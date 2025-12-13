@@ -54,4 +54,3 @@ We must avoid coupling domain/application logic to *how* authentication happens 
 
 - We can add HuleEdu SSO later by swapping identity/adapters and keeping domain/application unchanged.
 - v0.1 data model includes fields needed for future federation, reducing migration risk.
-

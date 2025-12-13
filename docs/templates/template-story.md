@@ -27,4 +27,3 @@ acceptance_criteria:
 
 ## Notes
 ```
-
