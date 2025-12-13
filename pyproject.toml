@@ -118,6 +118,7 @@ target-version = "py313"
 exclude = [
     ".git",
     ".venv",
+    ".cache",
     "__pycache__",
     ".mypy_cache",
     ".pytest_cache",
@@ -231,7 +232,7 @@ markers = [
     "financial: marks tests that incur real monetary costs via external API calls",
     "slow: marks tests as slow running",
     "integration: marks tests requiring external services",
-    "docker: marks tests that need docker-compose setup",
+    "docker: marks tests that need docker compose setup",
     "e2e: marks tests as end-to-end pipeline tests",
     "unit: marks tests as unit tests for isolated component testing",
     "timeout: marks tests with specific timeout requirements",
@@ -247,6 +248,7 @@ distribution = false
 [tool.pdm.scripts]
 # App runtime
 dev = "uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8000"
+dev-docker = "uvicorn --app-dir src skriptoteket.web.app:app --reload --host 0.0.0.0 --port 8000"
 serve = "uvicorn --app-dir src skriptoteket.web.app:app --host 0.0.0.0 --port 8000"
 
 # Code quality
@@ -268,6 +270,15 @@ db-upgrade = "alembic upgrade head"
 
 # Admin bootstrap
 bootstrap-superuser = { cmd = "python -m skriptoteket.cli bootstrap-superuser", env = { PYTHONPATH = "src" } }
+provision-user = { cmd = "python -m skriptoteket.cli provision-user", env = { PYTHONPATH = "src" } }
+
+# Docker dev workflow (compose base + dev overrides)
+dev-start = "docker compose -f compose.yaml -f compose.dev.yaml up -d"
+dev-stop = "docker compose -f compose.yaml -f compose.dev.yaml down"
+dev-restart = "docker compose -f compose.yaml -f compose.dev.yaml restart"
+dev-recreate = "docker compose -f compose.yaml -f compose.dev.yaml up -d --force-recreate"
+dev-build-start = "docker compose -f compose.yaml -f compose.dev.yaml up -d --build"
+dev-build-start-clean = "docker compose -f compose.yaml -f compose.dev.yaml down --volumes --remove-orphans && docker compose -f compose.yaml -f compose.dev.yaml build --no-cache && docker compose -f compose.yaml -f compose.dev.yaml up -d"
 
 # Pre-commit convenience
 precommit-install = "pre-commit install"

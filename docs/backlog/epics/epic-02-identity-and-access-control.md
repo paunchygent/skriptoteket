@@ -17,4 +17,3 @@ outcome: "Users can authenticate and role checks reliably gate contributor/admin
 ## Dependencies
 
 - ADR-0006 (identity/authorization).
-

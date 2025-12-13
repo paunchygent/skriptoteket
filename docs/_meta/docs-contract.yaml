@@ -86,4 +86,3 @@ types:
     status_allowed: ["active", "deprecated"]
     required: ["topic"]
     optional: ["examples"]
-

@@ -10,4 +10,3 @@ acceptance_criteria:
   - "Given I am an admin, when I publish a script, then it becomes visible and runnable for users."
   - "Given I am an admin, when I depublish a script, then it is hidden and not runnable for users, but retained for audit/rollback."
 ---
-

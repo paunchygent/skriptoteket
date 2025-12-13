@@ -25,4 +25,3 @@ topic: "tool-authoring"
 
 ## Examples
 ```
-

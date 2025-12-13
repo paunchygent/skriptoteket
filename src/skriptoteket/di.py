@@ -14,6 +14,9 @@ from skriptoteket.application.identity.current_user_provider import CurrentUserP
 from skriptoteket.application.identity.handlers.create_local_user import CreateLocalUserHandler
 from skriptoteket.application.identity.handlers.login import LoginHandler
 from skriptoteket.application.identity.handlers.logout import LogoutHandler
+from skriptoteket.application.identity.handlers.provision_local_user import (
+    ProvisionLocalUserHandler,
+)
 from skriptoteket.config import Settings
 from skriptoteket.infrastructure.clock import UTCClock
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
@@ -30,6 +33,7 @@ from skriptoteket.protocols.identity import (
     LoginHandlerProtocol,
     LogoutHandlerProtocol,
     PasswordHasherProtocol,
+    ProvisionLocalUserHandlerProtocol,
     SessionRepositoryProtocol,
     UserRepositoryProtocol,
 )
@@ -146,6 +150,23 @@ class AppProvider(Provider):
     ) -> CreateLocalUserHandlerProtocol:
         return CreateLocalUserHandler(
             settings=settings,
+            uow=uow,
+            users=users,
+            password_hasher=password_hasher,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def provision_local_user_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        users: UserRepositoryProtocol,
+        password_hasher: PasswordHasherProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> ProvisionLocalUserHandlerProtocol:
+        return ProvisionLocalUserHandler(
             uow=uow,
             users=users,
             password_hasher=password_hasher,

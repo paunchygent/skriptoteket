@@ -14,12 +14,16 @@ Keep this file updated so the next session can pick up work quickly.
 
 - Date: 2025-12-13
 - Branch / commit: `main` (see `git log -1 --oneline`)
-- Goal of the session: Establish identity foundation (sessions + bootstrap) and lock in agent workflow (no legacy, structured handoff).
+- Goal of the session: Finish ST-02-01 identity (role guards + admin provisioning + protocol-mocked unit tests).
 
 ## What changed
 
 - Implemented v0.1 identity scaffold in `src/skriptoteket/` (local accounts + Postgres sessions, login/logout, DI, migrations).
-- Added dev Postgres in `docker-compose.yml` and Alembic migration baseline (`migrations/`, `alembic.ini`).
+- Added role guard helpers in `src/skriptoteket/domain/identity/role_guards.py` and wired them into provisioning use-case.
+- Added admin provisioning use-case `ProvisionLocalUserHandler` and CLI command `pdm run provision-user`.
+- Added unit tests for login/current-user/role-guards using protocol mocks in `tests/unit/`.
+- Added dev Postgres in `compose.yaml` and Alembic migration baseline (`migrations/`, `alembic.ini`).
+- Added Docker/Compose standards rule in `.agent/rules/060-docker-and-compose.md` and Windsurf Context7 usage rule in `.windsurfrules`.
 - Added agent workflow helpers under `.agent/` and documented them in `doc_structure_requirements.md` and `docs/index.md`.
 - Enforced **no legacy support** by removing the `app/` shim entirely.
 
@@ -39,12 +43,15 @@ Keep this file updated so the next session can pick up work quickly.
 - `docker compose up -d db`
 - `pdm run db-upgrade`
 - `pdm run bootstrap-superuser`
+- `pdm run provision-user`
 - `pdm run dev` then open `/login`
+- Docker hot-reload: `pdm run dev-build-start` then open `/login`
+- Docker workflow helpers: `pdm run dev-start` / `pdm run dev-stop` / `pdm run dev-build-start-clean`
 - Quality gates: `pdm run docs-validate && pdm run lint && pdm run typecheck && pdm run test`
 
 ## Known issues / risks
 
-- Docker image build still expects `requirements.txt` in `Dockerfile`; either export it in CI or switch Dockerfile to PDM-based install.
+- None known for identity; next work is taxonomy/tool catalog.
 - Tool catalog (profession→category→tool) is not implemented yet; only auth + basic home page exists.
 
 ## Next steps (recommended order)

@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from skriptoteket.application.identity.commands import CreateLocalUserCommand, CreateLocalUserResult
+from skriptoteket.application.identity.local_user_creation import create_local_user
 from skriptoteket.config import Settings
-from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.identity.models import AuthProvider, User
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
@@ -33,24 +32,11 @@ class CreateLocalUserHandler(CreateLocalUserHandlerProtocol):
         self._id_generator = id_generator
 
     async def handle(self, command: CreateLocalUserCommand) -> CreateLocalUserResult:
-        email = command.email.strip().lower()
-        if await self._users.get_auth_by_email(email):
-            raise DomainError(code=ErrorCode.DUPLICATE_ENTRY, message="Email already exists")
-
-        now = self._clock.now()
-        user = User(
-            id=self._id_generator.new_uuid(),
-            email=email,
-            role=command.role,
-            auth_provider=AuthProvider.LOCAL,
-            external_id=None,
-            is_active=True,
-            created_at=now,
-            updated_at=now,
-        )
-        password_hash = self._password_hasher.hash(password=command.password)
-
         async with self._uow:
-            created = await self._users.create(user=user, password_hash=password_hash)
-
-        return CreateLocalUserResult(user=created)
+            return await create_local_user(
+                users=self._users,
+                password_hasher=self._password_hasher,
+                clock=self._clock,
+                id_generator=self._id_generator,
+                command=command,
+            )

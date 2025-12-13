@@ -10,4 +10,3 @@ acceptance_criteria:
   - "Given I am a contributor, when I submit a suggestion with title/description/professions/categories, then it is stored and visible in an admin review queue."
   - "Given I am a user (not contributor), when I try to submit a suggestion, then I am denied."
 ---
-

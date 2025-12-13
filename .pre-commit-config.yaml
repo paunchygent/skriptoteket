@@ -1,3 +1,5 @@
+default_install_hook_types: [pre-commit]
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -8,10 +10,37 @@ repos:
 
   - repo: local
     hooks:
+      - id: ruff-format
+        name: Ruff format (staged files)
+        entry: pdm run ruff format --force-exclude
+        language: system
+        types: [python]
+        pass_filenames: true
+
+      - id: ruff-lint
+        name: Ruff lint (staged files)
+        entry: pdm run ruff check --force-exclude
+        language: system
+        types: [python]
+        pass_filenames: true
+
+      - id: mypy
+        name: Mypy typecheck (src + tests)
+        entry: pdm run typecheck
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: pytest
+        name: Pytest (unit suite)
+        entry: pdm run test
+        language: system
+        types: [python]
+        pass_filenames: false
+
       - id: docs-contract-validate
         name: Docs contract validate (placement + naming + frontmatter)
         entry: pdm run docs-validate
         language: system
-        files: ^docs/.*\.md$
-        pass_filenames: true
-
+        files: ^docs/
+        pass_filenames: false

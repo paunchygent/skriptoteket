@@ -10,4 +10,3 @@ Documentation contract:
 
 Before proposing or committing docs changes:
 - Run: `pdm run docs-validate`
-

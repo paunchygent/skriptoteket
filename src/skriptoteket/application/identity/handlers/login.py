@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+from skriptoteket.application.identity.authentication import authenticate_local_user
 from skriptoteket.application.identity.commands import LoginCommand, LoginResult
 from skriptoteket.config import Settings
-from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.identity.models import AuthProvider, Session
+from skriptoteket.domain.identity.models import Session
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
@@ -41,27 +41,17 @@ class LoginHandler(LoginHandlerProtocol):
         self._token_generator = token_generator
 
     async def handle(self, command: LoginCommand) -> LoginResult:
-        email = command.email.strip().lower()
-        user_auth = await self._users.get_auth_by_email(email)
-        if not user_auth or not user_auth.user.is_active:
-            raise DomainError(code=ErrorCode.INVALID_CREDENTIALS, message="Invalid credentials")
-
-        if user_auth.user.auth_provider is not AuthProvider.LOCAL:
-            raise DomainError(code=ErrorCode.INVALID_CREDENTIALS, message="Invalid credentials")
-
-        if not user_auth.password_hash:
-            raise DomainError(code=ErrorCode.INVALID_CREDENTIALS, message="Invalid credentials")
-
-        if not self._password_hasher.verify(
+        user = await authenticate_local_user(
+            users=self._users,
+            password_hasher=self._password_hasher,
+            email=command.email,
             password=command.password,
-            password_hash=user_auth.password_hash,
-        ):
-            raise DomainError(code=ErrorCode.INVALID_CREDENTIALS, message="Invalid credentials")
+        )
 
         now = self._clock.now()
         session = Session(
             id=self._id_generator.new_uuid(),
-            user_id=user_auth.user.id,
+            user_id=user.id,
             csrf_token=self._token_generator.new_token(),
             created_at=now,
             expires_at=now + timedelta(seconds=self._settings.SESSION_TTL_SECONDS),
@@ -74,5 +64,5 @@ class LoginHandler(LoginHandlerProtocol):
         return LoginResult(
             session_id=session.id,
             csrf_token=session.csrf_token,
-            user=user_auth.user,
+            user=user,
         )

@@ -27,4 +27,3 @@ outcome: "What measurable outcome does this epic deliver?"
 
 ## Dependencies
 ```
-

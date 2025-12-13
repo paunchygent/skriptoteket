@@ -18,4 +18,3 @@ outcome: "Contributors can suggest scripts and admins can review decisions and m
 
 - EPIC-02 (identity and RBAC).
 - ADR-0005 (role hierarchy) and ADR-0006 (identity/authorization).
-

@@ -44,3 +44,9 @@ class LogoutHandlerProtocol(Protocol):
 
 class CreateLocalUserHandlerProtocol(Protocol):
     async def handle(self, command: CreateLocalUserCommand) -> CreateLocalUserResult: ...
+
+
+class ProvisionLocalUserHandlerProtocol(Protocol):
+    async def handle(
+        self, *, actor: User, command: CreateLocalUserCommand
+    ) -> CreateLocalUserResult: ...

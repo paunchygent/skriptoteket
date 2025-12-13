@@ -2,7 +2,7 @@
 type: story
 id: ST-02-01
 title: "User model and identity service (MVP, testable)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-13
 epic: "EPIC-02"
