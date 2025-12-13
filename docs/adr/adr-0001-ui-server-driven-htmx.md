@@ -1,4 +1,3 @@
-
 ---
 type: adr
 id: ADR-0001

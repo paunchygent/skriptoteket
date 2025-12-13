@@ -11,3 +11,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - PRD: `docs/prd/prd-script-hub-v0.1.md`
 - ADRs: `docs/adr/`
 - Backlog: `docs/backlog/`
+
+## Agent support
+
+- Start-here: `.agent/readme-first.md`
+- Session handoff: `.agent/handoff.md`
+- Next-session prompt template: `.agent/next-session-instruction-prompt-template.md`

@@ -212,6 +212,21 @@ Before proposing a change:
 - Run: `pdm run docs-validate`
 ```
 
+### 4.3 Agent-hjälpfiler: `.agent/` (sessioner + handoff)
+
+Utöver `docs/` (produkt/arkitektur) finns en liten agent-mapp för att göra arbetet **reproducerbart mellan sessioner**:
+
+```text
+.agent/
+  readme-first.md                          # Start här (vad ska läsas, var ska kod läggas, kommandon)
+  handoff.md                               # Uppdateras i slutet av varje session
+  next-session-instruction-prompt-template.md  # Prompt-mall för nästa session
+  rules/                                   # Normativa kodregler (index i 000-rule-index.md)
+  AGENTS.md                                # Kort arkitekturöversikt för agenter
+```
+
+**Regel:** Dessa filer får aldrig innehålla hemligheter (API-nycklar, tokens, personuppgifter).
+
 ---
 
 ## 5. Pre-commit: blockera fel placering + fel frontmatter + fel namn
