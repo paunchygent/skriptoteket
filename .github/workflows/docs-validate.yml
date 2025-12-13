@@ -1,0 +1,21 @@
+name: docs-validate
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  docs-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install PDM
+        run: python -m pip install --upgrade pip pdm
+      - name: Install dependencies
+        run: pdm install --frozen-lockfile -G monorepo-tools
+      - name: Validate docs contract
+        run: pdm run docs-validate
+

@@ -1,0 +1,261 @@
+[project]
+name = "hule-script-hub"
+version = "0.1.0"
+description = "Server-driven Script Hub for upload-based tools (csv/xlsx/docx/pdf/md/py) with HTMX-friendly UIs."
+authors = [
+    { name = "Olof Larsson", email = "paunchygent@gmail.com" },
+]
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+license = { text = "MIT" }
+
+# Runtime dependencies for the web app + ingest pipeline + your preferred core libs.
+dependencies = [
+    # Config / settings
+    "python-dotenv",
+    "pydantic",
+    "pydantic-settings",
+
+    # Web app (server-driven UI)
+    "fastapi",
+    "uvicorn[standard]",
+    "jinja2",
+    "python-multipart",
+
+    # Tool registry + docs contract validation helpers
+    "pyyaml",
+
+    # Ingest / parsing
+    "pandas",
+    "openpyxl",
+    "python-docx",
+    "pypdf",
+
+    # Preferred core libs (kept in runtime since you want them broadly available)
+    "aiohttp",
+    "psutil",
+    "typer",
+    "click",
+    "pypandoc",
+    "weasyprint",
+]
+
+[dependency-groups]
+# Repository tooling (lint/type/test/hooks + validation tooling)
+monorepo-tools = [
+    "ruff",
+    "mypy",
+
+    "pytest",
+    "pytest-mock",
+    "pytest-cov",
+    "pytest-asyncio",
+    "pytest-xdist",
+    "pytest-timeout",
+    "httpx",
+
+    "pre-commit",
+
+    # Validation / schema tooling used by docs-as-code rules
+    "jsonschema",
+    "pyyaml",
+
+    # Optional typing aids
+    "types-psutil",
+    "pandas-stubs",
+]
+
+# "Dev everything" extras that are useful locally but not required in prod images.
+dev = [
+    "coverage>=7.9.2",
+
+    # If you want local PDF generation alternatives / experiments
+    "reportlab",
+    "types-reportlab",
+]
+
+# Optional groups (install when needed)
+llm = [
+    "google-genai>=1.49.0",
+]
+
+analysis = [
+    "numpy",
+    "scipy",
+    "pyarrow",
+    "fastparquet",
+    "matplotlib",
+    "plotly",
+    "tabulate",
+    "types-tabulate",
+]
+
+tui = [
+    "textual",
+    "textual-filedrop",
+    "crossfiledialog",
+]
+
+docs = [
+    # If you later choose to publish docs as a site; keep optional to avoid forcing mkdocs.
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".pdm-python",
+    ".pdm-build",
+    "dist",
+    "build",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+]
+ignore = [
+    "E203",  # whitespace before ':' (conflicts with black)
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint.per-file-ignores]
+# Intentional re-exports
+"src/**/__init__.py" = ["F401"]
+
+# Scripts may prefer pragmatic patterns
+"scripts/**/*.py" = ["E501"]
+
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = true
+warn_unused_configs = true
+check_untyped_defs = true
+explicit_package_bases = true
+namespace_packages = true
+plugins = ["pydantic.mypy"]
+
+# Typical src-layout
+mypy_path = "stubs"
+exclude = [
+    "scripts/",
+    "docs/",
+]
+
+# External libraries without type stubs (or incomplete stubs)
+[[tool.mypy.overrides]]
+module = [
+    "yaml.*",
+    "pypandoc.*",
+    "weasyprint.*",
+    "pypdf.*",
+    "docx.*",
+    "pandas.*",
+]
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "*test*",
+    "*__pycache__*",
+    "*venv*",
+    "*.venv*",
+    "*migrations*",
+    "*setup.py",
+    "*__init__.py",
+    "*dist-packages*",
+    "*site-packages*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "raise ImportError",
+    "if __name__ == .__main__.:",
+    "pass",
+    "if TYPE_CHECKING:",
+    "@overload",
+    "@abstractmethod",
+    "@property",
+    "@classmethod",
+    "@staticmethod",
+]
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
+pythonpath = [
+    ".",
+]
+python_files = "test_*.py *_test.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-s -v --durations=10 --log-cli-level=INFO --import-mode=importlib -m 'not (financial or slow or docker)'"
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(message)s"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+asyncio_mode = "auto"
+
+markers = [
+    "financial: marks tests that incur real monetary costs via external API calls",
+    "slow: marks tests as slow running",
+    "integration: marks tests requiring external services",
+    "docker: marks tests that need docker-compose setup",
+    "e2e: marks tests as end-to-end pipeline tests",
+    "unit: marks tests as unit tests for isolated component testing",
+    "timeout: marks tests with specific timeout requirements",
+]
+
+filterwarnings = [
+    "ignore::DeprecationWarning:pydantic.*",
+]
+
+[tool.pdm]
+distribution = false
+
+[tool.pdm.scripts]
+# App runtime
+dev = "uvicorn app.main:app --reload --host 127.0.0.1 --port 8000"
+serve = "uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+# Code quality
+format = "ruff format --force-exclude ."
+lint = "ruff check --force-exclude ."
+lint-fix = "ruff check --fix --force-exclude ."
+typecheck = "mypy --config-file pyproject.toml src tests"
+
+# Tests
+test = "pytest"
+test-parallel = "pytest -n auto"
+test-sequential = "pytest -n 0"
+
+# Docs-as-code governance
+docs-validate = "python scripts/validate_docs.py"
+
+# Pre-commit convenience
+precommit-install = "pre-commit install"
+precommit-run = "pre-commit run --all-files"
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"

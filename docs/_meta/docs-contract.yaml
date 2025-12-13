@@ -1,0 +1,89 @@
+version: 1
+
+# Only these top-level folders may exist under docs/
+allowed_top_level:
+  - adr
+  - prd
+  - backlog
+  - runbooks
+  - reference
+  - templates
+  - _meta
+
+# Files that may omit frontmatter (exact paths, repo-relative)
+frontmatter_exempt:
+  - docs/index.md
+  - docs/README.md
+  - docs/_meta/README.md
+
+frontmatter:
+  delimiters: ["---", "---"]
+  common_required:
+    - type
+    - id
+    - title
+    - status
+    - owners
+    - created
+  common_optional:
+    - updated
+    - tags
+    - links
+
+types:
+  template:
+    folder: docs/templates
+    filename_regex: "^template-[a-z0-9-]+\\.md$"
+    id_regex: "^TPL-[a-z0-9-]+$"
+    status_allowed: ["active", "deprecated"]
+    required: ["for_type"]
+    optional: []
+
+  adr:
+    folder: docs/adr
+    filename_regex: "^adr-\\d{4}-[a-z0-9-]+\\.md$"
+    id_regex: "^ADR-\\d{4}$"
+    status_allowed: ["proposed", "accepted", "superseded", "deprecated"]
+    required: ["deciders"]
+    optional: ["context", "decision", "consequences"]
+
+  prd:
+    folder: docs/prd
+    filename_regex: "^prd-[a-z0-9-]+-v\\d+\\.\\d+(?:\\.\\d+)?\\.md$"
+    id_regex: "^PRD-[a-z0-9-]+-v\\d+\\.\\d+(?:\\.\\d+)?$"
+    status_allowed: ["draft", "active", "superseded"]
+    required: ["product", "version"]
+    optional: ["goals", "non_goals", "metrics"]
+
+  epic:
+    folder: docs/backlog/epics
+    filename_regex: "^epic-\\d{2}-[a-z0-9-]+\\.md$"
+    id_regex: "^EPIC-\\d{2}$"
+    status_allowed: ["proposed", "active", "done", "dropped"]
+    required: ["outcome"]
+    optional: ["risks", "dependencies"]
+
+  story:
+    folder: docs/backlog/stories
+    filename_regex: "^story-\\d{2}-\\d{2}-[a-z0-9-]+\\.md$"
+    id_regex: "^ST-\\d{2}-\\d{2}$"
+    status_allowed: ["ready", "in_progress", "done", "blocked"]
+    required: ["epic", "acceptance_criteria"]
+    optional: ["ui_impact", "data_impact", "risks", "dependencies"]
+
+  runbook:
+    folder: docs/runbooks
+    filename_regex: "^runbook-[a-z0-9-]+\\.md$"
+    id_regex: "^RUN-[a-z0-9-]+$"
+    status_allowed: ["active", "deprecated"]
+    required: ["system"]
+    optional: ["alerts", "steps", "rollback"]
+
+  reference:
+    folder: docs/reference
+    filename_regex: "^ref-[a-z0-9-]+\\.md$"
+    id_regex: "^REF-[a-z0-9-]+$"
+    status_allowed: ["active", "deprecated"]
+    required: ["topic"]
+    optional: ["examples"]
+

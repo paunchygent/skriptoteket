@@ -1,0 +1,17 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-yaml
+
+  - repo: local
+    hooks:
+      - id: docs-contract-validate
+        name: Docs contract validate (placement + naming + frontmatter)
+        entry: pdm run docs-validate
+        language: system
+        files: ^docs/.*\.md$
+        pass_filenames: true
+
