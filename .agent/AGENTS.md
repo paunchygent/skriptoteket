@@ -1,6 +1,6 @@
 # Architecture Reference
 
-Rules: `.agent/rules/000-rule-index.md`
+Rules: `.agent/rules/000-rule-index.md` (mirrored in root `AGENTS.md`; keep them consistent).
 
 ## Golden Rules
 
@@ -9,6 +9,7 @@ Rules: `.agent/rules/000-rule-index.md`
 - **<500 LoC** - Hard limit per file (010)
 - **Understand first** - Read rules before implementing (010)
 - **No legacy support** - This is a greenfield project; we do full refactor no matter the cost
+- **New agent/dev message** - When asked for a message to a new developer/agent, fill `.agent/next-session-instruction-prompt-template.md` (address the recipient as “you”)
 
 ## Layer Structure (020)
 

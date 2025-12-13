@@ -2,6 +2,13 @@
 
 Use this file as the starting point when you begin a new session.
 
+## Behavioral Rules (must follow)
+
+- **No legacy support / workarounds**: do the full refactor; delete old paths instead of shims.
+- **Preserve template structure**: when editing `.agent/handoff.md` or the next-session prompt template, keep headings and section order unchanged; only fill in content.
+- **No secrets**: never include API keys/tokens, passwords, or personal data in `.agent/` or `docs/`.
+- **Use the prompt template for new agents/devs**: if the user asks for a “message to a new developer/agent”, generate it by filling `.agent/next-session-instruction-prompt-template.md` (address the recipient as “you”).
+
 ## What this repo is
 
 Skriptoteket is a teacher-first Script Hub: users log in, browse tools by profession/category, upload files, and receive results.

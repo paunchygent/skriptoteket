@@ -1,6 +1,11 @@
 # Next Session Instruction Prompt (Template)
 
-Copy-paste this into the next chat to preserve context and enforce repo rules.
+Use this when you need to (a) start a new session or (b) provide a “message to a new developer/agent”.
+
+Rules:
+- Address the recipient as **you** (second person).
+- Include file references and commands; do not assume the reader saw prior chat context.
+- Do not include secrets/tokens/passwords.
 
 ---
 
@@ -15,6 +20,7 @@ You are working in the `skriptoteket` repo.
 ## Architecture constraints (non-negotiable)
 
 - DDD + Clean Architecture, SRP modules, no god objects, <400–500 LOC per file.
+- No legacy support/workarounds: do full refactor; delete old paths instead of shims.
 - Protocol-first DI: domain/application must not depend on frameworks or concrete implementations.
 - Async-first, single container; PostgreSQL repositories behind protocols; UoW controls transactions.
 - Pydantic models cross boundaries; dataclasses only within a single domain.
@@ -31,6 +37,13 @@ You are working in the `skriptoteket` repo.
 - Follow `docs/_meta/docs-contract.yaml` and templates under `docs/templates/`.
 - Do not create new `docs/<top>/` folders without updating the contract.
 - Run `pdm run docs-validate` for docs changes.
+
+## Key docs to read (source of truth)
+
+- `docs/index.md`
+- `docs/prd/prd-script-hub-v0.1.md`
+- ADRs: `docs/adr/` (notably `adr-0004-clean-architecture-ddd-di.md`, `adr-0009-auth-local-sessions-admin-provisioned.md`, `adr-0011-huleedu-identity-federation.md`)
+- Rules: `.agent/rules/000-rule-index.md`
 
 ## Current code layout
 

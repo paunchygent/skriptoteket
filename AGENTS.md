@@ -9,6 +9,17 @@ Target Python is **3.13–3.14**.
 - Findability: tools are tagged by **profession** and **category**; a tool can belong to multiple professions/categories
 - Future: HuleEdu SSO is planned via identity federation (identity external; **roles remain local**)
 
+## Engineering Rules (Non-Negotiable)
+
+- **No legacy support / workarounds**: do the full refactor; delete old paths instead of shims
+- **No vibe-coding**: follow established patterns and rules in `.agent/rules/000-rule-index.md`
+- **Protocol-first DI**: depend on `typing.Protocol`, not concrete implementations
+- **Layer boundaries**: domain is pure; web/api are thin; infrastructure implements protocols
+- **Transactions**: Unit of Work owns commit/rollback; repositories never commit
+- **Errors**: raise `DomainError` (no HTTP); map to HTTP in the web layer
+- **Testing**: mock protocols; avoid `@patch` or implementation details - use DI and focus on behavior; keep test files <400–500 LOC
+- **New agent/dev message**: when asked for a handoff message to a new developer/agent, generate it by filling `.agent/next-session-instruction-prompt-template.md` (address the recipient as “you”)
+
 ## Project Structure
 
 - `src/skriptoteket/`: production code (DDD/Clean layers + DI + web)
