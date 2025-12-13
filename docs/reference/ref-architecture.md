@@ -5,6 +5,7 @@ title: "Architecture and coding principles"
 status: active
 owners: "agents"
 created: 2025-12-13
+updated: 2025-12-13
 topic: "architecture"
 ---
 
@@ -15,6 +16,7 @@ topic: "architecture"
 - SRP everywhere: prefer small modules; avoid “god” classes/services.
 - File size: keep modules < ~400–500 LOC; split by responsibility.
 - Async-first: use `async def` end-to-end for I/O, especially DB access.
+- No legacy support / compatibility shims: do the full refactor and delete old paths instead.
 
 ## Layers and responsibilities
 

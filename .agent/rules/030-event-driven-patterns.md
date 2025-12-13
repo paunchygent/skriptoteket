@@ -162,6 +162,7 @@ class OrderEventConsumer:
 ## 6. Correlation ID Propagation
 
 **Every** operation must propagate correlation ID:
+
 - HTTP requests: Extract from `X-Correlation-ID` header (or generate)
 - Kafka messages: Include in EventEnvelope
 - Logs: Include as structured field
@@ -180,7 +181,7 @@ async def correlation_middleware(request: Request, call_next):
 
 ## 7. Topic Naming Convention
 
-```
+```text
 {namespace}.{domain}.{event_name}.v{version}
 
 Examples:

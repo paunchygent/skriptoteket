@@ -198,6 +198,7 @@ class PostgreSQLUserRepository(UserRepositoryProtocol):
 ## 5. Async Patterns
 
 ### Concurrent Operations
+
 ```python
 import asyncio
 
@@ -212,6 +213,7 @@ async def process_items(items: list[Item]) -> list[Result]:
 ```
 
 ### Timeout Handling
+
 ```python
 async def call_with_timeout(coro, timeout: float = 30.0):
     from src.domain.errors import DomainError, ErrorCode
@@ -223,6 +225,7 @@ async def call_with_timeout(coro, timeout: float = 30.0):
 ```
 
 ### Background Tasks
+
 ```python
 # Start background task in app lifecycle
 @app.on_event("startup")
@@ -279,6 +282,7 @@ class UserService(UserServiceProtocol):
 ```
 
 ### Protocol Mocking
+
 ```python
 # tests/unit/test_user_service.py
 from unittest.mock import AsyncMock

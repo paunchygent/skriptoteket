@@ -9,7 +9,7 @@ scope: "all"
 
 ## 1. Directory Structure
 
-```
+```text
 src/
 ├── app.py                    # FastAPI application factory
 ├── config.py                 # Pydantic Settings (env-based)
@@ -64,6 +64,7 @@ src/
 ## 2. Layer Rules
 
 ### API Layer (`api/`)
+
 - **Thin**: Validation, routing, response formatting only
 - **No business logic**: Delegates to domain services
 - **DTOs**: Pydantic models for request/response
@@ -102,6 +103,7 @@ async def list_tools(
 ```
 
 ### Domain Layer (`domain/`)
+
 - **Pure business logic**: No framework dependencies
 - **Protocol dependencies**: Injected via constructor
 - **Domain events**: Defined here, published via injected publisher
@@ -124,6 +126,7 @@ class UserService(UserServiceProtocol):
 ```
 
 ### Infrastructure Layer (`infrastructure/`)
+
 - **Protocol implementations**: Repositories, clients, publishers
 - **Framework-specific**: SQLAlchemy, aiohttp, aiokafka
 - **Transactions**: Unit of Work owns session + commit/rollback; repositories receive a session and never commit
@@ -131,7 +134,7 @@ class UserService(UserServiceProtocol):
 
 ## 3. Dependency Direction
 
-```
+```text
 api/ ──depends on──▶ domain/ ◀──implements── infrastructure/
          │                           │
          └─────── protocols.py ◀─────┘
@@ -163,6 +166,7 @@ api/ ──depends on──▶ domain/ ◀──implements── infrastructure/
 ## 6. Domain Boundaries
 
 Each domain subdirectory (`domain/users/`, `domain/orders/`) is a bounded context:
+
 - Has its own models, services, events
 - Communicates with other domains via domain events
 - Never imports directly from other domain subdirectories

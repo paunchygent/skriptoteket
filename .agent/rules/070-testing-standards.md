@@ -9,7 +9,7 @@ scope: "all"
 
 ## 1. Test Organization
 
-```
+```text
 tests/
 ├── unit/                    # Pure business logic tests
 │   ├── domain/
@@ -194,6 +194,7 @@ async def test_async_operation():
 ```
 
 Configure in `pyproject.toml`:
+
 ```toml
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -246,6 +247,7 @@ def test_complete_order_when_cancelled_raises_business_error(): ...
 | Overall | >80% |
 
 Run with:
+
 ```bash
 pytest --cov=src --cov-report=term-missing
 ```

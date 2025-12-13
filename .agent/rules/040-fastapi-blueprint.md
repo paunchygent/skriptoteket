@@ -296,7 +296,8 @@ def get_settings() -> Settings:
 | Nesting depth | max 2 (`/api/v1/users`) |
 
 Split large routers into submodules:
-```
+
+```text
 api/v1/users/
 ├── __init__.py      # Router aggregation
 ├── crud.py          # CRUD endpoints

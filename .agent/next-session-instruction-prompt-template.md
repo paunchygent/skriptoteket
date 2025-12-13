@@ -3,6 +3,7 @@
 Use this when you need to (a) start a new session or (b) provide a “message to a new developer/agent”.
 
 Rules:
+
 - Address the recipient as **you** (second person).
 - Include file references and commands; do not assume the reader saw prior chat context.
 - Do not include secrets/tokens/passwords.

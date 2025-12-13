@@ -10,6 +10,7 @@ scope: "all"
 ## 1. Philosophy
 
 This application follows:
+
 - **DDD**: Domain-Driven Design with clear bounded contexts
 - **Clean Architecture**: Dependencies point inward (domain has no external dependencies)
 - **SOLID**: Single responsibility, dependency inversion, interface segregation
@@ -40,6 +41,7 @@ class UserService:
 ```
 
 Benefits:
+
 - Testability via protocol mocks
 - Swappable implementations
 - Clear contracts between layers
@@ -47,6 +49,7 @@ Benefits:
 ## 4. Understand Before Implementing
 
 Before coding, you **MUST** understand:
+
 1. Task requirements and acceptance criteria
 2. Relevant architectural rules
 3. Existing patterns in the codebase
@@ -59,6 +62,7 @@ If unclear, seek clarification **before** implementation.
 **<400-500 LoC hard limit per file** (including tests).
 
 Forces:
+
 - Single responsibility
 - Decomposition into focused modules
 - Readable, maintainable code
@@ -66,6 +70,7 @@ Forces:
 ## 6. Leave Code Cleaner
 
 Every commit should leave the codebase cleaner:
+
 - Fix adjacent code smells when touching a file
 - Update outdated patterns to current standards
 - Remove dead code and unused imports

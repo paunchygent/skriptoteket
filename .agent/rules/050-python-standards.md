@@ -28,6 +28,7 @@ ruff check --fix .
 ```
 
 ### Style Rules
+
 - **Line length**: 100 characters
 - **Quotes**: Double quotes
 - **Indent**: 4 spaces
@@ -62,6 +63,7 @@ async def get_user(user_id):
 ```
 
 ### Common Type Patterns
+
 ```python
 from typing import Protocol, TypeVar, Generic
 from uuid import UUID
@@ -101,6 +103,7 @@ from src.domain.users.models import User
 ```
 
 **Rules**:
+
 - Absolute imports only (never relative across modules)
 - Group: stdlib → third-party → local
 - One import per line for clarity (or grouped with parentheses)
@@ -142,6 +145,7 @@ async def create_user(
 ```
 
 Docstrings required for:
+
 - Public classes
 - Public methods
 - Module-level functions

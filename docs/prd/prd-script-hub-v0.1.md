@@ -5,6 +5,7 @@ title: "Script Hub PRD v0.1 (MVP)"
 status: draft
 owners: "agents"
 created: 2025-12-13
+updated: 2025-12-13
 product: "script-hub"
 version: "0.1"
 ---
@@ -59,6 +60,7 @@ The identity subsystem must be minimal but robust:
 - Authorization checks are enforced at the interface layer (web/api), while application/domain logic relies on role/actor abstractions (no framework coupling).
 - No self-signup and no external IdP/SSO in v0.1 by default; keep the design extensible for future SSO integration.
 - Chosen v0.1 mechanism: **admin-provisioned local accounts + password auth + server-side sessions in PostgreSQL**.
+- Access policy (v0.1): **browse/run requires login** (no anonymous catalog access).
 - Future integration constraint: if/when HuleEdu SSO is added, Skriptoteket keeps **local roles** and stores `external_id` + `auth_provider` on users (ADR-0011).
 
 ## Findability (Taxonomy)
