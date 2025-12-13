@@ -21,6 +21,7 @@ This application follows:
 
 - Every change follows established patterns
 - No makeshift solutions or "temporary" hacks
+- No legacy support or compatibility shims: do the full refactor (delete old paths) instead of workarounds
 - If a pattern doesn't exist, propose it first
 - Deviant code **MUST** be refactored immediately
 

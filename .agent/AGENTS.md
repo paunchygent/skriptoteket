@@ -8,6 +8,7 @@ Rules: `.agent/rules/000-rule-index.md`
 - **Protocol-first** - All dependencies via `typing.Protocol` (042)
 - **<500 LoC** - Hard limit per file (010)
 - **Understand first** - Read rules before implementing (010)
+- **No legacy support** - This is a greenfield project; we do full refactor no matter the cost
 
 ## Layer Structure (020)
 

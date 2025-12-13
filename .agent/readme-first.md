@@ -17,7 +17,6 @@ Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future H
 ## Where to work
 
 - Production code lives in `src/skriptoteket/` (DDD/Clean layers).
-- `app/` is a legacy shim; avoid adding new behavior there.
 - `docs/` is contract-governed; do not add new top-level folders under `docs/` without updating the contract.
 
 ## Key commands

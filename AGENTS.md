@@ -16,7 +16,6 @@ Target Python is **3.13–3.14**.
 - `docs/`: PRD/ADRs/backlog (start at `docs/index.md`); contract-enforced via `docs/_meta/docs-contract.yaml`
 - `.agent/`: agent workflow helpers (`.agent/readme-first.md`, `.agent/handoff.md`, prompt template) + coding rules (`.agent/rules/`)
 - `scripts/`: repo tooling (e.g., `scripts/validate_docs.py`)
-- `app/`: legacy shim; avoid adding new behavior
 
 ## Key Commands
 

@@ -45,11 +45,12 @@ You are working in the `skriptoteket` repo.
 
 ## Acceptance criteria
 
-- <Bullets here>
+- Bullets here
 
 ---
 
 Start by reading:
+
 1) `.agent/readme-first.md`
 2) `docs/index.md`
 3) `.agent/rules/000-rule-index.md`

@@ -10,7 +10,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## What changed
 
-- 
+-
 
 ## Decisions (and links)
 
@@ -19,19 +19,18 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## How to run / verify
 
-- 
+-
 
 ## Known issues / risks
 
-- 
+-
 
 ## Next steps (recommended order)
 
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ## Notes
 
 - Do not include secrets/tokens in this file.
-
