@@ -1,13 +1,35 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=skriptoteket
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - skriptoteket-db:/var/lib/postgresql/data
+    restart: unless-stopped
+
   web:
     build: .
-    container_name: utility_scripts
+    container_name: skriptoteket_web
     ports:
       - "8000:8000"
     volumes:
-      - ./app:/app/app
+      - ./src:/app/src
+      - ./migrations:/app/migrations
+      - ./alembic.ini:/app/alembic.ini
     environment:
       - ENVIRONMENT=development
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/skriptoteket
+      - ENABLE_DOCS=true
+      - COOKIE_SECURE=false
+    depends_on:
+      - db
     restart: unless-stopped
+
+volumes:
+  skriptoteket-db:

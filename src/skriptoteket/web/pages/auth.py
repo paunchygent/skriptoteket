@@ -1,0 +1,84 @@
+from __future__ import annotations
+
+from uuid import UUID
+
+from dishka.integrations.fastapi import FromDishka, inject
+from fastapi import APIRouter, Depends, Form, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
+
+from skriptoteket.application.identity.commands import LoginCommand, LogoutCommand
+from skriptoteket.config import Settings
+from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.domain.identity.models import Session, User
+from skriptoteket.protocols.identity import LoginHandlerProtocol, LogoutHandlerProtocol
+from skriptoteket.web.auth.dependencies import get_current_session, get_session_id, require_user
+from skriptoteket.web.templating import templates
+
+router = APIRouter()
+
+
+@router.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request, error: str | None = None) -> HTMLResponse:
+    return templates.TemplateResponse(
+        "login.html",
+        {"request": request, "error": error, "user": None, "csrf_token": ""},
+    )
+
+
+@router.post("/login")
+@inject
+async def login(
+    request: Request,
+    settings: FromDishka[Settings],
+    handler: FromDishka[LoginHandlerProtocol],
+    email: str = Form(...),
+    password: str = Form(...),
+) -> RedirectResponse | HTMLResponse:
+    try:
+        result = await handler.handle(LoginCommand(email=email, password=password))
+    except DomainError as exc:
+        if exc.code in {ErrorCode.INVALID_CREDENTIALS, ErrorCode.UNAUTHORIZED}:
+            return templates.TemplateResponse(
+                "login.html",
+                {
+                    "request": request,
+                    "error": "Fel e-post eller lösenord.",
+                    "user": None,
+                    "csrf_token": "",
+                },
+            )
+        raise
+
+    response = RedirectResponse(url="/", status_code=303)
+    response.set_cookie(
+        key=settings.SESSION_COOKIE_NAME,
+        value=str(result.session_id),
+        max_age=settings.SESSION_TTL_SECONDS,
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+        path="/",
+    )
+    return response
+
+
+@router.post("/logout")
+@inject
+async def logout(
+    request: Request,
+    settings: FromDishka[Settings],
+    handler: FromDishka[LogoutHandlerProtocol],
+    csrf_token: str = Form(...),
+    session_id: UUID | None = Depends(get_session_id),
+    session: Session | None = Depends(get_current_session),
+    user: User = Depends(require_user),
+) -> RedirectResponse:
+    del user  # used for auth only
+
+    if session_id is None or session is None or csrf_token != session.csrf_token:
+        raise DomainError(code=ErrorCode.FORBIDDEN, message="CSRF validation failed")
+
+    await handler.handle(LogoutCommand(session_id=session_id))
+    response = RedirectResponse(url="/login", status_code=303)
+    response.delete_cookie(key=settings.SESSION_COOKIE_NAME, path="/")
+    return response

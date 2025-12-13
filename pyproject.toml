@@ -6,7 +6,7 @@ authors = [
     { name = "Olof Larsson", email = "paunchygent@gmail.com" },
 ]
 readme = "README.md"
-requires-python = ">=3.13,<3.14"
+requires-python = ">=3.13,<3.15"
 license = { text = "MIT" }
 
 # Runtime dependencies for the web app + ingest pipeline + your preferred core libs.
@@ -21,6 +21,15 @@ dependencies = [
     "uvicorn[standard]",
     "jinja2",
     "python-multipart",
+
+    # DI + persistence
+    "dishka",
+    "sqlalchemy[asyncio]",
+    "asyncpg",
+    "alembic",
+
+    # Security
+    "argon2-cffi",
 
     # Tool registry + docs contract validation helpers
     "pyyaml",
@@ -117,6 +126,7 @@ exclude = [
     ".pdm-build",
     "dist",
     "build",
+    "jupyter_scripts",
 ]
 
 [tool.ruff.lint]
@@ -151,7 +161,7 @@ namespace_packages = true
 plugins = ["pydantic.mypy"]
 
 # Typical src-layout
-mypy_path = "stubs"
+mypy_path = "src:stubs"
 exclude = [
     "scripts/",
     "docs/",
@@ -204,6 +214,7 @@ testpaths = [
     "tests",
 ]
 pythonpath = [
+    "src",
     ".",
 ]
 python_files = "test_*.py *_test.py"
@@ -235,8 +246,8 @@ distribution = false
 
 [tool.pdm.scripts]
 # App runtime
-dev = "uvicorn app.main:app --reload --host 127.0.0.1 --port 8000"
-serve = "uvicorn app.main:app --host 0.0.0.0 --port 8000"
+dev = "uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8000"
+serve = "uvicorn --app-dir src skriptoteket.web.app:app --host 0.0.0.0 --port 8000"
 
 # Code quality
 format = "ruff format --force-exclude ."
@@ -251,6 +262,12 @@ test-sequential = "pytest -n 0"
 
 # Docs-as-code governance
 docs-validate = "python scripts/validate_docs.py"
+
+# Database
+db-upgrade = "alembic upgrade head"
+
+# Admin bootstrap
+bootstrap-superuser = { cmd = "python -m skriptoteket.cli bootstrap-superuser", env = { PYTHONPATH = "src" } }
 
 # Pre-commit convenience
 precommit-install = "pre-commit install"

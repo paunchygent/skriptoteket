@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <p>Inloggad som <strong>{{ user.email }}</strong> ({{ user.role }}).</p>
+    <p>Här kommer verktygskatalogen (profession → kategori → verktyg).</p>
+  </div>
+{% endblock %}
+

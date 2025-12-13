@@ -93,7 +93,9 @@ def validate_path_rules(path: Path, contract: dict[str, Any]) -> list[Violation]
     # docs root files: only those explicitly exempt
     if len(path.parts) == 2:
         if norm not in set(contract.get("frontmatter_exempt", [])):
-            violations.append(Violation(norm, "Docs root files are not allowed (except exempt list)."))
+            violations.append(
+                Violation(norm, "Docs root files are not allowed (except exempt list).")
+            )
         return violations
 
     top = top_level_folder(path)
@@ -164,7 +166,9 @@ def validate_doc(path: Path, contract: dict[str, Any]) -> list[Violation]:
     # filename regex
     filename_regex = str(rule["filename_regex"])
     if not re.match(filename_regex, path.name):
-        violations.append(Violation(norm, f"Filename does not match {doc_type} convention: {filename_regex}"))
+        violations.append(
+            Violation(norm, f"Filename does not match {doc_type} convention: {filename_regex}")
+        )
 
     text = path.read_text(encoding="utf-8", errors="replace")
     fm, err = parse_frontmatter(text)
@@ -179,7 +183,9 @@ def validate_doc(path: Path, contract: dict[str, Any]) -> list[Violation]:
             violations.append(Violation(norm, f"Missing required frontmatter key: '{key}'"))
 
     if fm.get("type") != doc_type:
-        violations.append(Violation(norm, f"Frontmatter type '{fm.get('type')}' must equal '{doc_type}'."))
+        violations.append(
+            Violation(norm, f"Frontmatter type '{fm.get('type')}' must equal '{doc_type}'.")
+        )
 
     id_regex = str(rule["id_regex"])
     if "id" in fm and not re.match(id_regex, str(fm["id"])):
@@ -187,7 +193,9 @@ def validate_doc(path: Path, contract: dict[str, Any]) -> list[Violation]:
 
     expected_id = expected_id_from_filename(doc_type, path.name)
     if expected_id and "id" in fm and str(fm["id"]) != expected_id:
-        violations.append(Violation(norm, f"Frontmatter id must match filename: expected '{expected_id}'."))
+        violations.append(
+            Violation(norm, f"Frontmatter id must match filename: expected '{expected_id}'.")
+        )
 
     allowed_status = set(rule.get("status_allowed", []))
     if "status" in fm and fm["status"] not in allowed_status:
@@ -211,14 +219,18 @@ def validate_doc(path: Path, contract: dict[str, Any]) -> list[Violation]:
     elif isinstance(owners, list) and all(isinstance(item, str) for item in owners):
         pass
     else:
-        violations.append(Violation(norm, "Frontmatter 'owners' must be string or list of strings."))
+        violations.append(
+            Violation(norm, "Frontmatter 'owners' must be string or list of strings.")
+        )
 
     for key in rule.get("required", []):
         if key not in fm:
             violations.append(Violation(norm, f"Missing required '{doc_type}' key: '{key}'"))
 
     common_opt = set(contract["frontmatter"].get("common_optional", []))
-    allowed_keys = set(common_req) | common_opt | set(rule.get("required", [])) | set(rule.get("optional", []))
+    allowed_keys = (
+        set(common_req) | common_opt | set(rule.get("required", [])) | set(rule.get("optional", []))
+    )
     unknown = sorted(set(fm.keys()) - allowed_keys)
     if unknown:
         violations.append(
