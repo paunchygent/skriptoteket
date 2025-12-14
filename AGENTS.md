@@ -36,6 +36,7 @@ Target Python is **3.13–3.14**.
 - DB (dev): `docker compose up -d db` then `pdm run db-upgrade`
 - Bootstrap first superuser: `pdm run bootstrap-superuser`
 - Run: `pdm run dev`
+- Docker dev workflow: `pdm run dev-start` / `pdm run dev-stop` / `pdm run dev-build-start` / `pdm run dev-build-start-clean` / `pdm run dev-db-reset`
 - Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test`
 - Docs: `pdm run docs-validate`
 
