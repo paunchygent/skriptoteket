@@ -1,0 +1,45 @@
+from __future__ import annotations
+
+from typing import Protocol
+from uuid import UUID
+
+from skriptoteket.application.catalog.queries import (
+    ListCategoriesForProfessionQuery,
+    ListCategoriesForProfessionResult,
+    ListProfessionsQuery,
+    ListProfessionsResult,
+    ListToolsByTagsQuery,
+    ListToolsByTagsResult,
+)
+from skriptoteket.domain.catalog.models import Category, Profession, Tool
+
+
+class ProfessionRepositoryProtocol(Protocol):
+    async def list_all(self) -> list[Profession]: ...
+    async def get_by_slug(self, slug: str) -> Profession | None: ...
+
+
+class CategoryRepositoryProtocol(Protocol):
+    async def list_for_profession(self, *, profession_id: UUID) -> list[Category]: ...
+    async def get_for_profession_by_slug(
+        self, *, profession_id: UUID, category_slug: str
+    ) -> Category | None: ...
+
+
+class ToolRepositoryProtocol(Protocol):
+    async def list_by_tags(self, *, profession_id: UUID, category_id: UUID) -> list[Tool]: ...
+
+
+class ListProfessionsHandlerProtocol(Protocol):
+    async def handle(self, query: ListProfessionsQuery) -> ListProfessionsResult: ...
+
+
+class ListCategoriesForProfessionHandlerProtocol(Protocol):
+    async def handle(
+        self, query: ListCategoriesForProfessionQuery
+    ) -> ListCategoriesForProfessionResult: ...
+
+
+class ListToolsByTagsHandlerProtocol(Protocol):
+    async def handle(self, query: ListToolsByTagsQuery) -> ListToolsByTagsResult: ...
+

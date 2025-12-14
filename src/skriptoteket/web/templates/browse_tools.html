@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <p><a href="/browse/{{ profession.slug }}">← Tillbaka till kategorier</a></p>
+    <h2>{{ profession.label }} / {{ category.label }}</h2>
+
+    {% if tools %}
+      <ul>
+        {% for tool in tools %}
+          <li>
+            <strong>{{ tool.title }}</strong>
+            {% if tool.summary %}
+              <div>{{ tool.summary }}</div>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Inga verktyg ännu.</p>
+    {% endif %}
+  </div>
+{% endblock %}
+

@@ -10,6 +10,11 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from skriptoteket.application.catalog.handlers.list_categories_for_profession import (
+    ListCategoriesForProfessionHandler,
+)
+from skriptoteket.application.catalog.handlers.list_professions import ListProfessionsHandler
+from skriptoteket.application.catalog.handlers.list_tools_by_tags import ListToolsByTagsHandler
 from skriptoteket.application.identity.current_user_provider import CurrentUserProvider
 from skriptoteket.application.identity.handlers.create_local_user import CreateLocalUserHandler
 from skriptoteket.application.identity.handlers.login import LoginHandler
@@ -21,10 +26,25 @@ from skriptoteket.config import Settings
 from skriptoteket.infrastructure.clock import UTCClock
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.id_generator import UUID4Generator
+from skriptoteket.infrastructure.repositories.category_repository import (
+    PostgreSQLCategoryRepository,
+)
+from skriptoteket.infrastructure.repositories.profession_repository import (
+    PostgreSQLProfessionRepository,
+)
 from skriptoteket.infrastructure.repositories.session_repository import PostgreSQLSessionRepository
+from skriptoteket.infrastructure.repositories.tool_repository import PostgreSQLToolRepository
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
 from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordHasher
 from skriptoteket.infrastructure.token_generator import SecureTokenGenerator
+from skriptoteket.protocols.catalog import (
+    CategoryRepositoryProtocol,
+    ListCategoriesForProfessionHandlerProtocol,
+    ListProfessionsHandlerProtocol,
+    ListToolsByTagsHandlerProtocol,
+    ProfessionRepositoryProtocol,
+    ToolRepositoryProtocol,
+)
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
@@ -99,6 +119,18 @@ class AppProvider(Provider):
         return PostgreSQLSessionRepository(session)
 
     @provide(scope=Scope.REQUEST)
+    def profession_repo(self, session: AsyncSession) -> ProfessionRepositoryProtocol:
+        return PostgreSQLProfessionRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def category_repo(self, session: AsyncSession) -> CategoryRepositoryProtocol:
+        return PostgreSQLCategoryRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def tool_repo(self, session: AsyncSession) -> ToolRepositoryProtocol:
+        return PostgreSQLToolRepository(session)
+
+    @provide(scope=Scope.REQUEST)
     def current_user_provider(
         self,
         users: UserRepositoryProtocol,
@@ -165,7 +197,7 @@ class AppProvider(Provider):
         password_hasher: PasswordHasherProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
-    ) -> ProvisionLocalUserHandlerProtocol:
+        ) -> ProvisionLocalUserHandlerProtocol:
         return ProvisionLocalUserHandler(
             uow=uow,
             users=users,
@@ -173,6 +205,29 @@ class AppProvider(Provider):
             clock=clock,
             id_generator=id_generator,
         )
+
+    @provide(scope=Scope.REQUEST)
+    def list_professions_handler(
+        self, professions: ProfessionRepositoryProtocol
+    ) -> ListProfessionsHandlerProtocol:
+        return ListProfessionsHandler(professions=professions)
+
+    @provide(scope=Scope.REQUEST)
+    def list_categories_for_profession_handler(
+        self,
+        professions: ProfessionRepositoryProtocol,
+        categories: CategoryRepositoryProtocol,
+    ) -> ListCategoriesForProfessionHandlerProtocol:
+        return ListCategoriesForProfessionHandler(professions=professions, categories=categories)
+
+    @provide(scope=Scope.REQUEST)
+    def list_tools_by_tags_handler(
+        self,
+        professions: ProfessionRepositoryProtocol,
+        categories: CategoryRepositoryProtocol,
+        tools: ToolRepositoryProtocol,
+    ) -> ListToolsByTagsHandlerProtocol:
+        return ListToolsByTagsHandler(professions=professions, categories=categories, tools=tools)
 
 
 def create_container(settings: Settings):

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <p><a href="/browse">← Tillbaka till yrken</a></p>
+    <h2>{{ profession.label }}</h2>
+    <ul>
+      {% for category in categories %}
+        <li>
+          <a href="/browse/{{ profession.slug }}/{{ category.slug }}">{{ category.label }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock %}
+

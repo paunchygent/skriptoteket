@@ -2,7 +2,7 @@
 type: story
 id: ST-01-01
 title: "Profession → category navigation"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-13
 epic: "EPIC-01"

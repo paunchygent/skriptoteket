@@ -62,6 +62,7 @@ monorepo-tools = [
     "pytest-xdist",
     "pytest-timeout",
     "httpx",
+    "testcontainers",
 
     "pre-commit",
 
@@ -180,6 +181,15 @@ module = [
 ]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = [
+    "testcontainers.*",
+]
+ignore_missing_imports = true
+disable_error_code = [
+    "import-untyped",
+]
+
 [tool.coverage.run]
 source = ["."]
 omit = [
@@ -278,7 +288,15 @@ dev-stop = "docker compose -f compose.yaml -f compose.dev.yaml down"
 dev-restart = "docker compose -f compose.yaml -f compose.dev.yaml restart"
 dev-recreate = "docker compose -f compose.yaml -f compose.dev.yaml up -d --force-recreate"
 dev-build-start = "docker compose -f compose.yaml -f compose.dev.yaml up -d --build"
-dev-build-start-clean = "docker compose -f compose.yaml -f compose.dev.yaml down --volumes --remove-orphans && docker compose -f compose.yaml -f compose.dev.yaml build --no-cache && docker compose -f compose.yaml -f compose.dev.yaml up -d"
+dev-build-start-clean = { composite = [
+    "docker compose -f compose.yaml -f compose.dev.yaml build --no-cache",
+    "docker compose -f compose.yaml -f compose.dev.yaml up -d --force-recreate",
+] }
+
+dev-db-reset = { composite = [
+    "docker compose -f compose.yaml -f compose.dev.yaml down --volumes --remove-orphans",
+    "docker compose -f compose.yaml -f compose.dev.yaml up -d",
+] }
 
 # Pre-commit convenience
 precommit-install = "pre-commit install"

@@ -22,6 +22,7 @@ scope: "all"
 - [048-error-handling.md](048-error-handling.md): Structured errors, correlation IDs
 - [050-python-standards.md](050-python-standards.md): Style, typing, formatting, file limits
 - [053-sqlalchemy-patterns.md](053-sqlalchemy-patterns.md): Repository pattern, session management
+- [054-alembic-migrations.md](054-alembic-migrations.md): Migration workflow + idempotency testing
 - [060-docker-and-compose.md](060-docker-and-compose.md): Docker/Compose workflow (dev/prod), deprecated keys, secrets
 
 ## Quality Assurance

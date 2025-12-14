@@ -110,3 +110,64 @@ async def test_login_raises_for_invalid_credentials() -> None:
 
     assert exc_info.value.code == ErrorCode.INVALID_CREDENTIALS
     sessions.create.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_login_enters_uow_before_reading_user_auth(now: datetime) -> None:
+    events: list[str] = []
+
+    settings = Settings()
+    user = make_user(email="teacher@example.com")
+    user_auth = UserAuth(user=user, password_hash="hash")
+
+    uow = AsyncMock(spec=UnitOfWorkProtocol)
+
+    async def enter():
+        events.append("uow_enter")
+        return uow
+
+    uow.__aenter__.side_effect = enter
+    uow.__aexit__.return_value = None
+
+    users = AsyncMock(spec=UserRepositoryProtocol)
+
+    async def get_auth_by_email(email: str):
+        events.append("users_get_auth_by_email")
+        return user_auth
+
+    users.get_auth_by_email.side_effect = get_auth_by_email
+
+    sessions = AsyncMock(spec=SessionRepositoryProtocol)
+
+    async def create_session(*, session):
+        events.append("sessions_create")
+        return None
+
+    sessions.create.side_effect = create_session
+
+    password_hasher = Mock(spec=PasswordHasherProtocol)
+    password_hasher.verify.return_value = True
+
+    clock = Mock(spec=ClockProtocol)
+    clock.now.return_value = now
+
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    id_generator.new_uuid.return_value = uuid4()
+
+    token_generator = Mock(spec=TokenGeneratorProtocol)
+    token_generator.new_token.return_value = "csrf"
+
+    handler = LoginHandler(
+        settings=settings,
+        uow=uow,
+        users=users,
+        sessions=sessions,
+        password_hasher=password_hasher,
+        clock=clock,
+        id_generator=id_generator,
+        token_generator=token_generator,
+    )
+
+    await handler.handle(LoginCommand(email="teacher@example.com", password="pw"))
+
+    assert events[0] == "uow_enter"
