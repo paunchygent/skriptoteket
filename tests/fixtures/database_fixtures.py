@@ -54,7 +54,7 @@ def alembic_config(database_url: str) -> Config:
 @pytest.fixture(scope="module")
 def migrated_db(alembic_config: Config, database_url: str) -> str:
     """Runs alembic upgrade head once for the module."""
-    
+
     # Ensure env.py picks up the correct URL
     os.environ["DATABASE_URL"] = database_url
 
@@ -65,7 +65,7 @@ def migrated_db(alembic_config: Config, database_url: str) -> str:
     thread = threading.Thread(target=run_upgrade)
     thread.start()
     thread.join()
-    
+
     return database_url
 
 
@@ -101,7 +101,7 @@ async def db_session(
             )
         )
         tables = [row[0] for row in result.fetchall()]
-        
+
         if tables:
             table_list = ", ".join(f'"{t}"' for t in tables)
             await conn.execute(text(f"TRUNCATE TABLE {table_list} CASCADE"))

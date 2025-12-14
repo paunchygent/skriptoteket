@@ -52,8 +52,8 @@ def test_app(db_session: AsyncSession) -> FastAPI:
 
 @pytest.fixture
 async def client(test_app: FastAPI) -> AsyncIterator[httpx.AsyncClient]:
-            async with httpx.AsyncClient(
-                transport=httpx.ASGITransport(app=test_app),
-                base_url="http://test",
-            ) as c:
-                yield c
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=test_app),
+        base_url="http://test",
+    ) as c:
+        yield c

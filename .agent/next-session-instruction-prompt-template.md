@@ -7,6 +7,7 @@ Rules:
 - Address the recipient as **you** (second person).
 - Include file references and commands; do not assume the reader saw prior chat context.
 - Do not include secrets/tokens/passwords.
+- **DO NOT modify this template.** Use it to generate a new instruction prompt for your successor **AS A CHAT MESSAGE**.
 
 ---
 
