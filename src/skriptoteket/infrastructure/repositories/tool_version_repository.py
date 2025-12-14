@@ -5,6 +5,7 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.scripting.models import ToolVersion, VersionState
 from skriptoteket.infrastructure.db.models.tool_version import ToolVersionModel
 from skriptoteket.protocols.scripting import ToolVersionRepositoryProtocol
@@ -94,7 +95,7 @@ class PostgreSQLToolVersionRepository(ToolVersionRepositoryProtocol):
     async def update(self, *, version: ToolVersion) -> ToolVersion:
         model = await self._session.get(ToolVersionModel, version.id)
         if model is None:
-            return version
+            raise not_found("ToolVersion", str(version.id))
 
         model.state = version.state
         model.submitted_for_review_by_user_id = version.submitted_for_review_by_user_id

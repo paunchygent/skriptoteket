@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 

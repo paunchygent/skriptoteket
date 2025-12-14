@@ -91,8 +91,9 @@ class PublishVersionResult(BaseModel):
     archived_previous_active_version: ToolVersion | None = None
 
 
-def compute_content_hash(*, source_code: str) -> str:
-    return hashlib.sha256(source_code.encode("utf-8")).hexdigest()
+def compute_content_hash(*, entrypoint: str, source_code: str) -> str:
+    content = f"{entrypoint}\n{source_code}"
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
 
 def _validate_version_number(*, version_number: int) -> None:
@@ -147,7 +148,10 @@ def create_draft_version(
         state=VersionState.DRAFT,
         source_code=normalized_source_code,
         entrypoint=normalized_entrypoint,
-        content_hash=compute_content_hash(source_code=normalized_source_code),
+        content_hash=compute_content_hash(
+            entrypoint=normalized_entrypoint,
+            source_code=normalized_source_code,
+        ),
         derived_from_version_id=derived_from_version_id,
         created_by_user_id=created_by_user_id,
         created_at=now,
@@ -192,7 +196,10 @@ def save_draft_snapshot(
         state=VersionState.DRAFT,
         source_code=normalized_source_code,
         entrypoint=normalized_entrypoint,
-        content_hash=compute_content_hash(source_code=normalized_source_code),
+        content_hash=compute_content_hash(
+            entrypoint=normalized_entrypoint,
+            source_code=normalized_source_code,
+        ),
         derived_from_version_id=previous_version.id,
         created_by_user_id=saved_by_user_id,
         created_at=now,

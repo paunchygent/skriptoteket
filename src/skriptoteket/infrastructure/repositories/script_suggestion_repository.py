@@ -5,6 +5,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.suggestions.models import Suggestion
 from skriptoteket.infrastructure.db.models.script_suggestion import ScriptSuggestionModel
 from skriptoteket.protocols.suggestions import SuggestionRepositoryProtocol
@@ -52,7 +53,7 @@ class PostgreSQLScriptSuggestionRepository(SuggestionRepositoryProtocol):
     async def update(self, *, suggestion: Suggestion) -> Suggestion:
         model = await self._session.get(ScriptSuggestionModel, suggestion.id)
         if model is None:
-            return suggestion
+            raise not_found("Suggestion", str(suggestion.id))
 
         model.status = suggestion.status
         model.reviewed_by_user_id = suggestion.reviewed_by_user_id

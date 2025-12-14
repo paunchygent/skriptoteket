@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from fastapi import APIRouter, Depends
 
 from skriptoteket.web.auth.dependencies import require_user

@@ -5,6 +5,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.scripting.models import ToolRun
 from skriptoteket.infrastructure.db.models.tool_run import ToolRunModel
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
@@ -47,7 +48,7 @@ class PostgreSQLToolRunRepository(ToolRunRepositoryProtocol):
     async def update(self, *, run: ToolRun) -> ToolRun:
         model = await self._session.get(ToolRunModel, run.id)
         if model is None:
-            return run
+            raise not_found("ToolRun", str(run.id))
 
         model.status = run.status
         model.finished_at = run.finished_at
