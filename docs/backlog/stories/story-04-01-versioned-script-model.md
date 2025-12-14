@@ -2,7 +2,7 @@
 type: story
 id: ST-04-01
 title: "Versioned script model (domain + DB + repositories)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-14
 epic: "EPIC-04"
@@ -36,7 +36,10 @@ This story establishes the foundational data model for versioned tool scripts. I
 ## Technical Notes
 
 - Partial unique index enforces single active: `WHERE state = 'active'`
+- Unique constraint enforces monotonic uniqueness: `UNIQUE (tool_id, version_number)`
 - Version numbers are monotonic per tool (not global)
 - `derived_from_version_id` tracks lineage for rollback audit
 - `content_hash` (sha256) enables deduplication detection
 - `change_summary` field stores human-readable description of changes per version
+- `submitted_for_review_by` + `submitted_for_review_at` record the Draft → InReview transition (do not overload reviewer fields)
+- `tool_runs.workdir_path` is stored as a relative path/key under the artifacts root (not an absolute host path)

@@ -86,6 +86,8 @@ ToolVersion
   derived_from_version_id: UUID | None
   created_by: UUID
   created_at: datetime
+  submitted_for_review_by: UUID | None
+  submitted_for_review_at: datetime | None
   reviewed_by: UUID | None
   reviewed_at: datetime | None
   published_by: UUID | None
@@ -93,6 +95,12 @@ ToolVersion
   change_summary: str | None
   review_note: str | None  (new field)
 ```
+
+Notes:
+
+- `submitted_for_review_*` records the **Draft → InReview** transition (who submitted and when).
+- `reviewed_*` is reserved for reviewer actions (e.g. "request changes" / future explicit review events) and is **not**
+  used for submission audit.
 
 #### ToolRun
 
@@ -106,7 +114,7 @@ ToolRun
   status: RunStatus (running | succeeded | failed | timed_out)
   started_at: datetime
   finished_at: datetime | None
-  workdir_path: str (host path for persisted artifacts, e.g. /var/lib/skriptoteket/artifacts/{run_id})
+  workdir_path: str (relative path/key under artifacts root, e.g. "{run_id}/")
   input_filename: str
   input_size_bytes: int
   html_output: str | None  (Stored in DB)
@@ -143,7 +151,17 @@ Archived --> Active: Rollback (publish derived-from archived)
 CREATE UNIQUE INDEX ux_tool_versions_one_active_per_tool
 ON tool_versions(tool_id)
 WHERE state = 'active';
+
+-- Uniqueness + queryable history (monotonic per tool)
+ALTER TABLE tool_versions
+  ADD CONSTRAINT uq_tool_versions_tool_id_version_number
+  UNIQUE (tool_id, version_number);
 ```
+
+Audit FK policy:
+
+- `created_by`, `submitted_for_review_by`, `reviewed_by`, `published_by`, `requested_by` reference `users(id)` with
+  `ON DELETE RESTRICT` to preserve audit history (user deletion is blocked if referenced).
 
 ---
 

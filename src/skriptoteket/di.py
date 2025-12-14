@@ -49,6 +49,10 @@ from skriptoteket.infrastructure.repositories.script_suggestion_repository impor
 )
 from skriptoteket.infrastructure.repositories.session_repository import PostgreSQLSessionRepository
 from skriptoteket.infrastructure.repositories.tool_repository import PostgreSQLToolRepository
+from skriptoteket.infrastructure.repositories.tool_run_repository import PostgreSQLToolRunRepository
+from skriptoteket.infrastructure.repositories.tool_version_repository import (
+    PostgreSQLToolVersionRepository,
+)
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
 from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordHasher
 from skriptoteket.infrastructure.token_generator import SecureTokenGenerator
@@ -72,6 +76,10 @@ from skriptoteket.protocols.identity import (
     ProvisionLocalUserHandlerProtocol,
     SessionRepositoryProtocol,
     UserRepositoryProtocol,
+)
+from skriptoteket.protocols.scripting import (
+    ToolRunRepositoryProtocol,
+    ToolVersionRepositoryProtocol,
 )
 from skriptoteket.protocols.suggestions import (
     DecideSuggestionHandlerProtocol,
@@ -153,6 +161,14 @@ class AppProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def tool_repo(self, session: AsyncSession) -> ToolRepositoryProtocol:
         return PostgreSQLToolRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def tool_version_repo(self, session: AsyncSession) -> ToolVersionRepositoryProtocol:
+        return PostgreSQLToolVersionRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def tool_run_repo(self, session: AsyncSession) -> ToolRunRepositoryProtocol:
+        return PostgreSQLToolRunRepository(session)
 
     @provide(scope=Scope.REQUEST)
     def script_suggestion_repo(self, session: AsyncSession) -> SuggestionRepositoryProtocol:

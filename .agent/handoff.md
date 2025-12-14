@@ -13,60 +13,63 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-14
-- Branch / commit: `main` (HEAD; clean working tree)
-- Goal of the session: Align EPIC-04 dynamic scripting architecture/docs end-to-end (runner/storage/versioning/RBAC/user run) and resolve cross-epic story mismatches; apply minimal code changes required by the updated contracts.
+- Branch / commit: `main` (HEAD)
+- Goal of the session: Implement ST-04-01 “Versioned script model” end-to-end (migration + domain + protocols + repos + DI + tests incl. required migration idempotency test).
 
 ## What changed
 
-- Added/updated EPIC-04 docs: ADR-0012/0013/0014, EPIC-04, ST-04-01..05, and reference specs/contracts:
-  - `docs/adr/adr-0012-script-source-storage.md`
-  - `docs/adr/adr-0013-execution-ephemeral-docker.md`
-  - `docs/adr/adr-0014-versioning-and-single-active.md`
-  - `docs/backlog/epics/epic-04-dynamic-tool-scripts.md`
-  - `docs/backlog/stories/story-04-01-versioned-script-model.md`
-  - `docs/backlog/stories/story-04-02-docker-runner-execution.md`
-  - `docs/backlog/stories/story-04-03-admin-script-editor-ui.md`
-  - `docs/backlog/stories/story-04-04-governance-audit-rollback.md`
-  - `docs/backlog/stories/story-04-05-user-execution.md`
-  - `docs/reference/ref-dynamic-tool-scripts.md` (includes lifecycle map linking ST-03-03 + ST-04-04)
-  - `docs/reference/ref-scripting-api-contracts.md` (includes user endpoints)
-- Resolved EPIC-02/03/04 story alignment:
-  - Expanded ST-02-02 acceptance criteria: `docs/backlog/stories/story-02-02-admin-nomination-and-superuser-approval.md`
-  - Renamed and clarified ST-03-03 as tool visibility (not script versions): `docs/backlog/stories/story-03-03-publish-and-depublish-tools.md`
-  - Updated EPIC-03 wording to reflect tool governance vs script versioning: `docs/backlog/epics/epic-03-script-governance-workflow.md`
-- Applied minimal code changes required by updated contracts:
-  - `src/skriptoteket/domain/catalog/models.py` (Tool now includes `is_published` + `active_version_id`)
-  - `src/skriptoteket/protocols/catalog.py` (`ToolRepositoryProtocol.get_by_id/get_by_slug`)
-  - `src/skriptoteket/infrastructure/repositories/tool_repository.py` (implements the new methods)
-- Repo guidance: added “no unapproved reverts” rule: `AGENTS.md`
+- Updated docs to clarify submission audit and artifact paths:
+  - `docs/backlog/stories/story-04-01-versioned-script-model.md` (status: done)
+  - `docs/reference/ref-dynamic-tool-scripts.md`
+  - `docs/reference/ref-scripting-api-contracts.md`
+- Added migration + REQUIRED Testcontainers idempotency test:
+  - `migrations/versions/0005_tool_versions.py` (`tool_versions`, `tool_runs`, `tools.active_version_id`)
+  - `tests/integration/test_migration_0005_tool_versions_idempotent.py`
+- Added scripting domain models + transitions:
+  - `src/skriptoteket/domain/scripting/models.py`
+- Added protocols + infrastructure repositories + DI wiring:
+  - `src/skriptoteket/protocols/scripting.py`
+  - `src/skriptoteket/infrastructure/db/models/tool_version.py`
+  - `src/skriptoteket/infrastructure/db/models/tool_run.py`
+  - `src/skriptoteket/infrastructure/db/models/tool.py` (adds `active_version_id`)
+  - `src/skriptoteket/infrastructure/repositories/tool_version_repository.py`
+  - `src/skriptoteket/infrastructure/repositories/tool_run_repository.py`
+  - `src/skriptoteket/di.py` (register new repos)
+  - `src/skriptoteket/infrastructure/repositories/tool_repository.py` (set `active_version_id` on draft creation)
+- Added domain unit tests:
+  - `tests/unit/domain/scripting/test_models.py`
 
 ## Decisions (and links)
 
-- Execution: sibling runner containers controlled via Docker SDK over `docker.sock` (no host-path bind mounts); hardened runner (non-root, cap-drop, no-new-privileges, pids-limit, read-only root + writable tmpfs/volumes). See `docs/adr/adr-0013-execution-ephemeral-docker.md` and `docs/backlog/stories/story-04-02-docker-runner-execution.md`.
-- Storage: hybrid (DB stores source + stdout/stderr/html_output; binaries on disk with retention cleanup; production inputs not retained by default). See `docs/adr/adr-0012-script-source-storage.md`.
-- Versioning: append-only; publish is copy-on-activate and archives the reviewed `in_review` version (publish “consumes” it). See `docs/adr/adr-0014-versioning-and-single-active.md` and `docs/backlog/stories/story-04-04-governance-audit-rollback.md`.
-- Governance: Admins can publish tool visibility and script versions; Superuser rollback only. “Published implies runnable” (requires `tools.active_version_id`). See `docs/backlog/stories/story-03-03-publish-and-depublish-tools.md` and `docs/reference/ref-dynamic-tool-scripts.md`.
+- Submission audit uses dedicated fields (`submitted_for_review_by_user_id`, `submitted_for_review_at`) and does not overload reviewer fields. See `docs/reference/ref-dynamic-tool-scripts.md`.
+- Audit user FKs (`created_*`, `submitted_for_review_*`, `reviewed_*`, `published_*`, `requested_*`) use `ON DELETE RESTRICT` to preserve history. See `docs/reference/ref-dynamic-tool-scripts.md`.
+- Version uniqueness:
+  - `UNIQUE (tool_id, version_number)`
+  - Partial unique: one active per tool (`WHERE state='active'`)
+  See `docs/backlog/stories/story-04-01-versioned-script-model.md` and `migrations/versions/0005_tool_versions.py`.
+- `tool_runs.version_id` uses default `NO ACTION` (restrictive, cascade-safe); `artifacts_manifest` is `JSONB NOT NULL DEFAULT '{}'::jsonb`. See `migrations/versions/0005_tool_versions.py`.
+- `tool_runs.workdir_path` is stored as a relative key under the artifacts root (not an absolute host path). See `docs/reference/ref-dynamic-tool-scripts.md`.
 
 ## How to run / verify
 
-- Quality gates (run this session): `pdm run docs-validate && pdm run lint && pdm run typecheck && pdm run test`
+- Quality gates (ran): `pdm run format && pdm run lint && pdm run typecheck && pdm run test && pdm run docs-validate`
+- REQUIRED migration idempotency tests (ran; requires Docker): `pdm run pytest -m docker --override-ini addopts=''`
+- UI functional checks: not applicable (no UI/routes changed)
 
 ## Known issues / risks
 
-- Docker `docker.sock` mount expands blast radius; plan for a dedicated runner service/host in the future (ADR-0013).
-- ST-03-03 “publish tool” depends on ST-04-01 `active_version_id` being present (published implies runnable).
-- Production runs default to `--network none` and inject no secrets in v0.2; per-tool network/secrets are deferred.
+- Docker-marked tests require access to the local Docker daemon (may need elevated permissions in sandboxed environments).
+- ST-03-03 and later UI flows still need to enforce “published implies runnable” (active version must exist).
 
 ## Next steps (recommended order)
 
-1. Implement ST-04-01 end-to-end: `tool_versions` + `tool_runs` + `tools.active_version_id` migration, domain models/state transitions, protocols, repositories, and required migration idempotency test.
-2. Implement ST-03-03 publish/depublish tool visibility with the guard “published implies runnable” (`active_version_id != null`) + minimal admin UI.
-3. Implement ST-04-02 runner: Docker SDK sibling runner (archive copy I/O), runner image, artifact persistence + retention cleanup.
+1. Confirm with the user before starting any ST-03-03 or runner/UI work (session scope rule).
+2. Implement ST-03-03 publish/depublish tool visibility with the guard “published implies runnable” (`active_version_id != null`).
+3. Implement ST-04-02 runner (Docker SDK sibling runner + artifact persistence/retention).
 4. Implement ST-04-03 admin script editor UI (create/save/submit-review/run-sandbox).
-5. Implement ST-04-04 governance handlers (publish/rollback) and policies.
-6. Implement ST-04-05 user run pages (`/tools/{slug}/run`, `/my-runs/{run_id}`) and 404 rules for unpublished tools.
+5. Implement ST-04-04 governance handlers (publish/rollback/request changes) and policies.
+6. Implement ST-04-05 user run pages (`/tools/{slug}/run`, `/my-runs/{run_id}`).
 
 ## Notes
 
 - Do not include secrets/tokens in this file.
-- Relevant commits for this work: `901f50b`, `b0b2b09`, `96dedbd`.

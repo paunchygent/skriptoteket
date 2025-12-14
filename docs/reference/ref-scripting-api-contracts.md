@@ -73,6 +73,8 @@ Related documents:
   "derived_from_version_id": "uuid|null",
   "created_by": "uuid",
   "created_at": "2025-12-14T12:03:00Z",
+  "submitted_for_review_by": "uuid|null",
+  "submitted_for_review_at": "2025-12-14T12:10:00Z|null",
   "reviewed_by": "uuid|null",
   "reviewed_at": "2025-12-14T12:10:00Z|null",
   "published_by": "uuid|null",
@@ -97,6 +99,8 @@ Used when opening a version (includes `source_code`):
   "derived_from_version_id": "uuid|null",
   "created_by": "uuid",
   "created_at": "2025-12-14T12:03:00Z",
+  "submitted_for_review_by": "uuid|null",
+  "submitted_for_review_at": "2025-12-14T12:10:00Z|null",
   "reviewed_by": "uuid|null",
   "reviewed_at": "2025-12-14T12:10:00Z|null",
   "published_by": "uuid|null",
@@ -265,7 +269,7 @@ Auth: Contributor (own drafts), Admin, Superuser
 ```
 
 **Request:** `SubmitReviewIn`
-**Response 200:** `ToolVersionListItemOut` (state=in_review)
+**Response 200:** `ToolVersionListItemOut` (state=in_review, sets `submitted_for_review_by` + `submitted_for_review_at`)
 
 ### 2.7 Publish (Admin & Superuser)
 
@@ -368,6 +372,8 @@ class ToolVersionListItemOut(BaseModel):
     derived_from_version_id: Optional[UUID]
     created_by: UUID
     created_at: datetime
+    submitted_for_review_by: Optional[UUID] = None
+    submitted_for_review_at: Optional[datetime] = None
     reviewed_by: Optional[UUID] = None
     reviewed_at: Optional[datetime] = None
     published_by: Optional[UUID] = None

@@ -57,6 +57,7 @@ class PostgreSQLToolRepository(ToolRepositoryProtocol):
             title=tool.title,
             summary=tool.summary,
             is_published=False,
+            active_version_id=tool.active_version_id,
             created_at=tool.created_at,
             updated_at=tool.updated_at,
         )
