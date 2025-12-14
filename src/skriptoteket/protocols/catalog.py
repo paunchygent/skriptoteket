@@ -33,6 +33,14 @@ class CategoryRepositoryProtocol(Protocol):
 class ToolRepositoryProtocol(Protocol):
     async def list_by_tags(self, *, profession_id: UUID, category_id: UUID) -> list[Tool]: ...
 
+    async def create_draft(
+        self,
+        *,
+        tool: Tool,
+        profession_ids: list[UUID],
+        category_ids: list[UUID],
+    ) -> Tool: ...
+
 
 class ListProfessionsHandlerProtocol(Protocol):
     async def handle(self, query: ListProfessionsQuery) -> ListProfessionsResult: ...

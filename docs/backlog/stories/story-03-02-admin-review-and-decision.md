@@ -2,7 +2,7 @@
 type: story
 id: ST-03-02
 title: "Admin reviews suggestions (accept/modify/deny)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-13
 epic: "EPIC-03"

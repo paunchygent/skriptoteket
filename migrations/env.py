@@ -19,6 +19,9 @@ from skriptoteket.infrastructure.db.models.profession_category import (  # noqa:
 from skriptoteket.infrastructure.db.models.script_suggestion import (
     ScriptSuggestionModel,  # noqa: F401
 )
+from skriptoteket.infrastructure.db.models.script_suggestion_decision import (
+    ScriptSuggestionDecisionModel,  # noqa: F401
+)
 from skriptoteket.infrastructure.db.models.session import SessionModel  # noqa: F401
 from skriptoteket.infrastructure.db.models.tool import ToolModel  # noqa: F401
 from skriptoteket.infrastructure.db.models.tool_category import ToolCategoryModel  # noqa: F401

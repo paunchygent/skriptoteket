@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <h2>Granska förslag</h2>
+
+    {% if saved %}
+      <p>Beslut sparat.</p>
+    {% endif %}
+
+    {% if error %}
+      <p class="error">{{ error }}</p>
+    {% endif %}
+
+    {% if suggestion %}
+      <h3 style="margin-top: 18px; margin-bottom: 6px">{{ suggestion.title }}</h3>
+      <p style="margin-top: 0">
+        <small>Status: {{ suggestion.status }}</small><br />
+        <small>Inskickat: {{ suggestion.created_at }}</small><br />
+        <small>Av: {{ suggestion.submitted_by_user_id }}</small><br />
+        <small>Yrken: {{ suggestion.profession_slugs | join(", ") }}</small><br />
+        <small>Kategorier: {{ suggestion.category_slugs | join(", ") }}</small><br />
+        {% if suggestion.reviewed_at %}
+          <small>Granskat: {{ suggestion.reviewed_at }}</small><br />
+        {% endif %}
+        {% if suggestion.reviewed_by_user_id %}
+          <small>Granskad av: {{ suggestion.reviewed_by_user_id }}</small><br />
+        {% endif %}
+        {% if suggestion.review_rationale %}
+          <small>Motivering: {{ suggestion.review_rationale }}</small><br />
+        {% endif %}
+        {% if suggestion.draft_tool_id %}
+          <small>Utkast-tool: {{ suggestion.draft_tool_id }}</small><br />
+        {% endif %}
+      </p>
+
+      <p>{{ suggestion.description }}</p>
+
+      <h3 style="margin-top: 22px">Historik</h3>
+      {% if decisions %}
+        <ul>
+          {% for d in decisions %}
+            <li style="margin-bottom: 14px">
+              <small>{{ d.decided_at }} – {{ d.decision }} av {{ d.decided_by_user_id }}</small><br />
+              <small>Motivering: {{ d.rationale }}</small><br />
+              <small>Titel: {{ d.title }}</small><br />
+              <small>Yrken: {{ d.profession_slugs | join(", ") }}</small><br />
+              <small>Kategorier: {{ d.category_slugs | join(", ") }}</small><br />
+              {% if d.created_tool_id %}
+                <small>Skapad tool: {{ d.created_tool_id }}</small><br />
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p><small>Inga beslut ännu.</small></p>
+      {% endif %}
+
+      {% if can_decide %}
+        <h3 style="margin-top: 22px">Beslut</h3>
+        <form method="post" action="/admin/suggestions/{{ suggestion.id }}/decision">
+          <fieldset>
+            <legend>Typ</legend>
+            <label>
+              <input type="radio" name="decision" value="accept" {% if form.decision == "accept" %}checked{% endif %} />
+              Acceptera (ev. med ändringar)
+            </label>
+            <br />
+            <label>
+              <input type="radio" name="decision" value="deny" {% if form.decision == "deny" %}checked{% endif %} />
+              Avslå
+            </label>
+          </fieldset>
+
+          <label for="rationale">Motivering</label>
+          <textarea id="rationale" name="rationale" required>{{ form.rationale }}</textarea>
+
+          <p><small>Fälten nedan används bara vid accept.</small></p>
+
+          <label for="title">Titel</label>
+          <input id="title" name="title" value="{{ form.title }}" />
+
+          <label for="description">Beskrivning</label>
+          <textarea id="description" name="description">{{ form.description }}</textarea>
+
+          <fieldset>
+            <legend>Yrken</legend>
+            {% for profession in professions %}
+              <label>
+                <input
+                  type="checkbox"
+                  name="profession_slugs"
+                  value="{{ profession.slug }}"
+                  {% if profession.slug in form.profession_slugs %}checked{% endif %}
+                />
+                {{ profession.label }}
+              </label>
+              <br />
+            {% endfor %}
+          </fieldset>
+
+          <fieldset>
+            <legend>Kategorier</legend>
+            {% for category in categories %}
+              <label>
+                <input
+                  type="checkbox"
+                  name="category_slugs"
+                  value="{{ category.slug }}"
+                  {% if category.slug in form.category_slugs %}checked{% endif %}
+                />
+                {{ category.label }}
+              </label>
+              <br />
+            {% endfor %}
+          </fieldset>
+
+          <button type="submit">Spara beslut</button>
+        </form>
+      {% else %}
+        <p><small>Förslaget är redan granskat.</small></p>
+      {% endif %}
+    {% else %}
+      <p>Förslaget hittades inte.</p>
+    {% endif %}
+  </div>
+{% endblock %}
+

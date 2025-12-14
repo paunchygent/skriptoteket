@@ -11,51 +11,39 @@ from sqlalchemy.orm import Mapped, mapped_column
 from skriptoteket.infrastructure.db.base import Base
 
 
-class ScriptSuggestionModel(Base):
-    __tablename__ = "script_suggestions"
+class ScriptSuggestionDecisionModel(Base):
+    __tablename__ = "script_suggestion_decisions"
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
-    submitted_by_user_id: Mapped[UUID] = mapped_column(
+    suggestion_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("script_suggestions.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
+    )
+    decided_by_user_id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True),
         ForeignKey("users.id", ondelete="CASCADE"),
         index=True,
         nullable=False,
     )
 
+    decision: Mapped[str] = mapped_column(String(16), nullable=False)
+    rationale: Mapped[str] = mapped_column(Text, nullable=False)
+
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
-
     profession_slugs: Mapped[list[str]] = mapped_column(ARRAY(String(64)), nullable=False)
     category_slugs: Mapped[list[str]] = mapped_column(ARRAY(String(64)), nullable=False)
 
-    status: Mapped[str] = mapped_column(
-        String(32),
-        nullable=False,
-        server_default="pending_review",
-        index=True,
-    )
-    reviewed_by_user_id: Mapped[UUID | None] = mapped_column(
-        PGUUID(as_uuid=True),
-        ForeignKey("users.id", ondelete="SET NULL"),
-        index=True,
-        nullable=True,
-    )
-    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    review_rationale: Mapped[str | None] = mapped_column(Text, nullable=True)
-    draft_tool_id: Mapped[UUID | None] = mapped_column(
+    created_tool_id: Mapped[UUID | None] = mapped_column(
         PGUUID(as_uuid=True),
         ForeignKey("tools.id", ondelete="SET NULL"),
         nullable=True,
     )
 
-    created_at: Mapped[datetime] = mapped_column(
+    decided_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
-        nullable=False,
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now(),
         nullable=False,
     )

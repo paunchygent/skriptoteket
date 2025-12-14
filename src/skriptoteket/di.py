@@ -23,6 +23,10 @@ from skriptoteket.application.identity.handlers.logout import LogoutHandler
 from skriptoteket.application.identity.handlers.provision_local_user import (
     ProvisionLocalUserHandler,
 )
+from skriptoteket.application.suggestions.handlers.decide_suggestion import DecideSuggestionHandler
+from skriptoteket.application.suggestions.handlers.get_suggestion_for_review import (
+    GetSuggestionForReviewHandler,
+)
 from skriptoteket.application.suggestions.handlers.list_suggestions_for_review import (
     ListSuggestionsForReviewHandler,
 )
@@ -36,6 +40,9 @@ from skriptoteket.infrastructure.repositories.category_repository import (
 )
 from skriptoteket.infrastructure.repositories.profession_repository import (
     PostgreSQLProfessionRepository,
+)
+from skriptoteket.infrastructure.repositories.script_suggestion_decision_repository import (
+    PostgreSQLScriptSuggestionDecisionRepository,
 )
 from skriptoteket.infrastructure.repositories.script_suggestion_repository import (
     PostgreSQLScriptSuggestionRepository,
@@ -67,8 +74,11 @@ from skriptoteket.protocols.identity import (
     UserRepositoryProtocol,
 )
 from skriptoteket.protocols.suggestions import (
+    DecideSuggestionHandlerProtocol,
+    GetSuggestionForReviewHandlerProtocol,
     ListSuggestionsForReviewHandlerProtocol,
     SubmitSuggestionHandlerProtocol,
+    SuggestionDecisionRepositoryProtocol,
     SuggestionRepositoryProtocol,
 )
 from skriptoteket.protocols.token_generator import TokenGeneratorProtocol
@@ -147,6 +157,12 @@ class AppProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def script_suggestion_repo(self, session: AsyncSession) -> SuggestionRepositoryProtocol:
         return PostgreSQLScriptSuggestionRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def script_suggestion_decision_repo(
+        self, session: AsyncSession
+    ) -> SuggestionDecisionRepositoryProtocol:
+        return PostgreSQLScriptSuggestionDecisionRepository(session)
 
     @provide(scope=Scope.REQUEST)
     def current_user_provider(
@@ -277,6 +293,37 @@ class AppProvider(Provider):
         self, suggestions: SuggestionRepositoryProtocol
     ) -> ListSuggestionsForReviewHandlerProtocol:
         return ListSuggestionsForReviewHandler(suggestions=suggestions)
+
+    @provide(scope=Scope.REQUEST)
+    def get_suggestion_for_review_handler(
+        self,
+        suggestions: SuggestionRepositoryProtocol,
+        decisions: SuggestionDecisionRepositoryProtocol,
+    ) -> GetSuggestionForReviewHandlerProtocol:
+        return GetSuggestionForReviewHandler(suggestions=suggestions, decisions=decisions)
+
+    @provide(scope=Scope.REQUEST)
+    def decide_suggestion_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        suggestions: SuggestionRepositoryProtocol,
+        decisions: SuggestionDecisionRepositoryProtocol,
+        tools: ToolRepositoryProtocol,
+        professions: ProfessionRepositoryProtocol,
+        categories: CategoryRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> DecideSuggestionHandlerProtocol:
+        return DecideSuggestionHandler(
+            uow=uow,
+            suggestions=suggestions,
+            decisions=decisions,
+            tools=tools,
+            professions=professions,
+            categories=categories,
+            clock=clock,
+            id_generator=id_generator,
+        )
 
 
 def create_container(settings: Settings):

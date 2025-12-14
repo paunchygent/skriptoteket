@@ -24,9 +24,43 @@ class PostgreSQLToolRepository(ToolRepositoryProtocol):
             .where(
                 ToolProfessionModel.profession_id == profession_id,
                 ToolCategoryModel.category_id == category_id,
+                ToolModel.is_published.is_(True),
             )
             .distinct()
             .order_by(ToolModel.title.asc(), ToolModel.slug.asc())
         )
         result = await self._session.execute(stmt)
         return [Tool.model_validate(model) for model in result.scalars().all()]
+
+    async def create_draft(
+        self,
+        *,
+        tool: Tool,
+        profession_ids: list[UUID],
+        category_ids: list[UUID],
+    ) -> Tool:
+        model = ToolModel(
+            id=tool.id,
+            slug=tool.slug,
+            title=tool.title,
+            summary=tool.summary,
+            is_published=False,
+            created_at=tool.created_at,
+            updated_at=tool.updated_at,
+        )
+        self._session.add(model)
+        self._session.add_all(
+            [
+                ToolProfessionModel(tool_id=tool.id, profession_id=profession_id)
+                for profession_id in profession_ids
+            ]
+        )
+        self._session.add_all(
+            [
+                ToolCategoryModel(tool_id=tool.id, category_id=category_id)
+                for category_id in category_ids
+            ]
+        )
+        await self._session.flush()
+        await self._session.refresh(model)
+        return Tool.model_validate(model)

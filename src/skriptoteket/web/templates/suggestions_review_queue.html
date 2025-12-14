@@ -7,12 +7,17 @@
       <ul>
         {% for suggestion in suggestions %}
           <li style="margin-bottom: 16px">
-            <strong>{{ suggestion.title }}</strong><br />
+            <strong>{{ suggestion.title }}</strong>
+            <small style="margin-left: 8px">({{ suggestion.status }})</small><br />
             <small>Inskickat: {{ suggestion.created_at }}</small><br />
+            {% if suggestion.reviewed_at %}
+              <small>Granskat: {{ suggestion.reviewed_at }}</small><br />
+            {% endif %}
             <small>Av: {{ suggestion.submitted_by_user_id }}</small><br />
             <small>Yrken: {{ suggestion.profession_slugs | join(", ") }}</small><br />
             <small>Kategorier: {{ suggestion.category_slugs | join(", ") }}</small>
             <p>{{ suggestion.description }}</p>
+            <a href="/admin/suggestions/{{ suggestion.id }}">Öppna</a>
           </li>
         {% endfor %}
       </ul>
@@ -21,4 +26,3 @@
     {% endif %}
   </div>
 {% endblock %}
-
