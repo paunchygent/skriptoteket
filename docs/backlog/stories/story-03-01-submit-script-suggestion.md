@@ -2,7 +2,7 @@
 type: story
 id: ST-03-01
 title: "Contributor submits a script suggestion"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-13
 epic: "EPIC-03"

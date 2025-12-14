@@ -10,6 +10,8 @@ Rules:
 
 ---
 
+Role: You are the lead developer and architect of Skriptoteket.
+
 You are working in the `skriptoteket` repo.
 
 ## Product context (MVP)
@@ -55,11 +57,31 @@ You are working in the `skriptoteket` repo.
 
 ## Task for this session
 
-<Describe the next concrete task here, e.g. “Implement profession→category navigation UI + DB seed for allowlists”.>
+Pick up from `main` and implement ST-03-02 “Admin reviews suggestions (accept/modify/deny)” end-to-end (domain →
+application → infra → web), continuing from the existing ST-03-01 foundation.
+
+Entry points:
+
+- Story: `docs/backlog/stories/story-03-02-admin-review-and-decision.md`
+- Epic: `docs/backlog/epics/epic-03-script-governance-workflow.md`
+- Existing suggestion submission + queue:
+  - Domain: `src/skriptoteket/domain/suggestions/models.py`
+  - Application: `src/skriptoteket/application/suggestions/`
+  - Protocols: `src/skriptoteket/protocols/suggestions.py`
+  - Infra: `src/skriptoteket/infrastructure/repositories/script_suggestion_repository.py`, `migrations/versions/0003_script_suggestions.py`
+  - Web: `src/skriptoteket/web/pages/suggestions.py` (routes `/suggestions/new`, `/admin/suggestions`)
 
 ## Acceptance criteria
 
-- Bullets here
+- Docs: set ST-03-02 → `in_progress` at start; mark `done` when AC is met (keep EPIC-03 `active`).
+- Domain: introduce a review/decision model and invariants (no HTTP concerns; raise `DomainError` only).
+- Application: admin-only decision handler(s) that record decision + rationale and link to suggestion.
+- On accept: create a draft Tool entry and link it to the suggestion (not runnable/published yet).
+- Infra: add migrations + SQLAlchemy models/repos; keep UoW-owned commit/rollback (repos never commit).
+- Web: add minimal admin UI to open a suggestion and submit accept/modify/deny (role-gated).
+- Tests: protocol-mocked unit tests for handlers + REQUIRED Testcontainers migration idempotency test.
+- Session rule: run the app and verify the pages render/flow works; write exact steps in `.agent/handoff.md`.
+- End of session: update docs + `.agent/handoff.md`, then produce a new “next session” instruction for your successor.
 
 ---
 

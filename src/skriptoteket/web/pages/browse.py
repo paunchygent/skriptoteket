@@ -90,4 +90,3 @@ async def list_tools_by_tags(
             "tools": result.tools,
         },
     )
-

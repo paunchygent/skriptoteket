@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <h2>Förslag</h2>
+
+    {% if suggestions %}
+      <ul>
+        {% for suggestion in suggestions %}
+          <li style="margin-bottom: 16px">
+            <strong>{{ suggestion.title }}</strong><br />
+            <small>Inskickat: {{ suggestion.created_at }}</small><br />
+            <small>Av: {{ suggestion.submitted_by_user_id }}</small><br />
+            <small>Yrken: {{ suggestion.profession_slugs | join(", ") }}</small><br />
+            <small>Kategorier: {{ suggestion.category_slugs | join(", ") }}</small>
+            <p>{{ suggestion.description }}</p>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Inga förslag ännu.</p>
+    {% endif %}
+  </div>
+{% endblock %}
+

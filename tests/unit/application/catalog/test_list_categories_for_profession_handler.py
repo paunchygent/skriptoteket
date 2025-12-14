@@ -50,4 +50,3 @@ async def test_list_categories_for_profession_raises_when_profession_missing() -
 
     assert exc_info.value.code == ErrorCode.NOT_FOUND
     category_repo.list_for_profession.assert_not_awaited()
-

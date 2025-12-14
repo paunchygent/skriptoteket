@@ -26,4 +26,3 @@ class ToolCategoryModel(Base):
         index=True,
         nullable=False,
     )
-

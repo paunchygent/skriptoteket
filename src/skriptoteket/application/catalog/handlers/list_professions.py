@@ -14,4 +14,3 @@ class ListProfessionsHandler(ListProfessionsHandlerProtocol):
     async def handle(self, query: ListProfessionsQuery) -> ListProfessionsResult:
         del query  # no filters yet
         return ListProfessionsResult(professions=await self._professions.list_all())
-

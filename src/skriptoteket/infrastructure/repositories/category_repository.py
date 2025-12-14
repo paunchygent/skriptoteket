@@ -15,6 +15,11 @@ class PostgreSQLCategoryRepository(CategoryRepositoryProtocol):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
+    async def list_all(self) -> list[Category]:
+        stmt = select(CategoryModel).order_by(CategoryModel.slug.asc())
+        result = await self._session.execute(stmt)
+        return [Category.model_validate(model) for model in result.scalars().all()]
+
     async def list_for_profession(self, *, profession_id: UUID) -> list[Category]:
         stmt = (
             select(CategoryModel)
@@ -24,6 +29,12 @@ class PostgreSQLCategoryRepository(CategoryRepositoryProtocol):
         )
         result = await self._session.execute(stmt)
         return [Category.model_validate(model) for model in result.scalars().all()]
+
+    async def get_by_slug(self, slug: str) -> Category | None:
+        stmt = select(CategoryModel).where(CategoryModel.slug == slug)
+        result = await self._session.execute(stmt)
+        model = result.scalar_one_or_none()
+        return Category.model_validate(model) if model else None
 
     async def get_for_profession_by_slug(
         self, *, profession_id: UUID, category_slug: str
@@ -39,4 +50,3 @@ class PostgreSQLCategoryRepository(CategoryRepositoryProtocol):
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         return Category.model_validate(model) if model else None
-

@@ -29,4 +29,3 @@ class ProfessionModel(Base):
         onupdate=func.now(),
         nullable=False,
     )
-

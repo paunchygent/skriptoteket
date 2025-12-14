@@ -30,4 +30,3 @@ class PostgreSQLToolRepository(ToolRepositoryProtocol):
         )
         result = await self._session.execute(stmt)
         return [Tool.model_validate(model) for model in result.scalars().all()]
-

@@ -38,4 +38,3 @@ class ListToolsByTagsHandler(ListToolsByTagsHandlerProtocol):
             category_id=category.id,
         )
         return ListToolsByTagsResult(profession=profession, category=category, tools=tools)
-

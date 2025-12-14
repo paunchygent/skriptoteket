@@ -2,7 +2,7 @@
 type: epic
 id: EPIC-03
 title: "Script governance workflow (suggest → review → publish)"
-status: proposed
+status: active
 owners: "agents"
 created: 2025-12-13
 outcome: "Contributors can suggest scripts and admins can review decisions and manage publish/depublish without ad-hoc processes."

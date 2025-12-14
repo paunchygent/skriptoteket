@@ -15,6 +15,16 @@ class ListProfessionsResult(BaseModel):
     professions: list[Profession]
 
 
+class ListAllCategoriesQuery(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+
+class ListAllCategoriesResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    categories: list[Category]
+
+
 class ListCategoriesForProfessionQuery(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -41,4 +51,3 @@ class ListToolsByTagsResult(BaseModel):
     profession: Profession
     category: Category
     tools: list[Tool]
-

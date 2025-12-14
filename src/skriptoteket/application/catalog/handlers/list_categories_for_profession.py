@@ -31,4 +31,3 @@ class ListCategoriesForProfessionHandler(ListCategoriesForProfessionHandlerProto
 
         categories = await self._categories.list_for_profession(profession_id=profession.id)
         return ListCategoriesForProfessionResult(profession=profession, categories=categories)
-

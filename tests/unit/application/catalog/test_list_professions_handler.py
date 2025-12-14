@@ -26,4 +26,3 @@ async def test_list_professions_returns_repo_result(now: datetime) -> None:
 
     assert result.professions == professions_list
     professions.list_all.assert_awaited_once()
-

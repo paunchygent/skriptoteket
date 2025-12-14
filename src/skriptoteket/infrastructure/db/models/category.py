@@ -28,4 +28,3 @@ class CategoryModel(Base):
         onupdate=func.now(),
         nullable=False,
     )
-

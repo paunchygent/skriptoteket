@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from skriptoteket.application.catalog.handlers.list_all_categories import ListAllCategoriesHandler
 from skriptoteket.application.catalog.handlers.list_categories_for_profession import (
     ListCategoriesForProfessionHandler,
 )
@@ -22,6 +23,10 @@ from skriptoteket.application.identity.handlers.logout import LogoutHandler
 from skriptoteket.application.identity.handlers.provision_local_user import (
     ProvisionLocalUserHandler,
 )
+from skriptoteket.application.suggestions.handlers.list_suggestions_for_review import (
+    ListSuggestionsForReviewHandler,
+)
+from skriptoteket.application.suggestions.handlers.submit_suggestion import SubmitSuggestionHandler
 from skriptoteket.config import Settings
 from skriptoteket.infrastructure.clock import UTCClock
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
@@ -32,6 +37,9 @@ from skriptoteket.infrastructure.repositories.category_repository import (
 from skriptoteket.infrastructure.repositories.profession_repository import (
     PostgreSQLProfessionRepository,
 )
+from skriptoteket.infrastructure.repositories.script_suggestion_repository import (
+    PostgreSQLScriptSuggestionRepository,
+)
 from skriptoteket.infrastructure.repositories.session_repository import PostgreSQLSessionRepository
 from skriptoteket.infrastructure.repositories.tool_repository import PostgreSQLToolRepository
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
@@ -39,6 +47,7 @@ from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordH
 from skriptoteket.infrastructure.token_generator import SecureTokenGenerator
 from skriptoteket.protocols.catalog import (
     CategoryRepositoryProtocol,
+    ListAllCategoriesHandlerProtocol,
     ListCategoriesForProfessionHandlerProtocol,
     ListProfessionsHandlerProtocol,
     ListToolsByTagsHandlerProtocol,
@@ -56,6 +65,11 @@ from skriptoteket.protocols.identity import (
     ProvisionLocalUserHandlerProtocol,
     SessionRepositoryProtocol,
     UserRepositoryProtocol,
+)
+from skriptoteket.protocols.suggestions import (
+    ListSuggestionsForReviewHandlerProtocol,
+    SubmitSuggestionHandlerProtocol,
+    SuggestionRepositoryProtocol,
 )
 from skriptoteket.protocols.token_generator import TokenGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
@@ -131,6 +145,10 @@ class AppProvider(Provider):
         return PostgreSQLToolRepository(session)
 
     @provide(scope=Scope.REQUEST)
+    def script_suggestion_repo(self, session: AsyncSession) -> SuggestionRepositoryProtocol:
+        return PostgreSQLScriptSuggestionRepository(session)
+
+    @provide(scope=Scope.REQUEST)
     def current_user_provider(
         self,
         users: UserRepositoryProtocol,
@@ -197,7 +215,7 @@ class AppProvider(Provider):
         password_hasher: PasswordHasherProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
-        ) -> ProvisionLocalUserHandlerProtocol:
+    ) -> ProvisionLocalUserHandlerProtocol:
         return ProvisionLocalUserHandler(
             uow=uow,
             users=users,
@@ -221,6 +239,12 @@ class AppProvider(Provider):
         return ListCategoriesForProfessionHandler(professions=professions, categories=categories)
 
     @provide(scope=Scope.REQUEST)
+    def list_all_categories_handler(
+        self, categories: CategoryRepositoryProtocol
+    ) -> ListAllCategoriesHandlerProtocol:
+        return ListAllCategoriesHandler(categories=categories)
+
+    @provide(scope=Scope.REQUEST)
     def list_tools_by_tags_handler(
         self,
         professions: ProfessionRepositoryProtocol,
@@ -228,6 +252,31 @@ class AppProvider(Provider):
         tools: ToolRepositoryProtocol,
     ) -> ListToolsByTagsHandlerProtocol:
         return ListToolsByTagsHandler(professions=professions, categories=categories, tools=tools)
+
+    @provide(scope=Scope.REQUEST)
+    def submit_suggestion_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        suggestions: SuggestionRepositoryProtocol,
+        professions: ProfessionRepositoryProtocol,
+        categories: CategoryRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> SubmitSuggestionHandlerProtocol:
+        return SubmitSuggestionHandler(
+            uow=uow,
+            suggestions=suggestions,
+            professions=professions,
+            categories=categories,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def list_suggestions_for_review_handler(
+        self, suggestions: SuggestionRepositoryProtocol
+    ) -> ListSuggestionsForReviewHandlerProtocol:
+        return ListSuggestionsForReviewHandler(suggestions=suggestions)
 
 
 def create_container(settings: Settings):

@@ -26,6 +26,7 @@ class LogoutCommand(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     session_id: UUID
+    csrf_token: str
 
 
 class CreateLocalUserCommand(BaseModel):

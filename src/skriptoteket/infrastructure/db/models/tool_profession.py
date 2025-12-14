@@ -26,4 +26,3 @@ class ToolProfessionModel(Base):
         index=True,
         nullable=False,
     )
-

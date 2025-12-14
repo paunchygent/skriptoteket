@@ -12,52 +12,54 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2025-12-13
-- Branch / commit: `main` (base: `17a4717`; working tree has uncommitted changes)
-- Goal of the session: Implement ST-01-01 taxonomy browsing (profession → category → tool listing) + add migration/live-check workflows.
+- Date: 2025-12-14
+- Branch / commit: `main` (base: `e3ed146`; working tree has uncommitted changes)
+- Goal of the session: Implement ST-03-01 “Contributor submits a script suggestion” end-to-end (domain → application → infra → web) + minimal admin review queue visibility.
 
 ## What changed
 
-- Marked EPIC-01 active and ST-01-01 done in `docs/backlog/`.
-- Added catalog domain models in `src/skriptoteket/domain/catalog/models.py`.
-- Added query use-cases + protocols for taxonomy browsing in `src/skriptoteket/application/catalog/` and `src/skriptoteket/protocols/catalog.py`.
-- Added Postgres schema + seeded profession/category allowlists via `migrations/versions/0002_catalog_taxonomy.py` and new SQLAlchemy models under `src/skriptoteket/infrastructure/db/models/`.
-- Added Postgres repositories for browsing queries in `src/skriptoteket/infrastructure/repositories/` and wired them into Dishka DI in `src/skriptoteket/di.py`.
-- Added protected browsing pages under `/browse` in `src/skriptoteket/web/pages/browse.py` + templates in `src/skriptoteket/web/templates/`.
-- Added protocol-mocked unit tests for catalog query handlers in `tests/unit/application/catalog/` (+ `tests/fixtures/catalog_fixtures.py`).
-- Fixed a real transaction bug in login: `LoginHandler` now enters UoW before any DB reads (avoids SQLAlchemy autobegin conflicts): `src/skriptoteket/application/identity/handlers/login.py`.
-- Added required workflow rules:
-  - Live UI verification per session: `AGENTS.md`
-  - Migration idempotency via Testcontainers: `.agent/rules/054-alembic-migrations.md` (+ index update)
-- Added Testcontainers-based migration integration test for `0002_catalog_taxonomy`: `tests/integration/test_migration_0002_catalog_taxonomy_idempotent.py` and dependency `testcontainers` in `pyproject.toml`.
-- Added `.env` + `.env.example` and switched `compose.yaml` to use env-driven Postgres credentials + host port mapping (default host port now `55432` to avoid local Postgres conflicts).
-- Updated `migrations/env.py` to load `.env` (so `pdm run db-upgrade` uses `DATABASE_URL` from `.env`).
-- Fixed `pdm run dev-build-start-clean` to be a PDM composite script (no shell `&&`).
-- Applied `alembic upgrade head` against the Docker dev DB and created a new superuser using `.env` bootstrap values.
+- Marked EPIC-03 active and ST-03-01 done in `docs/backlog/`.
+- Added new domain bounded context for suggestions (pure): `src/skriptoteket/domain/suggestions/models.py`.
+- Added application commands/queries/handlers + protocols for suggestions:
+  - `src/skriptoteket/application/suggestions/`
+  - `src/skriptoteket/protocols/suggestions.py`
+- Extended catalog protocols/repos to support listing + validating category slugs:
+  - `src/skriptoteket/protocols/catalog.py`
+  - `src/skriptoteket/application/catalog/handlers/list_all_categories.py`
+  - `src/skriptoteket/application/catalog/queries.py`
+  - `src/skriptoteket/infrastructure/repositories/category_repository.py`
+- Added Postgres persistence for suggestions + migration:
+  - `migrations/versions/0003_script_suggestions.py`
+  - `src/skriptoteket/infrastructure/db/models/script_suggestion.py`
+  - `src/skriptoteket/infrastructure/repositories/script_suggestion_repository.py`
+  - Wired into Dishka: `src/skriptoteket/di.py` (+ `migrations/env.py` import)
+- Added server-rendered pages + templates:
+  - Contributor: `/suggestions/new` in `src/skriptoteket/web/pages/suggestions.py` + `src/skriptoteket/web/templates/suggestions_new.html`
+  - Admin queue: `/admin/suggestions` in `src/skriptoteket/web/pages/suggestions.py` + `src/skriptoteket/web/templates/suggestions_review_queue.html`
+  - Added nav links + textarea styling: `src/skriptoteket/web/templates/base.html`
+  - Added contributor role dependency: `src/skriptoteket/web/auth/dependencies.py`
+- Added tests:
+  - Unit tests for suggestion handlers: `tests/unit/application/test_suggestions_handlers.py`
+  - REQUIRED migration idempotency test: `tests/integration/test_migration_0003_script_suggestions_idempotent.py`
+- Fixed a transaction regression for protected write flows: UoW now begins only when needed (prevents `InvalidRequestError: A transaction is already begun` after auth/session DB reads): `src/skriptoteket/infrastructure/db/uow.py`
 
 ## Decisions (and links)
 
-- Docs/ADRs updated:
-  - Future HuleEdu identity federation: `docs/adr/adr-0011-huleedu-identity-federation.md`
-  - v0.1 auth: `docs/adr/adr-0009-auth-local-sessions-admin-provisioned.md`
-  - Architecture principles: `docs/reference/ref-architecture.md`
-- Scope decisions:
-  - Browse/run requires login (v0.1) — no anonymous access.
-  - No legacy support/workarounds: full refactor only (delete old paths instead of shims).
-  - When asked for a “message to a new developer/agent”, fill `.agent/next-session-instruction-prompt-template.md` (address recipient as “you”).
+- Suggestion tags are stored as validated slugs (arrays) in Postgres table `script_suggestions` (no cross-domain joins yet); validation happens in the application handler via catalog repos.
 
 ## How to run / verify
 
 - `docker compose up -d db`
 - `pdm run db-upgrade`
-- `pdm run bootstrap-superuser`
+- Create/ensure superuser exists (no secrets in shell history): `set -a; source .env; set +a; pdm run bootstrap-superuser --email "$BOOTSTRAP_SUPERUSER_EMAIL" --password "$BOOTSTRAP_SUPERUSER_PASSWORD"`
 - `pdm run provision-user`
 - `pdm run dev` then open `/login` and browse `/browse`
+- After login (as contributor+), open `/suggestions/new` and submit a suggestion; as admin, verify it appears in `/admin/suggestions`
 - Docker hot-reload: `pdm run dev-build-start` then open `/login`
 - Docker workflow helpers: `pdm run dev-start` / `pdm run dev-stop` / `pdm run dev-build-start-clean` (rebuild no-cache; keeps DB) / `pdm run dev-db-reset` (nukes DB volume)
 - Quality gates: `pdm run docs-validate && pdm run lint && pdm run typecheck && pdm run test`
 - Migration docker test: `pdm run pytest -m docker --override-ini addopts=''`
-- Live UI check (performed this session): started a Testcontainers Postgres + `alembic upgrade head`, created a local user, ran uvicorn, then verified `/browse/` renders seeded professions after login.
+- Live UI check (performed this session): `docker compose up -d`, `pdm run db-upgrade`, logged in via `/login` as an existing superuser from `.env`, submitted a suggestion via `/suggestions/new`, then verified it is listed under `/admin/suggestions`.
 - Dev DB port mapping: `localhost:55432` (configure via `POSTGRES_HOST_PORT` in `.env`).
 
 ## Known issues / risks
@@ -68,9 +70,9 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Next steps (recommended order)
 
-1. Implement tool governance workflow (EPIC-03) so contributors/admins can create tools and add profession/category tags.
-2. Add a minimal tool detail + “run tool” entrypoint after governance creates published tools.
-3. Consider integration tests for Postgres catalog repos once tool authoring is in place.
+1. Continue EPIC-03 with admin decisioning for suggestions (accept/modify/deny) and a basic status lifecycle.
+2. Add authoring flow to create a Tool from an accepted suggestion (incl. profession/category tag rows).
+3. Add audit/event trail and better admin UX (filters, pagination) once volume increases.
 
 ## Notes
 

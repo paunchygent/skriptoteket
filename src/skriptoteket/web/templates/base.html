@@ -12,8 +12,9 @@
       main { padding: 20px; max-width: 860px; margin: 0 auto; }
       .card { border: 1px solid #eee; border-radius: 10px; padding: 16px; }
       .error { color: #b00020; }
-      input, button { font: inherit; padding: 10px 12px; }
+      input, textarea, button { font: inherit; padding: 10px 12px; }
       input { width: 100%; box-sizing: border-box; }
+      textarea { width: 100%; box-sizing: border-box; min-height: 160px; }
       form > * + * { margin-top: 10px; }
     </style>
   </head>
@@ -24,6 +25,12 @@
         {% if user %}
           <nav style="display: inline">
             <a href="/browse">Katalog</a>
+            {% if user.role != "user" %}
+              <a href="/suggestions/new">Föreslå skript</a>
+            {% endif %}
+            {% if user.role in ["admin", "superuser"] %}
+              <a href="/admin/suggestions">Förslag</a>
+            {% endif %}
           </nav>
         {% endif %}
       </div>

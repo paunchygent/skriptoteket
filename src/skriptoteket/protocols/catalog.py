@@ -4,6 +4,8 @@ from typing import Protocol
 from uuid import UUID
 
 from skriptoteket.application.catalog.queries import (
+    ListAllCategoriesQuery,
+    ListAllCategoriesResult,
     ListCategoriesForProfessionQuery,
     ListCategoriesForProfessionResult,
     ListProfessionsQuery,
@@ -20,7 +22,9 @@ class ProfessionRepositoryProtocol(Protocol):
 
 
 class CategoryRepositoryProtocol(Protocol):
+    async def list_all(self) -> list[Category]: ...
     async def list_for_profession(self, *, profession_id: UUID) -> list[Category]: ...
+    async def get_by_slug(self, slug: str) -> Category | None: ...
     async def get_for_profession_by_slug(
         self, *, profession_id: UUID, category_slug: str
     ) -> Category | None: ...
@@ -43,3 +47,6 @@ class ListCategoriesForProfessionHandlerProtocol(Protocol):
 class ListToolsByTagsHandlerProtocol(Protocol):
     async def handle(self, query: ListToolsByTagsQuery) -> ListToolsByTagsResult: ...
 
+
+class ListAllCategoriesHandlerProtocol(Protocol):
+    async def handle(self, query: ListAllCategoriesQuery) -> ListAllCategoriesResult: ...

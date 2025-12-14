@@ -25,4 +25,3 @@ class PostgreSQLProfessionRepository(ProfessionRepositoryProtocol):
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         return Profession.model_validate(model) if model else None
-

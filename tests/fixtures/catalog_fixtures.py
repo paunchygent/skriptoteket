@@ -56,4 +56,3 @@ def make_tool(
         created_at=now,
         updated_at=now,
     )
-

@@ -10,7 +10,8 @@ class SQLAlchemyUnitOfWork(UnitOfWorkProtocol):
         self._session = session
 
     async def __aenter__(self) -> "SQLAlchemyUnitOfWork":
-        await self._session.begin()
+        if not self._session.in_transaction():
+            await self._session.begin()
         return self
 
     async def __aexit__(self, exc_type, exc, tb) -> None:

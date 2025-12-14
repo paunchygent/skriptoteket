@@ -27,4 +27,3 @@ class ProfessionCategoryModel(Base):
         nullable=False,
     )
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-
