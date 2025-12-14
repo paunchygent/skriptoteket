@@ -14,6 +14,13 @@ Use this file as the starting point when you begin a new session.
 Skriptoteket is a teacher-first Script Hub: users log in, browse tools by profession/category, upload files, and receive results.
 Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future HuleEdu SSO is planned via identity federation.
 
+## Current EPIC-04 decisions (dynamic scripts)
+
+- **Execution**: run scripts in hardened *sibling* Docker containers via `docker.sock` + Python Docker SDK (no host-path bind mounts; archive copy or scoped volumes for I/O). See `docs/adr/adr-0013-execution-ephemeral-docker.md`.
+- **Storage**: hybrid: source + logs/HTML in DB; binary artifacts on disk with retention cleanup; production inputs not retained by default. See `docs/adr/adr-0012-script-source-storage.md`.
+- **Versioning**: append-only; publish is copy-on-activate and archives the reviewed `in_review` version (publish “consumes” it). See `docs/adr/adr-0014-versioning-and-single-active.md`.
+- **Governance**: Admins can publish script versions and tools; Superusers can rollback. “Published implies runnable” (requires `tools.active_version_id`). See `docs/reference/ref-dynamic-tool-scripts.md`.
+
 ## Read order (mandatory)
 
 1. `docs/index.md` (PRD/ADRs/backlog entrypoint)
