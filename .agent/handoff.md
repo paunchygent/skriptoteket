@@ -46,6 +46,9 @@ Keep this file updated so the next session can pick up work quickly.
 - Added guardrails to prevent regressions (rule + tests):
   - `.agent/rules/040-fastapi-blueprint.md` (OpenAPI-safe typing)
   - `tests/test_openapi_contracts.py` (fails with rule reference if violated)
+- Aligned DI/config rules with the actual architecture by removing the misleading `@lru_cache get_settings()` example and explicitly requiring DI-provided `Settings`:
+  - `.agent/rules/040-fastapi-blueprint.md`
+  - `.agent/rules/042-async-di-patterns.md`
 
 ## Decisions (and links)
 

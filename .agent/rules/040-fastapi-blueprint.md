@@ -267,10 +267,11 @@ async def error_handler_middleware(request: Request, call_next):
 
 ```python
 # config.py
-from pydantic_settings import BaseSettings
-from functools import lru_cache
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
     # App
     APP_NAME: str = "myapp"
     APP_VERSION: str = "1.0.0"
@@ -292,11 +293,13 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
-
-@lru_cache
-def get_settings() -> Settings:
-    return Settings()
 ```
+
+**REQUIRED**: Construct `Settings()` once at application startup and provide it via DI (Dishka `Scope.APP`), rather than
+using a global cached singleton.
+
+- **FORBIDDEN**: `@lru_cache`-based `get_settings()` patterns for settings in production code.
+- **WHY**: Global singletons make tests and env overrides brittle and obscure the dependency graph.
 
 ## 8. Router/Page Size Limits
 

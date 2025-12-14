@@ -136,6 +136,11 @@ def create_container(settings: Settings):
     return make_async_container(AppProvider())
 ```
 
+**Settings rule**:
+
+- **REQUIRED**: `Settings()` is constructed once at app startup and passed into the DI container.
+- **FORBIDDEN**: Global cached settings singletons (e.g. `@lru_cache def get_settings()`).
+
 ## 3. Dishka Scopes
 
 | Scope | Lifetime | Use For |
