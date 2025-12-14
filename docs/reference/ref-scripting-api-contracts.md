@@ -13,6 +13,7 @@ topic: "scripting"
 This document defines the API contracts for the Admin Script Editor and User Execution features (EPIC-04).
 
 Related documents:
+
 - Design spec: REF-dynamic-tool-scripts
 - ADRs: ADR-0012, ADR-0013, ADR-0014
 - Epic: EPIC-04
@@ -151,7 +152,7 @@ Used when opening a version (includes `source_code`):
 
 ### 1.1 Show Run Page
 
-```
+```http
 GET /tools/{slug}/run
 Auth: User
 ```
@@ -160,13 +161,14 @@ Auth: User
 
 ### 1.2 Execute Tool
 
-```
+```http
 POST /tools/{slug}/run
 Auth: User
 Content-Type: multipart/form-data
 ```
 
 **Form fields:**
+
 - `file`: uploaded file (required)
 
 **Response 200:** HTML result page (rendered from `html_output`). Logs are hidden.
@@ -175,7 +177,7 @@ Content-Type: multipart/form-data
 
 ### 1.3 View Past Run
 
-```
+```http
 GET /my-runs/{run_id}
 Auth: User (own runs only)
 ```
@@ -190,12 +192,13 @@ Auth: User (own runs only)
 
 ### 2.1 Load Tool Metadata
 
-```
+```http
 GET /admin/tools/{tool_id}
 Auth: Admin, Superuser (optional: Contributor if viewing assigned tools)
 ```
 
 **Response 200:**
+
 ```json
 {
   "tool": {
@@ -211,12 +214,13 @@ Auth: Admin, Superuser (optional: Contributor if viewing assigned tools)
 
 ### 2.2 Version History
 
-```
+```http
 GET /admin/tools/{tool_id}/versions?state=draft,in_review,active,archived&limit=50
 Auth: Contributor (restricted to own), Admin, Superuser
 ```
 
 **Response 200:**
+
 ```json
 {
   "tool_id": "...",
@@ -226,7 +230,7 @@ Auth: Contributor (restricted to own), Admin, Superuser
 
 ### 2.3 Open Version (Load Source Code)
 
-```
+```http
 GET /admin/tool-versions/{version_id}
 Auth: Contributor (own drafts only), Admin, Superuser
 ```
@@ -235,7 +239,7 @@ Auth: Contributor (own drafts only), Admin, Superuser
 
 ### 2.4 Create New Draft
 
-```
+```http
 POST /admin/tools/{tool_id}/versions
 Auth: Contributor, Admin, Superuser
 ```
@@ -245,7 +249,7 @@ Auth: Contributor, Admin, Superuser
 
 ### 2.5 Save Draft Snapshot
 
-```
+```http
 POST /admin/tool-versions/{version_id}/save
 Auth: Contributor (own drafts only), Admin, Superuser
 ```
@@ -255,7 +259,7 @@ Auth: Contributor (own drafts only), Admin, Superuser
 
 ### 2.6 Submit for Review
 
-```
+```http
 POST /admin/tool-versions/{version_id}/submit-review
 Auth: Contributor (own drafts), Admin, Superuser
 ```
@@ -265,7 +269,7 @@ Auth: Contributor (own drafts), Admin, Superuser
 
 ### 2.7 Publish (Admin & Superuser)
 
-```
+```http
 POST /admin/tool-versions/{version_id}/publish
 Auth: Admin, Superuser
 Precondition: version is in_review
@@ -274,6 +278,7 @@ Precondition: version is in_review
 **Request:** `PublishIn`
 
 **Response 200:**
+
 ```json
 {
   "tool_id": "...",
@@ -292,7 +297,7 @@ Precondition: version is in_review
 
 ### 2.8 Rollback (Superuser Only)
 
-```
+```http
 POST /admin/tools/{tool_id}/rollback
 Auth: Superuser
 ```
@@ -306,7 +311,7 @@ Auth: Superuser
 
 ### 3.1 Run Sandbox
 
-```
+```http
 POST /admin/tool-versions/{version_id}/run-sandbox
 Auth: Contributor (own drafts), Admin, Superuser
 ```
@@ -315,7 +320,7 @@ Auth: Contributor (own drafts), Admin, Superuser
 
 ### 3.2 Refresh Run Details
 
-```
+```http
 GET /admin/tool-runs/{run_id}
 Auth: Admin, Superuser (Contributor for own runs)
 ```
@@ -324,7 +329,7 @@ Auth: Admin, Superuser (Contributor for own runs)
 
 ### 3.3 Download Artifact
 
-```
+```http
 GET /admin/tool-runs/{run_id}/artifacts/{artifact_id}
 Auth: Admin, Superuser (Contributor for own runs)
 ```

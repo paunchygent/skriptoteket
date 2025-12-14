@@ -13,6 +13,7 @@ Target Python is **3.13–3.14**.
 
 - **No legacy support / workarounds**: do the full refactor; delete old paths instead of shims
 - **No vibe-coding**: follow established patterns and rules in `.agent/rules/000-rule-index.md`
+- **No unapproved reverts**: do not revert/restore changes you did not personally make without explicit user guidance (assume they may be user-added)
 - **Session rule (REQUIRED)**: for any UI/route change, do a live functional check (run the app and verify the page renders) and record how you verified it in `.agent/handoff.md`
 - **Protocol-first DI**: depend on `typing.Protocol`, not concrete implementations
 - **Layer boundaries**: domain is pure; web/api are thin; infrastructure implements protocols
