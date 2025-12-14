@@ -32,6 +32,18 @@ class PostgreSQLToolRepository(ToolRepositoryProtocol):
         result = await self._session.execute(stmt)
         return [Tool.model_validate(model) for model in result.scalars().all()]
 
+    async def get_by_id(self, *, tool_id: UUID) -> Tool | None:
+        stmt = select(ToolModel).where(ToolModel.id == tool_id)
+        result = await self._session.execute(stmt)
+        model = result.scalar_one_or_none()
+        return Tool.model_validate(model) if model else None
+
+    async def get_by_slug(self, *, slug: str) -> Tool | None:
+        stmt = select(ToolModel).where(ToolModel.slug == slug)
+        result = await self._session.execute(stmt)
+        model = result.scalar_one_or_none()
+        return Tool.model_validate(model) if model else None
+
     async def create_draft(
         self,
         *,

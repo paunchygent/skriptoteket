@@ -33,6 +33,9 @@ class CategoryRepositoryProtocol(Protocol):
 class ToolRepositoryProtocol(Protocol):
     async def list_by_tags(self, *, profession_id: UUID, category_id: UUID) -> list[Tool]: ...
 
+    async def get_by_id(self, *, tool_id: UUID) -> Tool | None: ...
+    async def get_by_slug(self, *, slug: str) -> Tool | None: ...
+
     async def create_draft(
         self,
         *,

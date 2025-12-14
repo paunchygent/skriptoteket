@@ -34,5 +34,7 @@ class Tool(BaseModel):
     slug: str
     title: str
     summary: str | None = None
+    is_published: bool = False
+    active_version_id: UUID | None = None
     created_at: datetime
     updated_at: datetime
