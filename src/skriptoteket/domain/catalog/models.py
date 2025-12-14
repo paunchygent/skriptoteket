@@ -38,3 +38,9 @@ class Tool(BaseModel):
     active_version_id: UUID | None = None
     created_at: datetime
     updated_at: datetime
+
+
+def set_tool_published_state(*, tool: Tool, is_published: bool, now: datetime) -> Tool:
+    if tool.is_published == is_published:
+        return tool
+    return tool.model_copy(update={"is_published": is_published, "updated_at": now})

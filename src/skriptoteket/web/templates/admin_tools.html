@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <h2>Verktyg</h2>
+
+    {% if updated %}
+      <p>Uppdaterat.</p>
+    {% endif %}
+
+    {% if error %}
+      <p class="error">{{ error }}</p>
+    {% endif %}
+
+    {% if tools %}
+      <ul style="list-style: none; padding: 0; margin: 0">
+        {% for tool in tools %}
+          <li style="padding: 14px 0; border-top: 1px solid #eee">
+            <div>
+              <strong>{{ tool.title }}</strong> <small>({{ tool.slug }})</small>
+            </div>
+            <div style="margin-top: 6px">
+              <small>Publicerad: {{ "Ja" if tool.is_published else "Nej" }}</small><br />
+              <small>Aktiv version: {{ tool.active_version_id or "—" }}</small><br />
+            </div>
+
+            {% if tool.is_published %}
+              <form method="post" action="/admin/tools/{{ tool.id }}/depublish" style="margin-top: 10px">
+                <button type="submit">Avpublicera</button>
+              </form>
+            {% else %}
+              <form method="post" action="/admin/tools/{{ tool.id }}/publish" style="margin-top: 10px">
+                <button type="submit" {% if not tool.active_version_id %}disabled{% endif %}>
+                  Publicera
+                </button>
+              </form>
+              {% if not tool.active_version_id %}
+                <p style="margin-top: 6px"><small>Kan inte publicera: ingen aktiv version.</small></p>
+              {% endif %}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p><small>Inga verktyg ännu.</small></p>
+    {% endif %}
+  </div>
+{% endblock %}
+

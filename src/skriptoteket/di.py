@@ -10,12 +10,15 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from skriptoteket.application.catalog.handlers.depublish_tool import DepublishToolHandler
 from skriptoteket.application.catalog.handlers.list_all_categories import ListAllCategoriesHandler
 from skriptoteket.application.catalog.handlers.list_categories_for_profession import (
     ListCategoriesForProfessionHandler,
 )
 from skriptoteket.application.catalog.handlers.list_professions import ListProfessionsHandler
 from skriptoteket.application.catalog.handlers.list_tools_by_tags import ListToolsByTagsHandler
+from skriptoteket.application.catalog.handlers.list_tools_for_admin import ListToolsForAdminHandler
+from skriptoteket.application.catalog.handlers.publish_tool import PublishToolHandler
 from skriptoteket.application.identity.current_user_provider import CurrentUserProvider
 from skriptoteket.application.identity.handlers.create_local_user import CreateLocalUserHandler
 from skriptoteket.application.identity.handlers.login import LoginHandler
@@ -58,11 +61,14 @@ from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordH
 from skriptoteket.infrastructure.token_generator import SecureTokenGenerator
 from skriptoteket.protocols.catalog import (
     CategoryRepositoryProtocol,
+    DepublishToolHandlerProtocol,
     ListAllCategoriesHandlerProtocol,
     ListCategoriesForProfessionHandlerProtocol,
     ListProfessionsHandlerProtocol,
     ListToolsByTagsHandlerProtocol,
+    ListToolsForAdminHandlerProtocol,
     ProfessionRepositoryProtocol,
+    PublishToolHandlerProtocol,
     ToolRepositoryProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
@@ -284,6 +290,32 @@ class AppProvider(Provider):
         tools: ToolRepositoryProtocol,
     ) -> ListToolsByTagsHandlerProtocol:
         return ListToolsByTagsHandler(professions=professions, categories=categories, tools=tools)
+
+    @provide(scope=Scope.REQUEST)
+    def list_tools_for_admin_handler(
+        self,
+        tools: ToolRepositoryProtocol,
+    ) -> ListToolsForAdminHandlerProtocol:
+        return ListToolsForAdminHandler(tools=tools)
+
+    @provide(scope=Scope.REQUEST)
+    def publish_tool_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> PublishToolHandlerProtocol:
+        return PublishToolHandler(uow=uow, tools=tools, versions=versions, clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def depublish_tool_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> DepublishToolHandlerProtocol:
+        return DepublishToolHandler(uow=uow, tools=tools, clock=clock)
 
     @provide(scope=Scope.REQUEST)
     def submit_suggestion_handler(

@@ -51,3 +51,13 @@ class ListToolsByTagsResult(BaseModel):
     profession: Profession
     category: Category
     tools: list[Tool]
+
+
+class ListToolsForAdminQuery(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+
+class ListToolsForAdminResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tools: list[Tool]

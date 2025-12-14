@@ -1,8 +1,15 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
+from skriptoteket.application.catalog.commands import (
+    DepublishToolCommand,
+    DepublishToolResult,
+    PublishToolCommand,
+    PublishToolResult,
+)
 from skriptoteket.application.catalog.queries import (
     ListAllCategoriesQuery,
     ListAllCategoriesResult,
@@ -12,8 +19,11 @@ from skriptoteket.application.catalog.queries import (
     ListProfessionsResult,
     ListToolsByTagsQuery,
     ListToolsByTagsResult,
+    ListToolsForAdminQuery,
+    ListToolsForAdminResult,
 )
 from skriptoteket.domain.catalog.models import Category, Profession, Tool
+from skriptoteket.domain.identity.models import User
 
 
 class ProfessionRepositoryProtocol(Protocol):
@@ -33,8 +43,18 @@ class CategoryRepositoryProtocol(Protocol):
 class ToolRepositoryProtocol(Protocol):
     async def list_by_tags(self, *, profession_id: UUID, category_id: UUID) -> list[Tool]: ...
 
+    async def list_all(self) -> list[Tool]: ...
+
     async def get_by_id(self, *, tool_id: UUID) -> Tool | None: ...
     async def get_by_slug(self, *, slug: str) -> Tool | None: ...
+
+    async def set_published(
+        self,
+        *,
+        tool_id: UUID,
+        is_published: bool,
+        now: datetime,
+    ) -> Tool: ...
 
     async def create_draft(
         self,
@@ -61,3 +81,30 @@ class ListToolsByTagsHandlerProtocol(Protocol):
 
 class ListAllCategoriesHandlerProtocol(Protocol):
     async def handle(self, query: ListAllCategoriesQuery) -> ListAllCategoriesResult: ...
+
+
+class ListToolsForAdminHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        query: ListToolsForAdminQuery,
+    ) -> ListToolsForAdminResult: ...
+
+
+class PublishToolHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: PublishToolCommand,
+    ) -> PublishToolResult: ...
+
+
+class DepublishToolHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: DepublishToolCommand,
+    ) -> DepublishToolResult: ...

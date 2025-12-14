@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import select
@@ -32,6 +33,11 @@ class PostgreSQLToolRepository(ToolRepositoryProtocol):
         result = await self._session.execute(stmt)
         return [Tool.model_validate(model) for model in result.scalars().all()]
 
+    async def list_all(self) -> list[Tool]:
+        stmt = select(ToolModel).order_by(ToolModel.title.asc(), ToolModel.slug.asc())
+        result = await self._session.execute(stmt)
+        return [Tool.model_validate(model) for model in result.scalars().all()]
+
     async def get_by_id(self, *, tool_id: UUID) -> Tool | None:
         stmt = select(ToolModel).where(ToolModel.id == tool_id)
         result = await self._session.execute(stmt)
@@ -43,6 +49,17 @@ class PostgreSQLToolRepository(ToolRepositoryProtocol):
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         return Tool.model_validate(model) if model else None
+
+    async def set_published(self, *, tool_id: UUID, is_published: bool, now: datetime) -> Tool:
+        stmt = select(ToolModel).where(ToolModel.id == tool_id)
+        result = await self._session.execute(stmt)
+        model = result.scalar_one()
+
+        model.is_published = is_published
+        model.updated_at = now
+        await self._session.flush()
+        await self._session.refresh(model)
+        return Tool.model_validate(model)
 
     async def create_draft(
         self,
