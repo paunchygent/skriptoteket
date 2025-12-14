@@ -192,6 +192,12 @@ async def transfer_funds(
         await self._repo.credit(to_account_id, amount)
 ```
 
+### Autobegin boundary (FastAPI dependencies)
+
+**REQUIRED**: On write routes, the first DB interaction **must** happen inside the handler’s `async with uow:`. SQLAlchemy
+`AsyncSession` autobegins a transaction on the first DB call (even reads), and FastAPI dependencies share the same
+request-scoped session; DB reads in dependencies will therefore start the transaction before your handler.
+
 ## 8. Optimistic Locking
 
 ```python
