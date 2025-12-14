@@ -44,8 +44,12 @@ Related documents:
 | `NOT_FOUND` | 404 | Resource not found |
 | `VALIDATION_ERROR` | 400 | Invalid request data |
 | `CONFLICT` | 409 | State conflict (e.g. `STATE_CONFLICT`, `ACTIVE_VERSION_CONSTRAINT`) |
-| `RUN_FAILED` | 200 | Script execution failed (returned with `status=failed`) |
-| `RUN_TIMED_OUT` | 200 | Script execution timed out (returned with `status=timed_out`) |
+
+Notes:
+
+- Script execution failures/timeouts are represented via `ToolRunOut.status` (`failed` / `timed_out`) and are typically
+  returned with HTTP 200 for “execution completed with an outcome”.
+- `DomainError` error codes are reserved for control-plane failures (permission, not found, invalid state, etc.).
 
 ### 0.2 ToolOut DTO
 
@@ -178,6 +182,7 @@ Content-Type: multipart/form-data
 **Response 200:** HTML result page (rendered from `html_output`). Logs are hidden.
 
 **Response 404:** Tool does not exist or is not published.
+Also return 404 if the tool is published but `active_version_id` is missing/invalid/non-ACTIVE (defense in depth).
 
 ### 1.3 View Past Run
 

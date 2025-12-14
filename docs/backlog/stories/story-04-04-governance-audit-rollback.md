@@ -29,6 +29,7 @@ This story implements the governance layer. We follow ADR-0005: Admins manage th
   - Update policies to allow Admin publish.
 - Web routes:
   - `POST /admin/tool-versions/{version_id}/publish`
+  - `POST /admin/tool-versions/{version_id}/request-changes`
   - `POST /admin/tools/{tool_id}/rollback`
 
 ## Permission Matrix
@@ -56,4 +57,22 @@ This story implements the governance layer. We follow ADR-0005: Admins manage th
 
 - Audit trail is append-only (no version deletion)
 - All transitions logged with actor + timestamp
+- Publishing/rollback MUST update `tools.active_version_id` to the newly created ACTIVE version.
+  - If `tools.is_published == true`, end-users immediately run the new ACTIVE version (see ST-03-03 invariant).
+  - If the tool is depublished, it remains hidden even though a new ACTIVE exists.
+
+### Request changes (clarified)
+
+`RequestChangesHandler` is the “InReview → Draft” workflow step. Recommended behavior:
+
+1. Precondition: the target version is `state=in_review`.
+2. Transition the in-review version out of publishable state (recommended: set `state=archived` and set
+   `reviewed_by_user_id`/`reviewed_at`).
+3. Create a NEW draft version (append-only) derived from the reviewed version:
+   - `state=draft`
+   - `version_number=next`
+   - copy `source_code`/`entrypoint`
+   - `derived_from_version_id = in_review.id`
+   - `created_by_user_id = in_review.created_by_user_id` (preserves contributor ownership rules)
+   - store the request message in `change_summary` (until a dedicated reviewer-note field exists)
 - Future: emit domain events for external audit systems

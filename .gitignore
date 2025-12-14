@@ -29,3 +29,6 @@ build/
 # Local exports
 requirements.txt
 .coverage
+
+# Claude Code artifacts
+.claude/repomix_packages/

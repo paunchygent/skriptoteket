@@ -33,9 +33,44 @@ This story implements the execution infrastructure. It must support **sibling co
     `--network none` (sandbox).
   - Filesystem: `--read-only` root filesystem + tmpfs/volume mounts for `/work` and `/tmp`.
 - **Configuration:**
-  - Load limits from config: `RUNNER_CPU_LIMIT`, `RUNNER_MEMORY_LIMIT`.
+  - Load limits and paths from `Settings` (explicit keys; exact names can vary but MUST be centralized in config):
+    - Runner image: `RUNNER_IMAGE`
+    - Timeouts (seconds): `RUNNER_TIMEOUT_SANDBOX_SECONDS`, `RUNNER_TIMEOUT_PRODUCTION_SECONDS`
+    - Resource limits: `RUNNER_CPU_LIMIT`, `RUNNER_MEMORY_LIMIT`, `RUNNER_PIDS_LIMIT`
+    - Artifact storage: `ARTIFACTS_ROOT`, `ARTIFACTS_RETENTION_DAYS`
+    - Safety caps for DB fields: `RUN_OUTPUT_MAX_STDOUT_BYTES`, `RUN_OUTPUT_MAX_STDERR_BYTES`, `RUN_OUTPUT_MAX_HTML_BYTES`
 - **Cleanup:**
   - Background task (or simple cron script) to prune `/var/lib/skriptoteket/artifacts/` > N days.
+
+## Transaction boundary (REQUIRED)
+
+Execution can take seconds to minutes; handlers MUST NOT hold DB transactions open while waiting for the runner:
+
+1. Insert `tool_runs` row with `status=running` and commit.
+2. Execute the runner.
+3. Update the same `tool_runs` row with final `status`, `stdout`, `stderr`, `html_output`, `error_summary`,
+   `artifacts_manifest`, and commit.
+
+## Runner output contract (REQUIRED)
+
+Define a stable, versioned contract for how the runner returns results to the app. Recommended:
+
+- Runner writes a single JSON file at `/work/result.json` with:
+  - `status`: `succeeded|failed|timed_out`
+  - `html_output`: HTML string (may be empty on failure)
+  - `error_summary`: short string for end-user/admin display (no raw tracebacks)
+  - `artifacts`: list of `{ "path": "output/...", "bytes": <int> }` (paths are relative to `/work`)
+- The app stores:
+  - `stdout`/`stderr` captured from container logs (truncated to caps)
+  - `html_output` and `error_summary` from `result.json` (truncated to caps)
+  - `artifacts_manifest` generated from the extracted `/work/output` directory and the `artifacts` list
+
+### Artifacts manifest rules (REQUIRED)
+
+- Artifact paths must be relative and must not contain `..` segments.
+- The app should generate stable `artifact_id` values (e.g., slugified path) and include byte sizes.
+- Large/binary artifacts are written to disk under `/var/lib/skriptoteket/artifacts/{run_id}/...` and referenced only
+  via `tool_runs.artifacts_manifest` (never stored in Postgres blobs).
 
 ## Script Contract
 

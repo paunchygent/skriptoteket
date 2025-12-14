@@ -16,6 +16,30 @@ This epic enables the full script authoring and execution lifecycle:
 - **Docker runner execution**: Ephemeral container per run with resource limits
 - **Admin editor UI**: Code editor, sandbox execution, logs/artifacts display
 - **Governance and audit**: RBAC enforcement, version transitions, rollback capability
+- **Invariant alignment with EPIC-03**: “published implies runnable” (see Cross-cutting clarifications)
+
+## Cross-cutting clarifications (recommended)
+
+### Published implies runnable (system invariant)
+
+- A tool is runnable for end-users only when:
+  - `tools.is_published == true`
+  - `tools.active_version_id != null`
+  - `tool_versions.id == tools.active_version_id` and `tool_versions.state == 'active'`
+- ST-03-03 already enforces this on *tool publish*; EPIC-04 must uphold it on *version publish/rollback* and *user
+  execution*:
+  - ST-04-04 MUST update `tools.active_version_id` to point to the newly created ACTIVE version during publish/rollback.
+  - ST-04-05 MUST return 404 if the tool is depublished or if the active pointer is missing/invalid/non-ACTIVE (defense
+    in depth against drift).
+
+### Long-running runner calls MUST NOT hold DB transactions open
+
+- Handlers that trigger Docker execution (sandbox or production) should not keep a DB transaction open while waiting for
+  the container to finish.
+- Recommended pattern:
+  1. Create `ToolRun(status=running)` and commit.
+  2. Execute runner.
+  3. Persist results (status/stdout/stderr/html_output/artifacts_manifest) in a second commit.
 
 ## Stories
 
@@ -36,7 +60,7 @@ This epic enables the full script authoring and execution lifecycle:
 
 ### ST-04-03: Admin script editor UI
 
-- Admin endpoints: create draft, save, submit review, publish
+- Admin endpoints: create draft, save draft snapshot, submit for review, run sandbox
 - Web UI: code editor (syntax highlighting), "Run sandbox" button
 - Display: HTML preview, logs (stdout/stderr tabs), artifacts list
 - Template/stub generation for new scripts
@@ -45,7 +69,7 @@ This epic enables the full script authoring and execution lifecycle:
 
 - RBAC enforcement: contributor/admin/superuser permissions
 - Audit events for all version transitions and executions
-- Rollback action (publish derived-from older version)
+- Version publish + rollback (publish derived-from older version)
 - Version history view with actor/timestamp
 
 ### ST-04-05: User execution of active tools

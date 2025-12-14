@@ -12,6 +12,7 @@ acceptance_criteria:
   - "Given the run completes, then I see the HTML result rendered nicely."
   - "Given the run fails, I see a friendly error message (not raw stack traces)."
   - "Given I try to run a tool that is not published, then I get a 404."
+  - "Given a tool is published but the active version pointer is missing/invalid/non-ACTIVE (data drift), then I still get a 404 (defense in depth)."
   - "Given I have run a tool, when I visit /my-runs/{run_id}, then I can view that past result."
 ---
 

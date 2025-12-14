@@ -28,17 +28,16 @@ See REF-scripting-api-contracts for detailed endpoint specifications, request/re
   - `RunSandboxHandler`
   - `SubmitForReviewHandler`
 - Web routes: `src/skriptoteket/web/pages/admin_scripting.py`
+  - Entry point: link from `GET /admin/tools` (ST-03-03) to the script editor
   - `GET /admin/tools/{tool_id}` - load tool metadata
   - `GET /admin/tools/{tool_id}/versions` - version history
   - `GET /admin/tool-versions/{version_id}` - open version (load source)
   - `POST /admin/tools/{tool_id}/versions` - create draft
-  - `POST /admin/tool-versions/{version_id}/save` - save draft (with optimistic locking)
+  - `POST /admin/tool-versions/{version_id}/save` - save draft snapshot (append-only) with an expected-parent check
   - `POST /admin/tool-versions/{version_id}/run-sandbox` - run sandbox
   - `POST /admin/tool-versions/{version_id}/submit-review` - submit for review
   - `GET /admin/tool-runs/{run_id}` - refresh run details
   - `GET /admin/tool-runs/{run_id}/artifacts/{artifact_id}` - download artifact
-- **Protocol Updates:**
-  - Extend `src/skriptoteket/protocols/catalog.py` `ToolRepositoryProtocol` with `get_by_id(tool_id)` (currently missing).
 - Templates:
   - `templates/admin/script_editor.html` - main editor page
   - `templates/admin/partials/run_result.html` - HTMX partial for results
@@ -57,7 +56,11 @@ See REF-scripting-api-contracts for detailed endpoint specifications, request/re
 ## Technical Notes
 
 - HTMX for partial updates (run result, version list refresh)
-- Role guards: contributor sees own drafts only
+- Concurrency control: use `expected_parent_version_id` (see `REF-scripting-api-contracts`) rather than DB-level
+  optimistic locking; reject with `DomainError(CONFLICT)` if the draft head has advanced.
+- Role guards: contributor sees/edits own drafts only (ownership via `tool_versions.created_by_user_id`)
+  - This story SHOULD include a minimal discoverability surface for contributors (e.g. “My tools” list) or document
+    how contributors obtain a `tool_id` to open the editor.
 - Template pre-fill for new tools:
 
   ```python
