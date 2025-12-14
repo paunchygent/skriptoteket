@@ -54,6 +54,18 @@ app = create_app()
 
 ## 2. Web Layer (server-rendered UI)
 
+### OpenAPI-safe typing (REQUIRED)
+
+FastAPI uses type hints to build OpenAPI. With our current stack (FastAPI + Pydantic v2), postponed evaluation of
+annotations can surface as unresolved `ForwardRef`s and break `/docs` and `/openapi.json`.
+
+- **FORBIDDEN**: `from __future__ import annotations` in any router module (e.g. `src/skriptoteket/web/pages/**`,
+  `src/skriptoteket/web/partials/**`, `src/skriptoteket/api/**`).
+- **FORBIDDEN**: Union return type hints of Starlette responses (e.g. `RedirectResponse | HTMLResponse`).
+- **REQUIRED**: If an endpoint may return multiple response types (e.g. render a template on validation error and
+  redirect on success), annotate the return type as `fastapi.responses.Response` and set an explicit
+  `response_class=...` on the route decorator.
+
 ### Router organization
 
 ```python

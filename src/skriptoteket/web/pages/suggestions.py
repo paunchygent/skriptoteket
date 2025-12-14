@@ -1,10 +1,8 @@
-from __future__ import annotations
-
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 
 from skriptoteket.application.catalog.queries import ListAllCategoriesQuery, ListProfessionsQuery
 from skriptoteket.application.suggestions.commands import (
@@ -84,7 +82,7 @@ async def submit_suggestion(
     category_slugs: list[str] | None = Form(None),
     user: User = Depends(require_contributor),
     session: Session | None = Depends(get_current_session),
-) -> RedirectResponse | HTMLResponse:
+) -> Response:
     csrf_token = session.csrf_token if session else ""
     profession_slugs = profession_slugs or []
     category_slugs = category_slugs or []
@@ -231,7 +229,7 @@ async def decide_suggestion(
     category_slugs: list[str] | None = Form(None),
     user: User = Depends(require_admin),
     session: Session | None = Depends(get_current_session),
-) -> RedirectResponse | HTMLResponse:
+) -> Response:
     csrf_token = session.csrf_token if session else ""
     professions = (await professions_handler.handle(ListProfessionsQuery())).professions
     categories = (await categories_handler.handle(ListAllCategoriesQuery())).categories

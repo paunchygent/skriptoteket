@@ -1,10 +1,8 @@
-from __future__ import annotations
-
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 
 from skriptoteket.application.identity.commands import LoginCommand, LogoutCommand
 from skriptoteket.config import Settings
@@ -33,7 +31,7 @@ async def login(
     handler: FromDishka[LoginHandlerProtocol],
     email: str = Form(...),
     password: str = Form(...),
-) -> RedirectResponse | HTMLResponse:
+) -> Response:
     try:
         result = await handler.handle(LoginCommand(email=email, password=password))
     except DomainError as exc:

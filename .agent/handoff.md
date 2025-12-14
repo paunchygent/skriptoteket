@@ -14,7 +14,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 - Date: 2025-12-14
 - Branch / commit: `main` (HEAD)
-- Goal of the session: Implement ST-04-01 “Versioned script model” end-to-end (migration + domain + protocols + repos + DI + tests incl. required migration idempotency test).
+- Goal of the session: Ensure all tests pass and verify OpenAPI/API contracts render correctly.
 
 ## What changed
 
@@ -38,6 +38,14 @@ Keep this file updated so the next session can pick up work quickly.
   - `src/skriptoteket/infrastructure/repositories/tool_repository.py` (set `active_version_id` on draft creation)
 - Added domain unit tests:
   - `tests/unit/domain/scripting/test_models.py`
+- Fixed FastAPI OpenAPI generation (Pydantic v2) by removing `from __future__ import annotations` from route modules and typing multi-response endpoints as `Response`:
+  - `src/skriptoteket/web/pages/auth.py`
+  - `src/skriptoteket/web/pages/browse.py`
+  - `src/skriptoteket/web/pages/home.py`
+  - `src/skriptoteket/web/pages/suggestions.py`
+- Added guardrails to prevent regressions (rule + tests):
+  - `.agent/rules/040-fastapi-blueprint.md` (OpenAPI-safe typing)
+  - `tests/test_openapi_contracts.py` (fails with rule reference if violated)
 
 ## Decisions (and links)
 
@@ -52,9 +60,12 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## How to run / verify
 
-- Quality gates (ran): `pdm run format && pdm run lint && pdm run typecheck && pdm run test && pdm run docs-validate`
-- REQUIRED migration idempotency tests (ran; requires Docker): `pdm run pytest -m docker --override-ini addopts=''`
-- UI functional checks: not applicable (no UI/routes changed)
+- Tests (ran; all 59): `pdm run test -m ""` (requires Docker for Testcontainers tests)
+- Docs contract (ran): `pdm run docs-validate`
+- OpenAPI (ran): `pdm run python -c "import sys; sys.path.insert(0,'src'); from skriptoteket.web.app import create_app; create_app().openapi()"`
+- UI/route functional check (ran): start server and verify 200s for `/login`, `/docs`, `/openapi.json`:
+  - `pdm run uvicorn --app-dir src skriptoteket.web.app:app --host 127.0.0.1 --port 8010`
+  - `curl -sSf -o /dev/null -D - http://127.0.0.1:8010/login`
 
 ## Known issues / risks
 

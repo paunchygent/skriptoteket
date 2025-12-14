@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
