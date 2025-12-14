@@ -1,4 +1,12 @@
-# EPIC-04 Pre-Implementation Architecture Review
+---
+type: reference
+id: REF-architectural-review-epic-04
+title: "EPIC-04 Pre-Implementation Architecture Review"
+status: active
+owners: "agents"
+created: 2025-12-14
+topic: "scripting"
+---
 
 ## Executive Summary
 

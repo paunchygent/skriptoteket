@@ -30,7 +30,7 @@ Publishing new tool logic currently requires repository changes and redeployment
 ## Related Documents
 
 - Epic: EPIC-04
-- ADRs: ADR-0012 (storage), ADR-0013 (execution), ADR-0014 (versioning)
+- ADRs: ADR-0012 (storage), ADR-0013 (execution), ADR-0014 (versioning), ADR-0015 (runner contract), ADR-0016 (concurrency)
 - API Contracts: REF-scripting-api-contracts
 
 ---
@@ -82,7 +82,7 @@ ToolVersion
   state: VersionState (draft | in_review | active | archived)
   source_code: str
   entrypoint: str (default "run_tool")
-  content_hash: str (sha256)
+  content_hash: str (sha256 of "{entrypoint}\\n{source_code}")
   derived_from_version_id: UUID | None
   created_by: UUID
   created_at: datetime
@@ -277,6 +277,7 @@ No host-path bind mounts are used.
 | POST | `/admin/tools/{tool_id}/versions` | Create draft (derived from active/latest) |
 | POST | `/admin/tool-versions/{version_id}/save` | Save draft snapshot |
 | POST | `/admin/tool-versions/{version_id}/submit-review` | Submit for review |
+| POST | `/admin/tool-versions/{version_id}/request-changes` | Request changes (in_review → new draft) |
 | POST | `/admin/tool-versions/{version_id}/run-sandbox` | Run in sandbox |
 | POST | `/admin/tool-versions/{version_id}/publish` | Publish (Admin/Superuser) |
 | POST | `/admin/tools/{tool_id}/rollback` | Rollback (Superuser) |
@@ -290,7 +291,7 @@ No host-path bind mounts are used.
 ```text
 +----------------------------------------------------------------------+
 | Tool: [Title]  Slug: [slug]  Status: [DRAFT]  Version: v12           |
-| Actions: [Save Draft] [Submit for Review] [Publish*] [Rollback*]     |
+| Actions: [Save Draft] [Submit for Review] [Request Changes*] [Publish*] [Rollback*] |
 +----------------------------------------------------------------------+
 
 +----------------------------------+-----------------------------------+

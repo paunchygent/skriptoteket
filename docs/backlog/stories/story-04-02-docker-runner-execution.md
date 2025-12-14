@@ -23,6 +23,9 @@ This story implements the execution infrastructure. It must support **sibling co
 
 ## Scope
 
+- **Protocol boundary (protocol-first DI):**
+  - Add protocols for execution + artifact management (e.g. `ToolRunnerProtocol`, `ArtifactManagerProtocol`) so
+    application handlers depend on protocols, not Docker SDK implementations.
 - **Runner Infrastructure:** `src/skriptoteket/infrastructure/runner/`
   - `docker_runner.py`: Uses `docker` Python SDK.
   - Lifecycle: create container, inject script/input via `put_archive`, start, wait/timeout, fetch logs and
@@ -35,6 +38,7 @@ This story implements the execution infrastructure. It must support **sibling co
 - **Configuration:**
   - Load limits and paths from `Settings` (explicit keys; exact names can vary but MUST be centralized in config):
     - Runner image: `RUNNER_IMAGE`
+    - Concurrency: `RUNNER_MAX_CONCURRENCY`
     - Timeouts (seconds): `RUNNER_TIMEOUT_SANDBOX_SECONDS`, `RUNNER_TIMEOUT_PRODUCTION_SECONDS`
     - Resource limits: `RUNNER_CPU_LIMIT`, `RUNNER_MEMORY_LIMIT`, `RUNNER_PIDS_LIMIT`
     - Artifact storage: `ARTIFACTS_ROOT`, `ARTIFACTS_RETENTION_DAYS`
@@ -51,9 +55,20 @@ Execution can take seconds to minutes; handlers MUST NOT hold DB transactions op
 3. Update the same `tool_runs` row with final `status`, `stdout`, `stderr`, `html_output`, `error_summary`,
    `artifacts_manifest`, and commit.
 
+## Async integration and backpressure (REQUIRED)
+
+- Docker SDK calls are synchronous and MUST NOT run on the event loop.
+- All execution MUST be performed off the event loop (thread pool) and guarded by a global concurrency cap
+  (`RUNNER_MAX_CONCURRENCY`).
+- When saturated, new runs MUST be rejected (no in-process queueing).
+
+See ADR-0016 for the v0.1 concurrency + backpressure policy.
+
 ## Runner output contract (REQUIRED)
 
 Define a stable, versioned contract for how the runner returns results to the app. Recommended:
+
+- See ADR-0015 for the canonical contract and compatibility rules.
 
 - Runner writes a single JSON file at `/work/result.json` with:
   - `status`: `succeeded|failed|timed_out`

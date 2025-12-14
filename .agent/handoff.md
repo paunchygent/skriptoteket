@@ -14,66 +14,58 @@ Keep this file updated so the next session can pick up work quickly.
 
 - Date: 2025-12-14
 - Branch / commit: `main` (HEAD)
-- Goal of the session: Implement ST-03-03 “Admins publish/depublish tools (catalog visibility)” end-to-end.
+- Goal of the session: Align EPIC-04 docs and apply foundation fixes so ST-04-02+ can start cleanly.
 
 ## What changed
 
-- Story status:
-  - `docs/backlog/stories/story-03-03-publish-and-depublish-tools.md` (status: done)
-- Domain invariants:
-  - `src/skriptoteket/domain/catalog/models.py` (add `set_tool_published_state`)
-- Application (commands + handlers):
-  - `src/skriptoteket/application/catalog/commands.py` (publish/depublish commands)
-  - `src/skriptoteket/application/catalog/handlers/list_tools_for_admin.py`
-  - `src/skriptoteket/application/catalog/handlers/publish_tool.py`
-  - `src/skriptoteket/application/catalog/handlers/depublish_tool.py`
-  - `src/skriptoteket/application/catalog/queries.py` (add `ListToolsForAdmin*`)
-- Protocols + infrastructure:
-  - `src/skriptoteket/protocols/catalog.py` (new handler protocols + repo methods `list_all`, `set_published`)
-  - `src/skriptoteket/infrastructure/repositories/tool_repository.py` (implement `list_all`, `set_published`)
-- DI wiring:
-  - `src/skriptoteket/di.py` (register new handlers)
-- Minimal admin UI:
-  - `src/skriptoteket/web/pages/admin_tools.py` (`GET /admin/tools`, publish/depublish POSTs)
-  - `src/skriptoteket/web/templates/admin_tools.html`
-  - `src/skriptoteket/web/router.py` (include admin tools router)
-  - `src/skriptoteket/web/templates/base.html` (nav link)
+- Documentation (EPIC-04 alignment):
+  - `docs/reference/ref-scripting-api-contracts.md` (add `request-changes` endpoint + DTO)
+  - `docs/reference/ref-dynamic-tool-scripts.md` (add endpoint; clarify `content_hash`; add ADR links)
+  - `docs/backlog/stories/story-04-01-versioned-script-model.md` (clarify `content_hash`)
+  - `docs/backlog/stories/story-04-02-docker-runner-execution.md` (protocol boundary + concurrency/backpressure section)
+  - `docs/adr/adr-0015-runner-contract-and-compatibility.md` (new)
+  - `docs/adr/adr-0016-execution-concurrency-and-backpressure.md` (new)
+  - `docs/reference/reports/ref-architectural-review-epic-04.md` (rename from rep-* + add frontmatter)
+  - `docs/reference/reports/ref-lead-developer-assessment-epic-04.md` (new)
+- Foundation code fixes:
+  - `src/skriptoteket/domain/scripting/models.py` (`content_hash` now hashes `{entrypoint}\\n{source_code}`)
+  - `src/skriptoteket/infrastructure/repositories/tool_run_repository.py` (`update()` raises `NOT_FOUND` if row missing)
+  - `src/skriptoteket/infrastructure/repositories/tool_version_repository.py` (`update()` raises `NOT_FOUND` if row missing)
+  - `src/skriptoteket/infrastructure/repositories/script_suggestion_repository.py` (`update()` raises `NOT_FOUND` if row missing)
+  - `src/skriptoteket/web/router.py` (remove forbidden `from __future__ import annotations`)
+  - `src/skriptoteket/web/app.py` (remove future annotations from route module)
 - Tests:
-  - `tests/unit/application/test_catalog_publish_handlers.py`
+  - `tests/unit/application/test_catalog_publish_handlers.py` (update `compute_content_hash` call)
 
 ## Decisions (and links)
 
-- ST-03-03 publish validation is strict:
-  - Requires `tools.active_version_id` and that the pointed `tool_versions.state == ACTIVE`.
-  - If the pointer is missing/invalid/non-ACTIVE, reject (no silent auto-heal) with `DomainError(CONFLICT)`.
-- Publish/depublish is idempotent (no-op if already in desired state).
-- Minimal admin surface is a dedicated `/admin/tools` page (admin/superuser only).
+- `content_hash` semantics updated: hash `{entrypoint}\\n{source_code}` (see EPIC-04 docs + `src/skriptoteket/domain/scripting/models.py`).
+- Repository `update()` methods MUST NOT mask missing rows (raise `DomainError(NOT_FOUND)` instead).
+- Router/route modules must not use `from __future__ import annotations` (rule `040-fastapi-blueprint.md`).
+- `request-changes` endpoint is part of the public contracts (not internal-only): `docs/reference/ref-scripting-api-contracts.md`.
+- Runner contract and concurrency/backpressure are documented as new ADRs:
+  - `docs/adr/adr-0015-runner-contract-and-compatibility.md`
+  - `docs/adr/adr-0016-execution-concurrency-and-backpressure.md`
 
 ## How to run / verify
 
-- Quality (ran): `pdm run docs-validate && pdm run lint && pdm run typecheck && pdm run test`
+- Quality (ran): `pdm run docs-validate && pdm run test`
 - Live functional check (ran):
-  - Start DB + migrate: `docker compose up -d db && pdm run db-upgrade`
-  - Run server: `pdm run dev`
-  - Log in as a superuser (local credentials in `.env`, do not commit)
-  - Create an ACTIVE tool version for an existing draft tool (manual SQL) so the publish flow is testable before the
-    script editor exists (ST-04-03).
+  - Run server: `pdm run uvicorn --app-dir src skriptoteket.web.app:app --host 127.0.0.1 --port 8010`
   - Verify:
-    - `GET /admin/tools` renders and lists tools.
-    - Publishing a tool with an ACTIVE version makes it visible in `/browse/...`.
-    - Depublishing hides it from `/browse/...`.
-    - Publishing a tool without an ACTIVE version returns 400 and shows a helpful error.
+    - `curl -fsS http://127.0.0.1:8010/health`
+    - `curl -fsS http://127.0.0.1:8010/login`
 
 ## Known issues / risks
 
-- `/tools/{slug}/run` is not implemented yet (ST-04-05); when added it must gate on `tools.is_published` (404 when not).
-- No pagination/filtering on `/admin/tools` yet (acceptable for MVP).
+- ST-04-02 runner is still unimplemented; docker.sock risk acceptance must be confirmed for deployment.
+- Version-number race handling is not implemented yet (decision: surface as `DomainError(CONFLICT)`, do not silently retry).
 
 ## Next steps (recommended order)
 
-1. Confirm with the user before starting EPIC-04 work (session scope rule).
-2. Implement ST-04-02 runner (Docker SDK sibling runner + artifact persistence/retention).
-3. Implement ST-04-03 admin script editor UI (create/save/submit-review/run-sandbox).
+1. Confirm/accept ADR-0015 and ADR-0016 (or adjust and re-propose).
+2. Implement ST-04-02 runner (protocol boundary + docker execution + caps + artifacts + cleanup).
+3. Implement ST-04-03 admin editor UI + sandbox execution.
 4. Implement ST-04-04 governance handlers (publish/rollback/request changes) and policies.
 5. Implement ST-04-05 user run pages (`/tools/{slug}/run`, `/my-runs/{run_id}`).
 

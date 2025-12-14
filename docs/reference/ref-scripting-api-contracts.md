@@ -15,7 +15,7 @@ This document defines the API contracts for the Admin Script Editor and User Exe
 Related documents:
 
 - Design spec: REF-dynamic-tool-scripts
-- ADRs: ADR-0012, ADR-0013, ADR-0014
+- ADRs: ADR-0012, ADR-0013, ADR-0014, ADR-0015, ADR-0016
 - Epic: EPIC-04
 
 ---
@@ -276,7 +276,30 @@ Auth: Contributor (own drafts), Admin, Superuser
 **Request:** `SubmitReviewIn`
 **Response 200:** `ToolVersionListItemOut` (state=in_review, sets `submitted_for_review_by` + `submitted_for_review_at`)
 
-### 2.7 Publish (Admin & Superuser)
+### 2.7 Request Changes (Admin & Superuser)
+
+```http
+POST /admin/tool-versions/{version_id}/request-changes
+Auth: Admin, Superuser
+Precondition: version is in_review
+```
+
+**Request:** `RequestChangesIn`
+
+**Response 200:**
+
+`ToolVersionListItemOut` (new version, state=draft)
+
+**Server behavior (append-only):**
+
+1. Archive the reviewed IN_REVIEW version (it is consumed by the request-changes action).
+2. Create a NEW DRAFT version derived from the reviewed version (copy source_code/entrypoint).
+   - `created_by_user_id` is set to the original author (`reviewed_version.created_by_user_id`) to preserve contributor
+     ownership rules.
+   - The reviewer message is stored in `change_summary` on the new draft (until a dedicated reviewer-note field
+     exists).
+
+### 2.8 Publish (Admin & Superuser)
 
 ```http
 POST /admin/tool-versions/{version_id}/publish
@@ -304,7 +327,7 @@ Precondition: version is in_review
 3. Archive the reviewed IN_REVIEW version (it is consumed by publishing).
 4. Update `tools.active_version_id` to the new ACTIVE version.
 
-### 2.8 Rollback (Superuser Only)
+### 2.9 Rollback (Superuser Only)
 
 ```http
 POST /admin/tools/{tool_id}/rollback
@@ -403,6 +426,9 @@ class SaveDraftIn(BaseModel):
 
 class SubmitReviewIn(BaseModel):
     review_note: Optional[str] = None
+
+class RequestChangesIn(BaseModel):
+    message: Optional[str] = None
 
 class PublishIn(BaseModel):
     change_summary: Optional[str] = None
