@@ -237,6 +237,7 @@ log_cli_level = "INFO"
 log_cli_format = "%(message)s"
 log_cli_date_format = "%Y-%m-%d %H:%M:%S"
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "module"
 
 markers = [
     "financial: marks tests that incur real monetary costs via external API calls",
@@ -250,6 +251,7 @@ markers = [
 
 filterwarnings = [
     "ignore::DeprecationWarning:pydantic.*",
+    "ignore::DeprecationWarning:testcontainers.*",
 ]
 
 [tool.pdm]

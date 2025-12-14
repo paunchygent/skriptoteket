@@ -28,3 +28,4 @@ build/
 
 # Local exports
 requirements.txt
+.coverage

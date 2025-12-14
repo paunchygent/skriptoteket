@@ -18,6 +18,7 @@ async def home(
 ) -> HTMLResponse:
     csrf_token = session.csrf_token if session else ""
     return templates.TemplateResponse(
-        "home.html",
-        {"request": request, "user": user, "csrf_token": csrf_token},
+        request=request,
+        name="home.html",
+        context={"user": user, "csrf_token": csrf_token},
     )

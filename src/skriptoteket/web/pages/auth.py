@@ -19,8 +19,9 @@ router = APIRouter()
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request, error: str | None = None) -> HTMLResponse:
     return templates.TemplateResponse(
-        "login.html",
-        {"request": request, "error": error, "user": None, "csrf_token": ""},
+        request=request,
+        name="login.html",
+        context={"error": error, "user": None, "csrf_token": ""},
     )
 
 
@@ -38,9 +39,9 @@ async def login(
     except DomainError as exc:
         if exc.code in {ErrorCode.INVALID_CREDENTIALS, ErrorCode.UNAUTHORIZED}:
             return templates.TemplateResponse(
-                "login.html",
-                {
-                    "request": request,
+                request=request,
+                name="login.html",
+                context={
                     "error": "Fel e-post eller lösenord.",
                     "user": None,
                     "csrf_token": "",
