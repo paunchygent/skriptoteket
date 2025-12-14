@@ -35,6 +35,35 @@ Publishing new tool logic currently requires repository changes and redeployment
 
 ---
 
+## Lifecycle: Suggestion → Runnable Tool
+
+This feature is designed to work end-to-end with the EPIC-03 governance workflow (suggestions + catalog visibility)
+and the EPIC-04 scripting workflow (versioned script code + execution).
+
+### Sequence flow (happy path)
+
+1. **Contributor suggests a tool** (title/description/professions/categories).
+2. **Admin reviews suggestion** and **accepts** it, creating a **draft tool** entry (not published, not runnable yet).
+3. **Admin opens the script editor** for the draft tool and **creates a ToolVersion in `draft`** (starter template or
+   derived from an existing version).
+4. **Admin iterates**: each Save creates a new immutable draft snapshot; admin can **run sandbox tests** and inspect
+   HTML + logs + artifacts.
+5. **Submit for review**: a specific snapshot becomes `in_review` (optionally with `review_note`).
+6. **Publish script version** (Admin/Superuser): copy-on-activate creates a NEW `active` version, archives the previous
+   active (if any), and archives the reviewed `in_review` snapshot (**publish consumes in_review**).
+   - See: [ST-04-04 Governance, audit, and rollback](../backlog/stories/story-04-04-governance-audit-rollback.md)
+7. **Publish tool (catalog visibility)** (Admin): sets `tools.is_published=true`, which makes the tool discoverable and
+   runnable **only if** `tools.active_version_id` is set (published implies runnable).
+   - See: [ST-03-03 Admins publish/depublish tools](../backlog/stories/story-03-03-publish-and-depublish-tools.md)
+8. **User runs the tool**: `GET/POST /tools/{slug}/run` executes the ACTIVE version in production context and renders
+   the HTML result (logs hidden from end-users).
+
+### Variations
+
+- **Rollback (Superuser)**: create a new ACTIVE version derived from an older archived version. If the tool is
+  published, users immediately run the rolled-back ACTIVE version.
+  - See: [ST-04-04 Governance, audit, and rollback](../backlog/stories/story-04-04-governance-audit-rollback.md)
+
 ## Domain Model
 
 ### New Domain: `scripting`
