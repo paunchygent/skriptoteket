@@ -8,6 +8,10 @@ from skriptoteket.application.scripting.commands import (
     CreateDraftVersionResult,
     ExecuteToolVersionCommand,
     ExecuteToolVersionResult,
+    PublishVersionCommand,
+    PublishVersionResult,
+    RequestChangesCommand,
+    RequestChangesResult,
     RunSandboxCommand,
     RunSandboxResult,
     SaveDraftVersionCommand,
@@ -83,6 +87,24 @@ class SubmitForReviewHandlerProtocol(Protocol):
         actor: User,
         command: SubmitForReviewCommand,
     ) -> SubmitForReviewResult: ...
+
+
+class PublishVersionHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: PublishVersionCommand,
+    ) -> PublishVersionResult: ...
+
+
+class RequestChangesHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: RequestChangesCommand,
+    ) -> RequestChangesResult: ...
 
 
 class RunSandboxHandlerProtocol(Protocol):

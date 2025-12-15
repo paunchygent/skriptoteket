@@ -51,10 +51,27 @@
       </div>
 
       <div class="card stack">
+        {% if user.role in ["admin", "superuser"] %}
+          <div class="card stack">
+            <strong>Verktygsmetadata</strong>
+            <form method="post" action="/admin/tools/{{ tool.id }}/metadata">
+              <label for="tool_title">
+                Titel
+                <input id="tool_title" name="title" value="{{ tool.title }}" required />
+              </label>
+              <label for="tool_summary">
+                Sammanfattning
+                <textarea id="tool_summary" name="summary">{{ tool.summary or "" }}</textarea>
+              </label>
+              <button type="submit">Spara metadata</button>
+            </form>
+          </div>
+        {% endif %}
+
         <div class="muted">
           {% if selected_version %}
             <span class="pill">Version {{ selected_version.version_number }}</span>
-            <span class="pill">{{ selected_version.state }}</span>
+            <span class="pill">{{ selected_version.state | version_state_label }}</span>
             <span class="pill">ID: {{ selected_version.id }}</span>
           {% else %}
             <span class="pill">Ingen sparad version ännu</span>
@@ -74,7 +91,7 @@
             <input type="hidden" name="derived_from_version_id" value="{{ derived_from_version_id }}" />
           {% endif %}
           <label>
-            Entrypoint
+            Startfunktion
             <input name="entrypoint" value="{{ editor_entrypoint }}" />
           </label>
 
@@ -84,7 +101,7 @@
           </div>
 
           <label>
-            Change summary (valfritt)
+            Ändringssammanfattning (valfritt)
             <input name="change_summary" value="" />
           </label>
 
@@ -106,9 +123,9 @@
         <hr style="border: none; border-top: 1px solid #eee" />
 
         <div class="card stack">
-          <strong>Sandbox-körning</strong>
+          <strong>Testkörning</strong>
           {% if not selected_version %}
-            <p class="muted"><small>Spara ett utkast innan du kör sandbox.</small></p>
+            <p class="muted"><small>Spara ett utkast innan du testkör.</small></p>
           {% else %}
             <form
               id="run-form"
@@ -122,23 +139,23 @@
             >
               <input type="hidden" name="tool_id" value="{{ tool.id }}" />
               <label>
-                <small>Välj testfil för körning</small>
+                <small>Välj testfil</small>
                 <input type="file" name="file" required style="margin-top: 4px" />
               </label>
-              <button type="submit">Kör sandbox</button>
+              <button type="submit">Testkör</button>
             </form>
           {% endif %}
         </div>
 
         <div class="card stack">
-          <strong>Submit for review</strong>
+          <strong>Skicka för granskning</strong>
           {% if selected_version %}
             <form
               method="post"
               action="/admin/tool-versions/{{ selected_version.id }}/submit-review"
             >
               <label>
-                Review note (valfritt)
+                Notis till granskare (valfritt)
                 <input name="review_note" value="" />
               </label>
               <button type="submit">Skicka för granskning</button>
@@ -148,11 +165,39 @@
           {% endif %}
         </div>
 
+        {% if selected_version and selected_version.state == "in_review" and user.role in ["admin", "superuser"] %}
+          <div class="card stack">
+            <strong>Granska version</strong>
+
+            <form
+              method="post"
+              action="/admin/tool-versions/{{ selected_version.id }}/publish"
+            >
+              <label>
+                Ändringssammanfattning (valfritt)
+                <input name="change_summary" value="" />
+              </label>
+              <button type="submit">Publicera</button>
+            </form>
+
+            <form
+              method="post"
+              action="/admin/tool-versions/{{ selected_version.id }}/request-changes"
+            >
+              <label for="request_changes_message">
+                Meddelande (valfritt)
+              </label>
+              <textarea id="request_changes_message" name="message"></textarea>
+              <button type="submit">Begär ändringar</button>
+            </form>
+          </div>
+        {% endif %}
+
         <div id="run-result" class="stack">
           {% if run %}
             {% include "admin/partials/run_result.html" %}
           {% else %}
-            <p class="muted"><small>Inga sandbox-resultat ännu.</small></p>
+            <p class="muted"><small>Inga testresultat ännu.</small></p>
           {% endif %}
         </div>
       </div>

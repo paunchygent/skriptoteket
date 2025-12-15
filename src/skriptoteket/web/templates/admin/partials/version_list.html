@@ -4,7 +4,7 @@
       <li style="padding: 10px 0; border-top: 1px solid #eee">
         <div>
           <a href="/admin/tool-versions/{{ v.id }}"><strong>#{{ v.version_number }}</strong></a>
-          <small class="muted">{{ v.state }}</small>
+          <small class="muted">{{ v.state | version_state_label }}</small>
         </div>
         <div class="muted" style="margin-top: 4px">
           <small>{{ v.created_at }}</small><br />
@@ -16,4 +16,3 @@
 {% else %}
   <p class="muted"><small>Inga versioner ännu.</small></p>
 {% endif %}
-

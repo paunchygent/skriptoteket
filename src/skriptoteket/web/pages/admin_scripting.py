@@ -4,21 +4,30 @@ from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, Response
 
+from skriptoteket.application.catalog.commands import UpdateToolMetadataCommand
 from skriptoteket.application.scripting.commands import (
     CreateDraftVersionCommand,
+    PublishVersionCommand,
+    RequestChangesCommand,
     SaveDraftVersionCommand,
     SubmitForReviewCommand,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.domain.identity.models import Role, Session, User
-from skriptoteket.protocols.catalog import ToolRepositoryProtocol
+from skriptoteket.protocols.catalog import ToolRepositoryProtocol, UpdateToolMetadataHandlerProtocol
 from skriptoteket.protocols.scripting import (
     CreateDraftVersionHandlerProtocol,
+    PublishVersionHandlerProtocol,
+    RequestChangesHandlerProtocol,
     SaveDraftVersionHandlerProtocol,
     SubmitForReviewHandlerProtocol,
     ToolVersionRepositoryProtocol,
 )
-from skriptoteket.web.auth.dependencies import get_current_session, require_contributor
+from skriptoteket.web.auth.dependencies import (
+    get_current_session,
+    require_admin,
+    require_contributor,
+)
 from skriptoteket.web.pages.admin_scripting_runs import router as runs_router
 from skriptoteket.web.pages.admin_scripting_support import (
     editor_context as _editor_context,
@@ -48,6 +57,7 @@ from skriptoteket.web.pages.admin_scripting_support import (
     visible_versions_for_actor as _visible_versions_for_actor,
 )
 from skriptoteket.web.templating import templates
+from skriptoteket.web.ui_text import ui_error_message as _ui_error_message
 
 router = APIRouter()
 
@@ -106,6 +116,66 @@ async def script_editor_for_tool(
             error=None,
         ),
     )
+
+
+@router.post("/admin/tools/{tool_id}/metadata")
+@inject
+async def update_tool_metadata(
+    request: Request,
+    tool_id: UUID,
+    handler: FromDishka[UpdateToolMetadataHandlerProtocol],
+    tools: FromDishka[ToolRepositoryProtocol],
+    versions_repo: FromDishka[ToolVersionRepositoryProtocol],
+    user: User = Depends(require_admin),
+    session: Session | None = Depends(get_current_session),
+    title: str = Form(...),
+    summary: str | None = Form(None),
+) -> Response:
+    csrf_token = session.csrf_token if session else ""
+    try:
+        await handler.handle(
+            actor=user,
+            command=UpdateToolMetadataCommand(
+                tool_id=tool_id,
+                title=title,
+                summary=summary,
+            ),
+        )
+    except DomainError as exc:
+        tool = await tools.get_by_id(tool_id=tool_id)
+        if tool is None:
+            raise
+
+        ui_tool = tool.model_copy(update={"title": title, "summary": summary})
+        versions = await versions_repo.list_for_tool(tool_id=ui_tool.id, limit=50)
+        selected_version = _select_default_version(actor=user, tool=ui_tool, versions=versions)
+
+        if selected_version is None:
+            editor_entrypoint = "run_tool"
+            editor_source_code = _STARTER_TEMPLATE
+        else:
+            editor_entrypoint = selected_version.entrypoint
+            editor_source_code = selected_version.source_code
+
+        return templates.TemplateResponse(
+            "admin/script_editor.html",
+            _editor_context(
+                request=request,
+                user=user,
+                csrf_token=csrf_token,
+                tool=ui_tool,
+                versions=versions,
+                selected_version=selected_version,
+                editor_entrypoint=editor_entrypoint,
+                editor_source_code=editor_source_code,
+                run=None,
+                error=_ui_error_message(exc),
+            ),
+            status_code=_status_code_for_error(exc),
+        )
+
+    redirect_url = f"/admin/tools/{tool_id}"
+    return _redirect_with_hx(request=request, url=redirect_url)
 
 
 @router.get("/admin/tools/{tool_id}/versions", response_class=HTMLResponse)
@@ -228,7 +298,7 @@ async def create_draft(
             editor_entrypoint=entrypoint,
             editor_source_code=source_code,
             run=None,
-            error=exc.message,
+            error=_ui_error_message(exc),
             status_code=_status_code_for_error(exc),
         )
     redirect_url = f"/admin/tool-versions/{result.version.id}"
@@ -279,7 +349,7 @@ async def save_draft(
             editor_entrypoint=entrypoint,
             editor_source_code=source_code,
             run=None,
-            error=exc.message,
+            error=_ui_error_message(exc),
             status_code=_status_code_for_error(exc),
         )
     redirect_url = f"/admin/tool-versions/{result.version.id}"
@@ -324,12 +394,86 @@ async def submit_review(
                 editor_entrypoint=version.entrypoint,
                 editor_source_code=version.source_code,
                 run=None,
-                error=exc.message,
+                error=_ui_error_message(exc),
             ),
             status_code=_status_code_for_error(exc),
         )
 
     redirect_url = f"/admin/tool-versions/{result.version.id}"
+    return _redirect_with_hx(request=request, url=redirect_url)
+
+
+@router.post("/admin/tool-versions/{version_id}/publish")
+@inject
+async def publish_version(
+    request: Request,
+    version_id: UUID,
+    handler: FromDishka[PublishVersionHandlerProtocol],
+    tools: FromDishka[ToolRepositoryProtocol],
+    versions_repo: FromDishka[ToolVersionRepositoryProtocol],
+    user: User = Depends(require_admin),
+    session: Session | None = Depends(get_current_session),
+    change_summary: str | None = Form(None),
+) -> Response:
+    csrf_token = session.csrf_token if session else ""
+    try:
+        result = await handler.handle(
+            actor=user,
+            command=PublishVersionCommand(version_id=version_id, change_summary=change_summary),
+        )
+    except DomainError as exc:
+        return await _render_editor_for_version_id(
+            request=request,
+            user=user,
+            csrf_token=csrf_token,
+            tools=tools,
+            versions_repo=versions_repo,
+            version_id=version_id,
+            editor_entrypoint=None,
+            editor_source_code=None,
+            run=None,
+            error=_ui_error_message(exc),
+            status_code=_status_code_for_error(exc),
+        )
+
+    redirect_url = f"/admin/tool-versions/{result.new_active_version.id}"
+    return _redirect_with_hx(request=request, url=redirect_url)
+
+
+@router.post("/admin/tool-versions/{version_id}/request-changes")
+@inject
+async def request_changes(
+    request: Request,
+    version_id: UUID,
+    handler: FromDishka[RequestChangesHandlerProtocol],
+    tools: FromDishka[ToolRepositoryProtocol],
+    versions_repo: FromDishka[ToolVersionRepositoryProtocol],
+    user: User = Depends(require_admin),
+    session: Session | None = Depends(get_current_session),
+    message: str | None = Form(None),
+) -> Response:
+    csrf_token = session.csrf_token if session else ""
+    try:
+        result = await handler.handle(
+            actor=user,
+            command=RequestChangesCommand(version_id=version_id, message=message),
+        )
+    except DomainError as exc:
+        return await _render_editor_for_version_id(
+            request=request,
+            user=user,
+            csrf_token=csrf_token,
+            tools=tools,
+            versions_repo=versions_repo,
+            version_id=version_id,
+            editor_entrypoint=None,
+            editor_source_code=None,
+            run=None,
+            error=_ui_error_message(exc),
+            status_code=_status_code_for_error(exc),
+        )
+
+    redirect_url = f"/admin/tool-versions/{result.new_draft_version.id}"
     return _redirect_with_hx(request=request, url=redirect_url)
 
 

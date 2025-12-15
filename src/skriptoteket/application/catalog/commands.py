@@ -29,3 +29,17 @@ class DepublishToolResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     tool: Tool
+
+
+class UpdateToolMetadataCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    title: str
+    summary: str | None = None
+
+
+class UpdateToolMetadataResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool: Tool

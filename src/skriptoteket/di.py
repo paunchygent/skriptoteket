@@ -19,6 +19,7 @@ from skriptoteket.application.catalog.handlers.list_professions import ListProfe
 from skriptoteket.application.catalog.handlers.list_tools_by_tags import ListToolsByTagsHandler
 from skriptoteket.application.catalog.handlers.list_tools_for_admin import ListToolsForAdminHandler
 from skriptoteket.application.catalog.handlers.publish_tool import PublishToolHandler
+from skriptoteket.application.catalog.handlers.update_tool_metadata import UpdateToolMetadataHandler
 from skriptoteket.application.identity.current_user_provider import CurrentUserProvider
 from skriptoteket.application.identity.handlers.create_local_user import CreateLocalUserHandler
 from skriptoteket.application.identity.handlers.login import LoginHandler
@@ -82,6 +83,7 @@ from skriptoteket.protocols.catalog import (
     ProfessionRepositoryProtocol,
     PublishToolHandlerProtocol,
     ToolRepositoryProtocol,
+    UpdateToolMetadataHandlerProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -99,6 +101,8 @@ from skriptoteket.protocols.runner import ArtifactManagerProtocol, ToolRunnerPro
 from skriptoteket.protocols.scripting import (
     CreateDraftVersionHandlerProtocol,
     ExecuteToolVersionHandlerProtocol,
+    PublishVersionHandlerProtocol,
+    RequestChangesHandlerProtocol,
     RunSandboxHandlerProtocol,
     SaveDraftVersionHandlerProtocol,
     SubmitForReviewHandlerProtocol,
@@ -289,6 +293,46 @@ class AppProvider(Provider):
         return SubmitForReviewHandler(uow=uow, versions=versions, clock=clock)
 
     @provide(scope=Scope.REQUEST)
+    def publish_version_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> PublishVersionHandlerProtocol:
+        from skriptoteket.application.scripting.handlers.publish_version import (
+            PublishVersionHandler,
+        )
+
+        return PublishVersionHandler(
+            uow=uow,
+            tools=tools,
+            versions=versions,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def request_changes_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> RequestChangesHandlerProtocol:
+        from skriptoteket.application.scripting.handlers.request_changes import (
+            RequestChangesHandler,
+        )
+
+        return RequestChangesHandler(
+            uow=uow,
+            versions=versions,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
     def run_sandbox_handler(
         self,
         uow: UnitOfWorkProtocol,
@@ -437,6 +481,15 @@ class AppProvider(Provider):
         clock: ClockProtocol,
     ) -> DepublishToolHandlerProtocol:
         return DepublishToolHandler(uow=uow, tools=tools, clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def update_tool_metadata_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> UpdateToolMetadataHandlerProtocol:
+        return UpdateToolMetadataHandler(uow=uow, tools=tools, clock=clock)
 
     @provide(scope=Scope.REQUEST)
     def submit_suggestion_handler(

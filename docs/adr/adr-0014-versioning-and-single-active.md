@@ -79,11 +79,24 @@ Rationale for copy-on-activate over pointer-switching:
 
 - Domain function exists: `src/skriptoteket/domain/scripting/models.py` (`publish_version()` implements copy-on-activate).
 - DB support exists: `migrations/versions/0005_tool_versions.py` (states + single-ACTIVE constraint + `tools.active_version_id` FK).
+- Application + DI prerequisites exist:
+  - `src/skriptoteket/application/scripting/commands.py` (`PublishVersionCommand/Result`)
+  - `src/skriptoteket/protocols/scripting.py` (`PublishVersionHandlerProtocol`)
+  - `src/skriptoteket/di.py` (Dishka binding for `PublishVersionHandlerProtocol`)
+- Application handler exists:
+  - `src/skriptoteket/application/scripting/handlers/publish_version.py`
+- Web route exists:
+  - `src/skriptoteket/web/pages/admin_scripting.py` (`POST /admin/tool-versions/{version_id}/publish`)
+- Admin UI decision section exists:
+  - `src/skriptoteket/web/templates/admin/script_editor.html`
+- Repo support exists for persisting `tools.active_version_id` updates:
+  - `src/skriptoteket/protocols/catalog.py` (`ToolRepositoryProtocol.set_active_version_id`)
+  - `src/skriptoteket/infrastructure/repositories/tool_repository.py`
+- Tests cover publish behavior:
+  - `tests/unit/application/test_scripting_review_handlers.py`
+  - `tests/integration/web/test_admin_scripting_review_routes.py`
 
 ### Pending
 
-- Application + web wiring for admins to publish an `IN_REVIEW` version:
-  - Command/result + handler + protocol + DI registration
-  - `POST /admin/tool-versions/{version_id}/publish` route
-  - Admin UI decision section in `src/skriptoteket/web/templates/admin/script_editor.html`
 - Operational behavior tracking (story): `docs/backlog/stories/story-04-04-governance-audit-rollback.md` (ST-04-04).
+- Rollback wiring (Superuser-only): create new ACTIVE derived from an ARCHIVED version (same copy-on-activate rules).

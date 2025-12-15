@@ -36,6 +36,7 @@ from skriptoteket.web.pages.admin_scripting_support import (
     status_code_for_error as _status_code_for_error,
 )
 from skriptoteket.web.templating import templates
+from skriptoteket.web.ui_text import ui_error_message as _ui_error_message
 
 router = APIRouter()
 
@@ -97,7 +98,7 @@ def _resolve_artifact_path(
 
 def _render_hx_error(exc: DomainError) -> HTMLResponse:
     return HTMLResponse(
-        f'<p class="error">{exc.message}</p>',
+        f'<p class="error">{_ui_error_message(exc)}</p>',
         status_code=_status_code_for_error(exc),
     )
 
@@ -198,7 +199,7 @@ async def run_sandbox(
         return await _render_sandbox_editor(
             **editor_kwargs,
             run=None,
-            error=exc.message,
+            error=_ui_error_message(exc),
             status_code=_status_code_for_error(exc),
         )
 

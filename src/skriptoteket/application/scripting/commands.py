@@ -68,6 +68,35 @@ class SubmitForReviewResult(BaseModel):
     version: ToolVersion
 
 
+class PublishVersionCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    version_id: UUID
+    change_summary: str | None = None
+
+
+class PublishVersionResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    new_active_version: ToolVersion
+    archived_reviewed_version: ToolVersion
+    archived_previous_active_version: ToolVersion | None = None
+
+
+class RequestChangesCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    version_id: UUID
+    message: str | None = None
+
+
+class RequestChangesResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    new_draft_version: ToolVersion
+    archived_in_review_version: ToolVersion
+
+
 class RunSandboxCommand(BaseModel):
     model_config = ConfigDict(frozen=True)
 

@@ -9,6 +9,8 @@ from skriptoteket.application.catalog.commands import (
     DepublishToolResult,
     PublishToolCommand,
     PublishToolResult,
+    UpdateToolMetadataCommand,
+    UpdateToolMetadataResult,
 )
 from skriptoteket.application.catalog.queries import (
     ListAllCategoriesQuery,
@@ -53,6 +55,23 @@ class ToolRepositoryProtocol(Protocol):
         *,
         tool_id: UUID,
         is_published: bool,
+        now: datetime,
+    ) -> Tool: ...
+
+    async def set_active_version_id(
+        self,
+        *,
+        tool_id: UUID,
+        active_version_id: UUID | None,
+        now: datetime,
+    ) -> Tool: ...
+
+    async def update_metadata(
+        self,
+        *,
+        tool_id: UUID,
+        title: str,
+        summary: str | None,
         now: datetime,
     ) -> Tool: ...
 
@@ -108,3 +127,12 @@ class DepublishToolHandlerProtocol(Protocol):
         actor: User,
         command: DepublishToolCommand,
     ) -> DepublishToolResult: ...
+
+
+class UpdateToolMetadataHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: UpdateToolMetadataCommand,
+    ) -> UpdateToolMetadataResult: ...

@@ -67,28 +67,39 @@ This story implements the governance layer. We follow ADR-0005: Admins manage th
 ### Done
 
 - Domain copy-on-activate publish exists: `src/skriptoteket/domain/scripting/models.py` (`publish_version()`).
-- Script version lifecycle exists end-to-end for draft + submit-for-review + sandbox (ST-04-03), but without publish/decision wiring.
+- Script version lifecycle exists end-to-end for draft + submit-for-review + sandbox + publish + request-changes.
+- Application DTOs exist (publish + request-changes):
+  - `src/skriptoteket/application/scripting/commands.py`
+- Protocols + DI wiring exists:
+  - `src/skriptoteket/protocols/scripting.py`
+  - `src/skriptoteket/di.py`
+- Repo support exists for persisting `tools.active_version_id`:
+  - `src/skriptoteket/protocols/catalog.py`
+  - `src/skriptoteket/infrastructure/repositories/tool_repository.py`
+- Application handlers exist (publish + request-changes):
+  - `src/skriptoteket/application/scripting/handlers/publish_version.py`
+  - `src/skriptoteket/application/scripting/handlers/request_changes.py`
+- Web endpoints exist:
+  - `src/skriptoteket/web/pages/admin_scripting.py` (`POST /admin/tool-versions/{version_id}/publish`)
+  - `src/skriptoteket/web/pages/admin_scripting.py` (`POST /admin/tool-versions/{version_id}/request-changes`)
+- Editor review UI exists (admin/superuser only for `IN_REVIEW`):
+  - `src/skriptoteket/web/templates/admin/script_editor.html`
+- Admin-skripteditor har konsekvent svensk UI-copy (inkl. state-labels och körningsresultat).
+- Katalog-metadata är separat från skriptets källkod (admin kan uppdatera titel/sammanfattning i editorn):
+  - `POST /admin/tools/{tool_id}/metadata`
+- Tests exist:
+  - `tests/unit/application/test_scripting_review_handlers.py`
+  - `tests/integration/web/test_admin_scripting_review_routes.py`
+  - `tests/integration/web/test_admin_tool_metadata_routes.py` (regression: Katalog summary is tool metadata)
 
 ### Missing (validated gaps)
 
-- No application command/result for publishing a version: `src/skriptoteket/application/scripting/commands.py`
-- No application handler module: `src/skriptoteket/application/scripting/handlers/`
-- No handler protocol + DI wiring: `src/skriptoteket/protocols/scripting.py`, `src/skriptoteket/di.py`
-- No web endpoint: `src/skriptoteket/web/pages/admin_scripting.py` (`POST /admin/tool-versions/{version_id}/publish`)
-- No admin UI section in editor: `src/skriptoteket/web/templates/admin/script_editor.html`
-- Additional required plumbing: update `tools.active_version_id` on publish (currently no repo/protocol method to persist it).
-- Reject/request-changes workflow is not implemented in domain/application/web yet (needs decision on semantics + reviewer rationale storage).
+- Rollback workflow is still missing (Superuser-only): handler + route + UI (out of scope for this session).
 
-### Planned approach
+### Implementation notes
 
-- Mirror the suggestions decision pattern (ST-03-02):
-  - `PublishVersionCommand` / `PublishVersionHandler` / `PublishVersionHandlerProtocol`
-  - Admin-only route `POST /admin/tool-versions/{version_id}/publish`
-  - Conditional decision card in `admin/script_editor.html` shown only for `IN_REVIEW` + admin/superuser
-- Persist publish outcome by:
-  - creating the new ACTIVE version row,
-  - archiving the reviewed version (and previous active if any),
-  - updating `tools.active_version_id` in the same Unit of Work transaction.
+- Mirrors the suggestions decision pattern (ST-03-02): command/handler/protocol + admin-only POST + conditional editor card.
+- Persists publish outcome by: archiving reviewed/previous-active, creating NEW ACTIVE, updating `tools.active_version_id` (same UoW).
 
 ### Request changes (clarified)
 

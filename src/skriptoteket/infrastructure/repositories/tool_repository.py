@@ -61,6 +61,42 @@ class PostgreSQLToolRepository(ToolRepositoryProtocol):
         await self._session.refresh(model)
         return Tool.model_validate(model)
 
+    async def set_active_version_id(
+        self,
+        *,
+        tool_id: UUID,
+        active_version_id: UUID | None,
+        now: datetime,
+    ) -> Tool:
+        stmt = select(ToolModel).where(ToolModel.id == tool_id)
+        result = await self._session.execute(stmt)
+        model = result.scalar_one()
+
+        model.active_version_id = active_version_id
+        model.updated_at = now
+        await self._session.flush()
+        await self._session.refresh(model)
+        return Tool.model_validate(model)
+
+    async def update_metadata(
+        self,
+        *,
+        tool_id: UUID,
+        title: str,
+        summary: str | None,
+        now: datetime,
+    ) -> Tool:
+        stmt = select(ToolModel).where(ToolModel.id == tool_id)
+        result = await self._session.execute(stmt)
+        model = result.scalar_one()
+
+        model.title = title
+        model.summary = summary
+        model.updated_at = now
+        await self._session.flush()
+        await self._session.refresh(model)
+        return Tool.model_validate(model)
+
     async def create_draft(
         self,
         *,

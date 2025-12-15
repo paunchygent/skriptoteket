@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.web.error_mapping import error_to_status
 from skriptoteket.web.templating import templates
+from skriptoteket.web.ui_text import ui_error_message
 
 
 async def error_handler_middleware(request: Request, call_next):
@@ -30,7 +31,7 @@ async def error_handler_middleware(request: Request, call_next):
 
         return templates.TemplateResponse(
             "error.html",
-            {"request": request, "error_code": exc.code.value, "message": exc.message},
+            {"request": request, "error_code": exc.code.value, "message": ui_error_message(exc)},
             status_code=status_code,
         )
     except Exception:
@@ -54,7 +55,7 @@ async def error_handler_middleware(request: Request, call_next):
             {
                 "request": request,
                 "error_code": ErrorCode.INTERNAL_ERROR.value,
-                "message": "Internal server error",
+                "message": "Internt serverfel.",
             },
             status_code=500,
         )
