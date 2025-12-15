@@ -6,6 +6,7 @@ status: proposed
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-14
+updated: 2025-12-15
 ---
 
 ## Context
@@ -71,3 +72,18 @@ Rationale for copy-on-activate over pointer-switching:
 - "Load old version for testing" is trivial (select version, run sandbox)
 - Export-to-GitHub is a deterministic transformation
 - Rollback is safe and auditable (creates new record, does not mutate history)
+
+## Implementation status (as of 2025-12-15)
+
+### Done
+
+- Domain function exists: `src/skriptoteket/domain/scripting/models.py` (`publish_version()` implements copy-on-activate).
+- DB support exists: `migrations/versions/0005_tool_versions.py` (states + single-ACTIVE constraint + `tools.active_version_id` FK).
+
+### Pending
+
+- Application + web wiring for admins to publish an `IN_REVIEW` version:
+  - Command/result + handler + protocol + DI registration
+  - `POST /admin/tool-versions/{version_id}/publish` route
+  - Admin UI decision section in `src/skriptoteket/web/templates/admin/script_editor.html`
+- Operational behavior tracking (story): `docs/backlog/stories/story-04-04-governance-audit-rollback.md` (ST-04-04).

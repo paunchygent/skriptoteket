@@ -5,6 +5,7 @@ title: "Governance, audit, and rollback (RBAC + publish + history)"
 status: ready
 owners: "agents"
 created: 2025-12-14
+updated: 2025-12-15
 epic: "EPIC-04"
 acceptance_criteria:
   - "Given I am an Admin, when I publish an InReview version, then it becomes ACTIVE and the previous active becomes ARCHIVED."
@@ -60,6 +61,34 @@ This story implements the governance layer. We follow ADR-0005: Admins manage th
 - Publishing/rollback MUST update `tools.active_version_id` to the newly created ACTIVE version.
   - If `tools.is_published == true`, end-users immediately run the new ACTIVE version (see ST-03-03 invariant).
   - If the tool is depublished, it remains hidden even though a new ACTIVE exists.
+
+## Implementation status (as of 2025-12-15)
+
+### Done
+
+- Domain copy-on-activate publish exists: `src/skriptoteket/domain/scripting/models.py` (`publish_version()`).
+- Script version lifecycle exists end-to-end for draft + submit-for-review + sandbox (ST-04-03), but without publish/decision wiring.
+
+### Missing (validated gaps)
+
+- No application command/result for publishing a version: `src/skriptoteket/application/scripting/commands.py`
+- No application handler module: `src/skriptoteket/application/scripting/handlers/`
+- No handler protocol + DI wiring: `src/skriptoteket/protocols/scripting.py`, `src/skriptoteket/di.py`
+- No web endpoint: `src/skriptoteket/web/pages/admin_scripting.py` (`POST /admin/tool-versions/{version_id}/publish`)
+- No admin UI section in editor: `src/skriptoteket/web/templates/admin/script_editor.html`
+- Additional required plumbing: update `tools.active_version_id` on publish (currently no repo/protocol method to persist it).
+- Reject/request-changes workflow is not implemented in domain/application/web yet (needs decision on semantics + reviewer rationale storage).
+
+### Planned approach
+
+- Mirror the suggestions decision pattern (ST-03-02):
+  - `PublishVersionCommand` / `PublishVersionHandler` / `PublishVersionHandlerProtocol`
+  - Admin-only route `POST /admin/tool-versions/{version_id}/publish`
+  - Conditional decision card in `admin/script_editor.html` shown only for `IN_REVIEW` + admin/superuser
+- Persist publish outcome by:
+  - creating the new ACTIVE version row,
+  - archiving the reviewed version (and previous active if any),
+  - updating `tools.active_version_id` in the same Unit of Work transaction.
 
 ### Request changes (clarified)
 

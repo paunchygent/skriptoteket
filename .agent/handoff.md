@@ -14,10 +14,15 @@ Keep this file updated so the next session can pick up work quickly.
 
 - Date: 2025-12-15
 - Branch / commit: `main` (HEAD `ee39656`, dirty working tree)
-- Goal of the session: Implement ST-04-03 Admin script editor UI end-to-end (web + handlers + CodeMirror + sandbox run).
+- Goal of the session: Validate gaps for ST-04-04 publish/reject workflow and align on implementation plan (stop before coding).
 
 ## What changed
 
+- Publish/reject workflow planning:
+  - `docs/adr/adr-0014-versioning-and-single-active.md` (added implementation status section)
+  - `docs/backlog/stories/story-04-04-governance-audit-rollback.md` (validated gaps + planned approach)
+- Deferred governance options for future epics:
+  - `docs/reference/ref-scripting-governance-deferred-options.md` (hard reject, review queue, decision log, email notifications)
 - Story + contracts:
   - `docs/backlog/stories/story-04-03-admin-script-editor-ui.md` (status: done; records UI/asset decisions)
   - `docs/reference/ref-scripting-api-contracts.md` (clarifies v0.1 `/admin/...` is HTML/HTMX UI; JSON DTOs are conceptual)
@@ -56,6 +61,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Assets: vendor pinned JS/CSS under `src/skriptoteket/web/static/vendor/` (no CDN at runtime).
 - Execution UX: HTMX used for sandbox run result updates (partial HTML under `templates/admin/partials/`).
 - Safety: preflight `compile(...)` prevents Docker runs for syntax errors and returns a FAILED run with actionable `error_summary`.
+- ST-04-04 publish/reject workflow decisions are pending (reject semantics + review queue + notifications); see `docs/backlog/stories/story-04-04-governance-audit-rollback.md`.
 
 ## How to run / verify
 
@@ -74,6 +80,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Known issues / risks
 
+- No admin publish/reject wiring yet for `IN_REVIEW` versions (missing handler/protocol/route/UI); `tools.active_version_id` remains unset unless manually updated in DB.
 - `/work` per-run volume does not have a portable per-run size cap (unlike tmpfs); a buggy/malicious script can fill disk.
 - docker.sock mount expands blast radius if the app container is compromised (keep production opt-in and hardened).
 - Contributor discoverability: contributors can access the editor only if they have the direct `/admin/tools/{tool_id}` URL
@@ -81,9 +88,10 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Next steps (recommended order)
 
-1. If needed, add a minimal contributor discoverability surface (“My tools” / “My drafts”) without granting global access.
-2. Continue with ST-04-04 governance/audit/rollback (out of scope for this session).
-3. Consider artifact size caps (max bytes per file/total) and/or operational disk quotas.
+1. Implement publish flow for `IN_REVIEW` versions (ST-04-04): command + handler + protocol + DI + route + editor UI.
+2. Add persistence support for `tools.active_version_id` updates during publish (repo/protocol + infrastructure).
+3. Decide reject/request-changes semantics and whether to implement now (vs defer to later governance work).
+4. Consider artifact size caps (max bytes per file/total) and/or operational disk quotas.
 
 ## Notes
 
