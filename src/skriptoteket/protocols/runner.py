@@ -4,12 +4,16 @@ from collections.abc import Iterable
 from typing import Protocol
 from uuid import UUID
 
-from skriptoteket.domain.scripting.execution import ArtifactsManifest, RunnerArtifact, ToolExecutionResult
+from skriptoteket.domain.scripting.execution import (
+    ArtifactsManifest,
+    RunnerArtifact,
+    ToolExecutionResult,
+)
 from skriptoteket.domain.scripting.models import RunContext, ToolVersion
 
 
 class ArtifactManagerProtocol(Protocol):
-    async def store_output_archive(
+    def store_output_archive(
         self,
         *,
         run_id: UUID,

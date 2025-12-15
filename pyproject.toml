@@ -27,6 +27,7 @@ dependencies = [
     "sqlalchemy[asyncio]",
     "asyncpg",
     "alembic",
+    "docker",
 
     # Security
     "argon2-cffi",
@@ -283,6 +284,7 @@ db-upgrade = "alembic upgrade head"
 # Admin bootstrap
 bootstrap-superuser = { cmd = "python -m skriptoteket.cli bootstrap-superuser", env = { PYTHONPATH = "src" } }
 provision-user = { cmd = "python -m skriptoteket.cli provision-user", env = { PYTHONPATH = "src" } }
+artifacts-prune = { cmd = "python -m skriptoteket.cli prune-artifacts", env = { PYTHONPATH = "src" } }
 
 # Docker dev workflow (compose base + dev overrides)
 dev-start = "docker compose -f compose.yaml -f compose.dev.yaml up -d"

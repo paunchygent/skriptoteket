@@ -10,6 +10,7 @@ WORKDIR /app
 
 # Mirror the main app runtime deps (parity): tool scripts may import the same curated libs.
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     pandoc \
     libcairo2 \
     libgdk-pixbuf-2.0-0 \
@@ -22,7 +23,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --no-cache-dir pdm==2.26.2
 
 COPY pyproject.toml pdm.lock ./
-RUN pdm config python.use_venv false \
+RUN pdm config python.use_venv true \
+    && pdm config venv.in_project true \
     && pdm install --frozen-lockfile --prod --no-editable --no-self
 
 
@@ -44,10 +46,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     shared-mime-info \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir pdm==2.26.2
-
-COPY --from=builder /app/__pypackages__ /app/__pypackages__
-COPY pyproject.toml pdm.lock ./
+COPY --from=builder /app/.venv /app/.venv
 
 COPY runner/_runner.py /runner/_runner.py
 
@@ -56,7 +55,8 @@ RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin runner \
     && chmod 1777 /work /tmp
 
 USER runner
-WORKDIR /work
+WORKDIR /app
 
-CMD ["pdm", "run", "python", "/runner/_runner.py"]
+ENV PATH="/app/.venv/bin:$PATH"
 
+CMD ["python", "/runner/_runner.py"]

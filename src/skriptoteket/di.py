@@ -26,6 +26,9 @@ from skriptoteket.application.identity.handlers.logout import LogoutHandler
 from skriptoteket.application.identity.handlers.provision_local_user import (
     ProvisionLocalUserHandler,
 )
+from skriptoteket.application.scripting.handlers.execute_tool_version import (
+    ExecuteToolVersionHandler,
+)
 from skriptoteket.application.suggestions.handlers.decide_suggestion import DecideSuggestionHandler
 from skriptoteket.application.suggestions.handlers.get_suggestion_for_review import (
     GetSuggestionForReviewHandler,
@@ -57,6 +60,9 @@ from skriptoteket.infrastructure.repositories.tool_version_repository import (
     PostgreSQLToolVersionRepository,
 )
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
+from skriptoteket.infrastructure.runner.artifact_manager import FilesystemArtifactManager
+from skriptoteket.infrastructure.runner.capacity import RunnerCapacityLimiter
+from skriptoteket.infrastructure.runner.docker_runner import DockerRunnerLimits, DockerToolRunner
 from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordHasher
 from skriptoteket.infrastructure.token_generator import SecureTokenGenerator
 from skriptoteket.protocols.catalog import (
@@ -83,7 +89,9 @@ from skriptoteket.protocols.identity import (
     SessionRepositoryProtocol,
     UserRepositoryProtocol,
 )
+from skriptoteket.protocols.runner import ArtifactManagerProtocol, ToolRunnerProtocol
 from skriptoteket.protocols.scripting import (
+    ExecuteToolVersionHandlerProtocol,
     ToolRunRepositoryProtocol,
     ToolVersionRepositoryProtocol,
 )
@@ -148,6 +156,40 @@ class AppProvider(Provider):
     def password_hasher(self) -> PasswordHasherProtocol:
         return Argon2PasswordHasher()
 
+    @provide(scope=Scope.APP)
+    def runner_capacity(self, settings: Settings) -> RunnerCapacityLimiter:
+        return RunnerCapacityLimiter(max_concurrency=settings.RUNNER_MAX_CONCURRENCY)
+
+    @provide(scope=Scope.APP)
+    def artifact_manager(self, settings: Settings) -> ArtifactManagerProtocol:
+        return FilesystemArtifactManager(artifacts_root=settings.ARTIFACTS_ROOT)
+
+    @provide(scope=Scope.APP)
+    def tool_runner(
+        self,
+        settings: Settings,
+        capacity: RunnerCapacityLimiter,
+        artifacts: ArtifactManagerProtocol,
+    ) -> ToolRunnerProtocol:
+        limits = DockerRunnerLimits(
+            cpu_limit=settings.RUNNER_CPU_LIMIT,
+            memory_limit=settings.RUNNER_MEMORY_LIMIT,
+            pids_limit=settings.RUNNER_PIDS_LIMIT,
+            tmpfs_tmp=settings.RUNNER_TMPFS_TMP,
+        )
+        return DockerToolRunner(
+            runner_image=settings.RUNNER_IMAGE,
+            sandbox_timeout_seconds=settings.RUNNER_TIMEOUT_SANDBOX_SECONDS,
+            production_timeout_seconds=settings.RUNNER_TIMEOUT_PRODUCTION_SECONDS,
+            limits=limits,
+            output_max_stdout_bytes=settings.RUN_OUTPUT_MAX_STDOUT_BYTES,
+            output_max_stderr_bytes=settings.RUN_OUTPUT_MAX_STDERR_BYTES,
+            output_max_html_bytes=settings.RUN_OUTPUT_MAX_HTML_BYTES,
+            output_max_error_summary_bytes=settings.RUN_OUTPUT_MAX_ERROR_SUMMARY_BYTES,
+            capacity=capacity,
+            artifacts=artifacts,
+        )
+
     @provide(scope=Scope.REQUEST)
     def user_repo(self, session: AsyncSession) -> UserRepositoryProtocol:
         return PostgreSQLUserRepository(session)
@@ -175,6 +217,25 @@ class AppProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def tool_run_repo(self, session: AsyncSession) -> ToolRunRepositoryProtocol:
         return PostgreSQLToolRunRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def execute_tool_version_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        runs: ToolRunRepositoryProtocol,
+        runner: ToolRunnerProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> ExecuteToolVersionHandlerProtocol:
+        return ExecuteToolVersionHandler(
+            uow=uow,
+            versions=versions,
+            runs=runs,
+            runner=runner,
+            clock=clock,
+            id_generator=id_generator,
+        )
 
     @provide(scope=Scope.REQUEST)
     def script_suggestion_repo(self, session: AsyncSession) -> SuggestionRepositoryProtocol:

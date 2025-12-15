@@ -21,6 +21,9 @@ class ErrorCode(StrEnum):
     CONFLICT = "CONFLICT"
     DUPLICATE_ENTRY = "DUPLICATE_ENTRY"
 
+    # Service errors (503)
+    SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE"
+
     # Validation (400)
     VALIDATION_ERROR = "VALIDATION_ERROR"
 

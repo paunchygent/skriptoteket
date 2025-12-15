@@ -44,6 +44,7 @@ Related documents:
 | `NOT_FOUND` | 404 | Resource not found |
 | `VALIDATION_ERROR` | 400 | Invalid request data |
 | `CONFLICT` | 409 | State conflict (e.g. `STATE_CONFLICT`, `ACTIVE_VERSION_CONSTRAINT`) |
+| `SERVICE_UNAVAILABLE` | 503 | Execution service is temporarily unavailable (e.g. runner at capacity) |
 
 Notes:
 

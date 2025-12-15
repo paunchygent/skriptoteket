@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -22,3 +23,21 @@ class Settings(BaseSettings):
 
     COOKIE_SECURE: bool = False
     COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"
+
+    # Runner (ST-04-02)
+    RUNNER_IMAGE: str = "skriptoteket-runner:latest"
+    RUNNER_MAX_CONCURRENCY: int = 1
+    RUNNER_TIMEOUT_SANDBOX_SECONDS: int = 60
+    RUNNER_TIMEOUT_PRODUCTION_SECONDS: int = 120
+    RUNNER_CPU_LIMIT: float = 1.0
+    RUNNER_MEMORY_LIMIT: str = "1g"
+    RUNNER_PIDS_LIMIT: int = 256
+    RUNNER_TMPFS_TMP: str = "rw,noexec,nosuid,nodev,size=256m,mode=1777"
+
+    ARTIFACTS_ROOT: Path = Path("/var/lib/skriptoteket/artifacts")
+    ARTIFACTS_RETENTION_DAYS: int = 7
+
+    RUN_OUTPUT_MAX_STDOUT_BYTES: int = 200_000
+    RUN_OUTPUT_MAX_STDERR_BYTES: int = 200_000
+    RUN_OUTPUT_MAX_HTML_BYTES: int = 500_000
+    RUN_OUTPUT_MAX_ERROR_SUMMARY_BYTES: int = 20_000

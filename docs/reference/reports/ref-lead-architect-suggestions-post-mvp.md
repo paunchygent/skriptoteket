@@ -47,11 +47,11 @@ If deferred items are implemented in the wrong order, the main risks are:
 
 ## EPIC-05: Identity Federation and Operational Readiness
 
-### Outcome
+### EPIC-05 Outcome
 
 Skriptoteket is "production-ready for a real school environment": users authenticate via HuleEdu SSO (while keeping local roles), admin governance (nomination/approval) is complete, and operators/admins have baseline visibility and controls (metrics + retention/cleanup) to run the platform safely day-to-day.
 
-### Proposed Stories
+### EPIC-05 Proposed Stories
 
 #### ST-05-01: HuleEdu SSO Integration (Federated Identity, Local Authorization)
 
@@ -105,15 +105,15 @@ Skriptoteket is "production-ready for a real school environment": users authenti
   - session revocation UX (admin can revoke all sessions for a user)
 - This aligns with ADR-0009's baseline security expectations for session auth.
 
-### Dependencies and Risks EPIC-05
+### EPIC-05 Dependencies and Risks
 
-#### Dependencies EPIC-05
+#### EPIC-05 Dependencies
 
 - Identity protocols and session-based auth foundations (already present)
 - Clear "roles remain local" rule (ADR-0011)
 - Run tracking persistence (tool_runs) to compute dashboard metrics
 
-#### Risks EPIC-05
+#### EPIC-05 Risks
 
 - **Account matching mistakes** (email-based merges): mitigate by using immutable `external_id` as primary key and making linking explicit/admin-mediated.
 - **Operational drift** (cleanup not actually running): mitigate by making retention observable (dashboard shows disk usage/oldest artifact age).
@@ -123,11 +123,11 @@ Skriptoteket is "production-ready for a real school environment": users authenti
 
 ## EPIC-06: Execution Scale and Security Hardening
 
-### Outcome EPIC-06
+### EPIC-06 Outcome
 
 Tool execution becomes robust under increased usage and stricter security needs: long-running runs don't require an interactive HTTP request, execution capabilities are governed by per-tool policy (network/secrets), and runner isolation reduces blast radius beyond the v0.1 docker.sock acceptance.
 
-### Proposed Stories EPIC-06
+### EPIC-06 Proposed Stories
 
 #### ST-06-01: Persistent Async Execution Queue (Supersede Cap+Reject Where Appropriate)
 
@@ -185,14 +185,14 @@ Tool execution becomes robust under increased usage and stricter security needs:
   - basic quotas/rate limits (per-user and per-tool) to prevent noisy-neighbor effects
 - This becomes important once a queue exists (otherwise users can DoS themselves unintentionally).
 
-### Dependencies and Risks EPIC-06
+### EPIC-06 Dependencies and Risks
 
-#### Dependencies EPIC-06
+#### EPIC-06 Dependencies
 
 - Runner contract stability (ADR-0015) and clear async/backpressure semantics (ADR-0016)
 - Artifact persistence and cleanup mechanism (ideally completed in EPIC-05)
 
-#### Risks EPIC-06
+#### EPIC-06 Risks
 
 - **Operational complexity increase**: queue + runner service introduces multi-process/multi-container deployment and more failure modes. Mitigation: keep interfaces narrow; ship with strong health checks and clear operator docs.
 - **Security risk amplification** if network/secrets are added without strict policy and audit: mitigate by making policies explicit, default-off, and requiring privileged approval.

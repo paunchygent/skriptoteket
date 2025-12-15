@@ -2,7 +2,7 @@
 type: story
 id: ST-04-02
 title: "Docker runner execution (Sibling Containers + Security)"
-status: in_progress
+status: done
 owners: "agents"
 created: 2025-12-14
 epic: "EPIC-04"
@@ -45,6 +45,36 @@ This story implements the execution infrastructure. It must support **sibling co
     - Safety caps for DB fields: `RUN_OUTPUT_MAX_STDOUT_BYTES`, `RUN_OUTPUT_MAX_STDERR_BYTES`, `RUN_OUTPUT_MAX_HTML_BYTES`
 - **Cleanup:**
   - Background task (or simple cron script) to prune `/var/lib/skriptoteket/artifacts/` > N days.
+
+### Defaults (this repo)
+
+- `ARTIFACTS_RETENTION_DAYS` defaults to **7 days** (MVP/homeserver-friendly).
+- Cleanup command (cron-friendly): `pdm run artifacts-prune`
+- Runner image dependencies follow **parity** with the app runtime dependencies in `pyproject.toml` (`[project].dependencies`).
+  - Changes require PR + rebuild/redeploy (no dynamic installs).
+
+### Compose & docker.sock (high-visibility security note)
+
+The sibling-container model requires the app container to access the Docker Engine API via `/var/run/docker.sock`
+(ADR-0013). This is powerful and expands the blast radius if the app is compromised.
+
+- **Dev:** `compose.dev.yaml` mounts `/var/run/docker.sock` and persists artifacts to `./.artifacts/`.
+- **Production/homeserver:** docker socket access is **opt-in** via `compose.runner.yaml`:
+
+```bash
+docker compose -f compose.yaml -f compose.runner.yaml up -d
+```
+
+- **Security:** Treat the `web` container as trusted infrastructure. Keep it off the public internet (LAN/VPN and/or a
+  reverse proxy with strong auth). The runner containers do **not** get socket access.
+
+### Runner image build
+
+Build the runner image with:
+
+```bash
+docker build -f Dockerfile.runner -t skriptoteket-runner:latest .
+```
 
 ## Transaction boundary (REQUIRED)
 
@@ -101,11 +131,18 @@ def run_tool(input_path: str, output_dir: str) -> str:
 
 Instead of host bind mounts, the app uses Docker Engine APIs via the Python Docker SDK:
 
-1. Create container (do not auto-remove; cleanup is explicit).
-2. Inject script + input file via Docker archive copy (`put_archive`) into `/work`.
-3. Start container.
-4. Wait for exit (enforce timeout; on timeout, kill container and mark run as `timed_out`).
-5. Capture stdout/stderr via container logs.
-6. Retrieve `/work/output` via Docker archive copy (`get_archive`), then write artifacts to
+1. Create a per-run Docker volume mounted at `/work` (rw).
+2. Create container (do not auto-remove; cleanup is explicit).
+3. Inject script + input file via Docker archive copy (`put_archive`) into `/work` (the volume).
+4. Start container.
+5. Wait for exit (enforce timeout; on timeout, kill container and mark run as `timed_out`).
+6. Capture stdout/stderr via container logs.
+7. Retrieve `/work/result.json` and `/work/output` via Docker archive copy (`get_archive`), then write artifacts to
    `/var/lib/skriptoteket/artifacts/{run_id}/...` and persist a manifest in the DB.
-7. Remove container (and any per-run volumes if used).
+8. Remove container and the per-run `/work` volume.
+
+### Note on `/work` tmpfs (Docker limitation)
+
+Some Docker engines do not support `get_archive`/`docker cp` for files stored on `tmpfs` mounts (observed as a 404
+even when `docker exec` can see the file). To keep the archive-copy I/O strategy, `/work` uses a per-run volume, while
+`/tmp` remains a tmpfs mount.

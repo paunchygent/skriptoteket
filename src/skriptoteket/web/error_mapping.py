@@ -12,6 +12,7 @@ ERROR_CODE_TO_STATUS: dict[ErrorCode, int] = {
     ErrorCode.SESSION_NOT_FOUND: 404,
     ErrorCode.CONFLICT: 409,
     ErrorCode.DUPLICATE_ENTRY: 409,
+    ErrorCode.SERVICE_UNAVAILABLE: 503,
 }
 
 

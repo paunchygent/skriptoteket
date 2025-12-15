@@ -32,3 +32,6 @@ requirements.txt
 
 # Claude Code artifacts
 .claude/repomix_packages/
+
+# Local artifacts (runner output)
+.artifacts/

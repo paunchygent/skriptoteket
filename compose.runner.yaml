@@ -1,0 +1,9 @@
+services:
+  web:
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - skriptoteket-artifacts:/var/lib/skriptoteket/artifacts
+
+volumes:
+  skriptoteket-artifacts:
+

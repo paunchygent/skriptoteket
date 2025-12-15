@@ -3,6 +3,11 @@ from __future__ import annotations
 from typing import Protocol
 from uuid import UUID
 
+from skriptoteket.application.scripting.commands import (
+    ExecuteToolVersionCommand,
+    ExecuteToolVersionResult,
+)
+from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.models import ToolRun, ToolVersion, VersionState
 
 
@@ -34,3 +39,12 @@ class ToolRunRepositoryProtocol(Protocol):
     async def create(self, *, run: ToolRun) -> ToolRun: ...
 
     async def update(self, *, run: ToolRun) -> ToolRun: ...
+
+
+class ExecuteToolVersionHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: ExecuteToolVersionCommand,
+    ) -> ExecuteToolVersionResult: ...
