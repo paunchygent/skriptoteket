@@ -1,18 +1,15 @@
 {% if versions %}
-  <ul style="list-style: none; padding: 0; margin: 0">
+  <div class="huleedu-version-items">
     {% for v in versions %}
-      <li style="padding: 10px 0; border-top: 1px solid #eee">
-        <div>
-          <a href="/admin/tool-versions/{{ v.id }}"><strong>#{{ v.version_number }}</strong></a>
-          <small class="muted">{{ v.state | version_state_label }}</small>
+      <a href="/admin/tool-versions/{{ v.id }}" class="huleedu-version-item {% if selected_version and v.id == selected_version.id %}huleedu-version-item-active{% endif %}">
+        <div class="huleedu-version-item-header">
+          <span class="huleedu-version-number">#{{ v.version_number }}</span>
+          <span class="huleedu-badge {% if v.state.value == 'active' %}huleedu-badge-burgundy{% endif %}">{{ v.state | version_state_label }}</span>
         </div>
-        <div class="muted" style="margin-top: 4px">
-          <small>{{ v.created_at }}</small><br />
-          <small>Av: {{ v.created_by_user_id }}</small>
-        </div>
-      </li>
+        <div class="huleedu-muted"><small>{{ v.created_at.strftime('%Y-%m-%d %H:%M') if v.created_at else '' }}</small></div>
+      </a>
     {% endfor %}
-  </ul>
+  </div>
 {% else %}
-  <p class="muted"><small>Inga versioner ännu.</small></p>
+  <p class="huleedu-muted"><small>Inga versioner ännu.</small></p>
 {% endif %}

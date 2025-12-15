@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-  <div class="card">
+  <div class="huleedu-card">
     <h2>Verktyg</h2>
 
     {% if updated %}
@@ -8,43 +8,40 @@
     {% endif %}
 
     {% if error %}
-      <p class="error">{{ error }}</p>
+      <p class="huleedu-error">{{ error }}</p>
     {% endif %}
 
     {% if tools %}
-      <ul style="list-style: none; padding: 0; margin: 0">
+      <div class="huleedu-tool-list">
         {% for tool in tools %}
-          <li style="padding: 14px 0; border-top: 1px solid #eee">
-            <div>
-              <strong>{{ tool.title }}</strong> <small>({{ tool.slug }})</small>
+          <div class="huleedu-tool-row">
+            <div class="huleedu-tool-info">
+              <strong>{{ tool.title }}</strong>
+              <span class="huleedu-muted">
+                {% if tool.is_published %}
+                  <span class="huleedu-dot huleedu-dot-success"></span> Publicerad
+                {% else %}
+                  Ej publicerad
+                {% endif %}
+              </span>
             </div>
-            <div style="margin-top: 6px">
-              <a href="/admin/tools/{{ tool.id }}">Öppna skripteditor</a>
-            </div>
-            <div style="margin-top: 6px">
-              <small>Publicerad: {{ "Ja" if tool.is_published else "Nej" }}</small><br />
-              <small>Aktiv version: {{ tool.active_version_id or "—" }}</small><br />
-            </div>
-
-            {% if tool.is_published %}
-              <form method="post" action="/admin/tools/{{ tool.id }}/depublish" style="margin-top: 10px">
-                <button type="submit">Avpublicera</button>
-              </form>
-            {% else %}
-              <form method="post" action="/admin/tools/{{ tool.id }}/publish" style="margin-top: 10px">
-                <button type="submit" {% if not tool.active_version_id %}disabled{% endif %}>
-                  Publicera
-                </button>
-              </form>
-              {% if not tool.active_version_id %}
-                <p style="margin-top: 6px"><small>Kan inte publicera: ingen aktiv version.</small></p>
+            <div class="huleedu-tool-actions">
+              <a href="/admin/tools/{{ tool.id }}" class="huleedu-btn huleedu-btn-navy huleedu-btn-sm">Redigera</a>
+              {% if tool.is_published %}
+                <form method="post" action="/admin/tools/{{ tool.id }}/depublish">
+                  <button type="submit" class="huleedu-btn huleedu-btn-secondary huleedu-btn-sm">Avpublicera</button>
+                </form>
+              {% else %}
+                <form method="post" action="/admin/tools/{{ tool.id }}/publish">
+                  <button type="submit" class="huleedu-btn huleedu-btn-sm" {% if not tool.active_version_id %}disabled title="Ingen aktiv version"{% endif %}>Publicera</button>
+                </form>
               {% endif %}
-            {% endif %}
-          </li>
+            </div>
+          </div>
         {% endfor %}
-      </ul>
+      </div>
     {% else %}
-      <p><small>Inga verktyg ännu.</small></p>
+      <p class="huleedu-muted">Inga verktyg ännu.</p>
     {% endif %}
   </div>
 {% endblock %}

@@ -5,8 +5,8 @@ from skriptoteket.domain.scripting.models import RunContext, RunStatus, VersionS
 
 _VERSION_STATE_LABELS: dict[str, str] = {
     VersionState.DRAFT.value: "Utkast",
-    VersionState.IN_REVIEW.value: "För granskning",
-    VersionState.ACTIVE.value: "Aktiv",
+    VersionState.IN_REVIEW.value: "Granskning",
+    VersionState.ACTIVE.value: "Publicerad",
     VersionState.ARCHIVED.value: "Arkiverad",
 }
 

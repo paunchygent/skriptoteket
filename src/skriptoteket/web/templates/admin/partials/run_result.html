@@ -1,8 +1,8 @@
-<div class="card stack">
-  <div class="muted">
-    <span class="pill">Körning: {{ run.status | run_status_label }}</span>
-    <span class="pill">ID: {{ run.id }}</span>
-    <span class="pill">Version: {{ run.version_id }}</span>
+<div class="huleedu-card huleedu-stack">
+  <div class="huleedu-muted">
+    <span class="huleedu-pill">Körning: {{ run.status | run_status_label }}</span>
+    <span class="huleedu-pill">ID: {{ run.id }}</span>
+    <span class="huleedu-pill">Version: {{ run.version_id }}</span>
   </div>
 
   {% if run.error_summary %}
@@ -14,7 +14,11 @@
 
   <div>
     <strong>HTML-förhandsvisning</strong>
-    <iframe class="preview" sandbox srcdoc="{{ (run.html_output or '') | e }}"></iframe>
+    <iframe
+      sandbox
+      srcdoc="{{ (run.html_output or '') | e }}"
+      style="width: 100%; min-height: 260px; border: var(--huleedu-border-width) solid var(--huleedu-navy); background-color: var(--huleedu-canvas);"
+    ></iframe>
   </div>
 
   <details>
@@ -26,19 +30,19 @@
     <pre>{{ run.stderr or "" }}</pre>
   </details>
 
-  <div>
+  <div class="huleedu-stack-sm">
     <strong>Artefakter</strong>
     {% if artifacts %}
-      <ul>
+      <ul class="huleedu-list">
         {% for a in artifacts %}
-          <li>
-            <a href="{{ a.download_url }}">{{ a.path }}</a>
-            <small class="muted">({{ a.bytes }} byte)</small>
+          <li class="huleedu-list-item">
+            <a href="{{ a.download_url }}" class="huleedu-link">{{ a.path }}</a>
+            <small class="huleedu-muted">({{ a.bytes }} byte)</small>
           </li>
         {% endfor %}
       </ul>
     {% else %}
-      <p class="muted"><small>Inga artefakter.</small></p>
+      <p class="huleedu-muted"><small>Inga artefakter.</small></p>
     {% endif %}
   </div>
 </div>

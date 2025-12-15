@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
-  <div class="card">
+  <div class="huleedu-card huleedu-max-w-md huleedu-mx-auto huleedu-text-center huleedu-stack-sm">
     <p>Inloggad som <strong>{{ user.email }}</strong> ({{ user.role }}).</p>
-    <p><a href="/browse">Öppna verktygskatalogen</a> (yrke → kategori → verktyg).</p>
+    <p><a href="/browse" class="huleedu-link">Öppna verktygskatalogen</a> (yrke → kategori → verktyg).</p>
   </div>
 {% endblock %}

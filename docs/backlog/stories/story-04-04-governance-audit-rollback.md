@@ -115,4 +115,4 @@ This story implements the governance layer. We follow ADR-0005: Admins manage th
    - `derived_from_version_id = in_review.id`
    - `created_by_user_id = in_review.created_by_user_id` (preserves contributor ownership rules)
    - store the request message in `change_summary` (until a dedicated reviewer-note field exists)
-- Future: emit domain events for external audit systems
+   - Future: emit domain events for external audit systems

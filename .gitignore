@@ -33,5 +33,10 @@ requirements.txt
 # Claude Code artifacts
 .claude/repomix_packages/
 
+# Node.js (puppeteer for visual testing)
+tools/puppeteer/node_modules/
+tools/puppeteer/package.json
+tools/puppeteer/package-lock.json
+
 # Local artifacts (runner output)
 .artifacts/

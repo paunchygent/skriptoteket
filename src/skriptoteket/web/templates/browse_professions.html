@@ -1,12 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
-  <div class="card">
+  <div class="huleedu-card">
     <h2>Välj yrke</h2>
-    <ul>
+    <ul class="huleedu-list">
       {% for profession in professions %}
-        <li><a href="/browse/{{ profession.slug }}">{{ profession.label }}</a></li>
+        <li class="huleedu-list-item"><a href="/browse/{{ profession.slug }}">{{ profession.label }}</a></li>
       {% endfor %}
     </ul>
   </div>
 {% endblock %}
-

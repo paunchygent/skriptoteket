@@ -14,46 +14,44 @@ Keep this file updated so the next session can pick up work quickly.
 
 - Date: 2025-12-15
 - Branch / commit: `main` (HEAD `cc78d48`, dirty working tree)
-- Goal of the session: Button/UI consistency audit across all templates - ensure uniform button behavior and sizing.
+- Goal of the session: Script editor layout redesign + button interaction fixes.
 
 ## What changed
 
-### Current session (EPIC-05 Review & Refinement)
+### Current session (Script Editor Layout Redesign)
 
-**Completed ST-05-06 (Toast + HTMX Loading)**:
-- Created `src/skriptoteket/web/templates/partials/toast.html` with OOB swap pattern
-- Added auto-dismiss JS to `base.html` (5 second delay, fade-out animation)
-- Spinner CSS already existed in `app.css` (`.huleedu-spinner`, `.htmx-indicator`)
+**Major Layout Redesign (`admin/script_editor.html`)**:
+- Reduced dead space by unifying panels:
+  - Combined code editor + test runner into single card with toolbar separator
+  - Unified sidebar: single card with section dividers instead of 5 stacked cards
+- Removed confusing "Standardvy" button - version switching now via clickable version items
+- Improved version list (`admin/partials/version_list.html`):
+  - Clickable version cards with active state highlighting
+  - Burgundy border + background for currently selected version
+- Fixed review buttons overflow: "Publicera" and "Begär ändringar" now stack vertically
 
-**Design Fixes & Refinements**:
-- Fixed button display bug: `.huleedu-list-item a` was overriding `.huleedu-btn` with `display: flex`
-  - Added specificity override in `app.css` lines 387-397 for both `.huleedu-btn` and `.huleedu-link`
-- Added header separator: vertical line between logo and nav (`.huleedu-header-separator`)
-  - Updated `base.html` lines 19-33 with separator span and `huleedu-flex-center` wrapper
-  - Added CSS in `app.css` lines 151-156
-- Restructured `admin_tools.html` from list to table layout (`.huleedu-table`)
-  - Columns: Verktyg, Status, Aktiv version, Actions
-  - Status dots for published/unpublished state
-- Fixed sticky hover on large CTA buttons:
-  - Large buttons (not `.huleedu-btn-sm`) no longer change color on hover
-  - Uses `opacity: 0.9` instead to avoid sticky hover state on touch devices
-  - Added CSS in `app.css` lines 179-191
-- Ensured consistent button sizing across templates:
-  - Upgraded action buttons in `admin/script_editor.html` (Save, Test, Submit, Publish, Request Changes) and "Öppna standardvy" to regular size (removed `huleedu-btn-sm`).
-  - Added `huleedu-min-w-32` to "Spara beslut" in `suggestions_review_detail.html`.
-  - Added `huleedu-w-full` to the login button in `login.html`.
-  - Added `huleedu-min-w-32` to the submit button in `suggestions_new.html`.
-  - Styled file input in `admin/script_editor.html` using a custom wrapper with a "fake" button and transparent native input overlay to ensure consistent "Välj fil" text and design system compliance (font, shadow).
+**Terminology Fix**:
+- Changed "Aktiv" → "Publicerad" for published versions (`ui_text.py`)
+- Updated header pills to show "Publicerad" / "Ej publicerad"
+- Burgundy badge for published versions in editor toolbar and version list
+
+**Button Interaction Fixes**:
+- Navy buttons (`.huleedu-btn-navy`) now use inset shadow on hover instead of burgundy color
+- Added explicit `color: var(--huleedu-canvas)` on hover to fix `<a>` elements
+- Added `:active` press effect to all CTA buttons (2px translateY + deeper shadow)
+
+**Puppeteer Login Documentation**:
+- Updated `.claude/skills/puppeteer-visual-testing/skill.md` with correct login pattern
+- Added Puppeteer section to `CLAUDE.md`
+- Key: use `form.submit()` + timeout, NOT `click()` + `waitForNavigation()` (HTMX issue)
 
 **Files Modified**:
-- `src/skriptoteket/web/static/css/app.css` (button fixes, header separator, CTA hover, custom file input styles)
-- `src/skriptoteket/web/templates/base.html` (header separator, toast auto-dismiss JS)
-- `src/skriptoteket/web/templates/admin_tools.html` (table layout)
-- `src/skriptoteket/web/templates/partials/toast.html` (NEW)
-- `src/skriptoteket/web/templates/admin/script_editor.html` (button sizing and file input styling)
-- `src/skriptoteket/web/templates/suggestions_review_detail.html` (button sizing)
-- `src/skriptoteket/web/templates/login.html` (button sizing)
-- `src/skriptoteket/web/templates/suggestions_new.html` (button sizing)
+- `src/skriptoteket/web/templates/admin/script_editor.html` (major layout restructure)
+- `src/skriptoteket/web/templates/admin/partials/version_list.html` (clickable version items)
+- `src/skriptoteket/web/static/css/app.css` (unified sidebar, toolbar, version items, button hover/active)
+- `src/skriptoteket/web/ui_text.py` ("Aktiv" → "Publicerad")
+- `.claude/skills/puppeteer-visual-testing/skill.md` (login pattern)
+- `CLAUDE.md` (Puppeteer section)
 - `docs/backlog/stories/story-05-06-htmx-enhancements.md` (status: done)
 
 ### Previous session (ST-04-04 QC)

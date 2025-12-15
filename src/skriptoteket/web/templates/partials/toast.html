@@ -1,0 +1,32 @@
+{#
+  Toast notification partial for OOB swap.
+
+  Usage in handler:
+    from skriptoteket.web.pages.admin_scripting_support import is_hx_request
+    if is_hx_request(request):
+        return templates.TemplateResponse(
+            "partials/toast.html",
+            {"request": request, "message": "Sparat!", "type": "success"}
+        )
+
+  Variables:
+    message (str): Toast message text
+    type (str): "success" or "error" (default: "success")
+#}
+<div id="toast-container" hx-swap-oob="beforeend:#toast-container">
+  <div class="huleedu-toast huleedu-toast-{{ type|default('success') }}"
+       role="alert"
+       aria-live="polite"
+       data-auto-dismiss="5000">
+    <span class="huleedu-toast-icon" aria-hidden="true">
+      {% if type == 'error' %}&#10005;{% else %}&#10003;{% endif %}
+    </span>
+    <span>{{ message }}</span>
+    <button type="button"
+            class="huleedu-toast-dismiss"
+            onclick="this.parentElement.remove()"
+            aria-label="Stäng">
+      &#215;
+    </button>
+  </div>
+</div>

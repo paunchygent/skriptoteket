@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
-  <div class="card">
-    <h2>Fel</h2>
-    <p class="error"><strong>{{ error_code }}</strong>: {{ message }}</p>
-    <p><a href="/">Till startsidan</a></p>
+  <div class="huleedu-card huleedu-max-w-md huleedu-mx-auto huleedu-text-center huleedu-stack">
+    <h2 class="huleedu-text-burgundy">Fel</h2>
+    <p class="huleedu-error"><strong>{{ error_code }}</strong>: {{ message }}</p>
+    <p><a href="/" class="huleedu-link">Till startsidan</a></p>
   </div>
 {% endblock %}

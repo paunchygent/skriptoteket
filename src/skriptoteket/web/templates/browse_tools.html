@@ -1,23 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
-  <div class="card">
-    <p><a href="/browse/{{ profession.slug }}">← Tillbaka till kategorier</a></p>
+  <div class="huleedu-card">
+    <p><a class="huleedu-link" href="/browse/{{ profession.slug }}">← Tillbaka till kategorier</a></p>
     <h2>{{ profession.label }} / {{ category.label }}</h2>
 
     {% if tools %}
-      <ul>
+      <ul class="huleedu-list">
         {% for tool in tools %}
-          <li>
-            <strong>{{ tool.title }}</strong>
-            {% if tool.summary %}
-              <div>{{ tool.summary }}</div>
-            {% endif %}
+          <li class="huleedu-list-item">
+            <div>
+              <strong>{{ tool.title }}</strong>
+              {% if tool.summary %}
+                <p class="huleedu-muted">{{ tool.summary }}</p>
+              {% endif %}
+            </div>
           </li>
         {% endfor %}
       </ul>
     {% else %}
-      <p>Inga verktyg ännu.</p>
+      <p class="huleedu-muted">Inga verktyg ännu.</p>
     {% endif %}
   </div>
 {% endblock %}
-

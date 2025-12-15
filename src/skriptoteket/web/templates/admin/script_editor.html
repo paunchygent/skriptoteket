@@ -4,117 +4,58 @@
   <link rel="stylesheet" href="/static/vendor/codemirror/codemirror.min.css" />
 {% endblock %}
 
+{% block main_class %}huleedu-main-fluid{% endblock %}
+
 {% block content %}
-  <div class="huleedu-card huleedu-stack">
-    <div>
-      <h2 style="margin: 0">Skripteditor</h2>
-      <div class="huleedu-muted">
-        <strong>{{ tool.title }}</strong> <small>({{ tool.slug }})</small>
+  <div class="huleedu-card huleedu-mb-4">
+    <div class="huleedu-flex-between">
+      <div>
+        <h2 style="margin: 0">Skripteditorn</h2>
+        <div class="huleedu-muted">
+          <strong>{{ tool.title }}</strong> <small>({{ tool.slug }})</small>
+        </div>
       </div>
-      <div class="huleedu-muted huleedu-mt-2">
-        <span class="huleedu-pill">Publicerad: {{ "Ja" if tool.is_published else "Nej" }}</span>
-        <span class="huleedu-pill">Aktiv version: {{ tool.active_version_id or "—" }}</span>
+      <div class="huleedu-text-right">
+        <div class="huleedu-pills" style="justify-content: flex-end;">
+          <span class="huleedu-pill">{{ "Publicerad" if tool.is_published else "Ej publicerad" }}</span>
+          {% if selected_version %}
+            <span class="huleedu-pill huleedu-pill-active">Redigerar v{{ selected_version.version_number }}</span>
+          {% else %}
+            <span class="huleedu-pill">Nytt utkast</span>
+          {% endif %}
+        </div>
       </div>
     </div>
 
     {% if error %}
-      <p class="huleedu-error">{{ error }}</p>
+      <p class="huleedu-error huleedu-mt-2">{{ error }}</p>
     {% endif %}
+  </div>
 
-    <div class="huleedu-editor-layout">
-      <div class="huleedu-card huleedu-stack">
-        <div class="huleedu-flex-between">
-          <strong>Versioner</strong>
-                      <button
-                      type="button"
-                      class="huleedu-btn huleedu-btn-secondary huleedu-btn-sm huleedu-min-w-32"            hx-get="/admin/tools/{{ tool.id }}/versions"
-            hx-target="#version-list"
-            hx-swap="innerHTML"
-          >
-            Uppdatera
-          </button>
-        </div>
-        <div id="version-list">
-          {% include "admin/partials/version_list.html" %}
-        </div>
-      </div>
+  <div class="huleedu-editor-layout">
 
-      <div class="huleedu-card huleedu-stack">
-        {% if user.role in ["admin", "superuser"] %}
-          <div class="huleedu-card-flat huleedu-stack">
-            <strong>Verktygsmetadata</strong>
-            <form method="post" action="/admin/tools/{{ tool.id }}/metadata" class="huleedu-stack">
-              <div>
-                <label for="tool_title" class="huleedu-label">Titel</label>
-                <input id="tool_title" name="title" value="{{ tool.title }}" required class="huleedu-input" />
-              </div>
-              <div>
-                <label for="tool_summary" class="huleedu-label">Sammanfattning</label>
-                <textarea id="tool_summary" name="summary" class="huleedu-input">{{ tool.summary or "" }}</textarea>
-              </div>
-              <button type="submit" class="huleedu-btn huleedu-btn-navy huleedu-btn-sm huleedu-min-w-32">Spara metadata</button>
-            </form>
-          </div>
-        {% endif %}
-
-        <div class="huleedu-muted">
-          {% if selected_version %}
-            <span class="huleedu-pill">Version {{ selected_version.version_number }}</span>
-            <span class="huleedu-pill">{{ selected_version.state | version_state_label }}</span>
-            <span class="huleedu-pill">ID: {{ selected_version.id }}</span>
-          {% else %}
-            <span class="huleedu-pill">Ingen sparad version ännu</span>
-          {% endif %}
-        </div>
-
-        <form
-          id="editor-form"
-          class="huleedu-stack"
-          method="post"
-          action="{{ save_action }}"
-        >
+    <!-- COLUMN 1: Code Editor, Test Runner & Results (Main) -->
+    <div class="huleedu-editor-main">
+      <!-- CODE EDITOR + TEST RUNNER (unified panel) -->
+      <div class="huleedu-card huleedu-editor-code-card">
+        <form id="editor-form" method="post" action="{{ save_action }}" class="huleedu-editor-form">
           {% if save_mode == "snapshot" %}
             <input type="hidden" name="expected_parent_version_id" value="{{ selected_version.id }}" />
           {% endif %}
           {% if derived_from_version_id %}
             <input type="hidden" name="derived_from_version_id" value="{{ derived_from_version_id }}" />
           {% endif %}
-          <div>
-            <label class="huleedu-label">Startfunktion</label>
-            <input name="entrypoint" value="{{ editor_entrypoint }}" class="huleedu-input" />
-          </div>
 
-          <div class="code-editor">
-            <label for="source_code" class="huleedu-label">Kod</label>
-            <textarea id="source_code" name="source_code" class="huleedu-input" style="min-height: 420px; font-family: var(--huleedu-font-mono);">{{ editor_source_code }}</textarea>
-          </div>
-
-          <div>
-            <label class="huleedu-label">Ändringssammanfattning (valfritt)</label>
-            <input name="change_summary" value="" class="huleedu-input" />
-          </div>
-
-          <div class="huleedu-flex huleedu-gap-4" style="flex-wrap: wrap">
-            <button type="submit" class="huleedu-btn huleedu-btn-navy huleedu-min-w-32">
-              {% if save_mode == "snapshot" %}
-                Spara (ny snapshot)
-              {% else %}
-                Skapa utkast
-              {% endif %}
-            </button>
-
-            {% if selected_version %}
-              <a href="/admin/tools/{{ tool.id }}" class="huleedu-btn huleedu-btn-secondary huleedu-min-w-32">Öppna standardvy</a>
-            {% endif %}
+          <label for="source_code" class="huleedu-label">Källkod</label>
+          <div class="huleedu-editor-textarea-wrapper">
+            <textarea id="source_code" name="source_code" class="huleedu-input huleedu-editor-textarea">{{ editor_source_code }}</textarea>
           </div>
         </form>
 
-        <hr style="border: none; border-top: 1px solid var(--huleedu-navy-20); margin: var(--huleedu-space-4) 0" />
-
-        <div class="huleedu-card-flat huleedu-stack">
-          <strong>Testkörning</strong>
+        <!-- Test runner toolbar (inside same card) -->
+        <div class="huleedu-editor-toolbar">
           {% if not selected_version %}
-            <p class="huleedu-muted"><small>Spara ett utkast innan du testkör.</small></p>
+            <span class="huleedu-muted">Spara ett utkast innan du testkör.</span>
           {% else %}
             <form
               id="run-form"
@@ -125,79 +66,114 @@
               hx-target="#run-result"
               hx-swap="innerHTML"
               hx-encoding="multipart/form-data"
-              class="huleedu-stack-sm"
+              class="huleedu-flex huleedu-gap-4"
+              style="flex: 1; align-items: center;"
             >
               <input type="hidden" name="tool_id" value="{{ tool.id }}" />
-              <div class="huleedu-form-group">
-                <label class="huleedu-label">Välj testfil</label>
-                <div class="huleedu-input huleedu-file-wrapper">
-                  <span class="huleedu-file-fake-button">Välj fil</span>
-                  <span id="file-name" class="huleedu-muted" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Ingen fil vald</span>
-                  <input type="file" name="file" class="huleedu-file-native"
-                         onchange="document.getElementById('file-name').textContent = this.files[0] ? this.files[0].name : 'Ingen fil vald'" />
-                </div>
+              <div class="huleedu-file-wrapper huleedu-input" style="flex: 1; max-width: 280px;">
+                <span class="huleedu-file-fake-button">Välj fil</span>
+                <span id="file-name" class="huleedu-muted" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Ingen fil vald</span>
+                <input type="file" name="file" class="huleedu-file-native"
+                       onchange="document.getElementById('file-name').textContent = this.files[0] ? this.files[0].name : 'Ingen fil vald'" />
               </div>
-              <button type="submit" class="huleedu-btn huleedu-btn-navy huleedu-min-w-32">Testkör</button>
+              <button type="submit" class="huleedu-btn huleedu-btn-navy">Testkör</button>
             </form>
+            <span class="huleedu-toolbar-version">
+              <span class="huleedu-badge">v{{ selected_version.version_number }}</span>
+              <span class="huleedu-badge {% if selected_version.state.value == 'active' %}huleedu-badge-burgundy{% endif %}">{{ selected_version.state | version_state_label }}</span>
+            </span>
           {% endif %}
         </div>
+      </div>
 
-        <div class="huleedu-card-flat huleedu-stack">
-          <strong>Skicka för granskning</strong>
-          {% if selected_version %}
-            <form
-              method="post"
-              action="/admin/tool-versions/{{ selected_version.id }}/submit-review"
-              class="huleedu-stack-sm"
-            >
+      <!-- RUN RESULTS -->
+      <div id="run-result">
+        {% if run %}
+          {% include "admin/partials/run_result.html" %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- COLUMN 2: Unified Sidebar -->
+    <div class="huleedu-editor-sidebar">
+      <div class="huleedu-card huleedu-sidebar-unified">
+
+        <!-- SAVE & DRAFT -->
+        <section class="huleedu-sidebar-section">
+          <strong class="huleedu-sidebar-heading">Redigering</strong>
+          <div class="huleedu-stack-sm">
+            <div>
+              <label class="huleedu-label">Startfunktion</label>
+              <input form="editor-form" name="entrypoint" value="{{ editor_entrypoint }}" class="huleedu-input" placeholder="main" />
+            </div>
+            <div>
+              <label class="huleedu-label">Ändringssammanfattning</label>
+              <input form="editor-form" name="change_summary" value="" class="huleedu-input" placeholder="T.ex. fixade bugg..." />
+            </div>
+            <button type="submit" form="editor-form" class="huleedu-btn huleedu-btn-navy huleedu-w-full">
+              {% if save_mode == "snapshot" %}Spara{% else %}Skapa utkast{% endif %}
+            </button>
+          </div>
+        </section>
+
+        <!-- REVIEW / PUBLISH -->
+        {% if selected_version %}
+          <section class="huleedu-sidebar-section">
+            <strong class="huleedu-sidebar-heading">Process</strong>
+            <form method="post" action="/admin/tool-versions/{{ selected_version.id }}/submit-review" class="huleedu-stack-sm">
               <div>
-                <label class="huleedu-label">Notis till granskare (valfritt)</label>
+                <label class="huleedu-label">Notis till granskare</label>
                 <input name="review_note" value="" class="huleedu-input" />
               </div>
-              <button type="submit" class="huleedu-btn huleedu-btn-navy huleedu-min-w-32">Skicka för granskning</button>
+              <button type="submit" class="huleedu-btn huleedu-btn-navy huleedu-w-full">Skicka för granskning</button>
             </form>
-          {% else %}
-            <p class="huleedu-muted"><small>Spara ett utkast först.</small></p>
-          {% endif %}
-        </div>
 
-        {% if selected_version and selected_version.state == "in_review" and user.role in ["admin", "superuser"] %}
-          <div class="huleedu-card-flat huleedu-stack">
-            <strong>Granska version</strong>
-
-            <form
-              method="post"
-              action="/admin/tool-versions/{{ selected_version.id }}/publish"
-              class="huleedu-stack-sm"
-            >
-              <div>
-                <label class="huleedu-label">Ändringssammanfattning (valfritt)</label>
-                <input name="change_summary" value="" class="huleedu-input" />
+            {% if selected_version.state == "in_review" and user.role in ["admin", "superuser"] %}
+              <div class="huleedu-stack-sm huleedu-mt-2">
+                <strong class="huleedu-label">Granskning</strong>
+                <form method="post" action="/admin/tool-versions/{{ selected_version.id }}/publish">
+                  <button type="submit" class="huleedu-btn huleedu-w-full">Publicera</button>
+                </form>
+                <form method="post" action="/admin/tool-versions/{{ selected_version.id }}/request-changes">
+                  <button type="submit" class="huleedu-btn huleedu-btn-secondary huleedu-w-full">Begär ändringar</button>
+                </form>
               </div>
-              <button type="submit" class="huleedu-btn huleedu-min-w-32">Publicera</button>
-            </form>
-
-            <form
-              method="post"
-              action="/admin/tool-versions/{{ selected_version.id }}/request-changes"
-              class="huleedu-stack-sm"
-            >
-              <div>
-                <label for="request_changes_message" class="huleedu-label">Meddelande (valfritt)</label>
-                <textarea id="request_changes_message" name="message" class="huleedu-input"></textarea>
-              </div>
-              <button type="submit" class="huleedu-btn huleedu-btn-secondary huleedu-min-w-32">Begär ändringar</button>
-            </form>
-          </div>
+            {% endif %}
+          </section>
         {% endif %}
 
-        <div id="run-result" class="huleedu-stack">
-          {% if run %}
-            {% include "admin/partials/run_result.html" %}
-          {% else %}
-            <p class="huleedu-muted"><small>Inga testresultat ännu.</small></p>
-          {% endif %}
-        </div>
+        <!-- VERSIONS LIST -->
+        <section class="huleedu-sidebar-section">
+          <div class="huleedu-flex-between huleedu-mb-2">
+            <strong class="huleedu-sidebar-heading">Historik</strong>
+            <button type="button" class="huleedu-btn huleedu-btn-secondary huleedu-btn-sm"
+                    hx-get="/admin/tools/{{ tool.id }}/versions" hx-target="#version-list" hx-swap="innerHTML">
+              Uppdatera
+            </button>
+          </div>
+          <div id="version-list" class="huleedu-version-list">
+            {% include "admin/partials/version_list.html" %}
+          </div>
+        </section>
+
+        <!-- METADATA -->
+        {% if user.role in ["admin", "superuser"] %}
+          <section class="huleedu-sidebar-section huleedu-sidebar-section-last">
+            <strong class="huleedu-sidebar-heading">Metadata</strong>
+            <form method="post" action="/admin/tools/{{ tool.id }}/metadata" class="huleedu-stack-sm">
+              <div>
+                <label for="tool_title" class="huleedu-label">Titel</label>
+                <input id="tool_title" name="title" value="{{ tool.title }}" required class="huleedu-input" />
+              </div>
+              <div>
+                <label for="tool_summary" class="huleedu-label">Sammanfattning</label>
+                <input id="tool_summary" name="summary" value="{{ tool.summary or '' }}" class="huleedu-input" />
+              </div>
+              <button type="submit" class="huleedu-btn huleedu-btn-navy huleedu-btn-sm">Spara metadata</button>
+            </form>
+          </section>
+        {% endif %}
+
       </div>
     </div>
   </div>
@@ -222,6 +198,9 @@
           indentUnit: 4,
           tabSize: 4,
         });
+
+        // Ensure editor fills flex container
+        editor.setSize("100%", "100%");
 
         function sync() {
           editor.save();

@@ -130,6 +130,7 @@ pre {
 }
 
 .huleedu-header-brand {
+  font-family: var(--huleedu-font-serif);
   font-weight: var(--huleedu-font-bold);
   font-size: var(--huleedu-text-lg);
   letter-spacing: var(--huleedu-tracking-tight);
@@ -167,6 +168,12 @@ pre {
   margin: 0 auto;
 }
 
+.huleedu-main-fluid {
+  padding: var(--huleedu-space-6);
+  max-width: none;
+  width: 100%;
+}
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    BUTTONS - EXTENDED
@@ -179,7 +186,9 @@ pre {
 }
 
 .huleedu-btn-navy:hover {
-  background-color: var(--huleedu-burgundy);
+  background-color: var(--huleedu-navy);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  color: var(--huleedu-canvas); /* Keep white text on hover (for <a> elements) */
 }
 
 /*
@@ -225,6 +234,17 @@ pre {
 
 .huleedu-btn-danger:hover {
   background-color: #b91c1c;
+}
+
+/* Active/pressed state for CTA buttons - clear press feedback */
+.huleedu-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.25);
+}
+
+.huleedu-btn-secondary:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 
@@ -683,8 +703,9 @@ textarea.huleedu-input {
 
 .huleedu-editor-layout {
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: 1fr 320px;
   gap: var(--huleedu-space-4);
+  align-items: start;
 }
 
 @media (max-width: 1024px) {
@@ -694,15 +715,148 @@ textarea.huleedu-input {
 }
 
 .huleedu-editor-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: var(--huleedu-space-4);
+  position: sticky;
+  top: var(--huleedu-space-4);
+}
+
+/* Unified sidebar card with sections */
+.huleedu-sidebar-unified {
+  padding: 0;
+}
+
+.huleedu-sidebar-section {
+  padding: var(--huleedu-space-4);
+  border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+}
+
+.huleedu-sidebar-section-last {
+  border-bottom: none;
+}
+
+.huleedu-sidebar-heading {
+  display: block;
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-60);
+  margin-bottom: var(--huleedu-space-3);
 }
 
 .huleedu-editor-main {
   display: flex;
   flex-direction: column;
-  gap: var(--huleedu-space-4);
+  gap: var(--huleedu-space-3);
+}
+
+/* Code editor card fills available space */
+.huleedu-editor-code-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.huleedu-editor-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--huleedu-space-4);
+  padding-bottom: 0;
+}
+
+.huleedu-editor-form .huleedu-label {
+  margin-bottom: var(--huleedu-space-2);
+}
+
+.huleedu-editor-textarea-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 350px;
+}
+
+.huleedu-editor-textarea {
+  flex: 1;
+  font-family: var(--huleedu-font-mono);
+  resize: none;
+}
+
+/* Editor toolbar (file input + run button + version indicator) */
+.huleedu-editor-toolbar {
+  display: flex;
+  align-items: center;
+  padding: var(--huleedu-space-3) var(--huleedu-space-4);
+  border-top: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+  background-color: var(--huleedu-navy-02);
+}
+
+.huleedu-toolbar-version {
+  display: flex;
+  gap: var(--huleedu-space-2);
+  margin-left: auto;
+}
+
+/* Version list - compact scrollable */
+.huleedu-version-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.huleedu-version-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--huleedu-space-1);
+}
+
+.huleedu-version-item {
+  display: block;
+  padding: var(--huleedu-space-2) var(--huleedu-space-3);
+  text-decoration: none;
+  color: inherit;
+  border: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+  transition: border-color var(--huleedu-duration-default) var(--huleedu-ease-default),
+              background-color var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.huleedu-version-item:hover {
+  border-color: var(--huleedu-navy);
+  background-color: var(--huleedu-navy-02);
+}
+
+.huleedu-version-item-active {
+  border-color: var(--huleedu-burgundy);
+  background-color: var(--huleedu-burgundy-05);
+}
+
+.huleedu-version-item-header {
+  display: flex;
+  align-items: center;
+  gap: var(--huleedu-space-2);
+}
+
+.huleedu-version-number {
+  font-weight: var(--huleedu-font-semibold);
+}
+
+/* 2-column grid for compact form layouts */
+.huleedu-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--huleedu-space-3);
+}
+
+@media (max-width: 400px) {
+  .huleedu-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Horizontal divider */
+.huleedu-divider {
+  border: none;
+  border-top: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+  margin: var(--huleedu-space-3) 0;
 }
 
 
