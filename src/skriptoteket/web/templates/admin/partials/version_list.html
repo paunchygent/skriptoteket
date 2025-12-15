@@ -1,0 +1,19 @@
+{% if versions %}
+  <ul style="list-style: none; padding: 0; margin: 0">
+    {% for v in versions %}
+      <li style="padding: 10px 0; border-top: 1px solid #eee">
+        <div>
+          <a href="/admin/tool-versions/{{ v.id }}"><strong>#{{ v.version_number }}</strong></a>
+          <small class="muted">{{ v.state }}</small>
+        </div>
+        <div class="muted" style="margin-top: 4px">
+          <small>{{ v.created_at }}</small><br />
+          <small>Av: {{ v.created_by_user_id }}</small>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="muted"><small>Inga versioner ännu.</small></p>
+{% endif %}
+

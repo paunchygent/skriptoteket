@@ -1,0 +1,45 @@
+<div class="card stack">
+  <div class="muted">
+    <span class="pill">Run: {{ run.status }}</span>
+    <span class="pill">ID: {{ run.id }}</span>
+    <span class="pill">Version: {{ run.version_id }}</span>
+  </div>
+
+  {% if run.error_summary %}
+    <div>
+      <strong>Fel</strong>
+      <pre>{{ run.error_summary }}</pre>
+    </div>
+  {% endif %}
+
+  <div>
+    <strong>HTML output (sandboxed preview)</strong>
+    <iframe class="preview" sandbox srcdoc="{{ (run.html_output or '') | e }}"></iframe>
+  </div>
+
+  <details>
+    <summary>stdout</summary>
+    <pre>{{ run.stdout or "" }}</pre>
+  </details>
+  <details>
+    <summary>stderr</summary>
+    <pre>{{ run.stderr or "" }}</pre>
+  </details>
+
+  <div>
+    <strong>Artifacts</strong>
+    {% if artifacts %}
+      <ul>
+        {% for a in artifacts %}
+          <li>
+            <a href="{{ a.download_url }}">{{ a.path }}</a>
+            <small class="muted">({{ a.bytes }} bytes)</small>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted"><small>Inga artifacts.</small></p>
+    {% endif %}
+  </div>
+</div>
+

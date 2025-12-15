@@ -65,10 +65,10 @@ def test_prune_artifacts_root_skips_files(tmp_path) -> None:
     assert file_path.exists()
 
 
-def test_prune_artifacts_root_with_negative_retention_raises_value_error() -> None:
+def test_prune_artifacts_root_with_negative_retention_raises_value_error(tmp_path) -> None:
     with pytest.raises(ValueError, match="retention_days must be >= 0"):
         prune_artifacts_root(
-            artifacts_root=None,  # Won't be used
+            artifacts_root=tmp_path,
             retention_days=-1,
             now=datetime.now(timezone.utc),
         )

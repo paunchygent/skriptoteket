@@ -6,7 +6,7 @@ from skriptoteket.application.scripting.commands import (
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.scripting.execution import ToolExecutionResult
+from skriptoteket.domain.scripting.execution import ArtifactsManifest, ToolExecutionResult
 from skriptoteket.domain.scripting.models import RunStatus, finish_tool_run, start_tool_run
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -17,6 +17,27 @@ from skriptoteket.protocols.scripting import (
     ToolVersionRepositoryProtocol,
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+
+
+def _format_syntax_error(exc: SyntaxError) -> str:
+    parts: list[str] = [f"SyntaxError: {exc.msg}"]
+
+    location_parts: list[str] = []
+    if exc.lineno is not None:
+        location_parts.append(f"line {exc.lineno}")
+    if exc.offset is not None:
+        location_parts.append(f"col {exc.offset}")
+    if location_parts:
+        parts[0] = f"{parts[0]} ({', '.join(location_parts)})"
+
+    if exc.text:
+        code_line = exc.text.rstrip("\n")
+        parts.append(code_line)
+        if exc.offset is not None:
+            caret_position = max(exc.offset - 1, 0)
+            parts.append(" " * caret_position + "^")
+
+    return "\n".join(parts)
 
 
 class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
@@ -78,12 +99,22 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         domain_error_to_raise: DomainError | None = None
 
         try:
+            compile(version.source_code, "<tool_version>", "exec")
             execution_result = await self._runner.execute(
                 run_id=run_id,
                 version=version,
                 context=command.context,
                 input_filename=command.input_filename,
                 input_bytes=command.input_bytes,
+            )
+        except SyntaxError as exc:
+            execution_result = ToolExecutionResult(
+                status=RunStatus.FAILED,
+                stdout="",
+                stderr="",
+                html_output="",
+                error_summary=_format_syntax_error(exc),
+                artifacts_manifest=ArtifactsManifest(artifacts=[]),
             )
         except DomainError as exc:
             domain_error_to_raise = exc

@@ -4,8 +4,16 @@ from typing import Protocol
 from uuid import UUID
 
 from skriptoteket.application.scripting.commands import (
+    CreateDraftVersionCommand,
+    CreateDraftVersionResult,
     ExecuteToolVersionCommand,
     ExecuteToolVersionResult,
+    RunSandboxCommand,
+    RunSandboxResult,
+    SaveDraftVersionCommand,
+    SaveDraftVersionResult,
+    SubmitForReviewCommand,
+    SubmitForReviewResult,
 )
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.models import ToolRun, ToolVersion, VersionState
@@ -48,3 +56,39 @@ class ExecuteToolVersionHandlerProtocol(Protocol):
         actor: User,
         command: ExecuteToolVersionCommand,
     ) -> ExecuteToolVersionResult: ...
+
+
+class CreateDraftVersionHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: CreateDraftVersionCommand,
+    ) -> CreateDraftVersionResult: ...
+
+
+class SaveDraftVersionHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: SaveDraftVersionCommand,
+    ) -> SaveDraftVersionResult: ...
+
+
+class SubmitForReviewHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: SubmitForReviewCommand,
+    ) -> SubmitForReviewResult: ...
+
+
+class RunSandboxHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: RunSandboxCommand,
+    ) -> RunSandboxResult: ...

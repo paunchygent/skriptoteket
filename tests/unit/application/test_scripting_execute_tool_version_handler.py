@@ -201,3 +201,62 @@ async def test_execute_tool_version_marks_failed_on_capacity_error(now: datetime
     updated_run = runs_repo.update.call_args.kwargs["run"]
     assert updated_run.status is RunStatus.FAILED
     assert updated_run.error_summary == "Runner is at capacity; retry."
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_execute_tool_version_marks_failed_on_syntax_error_and_skips_runner(
+    now: datetime,
+) -> None:
+    actor = make_user(user_id=uuid4())
+    tool_id = uuid4()
+    version = make_tool_version(tool_id=tool_id, now=now, state=VersionState.DRAFT).model_copy(
+        update={
+            "source_code": "def run_tool(input_path: str, output_dir: str) -> str\n"
+            "    return '<p>ok</p>'\n"
+        }
+    )
+    run_id = uuid4()
+
+    uow = FakeUow()
+    versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
+    versions_repo.get_by_id.return_value = version
+
+    runs_repo = AsyncMock(spec=ToolRunRepositoryProtocol)
+
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    id_generator.new_uuid.return_value = run_id
+
+    clock = Mock(spec=ClockProtocol)
+    clock.now.side_effect = [now, now]
+
+    runner = AsyncMock(spec=ToolRunnerProtocol)
+
+    handler = ExecuteToolVersionHandler(
+        uow=uow,
+        versions=versions_repo,
+        runs=runs_repo,
+        runner=runner,
+        clock=clock,
+        id_generator=id_generator,
+    )
+
+    result = await handler.handle(
+        actor=actor,
+        command=ExecuteToolVersionCommand(
+            tool_id=tool_id,
+            version_id=version.id,
+            context=RunContext.SANDBOX,
+            input_filename="input.txt",
+            input_bytes=b"data",
+        ),
+    )
+
+    assert result.run.status is RunStatus.FAILED
+    assert result.run.error_summary is not None
+    assert "SyntaxError" in result.run.error_summary
+    runner.execute.assert_not_awaited()
+    assert uow.enter_count == 2
+    assert uow.exit_count == 2
+    runs_repo.create.assert_awaited_once()
+    runs_repo.update.assert_awaited_once()

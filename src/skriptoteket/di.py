@@ -26,9 +26,15 @@ from skriptoteket.application.identity.handlers.logout import LogoutHandler
 from skriptoteket.application.identity.handlers.provision_local_user import (
     ProvisionLocalUserHandler,
 )
+from skriptoteket.application.scripting.handlers.create_draft_version import (
+    CreateDraftVersionHandler,
+)
 from skriptoteket.application.scripting.handlers.execute_tool_version import (
     ExecuteToolVersionHandler,
 )
+from skriptoteket.application.scripting.handlers.run_sandbox import RunSandboxHandler
+from skriptoteket.application.scripting.handlers.save_draft_version import SaveDraftVersionHandler
+from skriptoteket.application.scripting.handlers.submit_for_review import SubmitForReviewHandler
 from skriptoteket.application.suggestions.handlers.decide_suggestion import DecideSuggestionHandler
 from skriptoteket.application.suggestions.handlers.get_suggestion_for_review import (
     GetSuggestionForReviewHandler,
@@ -91,7 +97,11 @@ from skriptoteket.protocols.identity import (
 )
 from skriptoteket.protocols.runner import ArtifactManagerProtocol, ToolRunnerProtocol
 from skriptoteket.protocols.scripting import (
+    CreateDraftVersionHandlerProtocol,
     ExecuteToolVersionHandlerProtocol,
+    RunSandboxHandlerProtocol,
+    SaveDraftVersionHandlerProtocol,
+    SubmitForReviewHandlerProtocol,
     ToolRunRepositoryProtocol,
     ToolVersionRepositoryProtocol,
 )
@@ -236,6 +246,56 @@ class AppProvider(Provider):
             clock=clock,
             id_generator=id_generator,
         )
+
+    @provide(scope=Scope.REQUEST)
+    def create_draft_version_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> CreateDraftVersionHandlerProtocol:
+        return CreateDraftVersionHandler(
+            uow=uow,
+            tools=tools,
+            versions=versions,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def save_draft_version_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> SaveDraftVersionHandlerProtocol:
+        return SaveDraftVersionHandler(
+            uow=uow,
+            versions=versions,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def submit_for_review_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> SubmitForReviewHandlerProtocol:
+        return SubmitForReviewHandler(uow=uow, versions=versions, clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def run_sandbox_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        execute: ExecuteToolVersionHandlerProtocol,
+    ) -> RunSandboxHandlerProtocol:
+        return RunSandboxHandler(uow=uow, versions=versions, execute=execute)
 
     @provide(scope=Scope.REQUEST)
     def script_suggestion_repo(self, session: AsyncSession) -> SuggestionRepositoryProtocol:

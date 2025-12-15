@@ -1,5 +1,8 @@
+from pathlib import Path
+
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from skriptoteket.config import Settings
 from skriptoteket.di import create_container
@@ -17,6 +20,9 @@ def create_app() -> FastAPI:
     )
 
     app.middleware("http")(error_handler_middleware)
+
+    static_dir = Path(__file__).resolve().parent / "static"
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
     container = create_container(settings)
     setup_dishka(container, app)

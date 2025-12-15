@@ -200,6 +200,10 @@ Auth: User (own runs only)
 
 ## 2. Admin Editor Endpoints
 
+Note (v0.1 UI): Skriptoteket uses a server-rendered admin UI + HTMX. The `/admin/...` endpoints are implemented as
+HTML pages and HTML fragments (see `src/skriptoteket/web/pages/admin_scripting.py`). The JSON DTOs below document the
+logical shapes and are intended for a future `/api/v1` surface.
+
 ### 2.1 Load Tool Metadata
 
 ```http

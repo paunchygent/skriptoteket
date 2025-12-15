@@ -2,7 +2,7 @@
 type: story
 id: ST-04-03
 title: "Admin script editor UI (create, edit, run sandbox)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-14
 epic: "EPIC-04"
@@ -27,7 +27,9 @@ See REF-scripting-api-contracts for detailed endpoint specifications, request/re
   - `SaveDraftVersionHandler`
   - `RunSandboxHandler`
   - `SubmitForReviewHandler`
-- Web routes: `src/skriptoteket/web/pages/admin_scripting.py`
+- Web routes:
+  - `src/skriptoteket/web/pages/admin_scripting.py` (editor + draft routes)
+  - `src/skriptoteket/web/pages/admin_scripting_runs.py` (sandbox run + run refresh + artifact download)
   - Entry point: link from `GET /admin/tools` (ST-03-03) to the script editor
   - `GET /admin/tools/{tool_id}` - load tool metadata
   - `GET /admin/tools/{tool_id}/versions` - version history
@@ -46,7 +48,7 @@ See REF-scripting-api-contracts for detailed endpoint specifications, request/re
 
 ## UI Components
 
-- Code editor: textarea with syntax highlighting (CodeMirror or similar, server-rendered fallback)
+- Code editor: CodeMirror (server-rendered `<textarea>` fallback)
 - Entrypoint field: text input (default "run_tool")
 - File upload: input for sandbox test file
 - Run button: triggers sandbox execution
@@ -56,6 +58,9 @@ See REF-scripting-api-contracts for detailed endpoint specifications, request/re
 ## Technical Notes
 
 - HTMX for partial updates (run result, version list refresh)
+- Asset strategy: vendor pinned JS/CSS under `src/skriptoteket/web/static/vendor/` (no CDN at runtime).
+- Execution preflight: `compile(source_code, "<tool_version>", "exec")` before runner execute; on `SyntaxError`, persist
+  a FAILED run without calling Docker and with an actionable `error_summary`.
 - Concurrency control: use `expected_parent_version_id` (see `REF-scripting-api-contracts`) rather than DB-level
   optimistic locking; reject with `DomainError(CONFLICT)` if the draft head has advanced.
 - Role guards: contributor sees/edits own drafts only (ownership via `tool_versions.created_by_user_id`)

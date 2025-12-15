@@ -19,6 +19,9 @@
               <strong>{{ tool.title }}</strong> <small>({{ tool.slug }})</small>
             </div>
             <div style="margin-top: 6px">
+              <a href="/admin/tools/{{ tool.id }}">Öppna skripteditor</a>
+            </div>
+            <div style="margin-top: 6px">
               <small>Publicerad: {{ "Ja" if tool.is_published else "Nej" }}</small><br />
               <small>Aktiv version: {{ tool.active_version_id or "—" }}</small><br />
             </div>
@@ -45,4 +48,3 @@
     {% endif %}
   </div>
 {% endblock %}
-

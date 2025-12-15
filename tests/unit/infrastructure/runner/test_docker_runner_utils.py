@@ -15,7 +15,6 @@ from skriptoteket.infrastructure.runner.docker_runner import (
     _truncate_utf8_str,
 )
 
-
 # --- _sanitize_input_filename tests ---
 
 

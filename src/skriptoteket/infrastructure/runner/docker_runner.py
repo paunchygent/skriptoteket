@@ -5,6 +5,7 @@ import io
 import tarfile
 from dataclasses import dataclass
 from pathlib import PurePosixPath
+from typing import Any
 from uuid import UUID
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -168,9 +169,9 @@ class DockerToolRunner(ToolRunnerProtocol):
         input_filename: str,
         input_bytes: bytes,
     ) -> ToolExecutionResult:
-        import docker
-        from docker.errors import DockerException, NotFound
-        from requests.exceptions import ReadTimeout
+        import docker  # type: ignore[import-untyped]
+        from docker.errors import DockerException, NotFound  # type: ignore[import-untyped]
+        from requests.exceptions import ReadTimeout  # type: ignore[import-untyped]
 
         timeout_seconds = (
             self._sandbox_timeout_seconds
@@ -383,16 +384,14 @@ class DockerToolRunner(ToolRunnerProtocol):
     def _store_output_archive(
         self,
         *,
-        container: object,
+        container: Any,
         run_id: UUID,
         reported_artifacts: list[RunnerArtifact],
     ) -> ArtifactsManifest:
-        from docker.errors import DockerException, NotFound
-
-        container_typed = container  # docker.models.containers.Container at runtime
+        from docker.errors import DockerException, NotFound  # type: ignore[import-untyped]
 
         try:
-            tar_stream, _ = container_typed.get_archive(path="/work/output")
+            tar_stream, _ = container.get_archive(path="/work/output")
             return self._artifacts.store_output_archive(
                 run_id=run_id,
                 output_archive=tar_stream,
@@ -404,7 +403,7 @@ class DockerToolRunner(ToolRunnerProtocol):
     def _store_output_archive_safely(
         self,
         *,
-        container: object,
+        container: Any,
         run_id: UUID,
     ) -> ArtifactsManifest:
         try:
