@@ -1,0 +1,761 @@
+/**
+ * Skriptoteket Application Styles
+ * ================================
+ * Imports HuleEdu design tokens and adds application-specific extensions.
+ */
+
+@import url('huleedu-design-tokens.css');
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  font-family: var(--huleedu-font-sans);
+  font-size: var(--huleedu-text-base);
+  line-height: var(--huleedu-leading-normal);
+  color: var(--huleedu-navy);
+  background-color: var(--huleedu-canvas);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GRID BACKGROUND PATTERN
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(var(--huleedu-navy) 1px, transparent 1px),
+    linear-gradient(90deg, var(--huleedu-navy) 1px, transparent 1px);
+  background-size: var(--huleedu-grid-size) var(--huleedu-grid-size);
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: -1;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TYPOGRAPHY
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--huleedu-font-sans);
+  font-weight: var(--huleedu-font-bold);
+  color: var(--huleedu-navy);
+  margin: 0 0 var(--huleedu-space-4) 0;
+  line-height: var(--huleedu-leading-snug);
+}
+
+h1 { font-size: var(--huleedu-text-3xl); }
+h2 { font-size: var(--huleedu-text-2xl); }
+h3 { font-size: var(--huleedu-text-xl); }
+
+p {
+  margin: 0 0 var(--huleedu-space-4) 0;
+}
+
+a {
+  color: var(--huleedu-navy);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--huleedu-burgundy);
+}
+
+strong {
+  font-weight: var(--huleedu-font-semibold);
+}
+
+code {
+  font-family: var(--huleedu-font-mono);
+  font-size: var(--huleedu-text-sm);
+  background-color: var(--huleedu-navy-05);
+  padding: var(--huleedu-space-0-5) var(--huleedu-space-1);
+  border-radius: var(--huleedu-radius-sm);
+}
+
+pre {
+  font-family: var(--huleedu-font-mono);
+  font-size: var(--huleedu-text-sm);
+  background-color: var(--huleedu-navy-05);
+  padding: var(--huleedu-space-4);
+  overflow-x: auto;
+  border: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LAYOUT - FRAME & HEADER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.huleedu-frame {
+  background-color: var(--huleedu-canvas);
+}
+
+.huleedu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 var(--huleedu-space-5);
+}
+
+.huleedu-header a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.huleedu-header-brand {
+  font-weight: var(--huleedu-font-bold);
+  font-size: var(--huleedu-text-lg);
+  letter-spacing: var(--huleedu-tracking-tight);
+}
+
+.huleedu-header-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--huleedu-space-5);
+}
+
+.huleedu-header-nav a {
+  font-size: var(--huleedu-text-sm);
+  font-weight: var(--huleedu-font-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-70);
+  transition: color var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.huleedu-header-nav a:hover {
+  color: var(--huleedu-burgundy);
+}
+
+.huleedu-main {
+  padding: var(--huleedu-space-6);
+  max-width: var(--huleedu-max-width-6xl);
+  margin: 0 auto;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BUTTONS - EXTENDED
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Navy filled button (functional actions: LOGGA IN, SPARA, SKICKA) */
+.huleedu-btn-navy {
+  background-color: var(--huleedu-navy);
+  color: var(--huleedu-canvas);
+}
+
+.huleedu-btn-navy:hover {
+  background-color: var(--huleedu-burgundy);
+}
+
+/* Small button variant */
+.huleedu-btn-sm {
+  padding: var(--huleedu-space-2) var(--huleedu-space-4);
+  font-size: var(--huleedu-text-xs);
+}
+
+/* Button with icon */
+.huleedu-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--huleedu-space-2);
+}
+
+/* Danger button for destructive actions */
+.huleedu-btn-danger {
+  background-color: var(--huleedu-error);
+  color: white;
+}
+
+.huleedu-btn-danger:hover {
+  background-color: #b91c1c;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FORMS - EXTENDED
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.huleedu-form-group {
+  margin-bottom: var(--huleedu-space-4);
+}
+
+.huleedu-form-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Textarea inherits input styling */
+textarea.huleedu-input {
+  min-height: 160px;
+  resize: vertical;
+}
+
+/* Checkbox and radio groups */
+.huleedu-checkbox-group,
+.huleedu-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--huleedu-space-3);
+}
+
+.huleedu-checkbox-item,
+.huleedu-radio-item {
+  display: flex;
+  align-items: center;
+  gap: var(--huleedu-space-2);
+}
+
+.huleedu-checkbox-item input[type="checkbox"],
+.huleedu-radio-item input[type="radio"] {
+  width: auto;
+  margin: 0;
+  accent-color: var(--huleedu-burgundy);
+}
+
+.huleedu-checkbox-item label,
+.huleedu-radio-item label {
+  font-size: var(--huleedu-text-sm);
+  cursor: pointer;
+}
+
+/* Fieldset styling */
+.huleedu-fieldset {
+  border: none;
+  padding: 0;
+  margin: 0 0 var(--huleedu-space-4) 0;
+}
+
+.huleedu-fieldset legend {
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-60);
+  margin-bottom: var(--huleedu-space-2);
+  padding: 0;
+}
+
+/* Error state for inputs */
+.huleedu-input-error {
+  border-color: var(--huleedu-burgundy);
+}
+
+.huleedu-input-error:focus {
+  border-color: var(--huleedu-burgundy);
+  box-shadow: 0 0 0 1px var(--huleedu-burgundy);
+}
+
+/* Error message text */
+.huleedu-error {
+  color: var(--huleedu-burgundy);
+  font-size: var(--huleedu-text-sm);
+  margin-top: var(--huleedu-space-1);
+}
+
+/* Muted/helper text */
+.huleedu-muted {
+  color: var(--huleedu-navy-60);
+  font-size: var(--huleedu-text-sm);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CARDS - EXTENDED
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Card without shadow (for nested contexts) */
+.huleedu-card-flat {
+  background-color: #fff;
+  border: var(--huleedu-border-width) solid var(--huleedu-border-color);
+  padding: var(--huleedu-space-4);
+  box-shadow: none;
+}
+
+/* Card header */
+.huleedu-card-header {
+  border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+  padding-bottom: var(--huleedu-space-4);
+  margin-bottom: var(--huleedu-space-4);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STATUS BADGES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.huleedu-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--huleedu-space-1-5);
+  padding: var(--huleedu-space-1) var(--huleedu-space-2);
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--huleedu-tracking-label);
+  border: var(--huleedu-border-width) solid var(--huleedu-navy-30);
+  background-color: var(--huleedu-canvas);
+  color: var(--huleedu-navy);
+}
+
+.huleedu-badge-burgundy {
+  border-color: var(--huleedu-burgundy);
+  color: var(--huleedu-burgundy);
+}
+
+.huleedu-badge-navy {
+  border-color: var(--huleedu-navy);
+  background-color: var(--huleedu-navy);
+  color: var(--huleedu-canvas);
+}
+
+/* Inline status dot */
+.huleedu-dot {
+  display: inline-block;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LISTS & ROWS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.huleedu-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.huleedu-list-item {
+  padding: var(--huleedu-space-4);
+  border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+  transition: background-color var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.huleedu-list-item:last-child {
+  border-bottom: none;
+}
+
+.huleedu-list-item:hover {
+  background-color: var(--huleedu-navy-02);
+}
+
+.huleedu-list-item a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+.huleedu-list-item a::after {
+  content: '\2192'; /* Right arrow */
+  color: var(--huleedu-navy-40);
+  transition: color var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.huleedu-list-item:hover a::after {
+  color: var(--huleedu-burgundy);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TABLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.huleedu-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.huleedu-table th {
+  text-align: left;
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-60);
+  padding: var(--huleedu-space-3) var(--huleedu-space-4);
+  border-bottom: var(--huleedu-border-width-2) solid var(--huleedu-navy);
+}
+
+.huleedu-table td {
+  padding: var(--huleedu-space-3) var(--huleedu-space-4);
+  border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+}
+
+.huleedu-table tbody tr:hover {
+  background-color: var(--huleedu-navy-02);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HTMX LOADING STATES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* General loading state for HTMX requests */
+.htmx-request {
+  opacity: 0.6;
+  pointer-events: none;
+  transition: opacity var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+/* Loading indicator (hidden by default, shown during requests) */
+.htmx-indicator {
+  display: none;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+  display: inline-block;
+}
+
+/* Spinner animation */
+.huleedu-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--huleedu-navy-20);
+  border-top-color: var(--huleedu-navy);
+  border-radius: var(--huleedu-radius-full);
+  animation: huleedu-spin 0.6s linear infinite;
+}
+
+.huleedu-spinner-sm {
+  width: 12px;
+  height: 12px;
+  border-width: 1.5px;
+}
+
+.huleedu-spinner-light {
+  border-color: var(--huleedu-canvas-30);
+  border-top-color: var(--huleedu-canvas);
+}
+
+@keyframes huleedu-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Button loading state */
+.huleedu-btn.htmx-request {
+  opacity: 0.7;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOAST NOTIFICATIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.huleedu-toast-container {
+  position: fixed;
+  top: var(--huleedu-space-4);
+  right: var(--huleedu-space-4);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: var(--huleedu-space-2);
+}
+
+@media (min-width: 768px) {
+  .huleedu-toast-container {
+    top: calc(var(--huleedu-space-4) + var(--huleedu-space-4)); /* Account for frame margin */
+    right: calc(var(--huleedu-space-4) + var(--huleedu-space-4));
+  }
+}
+
+.huleedu-toast {
+  display: flex;
+  align-items: center;
+  gap: var(--huleedu-space-3);
+  padding: var(--huleedu-space-4) var(--huleedu-space-5);
+  font-size: var(--huleedu-text-sm);
+  font-weight: var(--huleedu-font-medium);
+  box-shadow: var(--huleedu-shadow-brutal-sm);
+  animation: huleedu-toast-slide-in 0.3s var(--huleedu-ease-out);
+}
+
+.huleedu-toast-success {
+  background-color: var(--huleedu-navy);
+  color: var(--huleedu-canvas);
+}
+
+.huleedu-toast-error {
+  background-color: var(--huleedu-burgundy);
+  color: var(--huleedu-canvas);
+}
+
+.huleedu-toast-icon {
+  flex-shrink: 0;
+}
+
+.huleedu-toast-dismiss {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+  padding: var(--huleedu-space-1);
+}
+
+.huleedu-toast-dismiss:hover {
+  opacity: 1;
+}
+
+@keyframes huleedu-toast-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Toast auto-dismiss fade out */
+.huleedu-toast-dismiss-out {
+  animation: huleedu-toast-fade-out 0.3s var(--huleedu-ease-in) forwards;
+}
+
+@keyframes huleedu-toast-fade-out {
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CODEMIRROR THEME OVERRIDES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.CodeMirror {
+  font-family: var(--huleedu-font-mono) !important;
+  font-size: var(--huleedu-text-sm) !important;
+  background-color: var(--huleedu-canvas) !important;
+  border: var(--huleedu-border-width) solid var(--huleedu-navy) !important;
+  color: var(--huleedu-navy) !important;
+}
+
+.CodeMirror-gutters {
+  background-color: var(--huleedu-navy-05) !important;
+  border-right: var(--huleedu-border-width) solid var(--huleedu-navy-20) !important;
+}
+
+.CodeMirror-linenumber {
+  color: var(--huleedu-navy-40) !important;
+}
+
+.CodeMirror-cursor {
+  border-left-color: var(--huleedu-burgundy) !important;
+}
+
+.CodeMirror-selected {
+  background-color: var(--huleedu-burgundy-10) !important;
+}
+
+.CodeMirror-focused .CodeMirror-selected {
+  background-color: var(--huleedu-burgundy-20) !important;
+}
+
+/* Syntax highlighting colors */
+.cm-keyword { color: var(--huleedu-burgundy) !important; }
+.cm-def { color: var(--huleedu-navy) !important; font-weight: var(--huleedu-font-semibold) !important; }
+.cm-variable { color: var(--huleedu-navy) !important; }
+.cm-string { color: #059669 !important; } /* emerald-600 */
+.cm-number { color: #7c3aed !important; } /* violet-600 */
+.cm-comment { color: var(--huleedu-navy-40) !important; font-style: italic !important; }
+.cm-builtin { color: var(--huleedu-burgundy) !important; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCRIPT EDITOR LAYOUT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.huleedu-editor-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: var(--huleedu-space-4);
+}
+
+@media (max-width: 1024px) {
+  .huleedu-editor-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.huleedu-editor-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--huleedu-space-4);
+}
+
+.huleedu-editor-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--huleedu-space-4);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PILLS (Version/Status Tags)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.huleedu-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--huleedu-space-1);
+}
+
+.huleedu-pill {
+  display: inline-block;
+  padding: var(--huleedu-space-0-5) var(--huleedu-space-2);
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-medium);
+  background-color: var(--huleedu-navy-05);
+  color: var(--huleedu-navy-70);
+  border-radius: var(--huleedu-radius-sm);
+}
+
+.huleedu-pill-active {
+  background-color: var(--huleedu-burgundy);
+  color: var(--huleedu-canvas);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TABS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.huleedu-tabs {
+  display: flex;
+  border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy);
+}
+
+.huleedu-tab {
+  padding: var(--huleedu-space-3) var(--huleedu-space-5);
+  font-size: var(--huleedu-text-sm);
+  font-weight: var(--huleedu-font-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-60);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  transition: color var(--huleedu-duration-default) var(--huleedu-ease-default),
+              border-color var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.huleedu-tab:hover {
+  color: var(--huleedu-navy);
+}
+
+.huleedu-tab-active {
+  color: var(--huleedu-burgundy);
+  border-bottom-color: var(--huleedu-burgundy);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UTILITY CLASSES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Stack spacing */
+.huleedu-stack > * + * {
+  margin-top: var(--huleedu-space-4);
+}
+
+.huleedu-stack-sm > * + * {
+  margin-top: var(--huleedu-space-2);
+}
+
+/* Flex utilities */
+.huleedu-flex {
+  display: flex;
+}
+
+.huleedu-flex-center {
+  display: flex;
+  align-items: center;
+}
+
+.huleedu-flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.huleedu-gap-2 { gap: var(--huleedu-space-2); }
+.huleedu-gap-4 { gap: var(--huleedu-space-4); }
+
+/* Margins */
+.huleedu-mt-2 { margin-top: var(--huleedu-space-2); }
+.huleedu-mt-4 { margin-top: var(--huleedu-space-4); }
+.huleedu-mb-2 { margin-bottom: var(--huleedu-space-2); }
+.huleedu-mb-4 { margin-bottom: var(--huleedu-space-4); }
+
+/* Text alignment */
+.huleedu-text-center { text-align: center; }
+.huleedu-text-right { text-align: right; }
+
+/* Max widths for centered content */
+.huleedu-max-w-md { max-width: var(--huleedu-max-width-md); }
+.huleedu-max-w-lg { max-width: var(--huleedu-max-width-lg); }
+.huleedu-max-w-xl { max-width: var(--huleedu-max-width-xl); }
+
+.huleedu-mx-auto { margin-left: auto; margin-right: auto; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCESSIBILITY
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Visible focus states */
+:focus-visible {
+  outline: 2px solid var(--huleedu-navy);
+  outline-offset: 2px;
+}
+
+/* Screen reader only */
+.huleedu-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

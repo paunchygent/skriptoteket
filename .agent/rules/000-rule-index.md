@@ -19,6 +19,7 @@ scope: "all"
 ## Implementation Standards
 - [040-fastapi-blueprint.md](040-fastapi-blueprint.md): HTTP service patterns, routers, validation
 - [042-async-di-patterns.md](042-async-di-patterns.md): Protocols, Dishka DI, async patterns
+- [045-huleedu-design-system.md](045-huleedu-design-system.md): HuleEdu design tokens, button hierarchy, components
 - [048-error-handling.md](048-error-handling.md): Structured errors, correlation IDs
 - [050-python-standards.md](050-python-standards.md): Style, typing, formatting, file limits
 - [053-sqlalchemy-patterns.md](053-sqlalchemy-patterns.md): Repository pattern, session management
