@@ -1,0 +1,62 @@
+# syntax=docker/dockerfile:1
+
+FROM python:3.13-slim AS builder
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PDM_CHECK_UPDATE=false
+
+WORKDIR /app
+
+# Mirror the main app runtime deps (parity): tool scripts may import the same curated libs.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pandoc \
+    libcairo2 \
+    libgdk-pixbuf-2.0-0 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libpangoft2-1.0-0 \
+    shared-mime-info \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir pdm==2.26.2
+
+COPY pyproject.toml pdm.lock ./
+RUN pdm config python.use_venv false \
+    && pdm install --frozen-lockfile --prod --no-editable --no-self
+
+
+FROM python:3.13-slim AS runner
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PDM_CHECK_UPDATE=false
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pandoc \
+    libcairo2 \
+    libgdk-pixbuf-2.0-0 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libpangoft2-1.0-0 \
+    shared-mime-info \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir pdm==2.26.2
+
+COPY --from=builder /app/__pypackages__ /app/__pypackages__
+COPY pyproject.toml pdm.lock ./
+
+COPY runner/_runner.py /runner/_runner.py
+
+RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin runner \
+    && mkdir -p /work /tmp \
+    && chmod 1777 /work /tmp
+
+USER runner
+WORKDIR /work
+
+CMD ["pdm", "run", "python", "/runner/_runner.py"]
+

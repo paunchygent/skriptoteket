@@ -2,7 +2,7 @@
 type: story
 id: ST-04-02
 title: "Docker runner execution (Sibling Containers + Security)"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2025-12-14
 epic: "EPIC-04"
