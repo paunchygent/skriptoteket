@@ -13,12 +13,48 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-15
-- Branch / commit: `main` (HEAD `aa12789`, dirty working tree)
-- Goal of the session: Konsolidera och kvalitetssäkra ST-04-04-flöden (publish + begär ändringar) + test/regression för Katalog-metadata och svensk admin-editor copy.
+- Branch / commit: `main` (HEAD `cc78d48`, dirty working tree)
+- Goal of the session: Button/UI consistency audit across all templates - ensure uniform button behavior and sizing.
 
 ## What changed
 
-### Current session (ST-04-04 QC)
+### Current session (EPIC-05 Review & Refinement)
+
+**Completed ST-05-06 (Toast + HTMX Loading)**:
+- Created `src/skriptoteket/web/templates/partials/toast.html` with OOB swap pattern
+- Added auto-dismiss JS to `base.html` (5 second delay, fade-out animation)
+- Spinner CSS already existed in `app.css` (`.huleedu-spinner`, `.htmx-indicator`)
+
+**Design Fixes & Refinements**:
+- Fixed button display bug: `.huleedu-list-item a` was overriding `.huleedu-btn` with `display: flex`
+  - Added specificity override in `app.css` lines 387-397 for both `.huleedu-btn` and `.huleedu-link`
+- Added header separator: vertical line between logo and nav (`.huleedu-header-separator`)
+  - Updated `base.html` lines 19-33 with separator span and `huleedu-flex-center` wrapper
+  - Added CSS in `app.css` lines 151-156
+- Restructured `admin_tools.html` from list to table layout (`.huleedu-table`)
+  - Columns: Verktyg, Status, Aktiv version, Actions
+  - Status dots for published/unpublished state
+- Fixed sticky hover on large CTA buttons:
+  - Large buttons (not `.huleedu-btn-sm`) no longer change color on hover
+  - Uses `opacity: 0.9` instead to avoid sticky hover state on touch devices
+  - Added CSS in `app.css` lines 179-191
+- Ensured consistent button sizing across templates:
+  - Added `huleedu-min-w-32` to action buttons in `admin/script_editor.html` and `suggestions_review_detail.html`.
+  - Added `huleedu-w-full` to the login button in `login.html`.
+  - Added `huleedu-min-w-32` to the submit button in `suggestions_new.html`.
+
+**Files Modified**:
+- `src/skriptoteket/web/static/css/app.css` (button fixes, header separator, CTA hover)
+- `src/skriptoteket/web/templates/base.html` (header separator, toast auto-dismiss JS)
+- `src/skriptoteket/web/templates/admin_tools.html` (table layout)
+- `src/skriptoteket/web/templates/partials/toast.html` (NEW)
+- `src/skriptoteket/web/templates/admin/script_editor.html` (button sizing)
+- `src/skriptoteket/web/templates/suggestions_review_detail.html` (button sizing)
+- `src/skriptoteket/web/templates/login.html` (button sizing)
+- `src/skriptoteket/web/templates/suggestions_new.html` (button sizing)
+- `docs/backlog/stories/story-05-06-htmx-enhancements.md` (status: done)
+
+### Previous session (ST-04-04 QC)
 
 - Katalog-metadata (titel/sammanfattning) separerat från skript-källkod + enkel admin-UI för uppdatering:
   - `src/skriptoteket/application/catalog/commands.py` (`UpdateToolMetadataCommand/Result`)
@@ -40,15 +76,41 @@ Keep this file updated so the next session can pick up work quickly.
 - Tests:
   - `tests/integration/web/test_admin_tool_metadata_routes.py` (regression: Katalog visar tool-metadata, inte kod)
 
-### EPIC-05: HuleEdu Design System Harmonization (NEW)
+### EPIC-05: HuleEdu Design System Harmonization (IN PROGRESS)
 
-- `docs/adr/adr-0017-huleedu-design-system-adoption.md` (proposed) - decision to adopt HuleEdu design tokens
-- `docs/backlog/epics/epic-05-huleedu-design-harmonization.md` (proposed) - epic with 6 stories for template migration
-- `docs/reference/reports/ref-htmx-ux-enhancement-plan.md` - updated CSS section to use HuleEdu tokens (replaces generic blue design system)
-- `src/skriptoteket/web/static/css/huleedu-design-tokens.css` - full HuleEdu design tokens (colors, typography, spacing, shadows)
-- `src/skriptoteket/web/static/css/app.css` - application CSS importing tokens + Skriptoteket extensions
+- **Completed ST-05-01 (CSS/base template)**:
+  - `src/skriptoteket/web/templates/base.html` updated with:
+    - `hx-boost="true"` for global SPA-like navigation
+    - Linked `/static/css/app.css` (HuleEdu tokens + app extensions)
+    - Google Fonts preconnects (IBM Plex family)
+    - HuleEdu layout structure (`.huleedu-frame`, `.huleedu-header`, `.huleedu-main`)
+    - Toast container (`#toast-container`)
+  - `src/skriptoteket/web/static/css/huleedu-design-tokens.css` - full design tokens
+  - `src/skriptoteket/web/static/css/app.css` - application CSS
 
-### Previous session (ST-04-04)
+- **Completed ST-05-02 (Simple template migration)**:
+  - `src/skriptoteket/web/templates/login.html` converted to HuleEdu card, input, and button classes.
+  - `src/skriptoteket/web/templates/home.html` converted to HuleEdu card and link classes.
+  - `src/skriptoteket/web/templates/error.html` converted to HuleEdu styling with burgundy accent.
+
+- **Completed ST-05-03 (Browse template migration)**:
+  - `src/skriptoteket/web/templates/browse_professions.html` converted to `huleedu-card`, `huleedu-list`, `huleedu-list-item`.
+  - `src/skriptoteket/web/templates/browse_categories.html` converted with `huleedu-link` for back navigation.
+  - `src/skriptoteket/web/templates/browse_tools.html` converted with `huleedu-muted` for summaries and empty state.
+
+- **Completed ST-05-04 (Suggestion template migration)**:
+  - `src/skriptoteket/web/templates/suggestions_new.html` converted with `huleedu-checkbox-group`, `huleedu-form-group`, proper label/input classes.
+  - `src/skriptoteket/web/templates/suggestions_review_queue.html` converted with status dots (`huleedu-dot-active`/`huleedu-dot-success`), `huleedu-list-item`.
+  - `src/skriptoteket/web/templates/suggestions_review_detail.html` converted with `huleedu-radio-group`, `huleedu-checkbox-group`, form styling.
+
+- **Completed ST-05-05 (Admin template migration)**:
+  - `src/skriptoteket/web/templates/admin_tools.html` converted with `huleedu-list-item`, button hierarchy (Publicera=burgundy CTA, Avpublicera=secondary), "Öppna skripteditor" changed from link to navy button.
+  - `src/skriptoteket/web/templates/admin/script_editor.html` removed inline `<style>` block, uses `huleedu-editor-layout`, `huleedu-pill`, `huleedu-card-flat` for nested sections.
+  - `src/skriptoteket/web/templates/admin/partials/version_list.html` converted with `huleedu-list`, `huleedu-badge` for state labels.
+  - `src/skriptoteket/web/templates/admin/partials/run_result.html` converted with `huleedu-card` (brutal shadow), `huleedu-pill` for status.
+  - `src/skriptoteket/web/static/css/app.css` added `huleedu-min-w-32` utility for consistent button widths.
+
+### Previous session (ST-04-04 QC)
 
 - ST-04-04 docs status updates:
   - `docs/adr/adr-0014-versioning-and-single-active.md` (implementation status)
@@ -131,16 +193,33 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Next steps (recommended order)
 
-### EPIC-05: HuleEdu Design System (frontend specialist)
+### EPIC-05: Button/UI Consistency Audit (IN PROGRESS)
 
-1. **ST-05-01**: Update `base.html` with Google Fonts, CSS link, ledger frame, toast container, `hx-boost`
-2. **ST-05-02**: Migrate simple templates (`login.html`, `home.html`, `error.html`)
-3. **ST-05-03**: Migrate browse templates (`browse_professions.html`, `browse_categories.html`, `browse_tools.html`)
-4. **ST-05-04**: Migrate suggestion templates
-5. **ST-05-05**: Migrate admin templates (most complex: `script_editor.html`)
-6. **ST-05-06**: Add toast partial and HTMX loading enhancements
+**Status**: Stories ST-05-01 through ST-05-06 complete. Refinement pass needed for button consistency.
 
-See `docs/backlog/epics/epic-05-huleedu-design-harmonization.md` for acceptance criteria.
+**Remaining work**:
+1. Audit ALL 15 templates for button class consistency (COMPLETED)
+2. Ensure uniform `min-width` on action buttons in rows (COMPLETED)
+3. Verify header "Logga ut" stays fixed on resize (VERIFIED - flex-shrink: 0 is correct)
+4. Verify `suggestions_review_queue.html` matches `admin_tools.html` pattern (VERIFIED - uses huleedu-tool-list)
+
+**Templates to audit** (in priority order):
+- [X] `base.html` - header logout button
+- [X] `admin_tools.html` - action buttons (partially fixed)
+- [X] `suggestions_review_queue.html` - "Öppna" buttons
+- [X] `suggestions_review_detail.html` - action buttons
+- [X] `admin/script_editor.html` - multiple action buttons
+- [X] `admin/partials/version_list.html` - version actions (No buttons found, implicitly consistent)
+- [X] `login.html` - "Logga in" CTA
+- [X] `suggestions_new.html` - "Skicka förslag" CTA
+- [X] Browse templates (3 files) - navigation links (No buttons found, implicitly consistent)
+
+**Button CSS reference** (`app.css` lines 171-229):
+- `.huleedu-btn` = burgundy CTA
+- `.huleedu-btn-navy` = navy functional
+- `.huleedu-btn-secondary` = outline
+- `.huleedu-btn-sm` = small variant
+- `.huleedu-tool-actions .huleedu-btn { min-width: 130px; }` = row consistency
 
 ### Other
 

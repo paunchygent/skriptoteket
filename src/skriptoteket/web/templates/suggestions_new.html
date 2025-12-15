@@ -1,54 +1,62 @@
 {% extends "base.html" %}
 {% block content %}
-  <div class="card">
+  <div class="huleedu-card">
     <h2>Föreslå ett skript</h2>
     {% if submitted %}
       <p>Förslaget är skickat och ligger i granskningskön.</p>
     {% endif %}
     {% if error %}
-      <p class="error">{{ error }}</p>
+      <p class="huleedu-error">{{ error }}</p>
     {% endif %}
 
-    <form method="post" action="/suggestions/new">
-      <label for="title">Titel</label>
-      <input id="title" name="title" value="{{ form.title }}" required />
+    <form method="post" action="/suggestions/new" class="huleedu-stack">
+      <div class="huleedu-form-group">
+        <label for="title" class="huleedu-label">Titel</label>
+        <input id="title" name="title" value="{{ form.title }}" required class="huleedu-input" />
+      </div>
 
-      <label for="description">Beskrivning</label>
-      <textarea id="description" name="description" required>{{ form.description }}</textarea>
+      <div class="huleedu-form-group">
+        <label for="description" class="huleedu-label">Beskrivning</label>
+        <textarea id="description" name="description" required class="huleedu-input">{{ form.description }}</textarea>
+      </div>
 
-      <fieldset>
+      <fieldset class="huleedu-fieldset">
         <legend>Yrken</legend>
-        {% for profession in professions %}
-          <label>
-            <input
-              type="checkbox"
-              name="profession_slugs"
-              value="{{ profession.slug }}"
-              {% if profession.slug in form.profession_slugs %}checked{% endif %}
-            />
-            {{ profession.label }}
-          </label>
-          <br />
-        {% endfor %}
+        <div class="huleedu-checkbox-group">
+          {% for profession in professions %}
+            <div class="huleedu-checkbox-item">
+              <input
+                type="checkbox"
+                name="profession_slugs"
+                id="profession-{{ profession.slug }}"
+                value="{{ profession.slug }}"
+                {% if profession.slug in form.profession_slugs %}checked{% endif %}
+              />
+              <label for="profession-{{ profession.slug }}">{{ profession.label }}</label>
+            </div>
+          {% endfor %}
+        </div>
       </fieldset>
 
-      <fieldset>
+      <fieldset class="huleedu-fieldset">
         <legend>Kategorier</legend>
-        {% for category in categories %}
-          <label>
-            <input
-              type="checkbox"
-              name="category_slugs"
-              value="{{ category.slug }}"
-              {% if category.slug in form.category_slugs %}checked{% endif %}
-            />
-            {{ category.label }}
-          </label>
-          <br />
-        {% endfor %}
+        <div class="huleedu-checkbox-group">
+          {% for category in categories %}
+            <div class="huleedu-checkbox-item">
+              <input
+                type="checkbox"
+                name="category_slugs"
+                id="category-{{ category.slug }}"
+                value="{{ category.slug }}"
+                {% if category.slug in form.category_slugs %}checked{% endif %}
+              />
+              <label for="category-{{ category.slug }}">{{ category.label }}</label>
+            </div>
+          {% endfor %}
+        </div>
       </fieldset>
 
-      <button type="submit">Skicka förslag</button>
+      <button type="submit" class="huleedu-btn huleedu-btn-navy huleedu-min-w-32">Skicka förslag</button>
     </form>
   </div>
 {% endblock %}

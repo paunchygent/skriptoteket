@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-  <div class="card">
+  <div class="huleedu-card">
     <h2>Granska förslag</h2>
 
     {% if saved %}
@@ -8,116 +8,129 @@
     {% endif %}
 
     {% if error %}
-      <p class="error">{{ error }}</p>
+      <p class="huleedu-error">{{ error }}</p>
     {% endif %}
 
     {% if suggestion %}
-      <h3 style="margin-top: 18px; margin-bottom: 6px">{{ suggestion.title }}</h3>
-      <p style="margin-top: 0">
-        <small>Status: {{ suggestion.status }}</small><br />
-        <small>Inskickat: {{ suggestion.created_at }}</small><br />
-        <small>Av: {{ suggestion.submitted_by_user_id }}</small><br />
-        <small>Yrken: {{ suggestion.profession_slugs | join(", ") }}</small><br />
-        <small>Kategorier: {{ suggestion.category_slugs | join(", ") }}</small><br />
+      <h3 class="huleedu-mt-4">{{ suggestion.title }}</h3>
+      <div class="huleedu-muted huleedu-stack-sm">
+        <div>Status: {{ suggestion.status }}</div>
+        <div>Inskickat: {{ suggestion.created_at }}</div>
+        <div>Av: {{ suggestion.submitted_by_user_id }}</div>
+        <div>Yrken: {{ suggestion.profession_slugs | join(", ") }}</div>
+        <div>Kategorier: {{ suggestion.category_slugs | join(", ") }}</div>
         {% if suggestion.reviewed_at %}
-          <small>Granskat: {{ suggestion.reviewed_at }}</small><br />
+          <div>Granskat: {{ suggestion.reviewed_at }}</div>
         {% endif %}
         {% if suggestion.reviewed_by_user_id %}
-          <small>Granskad av: {{ suggestion.reviewed_by_user_id }}</small><br />
+          <div>Granskad av: {{ suggestion.reviewed_by_user_id }}</div>
         {% endif %}
         {% if suggestion.review_rationale %}
-          <small>Motivering: {{ suggestion.review_rationale }}</small><br />
+          <div>Motivering: {{ suggestion.review_rationale }}</div>
         {% endif %}
         {% if suggestion.draft_tool_id %}
-          <small>Utkast-tool: {{ suggestion.draft_tool_id }}</small><br />
+          <div>Utkast-tool: {{ suggestion.draft_tool_id }}</div>
         {% endif %}
-      </p>
+      </div>
 
-      <p>{{ suggestion.description }}</p>
+      <p class="huleedu-mt-4">{{ suggestion.description }}</p>
 
-      <h3 style="margin-top: 22px">Historik</h3>
+      <h3 class="huleedu-mt-4">Historik</h3>
       {% if decisions %}
-        <ul>
+        <ul class="huleedu-list">
           {% for d in decisions %}
-            <li style="margin-bottom: 14px">
-              <small>{{ d.decided_at }} – {{ d.decision }} av {{ d.decided_by_user_id }}</small><br />
-              <small>Motivering: {{ d.rationale }}</small><br />
-              <small>Titel: {{ d.title }}</small><br />
-              <small>Yrken: {{ d.profession_slugs | join(", ") }}</small><br />
-              <small>Kategorier: {{ d.category_slugs | join(", ") }}</small><br />
-              {% if d.created_tool_id %}
-                <small>Skapad tool: {{ d.created_tool_id }}</small><br />
-              {% endif %}
+            <li class="huleedu-list-item">
+              <div class="huleedu-muted">
+                <div>{{ d.decided_at }} – {{ d.decision }} av {{ d.decided_by_user_id }}</div>
+                <div>Motivering: {{ d.rationale }}</div>
+                <div>Titel: {{ d.title }}</div>
+                <div>Yrken: {{ d.profession_slugs | join(", ") }}</div>
+                <div>Kategorier: {{ d.category_slugs | join(", ") }}</div>
+                {% if d.created_tool_id %}
+                  <div>Skapad tool: {{ d.created_tool_id }}</div>
+                {% endif %}
+              </div>
             </li>
           {% endfor %}
         </ul>
       {% else %}
-        <p><small>Inga beslut ännu.</small></p>
+        <p class="huleedu-muted">Inga beslut ännu.</p>
       {% endif %}
 
       {% if can_decide %}
-        <h3 style="margin-top: 22px">Beslut</h3>
-        <form method="post" action="/admin/suggestions/{{ suggestion.id }}/decision">
-          <fieldset>
+        <h3 class="huleedu-mt-4">Beslut</h3>
+        <form method="post" action="/admin/suggestions/{{ suggestion.id }}/decision" class="huleedu-stack">
+          <fieldset class="huleedu-fieldset">
             <legend>Typ</legend>
-            <label>
-              <input type="radio" name="decision" value="accept" {% if form.decision == "accept" %}checked{% endif %} />
-              Acceptera (ev. med ändringar)
-            </label>
-            <br />
-            <label>
-              <input type="radio" name="decision" value="deny" {% if form.decision == "deny" %}checked{% endif %} />
-              Avslå
-            </label>
+            <div class="huleedu-radio-group">
+              <div class="huleedu-radio-item">
+                <input type="radio" name="decision" id="decision-accept" value="accept" {% if form.decision == "accept" %}checked{% endif %} />
+                <label for="decision-accept">Acceptera (ev. med ändringar)</label>
+              </div>
+              <div class="huleedu-radio-item">
+                <input type="radio" name="decision" id="decision-deny" value="deny" {% if form.decision == "deny" %}checked{% endif %} />
+                <label for="decision-deny">Avslå</label>
+              </div>
+            </div>
           </fieldset>
 
-          <label for="rationale">Motivering</label>
-          <textarea id="rationale" name="rationale" required>{{ form.rationale }}</textarea>
+          <div class="huleedu-form-group">
+            <label for="rationale" class="huleedu-label">Motivering</label>
+            <textarea id="rationale" name="rationale" required class="huleedu-input">{{ form.rationale }}</textarea>
+          </div>
 
-          <p><small>Fälten nedan används bara vid accept.</small></p>
+          <p class="huleedu-muted">Fälten nedan används bara vid accept.</p>
 
-          <label for="title">Titel</label>
-          <input id="title" name="title" value="{{ form.title }}" />
+          <div class="huleedu-form-group">
+            <label for="title" class="huleedu-label">Titel</label>
+            <input id="title" name="title" value="{{ form.title }}" class="huleedu-input" />
+          </div>
 
-          <label for="description">Beskrivning</label>
-          <textarea id="description" name="description">{{ form.description }}</textarea>
+          <div class="huleedu-form-group">
+            <label for="description" class="huleedu-label">Beskrivning</label>
+            <textarea id="description" name="description" class="huleedu-input">{{ form.description }}</textarea>
+          </div>
 
-          <fieldset>
+          <fieldset class="huleedu-fieldset">
             <legend>Yrken</legend>
-            {% for profession in professions %}
-              <label>
-                <input
-                  type="checkbox"
-                  name="profession_slugs"
-                  value="{{ profession.slug }}"
-                  {% if profession.slug in form.profession_slugs %}checked{% endif %}
-                />
-                {{ profession.label }}
-              </label>
-              <br />
-            {% endfor %}
+            <div class="huleedu-checkbox-group">
+              {% for profession in professions %}
+                <div class="huleedu-checkbox-item">
+                  <input
+                    type="checkbox"
+                    name="profession_slugs"
+                    id="profession-{{ profession.slug }}"
+                    value="{{ profession.slug }}"
+                    {% if profession.slug in form.profession_slugs %}checked{% endif %}
+                  />
+                  <label for="profession-{{ profession.slug }}">{{ profession.label }}</label>
+                </div>
+              {% endfor %}
+            </div>
           </fieldset>
 
-          <fieldset>
+          <fieldset class="huleedu-fieldset">
             <legend>Kategorier</legend>
-            {% for category in categories %}
-              <label>
-                <input
-                  type="checkbox"
-                  name="category_slugs"
-                  value="{{ category.slug }}"
-                  {% if category.slug in form.category_slugs %}checked{% endif %}
-                />
-                {{ category.label }}
-              </label>
-              <br />
-            {% endfor %}
+            <div class="huleedu-checkbox-group">
+              {% for category in categories %}
+                <div class="huleedu-checkbox-item">
+                  <input
+                    type="checkbox"
+                    name="category_slugs"
+                    id="category-{{ category.slug }}"
+                    value="{{ category.slug }}"
+                    {% if category.slug in form.category_slugs %}checked{% endif %}
+                  />
+                  <label for="category-{{ category.slug }}">{{ category.label }}</label>
+                </div>
+              {% endfor %}
+            </div>
           </fieldset>
 
-          <button type="submit">Spara beslut</button>
+          <button type="submit" class="huleedu-btn huleedu-btn-navy huleedu-min-w-32">Spara beslut</button>
         </form>
       {% else %}
-        <p><small>Förslaget är redan granskat.</small></p>
+        <p class="huleedu-muted">Förslaget är redan granskat.</p>
       {% endif %}
     {% else %}
       <p>Förslaget hittades inte.</p>
