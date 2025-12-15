@@ -95,7 +95,7 @@
           </div>
 
           <div class="huleedu-flex huleedu-gap-4" style="flex-wrap: wrap">
-            <button type="submit" class="huleedu-btn huleedu-btn-navy huleedu-btn-sm huleedu-min-w-32">
+            <button type="submit" class="huleedu-btn huleedu-btn-navy huleedu-min-w-32">
               {% if save_mode == "snapshot" %}
                 Spara (ny snapshot)
               {% else %}
@@ -104,7 +104,7 @@
             </button>
 
             {% if selected_version %}
-              <a href="/admin/tools/{{ tool.id }}" class="huleedu-link">Öppna standardvy</a>
+              <a href="/admin/tools/{{ tool.id }}" class="huleedu-btn huleedu-btn-secondary huleedu-min-w-32">Öppna standardvy</a>
             {% endif %}
           </div>
         </form>
@@ -128,11 +128,16 @@
               class="huleedu-stack-sm"
             >
               <input type="hidden" name="tool_id" value="{{ tool.id }}" />
-              <div>
+              <div class="huleedu-form-group">
                 <label class="huleedu-label">Välj testfil</label>
-                <input type="file" name="file" required class="huleedu-input" />
+                <div class="huleedu-input huleedu-file-wrapper">
+                  <span class="huleedu-file-fake-button">Välj fil</span>
+                  <span id="file-name" class="huleedu-muted" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Ingen fil vald</span>
+                  <input type="file" name="file" class="huleedu-file-native"
+                         onchange="document.getElementById('file-name').textContent = this.files[0] ? this.files[0].name : 'Ingen fil vald'" />
+                </div>
               </div>
-              <button type="submit" class="huleedu-btn huleedu-btn-navy huleedu-btn-sm huleedu-min-w-32">Testkör</button>
+              <button type="submit" class="huleedu-btn huleedu-btn-navy huleedu-min-w-32">Testkör</button>
             </form>
           {% endif %}
         </div>
@@ -149,7 +154,7 @@
                 <label class="huleedu-label">Notis till granskare (valfritt)</label>
                 <input name="review_note" value="" class="huleedu-input" />
               </div>
-              <button type="submit" class="huleedu-btn huleedu-btn-navy huleedu-btn-sm huleedu-min-w-32">Skicka för granskning</button>
+              <button type="submit" class="huleedu-btn huleedu-btn-navy huleedu-min-w-32">Skicka för granskning</button>
             </form>
           {% else %}
             <p class="huleedu-muted"><small>Spara ett utkast först.</small></p>
@@ -169,7 +174,7 @@
                 <label class="huleedu-label">Ändringssammanfattning (valfritt)</label>
                 <input name="change_summary" value="" class="huleedu-input" />
               </div>
-              <button type="submit" class="huleedu-btn huleedu-btn-sm huleedu-min-w-32">Publicera</button>
+              <button type="submit" class="huleedu-btn huleedu-min-w-32">Publicera</button>
             </form>
 
             <form
@@ -181,7 +186,7 @@
                 <label for="request_changes_message" class="huleedu-label">Meddelande (valfritt)</label>
                 <textarea id="request_changes_message" name="message" class="huleedu-input"></textarea>
               </div>
-              <button type="submit" class="huleedu-btn huleedu-btn-secondary huleedu-btn-sm huleedu-min-w-32">Begär ändringar</button>
+              <button type="submit" class="huleedu-btn huleedu-btn-secondary huleedu-min-w-32">Begär ändringar</button>
             </form>
           </div>
         {% endif %}

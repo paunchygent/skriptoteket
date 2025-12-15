@@ -116,6 +116,12 @@ pre {
   justify-content: space-between;
   align-items: center;
   padding: 0 var(--huleedu-space-5);
+  flex-wrap: nowrap;
+  gap: var(--huleedu-space-4);
+}
+
+.huleedu-header > form {
+  flex-shrink: 0;
 }
 
 .huleedu-header a {
@@ -148,6 +154,13 @@ pre {
   color: var(--huleedu-burgundy);
 }
 
+.huleedu-header-separator {
+  width: 1px;
+  height: 24px;
+  background-color: var(--huleedu-navy-30);
+  margin: 0 var(--huleedu-space-3);
+}
+
 .huleedu-main {
   padding: var(--huleedu-space-6);
   max-width: var(--huleedu-max-width-6xl);
@@ -169,10 +182,32 @@ pre {
   background-color: var(--huleedu-burgundy);
 }
 
+/*
+ * Large CTA buttons: no color change on hover to avoid sticky hover on touch.
+ * Uses subtle inset shadow (press effect) instead of color swap.
+ */
+.huleedu-btn:not(.huleedu-btn-navy):not(.huleedu-btn-secondary):not(.huleedu-btn-sm):hover {
+  background-color: var(--huleedu-burgundy);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.huleedu-btn-navy:not(.huleedu-btn-sm):hover {
+  background-color: var(--huleedu-navy);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
 /* Small button variant */
 .huleedu-btn-sm {
   padding: var(--huleedu-space-2) var(--huleedu-space-4);
   font-size: var(--huleedu-text-xs);
+}
+
+/* Disabled button: solid gray instead of transparent burgundy */
+.huleedu-btn:disabled {
+  background-color: var(--huleedu-navy-20);
+  color: var(--huleedu-navy-40);
+  opacity: 1;
+  cursor: not-allowed;
 }
 
 /* Button with icon */
@@ -359,7 +394,8 @@ textarea.huleedu-input {
   background-color: var(--huleedu-navy-02);
 }
 
-.huleedu-list-item a {
+/* Navigation links in list items: full-width clickable rows with arrow */
+.huleedu-list-item a:not(.huleedu-btn):not(.huleedu-link) {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -367,13 +403,13 @@ textarea.huleedu-input {
   color: inherit;
 }
 
-.huleedu-list-item a::after {
+.huleedu-list-item a:not(.huleedu-btn):not(.huleedu-link)::after {
   content: '\2192'; /* Right arrow */
   color: var(--huleedu-navy-40);
   transition: color var(--huleedu-duration-default) var(--huleedu-ease-default);
 }
 
-.huleedu-list-item:hover a::after {
+.huleedu-list-item:hover a:not(.huleedu-btn):not(.huleedu-link)::after {
   color: var(--huleedu-burgundy);
 }
 
@@ -385,6 +421,59 @@ textarea.huleedu-input {
 .huleedu-table {
   width: 100%;
   border-collapse: collapse;
+}
+
+/* Tool list layout - responsive alternative to tables */
+.huleedu-tool-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.huleedu-tool-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--huleedu-space-4);
+  padding: var(--huleedu-space-4) 0;
+  border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+}
+
+.huleedu-tool-row:last-child {
+  border-bottom: none;
+}
+
+.huleedu-tool-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--huleedu-space-1);
+  min-width: 0;
+}
+
+.huleedu-tool-actions {
+  display: flex;
+  gap: var(--huleedu-space-2);
+  flex-shrink: 0;
+}
+
+.huleedu-tool-actions .huleedu-btn {
+  min-width: 130px;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .huleedu-tool-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--huleedu-space-3);
+  }
+
+  .huleedu-tool-actions {
+    width: 100%;
+  }
+
+  .huleedu-tool-actions .huleedu-btn {
+    flex: 1;
+  }
 }
 
 .huleedu-table th {
@@ -716,6 +805,10 @@ textarea.huleedu-input {
 .huleedu-mb-2 { margin-bottom: var(--huleedu-space-2); }
 .huleedu-mb-4 { margin-bottom: var(--huleedu-space-4); }
 
+/* Width utilities */
+.huleedu-w-full { width: 100%; }
+.huleedu-min-w-32 { min-width: 8rem; } /* 128px - consistent button widths */
+
 /* Text alignment */
 .huleedu-text-center { text-align: center; }
 .huleedu-text-right { text-align: right; }
@@ -758,4 +851,42 @@ textarea.huleedu-input {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FILE INPUT STYLING
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.huleedu-file-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: var(--huleedu-space-1); /* Tighter padding for contained button */
+}
+
+.huleedu-file-fake-button {
+  display: inline-block;
+  padding: var(--huleedu-space-1) var(--huleedu-space-3);
+  background-color: var(--huleedu-navy-05);
+  border: 1px solid var(--huleedu-navy-20);
+  border-radius: var(--huleedu-radius-sm);
+  color: var(--huleedu-navy);
+  font-family: var(--huleedu-font-sans);
+  font-size: var(--huleedu-text-sm);
+  font-weight: var(--huleedu-font-medium);
+  box-shadow: 0 1px 0 0 var(--huleedu-navy-20); /* Subtle 3D effect */
+  margin-right: var(--huleedu-space-3);
+  flex-shrink: 0;
+}
+
+.huleedu-file-native {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 10;
 }

@@ -39,16 +39,18 @@ Keep this file updated so the next session can pick up work quickly.
   - Uses `opacity: 0.9` instead to avoid sticky hover state on touch devices
   - Added CSS in `app.css` lines 179-191
 - Ensured consistent button sizing across templates:
-  - Added `huleedu-min-w-32` to action buttons in `admin/script_editor.html` and `suggestions_review_detail.html`.
+  - Upgraded action buttons in `admin/script_editor.html` (Save, Test, Submit, Publish, Request Changes) and "Öppna standardvy" to regular size (removed `huleedu-btn-sm`).
+  - Added `huleedu-min-w-32` to "Spara beslut" in `suggestions_review_detail.html`.
   - Added `huleedu-w-full` to the login button in `login.html`.
   - Added `huleedu-min-w-32` to the submit button in `suggestions_new.html`.
+  - Styled file input in `admin/script_editor.html` using a custom wrapper with a "fake" button and transparent native input overlay to ensure consistent "Välj fil" text and design system compliance (font, shadow).
 
 **Files Modified**:
-- `src/skriptoteket/web/static/css/app.css` (button fixes, header separator, CTA hover)
+- `src/skriptoteket/web/static/css/app.css` (button fixes, header separator, CTA hover, custom file input styles)
 - `src/skriptoteket/web/templates/base.html` (header separator, toast auto-dismiss JS)
 - `src/skriptoteket/web/templates/admin_tools.html` (table layout)
 - `src/skriptoteket/web/templates/partials/toast.html` (NEW)
-- `src/skriptoteket/web/templates/admin/script_editor.html` (button sizing)
+- `src/skriptoteket/web/templates/admin/script_editor.html` (button sizing and file input styling)
 - `src/skriptoteket/web/templates/suggestions_review_detail.html` (button sizing)
 - `src/skriptoteket/web/templates/login.html` (button sizing)
 - `src/skriptoteket/web/templates/suggestions_new.html` (button sizing)
