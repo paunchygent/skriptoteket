@@ -50,8 +50,9 @@ async def new_suggestion_page(
     professions = (await professions_handler.handle(ListProfessionsQuery())).professions
     categories = (await categories_handler.handle(ListAllCategoriesQuery())).categories
     return templates.TemplateResponse(
-        "suggestions_new.html",
-        {
+        request=request,
+        name="suggestions_new.html",
+        context={
             "request": request,
             "user": user,
             "csrf_token": csrf_token,
@@ -102,8 +103,9 @@ async def submit_suggestion(
         categories = (await categories_handler.handle(ListAllCategoriesQuery())).categories
         status_code = 400 if exc.code is ErrorCode.VALIDATION_ERROR else 403
         return templates.TemplateResponse(
-            "suggestions_new.html",
-            {
+            request=request,
+            name="suggestions_new.html",
+            context={
                 "request": request,
                 "user": user,
                 "csrf_token": csrf_token,
@@ -135,8 +137,9 @@ async def suggestions_review_queue(
     csrf_token = session.csrf_token if session else ""
     result = await handler.handle(actor=user, query=ListSuggestionsForReviewQuery())
     return templates.TemplateResponse(
-        "suggestions_review_queue.html",
-        {
+        request=request,
+        name="suggestions_review_queue.html",
+        context={
             "request": request,
             "user": user,
             "csrf_token": csrf_token,
@@ -169,8 +172,9 @@ async def suggestion_review_detail(
     except DomainError as exc:
         status_code = 404 if exc.code is ErrorCode.NOT_FOUND else 403
         return templates.TemplateResponse(
-            "suggestions_review_detail.html",
-            {
+            request=request,
+            name="suggestions_review_detail.html",
+            context={
                 "request": request,
                 "user": user,
                 "csrf_token": csrf_token,
@@ -188,8 +192,9 @@ async def suggestion_review_detail(
 
     suggestion = result.suggestion
     return templates.TemplateResponse(
-        "suggestions_review_detail.html",
-        {
+        request=request,
+        name="suggestions_review_detail.html",
+        context={
             "request": request,
             "user": user,
             "csrf_token": csrf_token,
@@ -278,8 +283,9 @@ async def decide_suggestion(
             pass
 
         return templates.TemplateResponse(
-            "suggestions_review_detail.html",
-            {
+            request=request,
+            name="suggestions_review_detail.html",
+            context={
                 "request": request,
                 "user": user,
                 "csrf_token": csrf_token,

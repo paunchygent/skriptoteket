@@ -30,8 +30,9 @@ async def list_professions(
     csrf_token = session.csrf_token if session else ""
     result = await handler.handle(ListProfessionsQuery())
     return templates.TemplateResponse(
-        "browse_professions.html",
-        {
+        request=request,
+        name="browse_professions.html",
+        context={
             "request": request,
             "user": user,
             "csrf_token": csrf_token,
@@ -52,8 +53,9 @@ async def list_categories_for_profession(
     csrf_token = session.csrf_token if session else ""
     result = await handler.handle(ListCategoriesForProfessionQuery(profession_slug=profession_slug))
     return templates.TemplateResponse(
-        "browse_categories.html",
-        {
+        request=request,
+        name="browse_categories.html",
+        context={
             "request": request,
             "user": user,
             "csrf_token": csrf_token,
@@ -78,8 +80,9 @@ async def list_tools_by_tags(
         ListToolsByTagsQuery(profession_slug=profession_slug, category_slug=category_slug)
     )
     return templates.TemplateResponse(
-        "browse_tools.html",
-        {
+        request=request,
+        name="browse_tools.html",
+        context={
             "request": request,
             "user": user,
             "csrf_token": csrf_token,

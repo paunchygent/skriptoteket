@@ -180,11 +180,16 @@ async def render_editor_for_tool_id(
         error=error,
     )
     if status_code is None:
-        return templates.TemplateResponse("admin/script_editor.html", context)
+        return templates.TemplateResponse(
+            request=request,
+            name="admin/script_editor.html",
+            context=context,
+        )
 
     return templates.TemplateResponse(
-        "admin/script_editor.html",
-        context,
+        request=request,
+        name="admin/script_editor.html",
+        context=context,
         status_code=status_code,
     )
 
@@ -229,10 +234,15 @@ async def render_editor_for_version_id(
         error=error,
     )
     if status_code is None:
-        return templates.TemplateResponse("admin/script_editor.html", context)
+        return templates.TemplateResponse(
+            request=request,
+            name="admin/script_editor.html",
+            context=context,
+        )
 
     return templates.TemplateResponse(
-        "admin/script_editor.html",
-        context,
+        request=request,
+        name="admin/script_editor.html",
+        context=context,
         status_code=status_code,
     )

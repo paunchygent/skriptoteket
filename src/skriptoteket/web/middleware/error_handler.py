@@ -30,8 +30,13 @@ async def error_handler_middleware(request: Request, call_next):
             )
 
         return templates.TemplateResponse(
-            "error.html",
-            {"request": request, "error_code": exc.code.value, "message": ui_error_message(exc)},
+            request=request,
+            name="error.html",
+            context={
+                "request": request,
+                "error_code": exc.code.value,
+                "message": ui_error_message(exc),
+            },
             status_code=status_code,
         )
     except Exception:
@@ -51,8 +56,9 @@ async def error_handler_middleware(request: Request, call_next):
             )
 
         return templates.TemplateResponse(
-            "error.html",
-            {
+            request=request,
+            name="error.html",
+            context={
                 "request": request,
                 "error_code": ErrorCode.INTERNAL_ERROR.value,
                 "message": "Internt serverfel.",

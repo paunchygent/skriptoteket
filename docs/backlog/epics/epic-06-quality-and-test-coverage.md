@@ -22,6 +22,7 @@ outcome: "Automated tests provide high confidence in critical flows; overall cov
 - ST-06-03: Add test coverage for error handling middleware (HTML + JSON)
 - ST-06-04: Add unit tests for script bank tools (IST guardian email extractor)
 - ST-06-05: Improve test coverage for remaining web page routers (admin tools, scripting runs, suggestions)
+- ST-06-06: Test warnings hygiene (TemplateResponse deprecation + dependency warning filtering)
 
 ## Notes
 

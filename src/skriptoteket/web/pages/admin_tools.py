@@ -31,8 +31,9 @@ async def list_tools(
     csrf_token = session.csrf_token if session else ""
     result = await handler.handle(actor=user, query=ListToolsForAdminQuery())
     return templates.TemplateResponse(
-        "admin_tools.html",
-        {
+        request=request,
+        name="admin_tools.html",
+        context={
             "request": request,
             "user": user,
             "csrf_token": csrf_token,
@@ -71,8 +72,9 @@ async def publish_tool(
     except DomainError as exc:
         result = await list_handler.handle(actor=user, query=ListToolsForAdminQuery())
         return templates.TemplateResponse(
-            "admin_tools.html",
-            {
+            request=request,
+            name="admin_tools.html",
+            context={
                 "request": request,
                 "user": user,
                 "csrf_token": csrf_token,
@@ -101,8 +103,9 @@ async def depublish_tool(
     except DomainError as exc:
         result = await list_handler.handle(actor=user, query=ListToolsForAdminQuery())
         return templates.TemplateResponse(
-            "admin_tools.html",
-            {
+            request=request,
+            name="admin_tools.html",
+            context={
                 "request": request,
                 "user": user,
                 "csrf_token": csrf_token,

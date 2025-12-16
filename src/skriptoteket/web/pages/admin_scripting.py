@@ -102,8 +102,9 @@ async def script_editor_for_tool(
         source_code = selected_version.source_code
 
     return templates.TemplateResponse(
-        "admin/script_editor.html",
-        _editor_context(
+        request=request,
+        name="admin/script_editor.html",
+        context=_editor_context(
             request=request,
             user=user,
             csrf_token=csrf_token,
@@ -158,8 +159,9 @@ async def update_tool_metadata(
             editor_source_code = selected_version.source_code
 
         return templates.TemplateResponse(
-            "admin/script_editor.html",
-            _editor_context(
+            request=request,
+            name="admin/script_editor.html",
+            context=_editor_context(
                 request=request,
                 user=user,
                 csrf_token=csrf_token,
@@ -200,8 +202,9 @@ async def version_history(
             details={"tool_id": str(tool.id)},
         )
     return templates.TemplateResponse(
-        "admin/partials/version_list.html",
-        {
+        request=request,
+        name="admin/partials/version_list.html",
+        context={
             "request": request,
             "tool": tool,
             "versions": visible_versions,
@@ -238,8 +241,9 @@ async def script_editor_for_version(
 
     versions = await versions_repo.list_for_tool(tool_id=tool.id, limit=50)
     return templates.TemplateResponse(
-        "admin/script_editor.html",
-        _editor_context(
+        request=request,
+        name="admin/script_editor.html",
+        context=_editor_context(
             request=request,
             user=user,
             csrf_token=csrf_token,
@@ -383,8 +387,9 @@ async def submit_review(
             raise
         versions = await versions_repo.list_for_tool(tool_id=tool.id, limit=50)
         return templates.TemplateResponse(
-            "admin/script_editor.html",
-            _editor_context(
+            request=request,
+            name="admin/script_editor.html",
+            context=_editor_context(
                 request=request,
                 user=user,
                 csrf_token=csrf_token,

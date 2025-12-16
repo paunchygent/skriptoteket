@@ -14,56 +14,25 @@ Keep this file updated so the next session can pick up work quickly.
 
 - Date: 2025-12-16
 - Branch / commit: `main` (HEAD `321757b`, dirty working tree)
-- Goal of the session: Repo-level script bank + seed command (teacher-first, Swedish-first).
+- Goal of the session: ST-06-06 Test warnings hygiene (TemplateResponse deprecation + narrow warning filtering).
 
 ## What changed
 
-### Current session (Script Editor Layout Redesign)
+### Current session (ST-06-06 Test warnings hygiene)
 
-**Repo-level script bank (seed)**:
-- Added curated script bank content + metadata:
-  - `src/skriptoteket/script_bank/bank.py`
-  - `src/skriptoteket/script_bank/scripts/ist_vh_mejl_bcc.py`
-- Added CLI seed command (idempotent by slug) + pdm shortcut:
-  - `src/skriptoteket/cli/main.py` (`seed-script-bank`, `--dry-run`, `--slug`, `--sync-metadata`, `--sync-code`)
-  - `pyproject.toml` (`pdm run seed-script-bank`)
-- Docs + tests:
-  - `docs/reference/ref-dynamic-tool-scripts.md` (seed section)
-  - `tests/unit/test_script_bank.py`
-
-**Major Layout Redesign (`admin/script_editor.html`)**:
-- Reduced dead space by unifying panels:
-  - Combined code editor + test runner into single card with toolbar separator
-  - Unified sidebar: single card with section dividers instead of 5 stacked cards
-- Removed confusing "Standardvy" button - version switching now via clickable version items
-- Improved version list (`admin/partials/version_list.html`):
-  - Clickable version cards with active state highlighting
-  - Burgundy border + background for currently selected version
-- Fixed review buttons overflow: "Publicera" and "Begär ändringar" now stack vertically
-
-**Terminology Fix**:
-- Changed "Aktiv" → "Publicerad" for published versions (`ui_text.py`)
-- Updated header pills to show "Publicerad" / "Ej publicerad"
-- Burgundy badge for published versions in editor toolbar and version list
-
-**Button Interaction Fixes**:
-- Navy buttons (`.huleedu-btn-navy`) now use inset shadow on hover instead of burgundy color
-- Added explicit `color: var(--huleedu-canvas)` on hover to fix `<a>` elements
-- Added `:active` press effect to all CTA buttons (2px translateY + deeper shadow)
-
-**Puppeteer Login Documentation**:
-- Updated `.claude/skills/puppeteer-visual-testing/skill.md` with correct login pattern
-- Added Puppeteer section to `CLAUDE.md`
-- Key: use `form.submit()` + timeout, NOT `click()` + `waitForNavigation()` (HTMX issue)
-
-**Files Modified**:
-- `src/skriptoteket/web/templates/admin/script_editor.html` (major layout restructure)
-- `src/skriptoteket/web/templates/admin/partials/version_list.html` (clickable version items)
-- `src/skriptoteket/web/static/css/app.css` (unified sidebar, toolbar, version items, button hover/active)
-- `src/skriptoteket/web/ui_text.py` ("Aktiv" → "Publicerad")
-- `.claude/skills/puppeteer-visual-testing/skill.md` (login pattern)
-- `CLAUDE.md` (Puppeteer section)
-- `docs/backlog/stories/story-05-06-htmx-enhancements.md` (status: done)
+- Baseline: `pdm run test -- -q` emitted 18 Starlette `TemplateResponse` DeprecationWarnings.
+- Migrated all `templates.TemplateResponse(...)` call sites to the new keyword signature:
+  - `src/skriptoteket/web/pages/admin_scripting.py`
+  - `src/skriptoteket/web/pages/admin_scripting_runs.py`
+  - `src/skriptoteket/web/pages/admin_scripting_support.py`
+  - `src/skriptoteket/web/pages/admin_tools.py`
+  - `src/skriptoteket/web/pages/browse.py`
+  - `src/skriptoteket/web/pages/suggestions.py`
+  - `src/skriptoteket/web/middleware/error_handler.py`
+- Updated the usage example in `src/skriptoteket/web/templates/partials/toast.html`.
+- No new `filterwarnings` needed (kept existing narrow ignores for dependency internals).
+- Results: `pdm run test -- -q` now emits zero warnings; `pdm run docs-validate` passes.
+- Story status: `docs/backlog/stories/story-06-06-test-warnings-hygiene.md` set to `done`.
 
 ### Previous session (ST-04-04 QC)
 
@@ -177,22 +146,18 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## How to run / verify
 
-- Start dev stack (ran): `pdm run dev-start`
-- Run migrations (ran): `docker compose -f compose.yaml -f compose.dev.yaml exec -T web pdm run db-upgrade`
-- Build runner image (optional, needed for sandbox/prod execution): `docker build -f Dockerfile.runner -t skriptoteket-runner:latest .`
+- Start DB (ran): `docker compose up -d db`
+- Run migrations (ran): `pdm run db-upgrade`
+- Start app (ran): `pdm run dev`
 - Live functional check (ran, no secrets/tokens recorded):
-  - Seeded a temporary admin session + 2 draft tools + 2 `IN_REVIEW` versions via one-off script inside the web container.
-  - Verified via `curl` (with the temporary session cookie) that:
-    - `GET /admin/tool-versions/{in_review_id}` returns 200 and includes “Review version” card for admin.
-    - `POST /admin/tool-versions/{in_review_id}/publish` returns 303, redirect page shows `active`, and `/admin/tools/{tool_id}` shows `active_version_id` set (not `—`).
-    - `POST /admin/tool-versions/{in_review_id}/request-changes` returns 303, redirect page shows `draft`, and the “Review version” card is not shown.
-- Live functional check (ran, current session):
-  - Verified in browser (manual): uppdaterade “Verktygsmetadata” (titel + sammanfattning) i skripteditor och såg att Katalog visar den nya sammanfattningen (inte gammal skript-body).
-  - Verified via `curl` (med temporär admin-session-cookie) att `/admin/tool-versions/{version_id}` innehåller svensk UI-copy:
-    - status-label “För granskning”, rubrikerna “Skicka för granskning” och “Granska version”, samt “Startfunktion” och “Ändringssammanfattning”.
-- QC gates (ran): `pdm run lint-fix && pdm run lint && pdm run typecheck && pdm run test && pdm run docs-validate`
-- QC gates (ran, current session): `pdm run lint && pdm run typecheck && pdm run test && pdm run docs-validate`
-- Sanity (ran): `python -m py_compile src/skriptoteket/application/scripting/commands.py src/skriptoteket/protocols/scripting.py src/skriptoteket/protocols/catalog.py src/skriptoteket/infrastructure/repositories/tool_repository.py src/skriptoteket/di.py`
+  - Unauthenticated `GET /login` returns 200.
+  - Created a temporary superuser + session row via one-off `PYTHONPATH=src pdm run python` script.
+  - With the session cookie, verified:
+    - `GET /admin/tools` returns 200.
+    - `GET /admin/tools/{tool_id}` returns 200 (script editor route renders).
+- QC gates (ran): `pdm run test -- -q && pdm run docs-validate`
+- Lint note: `pdm run lint` currently fails on existing E501 lines in
+  `tests/integration/web/test_admin_scripting_editor_routes.py`; `pdm run ruff check src/skriptoteket/web` passes.
 
 ## Known issues / risks
 
