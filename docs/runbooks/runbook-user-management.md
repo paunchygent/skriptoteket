@@ -5,6 +5,7 @@ title: "Runbook: User Management (Local Auth)"
 status: active
 owners: "system-admin"
 created: 2025-12-16
+updated: 2025-12-16
 system: "skriptoteket-identity"
 ---
 
@@ -13,67 +14,135 @@ system: "skriptoteket-identity"
 Use this runbook when you need to:
 - Bootstrap a new deployment with the first Superuser.
 - Create new user accounts manually (since self-signup is disabled).
+- Change a user's password.
 - Grant roles to users.
 
 **Context:** This applies to the MVP configuration using "Admin-provisioned local accounts".
 
 ## Prerequisites
 
-- Access to the server where Docker Compose is running.
-- `docker` and `docker compose` permissions.
+- SSH access to the server
+- Docker running with the web container (`skriptoteket_web`)
+
+## Role Hierarchy
+
+| Role | Permissions |
+|------|-------------|
+| `user` | Browse katalog, run tools |
+| `contributor` | Above + submit suggestions |
+| `admin` | Above + manage tools, review suggestions, publish |
+| `superuser` | Full system access |
 
 ## Procedures
 
 ### 1. Bootstrap the First Admin (Superuser)
 
-Run this only once when setting up a fresh database. It creates a user with the `SUPERUSER` role.
+Run this only once when setting up a fresh database.
 
 ```bash
-# Replace 'skriptoteket-web' with your actual container name if different
-docker compose exec -it skriptoteket-web python -m skriptoteket.cli bootstrap-superuser \
-  --email "admin@example.com"
+ssh hemma "cd ~/apps/skriptoteket && docker compose exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli bootstrap-superuser --email 'admin@example.com' --password 'SECURE_PASSWORD'"
 ```
 
-*You will be prompted to enter and confirm a secure password.*
+**Interactive mode** (prompts for password):
+```bash
+ssh hemma
+cd ~/apps/skriptoteket
+docker compose exec -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli bootstrap-superuser --email 'admin@example.com'
+```
 
 ### 2. Provision Additional Users
 
 Use an existing admin/superuser account to create new users.
 
-**Syntax:**
 ```bash
-docker compose exec -it skriptoteket-web python -m skriptoteket.cli provision-user \
-  --actor-email "<YOUR_ADMIN_EMAIL>" \
-  --email "<NEW_USER_EMAIL>" \
-  --role "<ROLE>"
+ssh hemma "cd ~/apps/skriptoteket && docker compose exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli provision-user --actor-email 'admin@example.com' --actor-password 'ADMIN_PASSWORD' --email 'newuser@example.com' --password 'USER_PASSWORD' --role user"
 ```
 
-**Roles:**
-- `user`: Standard access (default).
-- `admin`: Can manage tools and basic settings.
-- `superuser`: Full system access.
+**Available roles:** `user`, `contributor`, `admin`, `superuser`
 
-**Example:**
+**Interactive mode:**
 ```bash
-docker compose exec -it skriptoteket-web python -m skriptoteket.cli provision-user \
-  --actor-email "admin@example.com" \
-  --email "johndoe@example.com" \
-  --role "user"
+ssh hemma
+cd ~/apps/skriptoteket
+docker compose exec -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli provision-user --actor-email 'admin@example.com' --email 'newuser@example.com' --role user
 ```
 
-*Prompts:*
-1. **Actor Password:** The password for `<YOUR_ADMIN_EMAIL>` (to authorize the request).
-2. **New User Password:** Set the initial password for the new user.
+### 3. Change User Password
+
+There is no CLI command for password changes. Use direct database update with a new Argon2 hash.
+
+**Step 1: Generate new password and hash**
+```bash
+ssh hemma "cd ~/apps/skriptoteket && docker compose exec -T -e PYTHONPATH=/app/src web pdm run python -c \"
+from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordHasher
+import secrets
+import string
+
+chars = string.ascii_letters + string.digits + '!@#'
+password = ''.join(secrets.choice(chars) for _ in range(16))
+
+hasher = Argon2PasswordHasher()
+hash = hasher.hash(password=password)
+
+print(f'NEW_PASSWORD={password}')
+print(f'HASH={hash}')
+\""
+```
+
+**Step 2: Update database** (replace the hash and email)
+```bash
+ssh hemma "docker exec skriptoteket-db-1 psql -U postgres -d skriptoteket -c \"UPDATE users SET password_hash = 'THE_HASH_FROM_STEP_1' WHERE email = 'user@example.com';\""
+```
+
+**Note:** The hash contains `$` characters that need escaping in shell. Use single quotes and escape `$` as `\$` if needed.
+
+### 4. List All Users
+
+```bash
+ssh hemma "docker exec skriptoteket-db-1 psql -U postgres -d skriptoteket -c \"SELECT id, email, role, created_at FROM users ORDER BY created_at;\""
+```
+
+### 5. Change User Role
+
+```bash
+ssh hemma "docker exec skriptoteket-db-1 psql -U postgres -d skriptoteket -c \"UPDATE users SET role = 'admin' WHERE email = 'user@example.com';\""
+```
+
+### 6. Delete User
+
+```bash
+ssh hemma "docker exec skriptoteket-db-1 psql -U postgres -d skriptoteket -c \"DELETE FROM users WHERE email = 'user@example.com';\""
+```
+
+**Warning:** This may fail if the user has related records (sessions, tool versions, etc.). You may need to delete related records first or use cascading deletes.
 
 ## Troubleshooting
 
-**"User already exists"**
-- The email is already taken. Use a different email or check the database.
+### "User already exists"
 
-**"Insufficient permissions"**
-- Ensure the `--actor-email` belongs to a user with `ADMIN` or `SUPERUSER` role.
-- Ensure the actor's password is correct.
+The email is already taken. Check existing users:
+```bash
+ssh hemma "docker exec skriptoteket-db-1 psql -U postgres -d skriptoteket -c \"SELECT email FROM users;\""
+```
 
-**"Invalid admin credentials"**
-- Double-check the password for the `--actor-email` account.
+### "Insufficient permissions"
 
+The actor must have `ADMIN` or `SUPERUSER` role to provision users.
+
+### "Invalid admin credentials"
+
+Double-check the password for the actor account.
+
+### "No module named 'skriptoteket'"
+
+Missing PYTHONPATH. Always use:
+```bash
+docker compose exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli ...
+```
+
+### Session Issues After Password Change
+
+User sessions remain valid after password change. To force re-login, delete sessions:
+```bash
+ssh hemma "docker exec skriptoteket-db-1 psql -U postgres -d skriptoteket -c \"DELETE FROM sessions WHERE user_id = (SELECT id FROM users WHERE email = 'user@example.com');\""
+```
