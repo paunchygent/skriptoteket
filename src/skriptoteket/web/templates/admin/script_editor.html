@@ -57,27 +57,31 @@
           {% if not selected_version %}
             <span class="huleedu-muted">Spara ett utkast innan du testkör.</span>
           {% else %}
-            <form
-              id="run-form"
-              method="post"
-              action="/admin/tool-versions/{{ selected_version.id }}/run-sandbox"
-              enctype="multipart/form-data"
-              hx-post="/admin/tool-versions/{{ selected_version.id }}/run-sandbox"
-              hx-target="#run-result"
-              hx-swap="innerHTML"
-              hx-encoding="multipart/form-data"
-              class="huleedu-flex huleedu-gap-4"
-              style="flex: 1; align-items: center;"
-            >
-              <input type="hidden" name="tool_id" value="{{ tool.id }}" />
-              <div class="huleedu-file-wrapper huleedu-input" style="flex: 1; max-width: 280px;">
-                <span class="huleedu-file-fake-button">Välj fil</span>
-                <span id="file-name" class="huleedu-muted" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Ingen fil vald</span>
-                <input type="file" name="file" class="huleedu-file-native"
-                       onchange="document.getElementById('file-name').textContent = this.files[0] ? this.files[0].name : 'Ingen fil vald'" />
-              </div>
-              <button type="submit" class="huleedu-btn huleedu-btn-navy">Testkör</button>
-            </form>
+            {% if user.role in ["admin", "superuser"] or selected_version.state.value in ["draft", "in_review"] %}
+              <form
+                id="run-form"
+                method="post"
+                action="/admin/tool-versions/{{ selected_version.id }}/run-sandbox"
+                enctype="multipart/form-data"
+                hx-post="/admin/tool-versions/{{ selected_version.id }}/run-sandbox"
+                hx-target="#run-result"
+                hx-swap="innerHTML"
+                hx-encoding="multipart/form-data"
+                class="huleedu-flex huleedu-gap-4"
+                style="flex: 1; align-items: center;"
+              >
+                <input type="hidden" name="tool_id" value="{{ tool.id }}" />
+                <div class="huleedu-file-wrapper huleedu-input" style="flex: 1; max-width: 280px;">
+                  <span class="huleedu-file-fake-button">Välj fil</span>
+                  <span id="file-name" class="huleedu-muted" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Ingen fil vald</span>
+                  <input type="file" name="file" class="huleedu-file-native"
+                         onchange="document.getElementById('file-name').textContent = this.files[0] ? this.files[0].name : 'Ingen fil vald'" />
+                </div>
+                <button type="submit" class="huleedu-btn huleedu-btn-navy">Testkör</button>
+              </form>
+            {% else %}
+              <span class="huleedu-muted">Skapa ett utkast innan du testkör.</span>
+            {% endif %}
             <span class="huleedu-toolbar-version">
               <span class="huleedu-badge">v{{ selected_version.version_number }}</span>
               <span class="huleedu-badge {% if selected_version.state.value == 'active' %}huleedu-badge-burgundy{% endif %}">{{ selected_version.state | version_state_label }}</span>

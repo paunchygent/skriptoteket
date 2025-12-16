@@ -87,12 +87,14 @@ async def script_editor_for_tool(
     versions = await versions_repo.list_for_tool(tool_id=tool.id, limit=50)
     selected_version = _select_default_version(actor=user, tool=tool, versions=versions)
 
-    if user.role is Role.CONTRIBUTOR and selected_version is None:
-        raise DomainError(
-            code=ErrorCode.FORBIDDEN,
-            message="Insufficient permissions",
-            details={"tool_id": str(tool.id)},
-        )
+    if user.role is Role.CONTRIBUTOR and versions:
+        visible_versions = _visible_versions_for_actor(actor=user, versions=versions)
+        if not visible_versions:
+            raise DomainError(
+                code=ErrorCode.FORBIDDEN,
+                message="Insufficient permissions",
+                details={"tool_id": str(tool.id)},
+            )
 
     if selected_version is None:
         entrypoint = "run_tool"
@@ -195,7 +197,7 @@ async def version_history(
 
     versions = await versions_repo.list_for_tool(tool_id=tool.id, limit=50)
     visible_versions = _visible_versions_for_actor(actor=user, versions=versions)
-    if user.role is Role.CONTRIBUTOR and not visible_versions:
+    if user.role is Role.CONTRIBUTOR and versions and not visible_versions:
         raise DomainError(
             code=ErrorCode.FORBIDDEN,
             message="Insufficient permissions",
@@ -228,7 +230,8 @@ async def script_editor_for_version(
     version = await versions_repo.get_by_id(version_id=version_id)
     if version is None:
         raise not_found("ToolVersion", str(version_id))
-    if not _is_allowed_to_view_version(actor=user, version=version):
+    versions = await versions_repo.list_for_tool(tool_id=version.tool_id, limit=50)
+    if not _is_allowed_to_view_version(actor=user, version=version, versions=versions):
         raise DomainError(
             code=ErrorCode.FORBIDDEN,
             message="Insufficient permissions",
@@ -239,7 +242,6 @@ async def script_editor_for_version(
     if tool is None:
         raise not_found("Tool", str(version.tool_id))
 
-    versions = await versions_repo.list_for_tool(tool_id=tool.id, limit=50)
     return templates.TemplateResponse(
         request=request,
         name="admin/script_editor.html",

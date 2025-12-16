@@ -91,6 +91,7 @@ async def _create_version(
     version_number: int,
     state: VersionState,
     source_code: str,
+    derived_from_version_id: uuid.UUID | None = None,
 ) -> ToolVersionModel:
     now = datetime.now(timezone.utc)
     entrypoint = "run_tool"
@@ -102,7 +103,7 @@ async def _create_version(
         source_code=source_code,
         entrypoint=entrypoint,
         content_hash=compute_content_hash(entrypoint=entrypoint, source_code=source_code),
-        derived_from_version_id=None,
+        derived_from_version_id=derived_from_version_id,
         created_by_user_id=created_by_user_id,
         created_at=now,
         submitted_for_review_by_user_id=created_by_user_id
@@ -138,19 +139,22 @@ async def test_admin_editor_for_tool_renders_starter_template_when_no_versions(
 
 
 @pytest.mark.integration
-async def test_contributor_editor_for_tool_without_visible_versions_is_forbidden(
+async def test_contributor_editor_for_tool_renders_starter_template_when_no_versions(
     client: AsyncClient,
     db_session: AsyncSession,
 ) -> None:
     await _login(
         client=client, db_session=db_session, role=Role.CONTRIBUTOR, email="contrib@example.com"
     )
-    tool = await _create_tool(db_session=db_session, slug="tool-forbidden", title="Forbidden")
+    tool = await _create_tool(
+        db_session=db_session, slug="tool-no-versions-contrib", title="No Versions"
+    )
 
     response = await client.get(f"/admin/tools/{tool.id}")
 
-    assert response.status_code == 403
-    assert "Du saknar behörighet" in response.text
+    assert response.status_code == 200
+    assert "Skripteditorn" in response.text
+    assert "Received file of" in response.text
 
 
 @pytest.mark.integration
@@ -173,6 +177,54 @@ async def test_contributor_editor_for_tool_renders_own_draft_version(
         source_code=f"def run_tool(input_path: str, output_dir: str) -> str:\n    {marker}\n    return '<p>ok</p>'\n",
     )
     del draft
+
+    response = await client.get(f"/admin/tools/{tool.id}")
+
+    assert response.status_code == 200
+    assert marker in response.text
+
+
+@pytest.mark.integration
+async def test_contributor_editor_for_tool_renders_active_version_derived_from_their_work(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    contributor = await _login(
+        client=client,
+        db_session=db_session,
+        role=Role.CONTRIBUTOR,
+        email="contrib-active@example.com",
+    )
+    admin = await _create_user(
+        db_session=db_session,
+        role=Role.ADMIN,
+        email="admin-active@example.com",
+    )
+    tool = await _create_tool(db_session=db_session, slug="tool-with-active", title="With Active")
+
+    author_version = await _create_version(
+        db_session=db_session,
+        tool_id=tool.id,
+        created_by_user_id=contributor.id,
+        version_number=1,
+        state=VersionState.ARCHIVED,
+        source_code="def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>v1</p>'\n",
+    )
+
+    marker = "# ACTIVE_MARKER"
+    active = await _create_version(
+        db_session=db_session,
+        tool_id=tool.id,
+        created_by_user_id=admin.id,
+        version_number=2,
+        state=VersionState.ACTIVE,
+        derived_from_version_id=author_version.id,
+        source_code=f"def run_tool(input_path: str, output_dir: str) -> str:\n    {marker}\n    return '<p>v2</p>'\n",
+    )
+
+    tool.active_version_id = active.id
+    tool.is_published = True
+    await db_session.flush()
 
     response = await client.get(f"/admin/tools/{tool.id}")
 

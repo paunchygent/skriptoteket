@@ -33,6 +33,7 @@ from skriptoteket.application.scripting.handlers.create_draft_version import (
 from skriptoteket.application.scripting.handlers.execute_tool_version import (
     ExecuteToolVersionHandler,
 )
+from skriptoteket.application.scripting.handlers.run_active_tool import RunActiveToolHandler
 from skriptoteket.application.scripting.handlers.run_sandbox import RunSandboxHandler
 from skriptoteket.application.scripting.handlers.save_draft_version import SaveDraftVersionHandler
 from skriptoteket.application.scripting.handlers.submit_for_review import SubmitForReviewHandler
@@ -103,6 +104,7 @@ from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
     PublishVersionHandlerProtocol,
     RequestChangesHandlerProtocol,
+    RunActiveToolHandlerProtocol,
     RunSandboxHandlerProtocol,
     SaveDraftVersionHandlerProtocol,
     SubmitForReviewHandlerProtocol,
@@ -340,6 +342,21 @@ class AppProvider(Provider):
         execute: ExecuteToolVersionHandlerProtocol,
     ) -> RunSandboxHandlerProtocol:
         return RunSandboxHandler(uow=uow, versions=versions, execute=execute)
+
+    @provide(scope=Scope.REQUEST)
+    def run_active_tool_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        execute: ExecuteToolVersionHandlerProtocol,
+    ) -> RunActiveToolHandlerProtocol:
+        return RunActiveToolHandler(
+            uow=uow,
+            tools=tools,
+            versions=versions,
+            execute=execute,
+        )
 
     @provide(scope=Scope.REQUEST)
     def script_suggestion_repo(self, session: AsyncSession) -> SuggestionRepositoryProtocol:

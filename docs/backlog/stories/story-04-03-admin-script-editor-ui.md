@@ -63,7 +63,8 @@ See REF-scripting-api-contracts for detailed endpoint specifications, request/re
   a FAILED run without calling Docker and with an actionable `error_summary`.
 - Concurrency control: use `expected_parent_version_id` (see `REF-scripting-api-contracts`) rather than DB-level
   optimistic locking; reject with `DomainError(CONFLICT)` if the draft head has advanced.
-- Role guards: contributor sees/edits own drafts only (ownership via `tool_versions.created_by_user_id`)
+- Role guards: contributor can edit only own drafts (ownership via `tool_versions.created_by_user_id`)
+  - Contributor can still view the published ACTIVE/ARCHIVED versions derived from their work, to enable iteration after publication (create a new draft from the published baseline).
   - This story SHOULD include a minimal discoverability surface for contributors (e.g. “My tools” list) or document
     how contributors obtain a `tool_id` to open the editor.
 - Template pre-fill for new tools:

@@ -8,6 +8,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.domain.scripting.models import create_draft_version
+from skriptoteket.domain.scripting.policies import require_can_view_version
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -64,6 +65,16 @@ class CreateDraftVersionHandler(CreateDraftVersionHandlerProtocol):
                             "derived_from_version_id": str(command.derived_from_version_id),
                             "derived_from_tool_id": str(derived_from.tool_id),
                         },
+                    )
+                if actor.role is Role.CONTRIBUTOR:
+                    versions_for_tool = await self._versions.list_for_tool(
+                        tool_id=tool.id,
+                        limit=200,
+                    )
+                    require_can_view_version(
+                        actor=actor,
+                        version=derived_from,
+                        versions=versions_for_tool,
                     )
 
             version_number = await self._versions.get_next_version_number(tool_id=tool.id)

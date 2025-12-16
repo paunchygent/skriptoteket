@@ -110,3 +110,21 @@ class RunSandboxResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     run: ToolRun
+
+
+class RunActiveToolCommand(BaseModel):
+    """Command for user-facing execution of published tools."""
+
+    model_config = ConfigDict(frozen=True)
+
+    tool_slug: str
+    input_filename: str
+    input_bytes: bytes
+
+
+class RunActiveToolResult(BaseModel):
+    """Result from user-facing tool execution."""
+
+    model_config = ConfigDict(frozen=True)
+
+    run: ToolRun

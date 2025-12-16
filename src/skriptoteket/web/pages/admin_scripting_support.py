@@ -5,8 +5,12 @@ from fastapi.responses import RedirectResponse, Response
 
 from skriptoteket.domain.catalog.models import Tool
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
-from skriptoteket.domain.identity.models import Role, User
+from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.execution import ArtifactsManifest
+from skriptoteket.domain.scripting.policies import (
+    can_view_version as _can_view_version,
+    visible_versions_for_actor as _visible_versions_for_actor,
+)
 from skriptoteket.domain.scripting.models import ToolRun, ToolVersion, VersionState
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.scripting import ToolVersionRepositoryProtocol
@@ -48,14 +52,7 @@ def parse_uuid(value: str | None) -> UUID | None:
 
 
 def visible_versions_for_actor(*, actor: User, versions: list[ToolVersion]) -> list[ToolVersion]:
-    if actor.role in {Role.ADMIN, Role.SUPERUSER}:
-        return versions
-    allowed_states = {VersionState.DRAFT, VersionState.IN_REVIEW}
-    return [
-        version
-        for version in versions
-        if version.created_by_user_id == actor.id and version.state in allowed_states
-    ]
+    return _visible_versions_for_actor(actor=actor, versions=versions)
 
 
 def select_default_version(
@@ -69,11 +66,9 @@ def select_default_version(
             return version
 
     if tool.active_version_id is not None:
-        for version in versions:
+        for version in visible_versions:
             if version.id == tool.active_version_id:
-                if actor.role in {Role.ADMIN, Role.SUPERUSER}:
-                    return version
-                return None
+                return version
 
     return visible_versions[0] if visible_versions else None
 
@@ -91,13 +86,13 @@ def artifacts_for_run(run: ToolRun) -> list[dict[str, object]]:
     ]
 
 
-def is_allowed_to_view_version(*, actor: User, version: ToolVersion) -> bool:
-    if actor.role in {Role.ADMIN, Role.SUPERUSER}:
-        return True
-    return version.created_by_user_id == actor.id and version.state in {
-        VersionState.DRAFT,
-        VersionState.IN_REVIEW,
-    }
+def is_allowed_to_view_version(
+    *,
+    actor: User,
+    version: ToolVersion,
+    versions: list[ToolVersion],
+) -> bool:
+    return _can_view_version(actor=actor, version=version, versions=versions)
 
 
 def editor_context(

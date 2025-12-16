@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.errors import not_found
-from skriptoteket.domain.scripting.models import ToolRun
+from skriptoteket.domain.scripting.models import RunContext, ToolRun
 from skriptoteket.infrastructure.db.models.tool_run import ToolRunModel
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
 
@@ -61,3 +61,21 @@ class PostgreSQLToolRunRepository(ToolRunRepositoryProtocol):
         await self._session.flush()
         await self._session.refresh(model)
         return ToolRun.model_validate(model)
+
+    async def list_for_user(
+        self,
+        *,
+        user_id: UUID,
+        context: RunContext,
+        limit: int = 50,
+    ) -> list[ToolRun]:
+        stmt = (
+            select(ToolRunModel)
+            .where(ToolRunModel.requested_by_user_id == user_id)
+            .where(ToolRunModel.context == context.value)
+            .order_by(ToolRunModel.started_at.desc())
+            .limit(limit)
+        )
+        result = await self._session.execute(stmt)
+        models = result.scalars().all()
+        return [ToolRun.model_validate(m) for m in models]

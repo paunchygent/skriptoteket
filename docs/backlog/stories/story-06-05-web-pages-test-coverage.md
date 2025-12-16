@@ -2,7 +2,7 @@
 type: story
 id: ST-06-05
 title: "Improve test coverage for remaining web page routers (admin tools, scripting runs, suggestions)"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2025-12-16
 epic: "EPIC-06"
@@ -29,4 +29,3 @@ These routes are core to admin and contributor workflows.
 1. Add targeted unit tests that call the route functions with protocol-mocked dependencies.
 2. Prefer asserting on response type/status/redirect headers and key template context fields.
 3. Add a small number of integration tests only where real DB behavior is essential.
-

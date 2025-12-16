@@ -12,6 +12,8 @@ from skriptoteket.application.scripting.commands import (
     PublishVersionResult,
     RequestChangesCommand,
     RequestChangesResult,
+    RunActiveToolCommand,
+    RunActiveToolResult,
     RunSandboxCommand,
     RunSandboxResult,
     SaveDraftVersionCommand,
@@ -20,7 +22,7 @@ from skriptoteket.application.scripting.commands import (
     SubmitForReviewResult,
 )
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.scripting.models import ToolRun, ToolVersion, VersionState
+from skriptoteket.domain.scripting.models import RunContext, ToolRun, ToolVersion, VersionState
 
 
 class ToolVersionRepositoryProtocol(Protocol):
@@ -51,6 +53,14 @@ class ToolRunRepositoryProtocol(Protocol):
     async def create(self, *, run: ToolRun) -> ToolRun: ...
 
     async def update(self, *, run: ToolRun) -> ToolRun: ...
+
+    async def list_for_user(
+        self,
+        *,
+        user_id: UUID,
+        context: RunContext,
+        limit: int = 50,
+    ) -> list[ToolRun]: ...
 
 
 class ExecuteToolVersionHandlerProtocol(Protocol):
@@ -114,3 +124,14 @@ class RunSandboxHandlerProtocol(Protocol):
         actor: User,
         command: RunSandboxCommand,
     ) -> RunSandboxResult: ...
+
+
+class RunActiveToolHandlerProtocol(Protocol):
+    """Protocol for user-facing execution of published tools."""
+
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: RunActiveToolCommand,
+    ) -> RunActiveToolResult: ...
