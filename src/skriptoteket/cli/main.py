@@ -2,26 +2,52 @@ from __future__ import annotations
 
 import asyncio
 from datetime import datetime, timezone
+from importlib.resources import files as resource_files
 from pathlib import Path
 
 import typer
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+from skriptoteket.application.catalog.commands import PublishToolCommand, UpdateToolMetadataCommand
+from skriptoteket.application.catalog.handlers.publish_tool import PublishToolHandler
+from skriptoteket.application.catalog.handlers.update_tool_metadata import UpdateToolMetadataHandler
 from skriptoteket.application.identity.authentication import authenticate_local_user
 from skriptoteket.application.identity.commands import CreateLocalUserCommand
 from skriptoteket.application.identity.handlers.create_local_user import CreateLocalUserHandler
 from skriptoteket.application.identity.handlers.provision_local_user import (
     ProvisionLocalUserHandler,
 )
+from skriptoteket.application.scripting.commands import (
+    CreateDraftVersionCommand,
+    PublishVersionCommand,
+    SubmitForReviewCommand,
+)
+from skriptoteket.application.scripting.handlers.create_draft_version import (
+    CreateDraftVersionHandler,
+)
+from skriptoteket.application.scripting.handlers.publish_version import PublishVersionHandler
+from skriptoteket.application.scripting.handlers.submit_for_review import SubmitForReviewHandler
 from skriptoteket.config import Settings
+from skriptoteket.domain.catalog.models import Tool, update_tool_metadata
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.infrastructure.clock import UTCClock
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.id_generator import UUID4Generator
+from skriptoteket.infrastructure.repositories.category_repository import (
+    PostgreSQLCategoryRepository,
+)
+from skriptoteket.infrastructure.repositories.profession_repository import (
+    PostgreSQLProfessionRepository,
+)
+from skriptoteket.infrastructure.repositories.tool_repository import PostgreSQLToolRepository
+from skriptoteket.infrastructure.repositories.tool_version_repository import (
+    PostgreSQLToolVersionRepository,
+)
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
 from skriptoteket.infrastructure.runner.retention import prune_artifacts_root
 from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordHasher
+from skriptoteket.script_bank.bank import SCRIPT_BANK
 
 app = typer.Typer(no_args_is_help=True)
 
@@ -168,3 +194,317 @@ def prune_artifacts(
         now=datetime.now(timezone.utc),
     )
     typer.echo(f"Deleted {deleted} artifact run directories from {effective_root}.")
+
+
+@app.command()
+def seed_script_bank(
+    actor_email: str = typer.Option(
+        ...,
+        envvar="SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL",
+        prompt=True,
+        help="Admin/superuser email used for audit fields (created_by/published_by).",
+    ),
+    actor_password: str = typer.Option(
+        ...,
+        envvar="SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD",
+        prompt=True,
+        hide_input=True,
+        help="Password for the admin/superuser account.",
+    ),
+    slug: list[str] = typer.Option(
+        [],
+        "--slug",
+        help="Seed only these tool slugs (repeatable). Defaults to all script-bank entries.",
+    ),
+    publish: bool = typer.Option(
+        True,
+        help="Ensure seeded tools are published (visible in Katalog) if an ACTIVE version exists.",
+    ),
+    sync_metadata: bool = typer.Option(
+        False,
+        help="Update title/summary for existing tools to match the repo script bank.",
+    ),
+    sync_code: bool = typer.Option(
+        False,
+        help=(
+            "If the ACTIVE version differs, create + publish a new version from the repo "
+            "script bank."
+        ),
+    ),
+    dry_run: bool = typer.Option(
+        False,
+        help="Print planned actions without writing to the database.",
+    ),
+) -> None:
+    """Seed curated repo scripts into the database (idempotent by tool slug)."""
+    asyncio.run(
+        _seed_script_bank_async(
+            actor_email=actor_email,
+            actor_password=actor_password,
+            slugs=slug,
+            publish=publish,
+            sync_metadata=sync_metadata,
+            sync_code=sync_code,
+            dry_run=dry_run,
+        )
+    )
+
+
+async def _seed_script_bank_async(
+    *,
+    actor_email: str,
+    actor_password: str,
+    slugs: list[str],
+    publish: bool,
+    sync_metadata: bool,
+    sync_code: bool,
+    dry_run: bool,
+) -> None:
+    settings = Settings()
+    engine = create_async_engine(settings.DATABASE_URL, pool_pre_ping=True)
+    sessionmaker = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+
+    try:
+        async with sessionmaker() as session:
+            uow = SQLAlchemyUnitOfWork(session)
+            users = PostgreSQLUserRepository(session)
+            password_hasher = Argon2PasswordHasher()
+            actor = await authenticate_local_user(
+                users=users,
+                password_hasher=password_hasher,
+                email=actor_email,
+                password=actor_password,
+            )
+            if actor.role not in {Role.ADMIN, Role.SUPERUSER}:
+                raise SystemExit("Insufficient permissions: actor must be admin or superuser.")
+
+            clock = UTCClock()
+            id_generator = UUID4Generator()
+
+            tools = PostgreSQLToolRepository(session)
+            versions = PostgreSQLToolVersionRepository(session)
+            professions = PostgreSQLProfessionRepository(session)
+            categories = PostgreSQLCategoryRepository(session)
+
+            create_draft_version = CreateDraftVersionHandler(
+                uow=uow,
+                tools=tools,
+                versions=versions,
+                clock=clock,
+                id_generator=id_generator,
+            )
+            submit_for_review = SubmitForReviewHandler(
+                uow=uow,
+                versions=versions,
+                clock=clock,
+            )
+            publish_version = PublishVersionHandler(
+                uow=uow,
+                tools=tools,
+                versions=versions,
+                clock=clock,
+                id_generator=id_generator,
+            )
+            publish_tool_handler = PublishToolHandler(
+                uow=uow,
+                tools=tools,
+                versions=versions,
+                clock=clock,
+            )
+            update_tool_metadata_handler = UpdateToolMetadataHandler(
+                uow=uow,
+                tools=tools,
+                clock=clock,
+            )
+
+            slug_set = set(slugs)
+            selected_entries = (
+                [entry for entry in SCRIPT_BANK if entry.slug in slug_set] if slugs else SCRIPT_BANK
+            )
+            if slugs and not selected_entries:
+                raise SystemExit(f"No script-bank entries found for slugs: {', '.join(slugs)}")
+
+            for entry in selected_entries:
+                await _seed_one_entry(
+                    actor=actor,
+                    entry=entry,
+                    uow=uow,
+                    tools=tools,
+                    versions=versions,
+                    professions=professions,
+                    categories=categories,
+                    create_draft_version=create_draft_version,
+                    submit_for_review=submit_for_review,
+                    publish_version=publish_version,
+                    publish_tool=publish_tool_handler,
+                    update_tool_metadata_handler=update_tool_metadata_handler,
+                    sync_metadata=sync_metadata,
+                    sync_code=sync_code,
+                    publish=publish,
+                    dry_run=dry_run,
+                )
+    finally:
+        await engine.dispose()
+
+
+async def _seed_one_entry(
+    *,
+    actor,
+    entry,
+    uow: SQLAlchemyUnitOfWork,
+    tools: PostgreSQLToolRepository,
+    versions: PostgreSQLToolVersionRepository,
+    professions: PostgreSQLProfessionRepository,
+    categories: PostgreSQLCategoryRepository,
+    create_draft_version: CreateDraftVersionHandler,
+    submit_for_review: SubmitForReviewHandler,
+    publish_version: PublishVersionHandler,
+    publish_tool: PublishToolHandler,
+    update_tool_metadata_handler: UpdateToolMetadataHandler,
+    sync_metadata: bool,
+    sync_code: bool,
+    publish: bool,
+    dry_run: bool,
+) -> None:
+    now = UTCClock().now()
+    tool = await tools.get_by_slug(slug=entry.slug)
+    created = False
+
+    if tool is None:
+        profession_ids = []
+        for profession_slug in entry.profession_slugs:
+            profession = await professions.get_by_slug(profession_slug)
+            if profession is None:
+                raise SystemExit(f"Unknown profession slug: {profession_slug}")
+            profession_ids.append(profession.id)
+
+        category_ids = []
+        for category_slug in entry.category_slugs:
+            category = await categories.get_by_slug(category_slug)
+            if category is None:
+                raise SystemExit(f"Unknown category slug: {category_slug}")
+            category_ids.append(category.id)
+
+        draft_tool = Tool(
+            id=UUID4Generator().new_uuid(),
+            slug=entry.slug,
+            title=entry.title,
+            summary=entry.summary,
+            is_published=False,
+            active_version_id=None,
+            created_at=now,
+            updated_at=now,
+        )
+        normalized_tool = update_tool_metadata(
+            tool=draft_tool,
+            title=draft_tool.title,
+            summary=draft_tool.summary,
+            now=now,
+        )
+
+        if dry_run:
+            typer.echo(f"[dry-run] Create tool: {entry.slug}")
+        else:
+            async with uow:
+                tool = await tools.create_draft(
+                    tool=normalized_tool,
+                    profession_ids=profession_ids,
+                    category_ids=category_ids,
+                )
+            created = True
+    else:
+        if sync_metadata and (tool.title != entry.title or tool.summary != entry.summary):
+            if dry_run:
+                typer.echo(f"[dry-run] Update metadata: {entry.slug}")
+            else:
+                await update_tool_metadata_handler.handle(
+                    actor=actor,
+                    command=UpdateToolMetadataCommand(
+                        tool_id=tool.id,
+                        title=entry.title,
+                        summary=entry.summary,
+                    ),
+                )
+                tool = await tools.get_by_id(tool_id=tool.id)
+                if tool is None:
+                    raise SystemExit(f"Tool disappeared during seed: {entry.slug}")
+
+    assert tool is not None
+
+    source_code = (
+        resource_files("skriptoteket.script_bank.scripts") / entry.source_filename
+    ).read_text(encoding="utf-8")
+
+    active_version = await versions.get_active_for_tool(tool_id=tool.id)
+    if active_version is None:
+        if dry_run:
+            typer.echo(f"[dry-run] Create + publish initial version: {entry.slug}")
+        else:
+            draft_result = await create_draft_version.handle(
+                actor=actor,
+                command=CreateDraftVersionCommand(
+                    tool_id=tool.id,
+                    entrypoint=entry.entrypoint,
+                    source_code=source_code,
+                    change_summary="Seed: initial version från repo",
+                ),
+            )
+            submitted = await submit_for_review.handle(
+                actor=actor,
+                command=SubmitForReviewCommand(
+                    version_id=draft_result.version.id,
+                    review_note="Automatiskt seedad från repo script bank.",
+                ),
+            )
+            await publish_version.handle(
+                actor=actor,
+                command=PublishVersionCommand(
+                    version_id=submitted.version.id,
+                    change_summary="Automatiskt publicerad från repo script bank.",
+                ),
+            )
+    elif sync_code and (
+        active_version.entrypoint != entry.entrypoint or active_version.source_code != source_code
+    ):
+        if dry_run:
+            typer.echo(f"[dry-run] Create + publish updated version: {entry.slug}")
+        else:
+            draft_result = await create_draft_version.handle(
+                actor=actor,
+                command=CreateDraftVersionCommand(
+                    tool_id=tool.id,
+                    derived_from_version_id=active_version.id,
+                    entrypoint=entry.entrypoint,
+                    source_code=source_code,
+                    change_summary="Seed: uppdaterad version från repo",
+                ),
+            )
+            submitted = await submit_for_review.handle(
+                actor=actor,
+                command=SubmitForReviewCommand(
+                    version_id=draft_result.version.id,
+                    review_note="Automatiskt uppdaterad från repo script bank.",
+                ),
+            )
+            await publish_version.handle(
+                actor=actor,
+                command=PublishVersionCommand(
+                    version_id=submitted.version.id,
+                    change_summary="Automatiskt publicerad (uppdatering) från repo script bank.",
+                ),
+            )
+
+    tool = await tools.get_by_id(tool_id=tool.id)
+    if tool is None:
+        raise SystemExit(f"Tool disappeared during seed: {entry.slug}")
+
+    if publish and not tool.is_published:
+        if dry_run:
+            typer.echo(f"[dry-run] Publish tool: {entry.slug}")
+        else:
+            await publish_tool.handle(actor=actor, command=PublishToolCommand(tool_id=tool.id))
+
+    if created and not dry_run:
+        typer.echo(f"Seeded tool: {entry.slug} (created)")
+    elif not dry_run:
+        typer.echo(f"Seeded tool: {entry.slug} (updated)")
