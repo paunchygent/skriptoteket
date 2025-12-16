@@ -22,6 +22,7 @@ build/
 .env
 .env.*
 !.env.example
+!.env.example.prod
 
 # Notebooks
 .ipynb_checkpoints/
@@ -40,3 +41,7 @@ tools/puppeteer/package-lock.json
 
 # Local artifacts (runner output)
 .artifacts/
+
+# Sensitive operational docs (credentials, server details)
+.agent/rules/080-home-server-deployment.md
+docs/runbooks/

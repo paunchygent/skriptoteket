@@ -1,0 +1,51 @@
+# Production deployment for home server (hemma.hule.education)
+# Usage: docker compose -f compose.prod.yaml build && docker compose -f compose.prod.yaml up -d
+#
+# Prerequisites:
+# - External network: docker network create hule-network
+# - External PostgreSQL: shared-postgres on hule-network
+# - Environment variables in .env (see .env.example.prod)
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: skriptoteket-web:latest
+    container_name: skriptoteket-web
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://skriptoteket:${SKRIPTOTEKET_DB_PASSWORD}@shared-postgres:5432/skriptoteket
+      SECRET_KEY: ${SECRET_KEY}
+      ENVIRONMENT: production
+      RUNNER_IMAGE: skriptoteket-runner:latest
+      ARTIFACTS_ROOT: /app/.artifacts
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - artifacts_data:/app/.artifacts
+    networks:
+      - hule-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Runner image - built but not run as a service
+  # Web app starts runner containers dynamically via Docker API
+  runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.runner
+    image: skriptoteket-runner:latest
+    profiles:
+      - build-only
+
+networks:
+  hule-network:
+    external: true
+
+volumes:
+  artifacts_data:
