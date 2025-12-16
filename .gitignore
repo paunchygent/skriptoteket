@@ -47,3 +47,4 @@ tools/puppeteer/package-lock.json
 docs/runbooks/*
 !docs/runbooks/.gitkeep
 !docs/runbooks/runbook-script-bank-seeding.md
+!docs/runbooks/runbook-user-management.md
