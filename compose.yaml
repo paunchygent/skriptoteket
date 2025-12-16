@@ -20,9 +20,6 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-skriptoteket}
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - skriptoteket-artifacts:/app/artifacts
     depends_on:
       - db
     restart: unless-stopped
@@ -38,4 +35,3 @@ networks:
 
 volumes:
   skriptoteket-db:
-  skriptoteket-artifacts:
