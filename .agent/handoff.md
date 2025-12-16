@@ -14,9 +14,20 @@ Keep this file updated so the next session can pick up work quickly.
 
 - Date: 2025-12-16
 - Branch / commit: `main` (HEAD `321757b`, dirty working tree)
-- Goal of the session: ST-06-06 Test warnings hygiene (TemplateResponse deprecation + narrow warning filtering).
+- Goal of the session: ST-04-04 Contributor iteration after publication (policies + editor visibility).
 
 ## What changed
+
+### Current session (ST-04-04 Contributor iteration after publication)
+
+- Added scripting policy layer for version visibility/lineage: `src/skriptoteket/domain/scripting/policies.py`.
+- Contributor can now open published tools they authored (ACTIVE/ARCHIVED derived from their work) and create a new draft from the published baseline:
+  - `src/skriptoteket/web/pages/admin_scripting_support.py`
+  - `src/skriptoteket/web/pages/admin_scripting.py`
+  - `src/skriptoteket/web/templates/admin/script_editor.html` (hides sandbox runner when contributor views ACTIVE/ARCHIVED).
+- Enforced derived-from permission in draft creation: `src/skriptoteket/application/scripting/handlers/create_draft_version.py`.
+- Docs/contracts updated to match: `docs/backlog/stories/story-04-03-admin-script-editor-ui.md`, `docs/reference/ref-scripting-api-contracts.md`.
+- Tests updated/added: `tests/integration/web/test_admin_scripting_editor_routes.py`.
 
 ### Current session (ST-06-06 Test warnings hygiene)
 
@@ -155,6 +166,10 @@ Keep this file updated so the next session can pick up work quickly.
   - With the session cookie, verified:
     - `GET /admin/tools` returns 200.
     - `GET /admin/tools/{tool_id}` returns 200 (script editor route renders).
+- Live functional check (ran, no secrets/tokens recorded):
+  - Seeded a published tool with an ACTIVE version derived from a contributor’s archived version (direct DB insert).
+  - Started server on port 8001: `pdm run uvicorn --app-dir src skriptoteket.web.app:app --host 127.0.0.1 --port 8001`.
+  - With a contributor session cookie, verified `GET /admin/tools/{tool_id}` returns 200 and includes the ACTIVE source marker (`LIVE_ACTIVE_MARKER`).
 - QC gates (ran): `pdm run test -- -q && pdm run docs-validate`
 - Lint note: `pdm run lint` currently fails on existing E501 lines in
   `tests/integration/web/test_admin_scripting_editor_routes.py`; `pdm run ruff check src/skriptoteket/web` passes.
