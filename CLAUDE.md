@@ -152,15 +152,48 @@ await new Promise(r => setTimeout(r, 1500)); // Wait for redirect
 
 **DO NOT** use `page.click()` + `waitForNavigation()` - it times out with HTMX forms.
 
-## Home Server Access
+## Home Server Deployment
 
-SSH access to the home server (Ubuntu Linux):
+**CRITICAL**: Production deployments use `compose.prod.yaml`, NOT `compose.yaml`.
+
+### SSH Access
 
 ```bash
 ssh hemma              # Via hemma.hule.education (works everywhere)
 ssh hemma-local        # Via 192.168.0.9 (local network, faster)
 ```
 
-- **Passwordless sudo** is configured - no password needed after SSH login
-- **Dynamic DNS** via Namecheap ddclient - IP updates automatically
-- Config: `~/.ssh/config`
+### Standard Deploy
+
+```bash
+ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"
+```
+
+### Deploy with Migrations
+
+```bash
+ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"
+ssh hemma "docker exec skriptoteket-web pdm run db-upgrade"
+```
+
+### CLI Commands in Container
+
+Always use `-e PYTHONPATH=/app/src` for CLI commands:
+
+```bash
+ssh hemma "docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli <command>"
+```
+
+### Key Differences: compose.yaml vs compose.prod.yaml
+
+| Feature | compose.yaml (dev) | compose.prod.yaml (prod) |
+|---------|-------------------|--------------------------|
+| Database | Local `skriptoteket-db-1` | Shared `shared-postgres` |
+| Docker socket | Not mounted | Mounted (for runner) |
+| Artifacts | Not mounted | Persistent volume |
+| Network | `skriptoteket_default` | `hule-network` |
+| Proxy headers | Manual | Built-in |
+
+### Runbooks
+
+See `docs/runbooks/runbook-home-server.md` for detailed operations.
