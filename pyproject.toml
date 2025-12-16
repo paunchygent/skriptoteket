@@ -262,7 +262,7 @@ distribution = false
 # App runtime
 dev = "uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8000"
 dev-docker = "uvicorn --app-dir src skriptoteket.web.app:app --reload --host 0.0.0.0 --port 8000"
-serve = "uvicorn --app-dir src skriptoteket.web.app:app --host 0.0.0.0 --port 8000"
+serve = "uvicorn --app-dir src skriptoteket.web.app:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'"
 
 # Code quality
 format = "ruff format --force-exclude ."
