@@ -151,3 +151,16 @@ await new Promise(r => setTimeout(r, 1500)); // Wait for redirect
 ```
 
 **DO NOT** use `page.click()` + `waitForNavigation()` - it times out with HTMX forms.
+
+## Home Server Access
+
+SSH access to the home server (Ubuntu Linux):
+
+```bash
+ssh hemma              # Via hemma.hule.education (works everywhere)
+ssh hemma-local        # Via 192.168.0.9 (local network, faster)
+```
+
+- **Passwordless sudo** is configured - no password needed after SSH login
+- **Dynamic DNS** via Namecheap ddclient - IP updates automatically
+- Config: `~/.ssh/config`
