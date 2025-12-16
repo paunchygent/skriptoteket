@@ -79,6 +79,11 @@ This epic enables the full script authoring and execution lifecycle:
 - Result view for end-users (HTML only, no logs/debug info)
 - Metrics and usage tracking
 
+### ST-04-06: Repo script bank seeding
+
+- Repo-level script bank (svenska, teacher-first) + CLI seeding till DB (idempotent per slug)
+- Runbook för körning (lokalt + prod/Docker)
+
 ## Risks
 
 - Docker socket access expands blast radius (mitigate: consider dedicated runner service later)

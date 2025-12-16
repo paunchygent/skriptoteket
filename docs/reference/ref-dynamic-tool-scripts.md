@@ -26,6 +26,7 @@ Publishing new tool logic currently requires repository changes and redeployment
 - Multi-language runtime support (Python only for now)
 - Asynchronous job queue for long-running tasks (may be added later)
 - Fixture library for saved test inputs (deferred to future epic)
+- Repo-seedad “script bank” som ändrar runtime scripts automatiskt (manuell seed via CLI är OK)
 
 ## Related Documents
 
@@ -63,6 +64,24 @@ and the EPIC-04 scripting workflow (versioned script code + execution).
 - **Rollback (Superuser)**: create a new ACTIVE version derived from an older archived version. If the tool is
   published, users immediately run the rolled-back ACTIVE version.
   - See: [ST-04-04 Governance, audit, and rollback](../backlog/stories/story-04-04-governance-audit-rollback.md)
+
+---
+
+## Repo-level script bank (seed)
+
+För att ha realistiska “exempelverktyg” i repo:t (med svensk, lärarfokuserad copy) finns en liten script bank under:
+
+- `src/skriptoteket/script_bank/`
+
+Den kan seedas till databasen (skapar verktyg + första ACTIVE versionen, och kan publicera verktyget) via:
+
+- `pdm run seed-script-bank`
+
+Tips:
+
+- Kör med `--dry-run` för att se vad som skulle hända.
+- `--sync-metadata` uppdaterar `tools.title`/`tools.summary` för redan existerande verktyg.
+- `--sync-code` skapar + publicerar en ny version om ACTIVE skiljer sig från repo-scriptet.
 
 ## Domain Model
 
