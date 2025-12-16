@@ -7,10 +7,12 @@ from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.models import (
     RunContext,
     RunStatus,
+    ToolVersion,
     VersionState,
     create_draft_version,
     finish_tool_run,
     publish_version,
+    save_draft_snapshot,
     start_tool_run,
     submit_for_review,
 )
@@ -63,7 +65,7 @@ def test_create_draft_version_validation() -> None:
     assert exc.value.code == ErrorCode.VALIDATION_ERROR
 
     # Test empty source code
-    with pytest.raises(DomainError):
+    with pytest.raises(DomainError) as exc:
         create_draft_version(
             version_id=version_id,
             tool_id=tool_id,
@@ -75,6 +77,125 @@ def test_create_draft_version_validation() -> None:
             change_summary=None,
             now=now,
         )
+    assert exc.value.code == ErrorCode.VALIDATION_ERROR
+
+    # Test invalid entrypoint (empty)
+    with pytest.raises(DomainError) as exc:
+        create_draft_version(
+            version_id=version_id,
+            tool_id=tool_id,
+            version_number=1,
+            source_code="code",
+            entrypoint="   ",  # Invalid
+            created_by_user_id=user_id,
+            derived_from_version_id=None,
+            change_summary=None,
+            now=now,
+        )
+    assert exc.value.code == ErrorCode.VALIDATION_ERROR
+
+    # Test invalid entrypoint (too long)
+    with pytest.raises(DomainError) as exc:
+        create_draft_version(
+            version_id=version_id,
+            tool_id=tool_id,
+            version_number=1,
+            source_code="code",
+            entrypoint="a" * 129,  # Invalid
+            created_by_user_id=user_id,
+            derived_from_version_id=None,
+            change_summary=None,
+            now=now,
+        )
+    assert exc.value.code == ErrorCode.VALIDATION_ERROR
+
+
+def test_save_draft_snapshot_success() -> None:
+    now = datetime.now(timezone.utc)
+    user_id = uuid4()
+    new_version_id = uuid4()
+
+    previous_draft = create_draft_version(
+        version_id=uuid4(),
+        tool_id=uuid4(),
+        version_number=1,
+        source_code="old code",
+        entrypoint="main.py",
+        created_by_user_id=user_id,
+        derived_from_version_id=None,
+        change_summary="Initial",
+        now=now,
+    )
+
+    new_draft = save_draft_snapshot(
+        previous_version=previous_draft,
+        new_version_id=new_version_id,
+        new_version_number=2,
+        source_code="new code",
+        entrypoint="app.py",
+        saved_by_user_id=user_id,
+        change_summary="  Updated  ",
+        now=now,
+    )
+
+    assert new_draft.id == new_version_id
+    assert new_draft.state == VersionState.DRAFT
+    assert new_draft.version_number == 2
+    assert new_draft.source_code == "new code"
+    assert new_draft.entrypoint == "app.py"
+    assert new_draft.derived_from_version_id == previous_draft.id
+    assert new_draft.change_summary == "Updated"
+
+
+def test_save_draft_snapshot_validations() -> None:
+    now = datetime.now(timezone.utc)
+    user_id = uuid4()
+
+    previous_draft = create_draft_version(
+        version_id=uuid4(),
+        tool_id=uuid4(),
+        version_number=2,
+        source_code="code",
+        entrypoint="main.py",
+        created_by_user_id=user_id,
+        derived_from_version_id=None,
+        change_summary=None,
+        now=now,
+    )
+
+    # Fail if previous version is not DRAFT (hack state)
+    in_review = submit_for_review(
+        version=previous_draft,
+        submitted_by_user_id=user_id,
+        review_note=None,
+        now=now,
+    )
+    with pytest.raises(DomainError) as exc:
+        save_draft_snapshot(
+            previous_version=in_review,
+            new_version_id=uuid4(),
+            new_version_number=3,
+            source_code="code",
+            entrypoint="main.py",
+            saved_by_user_id=user_id,
+            change_summary=None,
+            now=now,
+        )
+    assert exc.value.code == ErrorCode.CONFLICT
+
+    # Fail if new version number is not incremented
+    with pytest.raises(DomainError) as exc:
+        save_draft_snapshot(
+            previous_version=previous_draft,
+            new_version_id=uuid4(),
+            new_version_number=2,  # Same as previous
+            source_code="code",
+            entrypoint="main.py",
+            saved_by_user_id=user_id,
+            change_summary=None,
+            now=now,
+        )
+    assert exc.value.code == ErrorCode.VALIDATION_ERROR
 
 
 def test_submit_for_review_success() -> None:
@@ -97,7 +218,7 @@ def test_submit_for_review_success() -> None:
     reviewed = submit_for_review(
         version=draft,
         submitted_by_user_id=user_id,
-        review_note="Please review",
+        review_note="  Please review  ",
         now=now,
     )
 
@@ -184,6 +305,84 @@ def test_publish_version_success() -> None:
     assert result.archived_reviewed_version.state == VersionState.ARCHIVED
 
 
+def test_publish_version_validations() -> None:
+    now = datetime.now(timezone.utc)
+    publisher_id = uuid4()
+
+    draft = create_draft_version(
+        version_id=uuid4(),
+        tool_id=uuid4(),
+        version_number=1,
+        source_code="code",
+        entrypoint="main.py",
+        created_by_user_id=uuid4(),
+        derived_from_version_id=None,
+        change_summary=None,
+        now=now,
+    )
+    in_review = submit_for_review(
+        version=draft,
+        submitted_by_user_id=uuid4(),
+        review_note=None,
+        now=now,
+    )
+
+    # 1. Fail if reviewed version is not IN_REVIEW
+    with pytest.raises(DomainError) as exc:
+        publish_version(
+            reviewed_version=draft,  # Still DRAFT
+            new_active_version_id=uuid4(),
+            new_active_version_number=2,
+            published_by_user_id=publisher_id,
+            now=now,
+            change_summary=None,
+            previous_active_version=None,
+        )
+    assert exc.value.code == ErrorCode.CONFLICT
+
+    # 2. Fail if previous_active_version belongs to different tool
+    other_tool_active = ToolVersion(
+        id=uuid4(),
+        tool_id=uuid4(),  # Different tool
+        version_number=1,
+        state=VersionState.ACTIVE,
+        source_code="code",
+        entrypoint="main.py",
+        content_hash="hash",
+        created_by_user_id=uuid4(),
+        created_at=now,
+        published_by_user_id=uuid4(),
+        published_at=now,
+    )
+    with pytest.raises(DomainError) as exc:
+        publish_version(
+            reviewed_version=in_review,
+            new_active_version_id=uuid4(),
+            new_active_version_number=2,
+            published_by_user_id=publisher_id,
+            now=now,
+            change_summary=None,
+            previous_active_version=other_tool_active,
+        )
+    assert exc.value.code == ErrorCode.VALIDATION_ERROR
+
+    # 3. Fail if previous_active_version is not ACTIVE
+    previous_archived = other_tool_active.model_copy(
+        update={"tool_id": draft.tool_id, "state": VersionState.ARCHIVED}
+    )
+    with pytest.raises(DomainError) as exc:
+        publish_version(
+            reviewed_version=in_review,
+            new_active_version_id=uuid4(),
+            new_active_version_number=2,
+            published_by_user_id=publisher_id,
+            now=now,
+            change_summary=None,
+            previous_active_version=previous_archived,
+        )
+    assert exc.value.code == ErrorCode.VALIDATION_ERROR
+
+
 def test_start_and_finish_tool_run() -> None:
     now = datetime.now(timezone.utc)
     run_id = uuid4()
@@ -218,3 +417,121 @@ def test_start_and_finish_tool_run() -> None:
 
     assert finished.status == RunStatus.SUCCEEDED
     assert finished.finished_at == now
+
+
+def test_start_tool_run_validation() -> None:
+    now = datetime.now(timezone.utc)
+
+    # Empty workdir
+    with pytest.raises(DomainError) as exc:
+        start_tool_run(
+            run_id=uuid4(),
+            tool_id=uuid4(),
+            version_id=uuid4(),
+            context=RunContext.SANDBOX,
+            requested_by_user_id=uuid4(),
+            workdir_path="  ",
+            input_filename="input.txt",
+            input_size_bytes=100,
+            now=now,
+        )
+    assert exc.value.code == ErrorCode.VALIDATION_ERROR
+
+    # Empty input filename
+    with pytest.raises(DomainError) as exc:
+        start_tool_run(
+            run_id=uuid4(),
+            tool_id=uuid4(),
+            version_id=uuid4(),
+            context=RunContext.SANDBOX,
+            requested_by_user_id=uuid4(),
+            workdir_path="/tmp/run",
+            input_filename="  ",
+            input_size_bytes=100,
+            now=now,
+        )
+    assert exc.value.code == ErrorCode.VALIDATION_ERROR
+
+    # Negative size
+    with pytest.raises(DomainError) as exc:
+        start_tool_run(
+            run_id=uuid4(),
+            tool_id=uuid4(),
+            version_id=uuid4(),
+            context=RunContext.SANDBOX,
+            requested_by_user_id=uuid4(),
+            workdir_path="/tmp/run",
+            input_filename="input.txt",
+            input_size_bytes=-1,
+            now=now,
+        )
+    assert exc.value.code == ErrorCode.VALIDATION_ERROR
+
+
+def test_finish_tool_run_validation() -> None:
+    now = datetime.now(timezone.utc)
+
+    run = start_tool_run(
+        run_id=uuid4(),
+        tool_id=uuid4(),
+        version_id=uuid4(),
+        context=RunContext.SANDBOX,
+        requested_by_user_id=uuid4(),
+        workdir_path="/tmp/run",
+        input_filename="input.txt",
+        input_size_bytes=100,
+        now=now,
+    )
+
+    # 1. Fail if run already finished
+    finished = finish_tool_run(
+        run=run,
+        status=RunStatus.SUCCEEDED,
+        now=now,
+        html_output=None,
+        stdout=None,
+        stderr=None,
+        artifacts_manifest={},
+        error_summary=None,
+    )
+    with pytest.raises(DomainError) as exc:
+        finish_tool_run(
+            run=finished,
+            status=RunStatus.FAILED,
+            now=now,
+            html_output=None,
+            stdout=None,
+            stderr=None,
+            artifacts_manifest={},
+            error_summary=None,
+        )
+    assert exc.value.code == ErrorCode.CONFLICT
+
+    # 2. Fail if new status is RUNNING
+    with pytest.raises(DomainError) as exc:
+        finish_tool_run(
+            run=run,
+            status=RunStatus.RUNNING,  # Invalid
+            now=now,
+            html_output=None,
+            stdout=None,
+            stderr=None,
+            artifacts_manifest={},
+            error_summary=None,
+        )
+    assert exc.value.code == ErrorCode.VALIDATION_ERROR
+
+    # 3. Fail if finished_at before started_at
+    past = datetime(2000, 1, 1, tzinfo=timezone.utc)
+    with pytest.raises(DomainError) as exc:
+        finish_tool_run(
+            run=run,
+            status=RunStatus.SUCCEEDED,
+            now=past,
+            html_output=None,
+            stdout=None,
+            stderr=None,
+            artifacts_manifest={},
+            error_summary=None,
+        )
+    assert exc.value.code == ErrorCode.VALIDATION_ERROR

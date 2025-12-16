@@ -248,3 +248,31 @@ async def test_handle_accept_validates_taxonomy(handler, mock_suggestions, mock_
     with pytest.raises(DomainError) as exc:
         await handler.handle(actor=admin, command=command)
     assert exc.value.code == ErrorCode.VALIDATION_ERROR
+
+
+@pytest.mark.asyncio
+async def test_handle_accept_validates_category_taxonomy(
+    handler, mock_suggestions, mock_professions, mock_categories
+):
+    admin = create_admin_user()
+    suggestion = create_pending_suggestion()
+    mock_suggestions.get_by_id.return_value = suggestion
+
+    # Profession exists
+    mock_professions.get_by_slug.return_value = MagicMock(id=uuid4())
+    # Category missing
+    mock_categories.get_by_slug.return_value = None
+
+    command = DecideSuggestionCommand(
+        suggestion_id=suggestion.id,
+        decision=SuggestionDecisionType.ACCEPT,
+        rationale="ok",
+        title="Tool",
+        description="Desc",
+        profession_slugs=["prof1"],
+        category_slugs=["unknown_cat"],
+    )
+
+    with pytest.raises(DomainError) as exc:
+        await handler.handle(actor=admin, command=command)
+    assert exc.value.code == ErrorCode.VALIDATION_ERROR

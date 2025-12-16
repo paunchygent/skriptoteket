@@ -192,8 +192,7 @@ async def test_admin_can_update_tool_metadata_without_publish_overwriting_catalo
         created_by_user_id=author.id,
         version_number=1,
         source_code=(
-            "def run_tool(input_path: str, output_dir: str) -> str:\n"
-            "    return '<p>v1</p>'\n"
+            "def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>v1</p>'\n"
         ),
     )
 
@@ -236,8 +235,7 @@ async def test_admin_can_update_tool_metadata_without_publish_overwriting_catalo
         created_by_user_id=author.id,
         version_number=3,
         source_code=(
-            "def run_tool(input_path: str, output_dir: str) -> str:\n"
-            "    return '<p>v2</p>'\n"
+            "def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>v2</p>'\n"
         ),
     )
     publish_v3 = await client.post(

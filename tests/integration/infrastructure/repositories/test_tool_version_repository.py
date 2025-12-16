@@ -176,3 +176,36 @@ async def test_get_active_and_latest(db_session: AsyncSession, tool: Tool, now: 
     # Get next version number
     next_num = await repo.get_next_version_number(tool_id=tool.id)
     assert next_num == 4
+
+
+@pytest.mark.integration
+async def test_update_raises_not_found(db_session: AsyncSession, tool: Tool, now: datetime) -> None:
+    repo = PostgreSQLToolVersionRepository(db_session)
+
+    # Create dummy version object but don't persist it
+    missing_version = ToolVersion(
+        id=uuid4(),
+        tool_id=tool.id,
+        version_number=1,
+        state=VersionState.DRAFT,
+        source_code="code",
+        entrypoint="main.py",
+        content_hash="hash",
+        created_by_user_id=uuid4(),
+        created_at=now,
+    )
+
+    from skriptoteket.domain.errors import DomainError, ErrorCode
+
+    with pytest.raises(DomainError) as exc:
+        await repo.update(version=missing_version)
+    assert exc.value.code == ErrorCode.NOT_FOUND
+
+
+@pytest.mark.integration
+async def test_get_next_version_number_empty(db_session: AsyncSession, tool: Tool) -> None:
+    repo = PostgreSQLToolVersionRepository(db_session)
+
+    # Should be 1 when no versions exist
+    next_num = await repo.get_next_version_number(tool_id=tool.id)
+    assert next_num == 1
