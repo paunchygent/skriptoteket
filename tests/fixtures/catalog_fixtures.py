@@ -45,6 +45,7 @@ def make_tool(
     slug: str = "demo-tool",
     title: str = "Demo tool",
     summary: str | None = None,
+    is_published: bool = False,
     now: datetime,
     tool_id: UUID | None = None,
 ) -> Tool:
@@ -53,6 +54,7 @@ def make_tool(
         slug=slug,
         title=title,
         summary=summary,
+        is_published=is_published,
         created_at=now,
         updated_at=now,
     )

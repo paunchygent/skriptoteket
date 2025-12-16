@@ -92,10 +92,7 @@ async def _create_in_review_version(
 ) -> ToolVersionModel:
     now = datetime.now(timezone.utc)
     entrypoint = "run_tool"
-    source_code = (
-        "def run_tool(input_path: str, output_dir: str) -> str:\n"
-        "    return '<p>ok</p>'\n"
-    )
+    source_code = "def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>ok</p>'\n"
     model = ToolVersionModel(
         id=uuid.uuid4(),
         tool_id=tool_id,
@@ -165,6 +162,7 @@ async def test_publish_version_route_publishes_in_review_and_updates_tool_pointe
     updated_tool = await tool_repo.get_by_id(tool_id=tool.id)
     assert updated_tool is not None
     assert updated_tool.active_version_id == new_version_id
+    assert updated_tool.is_published is True
 
 
 @pytest.mark.integration

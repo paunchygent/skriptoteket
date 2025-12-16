@@ -258,6 +258,77 @@ async def test_publish_version_archives_reviewed_and_previous_active_and_updates
         active_version_id=new_active_version_id,
         now=now,
     )
+    tools.set_published.assert_awaited_once_with(
+        tool_id=tool.id,
+        is_published=True,
+        now=now,
+    )
+    assert uow.entered is True
+    assert uow.exited is True
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_publish_version_does_not_set_published_when_tool_already_published(
+    now: datetime,
+) -> None:
+    actor = make_user(role=Role.ADMIN, user_id=uuid4())
+    tool = make_tool(now=now, is_published=True)
+
+    reviewed_version = make_tool_version(
+        tool_id=tool.id,
+        version_id=uuid4(),
+        version_number=2,
+        state=VersionState.IN_REVIEW,
+        created_by_user_id=uuid4(),
+        now=now,
+    )
+    previous_active = make_tool_version(
+        tool_id=tool.id,
+        version_id=uuid4(),
+        version_number=1,
+        state=VersionState.ACTIVE,
+        created_by_user_id=uuid4(),
+        now=now,
+    )
+
+    uow = FakeUow()
+    tools = AsyncMock(spec=ToolRepositoryProtocol)
+    tools.get_by_id.return_value = tool
+
+    versions = AsyncMock(spec=ToolVersionRepositoryProtocol)
+    versions.get_by_id.return_value = reviewed_version
+    versions.get_active_for_tool.return_value = previous_active
+    versions.get_next_version_number.return_value = 3
+    versions.update.side_effect = lambda *, version: version
+    versions.create.side_effect = lambda *, version: version
+
+    clock = Mock(spec=ClockProtocol, now=Mock(return_value=now))
+    new_active_version_id = uuid4()
+    id_generator = Mock(spec=IdGeneratorProtocol, new_uuid=Mock(return_value=new_active_version_id))
+
+    handler = PublishVersionHandler(
+        uow=uow,
+        tools=tools,
+        versions=versions,
+        clock=clock,
+        id_generator=id_generator,
+    )
+
+    result = await handler.handle(
+        actor=actor,
+        command=PublishVersionCommand(version_id=reviewed_version.id, change_summary=None),
+    )
+
+    assert result.new_active_version.id == new_active_version_id
+    assert result.new_active_version.state is VersionState.ACTIVE
+
+    tools.set_active_version_id.assert_awaited_once_with(
+        tool_id=tool.id,
+        active_version_id=new_active_version_id,
+        now=now,
+    )
+    tools.set_published.assert_not_called()
     assert uow.entered is True
     assert uow.exited is True
 
