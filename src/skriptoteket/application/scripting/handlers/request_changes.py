@@ -81,4 +81,3 @@ class RequestChangesHandler(RequestChangesHandlerProtocol):
             new_draft_version=draft_persisted,
             archived_in_review_version=archived_persisted,
         )
-

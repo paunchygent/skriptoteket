@@ -72,4 +72,3 @@ def ui_error_message(exc: DomainError) -> str:
         return "Tjänsten är tillfälligt otillgänglig. Försök igen."
 
     return "Ett oväntat fel inträffade."
-

@@ -56,4 +56,3 @@ class UpdateToolMetadataHandler(UpdateToolMetadataHandlerProtocol):
             )
 
         return UpdateToolMetadataResult(tool=persisted)
-
