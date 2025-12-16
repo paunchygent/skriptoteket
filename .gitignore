@@ -44,4 +44,6 @@ tools/puppeteer/package-lock.json
 
 # Sensitive operational docs (credentials, server details)
 .agent/rules/080-home-server-deployment.md
-docs/runbooks/
+docs/runbooks/*
+!docs/runbooks/.gitkeep
+!docs/runbooks/runbook-script-bank-seeding.md
