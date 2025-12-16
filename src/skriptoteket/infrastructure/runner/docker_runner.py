@@ -224,7 +224,6 @@ class DockerToolRunner(ToolRunnerProtocol):
                 network_mode="none",
                 user="runner",
                 cap_drop=["ALL"],
-                security_opt=["no-new-privileges:true"],
                 pids_limit=self._limits.pids_limit,
                 read_only=True,
                 tmpfs={
