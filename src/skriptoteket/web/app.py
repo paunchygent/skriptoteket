@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 from dishka.integrations.fastapi import setup_dishka
@@ -11,6 +12,10 @@ from skriptoteket.web.router import router as web_router
 
 
 def create_app() -> FastAPI:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
     settings = Settings()
 
     app = FastAPI(

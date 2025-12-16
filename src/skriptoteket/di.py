@@ -62,6 +62,9 @@ from skriptoteket.infrastructure.repositories.script_suggestion_repository impor
     PostgreSQLScriptSuggestionRepository,
 )
 from skriptoteket.infrastructure.repositories.session_repository import PostgreSQLSessionRepository
+from skriptoteket.infrastructure.repositories.tool_maintainer_repository import (
+    PostgreSQLToolMaintainerRepository,
+)
 from skriptoteket.infrastructure.repositories.tool_repository import PostgreSQLToolRepository
 from skriptoteket.infrastructure.repositories.tool_run_repository import PostgreSQLToolRunRepository
 from skriptoteket.infrastructure.repositories.tool_version_repository import (
@@ -83,6 +86,7 @@ from skriptoteket.protocols.catalog import (
     ListToolsForAdminHandlerProtocol,
     ProfessionRepositoryProtocol,
     PublishToolHandlerProtocol,
+    ToolMaintainerRepositoryProtocol,
     ToolRepositoryProtocol,
     UpdateToolMetadataHandlerProtocol,
 )
@@ -150,7 +154,14 @@ class AppProvider(Provider):
         sessionmaker: async_sessionmaker[AsyncSession],
     ) -> AsyncIterator[AsyncSession]:
         async with sessionmaker() as session:
-            yield session
+            try:
+                yield session
+            finally:
+                # Commit any pending transaction before closing
+                # The UoW should have committed, but SQLAlchemy autobegin may have
+                # started a new transaction for post-commit queries
+                if session.in_transaction():
+                    await session.commit()
 
     @provide(scope=Scope.REQUEST)
     def uow(self, session: AsyncSession) -> UnitOfWorkProtocol:
@@ -227,6 +238,10 @@ class AppProvider(Provider):
         return PostgreSQLToolRepository(session)
 
     @provide(scope=Scope.REQUEST)
+    def tool_maintainer_repo(self, session: AsyncSession) -> ToolMaintainerRepositoryProtocol:
+        return PostgreSQLToolMaintainerRepository(session)
+
+    @provide(scope=Scope.REQUEST)
     def tool_version_repo(self, session: AsyncSession) -> ToolVersionRepositoryProtocol:
         return PostgreSQLToolVersionRepository(session)
 
@@ -258,6 +273,7 @@ class AppProvider(Provider):
         self,
         uow: UnitOfWorkProtocol,
         tools: ToolRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
         versions: ToolVersionRepositoryProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -265,6 +281,7 @@ class AppProvider(Provider):
         return CreateDraftVersionHandler(
             uow=uow,
             tools=tools,
+            maintainers=maintainers,
             versions=versions,
             clock=clock,
             id_generator=id_generator,
@@ -275,12 +292,14 @@ class AppProvider(Provider):
         self,
         uow: UnitOfWorkProtocol,
         versions: ToolVersionRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> SaveDraftVersionHandlerProtocol:
         return SaveDraftVersionHandler(
             uow=uow,
             versions=versions,
+            maintainers=maintainers,
             clock=clock,
             id_generator=id_generator,
         )
@@ -290,9 +309,15 @@ class AppProvider(Provider):
         self,
         uow: UnitOfWorkProtocol,
         versions: ToolVersionRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
         clock: ClockProtocol,
     ) -> SubmitForReviewHandlerProtocol:
-        return SubmitForReviewHandler(uow=uow, versions=versions, clock=clock)
+        return SubmitForReviewHandler(
+            uow=uow,
+            versions=versions,
+            maintainers=maintainers,
+            clock=clock,
+        )
 
     @provide(scope=Scope.REQUEST)
     def publish_version_handler(
@@ -339,9 +364,12 @@ class AppProvider(Provider):
         self,
         uow: UnitOfWorkProtocol,
         versions: ToolVersionRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
         execute: ExecuteToolVersionHandlerProtocol,
     ) -> RunSandboxHandlerProtocol:
-        return RunSandboxHandler(uow=uow, versions=versions, execute=execute)
+        return RunSandboxHandler(
+            uow=uow, versions=versions, maintainers=maintainers, execute=execute
+        )
 
     @provide(scope=Scope.REQUEST)
     def run_active_tool_handler(
@@ -548,6 +576,7 @@ class AppProvider(Provider):
         suggestions: SuggestionRepositoryProtocol,
         decisions: SuggestionDecisionRepositoryProtocol,
         tools: ToolRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
         professions: ProfessionRepositoryProtocol,
         categories: CategoryRepositoryProtocol,
         clock: ClockProtocol,
@@ -558,6 +587,7 @@ class AppProvider(Provider):
             suggestions=suggestions,
             decisions=decisions,
             tools=tools,
+            maintainers=maintainers,
             professions=professions,
             categories=categories,
             clock=clock,
