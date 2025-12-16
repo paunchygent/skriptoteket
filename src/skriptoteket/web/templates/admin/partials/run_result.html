@@ -36,7 +36,7 @@
       <ul class="huleedu-list">
         {% for a in artifacts %}
           <li class="huleedu-list-item">
-            <a href="{{ a.download_url }}" class="huleedu-link">{{ a.path }}</a>
+            <a href="{{ a.download_url }}" class="huleedu-link" hx-boost="false" download>{{ a.path }}</a>
             <small class="huleedu-muted">({{ a.bytes }} byte)</small>
           </li>
         {% endfor %}

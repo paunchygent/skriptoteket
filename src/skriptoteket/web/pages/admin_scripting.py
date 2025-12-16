@@ -13,8 +13,12 @@ from skriptoteket.application.scripting.commands import (
     SubmitForReviewCommand,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
-from skriptoteket.domain.identity.models import Role, Session, User
-from skriptoteket.protocols.catalog import ToolRepositoryProtocol, UpdateToolMetadataHandlerProtocol
+from skriptoteket.domain.identity.models import Session, User
+from skriptoteket.protocols.catalog import (
+    ToolMaintainerRepositoryProtocol,
+    ToolRepositoryProtocol,
+    UpdateToolMetadataHandlerProtocol,
+)
 from skriptoteket.protocols.scripting import (
     CreateDraftVersionHandlerProtocol,
     PublishVersionHandlerProtocol,
@@ -28,34 +32,8 @@ from skriptoteket.web.auth.dependencies import (
     require_admin,
     require_contributor,
 )
+from skriptoteket.web.pages import admin_scripting_support as support
 from skriptoteket.web.pages.admin_scripting_runs import router as runs_router
-from skriptoteket.web.pages.admin_scripting_support import (
-    editor_context as _editor_context,
-)
-from skriptoteket.web.pages.admin_scripting_support import (
-    is_allowed_to_view_version as _is_allowed_to_view_version,
-)
-from skriptoteket.web.pages.admin_scripting_support import (
-    parse_uuid as _parse_uuid,
-)
-from skriptoteket.web.pages.admin_scripting_support import (
-    redirect_with_hx as _redirect_with_hx,
-)
-from skriptoteket.web.pages.admin_scripting_support import (
-    render_editor_for_tool_id as _render_editor_for_tool_id,
-)
-from skriptoteket.web.pages.admin_scripting_support import (
-    render_editor_for_version_id as _render_editor_for_version_id,
-)
-from skriptoteket.web.pages.admin_scripting_support import (
-    select_default_version as _select_default_version,
-)
-from skriptoteket.web.pages.admin_scripting_support import (
-    status_code_for_error as _status_code_for_error,
-)
-from skriptoteket.web.pages.admin_scripting_support import (
-    visible_versions_for_actor as _visible_versions_for_actor,
-)
 from skriptoteket.web.templating import templates
 from skriptoteket.web.ui_text import ui_error_message as _ui_error_message
 
@@ -75,6 +53,7 @@ async def script_editor_for_tool(
     request: Request,
     tool_id: UUID,
     tools: FromDishka[ToolRepositoryProtocol],
+    maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
     user: User = Depends(require_contributor),
     session: Session | None = Depends(get_current_session),
@@ -84,17 +63,19 @@ async def script_editor_for_tool(
     if tool is None:
         raise not_found("Tool", str(tool_id))
 
-    versions = await versions_repo.list_for_tool(tool_id=tool.id, limit=50)
-    selected_version = _select_default_version(actor=user, tool=tool, versions=versions)
+    is_tool_maintainer = await support.require_tool_access(
+        actor=user,
+        tool_id=tool.id,
+        maintainers=maintainers,
+    )
 
-    if user.role is Role.CONTRIBUTOR and versions:
-        visible_versions = _visible_versions_for_actor(actor=user, versions=versions)
-        if not visible_versions:
-            raise DomainError(
-                code=ErrorCode.FORBIDDEN,
-                message="Insufficient permissions",
-                details={"tool_id": str(tool.id)},
-            )
+    versions = await versions_repo.list_for_tool(tool_id=tool.id, limit=50)
+    selected_version = support.select_default_version(
+        actor=user,
+        tool=tool,
+        versions=versions,
+        is_tool_maintainer=is_tool_maintainer,
+    )
 
     if selected_version is None:
         entrypoint = "run_tool"
@@ -106,7 +87,7 @@ async def script_editor_for_tool(
     return templates.TemplateResponse(
         request=request,
         name="admin/script_editor.html",
-        context=_editor_context(
+        context=support.editor_context(
             request=request,
             user=user,
             csrf_token=csrf_token,
@@ -117,6 +98,7 @@ async def script_editor_for_tool(
             editor_source_code=source_code,
             run=None,
             error=None,
+            is_tool_maintainer=is_tool_maintainer,
         ),
     )
 
@@ -151,7 +133,9 @@ async def update_tool_metadata(
 
         ui_tool = tool.model_copy(update={"title": title, "summary": summary})
         versions = await versions_repo.list_for_tool(tool_id=ui_tool.id, limit=50)
-        selected_version = _select_default_version(actor=user, tool=ui_tool, versions=versions)
+        selected_version = support.select_default_version(
+            actor=user, tool=ui_tool, versions=versions, is_tool_maintainer=True
+        )
 
         if selected_version is None:
             editor_entrypoint = "run_tool"
@@ -163,7 +147,7 @@ async def update_tool_metadata(
         return templates.TemplateResponse(
             request=request,
             name="admin/script_editor.html",
-            context=_editor_context(
+            context=support.editor_context(
                 request=request,
                 user=user,
                 csrf_token=csrf_token,
@@ -174,12 +158,13 @@ async def update_tool_metadata(
                 editor_source_code=editor_source_code,
                 run=None,
                 error=_ui_error_message(exc),
+                is_tool_maintainer=True,
             ),
-            status_code=_status_code_for_error(exc),
+            status_code=support.status_code_for_error(exc),
         )
 
     redirect_url = f"/admin/tools/{tool_id}"
-    return _redirect_with_hx(request=request, url=redirect_url)
+    return support.redirect_with_hx(request=request, url=redirect_url)
 
 
 @router.get("/admin/tools/{tool_id}/versions", response_class=HTMLResponse)
@@ -188,6 +173,7 @@ async def version_history(
     request: Request,
     tool_id: UUID,
     tools: FromDishka[ToolRepositoryProtocol],
+    maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
     user: User = Depends(require_contributor),
 ) -> HTMLResponse:
@@ -195,14 +181,18 @@ async def version_history(
     if tool is None:
         raise not_found("Tool", str(tool_id))
 
+    is_tool_maintainer = await support.require_tool_access(
+        actor=user,
+        tool_id=tool.id,
+        maintainers=maintainers,
+    )
+
     versions = await versions_repo.list_for_tool(tool_id=tool.id, limit=50)
-    visible_versions = _visible_versions_for_actor(actor=user, versions=versions)
-    if user.role is Role.CONTRIBUTOR and versions and not visible_versions:
-        raise DomainError(
-            code=ErrorCode.FORBIDDEN,
-            message="Insufficient permissions",
-            details={"tool_id": str(tool.id)},
-        )
+    visible_versions = support.visible_versions_for_actor(
+        actor=user,
+        versions=versions,
+        is_tool_maintainer=is_tool_maintainer,
+    )
     return templates.TemplateResponse(
         request=request,
         name="admin/partials/version_list.html",
@@ -221,6 +211,7 @@ async def script_editor_for_version(
     request: Request,
     version_id: UUID,
     tools: FromDishka[ToolRepositoryProtocol],
+    maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
     user: User = Depends(require_contributor),
     session: Session | None = Depends(get_current_session),
@@ -230,8 +221,17 @@ async def script_editor_for_version(
     version = await versions_repo.get_by_id(version_id=version_id)
     if version is None:
         raise not_found("ToolVersion", str(version_id))
-    versions = await versions_repo.list_for_tool(tool_id=version.tool_id, limit=50)
-    if not _is_allowed_to_view_version(actor=user, version=version, versions=versions):
+    is_tool_maintainer = await support.require_tool_access(
+        actor=user,
+        tool_id=version.tool_id,
+        maintainers=maintainers,
+    )
+
+    if not support.is_allowed_to_view_version(
+        actor=user,
+        version=version,
+        is_tool_maintainer=is_tool_maintainer,
+    ):
         raise DomainError(
             code=ErrorCode.FORBIDDEN,
             message="Insufficient permissions",
@@ -242,10 +242,11 @@ async def script_editor_for_version(
     if tool is None:
         raise not_found("Tool", str(version.tool_id))
 
+    versions = await versions_repo.list_for_tool(tool_id=tool.id, limit=50)
     return templates.TemplateResponse(
         request=request,
         name="admin/script_editor.html",
-        context=_editor_context(
+        context=support.editor_context(
             request=request,
             user=user,
             csrf_token=csrf_token,
@@ -256,6 +257,7 @@ async def script_editor_for_version(
             editor_source_code=version.source_code,
             run=None,
             error=None,
+            is_tool_maintainer=is_tool_maintainer,
         ),
     )
 
@@ -267,6 +269,7 @@ async def create_draft(
     tool_id: UUID,
     handler: FromDishka[CreateDraftVersionHandlerProtocol],
     tools: FromDishka[ToolRepositoryProtocol],
+    maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
     user: User = Depends(require_contributor),
     session: Session | None = Depends(get_current_session),
@@ -277,7 +280,7 @@ async def create_draft(
 ) -> Response:
     csrf_token = session.csrf_token if session else ""
     try:
-        derived_from = _parse_uuid(derived_from_version_id)
+        derived_from = support.parse_uuid(derived_from_version_id)
         if derived_from_version_id and derived_from is None:
             raise validation_error(
                 "Invalid derived_from_version_id",
@@ -294,21 +297,22 @@ async def create_draft(
             ),
         )
     except DomainError as exc:
-        return await _render_editor_for_tool_id(
+        return await support.render_editor_for_tool_id(
             request=request,
             user=user,
             csrf_token=csrf_token,
             tools=tools,
+            maintainers=maintainers,
             versions_repo=versions_repo,
             tool_id=tool_id,
             editor_entrypoint=entrypoint,
             editor_source_code=source_code,
             run=None,
             error=_ui_error_message(exc),
-            status_code=_status_code_for_error(exc),
+            status_code=support.status_code_for_error(exc),
         )
     redirect_url = f"/admin/tool-versions/{result.version.id}"
-    return _redirect_with_hx(request=request, url=redirect_url)
+    return support.redirect_with_hx(request=request, url=redirect_url)
 
 
 @router.post("/admin/tool-versions/{version_id}/save")
@@ -318,6 +322,7 @@ async def save_draft(
     version_id: UUID,
     handler: FromDishka[SaveDraftVersionHandlerProtocol],
     tools: FromDishka[ToolRepositoryProtocol],
+    maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
     user: User = Depends(require_contributor),
     session: Session | None = Depends(get_current_session),
@@ -328,7 +333,7 @@ async def save_draft(
 ) -> Response:
     csrf_token = session.csrf_token if session else ""
     try:
-        expected_parent = _parse_uuid(expected_parent_version_id)
+        expected_parent = support.parse_uuid(expected_parent_version_id)
         if expected_parent is None:
             raise validation_error(
                 "Invalid expected_parent_version_id",
@@ -345,21 +350,22 @@ async def save_draft(
             ),
         )
     except DomainError as exc:
-        return await _render_editor_for_version_id(
+        return await support.render_editor_for_version_id(
             request=request,
             user=user,
             csrf_token=csrf_token,
             tools=tools,
+            maintainers=maintainers,
             versions_repo=versions_repo,
             version_id=version_id,
             editor_entrypoint=entrypoint,
             editor_source_code=source_code,
             run=None,
             error=_ui_error_message(exc),
-            status_code=_status_code_for_error(exc),
+            status_code=support.status_code_for_error(exc),
         )
     redirect_url = f"/admin/tool-versions/{result.version.id}"
-    return _redirect_with_hx(request=request, url=redirect_url)
+    return support.redirect_with_hx(request=request, url=redirect_url)
 
 
 @router.post("/admin/tool-versions/{version_id}/submit-review")
@@ -369,6 +375,7 @@ async def submit_review(
     version_id: UUID,
     handler: FromDishka[SubmitForReviewHandlerProtocol],
     tools: FromDishka[ToolRepositoryProtocol],
+    maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
     user: User = Depends(require_contributor),
     session: Session | None = Depends(get_current_session),
@@ -381,33 +388,23 @@ async def submit_review(
             command=SubmitForReviewCommand(version_id=version_id, review_note=review_note),
         )
     except DomainError as exc:
-        version = await versions_repo.get_by_id(version_id=version_id)
-        if version is None:
-            raise
-        tool = await tools.get_by_id(tool_id=version.tool_id)
-        if tool is None:
-            raise
-        versions = await versions_repo.list_for_tool(tool_id=tool.id, limit=50)
-        return templates.TemplateResponse(
+        return await support.render_editor_for_version_id(
             request=request,
-            name="admin/script_editor.html",
-            context=_editor_context(
-                request=request,
-                user=user,
-                csrf_token=csrf_token,
-                tool=tool,
-                versions=versions,
-                selected_version=version,
-                editor_entrypoint=version.entrypoint,
-                editor_source_code=version.source_code,
-                run=None,
-                error=_ui_error_message(exc),
-            ),
-            status_code=_status_code_for_error(exc),
+            user=user,
+            csrf_token=csrf_token,
+            tools=tools,
+            maintainers=maintainers,
+            versions_repo=versions_repo,
+            version_id=version_id,
+            editor_entrypoint=None,
+            editor_source_code=None,
+            run=None,
+            error=_ui_error_message(exc),
+            status_code=support.status_code_for_error(exc),
         )
 
     redirect_url = f"/admin/tool-versions/{result.version.id}"
-    return _redirect_with_hx(request=request, url=redirect_url)
+    return support.redirect_with_hx(request=request, url=redirect_url)
 
 
 @router.post("/admin/tool-versions/{version_id}/publish")
@@ -417,6 +414,7 @@ async def publish_version(
     version_id: UUID,
     handler: FromDishka[PublishVersionHandlerProtocol],
     tools: FromDishka[ToolRepositoryProtocol],
+    maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
     user: User = Depends(require_admin),
     session: Session | None = Depends(get_current_session),
@@ -429,22 +427,23 @@ async def publish_version(
             command=PublishVersionCommand(version_id=version_id, change_summary=change_summary),
         )
     except DomainError as exc:
-        return await _render_editor_for_version_id(
+        return await support.render_editor_for_version_id(
             request=request,
             user=user,
             csrf_token=csrf_token,
             tools=tools,
+            maintainers=maintainers,
             versions_repo=versions_repo,
             version_id=version_id,
             editor_entrypoint=None,
             editor_source_code=None,
             run=None,
             error=_ui_error_message(exc),
-            status_code=_status_code_for_error(exc),
+            status_code=support.status_code_for_error(exc),
         )
 
     redirect_url = f"/admin/tool-versions/{result.new_active_version.id}"
-    return _redirect_with_hx(request=request, url=redirect_url)
+    return support.redirect_with_hx(request=request, url=redirect_url)
 
 
 @router.post("/admin/tool-versions/{version_id}/request-changes")
@@ -454,6 +453,7 @@ async def request_changes(
     version_id: UUID,
     handler: FromDishka[RequestChangesHandlerProtocol],
     tools: FromDishka[ToolRepositoryProtocol],
+    maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
     user: User = Depends(require_admin),
     session: Session | None = Depends(get_current_session),
@@ -466,22 +466,23 @@ async def request_changes(
             command=RequestChangesCommand(version_id=version_id, message=message),
         )
     except DomainError as exc:
-        return await _render_editor_for_version_id(
+        return await support.render_editor_for_version_id(
             request=request,
             user=user,
             csrf_token=csrf_token,
             tools=tools,
+            maintainers=maintainers,
             versions_repo=versions_repo,
             version_id=version_id,
             editor_entrypoint=None,
             editor_source_code=None,
             run=None,
             error=_ui_error_message(exc),
-            status_code=_status_code_for_error(exc),
+            status_code=support.status_code_for_error(exc),
         )
 
     redirect_url = f"/admin/tool-versions/{result.new_draft_version.id}"
-    return _redirect_with_hx(request=request, url=redirect_url)
+    return support.redirect_with_hx(request=request, url=redirect_url)
 
 
 router.include_router(runs_router)

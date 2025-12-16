@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
@@ -7,6 +9,8 @@ from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.web.error_mapping import error_to_status
 from skriptoteket.web.templating import templates
 from skriptoteket.web.ui_text import ui_error_message
+
+logger = logging.getLogger(__name__)
 
 
 async def error_handler_middleware(request: Request, call_next):
@@ -39,7 +43,13 @@ async def error_handler_middleware(request: Request, call_next):
             },
             status_code=status_code,
         )
-    except Exception:
+    except Exception as exc:
+        logger.exception(
+            "Unhandled exception on %s %s: %s",
+            request.method,
+            request.url.path,
+            exc,
+        )
         accept = request.headers.get("accept", "")
         wants_json = request.url.path.startswith("/api/") or "application/json" in accept
 

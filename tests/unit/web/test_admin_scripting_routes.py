@@ -1,12 +1,9 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timedelta, timezone
-from typing import Any
 from unittest.mock import AsyncMock
 
 import pytest
-from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
 from skriptoteket.application.scripting.commands import (
@@ -16,11 +13,14 @@ from skriptoteket.application.scripting.commands import (
     SaveDraftVersionResult,
     SubmitForReviewResult,
 )
-from skriptoteket.domain.catalog.models import Tool
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
-from skriptoteket.domain.identity.models import AuthProvider, Role, Session, User
-from skriptoteket.domain.scripting.models import ToolVersion, VersionState, compute_content_hash
-from skriptoteket.protocols.catalog import ToolRepositoryProtocol, UpdateToolMetadataHandlerProtocol
+from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.scripting.models import VersionState
+from skriptoteket.protocols.catalog import (
+    ToolMaintainerRepositoryProtocol,
+    ToolRepositoryProtocol,
+    UpdateToolMetadataHandlerProtocol,
+)
 from skriptoteket.protocols.scripting import (
     CreateDraftVersionHandlerProtocol,
     PublishVersionHandlerProtocol,
@@ -30,106 +30,21 @@ from skriptoteket.protocols.scripting import (
     ToolVersionRepositoryProtocol,
 )
 from skriptoteket.web.pages import admin_scripting
-
-
-def _original(fn: Any) -> Any:
-    return getattr(fn, "__dishka_orig_func__", fn)
-
-
-def _request(*, path: str, headers: dict[str, str] | None = None) -> Request:
-    raw_headers = [
-        (key.lower().encode("latin-1"), value.encode("latin-1"))
-        for key, value in (headers or {}).items()
-    ]
-    scope = {
-        "type": "http",
-        "method": "GET",
-        "path": path,
-        "headers": raw_headers,
-        "query_string": b"",
-    }
-    return Request(scope)
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc)
-
-
-def _user(*, role: Role) -> User:
-    now = _now()
-    return User(
-        id=uuid.uuid4(),
-        email=f"{role.value}@example.com",
-        role=role,
-        auth_provider=AuthProvider.LOCAL,
-        created_at=now,
-        updated_at=now,
-    )
-
-
-def _session(*, user_id: uuid.UUID) -> Session:
-    now = _now()
-    return Session(
-        id=uuid.uuid4(),
-        user_id=user_id,
-        csrf_token="csrf",
-        created_at=now,
-        expires_at=now + timedelta(days=1),
-    )
-
-
-def _tool(*, title: str = "Tool") -> Tool:
-    now = _now()
-    return Tool(
-        id=uuid.uuid4(),
-        slug="tool",
-        title=title,
-        summary="Summary",
-        is_published=False,
-        active_version_id=None,
-        created_at=now,
-        updated_at=now,
-    )
-
-
-def _version(
-    *,
-    tool_id: uuid.UUID,
-    created_by_user_id: uuid.UUID,
-    state: VersionState,
-    version_number: int = 1,
-    source_code: str = (
-        "def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>ok</p>'\n"
-    ),
-) -> ToolVersion:
-    now = _now()
-    entrypoint = "run_tool"
-    return ToolVersion(
-        id=uuid.uuid4(),
-        tool_id=tool_id,
-        version_number=version_number,
-        state=state,
-        source_code=source_code,
-        entrypoint=entrypoint,
-        content_hash=compute_content_hash(entrypoint=entrypoint, source_code=source_code),
-        derived_from_version_id=None,
-        created_by_user_id=created_by_user_id,
-        created_at=now,
-        submitted_for_review_by_user_id=None,
-        submitted_for_review_at=None,
-        reviewed_by_user_id=None,
-        reviewed_at=None,
-        published_by_user_id=None,
-        published_at=None,
-        change_summary=None,
-        review_note=None,
-    )
+from tests.unit.web.admin_scripting_test_support import (
+    _original,
+    _request,
+    _session,
+    _tool,
+    _user,
+    _version,
+)
 
 
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_script_editor_for_tool_renders_starter_template_when_no_versions() -> None:
     tools = AsyncMock(spec=ToolRepositoryProtocol)
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
     versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
     tool = _tool(title="No Versions")
     tools.get_by_id.return_value = tool
@@ -143,6 +58,7 @@ async def test_script_editor_for_tool_renders_starter_template_when_no_versions(
         request=request,
         tool_id=tool.id,
         tools=tools,
+        maintainers=maintainers,
         versions_repo=versions_repo,
         user=user,
         session=session,
@@ -221,6 +137,7 @@ async def test_update_tool_metadata_domain_error_renders_editor_with_error() -> 
 @pytest.mark.asyncio
 async def test_version_history_renders_partial_for_admin() -> None:
     tools = AsyncMock(spec=ToolRepositoryProtocol)
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
     versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
 
     tool = _tool()
@@ -237,6 +154,7 @@ async def test_version_history_renders_partial_for_admin() -> None:
         request=request,
         tool_id=tool.id,
         tools=tools,
+        maintainers=maintainers,
         versions_repo=versions_repo,
         user=user,
     )
@@ -251,6 +169,7 @@ async def test_version_history_renders_partial_for_admin() -> None:
 @pytest.mark.asyncio
 async def test_script_editor_for_version_raises_forbidden_for_other_contributor() -> None:
     tools = AsyncMock(spec=ToolRepositoryProtocol)
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
     versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
 
     tool = _tool()
@@ -261,6 +180,7 @@ async def test_script_editor_for_version_raises_forbidden_for_other_contributor(
     tools.get_by_id.return_value = tool
 
     user = _user(role=Role.CONTRIBUTOR)
+    maintainers.is_maintainer.return_value = True
     request = _request(path=f"/admin/tool-versions/{version.id}")
 
     with pytest.raises(DomainError) as exc_info:
@@ -268,6 +188,7 @@ async def test_script_editor_for_version_raises_forbidden_for_other_contributor(
             request=request,
             version_id=version.id,
             tools=tools,
+            maintainers=maintainers,
             versions_repo=versions_repo,
             user=user,
             session=None,
@@ -280,9 +201,11 @@ async def test_script_editor_for_version_raises_forbidden_for_other_contributor(
 @pytest.mark.asyncio
 async def test_script_editor_for_version_renders_editor_when_allowed() -> None:
     tools = AsyncMock(spec=ToolRepositoryProtocol)
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
     versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
 
     user = _user(role=Role.CONTRIBUTOR)
+    maintainers.is_maintainer.return_value = True
     tool = _tool()
     version = _version(
         tool_id=tool.id,
@@ -301,6 +224,7 @@ async def test_script_editor_for_version_renders_editor_when_allowed() -> None:
         request=request,
         version_id=version.id,
         tools=tools,
+        maintainers=maintainers,
         versions_repo=versions_repo,
         user=user,
         session=session,
@@ -315,10 +239,12 @@ async def test_script_editor_for_version_renders_editor_when_allowed() -> None:
 async def test_create_draft_redirects_to_new_version() -> None:
     handler = AsyncMock(spec=CreateDraftVersionHandlerProtocol)
     tools = AsyncMock(spec=ToolRepositoryProtocol)
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
     versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
 
     tool = _tool()
     user = _user(role=Role.CONTRIBUTOR)
+    maintainers.is_maintainer.return_value = True
     session = _session(user_id=user.id)
     request = _request(path=f"/admin/tools/{tool.id}/versions")
 
@@ -334,6 +260,7 @@ async def test_create_draft_redirects_to_new_version() -> None:
         tool_id=tool.id,
         handler=handler,
         tools=tools,
+        maintainers=maintainers,
         versions_repo=versions_repo,
         user=user,
         session=session,
@@ -352,6 +279,7 @@ async def test_create_draft_redirects_to_new_version() -> None:
 async def test_create_draft_invalid_derived_from_uuid_renders_error() -> None:
     handler = AsyncMock(spec=CreateDraftVersionHandlerProtocol)
     tools = AsyncMock(spec=ToolRepositoryProtocol)
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
     versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
 
     tool = _tool()
@@ -359,6 +287,7 @@ async def test_create_draft_invalid_derived_from_uuid_renders_error() -> None:
     versions_repo.list_for_tool.return_value = []
 
     user = _user(role=Role.CONTRIBUTOR)
+    maintainers.is_maintainer.return_value = True
     session = _session(user_id=user.id)
     request = _request(path=f"/admin/tools/{tool.id}/versions")
 
@@ -367,6 +296,7 @@ async def test_create_draft_invalid_derived_from_uuid_renders_error() -> None:
         tool_id=tool.id,
         handler=handler,
         tools=tools,
+        maintainers=maintainers,
         versions_repo=versions_repo,
         user=user,
         session=session,
@@ -387,9 +317,11 @@ async def test_create_draft_invalid_derived_from_uuid_renders_error() -> None:
 async def test_save_draft_redirects_to_new_snapshot() -> None:
     handler = AsyncMock(spec=SaveDraftVersionHandlerProtocol)
     tools = AsyncMock(spec=ToolRepositoryProtocol)
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
     versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
 
     user = _user(role=Role.CONTRIBUTOR)
+    maintainers.is_maintainer.return_value = True
     session = _session(user_id=user.id)
     request = _request(path="/admin/tool-versions/x/save")
 
@@ -405,6 +337,7 @@ async def test_save_draft_redirects_to_new_snapshot() -> None:
         version_id=saved_version.id,
         handler=handler,
         tools=tools,
+        maintainers=maintainers,
         versions_repo=versions_repo,
         user=user,
         session=session,
@@ -423,9 +356,11 @@ async def test_save_draft_redirects_to_new_snapshot() -> None:
 async def test_submit_review_redirects_on_success() -> None:
     handler = AsyncMock(spec=SubmitForReviewHandlerProtocol)
     tools = AsyncMock(spec=ToolRepositoryProtocol)
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
     versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
 
     user = _user(role=Role.CONTRIBUTOR)
+    maintainers.is_maintainer.return_value = True
     session = _session(user_id=user.id)
     request = _request(path="/admin/tool-versions/x/submit-review")
 
@@ -441,6 +376,7 @@ async def test_submit_review_redirects_on_success() -> None:
         version_id=reviewed_version.id,
         handler=handler,
         tools=tools,
+        maintainers=maintainers,
         versions_repo=versions_repo,
         user=user,
         session=session,
@@ -456,6 +392,7 @@ async def test_submit_review_redirects_on_success() -> None:
 async def test_publish_version_redirects_on_success() -> None:
     handler = AsyncMock(spec=PublishVersionHandlerProtocol)
     tools = AsyncMock(spec=ToolRepositoryProtocol)
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
     versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
 
     user = _user(role=Role.ADMIN)
@@ -483,6 +420,7 @@ async def test_publish_version_redirects_on_success() -> None:
         version_id=new_active.id,
         handler=handler,
         tools=tools,
+        maintainers=maintainers,
         versions_repo=versions_repo,
         user=user,
         session=session,
@@ -498,6 +436,7 @@ async def test_publish_version_redirects_on_success() -> None:
 async def test_request_changes_redirects_on_success() -> None:
     handler = AsyncMock(spec=RequestChangesHandlerProtocol)
     tools = AsyncMock(spec=ToolRepositoryProtocol)
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
     versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
 
     user = _user(role=Role.ADMIN)
@@ -520,6 +459,7 @@ async def test_request_changes_redirects_on_success() -> None:
         version_id=new_draft.id,
         handler=handler,
         tools=tools,
+        maintainers=maintainers,
         versions_repo=versions_repo,
         user=user,
         session=session,

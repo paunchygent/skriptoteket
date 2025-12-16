@@ -11,6 +11,7 @@ from skriptoteket.application.scripting.handlers.save_draft_version import SaveD
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.models import ToolVersion, VersionState, compute_content_hash
+from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.scripting import ToolVersionRepositoryProtocol
@@ -85,6 +86,8 @@ async def test_save_draft_version_rejects_when_draft_head_has_advanced(now: date
     versions.list_for_tool.return_value = [
         previous.model_copy(update={"id": uuid4(), "version_number": 2})
     ]
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
+    maintainers.is_maintainer.return_value = True
 
     clock = Mock(spec=ClockProtocol)
     clock.now.return_value = now
@@ -93,7 +96,7 @@ async def test_save_draft_version_rejects_when_draft_head_has_advanced(now: date
     id_generator.new_uuid.return_value = uuid4()
 
     handler = SaveDraftVersionHandler(
-        uow=uow, versions=versions, clock=clock, id_generator=id_generator
+        uow=uow, versions=versions, maintainers=maintainers, clock=clock, id_generator=id_generator
     )
 
     with pytest.raises(DomainError) as exc_info:
@@ -140,6 +143,8 @@ async def test_save_draft_version_creates_new_snapshot_when_head_matches(now: da
     versions.list_for_tool.return_value = [previous]
     versions.get_next_version_number.return_value = 2
     versions.create.side_effect = lambda *, version: version
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
+    maintainers.is_maintainer.return_value = True
 
     clock = Mock(spec=ClockProtocol)
     clock.now.return_value = now
@@ -148,7 +153,7 @@ async def test_save_draft_version_creates_new_snapshot_when_head_matches(now: da
     id_generator.new_uuid.return_value = new_version_id
 
     handler = SaveDraftVersionHandler(
-        uow=uow, versions=versions, clock=clock, id_generator=id_generator
+        uow=uow, versions=versions, maintainers=maintainers, clock=clock, id_generator=id_generator
     )
 
     result = await handler.handle(

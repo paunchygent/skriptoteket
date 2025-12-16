@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from skriptoteket.domain.identity.models import AuthProvider, Role, Session, User
 from skriptoteket.domain.scripting.models import VersionState, compute_content_hash
 from skriptoteket.infrastructure.db.models.tool import ToolModel
+from skriptoteket.infrastructure.db.models.tool_maintainer import ToolMaintainerModel
 from skriptoteket.infrastructure.db.models.tool_version import ToolVersionModel
 from skriptoteket.infrastructure.repositories.session_repository import PostgreSQLSessionRepository
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
@@ -83,6 +84,25 @@ async def _create_tool(*, db_session: AsyncSession, slug: str, title: str) -> To
     return tool
 
 
+async def _assign_maintainer(
+    *,
+    db_session: AsyncSession,
+    tool_id: uuid.UUID,
+    user_id: uuid.UUID,
+) -> None:
+    db_session.add(ToolMaintainerModel(tool_id=tool_id, user_id=user_id))
+    await db_session.flush()
+
+
+def _run_tool_source(*, html_output: str, marker: str | None = None) -> str:
+    marker_line = f"    {marker}\n" if marker else ""
+    return (
+        "def run_tool(input_path: str, output_dir: str) -> str:\n"
+        f"{marker_line}"
+        f"    return {html_output!r}\n"
+    )
+
+
 async def _create_version(
     *,
     db_session: AsyncSession,
@@ -143,12 +163,13 @@ async def test_contributor_editor_for_tool_renders_starter_template_when_no_vers
     client: AsyncClient,
     db_session: AsyncSession,
 ) -> None:
-    await _login(
+    contributor = await _login(
         client=client, db_session=db_session, role=Role.CONTRIBUTOR, email="contrib@example.com"
     )
     tool = await _create_tool(
         db_session=db_session, slug="tool-no-versions-contrib", title="No Versions"
     )
+    await _assign_maintainer(db_session=db_session, tool_id=tool.id, user_id=contributor.id)
 
     response = await client.get(f"/admin/tools/{tool.id}")
 
@@ -166,6 +187,7 @@ async def test_contributor_editor_for_tool_renders_own_draft_version(
         client=client, db_session=db_session, role=Role.CONTRIBUTOR, email="contrib2@example.com"
     )
     tool = await _create_tool(db_session=db_session, slug="tool-with-draft", title="With Draft")
+    await _assign_maintainer(db_session=db_session, tool_id=tool.id, user_id=contributor.id)
 
     marker = "# DRAFT_MARKER"
     draft = await _create_version(
@@ -174,7 +196,7 @@ async def test_contributor_editor_for_tool_renders_own_draft_version(
         created_by_user_id=contributor.id,
         version_number=1,
         state=VersionState.DRAFT,
-        source_code=f"def run_tool(input_path: str, output_dir: str) -> str:\n    {marker}\n    return '<p>ok</p>'\n",
+        source_code=_run_tool_source(html_output="<p>ok</p>", marker=marker),
     )
     del draft
 
@@ -185,7 +207,7 @@ async def test_contributor_editor_for_tool_renders_own_draft_version(
 
 
 @pytest.mark.integration
-async def test_contributor_editor_for_tool_renders_active_version_derived_from_their_work(
+async def test_contributor_editor_for_tool_renders_active_version_when_tool_assigned(
     client: AsyncClient,
     db_session: AsyncSession,
 ) -> None:
@@ -201,6 +223,7 @@ async def test_contributor_editor_for_tool_renders_active_version_derived_from_t
         email="admin-active@example.com",
     )
     tool = await _create_tool(db_session=db_session, slug="tool-with-active", title="With Active")
+    await _assign_maintainer(db_session=db_session, tool_id=tool.id, user_id=contributor.id)
 
     author_version = await _create_version(
         db_session=db_session,
@@ -208,7 +231,7 @@ async def test_contributor_editor_for_tool_renders_active_version_derived_from_t
         created_by_user_id=contributor.id,
         version_number=1,
         state=VersionState.ARCHIVED,
-        source_code="def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>v1</p>'\n",
+        source_code=_run_tool_source(html_output="<p>v1</p>"),
     )
 
     marker = "# ACTIVE_MARKER"
@@ -219,7 +242,7 @@ async def test_contributor_editor_for_tool_renders_active_version_derived_from_t
         version_number=2,
         state=VersionState.ACTIVE,
         derived_from_version_id=author_version.id,
-        source_code=f"def run_tool(input_path: str, output_dir: str) -> str:\n    {marker}\n    return '<p>v2</p>'\n",
+        source_code=_run_tool_source(html_output="<p>v2</p>", marker=marker),
     )
 
     tool.active_version_id = active.id
@@ -244,6 +267,7 @@ async def test_version_history_hides_versions_from_other_contributors(
         db_session=db_session, role=Role.CONTRIBUTOR, email="contrib-b@example.com"
     )
     tool = await _create_tool(db_session=db_session, slug="tool-history", title="History")
+    await _assign_maintainer(db_session=db_session, tool_id=tool.id, user_id=contributor_a.id)
 
     visible = await _create_version(
         db_session=db_session,
@@ -251,7 +275,7 @@ async def test_version_history_hides_versions_from_other_contributors(
         created_by_user_id=contributor_a.id,
         version_number=1,
         state=VersionState.DRAFT,
-        source_code="def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>a</p>'\n",
+        source_code=_run_tool_source(html_output="<p>a</p>"),
     )
     hidden = await _create_version(
         db_session=db_session,
@@ -259,7 +283,7 @@ async def test_version_history_hides_versions_from_other_contributors(
         created_by_user_id=contributor_b.id,
         version_number=2,
         state=VersionState.DRAFT,
-        source_code="def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>b</p>'\n",
+        source_code=_run_tool_source(html_output="<p>b</p>"),
     )
 
     response = await client.get(f"/admin/tools/{tool.id}/versions")
@@ -274,7 +298,7 @@ async def test_editor_for_version_is_forbidden_when_version_not_owned(
     client: AsyncClient,
     db_session: AsyncSession,
 ) -> None:
-    await _login(
+    contributor_a = await _login(
         client=client,
         db_session=db_session,
         role=Role.CONTRIBUTOR,
@@ -284,13 +308,14 @@ async def test_editor_for_version_is_forbidden_when_version_not_owned(
         db_session=db_session, role=Role.CONTRIBUTOR, email="contrib-owner-b@example.com"
     )
     tool = await _create_tool(db_session=db_session, slug="tool-ownership", title="Ownership")
+    await _assign_maintainer(db_session=db_session, tool_id=tool.id, user_id=contributor_a.id)
     version = await _create_version(
         db_session=db_session,
         tool_id=tool.id,
         created_by_user_id=contributor_b.id,
         version_number=1,
         state=VersionState.DRAFT,
-        source_code="def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>b</p>'\n",
+        source_code=_run_tool_source(html_output="<p>b</p>"),
     )
 
     response = await client.get(f"/admin/tool-versions/{version.id}")
@@ -304,20 +329,21 @@ async def test_create_draft_version_redirects_to_new_version(
     client: AsyncClient,
     db_session: AsyncSession,
 ) -> None:
-    await _login(
+    contributor = await _login(
         client=client,
         db_session=db_session,
         role=Role.CONTRIBUTOR,
         email="contrib-create@example.com",
     )
     tool = await _create_tool(db_session=db_session, slug="tool-create", title="Create")
+    await _assign_maintainer(db_session=db_session, tool_id=tool.id, user_id=contributor.id)
 
     marker = "# CREATED_MARKER"
     response = await client.post(
         f"/admin/tools/{tool.id}/versions",
         data={
             "entrypoint": "run_tool",
-            "source_code": f"def run_tool(input_path: str, output_dir: str) -> str:\n    {marker}\n    return '<p>ok</p>'\n",
+            "source_code": _run_tool_source(html_output="<p>ok</p>", marker=marker),
             "change_summary": "Initial",
         },
         follow_redirects=False,
@@ -339,20 +365,21 @@ async def test_create_draft_version_renders_validation_error_for_invalid_derived
         email="contrib-create-error@example.com",
     )
     tool = await _create_tool(db_session=db_session, slug="tool-create-error", title="Create Error")
+    await _assign_maintainer(db_session=db_session, tool_id=tool.id, user_id=contributor.id)
     await _create_version(
         db_session=db_session,
         tool_id=tool.id,
         created_by_user_id=contributor.id,
         version_number=1,
         state=VersionState.DRAFT,
-        source_code="def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>ok</p>'\n",
+        source_code=_run_tool_source(html_output="<p>ok</p>"),
     )
 
     response = await client.post(
         f"/admin/tools/{tool.id}/versions",
         data={
             "entrypoint": "run_tool",
-            "source_code": "def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>ok</p>'\n",
+            "source_code": _run_tool_source(html_output="<p>ok</p>"),
             "derived_from_version_id": "not-a-uuid",
         },
         follow_redirects=False,
@@ -374,20 +401,21 @@ async def test_save_draft_creates_new_snapshot_and_redirects(
         email="contrib-save@example.com",
     )
     tool = await _create_tool(db_session=db_session, slug="tool-save", title="Save")
+    await _assign_maintainer(db_session=db_session, tool_id=tool.id, user_id=contributor.id)
     draft = await _create_version(
         db_session=db_session,
         tool_id=tool.id,
         created_by_user_id=contributor.id,
         version_number=1,
         state=VersionState.DRAFT,
-        source_code="def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>v1</p>'\n",
+        source_code=_run_tool_source(html_output="<p>v1</p>"),
     )
 
     response = await client.post(
         f"/admin/tool-versions/{draft.id}/save",
         data={
             "entrypoint": "run_tool",
-            "source_code": "def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>v2</p>'\n",
+            "source_code": _run_tool_source(html_output="<p>v2</p>"),
             "expected_parent_version_id": str(draft.id),
         },
         follow_redirects=False,
@@ -410,20 +438,21 @@ async def test_save_draft_renders_error_for_invalid_expected_parent_uuid(
         email="contrib-save-error@example.com",
     )
     tool = await _create_tool(db_session=db_session, slug="tool-save-error", title="Save Error")
+    await _assign_maintainer(db_session=db_session, tool_id=tool.id, user_id=contributor.id)
     draft = await _create_version(
         db_session=db_session,
         tool_id=tool.id,
         created_by_user_id=contributor.id,
         version_number=1,
         state=VersionState.DRAFT,
-        source_code="def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>v1</p>'\n",
+        source_code=_run_tool_source(html_output="<p>v1</p>"),
     )
 
     response = await client.post(
         f"/admin/tool-versions/{draft.id}/save",
         data={
             "entrypoint": "run_tool",
-            "source_code": "def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>v2</p>'\n",
+            "source_code": _run_tool_source(html_output="<p>v2</p>"),
             "expected_parent_version_id": "not-a-uuid",
         },
         follow_redirects=False,
@@ -445,13 +474,14 @@ async def test_submit_review_conflict_renders_editor_error(
         email="contrib-review@example.com",
     )
     tool = await _create_tool(db_session=db_session, slug="tool-review", title="Review")
+    await _assign_maintainer(db_session=db_session, tool_id=tool.id, user_id=contributor.id)
     in_review = await _create_version(
         db_session=db_session,
         tool_id=tool.id,
         created_by_user_id=contributor.id,
         version_number=1,
         state=VersionState.IN_REVIEW,
-        source_code="def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>v1</p>'\n",
+        source_code=_run_tool_source(html_output="<p>v1</p>"),
     )
 
     response = await client.post(

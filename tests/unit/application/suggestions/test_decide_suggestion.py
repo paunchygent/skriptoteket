@@ -41,6 +41,11 @@ def mock_tools():
 
 
 @pytest.fixture
+def mock_maintainers():
+    return AsyncMock()
+
+
+@pytest.fixture
 def mock_professions():
     return AsyncMock()
 
@@ -70,6 +75,7 @@ def handler(
     mock_suggestions,
     mock_decisions,
     mock_tools,
+    mock_maintainers,
     mock_professions,
     mock_categories,
     mock_clock,
@@ -80,6 +86,7 @@ def handler(
         suggestions=mock_suggestions,
         decisions=mock_decisions,
         tools=mock_tools,
+        maintainers=mock_maintainers,
         professions=mock_professions,
         categories=mock_categories,
         clock=mock_clock,
@@ -114,7 +121,13 @@ def create_pending_suggestion() -> Suggestion:
 
 @pytest.mark.asyncio
 async def test_handle_accept_creates_draft_tool(
-    handler, mock_suggestions, mock_professions, mock_categories, mock_tools, mock_decisions
+    handler,
+    mock_suggestions,
+    mock_professions,
+    mock_categories,
+    mock_tools,
+    mock_decisions,
+    mock_maintainers,
 ):
     admin = create_admin_user()
     suggestion = create_pending_suggestion()
@@ -148,6 +161,11 @@ async def test_handle_accept_creates_draft_tool(
     created_tool = mock_tools.create_draft.call_args[1]["tool"]
     assert created_tool.title == "Accepted Tool"
 
+    mock_maintainers.add_maintainer.assert_awaited_once_with(
+        tool_id=created_tool.id,
+        user_id=suggestion.submitted_by_user_id,
+    )
+
     # Verify suggestion update
     mock_suggestions.update.assert_called_once()
     updated_suggestion = mock_suggestions.update.call_args[1]["suggestion"]
@@ -159,7 +177,7 @@ async def test_handle_accept_creates_draft_tool(
 
 @pytest.mark.asyncio
 async def test_handle_reject_does_not_create_tool(
-    handler, mock_suggestions, mock_tools, mock_decisions
+    handler, mock_suggestions, mock_tools, mock_decisions, mock_maintainers
 ):
     admin = create_admin_user()
     suggestion = create_pending_suggestion()
@@ -179,6 +197,7 @@ async def test_handle_reject_does_not_create_tool(
 
     assert result.draft_tool_id is None
     mock_tools.create_draft.assert_not_called()
+    mock_maintainers.add_maintainer.assert_not_called()
 
     # Verify suggestion update
     mock_suggestions.update.assert_called_once()

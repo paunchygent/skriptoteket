@@ -9,6 +9,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.domain.scripting.models import RunContext
+from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
     RunSandboxHandlerProtocol,
@@ -23,10 +24,12 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
         *,
         uow: UnitOfWorkProtocol,
         versions: ToolVersionRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
         execute: ExecuteToolVersionHandlerProtocol,
     ) -> None:
         self._uow = uow
         self._versions = versions
+        self._maintainers = maintainers
         self._execute = execute
 
     async def handle(
@@ -51,6 +54,18 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
                         "version_tool_id": str(version.tool_id),
                     },
                 )
+
+            if actor.role is Role.CONTRIBUTOR:
+                is_tool_maintainer = await self._maintainers.is_maintainer(
+                    tool_id=version.tool_id,
+                    user_id=actor.id,
+                )
+                if not is_tool_maintainer:
+                    raise DomainError(
+                        code=ErrorCode.FORBIDDEN,
+                        message="Insufficient permissions",
+                        details={"tool_id": str(version.tool_id)},
+                    )
             if actor.role is Role.CONTRIBUTOR and version.created_by_user_id != actor.id:
                 raise DomainError(
                     code=ErrorCode.FORBIDDEN,

@@ -3,6 +3,7 @@
 Routes for users to view their past production runs and download artifacts.
 """
 
+import logging
 from pathlib import Path
 from uuid import UUID
 
@@ -19,6 +20,8 @@ from skriptoteket.infrastructure.runner.path_safety import validate_output_path
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
 from skriptoteket.web.auth.dependencies import get_current_session, require_user
 from skriptoteket.web.templating import templates
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/my-runs")
 
@@ -52,10 +55,22 @@ async def _load_production_run_for_user(
     """
     run = await runs.get_by_id(run_id=run_id)
     if run is None:
+        logger.warning("Run not found: run_id=%s user_id=%s", run_id, user.id)
         raise not_found("ToolRun", str(run_id))
     if run.requested_by_user_id != user.id:
+        logger.warning(
+            "Run belongs to different user: run_id=%s run_user=%s request_user=%s",
+            run_id,
+            run.requested_by_user_id,
+            user.id,
+        )
         raise not_found("ToolRun", str(run_id))
     if run.context is not RunContext.PRODUCTION:
+        logger.warning(
+            "Run is not production context: run_id=%s context=%s",
+            run_id,
+            run.context,
+        )
         raise not_found("ToolRun", str(run_id))
     return run
 
@@ -132,6 +147,12 @@ async def download_artifact(
     manifest = ArtifactsManifest.model_validate(run.artifacts_manifest)
     artifact = next((a for a in manifest.artifacts if a.artifact_id == artifact_id), None)
     if artifact is None:
+        logger.warning(
+            "Artifact not found in manifest: run_id=%s artifact_id=%s available=%s",
+            run_id,
+            artifact_id,
+            [a.artifact_id for a in manifest.artifacts],
+        )
         raise not_found("Artifact", artifact_id)
 
     candidate_path, relative_path = _resolve_artifact_path(
@@ -139,7 +160,16 @@ async def download_artifact(
         run_id=run.id,
         artifact_path=artifact.path,
     )
-    if not candidate_path.is_file():
+    file_exists = candidate_path.is_file()
+    logger.info(
+        "Resolving artifact download: run_id=%s artifact_id=%s path=%s candidate=%s exists=%s",
+        run_id,
+        artifact_id,
+        artifact.path,
+        candidate_path,
+        file_exists,
+    )
+    if not file_exists:
         raise not_found("ArtifactFile", str(candidate_path))
 
     return FileResponse(

@@ -8,10 +8,15 @@
       <ul class="huleedu-list">
         {% for tool in tools %}
           <li class="huleedu-list-item">
-            <div>
-              <strong>{{ tool.title }}</strong>
-              {% if tool.summary %}
-                <p class="huleedu-muted">{{ tool.summary }}</p>
+            <div class="huleedu-flex-between">
+              <div>
+                <strong>{{ tool.title }}</strong>
+                {% if tool.summary %}
+                  <p class="huleedu-muted" style="margin-bottom: 0;">{{ tool.summary }}</p>
+                {% endif %}
+              </div>
+              {% if tool.is_published and tool.active_version_id %}
+                <a href="/tools/{{ tool.slug }}/run" class="huleedu-btn huleedu-btn-navy huleedu-btn-sm">Kör</a>
               {% endif %}
             </div>
           </li>

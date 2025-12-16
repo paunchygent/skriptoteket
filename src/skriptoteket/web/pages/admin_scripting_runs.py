@@ -13,7 +13,7 @@ from skriptoteket.domain.identity.models import Role, Session, User
 from skriptoteket.domain.scripting.execution import ArtifactsManifest
 from skriptoteket.domain.scripting.models import ToolRun
 from skriptoteket.infrastructure.runner.path_safety import validate_output_path
-from skriptoteket.protocols.catalog import ToolRepositoryProtocol
+from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol, ToolRepositoryProtocol
 from skriptoteket.protocols.scripting import (
     RunSandboxHandlerProtocol,
     ToolRunRepositoryProtocol,
@@ -46,6 +46,7 @@ class _SandboxEditorKwargs(TypedDict):
     user: User
     csrf_token: str
     tools: ToolRepositoryProtocol
+    maintainers: ToolMaintainerRepositoryProtocol
     versions_repo: ToolVersionRepositoryProtocol
     version_id: UUID
 
@@ -117,6 +118,7 @@ async def _render_sandbox_editor(
     user: User,
     csrf_token: str,
     tools: ToolRepositoryProtocol,
+    maintainers: ToolMaintainerRepositoryProtocol,
     versions_repo: ToolVersionRepositoryProtocol,
     version_id: UUID,
     run: ToolRun | None,
@@ -128,6 +130,7 @@ async def _render_sandbox_editor(
         user=user,
         csrf_token=csrf_token,
         tools=tools,
+        maintainers=maintainers,
         versions_repo=versions_repo,
         version_id=version_id,
         editor_entrypoint=None,
@@ -166,6 +169,7 @@ async def run_sandbox(
     version_id: UUID,
     handler: FromDishka[RunSandboxHandlerProtocol],
     tools: FromDishka[ToolRepositoryProtocol],
+    maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
     user: User = Depends(require_contributor),
     session: Session | None = Depends(get_current_session),
@@ -183,6 +187,7 @@ async def run_sandbox(
         "user": user,
         "csrf_token": csrf_token,
         "tools": tools,
+        "maintainers": maintainers,
         "versions_repo": versions_repo,
         "version_id": version_id,
     }

@@ -8,6 +8,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.domain.scripting.models import submit_for_review
+from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.scripting import (
     SubmitForReviewHandlerProtocol,
@@ -22,10 +23,12 @@ class SubmitForReviewHandler(SubmitForReviewHandlerProtocol):
         *,
         uow: UnitOfWorkProtocol,
         versions: ToolVersionRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
         clock: ClockProtocol,
     ) -> None:
         self._uow = uow
         self._versions = versions
+        self._maintainers = maintainers
         self._clock = clock
 
     async def handle(
@@ -42,6 +45,18 @@ class SubmitForReviewHandler(SubmitForReviewHandlerProtocol):
             version = await self._versions.get_by_id(version_id=command.version_id)
             if version is None:
                 raise not_found("ToolVersion", str(command.version_id))
+
+            if actor.role is Role.CONTRIBUTOR:
+                is_tool_maintainer = await self._maintainers.is_maintainer(
+                    tool_id=version.tool_id,
+                    user_id=actor.id,
+                )
+                if not is_tool_maintainer:
+                    raise DomainError(
+                        code=ErrorCode.FORBIDDEN,
+                        message="Insufficient permissions",
+                        details={"tool_id": str(version.tool_id)},
+                    )
 
             if actor.role is Role.CONTRIBUTOR and version.created_by_user_id != actor.id:
                 raise DomainError(

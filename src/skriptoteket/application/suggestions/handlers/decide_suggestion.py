@@ -15,6 +15,7 @@ from skriptoteket.domain.suggestions.models import (
 from skriptoteket.protocols.catalog import (
     CategoryRepositoryProtocol,
     ProfessionRepositoryProtocol,
+    ToolMaintainerRepositoryProtocol,
     ToolRepositoryProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
@@ -35,6 +36,7 @@ class DecideSuggestionHandler(DecideSuggestionHandlerProtocol):
         suggestions: SuggestionRepositoryProtocol,
         decisions: SuggestionDecisionRepositoryProtocol,
         tools: ToolRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
         professions: ProfessionRepositoryProtocol,
         categories: CategoryRepositoryProtocol,
         clock: ClockProtocol,
@@ -44,6 +46,7 @@ class DecideSuggestionHandler(DecideSuggestionHandlerProtocol):
         self._suggestions = suggestions
         self._decisions = decisions
         self._tools = tools
+        self._maintainers = maintainers
         self._professions = professions
         self._categories = categories
         self._clock = clock
@@ -114,6 +117,10 @@ class DecideSuggestionHandler(DecideSuggestionHandlerProtocol):
                     tool=tool,
                     profession_ids=profession_ids,
                     category_ids=category_ids,
+                )
+                await self._maintainers.add_maintainer(
+                    tool_id=tool.id,
+                    user_id=suggestion.submitted_by_user_id,
                 )
 
             await self._suggestions.update(suggestion=updated_suggestion)

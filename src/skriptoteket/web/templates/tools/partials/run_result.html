@@ -1,0 +1,38 @@
+{# User-facing run result - NO stdout/stderr (security requirement per ST-04-05) #}
+<div class="huleedu-card huleedu-stack"{% if run.error_summary %} style="border-color: var(--huleedu-burgundy);"{% endif %}>
+  <div class="huleedu-muted">
+    <span class="huleedu-pill{% if run.error_summary %} huleedu-pill-active{% endif %}">{{ run.status | run_status_label }}</span>
+  </div>
+
+  {% if run.error_summary %}
+    <div>
+      <strong class="huleedu-error">Ett fel uppstod</strong>
+      <pre>{{ run.error_summary }}</pre>
+    </div>
+  {% endif %}
+
+  {% if run.html_output %}
+    <div>
+      <strong>Resultat</strong>
+      <iframe
+        sandbox
+        srcdoc="{{ run.html_output | e }}"
+        style="width: 100%; min-height: 260px; border: var(--huleedu-border-width) solid var(--huleedu-navy); background-color: var(--huleedu-canvas);"
+      ></iframe>
+    </div>
+  {% endif %}
+
+  {% if artifacts %}
+    <div class="huleedu-stack-sm">
+      <strong>Filer</strong>
+      <ul class="huleedu-list">
+        {% for a in artifacts %}
+          <li class="huleedu-list-item">
+            <a href="{{ a.download_url }}" class="huleedu-link" hx-boost="false" download>{{ a.path }}</a>
+            <small class="huleedu-muted">({{ a.bytes }} byte)</small>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+</div>

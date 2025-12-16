@@ -1,65 +1,52 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from uuid import UUID
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.scripting.models import ToolVersion, VersionState
 
 
-def _is_derived_from_actor(
-    *,
-    actor_id: UUID,
-    version: ToolVersion,
-    versions_by_id: dict[UUID, ToolVersion],
-) -> bool:
-    current = version
-    visited: set[UUID] = set()
-    while current.derived_from_version_id is not None:
-        parent_id = current.derived_from_version_id
-        if parent_id in visited:
-            return False
-        visited.add(parent_id)
-
-        parent = versions_by_id.get(parent_id)
-        if parent is None:
-            return False
-        if parent.created_by_user_id == actor_id:
-            return True
-        current = parent
+def can_access_tool(*, actor: User, is_tool_maintainer: bool) -> bool:
+    if actor.role in {Role.ADMIN, Role.SUPERUSER}:
+        return True
+    if actor.role is Role.CONTRIBUTOR:
+        return is_tool_maintainer
     return False
 
 
-def can_view_version(
-    *,
-    actor: User,
-    version: ToolVersion,
-    versions: Iterable[ToolVersion],
-) -> bool:
+def require_can_access_tool(*, actor: User, tool_id: str, is_tool_maintainer: bool) -> None:
+    if can_access_tool(actor=actor, is_tool_maintainer=is_tool_maintainer):
+        return
+    raise DomainError(
+        code=ErrorCode.FORBIDDEN,
+        message="Insufficient permissions",
+        details={
+            "actor_user_id": str(actor.id),
+            "actor_role": actor.role.value,
+            "tool_id": tool_id,
+        },
+    )
+
+
+def can_view_version(*, actor: User, version: ToolVersion, is_tool_maintainer: bool) -> bool:
     if actor.role in {Role.ADMIN, Role.SUPERUSER}:
         return True
-
-    if actor.role is not Role.CONTRIBUTOR:
+    if actor.role is not Role.CONTRIBUTOR or not is_tool_maintainer:
         return False
 
-    if version.created_by_user_id == actor.id:
+    if version.state in {VersionState.ACTIVE, VersionState.ARCHIVED}:
         return True
-
-    if version.state not in {VersionState.ACTIVE, VersionState.ARCHIVED}:
-        return False
-
-    versions_by_id = {candidate.id: candidate for candidate in versions}
-    return _is_derived_from_actor(actor_id=actor.id, version=version, versions_by_id=versions_by_id)
+    return version.created_by_user_id == actor.id
 
 
 def require_can_view_version(
     *,
     actor: User,
     version: ToolVersion,
-    versions: Iterable[ToolVersion],
+    is_tool_maintainer: bool,
 ) -> None:
-    if can_view_version(actor=actor, version=version, versions=versions):
+    if can_view_version(actor=actor, version=version, is_tool_maintainer=is_tool_maintainer):
         return
     raise DomainError(
         code=ErrorCode.FORBIDDEN,
@@ -78,6 +65,7 @@ def visible_versions_for_actor(
     *,
     actor: User,
     versions: Iterable[ToolVersion],
+    is_tool_maintainer: bool,
 ) -> list[ToolVersion]:
     versions_list = list(versions)
     if actor.role in {Role.ADMIN, Role.SUPERUSER}:
@@ -85,17 +73,11 @@ def visible_versions_for_actor(
     if actor.role is not Role.CONTRIBUTOR:
         return []
 
-    versions_by_id = {version.id: version for version in versions_list}
-    visible: list[ToolVersion] = []
-    for version in versions_list:
-        if version.created_by_user_id == actor.id:
-            visible.append(version)
-            continue
-        if version.state in {VersionState.ACTIVE, VersionState.ARCHIVED} and _is_derived_from_actor(
-            actor_id=actor.id,
-            version=version,
-            versions_by_id=versions_by_id,
-        ):
-            visible.append(version)
-    return visible
+    if not is_tool_maintainer:
+        return []
 
+    return [
+        version
+        for version in versions_list
+        if can_view_version(actor=actor, version=version, is_tool_maintainer=is_tool_maintainer)
+    ]

@@ -8,6 +8,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, valida
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.domain.scripting.models import VersionState, save_draft_snapshot
+from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.scripting import (
@@ -23,11 +24,13 @@ class SaveDraftVersionHandler(SaveDraftVersionHandlerProtocol):
         *,
         uow: UnitOfWorkProtocol,
         versions: ToolVersionRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> None:
         self._uow = uow
         self._versions = versions
+        self._maintainers = maintainers
         self._clock = clock
         self._id_generator = id_generator
 
@@ -45,6 +48,18 @@ class SaveDraftVersionHandler(SaveDraftVersionHandlerProtocol):
             previous = await self._versions.get_by_id(version_id=command.version_id)
             if previous is None:
                 raise not_found("ToolVersion", str(command.version_id))
+
+            if actor.role is Role.CONTRIBUTOR:
+                is_tool_maintainer = await self._maintainers.is_maintainer(
+                    tool_id=previous.tool_id,
+                    user_id=actor.id,
+                )
+                if not is_tool_maintainer:
+                    raise DomainError(
+                        code=ErrorCode.FORBIDDEN,
+                        message="Insufficient permissions",
+                        details={"tool_id": str(previous.tool_id)},
+                    )
 
             if actor.role is Role.CONTRIBUTOR and previous.created_by_user_id != actor.id:
                 raise DomainError(

@@ -40,6 +40,9 @@ from skriptoteket.infrastructure.repositories.category_repository import (
 from skriptoteket.infrastructure.repositories.profession_repository import (
     PostgreSQLProfessionRepository,
 )
+from skriptoteket.infrastructure.repositories.tool_maintainer_repository import (
+    PostgreSQLToolMaintainerRepository,
+)
 from skriptoteket.infrastructure.repositories.tool_repository import PostgreSQLToolRepository
 from skriptoteket.infrastructure.repositories.tool_version_repository import (
     PostgreSQLToolVersionRepository,
@@ -282,6 +285,7 @@ async def _seed_script_bank_async(
             id_generator = UUID4Generator()
 
             tools = PostgreSQLToolRepository(session)
+            maintainers = PostgreSQLToolMaintainerRepository(session)
             versions = PostgreSQLToolVersionRepository(session)
             professions = PostgreSQLProfessionRepository(session)
             categories = PostgreSQLCategoryRepository(session)
@@ -289,6 +293,7 @@ async def _seed_script_bank_async(
             create_draft_version = CreateDraftVersionHandler(
                 uow=uow,
                 tools=tools,
+                maintainers=maintainers,
                 versions=versions,
                 clock=clock,
                 id_generator=id_generator,
@@ -296,6 +301,7 @@ async def _seed_script_bank_async(
             submit_for_review = SubmitForReviewHandler(
                 uow=uow,
                 versions=versions,
+                maintainers=maintainers,
                 clock=clock,
             )
             publish_version = PublishVersionHandler(

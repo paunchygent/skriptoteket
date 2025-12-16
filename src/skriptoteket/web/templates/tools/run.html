@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="huleedu-card">
+    <p><a class="huleedu-link" href="/browse">← Tillbaka till katalog</a></p>
+    <h2>{{ tool.title }}</h2>
+    {% if tool.summary %}
+      <p class="huleedu-muted">{{ tool.summary }}</p>
+    {% endif %}
+
+    {% if error %}
+      <p class="huleedu-error huleedu-mt-2">{{ error }}</p>
+    {% endif %}
+
+    <form
+      method="post"
+      action="/tools/{{ tool.slug }}/run"
+      enctype="multipart/form-data"
+      hx-post="/tools/{{ tool.slug }}/run"
+      hx-target="#result-container"
+      hx-swap="innerHTML"
+      hx-encoding="multipart/form-data"
+      hx-indicator="#run-indicator"
+      class="huleedu-stack huleedu-mt-4"
+    >
+      <div>
+        <label for="file" class="huleedu-label">Ladda upp fil</label>
+        <div class="huleedu-file-wrapper huleedu-input">
+          <span class="huleedu-file-fake-button">Välj fil</span>
+          <span id="file-name" class="huleedu-muted">Ingen fil vald</span>
+          <input
+            type="file"
+            id="file"
+            name="file"
+            required
+            class="huleedu-file-native"
+            onchange="document.getElementById('file-name').textContent = this.files[0] ? this.files[0].name : 'Ingen fil vald'"
+          />
+        </div>
+      </div>
+      <div class="huleedu-flex huleedu-gap-4">
+        <button type="submit" class="huleedu-btn">Kör</button>
+        <span id="run-indicator" class="htmx-indicator huleedu-muted">Kör...</span>
+      </div>
+    </form>
+  </div>
+
+  <div id="result-container" class="huleedu-mt-4">
+    {# HTMX will inject run_result.html partial here #}
+  </div>
+{% endblock %}
