@@ -2,7 +2,7 @@
 type: story
 id: ST-06-01
 title: "Improve test coverage for Admin Scripting and Docker Runner"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-16
 epic: "EPIC-06"

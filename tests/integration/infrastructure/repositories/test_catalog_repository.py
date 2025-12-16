@@ -7,11 +7,15 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.catalog.models import Tool
+from skriptoteket.domain.identity.models import AuthProvider, Role
+from skriptoteket.domain.scripting.models import VersionState
 from skriptoteket.infrastructure.db.models.category import CategoryModel
 from skriptoteket.infrastructure.db.models.profession import ProfessionModel
+from skriptoteket.infrastructure.db.models.profession_category import ProfessionCategoryModel
 
 # Import ToolVersionModel to ensure foreign key resolution in metadata
-from skriptoteket.infrastructure.db.models.tool_version import ToolVersionModel  # noqa: F401
+from skriptoteket.infrastructure.db.models.tool_version import ToolVersionModel
+from skriptoteket.infrastructure.db.models.user import UserModel
 from skriptoteket.infrastructure.repositories.category_repository import (
     PostgreSQLCategoryRepository,
 )
@@ -76,6 +80,46 @@ async def test_category_repository(db_session: AsyncSession) -> None:
 
 
 @pytest.mark.integration
+async def test_category_repository_filters_by_profession_and_slug(db_session: AsyncSession) -> None:
+    repo = PostgreSQLCategoryRepository(db_session)
+    now = datetime.now(timezone.utc)
+
+    prof_id = uuid.uuid4()
+    prof = ProfessionModel(
+        id=prof_id,
+        slug="teacher",
+        label="Teacher",
+        sort_order=1,
+        created_at=now,
+        updated_at=now,
+    )
+    cat_id = uuid.uuid4()
+    cat = CategoryModel(
+        id=cat_id,
+        slug="calculation",
+        label="Calculation",
+        created_at=now,
+        updated_at=now,
+    )
+    db_session.add(prof)
+    db_session.add(cat)
+    db_session.add(ProfessionCategoryModel(profession_id=prof_id, category_id=cat_id, sort_order=1))
+    await db_session.flush()
+
+    fetched = await repo.get_by_slug("calculation")
+    assert fetched is not None and fetched.id == cat_id
+
+    by_profession = await repo.list_for_profession(profession_id=prof_id)
+    assert [c.id for c in by_profession] == [cat_id]
+
+    by_profession_slug = await repo.get_for_profession_by_slug(
+        profession_id=prof_id,
+        category_slug="calculation",
+    )
+    assert by_profession_slug is not None and by_profession_slug.id == cat_id
+
+
+@pytest.mark.integration
 async def test_tool_repository(db_session: AsyncSession) -> None:
     tool_repo = PostgreSQLToolRepository(db_session)
     now = datetime.now(timezone.utc)
@@ -114,3 +158,132 @@ async def test_tool_repository(db_session: AsyncSession) -> None:
     by_slug = await tool_repo.get_by_slug(slug="my-tool")
     assert by_slug is not None
     assert by_slug.id == tool_id
+
+
+@pytest.mark.integration
+async def test_tool_repository_list_by_tags_and_updates(db_session: AsyncSession) -> None:
+    tool_repo = PostgreSQLToolRepository(db_session)
+    now = datetime.now(timezone.utc)
+
+    user_id = uuid.uuid4()
+    db_session.add(
+        UserModel(
+            id=user_id,
+            email="tool-repo@example.com",
+            password_hash="hash",
+            role=Role.USER,
+            auth_provider=AuthProvider.LOCAL,
+            created_at=now,
+            updated_at=now,
+        )
+    )
+
+    prof_id = uuid.uuid4()
+    cat_id = uuid.uuid4()
+    db_session.add(
+        ProfessionModel(
+            id=prof_id,
+            slug="p-tags",
+            label="P",
+            sort_order=1,
+            created_at=now,
+            updated_at=now,
+        )
+    )
+    db_session.add(
+        CategoryModel(
+            id=cat_id,
+            slug="c-tags",
+            label="C",
+            created_at=now,
+            updated_at=now,
+        )
+    )
+    await db_session.flush()
+
+    tool_a_id = uuid.uuid4()
+    tool_b_id = uuid.uuid4()
+    tool_c_id = uuid.uuid4()
+
+    tool_a = Tool(
+        id=tool_a_id,
+        slug="a-tool",
+        title="Alpha",
+        summary=None,
+        is_published=False,
+        active_version_id=None,
+        created_at=now,
+        updated_at=now,
+    )
+    tool_b = Tool(
+        id=tool_b_id,
+        slug="b-tool",
+        title="Beta",
+        summary=None,
+        is_published=False,
+        active_version_id=None,
+        created_at=now,
+        updated_at=now,
+    )
+    tool_c = Tool(
+        id=tool_c_id,
+        slug="c-tool",
+        title="Beta",
+        summary=None,
+        is_published=False,
+        active_version_id=None,
+        created_at=now,
+        updated_at=now,
+    )
+
+    await tool_repo.create_draft(tool=tool_a, profession_ids=[prof_id], category_ids=[cat_id])
+    await tool_repo.create_draft(tool=tool_b, profession_ids=[prof_id], category_ids=[cat_id])
+    await tool_repo.create_draft(tool=tool_c, profession_ids=[prof_id], category_ids=[cat_id])
+
+    await tool_repo.set_published(tool_id=tool_a_id, is_published=True, now=now)
+    await tool_repo.set_published(tool_id=tool_b_id, is_published=True, now=now)
+    # Keep tool_c unpublished
+
+    published = await tool_repo.list_by_tags(profession_id=prof_id, category_id=cat_id)
+    assert [t.id for t in published] == [tool_a_id, tool_b_id]
+
+    updated = await tool_repo.update_metadata(
+        tool_id=tool_a_id,
+        title="Alpha (updated)",
+        summary="Summary",
+        now=now,
+    )
+    assert updated.title == "Alpha (updated)"
+    assert updated.summary == "Summary"
+
+    version_id = uuid.uuid4()
+    db_session.add(
+        ToolVersionModel(
+            id=version_id,
+            tool_id=tool_a_id,
+            version_number=1,
+            state=VersionState.DRAFT,
+            source_code="print('hi')",
+            entrypoint="run_tool",
+            content_hash="hash",
+            derived_from_version_id=None,
+            created_by_user_id=user_id,
+            created_at=now,
+            submitted_for_review_by_user_id=None,
+            submitted_for_review_at=None,
+            reviewed_by_user_id=None,
+            reviewed_at=None,
+            published_by_user_id=None,
+            published_at=None,
+            change_summary=None,
+            review_note=None,
+        )
+    )
+    await db_session.flush()
+
+    with_active = await tool_repo.set_active_version_id(
+        tool_id=tool_a_id,
+        active_version_id=version_id,
+        now=now,
+    )
+    assert with_active.active_version_id == version_id
