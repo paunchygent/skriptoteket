@@ -12,13 +12,24 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2025-12-15
-- Branch / commit: `main` (HEAD `cc78d48`, dirty working tree)
-- Goal of the session: Script editor layout redesign + button interaction fixes.
+- Date: 2025-12-16
+- Branch / commit: `main` (HEAD `321757b`, dirty working tree)
+- Goal of the session: Repo-level script bank + seed command (teacher-first, Swedish-first).
 
 ## What changed
 
 ### Current session (Script Editor Layout Redesign)
+
+**Repo-level script bank (seed)**:
+- Added curated script bank content + metadata:
+  - `src/skriptoteket/script_bank/bank.py`
+  - `src/skriptoteket/script_bank/scripts/ist_vh_mejl_bcc.py`
+- Added CLI seed command (idempotent by slug) + pdm shortcut:
+  - `src/skriptoteket/cli/main.py` (`seed-script-bank`, `--dry-run`, `--slug`, `--sync-metadata`, `--sync-code`)
+  - `pyproject.toml` (`pdm run seed-script-bank`)
+- Docs + tests:
+  - `docs/reference/ref-dynamic-tool-scripts.md` (seed section)
+  - `tests/unit/test_script_bank.py`
 
 **Major Layout Redesign (`admin/script_editor.html`)**:
 - Reduced dead space by unifying panels:

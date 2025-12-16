@@ -10,13 +10,16 @@ scope: "all"
 **MUST** adhere to these rules for all development. These rules define a FastAPI monolithic application with PostgreSQL (Kafka is optional/future), following DDD and Clean Architecture principles.
 
 ## Core Principles
+
 - [010-foundational-principles.md](010-foundational-principles.md): Non-negotiable tenets and mindset
 - [020-monolith-architecture.md](020-monolith-architecture.md): Layer structure and boundaries
 
 ## Communication & Events
+
 - [030-event-driven-patterns.md](030-event-driven-patterns.md): Eventing patterns (apply only if/when Kafka is introduced)
 
 ## Implementation Standards
+
 - [040-fastapi-blueprint.md](040-fastapi-blueprint.md): HTTP service patterns, routers, validation
 - [042-async-di-patterns.md](042-async-di-patterns.md): Protocols, Dishka DI, async patterns
 - [045-huleedu-design-system.md](045-huleedu-design-system.md): HuleEdu design tokens, button hierarchy, components
@@ -27,6 +30,7 @@ scope: "all"
 - [060-docker-and-compose.md](060-docker-and-compose.md): Docker/Compose workflow (dev/prod), deprecated keys, secrets
 
 ## Quality Assurance
+
 - [070-testing-standards.md](070-testing-standards.md): Testing strategies, protocol mocks, fixtures
 
 ---
