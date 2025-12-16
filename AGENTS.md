@@ -40,6 +40,20 @@ Target Python is **3.13–3.14**.
 - Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test`
 - Docs: `pdm run docs-validate`
 
+## Tool Execution (Local Dev Only)
+
+Before running tool execution locally:
+
+```bash
+# Add to .env
+ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts
+
+# Create directory
+mkdir -p /tmp/skriptoteket/artifacts
+```
+
+The default `ARTIFACTS_ROOT=/var/lib/skriptoteket/artifacts` doesn't exist locally and will cause 500 errors on tool execution.
+
 ## Coding & Testing Rules
 
 - Follow `.agent/rules/000-rule-index.md` (protocol-first DI, UoW-owned transactions, no business logic in web layer)

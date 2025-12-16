@@ -13,21 +13,51 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-16
-- Branch / commit: `main` (HEAD `321757b`, dirty working tree)
-- Goal of the session: ST-04-04 Contributor iteration after publication (policies + editor visibility).
+- Branch / commit: `main` (dirty working tree)
+- Goal of the session: ST-04-04 maintainer-based contributor iteration + ST-04-05 user execution (templates and tests).
 
 ## What changed
 
-### Current session (ST-04-04 Contributor iteration after publication)
+### Current session (ST-04-05 User execution of active tools)
 
-- Added scripting policy layer for version visibility/lineage: `src/skriptoteket/domain/scripting/policies.py`.
-- Contributor can now open published tools they authored (ACTIVE/ARCHIVED derived from their work) and create a new draft from the published baseline:
-  - `src/skriptoteket/web/pages/admin_scripting_support.py`
-  - `src/skriptoteket/web/pages/admin_scripting.py`
-  - `src/skriptoteket/web/templates/admin/script_editor.html` (hides sandbox runner when contributor views ACTIVE/ARCHIVED).
-- Enforced derived-from permission in draft creation: `src/skriptoteket/application/scripting/handlers/create_draft_version.py`.
-- Docs/contracts updated to match: `docs/backlog/stories/story-04-03-admin-script-editor-ui.md`, `docs/reference/ref-scripting-api-contracts.md`.
-- Tests updated/added: `tests/integration/web/test_admin_scripting_editor_routes.py`.
+- **Templates** (user-facing tool execution):
+  - `src/skriptoteket/web/templates/tools/run.html` - Upload form with HTMX execution
+  - `src/skriptoteket/web/templates/tools/result.html` - Full-page result wrapper
+  - `src/skriptoteket/web/templates/tools/partials/run_result.html` - User-facing result partial (NO stdout/stderr per security requirement)
+  - `src/skriptoteket/web/templates/my_runs/detail.html` - Past run view page
+  - `src/skriptoteket/web/templates/browse_tools.html` - Added "Kör" button for published tools with active version
+
+- **Design decisions**:
+  - Failed runs: Burgundy border (`border-color: var(--huleedu-burgundy)`)
+  - Empty artifacts: Hidden completely
+  - Loading state: HTMX `htmx-indicator` class
+  - User templates hide stdout/stderr; show only `html_output` and `error_summary`
+
+- **Tests**:
+  - `tests/unit/application/scripting/handlers/test_run_active_tool.py` (6 unit tests)
+  - `tests/integration/web/test_tools_routes.py` (6 integration tests)
+  - `tests/integration/web/test_my_runs_routes.py` (6 integration tests)
+
+- **Bug fixes** (during live testing):
+  - `.env` requires `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts` for local dev (default `/var/lib/skriptoteket/artifacts` doesn't exist locally)
+  - Artifact download links need `hx-boost="false" download` to prevent HTMX interception and trigger native browser download:
+    - `src/skriptoteket/web/templates/tools/partials/run_result.html`
+    - `src/skriptoteket/web/templates/admin/partials/run_result.html`
+  - `src/skriptoteket/web/middleware/error_handler.py` - Replaced debug print statements with proper `logger.exception()` for unhandled exceptions
+
+- Story status: `docs/backlog/stories/story-04-05-user-execution.md` set to `done`
+
+### Previous session (ST-04-04 Contributor iteration after publication)
+
+- Implemented explicit tool maintainer assignment (no lineage-based access): `tool_maintainers` + domain/web/app enforcement.
+  - Migration + backfill: `migrations/versions/0006_tool_maintainers.py` (+ docker idempotency: `tests/integration/test_migration_0006_tool_maintainers_idempotent.py`)
+  - Infra + DI: `src/skriptoteket/infrastructure/db/models/tool_maintainer.py`, `src/skriptoteket/infrastructure/repositories/tool_maintainer_repository.py`, `src/skriptoteket/protocols/catalog.py`, `src/skriptoteket/di.py`
+  - Policies: `src/skriptoteket/domain/scripting/policies.py` (contributors: maintainers can view ACTIVE/ARCHIVED + own drafts/in_review)
+  - Handlers: maintainer checks in `create_draft_version.py`, `save_draft_version.py`, `submit_for_review.py`, `run_sandbox.py`
+  - Web gating: `src/skriptoteket/web/pages/admin_scripting.py`, `src/skriptoteket/web/pages/admin_scripting_support.py`, `src/skriptoteket/web/pages/admin_scripting_runs.py`
+  - Test isolation fix: `src/skriptoteket/infrastructure/db/uow.py` uses nested transactions when already in a transaction
+  - Docs updated: `docs/backlog/stories/story-04-03-admin-script-editor-ui.md`, `docs/reference/ref-scripting-api-contracts.md`
+  - Tests updated: `tests/integration/web/test_admin_scripting_editor_routes.py`, `tests/unit/web/test_admin_scripting_routes.py`
 
 ### Current session (ST-06-06 Test warnings hygiene)
 
@@ -44,6 +74,20 @@ Keep this file updated so the next session can pick up work quickly.
 - No new `filterwarnings` needed (kept existing narrow ignores for dependency internals).
 - Results: `pdm run test -- -q` now emits zero warnings; `pdm run docs-validate` passes.
 - Story status: `docs/backlog/stories/story-06-06-test-warnings-hygiene.md` set to `done`.
+
+### Current session (ST-06-05 Web pages router test coverage)
+
+- Story status: `docs/backlog/stories/story-06-05-web-pages-test-coverage.md` set to `done`.
+- Added behavior-focused unit tests (mock protocols/DI; assert on status/headers/template context):
+  - Admin tools pages: `tests/unit/web/test_admin_tools_pages.py`
+  - Admin scripting runs pages: `tests/unit/web/test_admin_scripting_runs_pages.py`
+  - Suggestions pages: `tests/unit/web/test_suggestions_pages.py`
+- Coverage targets met (>70% each):
+  - `src/skriptoteket/web/pages/admin_tools.py` (100%)
+  - `src/skriptoteket/web/pages/admin_scripting_runs.py` (96%)
+  - `src/skriptoteket/web/pages/suggestions.py` (98%)
+- Kept unit suite green: updated `tests/unit/application/scripting/handlers/test_run_active_tool.py` to use `RunStatus.SUCCEEDED`
+  and current `ToolRun` fields.
 
 ### Previous session (ST-04-04 QC)
 
@@ -157,19 +201,24 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## How to run / verify
 
+- Ensure `.env` has `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts` (required for local tool execution)
+- Create artifacts directory: `mkdir -p /tmp/skriptoteket/artifacts`
 - Start DB (ran): `docker compose up -d db`
 - Run migrations (ran): `pdm run db-upgrade`
-- Start app (ran): `pdm run dev`
+- Seed tool (ran): `SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL=... SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD=... PYTHONPATH=src pdm run python -m skriptoteket.cli seed-script-bank --slug ist-vh-mejl-bcc`
+- Start app (ran): `PYTHONPATH=src pdm run uvicorn --app-dir src skriptoteket.web.app:app --host 127.0.0.1 --port 8000`
 - Live functional check (ran, no secrets/tokens recorded):
   - Unauthenticated `GET /login` returns 200.
-  - Created a temporary superuser + session row via one-off `PYTHONPATH=src pdm run python` script.
-  - With the session cookie, verified:
+  - After login, verified:
     - `GET /admin/tools` returns 200.
-    - `GET /admin/tools/{tool_id}` returns 200 (script editor route renders).
-- Live functional check (ran, no secrets/tokens recorded):
-  - Seeded a published tool with an ACTIVE version derived from a contributor’s archived version (direct DB insert).
-  - Started server on port 8001: `pdm run uvicorn --app-dir src skriptoteket.web.app:app --host 127.0.0.1 --port 8001`.
-  - With a contributor session cookie, verified `GET /admin/tools/{tool_id}` returns 200 and includes the ACTIVE source marker (`LIVE_ACTIVE_MARKER`).
+    - `GET /admin/tools/<tool_id>` returns 200 (script editor route renders).
+  - Run migrations (ran): `pdm run db-upgrade`.
+  - Created a temporary admin + session row via one-off `PYTHONPATH=src pdm run python` script.
+  - With the session cookie, verified:
+    - `GET /admin/tools` returns 200 and includes `<h2>Verktyg</h2>`.
+    - `GET /suggestions/new` returns 200 and includes `<h2>Föreslå ett skript</h2>`.
+    - `GET /admin/suggestions` returns 200 and includes `<h2>Förslag</h2>`.
+    - `GET /admin/tool-runs/{random_uuid}` returns 404.
 - QC gates (ran): `pdm run test -- -q && pdm run docs-validate`
 - Lint note: `pdm run lint` currently fails on existing E501 lines in
   `tests/integration/web/test_admin_scripting_editor_routes.py`; `pdm run ruff check src/skriptoteket/web` passes.
@@ -189,12 +238,14 @@ Keep this file updated so the next session can pick up work quickly.
 **Status**: Stories ST-05-01 through ST-05-06 complete. Refinement pass needed for button consistency.
 
 **Remaining work**:
+
 1. Audit ALL 15 templates for button class consistency (COMPLETED)
 2. Ensure uniform `min-width` on action buttons in rows (COMPLETED)
 3. Verify header "Logga ut" stays fixed on resize (VERIFIED - flex-shrink: 0 is correct)
 4. Verify `suggestions_review_queue.html` matches `admin_tools.html` pattern (VERIFIED - uses huleedu-tool-list)
 
 **Templates to audit** (in priority order):
+
 - [X] `base.html` - header logout button
 - [X] `admin_tools.html` - action buttons (partially fixed)
 - [X] `suggestions_review_queue.html` - "Öppna" buttons
@@ -206,6 +257,7 @@ Keep this file updated so the next session can pick up work quickly.
 - [X] Browse templates (3 files) - navigation links (No buttons found, implicitly consistent)
 
 **Button CSS reference** (`app.css` lines 171-229):
+
 - `.huleedu-btn` = burgundy CTA
 - `.huleedu-btn-navy` = navy functional
 - `.huleedu-btn-secondary` = outline

@@ -77,28 +77,66 @@ async def provide_session(
     sessionmaker: async_sessionmaker[AsyncSession],
 ) -> AsyncIterator[AsyncSession]:
     async with sessionmaker() as session:
-        yield session
+        try:
+            yield session
+        finally:
+            # Commit any pending transaction before closing
+            # UoW should have committed, but autobegin may have started
+            # a new transaction for post-commit queries
+            if session.in_transaction():
+                await session.commit()
 ```
 
 ```python
 # infrastructure/uow.py
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, AsyncSessionTransaction
 from src.protocols import UnitOfWorkProtocol
 
 class SQLAlchemyUnitOfWork(UnitOfWorkProtocol):
+    """Unit of Work with conditional transaction handling.
+
+    When the session is already in a transaction (e.g., test fixtures with flushed data),
+    uses begin_nested() (savepoint) to avoid affecting the outer transaction on rollback.
+    When no transaction exists, commits the session directly.
+
+    The session provider in di.py commits any pending outer transaction on cleanup,
+    ensuring data persists in production while test isolation is preserved.
+    """
+
     def __init__(self, session: AsyncSession):
         self._session = session
+        self._transaction: AsyncSessionTransaction | None = None
 
     async def __aenter__(self) -> "SQLAlchemyUnitOfWork":
-        await self._session.begin()
+        if self._session.in_transaction():
+            # Already in transaction - use savepoint for isolation
+            self._transaction = await self._session.begin_nested()
         return self
 
     async def __aexit__(self, exc_type, exc, tb) -> None:
-        if exc:
-            await self._session.rollback()
-            return
-        await self._session.commit()
+        if self._transaction is not None:
+            # Savepoint mode
+            if exc:
+                await self._transaction.rollback()
+            else:
+                await self._transaction.commit()
+        else:
+            # Direct mode
+            if exc:
+                await self._session.rollback()
+            else:
+                await self._session.commit()
 ```
+
+### Transaction handling modes
+
+| Scenario | `in_transaction()` | Mode | Behavior |
+|----------|-------------------|------|----------|
+| Fresh request, no prior DB access | False | Direct | Commit/rollback session directly |
+| After dependency read (autobegin) | True | Savepoint | Commit/rollback savepoint; session provider commits outer |
+| Test with flushed data | True | Savepoint | Rollback savepoint preserves test data |
+
+**Key**: The session provider (di.py) commits pending transactions on cleanup, ensuring savepoint releases propagate to the database in production.
 
 ## 4. Repository Pattern (no commits)
 

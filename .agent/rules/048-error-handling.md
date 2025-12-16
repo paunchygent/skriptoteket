@@ -270,5 +270,22 @@ logger.error(
 | Logging without correlation_id | Breaks traceability |
 | Raw exception messages to client | Leaks implementation details |
 | Catching `Exception` without re-raising | Hides bugs |
+| Catching `Exception` without logging | Silently swallows errors; use `logger.exception()` |
 | HTTP status from domain layer | Domain shouldn't know HTTP |
 | Repository code mapping to HTTP | Mapping belongs in web/api layer |
+
+## 12. Middleware Exception Logging
+
+Always log unhandled exceptions in error handler middleware with full traceback:
+
+```python
+except Exception as exc:
+    logger.exception(
+        "Unhandled exception on %s %s: %s",
+        request.method,
+        request.url.path,
+        exc,
+    )
+```
+
+Using `logger.exception()` automatically includes the traceback. Never use bare `print()` statements for error logging in production code.

@@ -2,7 +2,7 @@
 type: story
 id: ST-06-05
 title: "Improve test coverage for remaining web page routers (admin tools, scripting runs, suggestions)"
-status: in_progress
+status: done
 owners: "agents"
 created: 2025-12-16
 epic: "EPIC-06"

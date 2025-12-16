@@ -133,3 +133,21 @@ The 24px grid at 4% opacity is applied via `body::before` in `app.css`. Do not r
 - **ST-05-06**: Toast partial + HTMX loading
 
 See `docs/backlog/epics/epic-05-huleedu-design-harmonization.md` for acceptance criteria.
+
+## 11. HTMX Gotchas
+
+### File Downloads with hx-boost
+
+When `hx-boost="true"` is on the body, HTMX intercepts ALL link clicks and fetches them via AJAX. This breaks file downloads - the file content gets swapped into the page instead of triggering a download dialog.
+
+**Fix:** Add `hx-boost="false"` and `download` attribute to download links:
+
+```html
+<!-- BAD: HTMX intercepts and swaps file content into page -->
+<a href="/download/file.txt">Download</a>
+
+<!-- GOOD: Native browser download behavior -->
+<a href="/download/file.txt" hx-boost="false" download>Download</a>
+```
+
+This applies to all artifact/file download links in both user-facing and admin templates.

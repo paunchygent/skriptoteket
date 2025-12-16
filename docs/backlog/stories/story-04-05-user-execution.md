@@ -2,7 +2,7 @@
 type: story
 id: ST-04-05
 title: "User execution of active tools"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-14
 epic: "EPIC-04"

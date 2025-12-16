@@ -208,7 +208,7 @@ logical shapes and are intended for a future `/api/v1` surface.
 
 ```http
 GET /admin/tools/{tool_id}
-Auth: Contributor, Admin, Superuser (contributors: drafts they own + published versions derived from their work; empty tools show starter template)
+Auth: Contributor, Admin, Superuser (contributors: assigned tool maintainers; can view ACTIVE/ARCHIVED + own drafts/in_review; empty tools show starter template)
 ```
 
 **Response 200:**

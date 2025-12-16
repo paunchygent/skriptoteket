@@ -24,6 +24,10 @@ pdm run provision-user          # Create additional users
 pdm run dev                     # Local server at http://127.0.0.1:8000
 pdm run dev-docker              # Server bound to 0.0.0.0 (for Docker)
 
+# Tool execution (local dev only)
+# Add to .env: ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts
+mkdir -p /tmp/skriptoteket/artifacts
+
 # Docker compose workflow
 pdm run dev-start               # Start with dev overrides
 pdm run dev-stop                # Stop containers
