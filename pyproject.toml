@@ -285,6 +285,7 @@ db-upgrade = "alembic upgrade head"
 bootstrap-superuser = { cmd = "python -m skriptoteket.cli bootstrap-superuser", env = { PYTHONPATH = "src" } }
 provision-user = { cmd = "python -m skriptoteket.cli provision-user", env = { PYTHONPATH = "src" } }
 artifacts-prune = { cmd = "python -m skriptoteket.cli prune-artifacts", env = { PYTHONPATH = "src" } }
+seed-script-bank = { cmd = "python -m skriptoteket.cli seed-script-bank", env = { PYTHONPATH = "src" } }
 
 # Docker dev workflow (compose base + dev overrides)
 dev-start = "docker compose -f compose.yaml -f compose.dev.yaml up -d"
