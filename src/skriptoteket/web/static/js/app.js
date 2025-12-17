@@ -123,6 +123,19 @@
     });
   }
 
+  function ensureToastObserver() {
+    var container = document.getElementById("toast-container");
+    if (!container) return;
+    if (container.dataset.huleeduToastObserverInitialized === "true") return;
+    container.dataset.huleeduToastObserverInitialized = "true";
+
+    if (!window.MutationObserver) return;
+    var observer = new MutationObserver(function () {
+      initToasts();
+    });
+    observer.observe(container, { childList: true });
+  }
+
   function scheduleAllEditorsRefresh() {
     if (resizeRefreshTimeout) clearTimeout(resizeRefreshTimeout);
     resizeRefreshTimeout = setTimeout(function () {
@@ -204,6 +217,7 @@
 
   function init(root) {
     cleanupCodeMirrorEditors();
+    ensureToastObserver();
     initToasts();
     initFileInputs(root);
     initCodeMirrorEditors(root);
@@ -219,6 +233,15 @@
 
   document.body.addEventListener("htmx:afterSwap", function () {
     initToasts();
+    scheduleAllEditorsRefresh();
+  });
+
+  document.body.addEventListener("htmx:oobAfterSwap", function () {
+    initToasts();
+  });
+
+  document.body.addEventListener("htmx:afterSettle", function () {
+    scheduleAllEditorsRefresh();
   });
 
   window.addEventListener("resize", scheduleAllEditorsRefresh);

@@ -209,7 +209,9 @@ async def test_run_sandbox_hx_request_domain_error_returns_inline_html() -> None
     )
 
     assert response.status_code == 400
-    assert '<p class="error">' in response.body.decode("utf-8")
+    assert response.template.name == "admin/partials/run_error_with_toast.html"
+    assert response.context["type"] == "error"
+    assert response.context["message"] == "Testkörning misslyckades."
 
 
 @pytest.mark.unit

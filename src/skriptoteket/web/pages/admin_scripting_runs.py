@@ -11,7 +11,7 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.domain.identity.models import Role, Session, User
 from skriptoteket.domain.scripting.execution import ArtifactsManifest
-from skriptoteket.domain.scripting.models import ToolRun
+from skriptoteket.domain.scripting.models import RunStatus, ToolRun
 from skriptoteket.infrastructure.runner.path_safety import validate_output_path
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol, ToolRepositoryProtocol
 from skriptoteket.protocols.scripting import (
@@ -97,14 +97,28 @@ def _resolve_artifact_path(
     return candidate_path, relative_path
 
 
-def _render_hx_error(exc: DomainError) -> HTMLResponse:
-    return HTMLResponse(
-        f'<p class="error">{_ui_error_message(exc)}</p>',
+def _run_succeeded(status: RunStatus | str) -> bool:
+    key = status.value if isinstance(status, RunStatus) else str(status)
+    return key == RunStatus.SUCCEEDED.value
+
+
+def _render_hx_error_with_toast(*, request: Request, exc: DomainError) -> Response:
+    error = _ui_error_message(exc)
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/partials/run_error_with_toast.html",
+        context={
+            "request": request,
+            "error": error,
+            "message": "Testkörning misslyckades.",
+            "type": "error",
+        },
         status_code=_status_code_for_error(exc),
     )
 
 
 def _render_run_result_partial(*, request: Request, run: ToolRun) -> Response:
+    succeeded = _run_succeeded(run.status)
     return templates.TemplateResponse(
         request=request,
         name="admin/partials/run_result_with_toast.html",
@@ -112,8 +126,8 @@ def _render_run_result_partial(*, request: Request, run: ToolRun) -> Response:
             "request": request,
             "run": run,
             "artifacts": _artifacts_for_run(run),
-            "message": "Körning klar.",
-            "type": "success",
+            "message": "Testkörning lyckades." if succeeded else "Testkörning misslyckades.",
+            "type": "success" if succeeded else "error",
         },
     )
 
@@ -207,7 +221,7 @@ async def run_sandbox(
         )
     except DomainError as exc:
         if hx_request:
-            return _render_hx_error(exc)
+            return _render_hx_error_with_toast(request=request, exc=exc)
         return await _render_sandbox_editor(
             **editor_kwargs,
             run=None,

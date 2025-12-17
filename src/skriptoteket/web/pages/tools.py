@@ -13,7 +13,7 @@ from skriptoteket.application.scripting.commands import RunActiveToolCommand
 from skriptoteket.domain.errors import DomainError, not_found
 from skriptoteket.domain.identity.models import Session, User
 from skriptoteket.domain.scripting.execution import ArtifactsManifest
-from skriptoteket.domain.scripting.models import ToolRun
+from skriptoteket.domain.scripting.models import RunStatus, ToolRun
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.scripting import (
     RunActiveToolHandlerProtocol,
@@ -28,6 +28,11 @@ from skriptoteket.web.templating import templates
 from skriptoteket.web.ui_text import ui_error_message
 
 router = APIRouter(prefix="/tools")
+
+
+def _run_succeeded(status: RunStatus | str) -> bool:
+    key = status.value if isinstance(status, RunStatus) else str(status)
+    return key == RunStatus.SUCCEEDED.value
 
 
 def _user_artifacts_for_run(run: ToolRun) -> list[dict[str, object]]:
@@ -123,8 +128,16 @@ async def execute_tool(
         run = result.run
     except DomainError as exc:
         if hx_request:
-            return HTMLResponse(
-                f'<div class="huleedu-alert huleedu-alert-error">{ui_error_message(exc)}</div>',
+            error = ui_error_message(exc)
+            return templates.TemplateResponse(
+                request=request,
+                name="tools/partials/run_error_with_toast.html",
+                context={
+                    "request": request,
+                    "error": error,
+                    "message": "Körning misslyckades.",
+                    "type": "error",
+                },
                 status_code=status_code_for_error(exc),
             )
         # Re-render form with error
@@ -148,6 +161,7 @@ async def execute_tool(
 
     # Success - render result
     if hx_request:
+        succeeded = _run_succeeded(run.status)
         return templates.TemplateResponse(
             request=request,
             name="tools/partials/run_result_with_toast.html",
@@ -155,8 +169,8 @@ async def execute_tool(
                 "request": request,
                 "run": run,
                 "artifacts": _user_artifacts_for_run(run),
-                "message": "Körning klar.",
-                "type": "success",
+                "message": "Körning lyckades." if succeeded else "Körning misslyckades.",
+                "type": "success" if succeeded else "error",
             },
         )
 

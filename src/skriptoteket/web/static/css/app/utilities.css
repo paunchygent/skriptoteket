@@ -53,8 +53,9 @@
 
 /* Consistent single-panel width (main menu pages) */
 .huleedu-panel {
+  display: block;
   width: 100%;
-  max-width: var(--huleedu-max-width-xl);
+  max-width: var(--huleedu-max-width-2xl);
   margin-left: auto;
   margin-right: auto;
 }

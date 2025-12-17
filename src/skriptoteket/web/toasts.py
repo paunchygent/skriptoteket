@@ -12,7 +12,12 @@ ToastType = Literal["success", "error"]
 TOAST_COOKIE_NAME = "skriptoteket_toast"
 
 
-def set_toast_cookie(*, response: Response, message: str, toast_type: ToastType = "success") -> None:
+def set_toast_cookie(
+    *,
+    response: Response,
+    message: str,
+    toast_type: ToastType = "success",
+) -> None:
     payload = json.dumps(
         {"m": message, "t": toast_type},
         separators=(",", ":"),
@@ -50,4 +55,3 @@ def read_toast_cookie(request: Request) -> tuple[str, ToastType] | None:
         toast_type = "success"
 
     return message, toast_type
-

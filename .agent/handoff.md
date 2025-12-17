@@ -35,20 +35,19 @@ Keep this file updated so the next session can pick up work quickly.
   - `src/skriptoteket/web/templates/browse_categories.html` - uses `.huleedu-panel`.
   - `src/skriptoteket/web/templates/browse_tools.html` - uses `.huleedu-panel`.
 - Panel/toast/spinner refinements (cross-browser stability + consistent visuals):
-  - `src/skriptoteket/web/static/css/app/utilities.css` - tune `.huleedu-panel` max-width to `--huleedu-max-width-xl`; add `.huleedu-flex-between-start` + `.huleedu-mb-0`.
-  - `src/skriptoteket/web/static/css/app/components.css` - tool rows align to top + allow action wrap; toast container moved to bottom-right + toast gets brutalist border.
+  - `src/skriptoteket/web/static/css/app/utilities.css` - make `.huleedu-panel` a fixed target width (`--huleedu-max-width-2xl`, capped at `100%`) + `display: block`; add `.huleedu-flex-between-start` + `.huleedu-mb-0`.
+  - `src/skriptoteket/web/static/css/app/components.css` - tool rows align to top + allow action wrap; toast container aligns to the right and sits below header (avoids overlapping “Logga ut”).
+  - `src/skriptoteket/web/static/js/app.js` - toast auto-dismiss is robust via `MutationObserver` on `#toast-container`; CodeMirror refresh scheduled after HTMX swaps.
   - `src/skriptoteket/web/templates/browse_tools.html` - align “Kör” button to top using `.huleedu-flex-between-start`; remove inline `style="margin-bottom:0"`.
-  - `src/skriptoteket/web/templates/tools/run.html` - use `.huleedu-panel` for consistent single-panel width; run button uses `.huleedu-btn-icon` for centered spinner.
+  - `src/skriptoteket/web/templates/tools/run.html`, `src/skriptoteket/web/templates/tools/result.html` - wrap in `.huleedu-panel` so tool run pages match other single-panel routes.
   - `src/skriptoteket/web/templates/admin/script_editor.html` - run button uses `.huleedu-btn-icon` for centered spinner.
+  - `src/skriptoteket/web/templates/admin/script_editor.html` + `src/skriptoteket/web/static/css/app/editor.css` - run results container scrolls and is height-capped (prevents CodeMirror collapsing after “Testkör”).
+  - `src/skriptoteket/web/pages/admin_scripting_runs.py`, `src/skriptoteket/web/pages/tools.py` - run-result toasts use `error` vs `success` based on run status.
+  - `src/skriptoteket/web/templates/partials/toast.html` - default `type` now applies even when the value is falsey (prevents unstyled “blank” toasts).
 - Header nav:
   - `src/skriptoteket/web/templates/base.html` - added “Mina verktyg” link for contributor+ users (`/my-tools`).
 - CSS modularization (replaces brittle monolith):
   - `src/skriptoteket/web/static/css/app.css` is now an entrypoint that `@import`s modules under `src/skriptoteket/web/static/css/app/`.
-- Browse width adjustment:
-  - `src/skriptoteket/web/templates/browse_professions.html` - removed fixed-width panel so it matches other full-width single-card pages.
-  - `src/skriptoteket/web/templates/browse_categories.html` - removed fixed-width panel.
-  - `src/skriptoteket/web/templates/browse_tools.html` - removed fixed-width panel.
-  - `src/skriptoteket/web/static/css/app/utilities.css` - removed unused `.huleedu-panel`.
 - Toasts now actually render:
   - `src/skriptoteket/web/toasts.py` - cookie-based “flash toast” helpers (`skriptoteket_toast`).
   - `src/skriptoteket/web/middleware/toasts.py` + `src/skriptoteket/web/app.py` - middleware reads toast cookie into `request.state.toast_*` and clears it after render.
@@ -84,7 +83,7 @@ Keep this file updated so the next session can pick up work quickly.
   - `curl -c /tmp/cookies.txt -X POST -d "email=<email>&password=<password>" http://127.0.0.1:8002/login`
   - `curl -b /tmp/cookies.txt http://127.0.0.1:8002/admin/tools/<tool_id>` returned `200` and HTML contained `huleedu-editor-page`, `data-huleedu-codemirror="python"`, and `hx-indicator="#sandbox-run-indicator"`.
 - Verify browse panel class + modular CSS served:
-  - `curl -b /tmp/cookies.txt http://127.0.0.1:8002/browse/` returned `200` and HTML contained `huleedu-card` (and no `huleedu-panel`).
+  - `curl -b /tmp/cookies.txt http://127.0.0.1:8002/browse/` returned `200` and HTML contained `huleedu-card huleedu-panel`.
   - `curl -o /dev/null -w "%{http_code}" http://127.0.0.1:8002/static/css/app/utilities.css` returned `200`.
 - Verify CodeMirror save sync hook is served:
   - `curl http://127.0.0.1:8002/static/js/app.js | rg \"htmx:configRequest\"` matches.
@@ -389,7 +388,7 @@ Keep this file updated so the next session can pick up work quickly.
     - `GET /` returns 200 (started local server on port 8001).
     - `GET /admin/tool-runs/{random_uuid}` returns 404.
   - UI refinements sanity check (ran, no secrets/tokens recorded):
-    - Start app: `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts PYTHONPATH=src pdm run uvicorn --app-dir src skriptoteket.web.app:app --host 127.0.0.1 --port 8012`
+    - Start app: `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts PYTHONPATH=src pdm run uvicorn --app-dir src skriptoteket.web.app:app --host 127.0.0.1 --port 8016`
     - Created a temporary superuser + session row via one-off `PYTHONPATH=src pdm run python` script.
     - With the session cookie, verified these render and include `.huleedu-panel`:
       - `GET /browse/` returns 200 and includes `<h2>Välj yrke</h2>`.
@@ -397,6 +396,7 @@ Keep this file updated so the next session can pick up work quickly.
       - `GET /suggestions/new` returns 200 and includes `<h2>Föreslå ett skript</h2>`.
       - `GET /admin/suggestions` returns 200 and includes `<h2>Förslag</h2>`.
       - `GET /admin/tools` returns 200 and includes `<h2>Verktyg</h2>`.
+      - `GET /tools/<published-slug>/run` returns 200 and wraps content in `.huleedu-panel`.
     - Verified toast HTML renders when `skriptoteket_toast` cookie is present (ensures toast container + markup exists in `base.html`).
 - Observability smoke check (ran, no secrets/tokens recorded):
   - Start app: `PYTHONPATH=src pdm run uvicorn --app-dir src skriptoteket.web.app:app --host 127.0.0.1 --port 8010`
@@ -469,3 +469,56 @@ All ST-04-04 work is done:
 ## Notes
 
 - Do not include secrets/tokens in this file.
+
+---
+
+## 2025-12-17 ST-05-07 Frontend Stabilisering (ny story)
+
+**Story skapad:** `docs/backlog/stories/story-05-07-frontend-stabilization.md`
+
+**Källa:** Frontend-expert analys via repomix-paket (`.claude/repomix_packages/TASK-frontend-review.md`)
+
+### Nästa sessions uppdrag
+
+1. **Validera repomix-analys mot faktisk kod**
+   - CSS brace-bugg var FALSE POSITIVE (components.css är korrekt balanserad)
+   - Granska övriga påståenden i `TASK-frontend-review.md` mot faktiska filer
+
+2. **Implementera panel-bredd unifiering (Prio 2-3)**
+   - Lägg till `--huleedu-content-width: 42rem` i `utilities.css`
+   - Uppdatera `.huleedu-panel` att använda denna token
+   - Migrera `login.html` och `home.html` till `.huleedu-panel`
+   - Verifiera konsekvent bredd på alla single-column sidor
+
+3. **Implementera dvh fallback (Prio 4)**
+   - Lägg till `height: 100vh; height: 100dvh;` fallback i `layout.css`
+   - Testa på äldre browsers om möjligt
+
+4. **Utvärdera editor-layout refaktorering (Prio 5)**
+   - Granska nuvarande `editor.css` och `script_editor.html`
+   - Bedöm om CSS Grid med `grid-template-areas` förbättrar stabilitet
+   - Dokumentera exakta patches i story-filen
+
+5. **Uppdatera epic-filen**
+   - Lägg till ST-05-07 i `docs/backlog/epics/epic-05-huleedu-design-harmonization.md`
+
+### Relevanta filer
+
+- Story: `docs/backlog/stories/story-05-07-frontend-stabilization.md`
+- Plan: `.claude/plans/vast-sprouting-locket.md`
+- Task-beskrivning: `.claude/repomix_packages/TASK-frontend-review.md`
+- Repomix-paket: `.claude/repomix_packages/repomix-frontend-architecture-review.xml`
+
+---
+
+## 2025-12-17 Editor/UI fixes (live check)
+
+**Live functional check performed** (per UI/route session rule):
+
+- DB: `pdm run db-upgrade` (no pending migrations).
+- Started web server: `pdm run uvicorn --app-dir src skriptoteket.web.app:app --host 127.0.0.1 --port 8018`
+- Created a temporary superuser (email only; password not recorded here) via `pdm run bootstrap-superuser`.
+- Verified rendered pages (via `curl` with the session cookie):
+  - `GET /` renders and includes cache-busted assets `app.css?v=...`, `app.js?v=...`, `htmx.min.js?v=...`.
+  - `GET /browse/`, `GET /my-tools`, `GET /admin/tools` render and include `.huleedu-panel` on the primary card.
+  - `POST /tools/nonexistent/run` with `HX-Request: true` returns an error alert + OOB toast (`huleedu-toast-error`, `hx-swap-oob="beforeend:#toast-container"`).

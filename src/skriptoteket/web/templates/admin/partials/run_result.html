@@ -1,4 +1,4 @@
-<div class="huleedu-card huleedu-stack">
+<div class="huleedu-card huleedu-stack"{% if run.error_summary %} style="border-color: var(--huleedu-burgundy);"{% endif %}>
   <div class="huleedu-muted">
     <span class="huleedu-pill">Körning: {{ run.status | run_status_label }}</span>
     <span class="huleedu-pill">ID: {{ run.id }}</span>

@@ -86,13 +86,13 @@
             </span>
           {% endif %}
         </div>
-      </div>
 
-      <!-- RUN RESULTS -->
-      <div id="run-result">
-        {% if run %}
-          {% include "admin/partials/run_result.html" %}
-        {% endif %}
+        <!-- RUN RESULTS (Moved inside card) -->
+        <div id="run-result" class="huleedu-editor-run-result">
+          {% if run %}
+            {% include "admin/partials/run_result.html" %}
+          {% endif %}
+        </div>
       </div>
     </div>
 

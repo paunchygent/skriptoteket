@@ -236,6 +236,23 @@
   opacity: 0.7;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   ALERTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.huleedu-alert {
+  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  background-color: var(--huleedu-canvas);
+  padding: var(--huleedu-space-3) var(--huleedu-space-4);
+  box-shadow: var(--huleedu-shadow-brutal-sm);
+  font-size: var(--huleedu-text-sm);
+}
+
+.huleedu-alert-error {
+  border-color: var(--huleedu-burgundy);
+  color: var(--huleedu-burgundy);
+}
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    TOAST NOTIFICATIONS
@@ -243,20 +260,14 @@
 
 .huleedu-toast-container {
   position: fixed;
-  bottom: var(--huleedu-space-4);
+  top: calc(var(--huleedu-space-4) + var(--huleedu-header-height));
   right: var(--huleedu-space-4);
-  z-index: 1000;
+  z-index: 2000;
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: var(--huleedu-space-2);
   max-width: calc(100vw - var(--huleedu-space-8));
-}
-
-@media (min-width: 768px) {
-  .huleedu-toast-container {
-    bottom: calc(var(--huleedu-space-4) + var(--huleedu-space-4)); /* Account for frame margin */
-    right: calc(var(--huleedu-space-4) + var(--huleedu-space-4));
-  }
 }
 
 .huleedu-toast {
@@ -266,10 +277,8 @@
   padding: var(--huleedu-space-4) var(--huleedu-space-5);
   font-size: var(--huleedu-text-sm);
   font-weight: var(--huleedu-font-medium);
-  width: 100%;
   max-width: var(--huleedu-max-width-sm);
-  border: var(--huleedu-border-width) solid var(--huleedu-canvas);
-  border-radius: var(--huleedu-radius-sm);
+  overflow-wrap: anywhere;
   box-shadow: var(--huleedu-shadow-brutal-sm);
   animation: huleedu-toast-slide-in 0.3s var(--huleedu-ease-out);
 }
@@ -290,23 +299,17 @@
 
 .huleedu-toast-dismiss {
   margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
   background: none;
-  border: var(--huleedu-border-width) solid var(--huleedu-canvas-50);
-  border-radius: var(--huleedu-radius-full);
+  border: none;
   color: inherit;
   opacity: 0.7;
   cursor: pointer;
-  padding: 0;
+  padding: var(--huleedu-space-1);
+  line-height: 1;
 }
 
 .huleedu-toast-dismiss:hover {
   opacity: 1;
-  border-color: var(--huleedu-canvas);
 }
 
 @keyframes huleedu-toast-slide-in {
