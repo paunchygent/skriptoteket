@@ -1,3 +1,13 @@
+---
+type: reference
+id: REF-frontend-expert-review-epic-05
+title: "EPIC-05 Frontend expert review (repomix)"
+status: active
+owners: "agents"
+created: 2025-12-17
+topic: "frontend-review"
+---
+
 ## 1. Analysrapport
 
 Nedan är en sammanhållen frontend-review baserad på kontextpaketet (42 filer) med fokus på bräcklighet, kohesion, specifika UI-problem samt en konkret, stegvis refactor-plan som håller sig inom era constraints (server-rendered + HTMX, inga externa beroenden, inkrementella deployer).

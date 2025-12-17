@@ -472,6 +472,32 @@ All ST-04-04 work is done:
 
 ---
 
+## 2025-12-17 Skriptoteket DevOps Skill (NEW)
+
+**Task:** Create branched DevOps skill for home server management.
+
+**Completed this session:**
+- Research phase: 4 Explore agents ran in parallel covering runbooks, ADRs, Docker configs, CLI code
+- Created ref-doc: `docs/reference/reports/ref-devops-skill-research.md`
+- Created SKILL.md: `.claude/skills/skriptoteket-devops/SKILL.md` (with all critical config copy-paste ready)
+- Created directory: `.claude/skills/skriptoteket-devops/branches/` (empty, for next session)
+
+**Next session mandate:**
+1. Create 10 branch files in `.claude/skills/skriptoteket-devops/branches/`:
+   - `deploy.md`, `database.md`, `users.md`, `seed.md`, `cli.md`
+   - `security.md`, `network.md`, `dns-provider.md`, `server-os.md`, `troubleshoot.md`
+2. Create `reference.md` with quick command reference
+3. Verify skill shows in `/skill` autocompletion
+4. Each branch should be 50-100 lines max, SSH-first commands
+
+**Relevant files:**
+- SKILL.md: `.claude/skills/skriptoteket-devops/SKILL.md`
+- Research: `docs/reference/reports/ref-devops-skill-research.md`
+- Plan: `.claude/plans/vast-sprouting-locket.md`
+- Existing skills (pattern reference): `.claude/skills/loki-logql/`, `.claude/skills/structlog-logging/`
+
+---
+
 ## 2025-12-17 ST-05-07 Frontend Stabilisering (ny story)
 
 **Story:** `docs/backlog/stories/story-05-07-frontend-stabilization.md` (uppdaterad med validering + patch-förslag)
