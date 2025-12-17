@@ -14,11 +14,96 @@ Keep this file updated so the next session can pick up work quickly.
 
 - Date: 2025-12-16
 - Branch / commit: `main` (dirty working tree)
-- Goal of the session: ST-04-04 maintainer-based contributor iteration + ST-04-05 user execution (templates and tests).
+- Goal of the session: HuleEdu-compatible structured logging (structlog + correlation IDs) and baseline lifecycle logs for execution/runner.
 
 ## What changed
 
-### Current session (ST-04-05 User execution of active tools)
+### Current session (ST-04-04 continuation - Maintainer Admin + My Tools + Rollback)
+
+**Observability / logging (HuleEdu-compatible):**
+- Dependencies: `pyproject.toml`, `pdm.lock` - added `structlog`
+- Config: `src/skriptoteket/observability/logging.py` - JSON logs with required fields (`timestamp`, `level`, `event`, `service.name`, `deployment.environment`) + callsite; optional OTEL `trace_id`/`span_id`
+- Correlation: `src/skriptoteket/web/middleware/correlation.py` - binds `correlation_id` via `structlog.contextvars` and echoes `X-Correlation-ID`
+- Web wiring: `src/skriptoteket/web/app.py` - configures logging + adds correlation middleware
+- Error logging: `src/skriptoteket/web/middleware/error_handler.py` - logs `DomainError` + unhandled exceptions; includes `correlation_id` in JSON errors
+- Structured events: `src/skriptoteket/web/pages/my_runs.py`, `src/skriptoteket/application/scripting/handlers/execute_tool_version.py`, `src/skriptoteket/infrastructure/runner/docker_runner.py`
+- Env examples: `.env.example`, `.env.example.prod` - `SERVICE_NAME`, `LOG_LEVEL`, `LOG_FORMAT`
+- Docs: `docs/backlog/epics/epic-07-observability-and-operations.md`, `docs/backlog/stories/story-07-01-structured-logging-and-correlation.md`, `docs/adr/adr-0018-observability-structured-logging-and-correlation.md`
+- Runbook: `docs/runbooks/runbook-observability-logging.md`
+- Reference guide (docs-contract aligned): `docs/reference/reports/ref-external-observability-integration.md`
+
+**User decisions captured:**
+- Audit trail: Separate `tool_maintainer_audit_log` table (not columns on main table)
+- Navigation: "Mina verktyg" in main header nav (contributors+ only)
+- Rollback: Copy-on-rollback (creates new version with next version number, preserves history)
+
+**Migration + Infrastructure:**
+- `migrations/versions/0007_tool_maintainer_audit_log.py` - Creates audit log table with indexes
+- `tests/integration/test_migration_0007_tool_maintainer_audit_log_idempotent.py` - Idempotency test
+- `src/skriptoteket/infrastructure/db/models/tool_maintainer_audit_log.py` - SQLAlchemy model with `MaintainerAuditAction` enum
+- `src/skriptoteket/infrastructure/repositories/tool_maintainer_audit_repository.py` - Audit logging methods (`log_assignment`, `log_removal`)
+
+**Repository extensions (already existed, verified):**
+- `src/skriptoteket/infrastructure/repositories/tool_maintainer_repository.py`:
+  - `list_maintainers(tool_id)` - Returns list of user UUIDs
+  - `remove_maintainer(tool_id, user_id)` - Removes maintainer assignment
+  - `list_tools_for_user(user_id)` - Returns list of tool UUIDs user maintains
+
+**Commands/Queries added:**
+- `src/skriptoteket/application/catalog/commands.py`:
+  - `AssignMaintainerCommand(tool_id, user_id, reason?)` / `AssignMaintainerResult`
+  - `RemoveMaintainerCommand(tool_id, user_id, reason?)` / `RemoveMaintainerResult`
+- `src/skriptoteket/application/catalog/queries.py`:
+  - `ListMaintainersQuery(tool_id)` / `ListMaintainersResult`
+  - `ListToolsForContributorQuery()` / `ListToolsForContributorResult`
+- `src/skriptoteket/application/scripting/commands.py`:
+  - `RollbackVersionCommand(version_id)` / `RollbackVersionResult` (moved to domain models.py)
+
+**Domain logic:**
+- `src/skriptoteket/domain/scripting/models.py`:
+  - Added `RollbackVersionResult` model class
+  - Added `rollback_to_version()` function (mirrors `publish_version` pattern)
+  - Creates new ACTIVE version with `derived_from_version_id = archived.id`
+  - Archives current active if exists
+
+**Handlers created:**
+- `src/skriptoteket/application/catalog/handlers/list_maintainers.py` - Admin+ only
+- `src/skriptoteket/application/catalog/handlers/assign_maintainer.py` - Admin+ only, validates target is contributor+
+- `src/skriptoteket/application/catalog/handlers/remove_maintainer.py` - Admin+ only
+- `src/skriptoteket/application/catalog/handlers/list_tools_for_contributor.py` - Contributor+ only, uses actor.id
+- `src/skriptoteket/application/scripting/handlers/rollback_version.py` - **Superuser ONLY**
+
+**DI refactored into domain-specific providers (user decision):**
+- `src/skriptoteket/di/__init__.py` - Container assembly, exports `create_container()` and all providers
+- `src/skriptoteket/di/infrastructure.py` - Database, repositories, core services (Settings, engine, sessionmaker, UoW, all repos)
+- `src/skriptoteket/di/identity.py` - Auth handlers (CurrentUserProvider, LoginHandler, LogoutHandler, CreateLocalUserHandler, ProvisionLocalUserHandler)
+- `src/skriptoteket/di/catalog.py` - Catalog + maintainer handlers (ListProfessions, ListCategories, ListTools, UpdateToolMetadata, ListMaintainers, AssignMaintainer, RemoveMaintainer, ListToolsForContributor)
+- `src/skriptoteket/di/scripting.py` - Scripting handlers (Execute, CreateDraft, SaveDraft, SubmitForReview, Publish, RequestChanges, RunSandbox, RunActiveTool, RollbackVersion)
+- `src/skriptoteket/di/suggestions.py` - Suggestion handlers
+
+**Web routes (completed):**
+- `src/skriptoteket/web/pages/admin_scripting.py`:
+  - `GET /admin/tools/{tool_id}/maintainers` - HTMX partial listing maintainers
+  - `POST /admin/tools/{tool_id}/maintainers` - Assign maintainer (form: user_email)
+  - `DELETE /admin/tools/{tool_id}/maintainers/{user_id}` - Remove maintainer
+  - `POST /admin/tool-versions/{version_id}/rollback` - Superuser only rollback
+- `src/skriptoteket/web/pages/my_tools.py` - `GET /my-tools` (Contributor+ only)
+- `src/skriptoteket/web/router.py` - Registered my_tools router
+
+**Templates (completed):**
+- `src/skriptoteket/web/templates/my_tools.html` - Contributor tool list page
+- `src/skriptoteket/web/templates/admin/partials/maintainer_list.html` - HTMX partial for maintainer management
+- `src/skriptoteket/web/templates/base.html` - Added "Mina verktyg" nav link for contributors+
+- `src/skriptoteket/web/templates/admin/partials/version_list.html` - Added rollback button for superuser on archived versions
+
+**Tests:**
+- `tests/integration/web/conftest.py` - Updated for domain-split DI providers
+- All 29 web integration tests pass
+- `pdm run lint` passes
+
+**Plan file:** `.claude/plans/serialized-spinning-wadler.md` contains full implementation plan (completed)
+
+### Previous session (ST-04-05 User execution of active tools)
 
 - **Templates** (user-facing tool execution):
   - `src/skriptoteket/web/templates/tools/run.html` - Upload form with HTMX execution
@@ -44,6 +129,10 @@ Keep this file updated so the next session can pick up work quickly.
     - `src/skriptoteket/web/templates/tools/partials/run_result.html`
     - `src/skriptoteket/web/templates/admin/partials/run_result.html`
   - `src/skriptoteket/web/middleware/error_handler.py` - Replaced debug print statements with proper `logger.exception()` for unhandled exceptions
+  - Transaction ownership is now consistent across web + CLI:
+    - `src/skriptoteket/infrastructure/db/uow.py` commits/rolls back the active transaction (nested/root) and uses SAVEPOINTs only for nested `async with uow:` blocks
+    - `src/skriptoteket/di.py` rolls back any leftover transaction at request end (UoW owns commit)
+    - `tests/integration/web/conftest.py` wraps each request in a SAVEPOINT to protect flushed fixture data from app rollbacks
 
 - Story status: `docs/backlog/stories/story-04-05-user-execution.md` set to `done`
 
@@ -218,20 +307,39 @@ Keep this file updated so the next session can pick up work quickly.
     - `GET /admin/tools` returns 200 and includes `<h2>Verktyg</h2>`.
     - `GET /suggestions/new` returns 200 and includes `<h2>Föreslå ett skript</h2>`.
     - `GET /admin/suggestions` returns 200 and includes `<h2>Förslag</h2>`.
+    - `GET /` returns 200 (started local server on port 8001).
     - `GET /admin/tool-runs/{random_uuid}` returns 404.
-- QC gates (ran): `pdm run test -- -q && pdm run docs-validate`
-- Lint note: `pdm run lint` currently fails on existing E501 lines in
-  `tests/integration/web/test_admin_scripting_editor_routes.py`; `pdm run ruff check src/skriptoteket/web` passes.
+- Observability smoke check (ran, no secrets/tokens recorded):
+  - Start app: `PYTHONPATH=src pdm run uvicorn --app-dir src skriptoteket.web.app:app --host 127.0.0.1 --port 8010`
+  - `GET /login` returns 200 and echoes `X-Correlation-ID` when provided.
+  - Logs are JSON and include `timestamp`, `level`, `event`, `service.name`, `deployment.environment`.
+- QC (ran): `pdm run lint` and `pdm run typecheck` both pass.
+- Docs validation (ran): `pdm run docs-validate` passes.
+- Unit tests (ran): `pdm run test tests/unit -q` passes (232 tests).
 
 ## Known issues / risks
 
-- Rollback workflow is still missing (Superuser-only; out of this session scope).
 - `/work` per-run volume does not have a portable per-run size cap (unlike tmpfs); a buggy/malicious script can fill disk.
 - docker.sock mount expands blast radius if the app container is compromised (keep production opt-in and hardened).
-- Contributor discoverability: contributors can access the editor only if they have the direct `/admin/tools/{tool_id}` URL
-  (no “My tools” list yet).
+- Maintainer list partial requires HTMX; script_editor.html sidebar integration still needs implementation (manual HTMX include).
 
 ## Next steps (recommended order)
+
+### ST-04-04 COMPLETED
+
+All ST-04-04 work is done:
+
+- [X] DI container refactored into domain-specific providers
+- [X] Web routes for maintainer management (list/assign/remove)
+- [X] My Tools page (`/my-tools`) for contributors
+- [X] Rollback route for superuser
+- [X] Templates created (my_tools.html, maintainer_list.html)
+- [X] Navigation updated ("Mina verktyg" link)
+- [X] Rollback button on archived versions (superuser only)
+- [X] `pdm run lint` passes
+- [X] `pdm run test tests/integration/web/` passes (29 tests)
+
+**Remaining UI integration:** Add maintainer list HTMX include to `script_editor.html` sidebar for live admin experience.
 
 ### EPIC-05: Button/UI Consistency Audit (IN PROGRESS)
 

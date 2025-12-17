@@ -7,10 +7,11 @@ import pytest
 from dishka import Scope, make_async_container, provide
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.config import Settings
-from skriptoteket.di import AppProvider
+from skriptoteket.di import InfrastructureProvider
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from skriptoteket.web.router import router as web_router
 
@@ -23,16 +24,52 @@ def test_app(db_session: AsyncSession) -> FastAPI:
     """
     settings = Settings()
 
-    # Subclass AppProvider to override the 'session' provider
-    class TestAppProvider(AppProvider):
+    # Subclass InfrastructureProvider to override the 'session' provider
+    class TestInfrastructureProvider(InfrastructureProvider):
         @provide(scope=Scope.REQUEST)
         async def session(self) -> AsyncIterator[AsyncSession]:
-            # Yield the session from the pytest fixture.
-            # We do NOT close it here; pytest fixture handles that.
-            yield db_session
+            # Start a SAVEPOINT for the request so that app rollbacks (e.g. on CONFLICT)
+            # don't wipe out test fixture data that lives in the outer transaction.
+            #
+            # We also re-create the SAVEPOINT after each commit/rollback so handlers
+            # that use multiple UoWs inside a single request remain isolated.
+            await db_session.begin_nested()
 
-    # Create container with our test provider
-    container = make_async_container(TestAppProvider(settings))
+            def _restart_savepoint(session, transaction) -> None:
+                if (
+                    transaction.nested
+                    and transaction.parent is not None
+                    and not transaction.parent.nested
+                ):
+                    session.begin_nested()
+
+            event.listen(db_session.sync_session, "after_transaction_end", _restart_savepoint)
+            try:
+                # Yield the session from the pytest fixture.
+                # We do NOT close it here; pytest fixture handles that.
+                yield db_session
+            finally:
+                event.remove(db_session.sync_session, "after_transaction_end", _restart_savepoint)
+                nested = db_session.get_nested_transaction()
+                if nested is not None:
+                    await nested.rollback()
+
+    # Import the domain providers
+    from skriptoteket.di import (
+        CatalogProvider,
+        IdentityProvider,
+        ScriptingProvider,
+        SuggestionsProvider,
+    )
+
+    # Create container with test infrastructure + all domain providers
+    container = make_async_container(
+        TestInfrastructureProvider(settings),
+        IdentityProvider(),
+        CatalogProvider(),
+        ScriptingProvider(),
+        SuggestionsProvider(),
+    )
 
     # Construct app (mirroring src/skriptoteket/web/app.py logic)
     app = FastAPI(

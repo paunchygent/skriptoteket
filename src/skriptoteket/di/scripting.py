@@ -1,0 +1,187 @@
+"""Scripting domain provider: script execution and version management handlers."""
+
+from __future__ import annotations
+
+from dishka import Provider, Scope, provide
+
+from skriptoteket.application.scripting.handlers.create_draft_version import (
+    CreateDraftVersionHandler,
+)
+from skriptoteket.application.scripting.handlers.execute_tool_version import (
+    ExecuteToolVersionHandler,
+)
+from skriptoteket.application.scripting.handlers.publish_version import PublishVersionHandler
+from skriptoteket.application.scripting.handlers.request_changes import RequestChangesHandler
+from skriptoteket.application.scripting.handlers.rollback_version import RollbackVersionHandler
+from skriptoteket.application.scripting.handlers.run_active_tool import RunActiveToolHandler
+from skriptoteket.application.scripting.handlers.run_sandbox import RunSandboxHandler
+from skriptoteket.application.scripting.handlers.save_draft_version import SaveDraftVersionHandler
+from skriptoteket.application.scripting.handlers.submit_for_review import SubmitForReviewHandler
+from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol, ToolRepositoryProtocol
+from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.runner import ToolRunnerProtocol
+from skriptoteket.protocols.scripting import (
+    CreateDraftVersionHandlerProtocol,
+    ExecuteToolVersionHandlerProtocol,
+    PublishVersionHandlerProtocol,
+    RequestChangesHandlerProtocol,
+    RollbackVersionHandlerProtocol,
+    RunActiveToolHandlerProtocol,
+    RunSandboxHandlerProtocol,
+    SaveDraftVersionHandlerProtocol,
+    SubmitForReviewHandlerProtocol,
+    ToolRunRepositoryProtocol,
+    ToolVersionRepositoryProtocol,
+)
+from skriptoteket.protocols.uow import UnitOfWorkProtocol
+
+
+class ScriptingProvider(Provider):
+    """Provides scripting/execution handlers."""
+
+    @provide(scope=Scope.REQUEST)
+    def execute_tool_version_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        runs: ToolRunRepositoryProtocol,
+        runner: ToolRunnerProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> ExecuteToolVersionHandlerProtocol:
+        return ExecuteToolVersionHandler(
+            uow=uow,
+            versions=versions,
+            runs=runs,
+            runner=runner,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def create_draft_version_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> CreateDraftVersionHandlerProtocol:
+        return CreateDraftVersionHandler(
+            uow=uow,
+            tools=tools,
+            maintainers=maintainers,
+            versions=versions,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def save_draft_version_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> SaveDraftVersionHandlerProtocol:
+        return SaveDraftVersionHandler(
+            uow=uow,
+            versions=versions,
+            maintainers=maintainers,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def submit_for_review_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> SubmitForReviewHandlerProtocol:
+        return SubmitForReviewHandler(
+            uow=uow,
+            versions=versions,
+            maintainers=maintainers,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def publish_version_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> PublishVersionHandlerProtocol:
+        return PublishVersionHandler(
+            uow=uow,
+            tools=tools,
+            versions=versions,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def rollback_version_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> RollbackVersionHandlerProtocol:
+        return RollbackVersionHandler(
+            uow=uow,
+            tools=tools,
+            versions=versions,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def request_changes_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> RequestChangesHandlerProtocol:
+        return RequestChangesHandler(
+            uow=uow,
+            versions=versions,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def run_sandbox_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
+        execute: ExecuteToolVersionHandlerProtocol,
+    ) -> RunSandboxHandlerProtocol:
+        return RunSandboxHandler(
+            uow=uow, versions=versions, maintainers=maintainers, execute=execute
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def run_active_tool_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        execute: ExecuteToolVersionHandlerProtocol,
+    ) -> RunActiveToolHandlerProtocol:
+        return RunActiveToolHandler(
+            uow=uow,
+            tools=tools,
+            versions=versions,
+            execute=execute,
+        )

@@ -24,17 +24,19 @@
     >
       <div>
         <label for="file" class="huleedu-label">Ladda upp fil</label>
-        <div class="huleedu-file-wrapper huleedu-input">
-          <span class="huleedu-file-fake-button">Välj fil</span>
+        <div class="huleedu-file-group">
+          <label class="huleedu-file-label">
+            <span class="huleedu-file-fake-button">Välj fil</span>
+            <input
+              type="file"
+              id="file"
+              name="file"
+              required
+              class="huleedu-file-hidden"
+              onchange="document.getElementById('file-name').textContent = this.files[0] ? this.files[0].name : 'Ingen fil vald'"
+            />
+          </label>
           <span id="file-name" class="huleedu-muted">Ingen fil vald</span>
-          <input
-            type="file"
-            id="file"
-            name="file"
-            required
-            class="huleedu-file-native"
-            onchange="document.getElementById('file-name').textContent = this.files[0] ? this.files[0].name : 'Ingen fil vald'"
-          />
         </div>
       </div>
       <div class="huleedu-flex huleedu-gap-4">

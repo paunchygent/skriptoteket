@@ -80,63 +80,77 @@ async def provide_session(
         try:
             yield session
         finally:
-            # Commit any pending transaction before closing
-            # UoW should have committed, but autobegin may have started
-            # a new transaction for post-commit queries
+            # Ensure the connection is returned to the pool clean.
+            # The Unit of Work owns commit; anything left open is rolled back.
             if session.in_transaction():
-                await session.commit()
+                await session.rollback()
 ```
 
 ```python
 # infrastructure/uow.py
+from typing import TYPE_CHECKING
+
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncSessionTransaction
 from src.protocols import UnitOfWorkProtocol
 
+if TYPE_CHECKING:
+    from types import TracebackType
+
 class SQLAlchemyUnitOfWork(UnitOfWorkProtocol):
-    """Unit of Work with conditional transaction handling.
+    """Unit of Work that controls SQLAlchemy transactions.
 
-    When the session is already in a transaction (e.g., test fixtures with flushed data),
-    uses begin_nested() (savepoint) to avoid affecting the outer transaction on rollback.
-    When no transaction exists, commits the session directly.
-
-    The session provider in di.py commits any pending outer transaction on cleanup,
-    ensuring data persists in production while test isolation is preserved.
+    - The outermost `async with uow:` joins the current transaction (nested or root)
+      if one exists, otherwise starts a new root transaction.
+    - Nested `async with uow:` blocks use SAVEPOINTs via `begin_nested()` so that
+      an inner rollback does not wipe out outer changes.
     """
 
     def __init__(self, session: AsyncSession):
         self._session = session
-        self._transaction: AsyncSessionTransaction | None = None
+        self._transactions: list[AsyncSessionTransaction] = []
 
     async def __aenter__(self) -> "SQLAlchemyUnitOfWork":
+        if self._transactions:
+            self._transactions.append(await self._session.begin_nested())
+            return self
+
+        if self._session.in_nested_transaction():
+            tx = self._session.get_nested_transaction()
+            self._transactions.append(tx if tx is not None else await self._session.begin_nested())
+            return self
+
         if self._session.in_transaction():
-            # Already in transaction - use savepoint for isolation
-            self._transaction = await self._session.begin_nested()
+            tx = self._session.get_transaction()
+            self._transactions.append(tx if tx is not None else await self._session.begin())
+            return self
+
+        self._transactions.append(await self._session.begin())
         return self
 
-    async def __aexit__(self, exc_type, exc, tb) -> None:
-        if self._transaction is not None:
-            # Savepoint mode
-            if exc:
-                await self._transaction.rollback()
-            else:
-                await self._transaction.commit()
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        tb: TracebackType | None,
+    ) -> None:
+        if not self._transactions:
+            return
+
+        tx = self._transactions.pop()
+        if exc:
+            await tx.rollback()
         else:
-            # Direct mode
-            if exc:
-                await self._session.rollback()
-            else:
-                await self._session.commit()
+            await tx.commit()
 ```
 
 ### Transaction handling modes
 
-| Scenario | `in_transaction()` | Mode | Behavior |
-|----------|-------------------|------|----------|
-| Fresh request, no prior DB access | False | Direct | Commit/rollback session directly |
-| After dependency read (autobegin) | True | Savepoint | Commit/rollback savepoint; session provider commits outer |
-| Test with flushed data | True | Savepoint | Rollback savepoint preserves test data |
-
-**Key**: The session provider (di.py) commits pending transactions on cleanup, ensuring savepoint releases propagate to the database in production.
+| Scenario | Behavior |
+|----------|----------|
+| Fresh request, no prior DB access | Outer UoW starts root transaction and commits/rolls back it. |
+| Dependency did a read first (autobegin) | Outer UoW joins the root transaction and commits/rolls back it. |
+| Nested `async with uow:` usage | Inner blocks use SAVEPOINTs to isolate rollbacks. |
+| Integration tests that share a session + use `flush()` fixtures | Wrap each request in a SAVEPOINT so app rollbacks don't wipe fixture data. |
 
 ## 4. Repository Pattern (no commits)
 

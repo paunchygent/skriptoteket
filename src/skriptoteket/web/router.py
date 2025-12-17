@@ -7,6 +7,7 @@ from skriptoteket.web.pages import auth as auth_pages
 from skriptoteket.web.pages import browse as browse_pages
 from skriptoteket.web.pages import home as home_pages
 from skriptoteket.web.pages import my_runs as my_runs_pages
+from skriptoteket.web.pages import my_tools as my_tools_pages
 from skriptoteket.web.pages import suggestions as suggestions_pages
 from skriptoteket.web.pages import tools as tools_pages
 
@@ -18,6 +19,7 @@ protected.include_router(home_pages.router)
 protected.include_router(browse_pages.router)
 protected.include_router(tools_pages.router)
 protected.include_router(my_runs_pages.router)
+protected.include_router(my_tools_pages.router)
 protected.include_router(suggestions_pages.router)
 protected.include_router(admin_tools_pages.router)
 protected.include_router(admin_scripting_pages.router)

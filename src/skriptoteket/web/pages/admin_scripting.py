@@ -4,25 +4,36 @@ from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, Response
 
-from skriptoteket.application.catalog.commands import UpdateToolMetadataCommand
+from skriptoteket.application.catalog.commands import (
+    AssignMaintainerCommand,
+    RemoveMaintainerCommand,
+    UpdateToolMetadataCommand,
+)
+from skriptoteket.application.catalog.queries import ListMaintainersQuery
 from skriptoteket.application.scripting.commands import (
     CreateDraftVersionCommand,
     PublishVersionCommand,
     RequestChangesCommand,
+    RollbackVersionCommand,
     SaveDraftVersionCommand,
     SubmitForReviewCommand,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.domain.identity.models import Session, User
 from skriptoteket.protocols.catalog import (
+    AssignMaintainerHandlerProtocol,
+    ListMaintainersHandlerProtocol,
+    RemoveMaintainerHandlerProtocol,
     ToolMaintainerRepositoryProtocol,
     ToolRepositoryProtocol,
     UpdateToolMetadataHandlerProtocol,
 )
+from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.protocols.scripting import (
     CreateDraftVersionHandlerProtocol,
     PublishVersionHandlerProtocol,
     RequestChangesHandlerProtocol,
+    RollbackVersionHandlerProtocol,
     SaveDraftVersionHandlerProtocol,
     SubmitForReviewHandlerProtocol,
     ToolVersionRepositoryProtocol,
@@ -31,6 +42,7 @@ from skriptoteket.web.auth.dependencies import (
     get_current_session,
     require_admin,
     require_contributor,
+    require_superuser,
 )
 from skriptoteket.web.pages import admin_scripting_support as support
 from skriptoteket.web.pages.admin_scripting_runs import router as runs_router
@@ -198,6 +210,7 @@ async def version_history(
         name="admin/partials/version_list.html",
         context={
             "request": request,
+            "user": user,
             "tool": tool,
             "versions": visible_versions,
             "selected_version_id": None,
@@ -482,6 +495,161 @@ async def request_changes(
         )
 
     redirect_url = f"/admin/tool-versions/{result.new_draft_version.id}"
+    return support.redirect_with_hx(request=request, url=redirect_url)
+
+
+# -----------------------------------------------------------------------------
+# Maintainer management routes
+# -----------------------------------------------------------------------------
+
+
+@router.get("/admin/tools/{tool_id}/maintainers", response_class=HTMLResponse)
+@inject
+async def list_maintainers(
+    request: Request,
+    tool_id: UUID,
+    handler: FromDishka[ListMaintainersHandlerProtocol],
+    user: User = Depends(require_admin),
+) -> HTMLResponse:
+    result = await handler.handle(
+        actor=user,
+        query=ListMaintainersQuery(tool_id=tool_id),
+    )
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/partials/maintainer_list.html",
+        context={
+            "request": request,
+            "tool_id": tool_id,
+            "maintainers": result.maintainers,
+            "error": None,
+        },
+    )
+
+
+@router.post("/admin/tools/{tool_id}/maintainers", response_class=HTMLResponse)
+@inject
+async def assign_maintainer(
+    request: Request,
+    tool_id: UUID,
+    handler: FromDishka[AssignMaintainerHandlerProtocol],
+    list_handler: FromDishka[ListMaintainersHandlerProtocol],
+    users: FromDishka[UserRepositoryProtocol],
+    user: User = Depends(require_admin),
+    user_email: str = Form(...),
+) -> HTMLResponse:
+    error = None
+    try:
+        user_auth = await users.get_auth_by_email(email=user_email)
+        if user_auth is None:
+            error = f"Ingen anvandare med e-post: {user_email}"
+        else:
+            await handler.handle(
+                actor=user,
+                command=AssignMaintainerCommand(
+                    tool_id=tool_id,
+                    user_id=user_auth.user.id,
+                ),
+            )
+    except DomainError as exc:
+        error = _ui_error_message(exc)
+
+    # Always return fresh list
+    result = await list_handler.handle(
+        actor=user,
+        query=ListMaintainersQuery(tool_id=tool_id),
+    )
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/partials/maintainer_list.html",
+        context={
+            "request": request,
+            "tool_id": tool_id,
+            "maintainers": result.maintainers,
+            "error": error,
+        },
+    )
+
+
+@router.delete("/admin/tools/{tool_id}/maintainers/{user_id}", response_class=HTMLResponse)
+@inject
+async def remove_maintainer(
+    request: Request,
+    tool_id: UUID,
+    user_id: UUID,
+    handler: FromDishka[RemoveMaintainerHandlerProtocol],
+    list_handler: FromDishka[ListMaintainersHandlerProtocol],
+    user: User = Depends(require_admin),
+) -> HTMLResponse:
+    error = None
+    try:
+        await handler.handle(
+            actor=user,
+            command=RemoveMaintainerCommand(
+                tool_id=tool_id,
+                user_id=user_id,
+            ),
+        )
+    except DomainError as exc:
+        error = _ui_error_message(exc)
+
+    # Always return fresh list
+    result = await list_handler.handle(
+        actor=user,
+        query=ListMaintainersQuery(tool_id=tool_id),
+    )
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/partials/maintainer_list.html",
+        context={
+            "request": request,
+            "tool_id": tool_id,
+            "maintainers": result.maintainers,
+            "error": error,
+        },
+    )
+
+
+# -----------------------------------------------------------------------------
+# Rollback route (superuser only)
+# -----------------------------------------------------------------------------
+
+
+@router.post("/admin/tool-versions/{version_id}/rollback")
+@inject
+async def rollback_version(
+    request: Request,
+    version_id: UUID,
+    handler: FromDishka[RollbackVersionHandlerProtocol],
+    tools: FromDishka[ToolRepositoryProtocol],
+    maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
+    versions_repo: FromDishka[ToolVersionRepositoryProtocol],
+    user: User = Depends(require_superuser),
+    session: Session | None = Depends(get_current_session),
+) -> Response:
+    csrf_token = session.csrf_token if session else ""
+    try:
+        result = await handler.handle(
+            actor=user,
+            command=RollbackVersionCommand(version_id=version_id),
+        )
+    except DomainError as exc:
+        return await support.render_editor_for_version_id(
+            request=request,
+            user=user,
+            csrf_token=csrf_token,
+            tools=tools,
+            maintainers=maintainers,
+            versions_repo=versions_repo,
+            version_id=version_id,
+            editor_entrypoint=None,
+            editor_source_code=None,
+            run=None,
+            error=_ui_error_message(exc),
+            status_code=support.status_code_for_error(exc),
+        )
+
+    redirect_url = f"/admin/tool-versions/{result.new_active_version.id}"
     return support.redirect_with_hx(request=request, url=redirect_url)
 
 

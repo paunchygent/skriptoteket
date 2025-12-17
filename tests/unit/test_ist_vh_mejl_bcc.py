@@ -59,7 +59,10 @@ def test_run_tool_writes_emails_artifact_and_returns_html(tmp_path: Path) -> Non
     output_dir = tmp_path / "output"
     html = run_tool(str(input_path), str(output_dir))
 
-    assert (output_dir / "emails.txt").read_text(encoding="utf-8") == "a@example.com;b@example.com"
+    artifacts = list(output_dir.glob("emails_*.txt"))
+    assert len(artifacts) == 1
+    assert artifacts[0].read_text(encoding="utf-8") == "a@example.com;b@example.com"
+    assert "a@example.com;b@example.com" in html
     assert "unika" in html
 
 

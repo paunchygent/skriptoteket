@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import time
+
+import structlog
+
 from skriptoteket.application.scripting.commands import (
     ExecuteToolVersionCommand,
     ExecuteToolVersionResult,
@@ -17,6 +21,8 @@ from skriptoteket.protocols.scripting import (
     ToolVersionRepositoryProtocol,
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+
+logger = structlog.get_logger(__name__)
 
 
 def _format_syntax_error(exc: SyntaxError) -> str:
@@ -64,6 +70,7 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         actor: User,
         command: ExecuteToolVersionCommand,
     ) -> ExecuteToolVersionResult:
+        started_at = time.monotonic()
         version = await self._versions.get_by_id(version_id=command.version_id)
         if version is None:
             raise not_found("ToolVersion", str(command.version_id))
@@ -92,6 +99,17 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
             now=now,
         )
 
+        logger.info(
+            "Tool execution started",
+            run_id=str(run_id),
+            tool_id=str(command.tool_id),
+            tool_version_id=str(command.version_id),
+            context=command.context.value,
+            actor_id=str(actor.id),
+            input_filename=command.input_filename,
+            input_size_bytes=len(command.input_bytes),
+        )
+
         async with self._uow:
             await self._runs.create(run=run)
 
@@ -108,6 +126,17 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
                 input_bytes=command.input_bytes,
             )
         except SyntaxError as exc:
+            logger.warning(
+                "Tool execution failed (syntax error)",
+                run_id=str(run_id),
+                tool_id=str(command.tool_id),
+                tool_version_id=str(command.version_id),
+                context=command.context.value,
+                actor_id=str(actor.id),
+                error_message=exc.msg,
+                lineno=exc.lineno,
+                offset=exc.offset,
+            )
             execution_result = ToolExecutionResult(
                 status=RunStatus.FAILED,
                 stdout="",
@@ -117,8 +146,25 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
                 artifacts_manifest=ArtifactsManifest(artifacts=[]),
             )
         except DomainError as exc:
+            logger.warning(
+                "Tool execution failed (domain error)",
+                run_id=str(run_id),
+                tool_id=str(command.tool_id),
+                tool_version_id=str(command.version_id),
+                context=command.context.value,
+                actor_id=str(actor.id),
+                error_code=exc.code.value,
+            )
             domain_error_to_raise = exc
         except Exception:  # noqa: BLE001
+            logger.exception(
+                "Tool execution failed (unexpected exception)",
+                run_id=str(run_id),
+                tool_id=str(command.tool_id),
+                tool_version_id=str(command.version_id),
+                context=command.context.value,
+                actor_id=str(actor.id),
+            )
             domain_error_to_raise = DomainError(
                 code=ErrorCode.INTERNAL_ERROR,
                 message="Execution failed (internal error).",
@@ -152,6 +198,23 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
 
         async with self._uow:
             await self._runs.update(run=finished)
+
+        artifacts_count = 0
+        artifacts = finished.artifacts_manifest.get("artifacts")
+        if isinstance(artifacts, list):
+            artifacts_count = len(artifacts)
+
+        logger.info(
+            "Tool execution finished",
+            run_id=str(run_id),
+            tool_id=str(command.tool_id),
+            tool_version_id=str(command.version_id),
+            context=command.context.value,
+            status=finished.status.value,
+            duration_seconds=round(time.monotonic() - started_at, 6),
+            artifacts_count=artifacts_count,
+            error_summary_present=finished.error_summary is not None,
+        )
 
         if domain_error_to_raise is not None:
             raise domain_error_to_raise

@@ -12,6 +12,8 @@ from skriptoteket.application.scripting.commands import (
     PublishVersionResult,
     RequestChangesCommand,
     RequestChangesResult,
+    RollbackVersionCommand,
+    RollbackVersionResult,
     RunActiveToolCommand,
     RunActiveToolResult,
     RunSandboxCommand,
@@ -22,7 +24,12 @@ from skriptoteket.application.scripting.commands import (
     SubmitForReviewResult,
 )
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.scripting.models import RunContext, ToolRun, ToolVersion, VersionState
+from skriptoteket.domain.scripting.models import (
+    RunContext,
+    ToolRun,
+    ToolVersion,
+    VersionState,
+)
 
 
 class ToolVersionRepositoryProtocol(Protocol):
@@ -106,6 +113,15 @@ class PublishVersionHandlerProtocol(Protocol):
         actor: User,
         command: PublishVersionCommand,
     ) -> PublishVersionResult: ...
+
+
+class RollbackVersionHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: RollbackVersionCommand,
+    ) -> RollbackVersionResult: ...
 
 
 class RequestChangesHandlerProtocol(Protocol):

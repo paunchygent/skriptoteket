@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 
 from dishka.integrations.fastapi import setup_dishka
@@ -7,16 +6,20 @@ from fastapi.staticfiles import StaticFiles
 
 from skriptoteket.config import Settings
 from skriptoteket.di import create_container
+from skriptoteket.observability.logging import configure_logging
+from skriptoteket.web.middleware.correlation import CorrelationMiddleware
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from skriptoteket.web.router import router as web_router
 
 
 def create_app() -> FastAPI:
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    )
     settings = Settings()
+    configure_logging(
+        service_name=settings.SERVICE_NAME,
+        environment=settings.ENVIRONMENT,
+        log_level=settings.LOG_LEVEL,
+        log_format=settings.LOG_FORMAT,
+    )
 
     app = FastAPI(
         title=settings.APP_NAME,
@@ -24,6 +27,7 @@ def create_app() -> FastAPI:
         docs_url="/docs" if settings.ENABLE_DOCS else None,
     )
 
+    app.add_middleware(CorrelationMiddleware)
     app.middleware("http")(error_handler_middleware)
 
     static_dir = Path(__file__).resolve().parent / "static"

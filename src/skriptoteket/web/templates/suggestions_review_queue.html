@@ -12,8 +12,12 @@
               <span class="huleedu-muted">
                 {% if suggestion.status == 'pending' %}
                   <span class="huleedu-dot huleedu-dot-active"></span> Väntar på granskning
+                {% elif suggestion.status == 'accepted' %}
+                  <span class="huleedu-dot huleedu-dot-success"></span> Godkänd
+                {% elif suggestion.status == 'denied' %}
+                  <span class="huleedu-dot huleedu-dot-error"></span> Nekad
                 {% else %}
-                  <span class="huleedu-dot huleedu-dot-success"></span> {{ suggestion.status }}
+                  <span class="huleedu-dot"></span> {{ suggestion.status }}
                 {% endif %}
               </span>
             </div>

@@ -128,3 +128,16 @@ class RunActiveToolResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     run: ToolRun
+
+
+class RollbackVersionCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    version_id: UUID  # The archived version to rollback to
+
+
+class RollbackVersionResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    new_active_version: ToolVersion
+    archived_previous_active_version: ToolVersion | None = None

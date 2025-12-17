@@ -5,10 +5,14 @@ from typing import Protocol
 from uuid import UUID
 
 from skriptoteket.application.catalog.commands import (
+    AssignMaintainerCommand,
+    AssignMaintainerResult,
     DepublishToolCommand,
     DepublishToolResult,
     PublishToolCommand,
     PublishToolResult,
+    RemoveMaintainerCommand,
+    RemoveMaintainerResult,
     UpdateToolMetadataCommand,
     UpdateToolMetadataResult,
 )
@@ -17,12 +21,16 @@ from skriptoteket.application.catalog.queries import (
     ListAllCategoriesResult,
     ListCategoriesForProfessionQuery,
     ListCategoriesForProfessionResult,
+    ListMaintainersQuery,
+    ListMaintainersResult,
     ListProfessionsQuery,
     ListProfessionsResult,
     ListToolsByTagsQuery,
     ListToolsByTagsResult,
     ListToolsForAdminQuery,
     ListToolsForAdminResult,
+    ListToolsForContributorQuery,
+    ListToolsForContributorResult,
 )
 from skriptoteket.domain.catalog.models import Category, Profession, Tool
 from skriptoteket.domain.identity.models import User
@@ -89,6 +97,26 @@ class ToolMaintainerRepositoryProtocol(Protocol):
 
     async def add_maintainer(self, *, tool_id: UUID, user_id: UUID) -> None: ...
 
+    async def list_maintainers(self, *, tool_id: UUID) -> list[UUID]: ...
+
+    async def remove_maintainer(self, *, tool_id: UUID, user_id: UUID) -> None: ...
+
+    async def list_tools_for_user(self, *, user_id: UUID) -> list[UUID]: ...
+
+
+class ToolMaintainerAuditRepositoryProtocol(Protocol):
+    async def log_action(
+        self,
+        *,
+        log_id: UUID,
+        tool_id: UUID,
+        user_id: UUID,
+        action: str,
+        performed_by_user_id: UUID,
+        performed_at: datetime,
+        reason: str | None,
+    ) -> None: ...
+
 
 class ListProfessionsHandlerProtocol(Protocol):
     async def handle(self, query: ListProfessionsQuery) -> ListProfessionsResult: ...
@@ -142,3 +170,39 @@ class UpdateToolMetadataHandlerProtocol(Protocol):
         actor: User,
         command: UpdateToolMetadataCommand,
     ) -> UpdateToolMetadataResult: ...
+
+
+class ListMaintainersHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        query: ListMaintainersQuery,
+    ) -> ListMaintainersResult: ...
+
+
+class AssignMaintainerHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: AssignMaintainerCommand,
+    ) -> AssignMaintainerResult: ...
+
+
+class RemoveMaintainerHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: RemoveMaintainerCommand,
+    ) -> RemoveMaintainerResult: ...
+
+
+class ListToolsForContributorHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        query: ListToolsForContributorQuery,
+    ) -> ListToolsForContributorResult: ...

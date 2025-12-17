@@ -2,7 +2,7 @@
 type: story
 id: ST-04-04
 title: "Governance, audit, and rollback (RBAC + publish + history)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-14
 updated: 2025-12-15

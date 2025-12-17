@@ -23,6 +23,7 @@ outcome: "Automated tests provide high confidence in critical flows; overall cov
 - ST-06-04: Add unit tests for script bank tools (IST guardian email extractor)
 - ST-06-05: Improve test coverage for remaining web page routers (admin tools, scripting runs, suggestions)
 - ST-06-06: Test warnings hygiene (TemplateResponse deprecation + dependency warning filtering)
+- ST-06-07: Integrate toast notifications into admin workflows (completes ST-05-06)
 
 ## Notes
 

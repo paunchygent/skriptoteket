@@ -3,10 +3,13 @@ from __future__ import annotations
 import asyncio
 import io
 import tarfile
+import time
 from dataclasses import dataclass
 from pathlib import PurePosixPath
 from typing import Any
 from uuid import UUID
+
+import structlog
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.execution import (
@@ -18,6 +21,8 @@ from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolVers
 from skriptoteket.infrastructure.runner.capacity import RunnerCapacityLimiter
 from skriptoteket.infrastructure.runner.result_contract import parse_runner_result_json
 from skriptoteket.protocols.runner import ArtifactManagerProtocol, ToolRunnerProtocol
+
+logger = structlog.get_logger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
@@ -143,6 +148,13 @@ class DockerToolRunner(ToolRunnerProtocol):
         input_bytes: bytes,
     ) -> ToolExecutionResult:
         if not await self._capacity.try_acquire():
+            logger.warning(
+                "Runner at capacity",
+                run_id=str(run_id),
+                tool_id=str(version.tool_id),
+                tool_version_id=str(version.id),
+                context=context.value,
+            )
             raise DomainError(
                 code=ErrorCode.SERVICE_UNAVAILABLE,
                 message="Runner is at capacity; retry.",
@@ -173,6 +185,7 @@ class DockerToolRunner(ToolRunnerProtocol):
         from docker.errors import DockerException, NotFound  # type: ignore[import-untyped]
         from requests.exceptions import ReadTimeout  # type: ignore[import-untyped]
 
+        start_time = time.monotonic()
         timeout_seconds = (
             self._sandbox_timeout_seconds
             if context is RunContext.SANDBOX
@@ -180,6 +193,18 @@ class DockerToolRunner(ToolRunnerProtocol):
         )
 
         safe_input_filename = _sanitize_input_filename(input_filename=input_filename)
+
+        logger.info(
+            "Runner execution start",
+            run_id=str(run_id),
+            tool_id=str(version.tool_id),
+            tool_version_id=str(version.id),
+            context=context.value,
+            timeout_seconds=timeout_seconds,
+            cpu_limit=self._limits.cpu_limit,
+            memory_limit=self._limits.memory_limit,
+            pids_limit=self._limits.pids_limit,
+        )
 
         nano_cpus = int(self._limits.cpu_limit * 1_000_000_000)
         env = {
@@ -275,6 +300,15 @@ class DockerToolRunner(ToolRunnerProtocol):
                 artifacts_manifest = self._store_output_archive_safely(
                     container=container, run_id=run_id
                 )
+                logger.warning(
+                    "Runner execution timed out",
+                    run_id=str(run_id),
+                    tool_id=str(version.tool_id),
+                    tool_version_id=str(version.id),
+                    context=context.value,
+                    timeout_seconds=timeout_seconds,
+                    duration_seconds=round(time.monotonic() - start_time, 6),
+                )
 
                 return ToolExecutionResult(
                     status=RunStatus.TIMED_OUT,
@@ -291,6 +325,14 @@ class DockerToolRunner(ToolRunnerProtocol):
             if result_json_bytes is None:
                 artifacts_manifest = self._store_output_archive_safely(
                     container=container, run_id=run_id
+                )
+                logger.warning(
+                    "Runner contract violation (missing result.json)",
+                    run_id=str(run_id),
+                    tool_id=str(version.tool_id),
+                    tool_version_id=str(version.id),
+                    context=context.value,
+                    duration_seconds=round(time.monotonic() - start_time, 6),
                 )
                 return ToolExecutionResult(
                     status=RunStatus.FAILED,
@@ -309,6 +351,14 @@ class DockerToolRunner(ToolRunnerProtocol):
             except DomainError:
                 artifacts_manifest = self._store_output_archive_safely(
                     container=container, run_id=run_id
+                )
+                logger.warning(
+                    "Runner contract violation (invalid result.json)",
+                    run_id=str(run_id),
+                    tool_id=str(version.tool_id),
+                    tool_version_id=str(version.id),
+                    context=context.value,
+                    duration_seconds=round(time.monotonic() - start_time, 6),
                 )
                 return ToolExecutionResult(
                     status=RunStatus.FAILED,
@@ -343,6 +393,14 @@ class DockerToolRunner(ToolRunnerProtocol):
                     reported_artifacts=runner_payload.artifacts,
                 )
             except DomainError:
+                logger.warning(
+                    "Artifact extraction violation",
+                    run_id=str(run_id),
+                    tool_id=str(version.tool_id),
+                    tool_version_id=str(version.id),
+                    context=context.value,
+                    duration_seconds=round(time.monotonic() - start_time, 6),
+                )
                 return ToolExecutionResult(
                     status=RunStatus.FAILED,
                     stdout=stdout,
@@ -355,6 +413,16 @@ class DockerToolRunner(ToolRunnerProtocol):
                     artifacts_manifest=ArtifactsManifest(artifacts=[]),
                 )
 
+            logger.info(
+                "Runner execution finished",
+                run_id=str(run_id),
+                tool_id=str(version.tool_id),
+                tool_version_id=str(version.id),
+                context=context.value,
+                status=status.value,
+                duration_seconds=round(time.monotonic() - start_time, 6),
+                artifacts_count=len(artifacts_manifest.artifacts),
+            )
             return ToolExecutionResult(
                 status=status,
                 stdout=stdout,

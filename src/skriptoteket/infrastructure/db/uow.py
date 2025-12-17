@@ -11,25 +11,38 @@ if TYPE_CHECKING:
 
 
 class SQLAlchemyUnitOfWork(UnitOfWorkProtocol):
-    """Unit of Work with conditional transaction handling.
+    """Unit of Work that controls SQLAlchemy transactions.
 
-    When the session is already in a transaction (e.g., test fixtures with flushed data),
-    uses begin_nested() (savepoint) to avoid affecting the outer transaction on rollback.
-    When no transaction exists, commits the session directly.
-
-    The session provider in di.py commits any pending outer transaction on cleanup,
-    ensuring data persists in production while test isolation is preserved.
+    - The outermost `async with uow:` joins the current transaction (nested or root)
+      if one exists, otherwise starts a new root transaction.
+    - Nested `async with uow:` blocks use SAVEPOINTs via `begin_nested()` so that
+      an inner rollback does not wipe out outer changes.
     """
 
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
-        self._transaction: AsyncSessionTransaction | None = None
+        self._transactions: list[AsyncSessionTransaction] = []
 
     async def __aenter__(self) -> "SQLAlchemyUnitOfWork":
+        if self._transactions:
+            self._transactions.append(await self._session.begin_nested())
+            return self
+
+        if self._session.in_nested_transaction():
+            transaction = self._session.get_nested_transaction()
+            if transaction is None:
+                transaction = await self._session.begin_nested()
+            self._transactions.append(transaction)
+            return self
+
         if self._session.in_transaction():
-            # Already in transaction (test or dependency read triggered autobegin)
-            # Use savepoint so rollback doesn't affect outer transaction
-            self._transaction = await self._session.begin_nested()
+            transaction = self._session.get_transaction()
+            if transaction is None:
+                transaction = await self._session.begin()
+            self._transactions.append(transaction)
+            return self
+
+        self._transactions.append(await self._session.begin())
         return self
 
     async def __aexit__(
@@ -38,15 +51,11 @@ class SQLAlchemyUnitOfWork(UnitOfWorkProtocol):
         exc: BaseException | None,
         tb: TracebackType | None,
     ) -> None:
-        if self._transaction is not None:
-            # Savepoint mode - commit or rollback the savepoint
-            if exc:
-                await self._transaction.rollback()
-            else:
-                await self._transaction.commit()
+        if not self._transactions:
+            return
+
+        transaction = self._transactions.pop()
+        if exc:
+            await transaction.rollback()
         else:
-            # Direct mode - commit or rollback the session
-            if exc:
-                await self._session.rollback()
-            else:
-                await self._session.commit()
+            await transaction.commit()

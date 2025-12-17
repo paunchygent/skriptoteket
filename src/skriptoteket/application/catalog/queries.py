@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from pydantic import BaseModel, ConfigDict
 
 from skriptoteket.domain.catalog.models import Category, Profession, Tool
+from skriptoteket.domain.identity.models import User
 
 
 class ListProfessionsQuery(BaseModel):
@@ -58,6 +61,29 @@ class ListToolsForAdminQuery(BaseModel):
 
 
 class ListToolsForAdminResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tools: list[Tool]
+
+
+class ListMaintainersQuery(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+
+
+class ListMaintainersResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    maintainers: list[User]
+
+
+class ListToolsForContributorQuery(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+
+class ListToolsForContributorResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     tools: list[Tool]

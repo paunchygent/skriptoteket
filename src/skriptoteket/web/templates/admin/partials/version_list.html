@@ -7,6 +7,14 @@
           <span class="huleedu-badge {% if v.state.value == 'active' %}huleedu-badge-burgundy{% endif %}">{{ v.state | version_state_label }}</span>
         </div>
         <div class="huleedu-muted"><small>{{ v.created_at.strftime('%Y-%m-%d %H:%M') if v.created_at else '' }}</small></div>
+        {% if v.state.value == 'archived' and user and user.role.value == 'superuser' %}
+          <form method="post" action="/admin/tool-versions/{{ v.id }}/rollback" style="margin-top: 0.25rem;" onclick="event.stopPropagation();">
+            <button type="submit" class="huleedu-btn huleedu-btn-secondary huleedu-btn-sm"
+                    onclick="event.preventDefault(); event.stopPropagation(); if(confirm('Återställ denna version som ny aktiv version?')) this.form.submit();">
+              Återställ
+            </button>
+          </form>
+        {% endif %}
       </a>
     {% endfor %}
   </div>

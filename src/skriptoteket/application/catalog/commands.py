@@ -43,3 +43,33 @@ class UpdateToolMetadataResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     tool: Tool
+
+
+class AssignMaintainerCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    user_id: UUID
+    reason: str | None = None
+
+
+class AssignMaintainerResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    user_id: UUID
+
+
+class RemoveMaintainerCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    user_id: UUID
+    reason: str | None = None
+
+
+class RemoveMaintainerResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    user_id: UUID

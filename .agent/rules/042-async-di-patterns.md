@@ -106,11 +106,10 @@ class AppProvider(Provider):
             try:
                 yield session
             finally:
-                # Commit any pending transaction before closing
-                # UoW should have committed, but autobegin may have started
-                # a new transaction for post-commit queries
+                # Ensure the connection is returned to the pool clean.
+                # The Unit of Work owns commit; anything left open is rolled back.
                 if session.in_transaction():
-                    await session.commit()
+                    await session.rollback()
 
     @provide(scope=Scope.REQUEST)
     def provide_uow(self, session: AsyncSession) -> UnitOfWorkProtocol:
@@ -167,39 +166,45 @@ from src.protocols import UnitOfWorkProtocol
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncSessionTransaction
 
 class SQLAlchemyUnitOfWork(UnitOfWorkProtocol):
-    """Unit of Work with conditional transaction handling.
+    """Unit of Work that controls SQLAlchemy transactions.
 
-    When the session is already in a transaction (e.g., test fixtures with flushed data),
-    uses begin_nested() (savepoint) to avoid affecting the outer transaction on rollback.
-    When no transaction exists, commits the session directly.
-
-    The session provider in di.py commits any pending outer transaction on cleanup,
-    ensuring data persists in production while test isolation is preserved.
+    - The outermost `async with uow:` joins the current transaction (nested or root)
+      if one exists, otherwise starts a new root transaction.
+    - Nested `async with uow:` blocks use SAVEPOINTs via `begin_nested()` so that
+      an inner rollback does not wipe out outer changes.
     """
 
     def __init__(self, session: AsyncSession):
         self._session = session
-        self._transaction: AsyncSessionTransaction | None = None
+        self._transactions: list[AsyncSessionTransaction] = []
 
     async def __aenter__(self) -> "SQLAlchemyUnitOfWork":
+        if self._transactions:
+            self._transactions.append(await self._session.begin_nested())
+            return self
+
+        if self._session.in_nested_transaction():
+            tx = self._session.get_nested_transaction()
+            self._transactions.append(tx if tx is not None else await self._session.begin_nested())
+            return self
+
         if self._session.in_transaction():
-            # Already in transaction - use savepoint for isolation
-            self._transaction = await self._session.begin_nested()
+            tx = self._session.get_transaction()
+            self._transactions.append(tx if tx is not None else await self._session.begin())
+            return self
+
+        self._transactions.append(await self._session.begin())
         return self
 
     async def __aexit__(self, exc_type, exc, tb) -> None:
-        if self._transaction is not None:
-            # Savepoint mode
-            if exc:
-                await self._transaction.rollback()
-            else:
-                await self._transaction.commit()
+        if not self._transactions:
+            return
+
+        tx = self._transactions.pop()
+        if exc:
+            await tx.rollback()
         else:
-            # Direct mode
-            if exc:
-                await self._session.rollback()
-            else:
-                await self._session.commit()
+            await tx.commit()
 
 # infrastructure/repositories/user_repository.py
 # - takes AsyncSession injected per request

@@ -15,6 +15,7 @@ dependencies = [
     "python-dotenv",
     "pydantic",
     "pydantic-settings",
+    "structlog",
 
     # Web app (server-driven UI)
     "fastapi",
@@ -55,7 +56,6 @@ dependencies = [
 monorepo-tools = [
     "ruff",
     "mypy",
-
     "pytest",
     "pytest-mock",
     "pytest-cov",
@@ -64,16 +64,14 @@ monorepo-tools = [
     "pytest-timeout",
     "httpx",
     "testcontainers",
-
     "pre-commit",
-
-    # Validation / schema tooling used by docs-as-code rules
     "jsonschema",
     "pyyaml",
-
-    # Optional typing aids
     "types-psutil",
     "pandas-stubs",
+    "types-openpyxl>=3.1.5.20250919",
+    "types-docker>=7.1.0.20251202",
+    "types-requests>=2.32.4.20250913",
 ]
 
 # "Dev everything" extras that are useful locally but not required in prod images.

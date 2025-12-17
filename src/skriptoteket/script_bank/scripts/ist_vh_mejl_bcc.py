@@ -9,11 +9,12 @@ Vanligt användningsområden:
 Runner-kontrakt:
 - Entrypoint: run_tool(input_path: str, output_dir: str) -> str
 - Input: CSV eller XLSX med rubrikrad
-- Output: HTML (för UI) + en fil `emails.txt` som artifact
+- Output: HTML (för UI) + en fil `emails_<timestamp>.txt` som artifact
 """
 
 import re
 from collections.abc import Iterable
+from datetime import datetime, timezone
 from pathlib import Path
 
 EMAIL_RE = re.compile(r"([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,15})")
@@ -105,10 +106,18 @@ def read_csv(path: Path) -> tuple[list[str], list[list[str]]]:
 
 def read_xlsx(path: Path) -> tuple[list[str], list[list[str]]]:
     """Läs XLSX med openpyxl (första bladet)."""
+    import warnings
+
     from openpyxl import load_workbook
 
-    wb = load_workbook(path, read_only=True, data_only=True)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        wb = load_workbook(path, read_only=True, data_only=True)
     ws = wb.active
+
+    if ws is None:
+        wb.close()
+        return [], []
 
     rows = [[str(cell.value or "") for cell in row] for row in ws.iter_rows()]
     wb.close()
@@ -151,7 +160,8 @@ def run_tool(input_path: str, output_dir: str) -> str:
 
     email_string = ";".join(all_emails)
 
-    artifact_path = output / "emails.txt"
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    artifact_path = output / f"emails_{timestamp}.txt"
     artifact_path.write_text(email_string, encoding="utf-8")
 
     stats_rows = "".join(

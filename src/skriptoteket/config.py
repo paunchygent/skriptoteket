@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     APP_NAME: str = "Skriptoteket"
     APP_VERSION: str = "0.1.0"
     ENVIRONMENT: str = "development"
+    SERVICE_NAME: str = "skriptoteket"
+    LOG_LEVEL: str = "INFO"
+    LOG_FORMAT: Literal["json", "console"] = "json"
 
     ENABLE_DOCS: bool = True
 

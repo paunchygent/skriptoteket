@@ -91,6 +91,15 @@ class PublishVersionResult(BaseModel):
     archived_previous_active_version: ToolVersion | None = None
 
 
+class RollbackVersionResult(BaseModel):
+    """Result of a rollback action."""
+
+    model_config = ConfigDict(frozen=True)
+
+    new_active_version: ToolVersion
+    archived_previous_active_version: ToolVersion | None = None
+
+
 def compute_content_hash(*, entrypoint: str, source_code: str) -> str:
     content = f"{entrypoint}\n{source_code}"
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
@@ -303,6 +312,66 @@ def publish_version(
     return PublishVersionResult(
         new_active_version=new_active,
         archived_reviewed_version=archived_reviewed,
+        archived_previous_active_version=archived_previous,
+    )
+
+
+def rollback_to_version(
+    *,
+    archived_version: ToolVersion,
+    new_active_version_id: UUID,
+    new_active_version_number: int,
+    published_by_user_id: UUID,
+    now: datetime,
+    previous_active_version: ToolVersion | None,
+) -> RollbackVersionResult:
+    if archived_version.state is not VersionState.ARCHIVED:
+        raise DomainError(
+            code=ErrorCode.CONFLICT,
+            message="Only archived versions can be rolled back to",
+            details={"state": archived_version.state.value},
+        )
+    if previous_active_version is not None:
+        if previous_active_version.tool_id != archived_version.tool_id:
+            raise validation_error(
+                "previous_active_version must belong to the same tool",
+                details={
+                    "previous_active_tool_id": str(previous_active_version.tool_id),
+                    "tool_id": str(archived_version.tool_id),
+                },
+            )
+        if previous_active_version.state is not VersionState.ACTIVE:
+            raise validation_error(
+                "previous_active_version must be active",
+                details={"state": previous_active_version.state.value},
+            )
+
+    _validate_version_number(version_number=new_active_version_number)
+
+    archived_previous = (
+        previous_active_version.model_copy(update={"state": VersionState.ARCHIVED})
+        if previous_active_version is not None
+        else None
+    )
+
+    new_active = ToolVersion(
+        id=new_active_version_id,
+        tool_id=archived_version.tool_id,
+        version_number=new_active_version_number,
+        state=VersionState.ACTIVE,
+        source_code=archived_version.source_code,
+        entrypoint=archived_version.entrypoint,
+        content_hash=archived_version.content_hash,
+        derived_from_version_id=archived_version.id,
+        created_by_user_id=published_by_user_id,
+        created_at=now,
+        published_by_user_id=published_by_user_id,
+        published_at=now,
+        change_summary=f"Rollback from v{archived_version.version_number}",
+    )
+
+    return RollbackVersionResult(
+        new_active_version=new_active,
         archived_previous_active_version=archived_previous,
     )
 
