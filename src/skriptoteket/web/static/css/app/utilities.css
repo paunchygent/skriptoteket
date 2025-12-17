@@ -52,12 +52,15 @@
 .huleedu-mx-auto { margin-left: auto; margin-right: auto; }
 
 /* Consistent single-panel width (main menu pages) */
+:root {
+  --huleedu-content-width: clamp(var(--huleedu-max-width-2xl), 70vw, 56rem);
+}
+
 .huleedu-panel {
   display: block;
   width: 100%;
-  max-width: var(--huleedu-max-width-2xl);
-  margin-left: auto;
-  margin-right: auto;
+  max-width: var(--huleedu-content-width);
+  margin-inline: auto;
 }
 
 /* Flex utilities - variants */

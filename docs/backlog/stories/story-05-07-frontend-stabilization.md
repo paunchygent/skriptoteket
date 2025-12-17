@@ -8,7 +8,7 @@ created: 2025-12-17
 epic: "EPIC-05"
 acceptance_criteria:
   - "Given components.css, when parsed, then all CSS rules have matching braces"
-  - "Given any single-column page, when rendered, then content width is consistent (42rem)"
+  - "Given any single-column page, when rendered, then content width is consistent and responsive (min 42rem, max 56rem)"
   - "Given editor page on any modern browser, when CodeMirror loads, then layout is stable without collapse"
   - "Given dvh units, when on older browsers, then vh fallback prevents layout break"
 ---
@@ -25,56 +25,55 @@ Frontend-expert analys identifierade bräcklighet och inkonsistens i Skriptoteke
 
 - [x] ~~Fix saknad `}` i `components.css`~~ - **FALSE POSITIVE** (CSS är korrekt balanserad)
   - Verifierat: `src/skriptoteket/web/static/css/app/components.css` har 58 `{` och 58 `}` och `.huleedu-toast-container` stängs korrekt (`src/skriptoteket/web/static/css/app/components.css:261` + `src/skriptoteket/web/static/css/app/components.css:271`).
-- [ ] Lägg till `--huleedu-content-width` (app-policy) som alias till 42rem
+- [x] Lägg till `--huleedu-content-width` (app-policy) som alias till 42rem
   - Obs: 42rem finns redan som `--huleedu-max-width-2xl` i `src/skriptoteket/web/static/css/huleedu-design-tokens.css:169`.
-  - Föreslagen ändring: definiera `--huleedu-content-width: var(--huleedu-max-width-2xl);` i `src/skriptoteket/web/static/css/app/utilities.css` nära panel-sektionen.
-- [ ] Uppdatera `.huleedu-panel` att använda `--huleedu-content-width`
+  - Beslut: gör policy responsiv med `clamp()` (min 42rem, max 56rem).
+  - Föreslagen ändring: definiera `--huleedu-content-width: clamp(var(--huleedu-max-width-2xl), 70vw, 56rem);` i `src/skriptoteket/web/static/css/app/utilities.css` nära panel-sektionen.
+- [x] Uppdatera `.huleedu-panel` att använda `--huleedu-content-width`
   - Nuvarande: `max-width: var(--huleedu-max-width-2xl)` + `margin-left/right` (`src/skriptoteket/web/static/css/app/utilities.css:55`–`61`).
   - Föreslagen: `max-width: var(--huleedu-content-width); margin-inline: auto;`.
 
 ### Panel/Card-bredd (Prio 3)
 
-- [ ] Migrera `login.html` till `.huleedu-panel`
-- [ ] Migrera `home.html` till `.huleedu-panel`
-- [ ] Migrera `error.html` till `.huleedu-panel` (idag `huleedu-max-w-md`)
-- [ ] Verifiera/åtgärda återstående single-column sidor som saknar `.huleedu-panel`
-  - Saknar panel idag (bredare än 42rem via `.huleedu-main`): `src/skriptoteket/web/templates/my_runs/detail.html` och `src/skriptoteket/web/templates/suggestions_review_detail.html`.
-    - `src/skriptoteket/web/templates/my_runs/detail.html:3` saknar wrapper runt innehållet → lägg till `.huleedu-panel`.
-    - `src/skriptoteket/web/templates/suggestions_review_detail.html:3` använder `huleedu-card` utan panel → lägg till `.huleedu-panel`.
-  - Redan panel (42rem via `.huleedu-panel`): `src/skriptoteket/web/templates/browse_professions.html:3`, `src/skriptoteket/web/templates/browse_categories.html:3`, `src/skriptoteket/web/templates/browse_tools.html:3`, `src/skriptoteket/web/templates/my_tools.html:3`, `src/skriptoteket/web/templates/admin_tools.html:3`, `src/skriptoteket/web/templates/suggestions_new.html:3`, `src/skriptoteket/web/templates/suggestions_review_queue.html:3`, `src/skriptoteket/web/templates/tools/run.html:3`, `src/skriptoteket/web/templates/tools/result.html:3`.
+- [x] Migrera `login.html` till `.huleedu-panel`
+- [x] Migrera `home.html` till `.huleedu-panel`
+- [x] Migrera `error.html` till `.huleedu-panel` (idag `huleedu-max-w-md`)
+- [x] Verifiera/åtgärda återstående single-column sidor som saknar `.huleedu-panel`
+  - Fixat: `src/skriptoteket/web/templates/my_runs/detail.html` och `src/skriptoteket/web/templates/suggestions_review_detail.html` hade ingen panel-wrapper → båda använder nu `.huleedu-panel`.
+  - Redan panel (via `.huleedu-panel`): `src/skriptoteket/web/templates/browse_professions.html:3`, `src/skriptoteket/web/templates/browse_categories.html:3`, `src/skriptoteket/web/templates/browse_tools.html:3`, `src/skriptoteket/web/templates/my_tools.html:3`, `src/skriptoteket/web/templates/admin_tools.html:3`, `src/skriptoteket/web/templates/suggestions_new.html:3`, `src/skriptoteket/web/templates/suggestions_review_queue.html:3`, `src/skriptoteket/web/templates/tools/run.html:3`, `src/skriptoteket/web/templates/tools/result.html:3`.
 
 ### Layout-robusthet (Prio 4-5)
 
-- [ ] Lägg till `dvh` fallback: `height: 100vh; height: 100dvh;` i layout.css
-  - Endast `dvh` hittas i `src/skriptoteket/web/static/css/app/layout.css:9`–`18` (ingen `vh` fallback idag).
-- [ ] Refaktorera editorns interna layout (CodeMirror + toolbar + run-result) till stabil höjdmodell
-  - Nuvarande 2-kolumn grid finns redan (`src/skriptoteket/web/static/css/app/editor.css:57`–`77`), men code-card är flex med “växer, krymper inte” (`flex: 1 0 auto`) och editor har `min-height: 500px` (`src/skriptoteket/web/static/css/app/editor.css:131`–`162`).
-  - Run-result expanderar utan scrollcap (`max-height: none; overflow: visible`) (`src/skriptoteket/web/static/css/app/editor.css:210`–`218`).
-  - Mål: tydliga scroll-ansvar + `min-height: 0` där relevant + run-result ska inte kunna “trycka sönder” editorn.
-- [ ] Uppdatera `src/skriptoteket/web/templates/admin/script_editor.html` för den nya layouten
-  - Nuvarande struktur: textarea → toolbar → `#run-result` i samma card (`src/skriptoteket/web/templates/admin/script_editor.html:36`–`96`).
+- [x] Lägg till `dvh` fallback: `height: 100vh; height: 100dvh;` i layout.css
+  - Implementerat i `src/skriptoteket/web/static/css/app/layout.css:5`–`21` (vh först, dvh därefter).
+- [x] Refaktorera editorns interna layout (CodeMirror + toolbar + run-result) till stabil höjdmodell
+  - Scroll-ansvar: `.huleedu-editor-main` är låst (`overflow: hidden`) och scroll sker i CodeMirror + run-result (`src/skriptoteket/web/static/css/app/editor.css:119`–`128`, `src/skriptoteket/web/static/css/app/editor.css:210`–`223`).
+  - Code-card kan krympa: `flex: 1 1 auto` + `overflow: hidden` (förhindrar “kollaps” efter layoutändringar) (`src/skriptoteket/web/static/css/app/editor.css:131`–`139`).
+  - Run-result är capped och scrollar internt: `max-height: clamp(...)` + `overflow: auto` och döljs helt när tom (`:empty`) (`src/skriptoteket/web/static/css/app/editor.css:210`–`223`).
+- [x] Uppdatera `src/skriptoteket/web/templates/admin/script_editor.html` för den nya layouten
+  - Run-result är tomt när ingen körning finns (för att `:empty` ska fungera) och run-knappen använder `huleedu-btn-loading` + `hx-indicator` på knappen (`src/skriptoteket/web/templates/admin/script_editor.html:57`–`96`).
 
 ### Modern CSS (Prio 6+, valfritt)
 
 - [ ] Lägg till `@supports` för progressiv förbättring där relevant
 - [ ] Introducera `clamp()` för fluid typography
-- [ ] Byt `setTimeout` → `ResizeObserver` för CodeMirror refresh i app.js
-  - Nuvarande debounce refresh: `setTimeout(..., 50)` i `scheduleAllEditorsRefresh()` (`src/skriptoteket/web/static/js/app.js:139`–`152`) triggas på `htmx:afterSwap`, `htmx:afterSettle` och `resize` (`src/skriptoteket/web/static/js/app.js:234`–`247`).
+- [x] Byt `setTimeout` → `ResizeObserver` för CodeMirror refresh i app.js
+  - `ResizeObserver` triggar refresh och `scheduleAllEditorsRefresh()` debouncar med `requestAnimationFrame` (fortfarande triggat av `htmx:*` + `resize`) (`src/skriptoteket/web/static/js/app.js:141`–`179`, `src/skriptoteket/web/static/js/app.js:252`–`265`).
 
 ## Filer att modifiera
 
 ```
 src/skriptoteket/web/static/css/app/components.css     # No changes needed (false positive)
-src/skriptoteket/web/static/css/app/utilities.css      # Content-width token
-src/skriptoteket/web/static/css/app/layout.css         # dvh fallback
-src/skriptoteket/web/static/css/app/editor.css         # Grid areas refactor
-src/skriptoteket/web/templates/login.html              # Use .huleedu-panel
-src/skriptoteket/web/templates/home.html               # Use .huleedu-panel
-src/skriptoteket/web/templates/error.html              # Use .huleedu-panel
-src/skriptoteket/web/templates/my_runs/detail.html     # Consider wrapping in .huleedu-panel (consistency)
-src/skriptoteket/web/templates/suggestions_review_detail.html # Consider .huleedu-panel (single-column consistency)
-src/skriptoteket/web/templates/admin/script_editor.html # Updated grid classes
-src/skriptoteket/web/static/js/app.js                  # ResizeObserver (optional)
+src/skriptoteket/web/static/css/app/utilities.css      # Content-width token (done)
+src/skriptoteket/web/static/css/app/layout.css         # dvh fallback (done)
+src/skriptoteket/web/static/css/app/editor.css         # Editor stabilization (done)
+src/skriptoteket/web/templates/login.html              # Use .huleedu-panel (done)
+src/skriptoteket/web/templates/home.html               # Use .huleedu-panel (done)
+src/skriptoteket/web/templates/error.html              # Use .huleedu-panel (done)
+src/skriptoteket/web/templates/my_runs/detail.html     # Use .huleedu-panel (done)
+src/skriptoteket/web/templates/suggestions_review_detail.html # Use .huleedu-panel (done)
+src/skriptoteket/web/templates/admin/script_editor.html # Editor tweaks (done)
+src/skriptoteket/web/static/js/app.js                  # ResizeObserver (done)
 ```
 
 ## Implementation Notes
@@ -107,9 +106,9 @@ src/skriptoteket/web/static/js/app.js                  # ResizeObserver (optiona
 ### 2025-12-17: Editor – nuvarande layout och riskpunkter
 
 - Sida: `huleedu-main-fluid huleedu-editor-page` låser page-scroll och kräver stabila inre scroll-containers (`src/skriptoteket/web/static/css/app/editor.css:49`–`55`).
-- Vänsterkolumn scrollar (`overflow-y: auto`) och code-card är flex med `flex: 1 0 auto` + editor `min-height: 500px` → tenderar att inte krympa (`src/skriptoteket/web/static/css/app/editor.css:119`–`162`).
-- Run-result saknar scrollcap (`max-height: none; overflow: visible`) och ligger i samma card som editorn (`src/skriptoteket/web/static/css/app/editor.css:210`–`218`, `src/skriptoteket/web/templates/admin/script_editor.html:36`–`96`).
-- CodeMirror refresh sker via event + debounce `setTimeout` (`src/skriptoteket/web/static/js/app.js:139`–`152`, `src/skriptoteket/web/static/js/app.js:234`–`247`).
+- Vänsterkolumn är låst (`overflow: hidden`) och scroll ligger i CodeMirror + run-result (run-result är capped och scrollar internt) (`src/skriptoteket/web/static/css/app/editor.css:119`–`128`, `src/skriptoteket/web/static/css/app/editor.css:210`–`223`).
+- Code-card är stabil: kan krympa (`flex: 1 1 auto`) och har `overflow: hidden` för att undvika kollaps när run-result dyker upp (`src/skriptoteket/web/static/css/app/editor.css:131`–`150`).
+- CodeMirror refresh sker via `ResizeObserver` + `requestAnimationFrame` (fortfarande triggat av `htmx:*` + `resize`) (`src/skriptoteket/web/static/js/app.js:141`–`179`, `src/skriptoteket/web/static/js/app.js:252`–`265`).
 
 ### Avvisade alternativ
 
@@ -138,12 +137,12 @@ Stödjer: Safari 15+, Chrome 90+, Firefox 90+
 
 Nästa session ska:
 
-1. Implementera panel-bredd-unifiering (minst: login/home/error → `.huleedu-panel`)
-2. Implementera `vh` fallback för `dvh` i `layout.css`
-3. Implementera editor-stabilisering (inre layout + scroll + CodeMirror refresh)
-4. Live-check: verifiera editor-sidan efter ändringar (session rule) och logga i `.agent/handoff.md`
+1. Implementera editor-stabilisering (inre layout + scroll + CodeMirror refresh)
+2. Live-check: verifiera editor-sidan efter ändringar (session rule) och logga i `.agent/handoff.md`
 
 ## Exakta patch-förslag (för nästa session)
+
+Obs: Patch A–C är redan implementerade (2025-12-17). Kvar i denna story är framför allt editor-stabilisering (D) + ev. ResizeObserver (Modern CSS).
 
 ### A) `utilities.css`: content-width token + panel
 
@@ -151,7 +150,7 @@ Plats: nära `.huleedu-panel` (`src/skriptoteket/web/static/css/app/utilities.cs
 
 ```css
 :root {
-  --huleedu-content-width: var(--huleedu-max-width-2xl); /* 42rem */
+  --huleedu-content-width: clamp(var(--huleedu-max-width-2xl), 70vw, 56rem);
 }
 
 .huleedu-panel {
@@ -214,3 +213,9 @@ Plats: `.huleedu-frame` (`src/skriptoteket/web/static/css/app/layout.css:5`–`1
 `suggestions_review_detail.html` (single-column admin-detaljsida):
 
 - Byt toppnivå från `<div class="huleedu-card">` till `<div class="huleedu-card huleedu-panel">` (`src/skriptoteket/web/templates/suggestions_review_detail.html:3`).
+
+## Relaterat (separat UX-story, ej ST-05-07)
+
+Admin-navigationen kan bli förvirrande när både “Mina verktyg” och “Verktyg” finns samtidigt. Beslut (diskussion 2025-12-17):
+
+- Implementerat: byt label i headern för `/admin/tools` från **“Verktyg”** → **“Testyta”** (`src/skriptoteket/web/templates/base.html:31`).

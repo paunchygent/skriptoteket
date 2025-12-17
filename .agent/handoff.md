@@ -478,19 +478,20 @@ All ST-04-04 work is done:
 
 **Källa:** Frontend-expert analys via repomix-paket (`.claude/repomix_packages/TASK-frontend-review.md`)
 
-**Gjort denna session (validering + dokumentation):**
+**Gjort denna session (implementation + live-check):**
 
 - CSS-integritet verifierad: `components.css` och `utilities.css` är syntaktiskt balanserade; toast “saknad `}`” var **FALSE POSITIVE**.
-- Panelbredd kartlagd: `.huleedu-panel` ger 42rem; `login.html`/`home.html`/`error.html` använder 28rem via `huleedu-max-w-md`; sidor utan panel-wrapper identifierade.
-- `dvh`-användning verifierad: endast `layout.css` använder `100dvh` och saknar `vh` fallback.
+- Panelbredd implementerad: `.huleedu-panel` använder `--huleedu-content-width` (responsiv `clamp()` min 42rem, max 56rem) och templates migrerade till `.huleedu-panel` (`login.html`, `home.html`, `error.html`, `my_runs/detail.html`, `suggestions_review_detail.html`).
+- `dvh`-fallback implementerad: `src/skriptoteket/web/static/css/app/layout.css` stackar `100vh` före `100dvh` (inkl. `calc()` i desktop breakpoint).
 - Editor-bräcklighet kartlagd: code-card/editor tenderar att inte krympa och run-result expanderar utan scrollcap; CodeMirror refresh är HTMX events + debounce `setTimeout`.
-- Dokumenterade exakta fil:rad + patch-snuttar i storyn och länkade in ST-05-07 i EPIC-05.
+- Admin-nav UX-fix: `/admin/tools` heter nu “Testyta” (för att skilja från “Mina verktyg”) i `src/skriptoteket/web/templates/base.html` + rubrik i `src/skriptoteket/web/templates/admin_tools.html`.
 
 ### Nästa sessions uppdrag
 
 - **Källa till sanning:** följ `docs/backlog/stories/story-05-07-frontend-stabilization.md` (innehåller patch-snuttar + fil:rad).
-- **Rekommenderad implementeringsordning:** panelbredd-token + template-migrering → `vh` fallback för `dvh` → editor-stabilisering (CSS, ev ResizeObserver).
-- **Öppen fråga (bestäm innan implementation):** ska `my_runs/detail.html` och `suggestions_review_detail.html` också begränsas till 42rem (via `.huleedu-panel`) eller fortsätta vara breda?
+- **Rekommenderad implementeringsordning (återstår):** editor-stabilisering (CSS, ev ResizeObserver).
+- **Beslut (2025-12-17, implementerat):** alla single-column sidor använder responsiv panelbredd via `.huleedu-panel` (min 42rem, max 56rem).
+- **Beslut (2025-12-17, implementerat):** byt label i headern för `/admin/tools` från “Verktyg” → “Testyta” (`src/skriptoteket/web/templates/base.html:31`).
 - **Metod (för att undvika drift):** repomix kan vara trunkerat; verifiera alltid mot faktiska filer och håll detaljer/patchediff i storyn (inte i handoff).
 
 ### Relevanta filer
@@ -517,3 +518,19 @@ All ST-04-04 work is done:
   - `POST /tools/nonexistent/run` with `HX-Request: true` returns an error alert + OOB toast (`huleedu-toast-error`, `hx-swap-oob="beforeend:#toast-container"`).
 
 - Re-verified after final toast/layout tweaks on port `8019` (same checks as above).
+
+- Re-verified panelbredd + “Testyta” på port `8020`:
+  - `GET /login` innehåller `.huleedu-panel` på kortet.
+  - Inloggning via `POST /login` (utan CSRF) + cookie.
+  - `GET /` och `GET /browse/` renderar utan template-fel.
+  - `GET /admin/tools` visar nav-label “Testyta” + rubrik `<h2>Testyta</h2>`.
+
+- Re-verified `vh` fallback för `dvh` på port `8021`:
+  - `GET /login` renderar (200).
+  - `GET /static/css/app/layout.css` innehåller både `100vh` och `100dvh` samt `calc(100vh - …)` + `calc(100dvh - …)`.
+
+- Re-verified editor-stabilisering på port `8022`:
+  - Inloggning via `POST /login` (utan CSRF) + cookie.
+  - `GET /admin/tools` renderar och listar verktyg.
+  - `GET /admin/tools/{tool_id}` renderar editorn (200) och innehåller `hx-indicator="#sandbox-run-button"` samt tom `#run-result` (för `:empty`-regeln).
+  - `GET /static/css/app/editor.css` innehåller `max-height` + `overflow: auto` för `.huleedu-editor-run-result` samt `:empty { display: none; }`.

@@ -75,7 +75,9 @@
 
   /** @type {Set<any>} */
   var activeCodeMirrorEditors = new Set();
-  var resizeRefreshTimeout = null;
+  var resizeRefreshAnimationFrame = null;
+  /** @type {ResizeObserver | null} */
+  var codeMirrorResizeObserver = null;
 
   function ensureCodeMirrorAssets() {
     if (window.CodeMirror) return Promise.resolve();
@@ -136,26 +138,55 @@
     observer.observe(container, { childList: true });
   }
 
+  function ensureCodeMirrorResizeObserver() {
+    if (codeMirrorResizeObserver) return;
+    if (!window.ResizeObserver) return;
+
+    codeMirrorResizeObserver = new ResizeObserver(function () {
+      scheduleAllEditorsRefresh();
+    });
+  }
+
+  function observeCodeMirrorEditor(editor) {
+    if (!editor || typeof editor.getWrapperElement !== "function") return;
+    ensureCodeMirrorResizeObserver();
+    if (!codeMirrorResizeObserver) return;
+
+    var wrapper = editor.getWrapperElement();
+    if (!wrapper) return;
+    if (wrapper.dataset && wrapper.dataset.huleeduResizeObserved === "true") return;
+    if (wrapper.dataset) wrapper.dataset.huleeduResizeObserved = "true";
+
+    codeMirrorResizeObserver.observe(wrapper);
+  }
+
   function scheduleAllEditorsRefresh() {
-    if (resizeRefreshTimeout) clearTimeout(resizeRefreshTimeout);
-    resizeRefreshTimeout = setTimeout(function () {
+    if (resizeRefreshAnimationFrame) cancelAnimationFrame(resizeRefreshAnimationFrame);
+    resizeRefreshAnimationFrame = requestAnimationFrame(function () {
+      resizeRefreshAnimationFrame = null;
       activeCodeMirrorEditors.forEach(function (editor) {
         if (!editor || typeof editor.getWrapperElement !== "function") return;
         var wrapper = editor.getWrapperElement();
         if (!wrapper || !document.contains(wrapper)) {
           activeCodeMirrorEditors.delete(editor);
+          if (codeMirrorResizeObserver && wrapper) {
+            codeMirrorResizeObserver.unobserve(wrapper);
+          }
           return;
         }
         editor.refresh();
       });
-    }, 50);
+    });
   }
 
   function cleanupCodeMirrorEditors() {
     activeCodeMirrorEditors.forEach(function (editor) {
       if (!editor || typeof editor.getWrapperElement !== "function") return;
       var wrapper = editor.getWrapperElement();
-      if (!wrapper || !document.contains(wrapper)) activeCodeMirrorEditors.delete(editor);
+      if (!wrapper || !document.contains(wrapper)) {
+        activeCodeMirrorEditors.delete(editor);
+        if (codeMirrorResizeObserver && wrapper) codeMirrorResizeObserver.unobserve(wrapper);
+      }
     });
   }
 
@@ -205,6 +236,7 @@
           }
 
           activeCodeMirrorEditors.add(editor);
+          observeCodeMirrorEditor(editor);
 
           textarea.dataset.huleeduCodemirrorInitialized = "true";
         });

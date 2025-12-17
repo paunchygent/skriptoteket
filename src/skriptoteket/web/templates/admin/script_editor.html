@@ -63,7 +63,7 @@
                 hx-target="#run-result"
                 hx-swap="innerHTML"
                 hx-encoding="multipart/form-data"
-                hx-indicator="#sandbox-run-indicator"
+                hx-indicator="#sandbox-run-button"
                 class="huleedu-flex huleedu-gap-4 huleedu-editor-run-form"
               >
                 <input type="hidden" name="tool_id" value="{{ tool.id }}" />
@@ -72,7 +72,7 @@
                   <span id="file-name" class="huleedu-muted huleedu-file-name">Ingen fil vald</span>
                   <input type="file" name="file" class="huleedu-file-native" data-huleedu-file-name-target="file-name" />
                 </label>
-                <button type="submit" class="huleedu-btn huleedu-btn-navy huleedu-btn-icon">
+                <button id="sandbox-run-button" type="submit" class="huleedu-btn huleedu-btn-navy huleedu-btn-icon huleedu-btn-loading">
                   <span id="sandbox-run-indicator" class="htmx-indicator huleedu-spinner huleedu-spinner-sm huleedu-spinner-light" aria-hidden="true"></span>
                   Testkör
                 </button>
@@ -88,11 +88,7 @@
         </div>
 
         <!-- RUN RESULTS (Moved inside card) -->
-        <div id="run-result" class="huleedu-editor-run-result">
-          {% if run %}
-            {% include "admin/partials/run_result.html" %}
-          {% endif %}
-        </div>
+        <div id="run-result" class="huleedu-editor-run-result">{% if run %}{% include "admin/partials/run_result.html" %}{% endif %}</div>
       </div>
     </div>
 

@@ -123,30 +123,30 @@
   min-height: 0;
   min-width: 0;
   height: 100%; /* Fill grid cell */
-  overflow-y: auto; /* Independent scroll for editor+output */
+  overflow: hidden; /* Scroll lives in CodeMirror + run-result */
   padding: 4px; /* Prevent shadow clipping */
 }
 
 /* Code editor card fills available space */
 .huleedu-editor-code-card {
-  flex: 1 0 auto; /* Grow, don't shrink */
+  flex: 1 1 auto; /* Fill column; allow shrink */
   display: flex;
   flex-direction: column;
   padding: 0;
   min-height: 0;
   min-width: 0;
-  /* overflow: hidden; Removed to allow expansion */
+  overflow: hidden; /* Prevent CodeMirror collapse on layout changes */
 }
 
 .huleedu-editor-form {
-  flex: 1 0 auto; /* Grow, don't shrink */
+  flex: 1 1 auto; /* Allow shrink when run-result is visible */
   display: flex;
   flex-direction: column;
   padding: var(--huleedu-space-4);
   padding-bottom: 0;
   min-height: 0;
   min-width: 0;
-  /* overflow: hidden; Removed to allow expansion */
+  overflow: hidden; /* CodeMirror scroll stays inside */
 }
 
 .huleedu-editor-form .huleedu-label {
@@ -154,10 +154,10 @@
 }
 
 .huleedu-editor-textarea-wrapper {
-  flex: 1 0 auto; /* Grow, don't shrink */
+  flex: 1 1 auto; /* Fill remaining height; allow shrink */
   display: flex;
   flex-direction: column;
-  min-height: 500px; /* Ensure substantial editor height */
+  min-height: 0;
   min-width: 0;
 }
 
@@ -210,11 +210,16 @@
 .huleedu-editor-run-result {
   flex: 0 0 auto; /* Natural height */
   min-height: 0;
-  max-height: none; /* Allow full expansion */
-  overflow: visible; /* No internal scroll */
+  max-height: clamp(12rem, 35vh, 22rem);
+  overflow: auto;
+  overscroll-behavior: contain;
   border-top: var(--huleedu-border-width) solid var(--huleedu-navy-20);
   background-color: var(--huleedu-navy-02);
   padding: var(--huleedu-space-4);
+}
+
+.huleedu-editor-run-result:empty {
+  display: none;
 }
 
 /* Version list - compact scrollable */
