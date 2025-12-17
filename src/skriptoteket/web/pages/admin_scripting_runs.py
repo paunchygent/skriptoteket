@@ -107,8 +107,14 @@ def _render_hx_error(exc: DomainError) -> HTMLResponse:
 def _render_run_result_partial(*, request: Request, run: ToolRun) -> Response:
     return templates.TemplateResponse(
         request=request,
-        name="admin/partials/run_result.html",
-        context={"request": request, "run": run, "artifacts": _artifacts_for_run(run)},
+        name="admin/partials/run_result_with_toast.html",
+        context={
+            "request": request,
+            "run": run,
+            "artifacts": _artifacts_for_run(run),
+            "message": "Körning klar.",
+            "type": "success",
+        },
     )
 
 

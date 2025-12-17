@@ -7,11 +7,14 @@
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 @media (min-width: 768px) {
   .huleedu-frame {
     min-height: calc(100dvh - var(--huleedu-space-8));
+    height: calc(100dvh - var(--huleedu-space-8));
   }
 }
 
@@ -73,6 +76,8 @@
   margin: 0 auto;
   flex: 1 1 auto;
   min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .huleedu-main-fluid {
@@ -81,5 +86,6 @@
   width: 100%;
   flex: 1 1 auto;
   min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
-

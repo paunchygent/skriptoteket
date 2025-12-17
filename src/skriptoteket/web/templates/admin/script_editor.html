@@ -63,15 +63,19 @@
                 hx-target="#run-result"
                 hx-swap="innerHTML"
                 hx-encoding="multipart/form-data"
+                hx-indicator="#sandbox-run-indicator"
                 class="huleedu-flex huleedu-gap-4 huleedu-editor-run-form"
               >
                 <input type="hidden" name="tool_id" value="{{ tool.id }}" />
                 <label class="huleedu-file-wrapper huleedu-input huleedu-editor-file-field">
                   <span class="huleedu-file-fake-button" aria-hidden="true">Välj fil</span>
-                  <span id="file-name" class="huleedu-muted huleedu-editor-file-name">Ingen fil vald</span>
+                  <span id="file-name" class="huleedu-muted huleedu-file-name">Ingen fil vald</span>
                   <input type="file" name="file" class="huleedu-file-native" data-huleedu-file-name-target="file-name" />
                 </label>
-                <button type="submit" class="huleedu-btn huleedu-btn-navy">Testkör</button>
+                <button type="submit" class="huleedu-btn huleedu-btn-navy huleedu-btn-icon">
+                  <span id="sandbox-run-indicator" class="htmx-indicator huleedu-spinner huleedu-spinner-sm huleedu-spinner-light" aria-hidden="true"></span>
+                  Testkör
+                </button>
               </form>
             {% else %}
               <span class="huleedu-muted">Skapa ett utkast innan du testkör.</span>

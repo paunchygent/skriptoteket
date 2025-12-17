@@ -9,6 +9,7 @@ from skriptoteket.di import create_container
 from skriptoteket.observability.logging import configure_logging
 from skriptoteket.web.middleware.correlation import CorrelationMiddleware
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
+from skriptoteket.web.middleware.toasts import toast_middleware
 from skriptoteket.web.router import router as web_router
 
 
@@ -29,6 +30,7 @@ def create_app() -> FastAPI:
 
     app.add_middleware(CorrelationMiddleware)
     app.middleware("http")(error_handler_middleware)
+    app.middleware("http")(toast_middleware)
 
     static_dir = Path(__file__).resolve().parent / "static"
     app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")

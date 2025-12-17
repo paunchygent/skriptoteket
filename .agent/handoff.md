@@ -30,31 +30,72 @@ Keep this file updated so the next session can pick up work quickly.
   - `src/skriptoteket/web/templates/base.html` - loads new global `/static/js/app.js`.
   - `src/skriptoteket/web/static/js/app.js` - initializes CodeMirror on `DOMContentLoaded` and `htmx:load`, dynamically loads CodeMirror CSS/JS when a `textarea[data-huleedu-codemirror]` is present, and syncs CodeMirror → `<textarea>` before boosted submits (`submit` capture + `htmx:configRequest`) so “Spara” persists edits.
 - Browse flow single-panel width consistency:
-  - `src/skriptoteket/web/static/css/app/utilities.css` - added `.huleedu-panel` (width + max-width + auto margins) for deterministic panel widths.
+  - `src/skriptoteket/web/static/css/app/utilities.css` - `.huleedu-panel` (width + max-width + auto margins) for deterministic panel widths.
   - `src/skriptoteket/web/templates/browse_professions.html` - uses `.huleedu-panel`.
   - `src/skriptoteket/web/templates/browse_categories.html` - uses `.huleedu-panel`.
   - `src/skriptoteket/web/templates/browse_tools.html` - uses `.huleedu-panel`.
+- Panel/toast/spinner refinements (cross-browser stability + consistent visuals):
+  - `src/skriptoteket/web/static/css/app/utilities.css` - tune `.huleedu-panel` max-width to `--huleedu-max-width-xl`; add `.huleedu-flex-between-start` + `.huleedu-mb-0`.
+  - `src/skriptoteket/web/static/css/app/components.css` - tool rows align to top + allow action wrap; toast container moved to bottom-right + toast gets brutalist border.
+  - `src/skriptoteket/web/templates/browse_tools.html` - align “Kör” button to top using `.huleedu-flex-between-start`; remove inline `style="margin-bottom:0"`.
+  - `src/skriptoteket/web/templates/tools/run.html` - use `.huleedu-panel` for consistent single-panel width; run button uses `.huleedu-btn-icon` for centered spinner.
+  - `src/skriptoteket/web/templates/admin/script_editor.html` - run button uses `.huleedu-btn-icon` for centered spinner.
 - Header nav:
   - `src/skriptoteket/web/templates/base.html` - added “Mina verktyg” link for contributor+ users (`/my-tools`).
 - CSS modularization (replaces brittle monolith):
   - `src/skriptoteket/web/static/css/app.css` is now an entrypoint that `@import`s modules under `src/skriptoteket/web/static/css/app/`.
+- Browse width adjustment:
+  - `src/skriptoteket/web/templates/browse_professions.html` - removed fixed-width panel so it matches other full-width single-card pages.
+  - `src/skriptoteket/web/templates/browse_categories.html` - removed fixed-width panel.
+  - `src/skriptoteket/web/templates/browse_tools.html` - removed fixed-width panel.
+  - `src/skriptoteket/web/static/css/app/utilities.css` - removed unused `.huleedu-panel`.
+- Toasts now actually render:
+  - `src/skriptoteket/web/toasts.py` - cookie-based “flash toast” helpers (`skriptoteket_toast`).
+  - `src/skriptoteket/web/middleware/toasts.py` + `src/skriptoteket/web/app.py` - middleware reads toast cookie into `request.state.toast_*` and clears it after render.
+  - `src/skriptoteket/web/templates/base.html` - renders toast on page load; removed inline toast JS.
+  - `src/skriptoteket/web/static/js/app.js` - toast auto-dismiss now runs on page load and after HTMX swaps.
+  - `src/skriptoteket/web/templates/partials/toast.html` - fixed OOB swap to append a toast element (no duplicate `id="toast-container"`).
+  - `src/skriptoteket/web/pages/admin_scripting.py` - sets toast cookie on successful save/create draft/submit review/publish/request changes/metadata save.
+- Toasts on run (HTMX partial):
+  - `src/skriptoteket/web/templates/admin/partials/run_result_with_toast.html` - returns run result + OOB toast.
+  - `src/skriptoteket/web/templates/tools/partials/run_result_with_toast.html` - returns run result + OOB toast.
+  - `src/skriptoteket/web/pages/admin_scripting_runs.py` - uses `run_result_with_toast.html` for HTMX sandbox runs.
+  - `src/skriptoteket/web/pages/tools.py` - uses `run_result_with_toast.html` for HTMX production runs.
+- Run spinners + file input de-brittle:
+  - `src/skriptoteket/web/templates/admin/script_editor.html` - “Testkör” now shows spinner during HTMX request.
+  - `src/skriptoteket/web/templates/tools/run.html` - “Kör” now shows spinner; removed inline `onchange` and switched to shared file input markup.
+  - `src/skriptoteket/web/static/css/app/components.css` - `.htmx-indicator` now wins over spinner display (prevents always-visible spinners).
+  - `src/skriptoteket/web/static/css/app/forms.css` - shared file input styling (`.huleedu-file-*`) + truncation (`.huleedu-file-name`).
+  - `src/skriptoteket/web/static/css/app/editor.css` - removed file input styles (moved to forms) and made sidebar card independently scrollable (`overflow-y: auto`).
+- Scroll robustness:
+  - `src/skriptoteket/web/static/css/app/layout.css` - `.huleedu-frame` is now fixed-height + `overflow: hidden`; `.huleedu-main*` scrolls (`overflow-y: auto`) so the editor columns can scroll independently across browsers.
 
 **Live functional check (required for UI changes):**
 - `docker compose up -d db`
 - `pdm run db-upgrade`
+- Create local superuser: `pdm run bootstrap-superuser --email <email> --password <password>`
+- Seed at least one tool for editor: `SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL=<email> SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD=<password> pdm run seed-script-bank`
 - Seed tools (local dev admin creds): `pdm run seed-script-bank` (requires `SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL` + `SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD`)
-- Run server on a free port (8000 was in use locally): `uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8001`
+- Ensure tool execution works locally:
+  - `mkdir -p /tmp/skriptoteket/artifacts`
+  - Run server with `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts ...` (default `/var/lib/...` doesn't exist locally)
+- Run server on a free port (8000/8001 may be in use locally): `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8002`
 - Login + fetch editor HTML (placeholders; do not paste real passwords):
-  - `curl -c /tmp/cookies.txt -X POST -d "email=<email>&password=<password>" http://127.0.0.1:8001/login`
-  - `curl -b /tmp/cookies.txt http://127.0.0.1:8001/admin/tools/<tool_id>` returned `200` and HTML contained `huleedu-editor-page`, `data-huleedu-codemirror="python"`, and `<script src="/static/js/app.js" defer></script>`.
+  - `curl -c /tmp/cookies.txt -X POST -d "email=<email>&password=<password>" http://127.0.0.1:8002/login`
+  - `curl -b /tmp/cookies.txt http://127.0.0.1:8002/admin/tools/<tool_id>` returned `200` and HTML contained `huleedu-editor-page`, `data-huleedu-codemirror="python"`, and `hx-indicator="#sandbox-run-indicator"`.
 - Verify browse panel class + modular CSS served:
-  - `curl -b /tmp/cookies.txt http://127.0.0.1:8001/browse/` returned `200` and HTML contained `huleedu-card huleedu-panel`.
-  - `curl -o /dev/null -w "%{http_code}" http://127.0.0.1:8001/static/css/app/utilities.css` returned `200`.
+  - `curl -b /tmp/cookies.txt http://127.0.0.1:8002/browse/` returned `200` and HTML contained `huleedu-card` (and no `huleedu-panel`).
+  - `curl -o /dev/null -w "%{http_code}" http://127.0.0.1:8002/static/css/app/utilities.css` returned `200`.
 - Verify CodeMirror save sync hook is served:
-  - `curl http://127.0.0.1:8001/static/js/app.js | rg \"htmx:configRequest\"` matches.
+  - `curl http://127.0.0.1:8002/static/js/app.js | rg \"htmx:configRequest\"` matches.
 - Verify “Mina verktyg” nav + page heading:
-  - `curl -b /tmp/cookies.txt http://127.0.0.1:8001/ | rg \"/my-tools\"` matches.
-  - `curl -b /tmp/cookies.txt http://127.0.0.1:8001/my-tools | rg \"<h2>Mina verktyg</h2>\"` matches.
+  - `curl -b /tmp/cookies.txt http://127.0.0.1:8002/ | rg \"/my-tools\"` matches.
+  - `curl -b /tmp/cookies.txt http://127.0.0.1:8002/my-tools | rg \"<h2>Mina verktyg</h2>\"` matches.
+- Verify toasts appear after a redirecting action:
+  - POST metadata save then GET editor and confirm HTML contains `huleedu-toast` and `data-auto-dismiss` (cookie is cleared by middleware).
+- Verify spinners:
+  - `tools/run.html` submit shows spinner while request is running (`hx-indicator="#run-indicator"`).
+  - `admin/script_editor.html` “Testkör” shows spinner while request is running (`hx-indicator="#sandbox-run-indicator"`).
 
 ### Current session (ST-04-04 continuation - Maintainer Admin + My Tools + Rollback)
 
@@ -347,6 +388,16 @@ Keep this file updated so the next session can pick up work quickly.
     - `GET /admin/suggestions` returns 200 and includes `<h2>Förslag</h2>`.
     - `GET /` returns 200 (started local server on port 8001).
     - `GET /admin/tool-runs/{random_uuid}` returns 404.
+  - UI refinements sanity check (ran, no secrets/tokens recorded):
+    - Start app: `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts PYTHONPATH=src pdm run uvicorn --app-dir src skriptoteket.web.app:app --host 127.0.0.1 --port 8012`
+    - Created a temporary superuser + session row via one-off `PYTHONPATH=src pdm run python` script.
+    - With the session cookie, verified these render and include `.huleedu-panel`:
+      - `GET /browse/` returns 200 and includes `<h2>Välj yrke</h2>`.
+      - `GET /my-tools` returns 200 and includes `<h2>Mina verktyg</h2>`.
+      - `GET /suggestions/new` returns 200 and includes `<h2>Föreslå ett skript</h2>`.
+      - `GET /admin/suggestions` returns 200 and includes `<h2>Förslag</h2>`.
+      - `GET /admin/tools` returns 200 and includes `<h2>Verktyg</h2>`.
+    - Verified toast HTML renders when `skriptoteket_toast` cookie is present (ensures toast container + markup exists in `base.html`).
 - Observability smoke check (ran, no secrets/tokens recorded):
   - Start app: `PYTHONPATH=src pdm run uvicorn --app-dir src skriptoteket.web.app:app --host 127.0.0.1 --port 8010`
   - `GET /login` returns 200 and echoes `X-Correlation-ID` when provided.

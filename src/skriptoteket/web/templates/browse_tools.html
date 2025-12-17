@@ -8,11 +8,11 @@
       <ul class="huleedu-list">
         {% for tool in tools %}
           <li class="huleedu-list-item">
-            <div class="huleedu-flex-between">
+            <div class="huleedu-flex-between-start">
               <div>
                 <strong>{{ tool.title }}</strong>
                 {% if tool.summary %}
-                  <p class="huleedu-muted" style="margin-bottom: 0;">{{ tool.summary }}</p>
+                  <p class="huleedu-muted huleedu-mb-0">{{ tool.summary }}</p>
                 {% endif %}
               </div>
               {% if tool.is_published and tool.active_version_id %}

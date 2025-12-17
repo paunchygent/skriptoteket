@@ -107,6 +107,22 @@
     });
   }
 
+  function initToasts() {
+    document.querySelectorAll("[data-auto-dismiss]").forEach(function (toast) {
+      if (toast.dataset.dismissScheduled) return;
+      toast.dataset.dismissScheduled = "true";
+
+      var delay = parseInt(toast.dataset.autoDismiss, 10) || 5000;
+      setTimeout(function () {
+        if (!document.contains(toast)) return;
+        toast.classList.add("huleedu-toast-dismiss-out");
+        setTimeout(function () {
+          if (document.contains(toast)) toast.remove();
+        }, 300);
+      }, delay);
+    });
+  }
+
   function scheduleAllEditorsRefresh() {
     if (resizeRefreshTimeout) clearTimeout(resizeRefreshTimeout);
     resizeRefreshTimeout = setTimeout(function () {
@@ -188,6 +204,7 @@
 
   function init(root) {
     cleanupCodeMirrorEditors();
+    initToasts();
     initFileInputs(root);
     initCodeMirrorEditors(root);
   }
@@ -198,6 +215,10 @@
 
   document.body.addEventListener("htmx:load", function (evt) {
     init(evt.target || document);
+  });
+
+  document.body.addEventListener("htmx:afterSwap", function () {
+    initToasts();
   });
 
   window.addEventListener("resize", scheduleAllEditorsRefresh);

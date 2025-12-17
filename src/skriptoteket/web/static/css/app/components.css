@@ -115,7 +115,7 @@
 .huleedu-tool-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--huleedu-space-4);
   padding: var(--huleedu-space-4) 0;
   border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy-20);
@@ -130,12 +130,16 @@
   flex-direction: column;
   gap: var(--huleedu-space-1);
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .huleedu-tool-actions {
   display: flex;
   gap: var(--huleedu-space-2);
   flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-end;
 }
 
 .huleedu-tool-actions .huleedu-btn {
@@ -193,12 +197,12 @@
 
 /* Loading indicator (hidden by default, shown during requests) */
 .htmx-indicator {
-  display: none;
+  display: none !important;
 }
 
 .htmx-request .htmx-indicator,
 .htmx-request.htmx-indicator {
-  display: inline-block;
+  display: inline-block !important;
 }
 
 /* Spinner animation */
@@ -239,17 +243,18 @@
 
 .huleedu-toast-container {
   position: fixed;
-  top: var(--huleedu-space-4);
+  bottom: var(--huleedu-space-4);
   right: var(--huleedu-space-4);
   z-index: 1000;
   display: flex;
   flex-direction: column;
   gap: var(--huleedu-space-2);
+  max-width: calc(100vw - var(--huleedu-space-8));
 }
 
 @media (min-width: 768px) {
   .huleedu-toast-container {
-    top: calc(var(--huleedu-space-4) + var(--huleedu-space-4)); /* Account for frame margin */
+    bottom: calc(var(--huleedu-space-4) + var(--huleedu-space-4)); /* Account for frame margin */
     right: calc(var(--huleedu-space-4) + var(--huleedu-space-4));
   }
 }
@@ -261,6 +266,10 @@
   padding: var(--huleedu-space-4) var(--huleedu-space-5);
   font-size: var(--huleedu-text-sm);
   font-weight: var(--huleedu-font-medium);
+  width: 100%;
+  max-width: var(--huleedu-max-width-sm);
+  border: var(--huleedu-border-width) solid var(--huleedu-canvas);
+  border-radius: var(--huleedu-radius-sm);
   box-shadow: var(--huleedu-shadow-brutal-sm);
   animation: huleedu-toast-slide-in 0.3s var(--huleedu-ease-out);
 }
@@ -281,16 +290,23 @@
 
 .huleedu-toast-dismiss {
   margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
   background: none;
-  border: none;
+  border: var(--huleedu-border-width) solid var(--huleedu-canvas-50);
+  border-radius: var(--huleedu-radius-full);
   color: inherit;
   opacity: 0.7;
   cursor: pointer;
-  padding: var(--huleedu-space-1);
+  padding: 0;
 }
 
 .huleedu-toast-dismiss:hover {
   opacity: 1;
+  border-color: var(--huleedu-canvas);
 }
 
 @keyframes huleedu-toast-slide-in {
@@ -376,4 +392,3 @@
   color: var(--huleedu-burgundy);
   border-bottom-color: var(--huleedu-burgundy);
 }
-

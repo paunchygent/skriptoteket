@@ -84,3 +84,53 @@ textarea.huleedu-input {
   font-size: var(--huleedu-text-sm);
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FILE INPUT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.huleedu-file-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: var(--huleedu-space-1);
+  cursor: pointer;
+}
+
+.huleedu-file-fake-button {
+  display: inline-block;
+  padding: var(--huleedu-space-1) var(--huleedu-space-3);
+  background-color: var(--huleedu-navy-05);
+  border: 1px solid var(--huleedu-navy-20);
+  border-radius: var(--huleedu-radius-sm);
+  color: var(--huleedu-navy);
+  font-family: var(--huleedu-font-sans);
+  font-size: var(--huleedu-text-sm);
+  font-weight: var(--huleedu-font-medium);
+  box-shadow: 0 1px 0 0 var(--huleedu-navy-20);
+  margin-right: var(--huleedu-space-3);
+  flex-shrink: 0;
+}
+
+.huleedu-file-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.huleedu-file-native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.huleedu-file-wrapper:focus-within {
+  outline: 2px solid var(--huleedu-navy);
+  outline-offset: 2px;
+}

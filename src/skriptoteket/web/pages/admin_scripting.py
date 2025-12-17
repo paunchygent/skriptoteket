@@ -47,6 +47,7 @@ from skriptoteket.web.auth.dependencies import (
 from skriptoteket.web.pages import admin_scripting_support as support
 from skriptoteket.web.pages.admin_scripting_runs import router as runs_router
 from skriptoteket.web.templating import templates
+from skriptoteket.web.toasts import set_toast_cookie
 from skriptoteket.web.ui_text import ui_error_message as _ui_error_message
 
 router = APIRouter()
@@ -176,7 +177,9 @@ async def update_tool_metadata(
         )
 
     redirect_url = f"/admin/tools/{tool_id}"
-    return support.redirect_with_hx(request=request, url=redirect_url)
+    response = support.redirect_with_hx(request=request, url=redirect_url)
+    set_toast_cookie(response=response, message="Metadata sparad.", toast_type="success")
+    return response
 
 
 @router.get("/admin/tools/{tool_id}/versions", response_class=HTMLResponse)
@@ -325,7 +328,9 @@ async def create_draft(
             status_code=support.status_code_for_error(exc),
         )
     redirect_url = f"/admin/tool-versions/{result.version.id}"
-    return support.redirect_with_hx(request=request, url=redirect_url)
+    response = support.redirect_with_hx(request=request, url=redirect_url)
+    set_toast_cookie(response=response, message="Utkast skapat.", toast_type="success")
+    return response
 
 
 @router.post("/admin/tool-versions/{version_id}/save")
@@ -378,7 +383,9 @@ async def save_draft(
             status_code=support.status_code_for_error(exc),
         )
     redirect_url = f"/admin/tool-versions/{result.version.id}"
-    return support.redirect_with_hx(request=request, url=redirect_url)
+    response = support.redirect_with_hx(request=request, url=redirect_url)
+    set_toast_cookie(response=response, message="Sparat.", toast_type="success")
+    return response
 
 
 @router.post("/admin/tool-versions/{version_id}/submit-review")
@@ -417,7 +424,9 @@ async def submit_review(
         )
 
     redirect_url = f"/admin/tool-versions/{result.version.id}"
-    return support.redirect_with_hx(request=request, url=redirect_url)
+    response = support.redirect_with_hx(request=request, url=redirect_url)
+    set_toast_cookie(response=response, message="Skickat för granskning.", toast_type="success")
+    return response
 
 
 @router.post("/admin/tool-versions/{version_id}/publish")
@@ -456,7 +465,9 @@ async def publish_version(
         )
 
     redirect_url = f"/admin/tool-versions/{result.new_active_version.id}"
-    return support.redirect_with_hx(request=request, url=redirect_url)
+    response = support.redirect_with_hx(request=request, url=redirect_url)
+    set_toast_cookie(response=response, message="Publicerad.", toast_type="success")
+    return response
 
 
 @router.post("/admin/tool-versions/{version_id}/request-changes")
@@ -495,7 +506,9 @@ async def request_changes(
         )
 
     redirect_url = f"/admin/tool-versions/{result.new_draft_version.id}"
-    return support.redirect_with_hx(request=request, url=redirect_url)
+    response = support.redirect_with_hx(request=request, url=redirect_url)
+    set_toast_cookie(response=response, message="Ändringar begärda.", toast_type="success")
+    return response
 
 
 # -----------------------------------------------------------------------------

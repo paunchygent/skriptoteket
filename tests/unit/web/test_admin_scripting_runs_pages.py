@@ -254,7 +254,7 @@ async def test_run_sandbox_hx_request_success_renders_run_result_partial() -> No
     )
 
     assert response.status_code == 200
-    assert response.template.name == "admin/partials/run_result.html"
+    assert response.template.name == "admin/partials/run_result_with_toast.html"
     assert response.context["run"] == run
     assert response.context["artifacts"][0]["download_url"] == (
         f"/admin/tool-runs/{run.id}/artifacts/a1"
@@ -342,7 +342,7 @@ async def test_get_run_renders_run_partial_for_owner() -> None:
     )
 
     assert response.status_code == 200
-    assert response.template.name == "admin/partials/run_result.html"
+    assert response.template.name == "admin/partials/run_result_with_toast.html"
     assert response.context["run"] == run
 
 

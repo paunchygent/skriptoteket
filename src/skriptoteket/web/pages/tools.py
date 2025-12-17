@@ -150,11 +150,13 @@ async def execute_tool(
     if hx_request:
         return templates.TemplateResponse(
             request=request,
-            name="tools/partials/run_result.html",
+            name="tools/partials/run_result_with_toast.html",
             context={
                 "request": request,
                 "run": run,
                 "artifacts": _user_artifacts_for_run(run),
+                "message": "Körning klar.",
+                "type": "success",
             },
         )
 
