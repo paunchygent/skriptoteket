@@ -12,11 +12,49 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2025-12-16
+- Date: 2025-12-17
 - Branch / commit: `main` (dirty working tree)
-- Goal of the session: HuleEdu-compatible structured logging (structlog + correlation IDs) and baseline lifecycle logs for execution/runner.
+- Goal of the session: Fix script editor UI sizing/scroll + CodeMirror init + file input hiding (ST-06-08).
 
 ## What changed
+
+### Current session (ST-06-08 Editor UI fixes: sizing, borders, CodeMirror init, file input)
+
+- Layout refactor (less brittle across browsers; avoids `calc(100vh - …)`/JS sizing):
+  - `src/skriptoteket/web/static/css/app.css` - make `.huleedu-frame` a flex column + use `100dvh`; editor page uses flex/grid with `min-height: 0` + `minmax(0, 1fr)` to keep CodeMirror scroll inside container; toolbar stays pinned within code card.
+  - `src/skriptoteket/web/templates/admin/script_editor.html` - `main_class` now includes `huleedu-editor-page` and editor-only inline styles were moved into CSS classes.
+- File input shown twice fix:
+  - `src/skriptoteket/web/templates/admin/script_editor.html` - switched to a `<label>` wrapper + visually-hidden native input (no overlay hacks).
+  - `src/skriptoteket/web/static/css/app.css` - `.huleedu-file-native` now uses a screen-reader-only pattern; added `:focus-within` outline.
+- CodeMirror first-visit init fix under HTMX (`hx-boost`) + modularized JS:
+  - `src/skriptoteket/web/templates/base.html` - loads new global `/static/js/app.js`.
+  - `src/skriptoteket/web/static/js/app.js` - initializes CodeMirror on `DOMContentLoaded` and `htmx:load`, dynamically loads CodeMirror CSS/JS when a `textarea[data-huleedu-codemirror]` is present, and syncs CodeMirror → `<textarea>` before boosted submits (`submit` capture + `htmx:configRequest`) so “Spara” persists edits.
+- Browse flow single-panel width consistency:
+  - `src/skriptoteket/web/static/css/app/utilities.css` - added `.huleedu-panel` (width + max-width + auto margins) for deterministic panel widths.
+  - `src/skriptoteket/web/templates/browse_professions.html` - uses `.huleedu-panel`.
+  - `src/skriptoteket/web/templates/browse_categories.html` - uses `.huleedu-panel`.
+  - `src/skriptoteket/web/templates/browse_tools.html` - uses `.huleedu-panel`.
+- Header nav:
+  - `src/skriptoteket/web/templates/base.html` - added “Mina verktyg” link for contributor+ users (`/my-tools`).
+- CSS modularization (replaces brittle monolith):
+  - `src/skriptoteket/web/static/css/app.css` is now an entrypoint that `@import`s modules under `src/skriptoteket/web/static/css/app/`.
+
+**Live functional check (required for UI changes):**
+- `docker compose up -d db`
+- `pdm run db-upgrade`
+- Seed tools (local dev admin creds): `pdm run seed-script-bank` (requires `SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL` + `SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD`)
+- Run server on a free port (8000 was in use locally): `uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8001`
+- Login + fetch editor HTML (placeholders; do not paste real passwords):
+  - `curl -c /tmp/cookies.txt -X POST -d "email=<email>&password=<password>" http://127.0.0.1:8001/login`
+  - `curl -b /tmp/cookies.txt http://127.0.0.1:8001/admin/tools/<tool_id>` returned `200` and HTML contained `huleedu-editor-page`, `data-huleedu-codemirror="python"`, and `<script src="/static/js/app.js" defer></script>`.
+- Verify browse panel class + modular CSS served:
+  - `curl -b /tmp/cookies.txt http://127.0.0.1:8001/browse/` returned `200` and HTML contained `huleedu-card huleedu-panel`.
+  - `curl -o /dev/null -w "%{http_code}" http://127.0.0.1:8001/static/css/app/utilities.css` returned `200`.
+- Verify CodeMirror save sync hook is served:
+  - `curl http://127.0.0.1:8001/static/js/app.js | rg \"htmx:configRequest\"` matches.
+- Verify “Mina verktyg” nav + page heading:
+  - `curl -b /tmp/cookies.txt http://127.0.0.1:8001/ | rg \"/my-tools\"` matches.
+  - `curl -b /tmp/cookies.txt http://127.0.0.1:8001/my-tools | rg \"<h2>Mina verktyg</h2>\"` matches.
 
 ### Current session (ST-04-04 continuation - Maintainer Admin + My Tools + Rollback)
 

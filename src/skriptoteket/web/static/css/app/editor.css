@@ -1,0 +1,287 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   CODEMIRROR THEME OVERRIDES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.CodeMirror {
+  font-family: var(--huleedu-font-mono) !important;
+  font-size: var(--huleedu-text-sm) !important;
+  background-color: var(--huleedu-canvas) !important;
+  border: var(--huleedu-border-width) solid var(--huleedu-navy) !important;
+  box-sizing: border-box !important;
+  color: var(--huleedu-navy) !important;
+}
+
+.CodeMirror-gutters {
+  background-color: var(--huleedu-navy-05) !important;
+  border-right: var(--huleedu-border-width) solid var(--huleedu-navy-20) !important;
+}
+
+.CodeMirror-linenumber {
+  color: var(--huleedu-navy-40) !important;
+}
+
+.CodeMirror-cursor {
+  border-left-color: var(--huleedu-burgundy) !important;
+}
+
+.CodeMirror-selected {
+  background-color: var(--huleedu-burgundy-10) !important;
+}
+
+.CodeMirror-focused .CodeMirror-selected {
+  background-color: var(--huleedu-burgundy-20) !important;
+}
+
+/* Syntax highlighting colors */
+.cm-keyword { color: var(--huleedu-burgundy) !important; }
+.cm-def { color: var(--huleedu-navy) !important; font-weight: var(--huleedu-font-semibold) !important; }
+.cm-variable { color: var(--huleedu-navy) !important; }
+.cm-string { color: #059669 !important; } /* emerald-600 */
+.cm-number { color: #7c3aed !important; } /* violet-600 */
+.cm-comment { color: var(--huleedu-navy-40) !important; font-style: italic !important; }
+.cm-builtin { color: var(--huleedu-burgundy) !important; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCRIPT EDITOR LAYOUT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.huleedu-editor-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.huleedu-editor-layout {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  grid-template-rows: minmax(0, 1fr);
+  gap: var(--huleedu-space-4);
+  align-items: stretch;
+  min-height: 0;
+  min-width: 0;
+}
+
+@media (max-width: 1024px) {
+  .huleedu-editor-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.huleedu-editor-sidebar {
+  min-width: 0;
+}
+
+@media (min-width: 1025px) {
+  .huleedu-editor-sidebar {
+    position: sticky;
+    top: var(--huleedu-space-4);
+    align-self: start;
+  }
+}
+
+/* Unified sidebar card with sections */
+.huleedu-sidebar-unified {
+  padding: 0;
+}
+
+.huleedu-sidebar-section {
+  padding: var(--huleedu-space-4);
+  border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+}
+
+.huleedu-sidebar-section-last {
+  border-bottom: none;
+}
+
+.huleedu-sidebar-heading {
+  display: block;
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-60);
+  margin-bottom: var(--huleedu-space-3);
+}
+
+.huleedu-editor-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--huleedu-space-3);
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Code editor card fills available space */
+.huleedu-editor-code-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.huleedu-editor-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--huleedu-space-4);
+  padding-bottom: 0;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.huleedu-editor-form .huleedu-label {
+  margin-bottom: var(--huleedu-space-2);
+}
+
+.huleedu-editor-textarea-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.huleedu-editor-textarea {
+  flex: 1;
+  font-family: var(--huleedu-font-mono);
+  resize: none;
+  min-height: 0;
+  min-width: 0;
+}
+
+.huleedu-editor-textarea-wrapper .CodeMirror {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+}
+
+/* Editor toolbar (file input + run button + version indicator) */
+.huleedu-editor-toolbar {
+  display: flex;
+  align-items: center;
+  padding: var(--huleedu-space-3) var(--huleedu-space-4);
+  border-top: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+  background-color: var(--huleedu-navy-02);
+  flex: 0 0 auto;
+}
+
+.huleedu-toolbar-version {
+  display: flex;
+  gap: var(--huleedu-space-2);
+  margin-left: auto;
+}
+
+.huleedu-editor-status-pills {
+  justify-content: flex-end;
+}
+
+.huleedu-editor-run-form {
+  flex: 1;
+  align-items: center;
+}
+
+.huleedu-editor-file-field {
+  flex: 1;
+  max-width: 280px;
+}
+
+.huleedu-editor-file-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Version list - compact scrollable */
+.huleedu-version-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.huleedu-version-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--huleedu-space-1);
+}
+
+.huleedu-version-item {
+  display: block;
+  padding: var(--huleedu-space-2) var(--huleedu-space-3);
+  text-decoration: none;
+  color: inherit;
+  border: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+  transition: border-color var(--huleedu-duration-default) var(--huleedu-ease-default),
+              background-color var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.huleedu-version-item:hover {
+  border-color: var(--huleedu-navy);
+  background-color: var(--huleedu-navy-02);
+}
+
+.huleedu-version-item-active {
+  border-color: var(--huleedu-burgundy);
+  background-color: var(--huleedu-burgundy-05);
+}
+
+.huleedu-version-item-header {
+  display: flex;
+  align-items: center;
+  gap: var(--huleedu-space-2);
+}
+
+.huleedu-version-number {
+  font-weight: var(--huleedu-font-semibold);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FILE INPUT STYLING
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.huleedu-file-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: var(--huleedu-space-1); /* Tighter padding for contained button */
+  cursor: pointer;
+}
+
+.huleedu-file-fake-button {
+  display: inline-block;
+  padding: var(--huleedu-space-1) var(--huleedu-space-3);
+  background-color: var(--huleedu-navy-05);
+  border: 1px solid var(--huleedu-navy-20);
+  border-radius: var(--huleedu-radius-sm);
+  color: var(--huleedu-navy);
+  font-family: var(--huleedu-font-sans);
+  font-size: var(--huleedu-text-sm);
+  font-weight: var(--huleedu-font-medium);
+  box-shadow: 0 1px 0 0 var(--huleedu-navy-20); /* Subtle 3D effect */
+  margin-right: var(--huleedu-space-3);
+  flex-shrink: 0;
+}
+
+.huleedu-file-native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.huleedu-file-wrapper:focus-within {
+  outline: 2px solid var(--huleedu-navy);
+  outline-offset: 2px;
+}
+

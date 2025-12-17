@@ -1,0 +1,86 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   FORMS - EXTENDED
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.huleedu-form-group {
+  margin-bottom: var(--huleedu-space-4);
+}
+
+.huleedu-form-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Textarea inherits input styling */
+textarea.huleedu-input {
+  min-height: 160px;
+  resize: vertical;
+}
+
+/* Checkbox and radio groups */
+.huleedu-checkbox-group,
+.huleedu-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--huleedu-space-3);
+}
+
+.huleedu-checkbox-item,
+.huleedu-radio-item {
+  display: flex;
+  align-items: center;
+  gap: var(--huleedu-space-2);
+}
+
+.huleedu-checkbox-item input[type="checkbox"],
+.huleedu-radio-item input[type="radio"] {
+  width: auto;
+  margin: 0;
+  accent-color: var(--huleedu-burgundy);
+}
+
+.huleedu-checkbox-item label,
+.huleedu-radio-item label {
+  font-size: var(--huleedu-text-sm);
+  cursor: pointer;
+}
+
+/* Fieldset styling */
+.huleedu-fieldset {
+  border: none;
+  padding: 0;
+  margin: 0 0 var(--huleedu-space-4) 0;
+}
+
+.huleedu-fieldset legend {
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-60);
+  margin-bottom: var(--huleedu-space-2);
+  padding: 0;
+}
+
+/* Error state for inputs */
+.huleedu-input-error {
+  border-color: var(--huleedu-burgundy);
+}
+
+.huleedu-input-error:focus {
+  border-color: var(--huleedu-burgundy);
+  box-shadow: 0 0 0 1px var(--huleedu-burgundy);
+}
+
+/* Error message text */
+.huleedu-error {
+  color: var(--huleedu-burgundy);
+  font-size: var(--huleedu-text-sm);
+  margin-top: var(--huleedu-space-1);
+}
+
+/* Muted/helper text */
+.huleedu-muted {
+  color: var(--huleedu-navy-60);
+  font-size: var(--huleedu-text-sm);
+}
+

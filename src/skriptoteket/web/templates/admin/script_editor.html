@@ -1,10 +1,6 @@
 {% extends "base.html" %}
 
-{% block head_extra %}
-  <link rel="stylesheet" href="/static/vendor/codemirror/codemirror.min.css" />
-{% endblock %}
-
-{% block main_class %}huleedu-main-fluid{% endblock %}
+{% block main_class %}huleedu-main-fluid huleedu-editor-page{% endblock %}
 
 {% block content %}
   <div class="huleedu-card huleedu-mb-4">
@@ -16,7 +12,7 @@
         </div>
       </div>
       <div class="huleedu-text-right">
-        <div class="huleedu-pills" style="justify-content: flex-end;">
+        <div class="huleedu-pills huleedu-editor-status-pills">
           <span class="huleedu-pill">{{ "Publicerad" if tool.is_published else "Ej publicerad" }}</span>
           {% if selected_version %}
             <span class="huleedu-pill huleedu-pill-active">Redigerar v{{ selected_version.version_number }}</span>
@@ -48,7 +44,7 @@
 
           <label for="source_code" class="huleedu-label">Källkod</label>
           <div class="huleedu-editor-textarea-wrapper">
-            <textarea id="source_code" name="source_code" class="huleedu-input huleedu-editor-textarea">{{ editor_source_code }}</textarea>
+            <textarea id="source_code" name="source_code" class="huleedu-input huleedu-editor-textarea" data-huleedu-codemirror="python">{{ editor_source_code }}</textarea>
           </div>
         </form>
 
@@ -67,16 +63,14 @@
                 hx-target="#run-result"
                 hx-swap="innerHTML"
                 hx-encoding="multipart/form-data"
-                class="huleedu-flex huleedu-gap-4"
-                style="flex: 1; align-items: center;"
+                class="huleedu-flex huleedu-gap-4 huleedu-editor-run-form"
               >
                 <input type="hidden" name="tool_id" value="{{ tool.id }}" />
-                <div class="huleedu-file-wrapper huleedu-input" style="flex: 1; max-width: 280px;">
-                  <span class="huleedu-file-fake-button">Välj fil</span>
-                  <span id="file-name" class="huleedu-muted" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Ingen fil vald</span>
-                  <input type="file" name="file" class="huleedu-file-native"
-                         onchange="document.getElementById('file-name').textContent = this.files[0] ? this.files[0].name : 'Ingen fil vald'" />
-                </div>
+                <label class="huleedu-file-wrapper huleedu-input huleedu-editor-file-field">
+                  <span class="huleedu-file-fake-button" aria-hidden="true">Välj fil</span>
+                  <span id="file-name" class="huleedu-muted huleedu-editor-file-name">Ingen fil vald</span>
+                  <input type="file" name="file" class="huleedu-file-native" data-huleedu-file-name-target="file-name" />
+                </label>
                 <button type="submit" class="huleedu-btn huleedu-btn-navy">Testkör</button>
               </form>
             {% else %}
@@ -181,44 +175,4 @@
       </div>
     </div>
   </div>
-{% endblock %}
-
-{% block scripts_extra %}
-  <script src="/static/vendor/codemirror/codemirror.min.js" defer></script>
-  <script src="/static/vendor/codemirror/mode/python/python.min.js" defer></script>
-  <script>
-    (function () {
-      var initialized = false;
-
-      function init() {
-        if (initialized) return;
-        if (!window.CodeMirror) return;
-        var textarea = document.getElementById("source_code");
-        if (!textarea) return;
-
-        var editor = window.CodeMirror.fromTextArea(textarea, {
-          lineNumbers: true,
-          mode: "python",
-          indentUnit: 4,
-          tabSize: 4,
-        });
-
-        // Ensure editor fills flex container
-        editor.setSize("100%", "100%");
-
-        function sync() {
-          editor.save();
-        }
-
-        var editorForm = document.getElementById("editor-form");
-        if (editorForm) editorForm.addEventListener("submit", sync);
-        document.body.addEventListener("htmx:configRequest", sync);
-
-        initialized = true;
-      }
-
-      document.addEventListener("DOMContentLoaded", init);
-      window.addEventListener("load", init);
-    })();
-  </script>
 {% endblock %}
