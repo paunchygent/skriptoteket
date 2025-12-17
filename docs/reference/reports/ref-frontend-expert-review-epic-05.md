@@ -81,7 +81,7 @@ I `static/js/app.js` ligger:
 * Vendor lazy‑load (CodeMirror CSS/JS)
 * CodeMirror init/cleanup/refresh
 * HTMX lifecycle listeners (`htmx:load`, `afterSwap`, `afterSettle`, `configRequest`)
-* Toast auto‑dismiss + MutationObserver
+* Toast auto‑dismiss + single-toast replace (HTMX OOB)
 * File input filename display (data‑attribute)
 * Form sync (submit + HTMX configRequest)
 
@@ -96,7 +96,7 @@ Exempel på “korsningar” (cross‑cutting):
 
   * `htmx:configRequest` triggar `syncCodeMirrorFields()` så att textarea får rätt value före request.
   * `htmx:afterSwap`/`afterSettle` triggar `scheduleAllEditorsRefresh()` för att motverka “collapse” efter swap/timing.
-* **Toast ↔ DOM**: MutationObserver sitter på `#toast-container` och auto‑dismissar nya toasts (inkl. OOB).
+* **Toast ↔ HTMX/DOM**: `htmx:oobBeforeSwap` tar över OOB-swap för `#toast-container` för att få single-toast + fade-out vid replace; auto‑dismiss schemaläggs utan MutationObserver.
 * **File input ↔ markup**: `data-huleedu-file-name-target` kopplar input till span med filnamn.
 
 ---
@@ -123,8 +123,8 @@ Responsen förväntas ersätta resultat‑container via `innerHTML`.
 * Server sätter toast cookie (t.ex. `set_toast_cookie`) och kan läsa den (`read_toast_cookie`).
 * Middleware läser cookie, sätter `request.state.toast_message` och rensar cookie efter request.
 * `base.html` renderar toast DOM om `request.state.toast_message` finns.
-* För HTMX‑fel finns `run_error_with_toast.html` som inkluderar toast-partial med `hx-swap-oob="beforeend:#toast-container"`.
-* Frontend observer/dismiss hanterar auto‑dismiss.
+* För HTMX‑fel finns `run_error_with_toast.html` som inkluderar toast-partial med `hx-swap-oob="innerHTML:#toast-container"` (single toast, ingen stacking).
+* Frontend event listeners hanterar auto‑dismiss + dismiss/replace animation.
 
 Detta är funktionellt, men “lagerdjupet” gör det svårare att förändra eller felsöka.
 

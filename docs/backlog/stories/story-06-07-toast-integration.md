@@ -11,7 +11,7 @@ acceptance_criteria:
   - "Suggestion decisions show toast feedback"
   - "Version workflow actions (submit/publish/request-changes) show toasts"
   - "Error scenarios show error toasts (type: error)"
-  - "All toasts auto-dismiss after 5 seconds"
+  - "All toasts auto-dismiss after 12 seconds (default)"
   - "Manual tests confirm toast appears and dismisses correctly"
 ---
 
@@ -25,14 +25,15 @@ confirmations.
 
 - **Toast partial**: `src/skriptoteket/web/templates/partials/toast.html`
 - **Toast container**: `<div id="toast-container">` in `base.html`
-- **Auto-dismiss JS**: `base.html` lines 49-61
-- **CSS**: Toast styles in `app.css`
+- **Auto-dismiss + replace JS**: `src/skriptoteket/web/static/js/app.js` (single-toast fade replace on `htmx:oobBeforeSwap`)
+- **CSS**: Toast styles in `src/skriptoteket/web/static/css/app/components.css`
 
 ### OOB Swap Pattern
 
 ```html
-<div id="toast-container" hx-swap-oob="beforeend:#toast-container">
-  <div class="huleedu-toast huleedu-toast-{{ type }}" ...>
+<div class="huleedu-toast huleedu-toast-{{ type }}"
+     hx-swap-oob="innerHTML:#toast-container"
+     data-auto-dismiss="12000">
 ```
 
 ## Routes to Integrate

@@ -1,16 +1,15 @@
 {% set toast_type = type|default('success', true) %}
 <div class="huleedu-toast huleedu-toast-{{ toast_type }}"
-     hx-swap-oob="beforeend:#toast-container"
+     hx-swap-oob="innerHTML:#toast-container"
      role="alert"
      aria-live="polite"
-     data-auto-dismiss="5000">
+     data-auto-dismiss="12000">
   <span class="huleedu-toast-icon" aria-hidden="true">
     {% if toast_type == 'error' %}&#10005;{% else %}&#10003;{% endif %}
   </span>
   <span>{{ message }}</span>
   <button type="button"
           class="huleedu-toast-dismiss"
-          onclick="this.parentElement.remove()"
           aria-label="Stäng">
     &#215;
   </button>

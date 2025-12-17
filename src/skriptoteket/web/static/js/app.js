@@ -109,33 +109,96 @@
     });
   }
 
+  var TOAST_DEFAULT_AUTO_DISMISS_MS = 12000;
+  var TOAST_EXIT_ANIMATION_MS = 300;
+
+  /** @type {number | null} */
+  var toastReplaceTimeoutId = null;
+  /** @type {Element | null} */
+  var pendingToastReplaceNode = null;
+
+  function dismissToast(toast) {
+    if (!toast || !toast.classList) return;
+    if (toast.dataset.huleeduToastDismissing === "true") return;
+    toast.dataset.huleeduToastDismissing = "true";
+
+    toast.classList.add("huleedu-toast-dismiss-out");
+    setTimeout(function () {
+      if (document.contains(toast)) toast.remove();
+    }, TOAST_EXIT_ANIMATION_MS);
+  }
+
+  function scheduleToastAutoDismiss(toast) {
+    if (!toast || toast.dataset.dismissScheduled) return;
+    toast.dataset.dismissScheduled = "true";
+
+    var delay = parseInt(toast.dataset.autoDismiss, 10);
+    if (!isFinite(delay) || delay <= 0) delay = TOAST_DEFAULT_AUTO_DISMISS_MS;
+
+    setTimeout(function () {
+      if (!document.contains(toast)) return;
+      dismissToast(toast);
+    }, delay);
+  }
+
   function initToasts() {
     document.querySelectorAll("[data-auto-dismiss]").forEach(function (toast) {
-      if (toast.dataset.dismissScheduled) return;
-      toast.dataset.dismissScheduled = "true";
-
-      var delay = parseInt(toast.dataset.autoDismiss, 10) || 5000;
-      setTimeout(function () {
-        if (!document.contains(toast)) return;
-        toast.classList.add("huleedu-toast-dismiss-out");
-        setTimeout(function () {
-          if (document.contains(toast)) toast.remove();
-        }, 300);
-      }, delay);
+      scheduleToastAutoDismiss(toast);
     });
   }
 
-  function ensureToastObserver() {
-    var container = document.getElementById("toast-container");
-    if (!container) return;
-    if (container.dataset.huleeduToastObserverInitialized === "true") return;
-    container.dataset.huleeduToastObserverInitialized = "true";
+  function extractToastNode(fragment) {
+    if (!fragment) return null;
+    if (fragment.nodeType === Node.DOCUMENT_FRAGMENT_NODE) return fragment.firstElementChild;
+    if (fragment.nodeType === Node.ELEMENT_NODE) return fragment;
+    return null;
+  }
 
-    if (!window.MutationObserver) return;
-    var observer = new MutationObserver(function () {
-      initToasts();
-    });
-    observer.observe(container, { childList: true });
+  function stripOobAttributes(node) {
+    if (!node || !node.removeAttribute) return;
+    node.removeAttribute("hx-swap-oob");
+    node.removeAttribute("data-hx-swap-oob");
+  }
+
+  function replaceToastWithFade(toastNode) {
+    var container = document.getElementById("toast-container");
+    if (!container || !toastNode) return;
+
+    pendingToastReplaceNode = toastNode;
+
+    if (toastReplaceTimeoutId) {
+      clearTimeout(toastReplaceTimeoutId);
+      toastReplaceTimeoutId = null;
+    }
+
+    var existing = container.querySelector(".huleedu-toast");
+    if (existing) {
+      dismissToast(existing);
+
+      toastReplaceTimeoutId = setTimeout(function () {
+        toastReplaceTimeoutId = null;
+
+        var liveContainer = document.getElementById("toast-container");
+        if (!liveContainer) return;
+
+        liveContainer.replaceChildren();
+
+        var node = pendingToastReplaceNode;
+        pendingToastReplaceNode = null;
+        if (!node) return;
+
+        stripOobAttributes(node);
+        liveContainer.appendChild(node);
+        scheduleToastAutoDismiss(node);
+      }, TOAST_EXIT_ANIMATION_MS);
+      return;
+    }
+
+    container.replaceChildren();
+    pendingToastReplaceNode = null;
+    stripOobAttributes(toastNode);
+    container.appendChild(toastNode);
+    scheduleToastAutoDismiss(toastNode);
   }
 
   function ensureCodeMirrorResizeObserver() {
@@ -249,7 +312,6 @@
 
   function init(root) {
     cleanupCodeMirrorEditors();
-    ensureToastObserver();
     initToasts();
     initFileInputs(root);
     initCodeMirrorEditors(root);
@@ -263,13 +325,24 @@
     init(evt.target || document);
   });
 
+  document.body.addEventListener("htmx:oobBeforeSwap", function (evt) {
+    if (!evt || !evt.detail) return;
+
+    var target = evt.detail.target || evt.target;
+    if (!target || target.id !== "toast-container") return;
+
+    var toastNode = extractToastNode(evt.detail.fragment);
+    if (!toastNode) return;
+
+    // HTMX will otherwise replace the toast immediately (no fade-out). We take over the swap to
+    // enforce a single toast with a small replacement animation.
+    evt.detail.shouldSwap = false;
+    replaceToastWithFade(toastNode);
+  });
+
   document.body.addEventListener("htmx:afterSwap", function () {
     initToasts();
     scheduleAllEditorsRefresh();
-  });
-
-  document.body.addEventListener("htmx:oobAfterSwap", function () {
-    initToasts();
   });
 
   document.body.addEventListener("htmx:afterSettle", function () {
@@ -277,6 +350,20 @@
   });
 
   window.addEventListener("resize", scheduleAllEditorsRefresh);
+
+  document.addEventListener("click", function (evt) {
+    if (!evt || !evt.target) return;
+    if (!evt.target.closest) return;
+
+    var dismissButton = evt.target.closest(".huleedu-toast-dismiss");
+    if (!dismissButton) return;
+
+    var toast = dismissButton.closest ? dismissButton.closest(".huleedu-toast") : null;
+    if (!toast) return;
+
+    evt.preventDefault();
+    dismissToast(toast);
+  });
 
   // Keep underlying <textarea> values in sync for both native submits and HTMX-boosted requests.
   document.addEventListener(

@@ -48,3 +48,17 @@ docs/runbooks/*
 !docs/runbooks/.gitkeep
 !docs/runbooks/runbook-script-bank-seeding.md
 !docs/runbooks/runbook-user-management.md
+.agent/handoff.md
+.claude/skills/skriptoteket-devops/SKILL.md
+.claude/skills/skriptoteket-devops/branches/cli.md
+.claude/skills/skriptoteket-devops/branches/database.md
+.claude/skills/skriptoteket-devops/branches/deploy.md
+.claude/skills/skriptoteket-devops/branches/dns-provider.md
+.claude/skills/skriptoteket-devops/branches/network.md
+.claude/skills/skriptoteket-devops/branches/reference.md
+.claude/skills/skriptoteket-devops/branches/security.md
+.claude/skills/skriptoteket-devops/branches/seed.md
+.claude/skills/skriptoteket-devops/branches/server-os.md
+.claude/skills/skriptoteket-devops/branches/troubleshoot.md
+.claude/skills/skriptoteket-devops/branches/users.md
+.claude/skills/skriptoteket-devops/SKILL.md

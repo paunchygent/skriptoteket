@@ -8,7 +8,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 
 ## Key documents
 
-- PRD: `docs/prd/prd-script-hub-v0.1.md`
+- PRD (MVP): `docs/prd/prd-script-hub-v0.1.md`
+- PRD (Planned): `docs/prd/prd-script-hub-v0.2-features.md`
 - ADRs: `docs/adr/`
 - Backlog: `docs/backlog/`
 

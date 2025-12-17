@@ -284,17 +284,26 @@
 }
 
 .huleedu-toast-success {
-  background-color: var(--huleedu-navy);
+  background-color: rgba(28, 46, 74, 0.90); /* --huleedu-navy, slightly translucent */
   color: var(--huleedu-canvas);
 }
 
 .huleedu-toast-error {
-  background-color: var(--huleedu-burgundy);
+  background-color: rgba(107, 28, 46, 0.90); /* --huleedu-burgundy, slightly translucent */
   color: var(--huleedu-canvas);
 }
 
 .huleedu-toast-icon {
   flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 0;
+  color: #fff;
+  line-height: 1;
 }
 
 .huleedu-toast-dismiss {

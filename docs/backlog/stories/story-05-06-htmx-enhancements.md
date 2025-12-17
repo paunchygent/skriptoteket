@@ -27,10 +27,10 @@ Enhancing the user experience with HTMX-driven interactions, loading states, and
 
 ### Toast Partial
 Created `src/skriptoteket/web/templates/partials/toast.html` with:
-- OOB swap pattern: `hx-swap-oob="beforeend:#toast-container"`
+- Single-toast OOB swap pattern: `hx-swap-oob="innerHTML:#toast-container"` (replaces, no stacking)
 - Success (navy) and error (burgundy) variants
-- Auto-dismiss after 5 seconds via JS in base.html
-- Manual dismiss button
+- Auto-dismiss default 12 seconds via JS in `src/skriptoteket/web/static/js/app.js`
+- Manual dismiss button (uses the same fade-out animation)
 - ARIA attributes for accessibility
 
 ### Loading Spinners

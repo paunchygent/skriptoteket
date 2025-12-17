@@ -1,4 +1,14 @@
-# DevOps Skill Research: Skriptoteket Home Server
+---
+type: reference
+id: REF-devops-skill-research
+title: "DevOps Skill Research"
+status: active
+owners: "agents"
+topic: "devops"
+created: 2025-12-17
+---
+
+# Research for DevOps Skill Construction
 
 Research document for creating the `skriptoteket-devops` Claude skill.
 

@@ -49,14 +49,13 @@
         <div class="huleedu-toast huleedu-toast-{{ request.state.toast_type or 'success' }}"
              role="alert"
              aria-live="polite"
-             data-auto-dismiss="5000">
+             data-auto-dismiss="12000">
           <span class="huleedu-toast-icon" aria-hidden="true">
             {% if request.state.toast_type == 'error' %}&#10005;{% else %}&#10003;{% endif %}
           </span>
           <span>{{ request.state.toast_message }}</span>
           <button type="button"
                   class="huleedu-toast-dismiss"
-                  onclick="this.parentElement.remove()"
                   aria-label="Stäng">
             &#215;
           </button>
