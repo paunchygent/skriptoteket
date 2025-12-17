@@ -474,37 +474,30 @@ All ST-04-04 work is done:
 
 ## 2025-12-17 ST-05-07 Frontend Stabilisering (ny story)
 
-**Story skapad:** `docs/backlog/stories/story-05-07-frontend-stabilization.md`
+**Story:** `docs/backlog/stories/story-05-07-frontend-stabilization.md` (uppdaterad med validering + patch-förslag)
 
 **Källa:** Frontend-expert analys via repomix-paket (`.claude/repomix_packages/TASK-frontend-review.md`)
 
+**Gjort denna session (validering + dokumentation):**
+
+- CSS-integritet verifierad: `components.css` och `utilities.css` är syntaktiskt balanserade; toast “saknad `}`” var **FALSE POSITIVE**.
+- Panelbredd kartlagd: `.huleedu-panel` ger 42rem; `login.html`/`home.html`/`error.html` använder 28rem via `huleedu-max-w-md`; sidor utan panel-wrapper identifierade.
+- `dvh`-användning verifierad: endast `layout.css` använder `100dvh` och saknar `vh` fallback.
+- Editor-bräcklighet kartlagd: code-card/editor tenderar att inte krympa och run-result expanderar utan scrollcap; CodeMirror refresh är HTMX events + debounce `setTimeout`.
+- Dokumenterade exakta fil:rad + patch-snuttar i storyn och länkade in ST-05-07 i EPIC-05.
+
 ### Nästa sessions uppdrag
 
-1. **Validera repomix-analys mot faktisk kod**
-   - CSS brace-bugg var FALSE POSITIVE (components.css är korrekt balanserad)
-   - Granska övriga påståenden i `TASK-frontend-review.md` mot faktiska filer
-
-2. **Implementera panel-bredd unifiering (Prio 2-3)**
-   - Lägg till `--huleedu-content-width: 42rem` i `utilities.css`
-   - Uppdatera `.huleedu-panel` att använda denna token
-   - Migrera `login.html` och `home.html` till `.huleedu-panel`
-   - Verifiera konsekvent bredd på alla single-column sidor
-
-3. **Implementera dvh fallback (Prio 4)**
-   - Lägg till `height: 100vh; height: 100dvh;` fallback i `layout.css`
-   - Testa på äldre browsers om möjligt
-
-4. **Utvärdera editor-layout refaktorering (Prio 5)**
-   - Granska nuvarande `editor.css` och `script_editor.html`
-   - Bedöm om CSS Grid med `grid-template-areas` förbättrar stabilitet
-   - Dokumentera exakta patches i story-filen
-
-5. **Uppdatera epic-filen**
-   - Lägg till ST-05-07 i `docs/backlog/epics/epic-05-huleedu-design-harmonization.md`
+- **Källa till sanning:** följ `docs/backlog/stories/story-05-07-frontend-stabilization.md` (innehåller patch-snuttar + fil:rad).
+- **Rekommenderad implementeringsordning:** panelbredd-token + template-migrering → `vh` fallback för `dvh` → editor-stabilisering (CSS, ev ResizeObserver).
+- **Öppen fråga (bestäm innan implementation):** ska `my_runs/detail.html` och `suggestions_review_detail.html` också begränsas till 42rem (via `.huleedu-panel`) eller fortsätta vara breda?
+- **Metod (för att undvika drift):** repomix kan vara trunkerat; verifiera alltid mot faktiska filer och håll detaljer/patchediff i storyn (inte i handoff).
 
 ### Relevanta filer
 
 - Story: `docs/backlog/stories/story-05-07-frontend-stabilization.md`
+- Epic: `docs/backlog/epics/epic-05-huleedu-design-harmonization.md`
+- Expert-rapport: `docs/reference/reports/ref-frontend-expert-review-epic-05.md`
 - Plan: `.claude/plans/vast-sprouting-locket.md`
 - Task-beskrivning: `.claude/repomix_packages/TASK-frontend-review.md`
 - Repomix-paket: `.claude/repomix_packages/repomix-frontend-architecture-review.xml`
@@ -522,3 +515,5 @@ All ST-04-04 work is done:
   - `GET /` renders and includes cache-busted assets `app.css?v=...`, `app.js?v=...`, `htmx.min.js?v=...`.
   - `GET /browse/`, `GET /my-tools`, `GET /admin/tools` render and include `.huleedu-panel` on the primary card.
   - `POST /tools/nonexistent/run` with `HX-Request: true` returns an error alert + OOB toast (`huleedu-toast-error`, `hx-swap-oob="beforeend:#toast-container"`).
+
+- Re-verified after final toast/layout tweaks on port `8019` (same checks as above).

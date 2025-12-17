@@ -25,6 +25,7 @@ This epic applies the HuleEdu design system across all Skriptoteket web template
 - [ST-05-04: Suggestion template migration](../stories/story-05-04-suggestion-templates.md) (DONE)
 - [ST-05-05: Admin template migration](../stories/story-05-05-admin-templates.md) (DONE)
 - [ST-05-06: HTMX loading and toast enhancements](../stories/story-05-06-htmx-enhancements.md)
+- [ST-05-07: Frontend stabilisering och modern CSS](../stories/story-05-07-frontend-stabilization.md) (IN PROGRESS)
 
 ## Risks
 
