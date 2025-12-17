@@ -472,29 +472,40 @@ All ST-04-04 work is done:
 
 ---
 
-## 2025-12-17 Skriptoteket DevOps Skill (NEW)
+## 2025-12-17 Production Deployment (COMPLETE)
 
-**Task:** Create branched DevOps skill for home server management.
+**Deployed:** commit `85b7a33` (main) to hemma.hule.education
 
-**Completed this session:**
-- Research phase: 4 Explore agents ran in parallel covering runbooks, ADRs, Docker configs, CLI code
-- Created ref-doc: `docs/reference/reports/ref-devops-skill-research.md`
-- Created SKILL.md: `.claude/skills/skriptoteket-devops/SKILL.md` (with all critical config copy-paste ready)
-- Created directory: `.claude/skills/skriptoteket-devops/branches/` (empty, for next session)
+**Actions performed:**
+1. `git pull` + `docker compose -f compose.prod.yaml up -d --build` (159 files changed)
+2. Applied migrations: `0006_tool_maintainers`, `0007_tool_maintainer_audit_log`
+3. Verified HTTPS: `curl -sI https://skriptoteket.hule.education/login` → 200 OK
 
-**Next session mandate:**
-1. Create 10 branch files in `.claude/skills/skriptoteket-devops/branches/`:
-   - `deploy.md`, `database.md`, `users.md`, `seed.md`, `cli.md`
-   - `security.md`, `network.md`, `dns-provider.md`, `server-os.md`, `troubleshoot.md`
-2. Create `reference.md` with quick command reference
-3. Verify skill shows in `/skill` autocompletion
-4. Each branch should be 50-100 lines max, SSH-first commands
+**Users provisioned (17 admin accounts):**
 
-**Relevant files:**
-- SKILL.md: `.claude/skills/skriptoteket-devops/SKILL.md`
-- Research: `docs/reference/reports/ref-devops-skill-research.md`
-- Plan: `.claude/plans/vast-sprouting-locket.md`
-- Existing skills (pattern reference): `.claude/skills/loki-logql/`, `.claude/skills/structlog-logging/`
+| Email | Role |
+|-------|------|
+| camilla_ahlin@hule.education | admin |
+| anders_uvebrant@hule.education | admin |
+| katrin_forsgren@hule.education | admin |
+| lars_bohman@hule.education | admin |
+| karin_lagerstrom@hule.education | admin |
+| christina_alstrom@hule.education | admin |
+| maria_holmgren@hule.education | admin |
+| olof_larsson@hule.education | admin |
+| karin_ek_thorbjornsson@hule.education | admin |
+| liselotte_akerfelt@hule.education | admin |
+| hampus_kvarnliden@hule.education | admin |
+| carl_larsson@hule.education | admin |
+| jenny_olofsson_reijer@hule.education | admin |
+| par_lydmark@hule.education | admin |
+| viktor_moller@hule.education | admin |
+| fredrik_jacobsson@hule.education | admin |
+| johan_stahl@hule.education | admin |
+
+**Total users in production:** 20 (1 superuser, 17 admins, 1 contributor, 1 user)
+
+**Credentials:** Distributed separately to users
 
 ---
 
