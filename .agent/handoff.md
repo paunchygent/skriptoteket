@@ -13,10 +13,29 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-19
-- Branch / commit: `main` @ `7315d90`
-- Goal of the session: Fix hamburger menu HTMX navigation bug (ST-05-11).
+- Branch / commit: `main` @ `c81f041`
+- Goal of the session: Fix hamburger menu bug (ST-05-11) + document mobile editor UX issues (ST-05-12).
 
-## 2025-12-19 ST-05-11 Hamburger Menu Fix
+## 2025-12-19 ST-05-12 Mobile Editor UX Issues (READY for implementation)
+
+**Story:** `docs/backlog/stories/story-05-12-mobile-editor-ux.md`
+
+**Three issues identified during ST-05-11 verification:**
+
+1. **iOS file upload blocked** - Missing `accept` attribute causes iOS to reject file picker
+   - Fix: Add `accept="*/*"` to `tools/run.html:31` and `admin/script_editor.html:73`
+
+2. **Wrong section ordering** - Metadata appears first on mobile, should be CodeMirror first
+   - Fix: Remove `order: -1` from `.huleedu-editor-sidebar` in `editor.css` mobile query
+
+3. **Width overflow** - CodeMirror expands beyond viewport, persists after leaving Testyta
+   - Fix: Add `max-width: 100vw; overflow-x: hidden` constraints in `editor.css` mobile query
+
+**Implementation deferred to next session.** See story file for detailed root cause analysis and code snippets.
+
+---
+
+## 2025-12-19 ST-05-11 Hamburger Menu Fix (DONE)
 
 **Deployed:** commit `7315d90` to production (`hemma.hule.education`)
 
