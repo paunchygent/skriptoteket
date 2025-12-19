@@ -85,3 +85,31 @@
   transform: translateY(2px);
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
 }
+
+/*
+ * Touch devices: disable hover color swap to avoid "sticky" :hover after tap.
+ * Keeps buttons in deterministic published/unpublished visual states.
+ */
+@media (hover: none), (pointer: coarse) {
+  .huleedu-btn:not(.huleedu-btn-secondary):not(.huleedu-btn-navy):not(.huleedu-btn-danger):not(:disabled):hover {
+    background-color: var(--huleedu-burgundy);
+    box-shadow: none;
+  }
+
+  .huleedu-btn-navy:not(:disabled):hover {
+    background-color: var(--huleedu-navy);
+    color: var(--huleedu-canvas);
+    box-shadow: none;
+  }
+
+  .huleedu-btn-secondary:not(:disabled):hover {
+    background-color: transparent;
+    color: var(--huleedu-navy);
+    box-shadow: none;
+  }
+
+  .huleedu-btn-danger:not(:disabled):hover {
+    background-color: var(--huleedu-error);
+    box-shadow: none;
+  }
+}

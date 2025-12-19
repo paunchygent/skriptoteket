@@ -14,15 +14,22 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-19
-- Branch / commit: `main` @ `5dd5b5a` (plus local uncommitted changes)
+- Branch / commit: `main` @ `3b3c49a` (dirty)
 - Current sprint: `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md`
-- Backend now: ST-10-03 Session B (implement deterministic `UiPayloadNormalizerProtocol`)
+- Backend now: ST-10-03 Session C (cleanup refactor: SRP modularize the UI payload normalizer)
 - Frontend now: N/A (completed work moved to `.agent/readme-first.md`)
-- Goal of next session: implement the normalizer + determinism tests (ST-10-03)
+- Goal of next session: refactor the normalizer into SRP modules (no behavior change; no shims)
 
 ## 2025-12-19 ST-05-12 Mobile Editor Scroll Follow-up (IN PROGRESS)
 
-- Parked/not sprint-critical; keep details in `docs/backlog/stories/story-05-12-mobile-editor-ux.md` and `.agent/readme-first.md`.
+- DONE: verified on real iOS device in deployed app (Testyta + Mina verktyg); story marked `done` in `docs/backlog/stories/story-05-12-mobile-editor-ux.md`.
+
+## 2025-12-19 UI minor consistency fixes (IN PROGRESS)
+
+- Home/login confirmation: controlled line breaks + safe email wrapping in `src/skriptoteket/web/templates/home.html`.
+- Browse lists: add spacing between long labels and arrow in `src/skriptoteket/web/static/css/app/components.css`.
+- Publish/unpublish: disable hover color-swap on touch to prevent “sticky hover” in `src/skriptoteket/web/static/css/app/buttons.css`.
+- Verification: `pdm run dev` + `pdm run ui-smoke` (Playwright, iPhone profile) → screenshots in `.artifacts/ui-smoke/`.
 
 ## 2025-12-19 ST-05-12 Mobile Editor UX Issues (DONE)
 
@@ -36,6 +43,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 - This handoff is intentionally compressed to current sprint-critical work only (see `.agent/readme-first.md` for history).
 - Backend: contract v2 seams/policies/models/tests added (see `## 2025-12-19 SPR-2025-12-22 Session A (DONE)` below).
+- Backend: deterministic normalizer implemented + tests: `src/skriptoteket/domain/scripting/ui/normalizer.py`, `tests/unit/domain/scripting/ui/test_ui_payload_normalizer.py`.
 
 ### Current session (EPIC-05 Responsive Frontend: ST-05-07, ST-05-08, ST-05-10)
 
@@ -87,17 +95,21 @@ Keep this file updated so the next session can pick up work quickly.
 ## How to run / verify
 
 - Canonical local recipe: see `.agent/readme-first.md` (includes `ARTIFACTS_ROOT` note).
+- UI smoke (Playwright): `pdm run ui-smoke` (requires local dev server + `.env` bootstrap credentials; does not create users).
 - Quality gates: `pdm run lint` (runs Ruff + agent-doc budgets + docs-validate), then `pdm run test`.
-- Session A checks: `pdm run pytest tests/unit/domain/scripting/ui`.
+- Session A/B checks: `pdm run pytest tests/unit/domain/scripting/ui`.
 
 ## Known issues / risks
 
 - `vega_lite` restrictions are not implemented yet; do not accept/render vega-lite outputs until restrictions exist (ADR-0024).
+- Dev DB can get bloated with test accounts: avoid creating new superusers for UI checks (reuse `.env` bootstrap account).
+- `src/skriptoteket/domain/scripting/ui/normalizer.py` is ~676 LoC and violates SRP/file-size guidelines; refactor into smaller modules before continuing feature work.
 
 ## Next steps (recommended order)
 
-- Backend: implement deterministic `UiPayloadNormalizerProtocol` implementation + unit tests (ST-10-03 Session B).
-- Backend: Session C will add persistence + migrations (out of scope until explicitly started).
+- Backend: Session C cleanup: refactor `src/skriptoteket/domain/scripting/ui/normalizer.py` into SRP modules (no shims) and keep `pdm run lint` + `pdm run pytest tests/unit/domain/scripting/ui` green.
+- Backend: confirm vega-lite approach (implement restrictions vs keep blocked); current implementation blocks `vega_lite` outputs with a system notice.
+- Backend: Session D will add persistence + migrations (out of scope until explicitly started).
 
 ### ST-04-04 COMPLETED
 
@@ -142,7 +154,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## 2025-12-19 SPR-2025-12-22 Session A (DONE)
 
 - Scope: contract/policy seams only (no DB/API/runner/UI changes).
-- Protocol seams: `src/skriptoteket/protocols/tool_ui.py`
+- Protocol seams: `src/skriptoteket/protocols/scripting_ui.py`
 - Contract v2 models: `src/skriptoteket/domain/scripting/ui/contract_v2.py`
 - Policy profiles + caps: `src/skriptoteket/domain/scripting/ui/policy.py`
 - Normalization result type: `src/skriptoteket/domain/scripting/ui/normalization.py`

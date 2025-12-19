@@ -40,6 +40,15 @@
 .huleedu-w-full { width: 100%; }
 .huleedu-min-w-32 { min-width: 8rem; } /* 128px - consistent button widths */
 
+/* Display utilities */
+.huleedu-block { display: block; }
+
+/* Text wrapping */
+.huleedu-wrap-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 /* Text alignment */
 .huleedu-text-center { text-align: center; }
 .huleedu-text-right { text-align: right; }

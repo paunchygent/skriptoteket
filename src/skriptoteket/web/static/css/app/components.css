@@ -82,12 +82,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: var(--huleedu-space-3);
   text-decoration: none;
   color: inherit;
 }
 
 .huleedu-list-item a:not(.huleedu-btn):not(.huleedu-link)::after {
   content: '\2192'; /* Right arrow */
+  flex-shrink: 0;
   color: var(--huleedu-navy-40);
   transition: color var(--huleedu-duration-default) var(--huleedu-ease-default);
 }

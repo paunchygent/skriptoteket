@@ -2,9 +2,10 @@
 type: story
 id: ST-05-12
 title: "Mobile editor UX: iOS file upload, CodeMirror ordering, width overflow, nav overlay"
-status: in_progress
+status: done
 owners: "agents"
 created: 2025-12-19
+updated: 2025-12-19
 epic: "EPIC-05"
 acceptance_criteria:
   - "Given iOS Safari, when user taps 'Välj fil' on tool run page, then file picker opens without 'Åtgärden tillåts inte' error"
@@ -200,6 +201,9 @@ src/skriptoteket/web/static/css/app/layout.css          # Header relative positi
 ## Resolution (2025-12-19)
 
 All issues resolved in commit `424e90b`.
+
+### Production verification (2025-12-19)
+- Verified on a real iOS device against the deployed app: Testyta + Mina verktyg.
 
 ### Root Cause
 All three issues traced to a single CSS bug: `.huleedu-mobile-nav` had `position: absolute` but **no `top` value**. Without `top`, the browser used `top: auto`, positioning the element at its natural flow location - not truly removing it from document flow.

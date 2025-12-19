@@ -38,6 +38,7 @@ Target Python is **3.13–3.14**.
 - DB (dev): `docker compose up -d db` then `pdm run db-upgrade`
 - Bootstrap first superuser: `pdm run bootstrap-superuser`
 - Run: `pdm run dev`
+- **Dev services are long-running**: do not stop `pdm run dev` or `docker compose up -d db` unless explicitly requested.
 - Docker dev workflow: `pdm run dev-start` / `pdm run dev-stop` / `pdm run dev-build-start` / `pdm run dev-build-start-clean` / `pdm run dev-db-reset`
 - Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test` (lint runs Ruff + agent-doc budgets + docs contract)
 - Docs: `pdm run docs-validate`
@@ -64,9 +65,10 @@ The default `ARTIFACTS_ROOT=/var/lib/skriptoteket/artifacts` doesn't exist local
 
 ### Browser Automation
 
-Playwright (recommended), Selenium, Puppeteer available. Run via `pdm run python scripts/<script>.py`.
+Playwright (recommended), Selenium, Puppeteer available. Run via `pdm run python -m scripts.<module>`.
 
-- **Credentials**: `superuser@local.dev` / `superuser-password`
+- **Do not create new superusers for UI checks**: reuse the existing local dev bootstrap account in `.env`
+  (`BOOTSTRAP_SUPERUSER_EMAIL` / `BOOTSTRAP_SUPERUSER_PASSWORD`). Creating new accounts bloats the dev DB.
 - **HTMX caveat**: Avoid `waitForNavigation()` - use explicit URL waits
 
 ## Git Workflow
