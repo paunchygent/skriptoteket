@@ -452,6 +452,7 @@
   border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy-20);
   /* Overlay positioning - absolute relative to .huleedu-frame */
   position: absolute;
+  top: var(--huleedu-header-height);
   left: 0;
   right: 0;
   z-index: 100;
