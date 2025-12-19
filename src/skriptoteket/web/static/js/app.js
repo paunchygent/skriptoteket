@@ -420,6 +420,16 @@
     nav.hidden = expanded;
   });
 
+  // Close mobile nav after HTMX navigation (hx-boost swaps content but header stays)
+  document.body.addEventListener("htmx:afterSettle", function () {
+    var hamburger = document.querySelector(".huleedu-hamburger");
+    var mobileNav = document.getElementById("mobile-nav");
+    if (hamburger && mobileNav) {
+      hamburger.setAttribute("aria-expanded", "false");
+      mobileNav.hidden = true;
+    }
+  });
+
   // Keep underlying <textarea> values in sync for both native submits and HTMX-boosted requests.
   document.addEventListener(
     "submit",
