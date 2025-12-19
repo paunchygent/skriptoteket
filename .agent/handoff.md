@@ -13,10 +13,10 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-19
-- Branch / commit: `main` @ `9b8167c`
-- Goal of next session: Verify ST-05-12 on iOS device.
+- Branch / commit: `main` @ `424e90b`
+- Goal of next session: N/A - ST-05-12 complete
 
-## 2025-12-19 ST-05-12 Mobile Editor UX Issues (IMPLEMENTED)
+## 2025-12-19 ST-05-12 Mobile Editor UX Issues (DONE)
 
 **Story:** `docs/backlog/stories/story-05-12-mobile-editor-ux.md`
 
@@ -68,11 +68,23 @@ Keep this file updated so the next session can pick up work quickly.
 - Editor shows CodeMirror first, sidebar below
 - No horizontal scroll / width overflow
 
-**Follow-up fixes (commit pending):**
+**Follow-up fixes (commits 9b8167c, 5dd5b5a):**
 - Mobile nav positioning: Reverted nav outside header, uses `position: absolute` relative to `.huleedu-frame`
 - CodeMirror height: Added `min-height: 40vh` for ~15-20 lines visible
 - Sidebar: Removed `max-height: 40vh` constraint, sizes naturally
 - Editor page: Added `min-height: 100vh` for vertical scrolling
+
+**Final fix (commit 424e90b):**
+- Root cause: Missing `top` value on `.huleedu-mobile-nav` - browser used `top: auto` instead of true absolute positioning
+- Fix: Added `top: var(--huleedu-header-height)` to `.huleedu-mobile-nav` in `components.css:455`
+- All three outstanding issues (4, 5, 6) resolved by this single CSS fix
+
+**Puppeteer verification (375x667 mobile viewport):**
+- Nav top (65px) matches header bottom (65px) - properly positioned below header
+- Nav overlays main content without compressing it
+- "KATALOG" fully visible (not cut off)
+- X close icon visible
+- No horizontal overflow
 
 ---
 

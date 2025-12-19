@@ -158,3 +158,30 @@ src/skriptoteket/web/static/css/app/layout.css          # Header relative positi
 
 - `accept="*/*"` chosen over specific MIME types to support future tools with different file requirements
 - Mobile nav uses `position: absolute` relative to header, not `fixed`, to scroll with page
+
+## Resolution (2025-12-19)
+
+All issues resolved in commit `424e90b`.
+
+### Root Cause
+All three issues traced to a single CSS bug: `.huleedu-mobile-nav` had `position: absolute` but **no `top` value**. Without `top`, the browser used `top: auto`, positioning the element at its natural flow location - not truly removing it from document flow.
+
+### Fix Applied
+Added `top: var(--huleedu-header-height)` to `.huleedu-mobile-nav` in `components.css`:
+
+```css
+.huleedu-mobile-nav {
+  position: absolute;
+  top: var(--huleedu-header-height);  /* 4rem/64px - positions below header */
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+```
+
+### Verification (Puppeteer 375x667 mobile viewport)
+- Nav top (65px) matches header bottom (65px) - properly positioned below header
+- Nav overlays main content without compressing it
+- "KATALOG" fully visible (left edge 17px, within viewport)
+- X close icon visible
+- No horizontal overflow (document width = viewport width = 375px)
