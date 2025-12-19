@@ -472,6 +472,42 @@ All ST-04-04 work is done:
 
 ---
 
+## 2025-12-19 Security Hardening (EPIC-09)
+
+**Completed stories:**
+- ST-09-01: HTTP security headers via nginx (done)
+- ST-09-03: Firewall audit and cleanup (done)
+
+**Pending:**
+- ST-09-02: Content-Security-Policy (Phase 2, requires HTMX/CodeMirror testing)
+
+**Changes deployed to production:**
+
+1. **nginx security headers** added to `~/infrastructure/nginx/conf.d/skriptoteket.conf`:
+   - `Strict-Transport-Security: max-age=31536000; includeSubDomains`
+   - `X-Frame-Options: DENY`
+   - `X-Content-Type-Options: nosniff`
+   - `Referrer-Policy: strict-origin-when-cross-origin`
+   - `Permissions-Policy: geolocation=(), camera=(), microphone=()`
+
+2. **Stale UFW rules removed:** Port 5000 (IPv4 + IPv6)
+
+**Verification:**
+```bash
+curl -sI https://skriptoteket.hule.education/login | grep -iE 'strict|x-frame|x-content|referrer|permissions'
+```
+
+**Security grade:** B- → B+ (home server baseline)
+
+**Docs created:**
+- `docs/adr/adr-0021-http-security-headers.md`
+- `docs/backlog/epics/epic-09-security-hardening.md`
+- `docs/backlog/stories/story-09-01-http-security-headers.md`
+- `docs/backlog/stories/story-09-02-content-security-policy.md`
+- `docs/backlog/stories/story-09-03-firewall-audit.md`
+
+---
+
 ## 2025-12-17 Production Deployment (COMPLETE)
 
 **Deployed:** commit `85b7a33` (main) to hemma.hule.education
