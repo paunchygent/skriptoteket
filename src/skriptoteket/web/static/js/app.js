@@ -1,5 +1,13 @@
 // Skriptoteket frontend helpers (HTMX + small page initializers)
 (function () {
+  "use strict";
+
+  // Prevent duplicate initialization on HTMX hx-boost navigation.
+  // With hx-boost, HTMX swaps only <main> content but re-executes scripts,
+  // which would attach duplicate event listeners and break the hamburger toggle.
+  if (window.__huleeduAppInitialized) return;
+  window.__huleeduAppInitialized = true;
+
   var CODEMIRROR_CSS_URL = "/static/vendor/codemirror/codemirror.min.css";
   var CODEMIRROR_CORE_URL = "/static/vendor/codemirror/codemirror.min.js";
   var CODEMIRROR_PYTHON_MODE_URL = "/static/vendor/codemirror/mode/python/python.min.js";
