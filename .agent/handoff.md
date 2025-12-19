@@ -13,14 +13,14 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-19
-- Branch / commit: `main` @ `c81f041`
-- Goal of the session: Fix hamburger menu bug (ST-05-11) + document mobile editor UX issues (ST-05-12).
+- Branch / commit: `main` @ `5e66f8f`
+- Goal of next session: Implement ST-05-12 mobile editor UX fixes.
 
 ## 2025-12-19 ST-05-12 Mobile Editor UX Issues (READY for implementation)
 
 **Story:** `docs/backlog/stories/story-05-12-mobile-editor-ux.md`
 
-**Three issues identified during ST-05-11 verification:**
+**Four issues identified during ST-05-11 verification:**
 
 1. **iOS file upload blocked** - Missing `accept` attribute causes iOS to reject file picker
    - Fix: Add `accept="*/*"` to `tools/run.html:31` and `admin/script_editor.html:73`
@@ -30,6 +30,17 @@ Keep this file updated so the next session can pick up work quickly.
 
 3. **Width overflow** - CodeMirror expands beyond viewport, persists after leaving Testyta
    - Fix: Add `max-width: 100vw; overflow-x: hidden` constraints in `editor.css` mobile query
+
+4. **Mobile nav collapses content** - Hamburger dropdown pushes/compresses editor content instead of overlaying
+   - Fix: Add `position: absolute; top: 100%;` to `.huleedu-mobile-nav` in `components.css`
+   - Fix: Add `position: relative;` to `.huleedu-header` in `layout.css` mobile query
+
+**Files to modify:**
+- `src/skriptoteket/web/templates/tools/run.html:31`
+- `src/skriptoteket/web/templates/admin/script_editor.html:73`
+- `src/skriptoteket/web/static/css/app/editor.css`
+- `src/skriptoteket/web/static/css/app/components.css:447`
+- `src/skriptoteket/web/static/css/app/layout.css`
 
 **Implementation deferred to next session.** See story file for detailed root cause analysis and code snippets.
 
