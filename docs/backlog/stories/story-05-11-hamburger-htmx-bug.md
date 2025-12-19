@@ -2,7 +2,7 @@
 type: story
 id: ST-05-11
 title: "Fix hamburger menu after HTMX navigation"
-status: in_progress
+status: done
 owners: "agents"
 created: 2025-12-19
 epic: "EPIC-05"

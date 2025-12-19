@@ -13,25 +13,28 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-19
-- Branch / commit: `main` @ `ff7bb28`
-- Goal of the session: Deploy EPIC-05 responsive frontend to production.
+- Branch / commit: `main` @ `7315d90`
+- Goal of the session: Fix hamburger menu HTMX navigation bug (ST-05-11).
 
-## 2025-12-19 EPIC-05 Responsive Frontend Deployment
+## 2025-12-19 ST-05-11 Hamburger Menu Fix
 
-**Deployed:** commit `ff7bb28` to production (`hemma.hule.education`)
+**Deployed:** commit `7315d90` to production (`hemma.hule.education`)
 
-**Changes deployed:**
-- EPIC-05 responsive frontend (ST-05-07, ST-05-08, ST-05-10)
-- EPIC-10 documentation (planning only, no code)
-- Mobile nav UX fix: logout moved to dropdown, hamburger rightmost
+**Bug fixed:** Hamburger menu stopped working after HTMX `hx-boost` navigation. Worked on first click, failed on subsequent clicks until page reload.
 
-**Verification:**
-- CSS deployed: hamburger styles, mobile nav logout styles in `/static/css/app/components.css`
-- JS deployed: hamburger toggle handler uses event delegation in `/static/js/app.js`
-- Header logout hidden on mobile (<768px), available in mobile nav dropdown
+**Root cause:** With `hx-boost="true"`, HTMX swaps only `<main>` content but re-executes `app.js`, attaching duplicate event listeners. Multiple listeners fought for control, breaking the toggle.
 
-**Note:** Hamburger menu only appears for authenticated users (by design).
-Works on all pages via base template inheritance and event delegation.
+**Fix:** Added initialization guard at top of IIFE in `src/skriptoteket/web/static/js/app.js:3-9`:
+```javascript
+if (window.__huleeduAppInitialized) return;
+window.__huleeduAppInitialized = true;
+```
+
+**Files changed:**
+- `src/skriptoteket/web/static/js/app.js` - Added init guard
+- `docs/backlog/stories/story-05-11-hamburger-htmx-bug.md` - Created and marked done
+
+**Verification:** `curl https://skriptoteket.hule.education/static/js/app.js | head -15` shows guard in place.
 
 ## What changed
 
