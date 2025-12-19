@@ -61,7 +61,13 @@ The default `ARTIFACTS_ROOT=/var/lib/skriptoteket/artifacts` doesn't exist local
 - Keep files small (<400–500 LOC); Ruff format + lint (100 chars)
 - Use Pydantic for cross-boundary models; `dataclasses` only inside a single domain
 
-## PR & Security
+## Git Workflow
 
-- Include what/why + how to test; run `pdm run docs-validate` for doc changes
+- **Never use `git commit --amend`**: always create fresh commits for fixes discovered after the initial commit
+- **Never force push**: if you need to fix something, make a new commit
+- Include what/why + how to test in commit messages
+- Run `pdm run docs-validate` for doc changes
+
+## Security
+
 - Never commit secrets (API keys/tokens); use env vars / `.env` locally

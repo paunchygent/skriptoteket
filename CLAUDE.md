@@ -118,6 +118,12 @@ Read `.agent/rules/000-rule-index.md` for the complete rulebook. Key points:
 - **File size**: <400-500 LOC per file (including tests)
 - **Pydantic for boundaries**: Use Pydantic models for cross-boundary data; dataclasses only for internal domain structures
 
+## Git Workflow (Non-Negotiable)
+
+- **Never use `git commit --amend`**: Always create fresh commits for fixes discovered after the initial commit
+- **Never force push**: If you need to fix something, make a new commit
+- This prevents sync issues between local, remote, and deployed servers
+
 ## Testing
 
 - **Protocol mocking**: Mock protocols, not implementations

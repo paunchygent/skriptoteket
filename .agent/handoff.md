@@ -13,8 +13,8 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-19
-- Branch / commit: `main` @ pending commit
-- Goal of next session: Deploy ST-05-12 and verify on iOS device.
+- Branch / commit: `main` @ `24b1fd6`
+- Goal of next session: N/A - ST-05-12 complete.
 
 ## 2025-12-19 ST-05-12 Mobile Editor UX Issues (IMPLEMENTED)
 
@@ -59,6 +59,14 @@ Keep this file updated so the next session can pick up work quickly.
    - `src/skriptoteket/web/static/css/app/layout.css:98`
 
 **QC passed:** `pdm run lint` and `pdm run typecheck` both pass.
+
+**Additional fix required:** Mobile nav was outside `<header>`, breaking `position: absolute; top: 100%`. Moved nav inside header in `base.html`.
+
+**Puppeteer verification (375x667 mobile viewport):**
+- Hamburger menu opens and displays all nav links
+- Mobile nav overlays content (doesn't push/compress)
+- Editor shows CodeMirror first, sidebar below
+- No horizontal scroll / width overflow
 
 ---
 

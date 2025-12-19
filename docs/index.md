@@ -10,6 +10,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 
 - PRD (MVP): `docs/prd/prd-script-hub-v0.1.md`
 - PRD (Planned): `docs/prd/prd-script-hub-v0.2.md`
+- Implementation map (v0.2): `docs/reference/ref-implementation-map-script-hub-v0-2.md`
 - Release notes: `docs/releases/`
 - ADRs: `docs/adr/`
 - Backlog: `docs/backlog/`
