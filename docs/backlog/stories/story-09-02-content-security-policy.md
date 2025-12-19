@@ -3,9 +3,16 @@ type: story
 id: ST-09-02
 title: "Content-Security-Policy for HTMX/CodeMirror"
 epic: EPIC-09
-status: pending
+status: ready
 owners: "agents"
 created: 2025-12-17
+acceptance_criteria:
+  - "Given any HTTPS response, when headers are inspected, then Content-Security-Policy is present and enforced"
+  - "Given the UI uses HTMX, when key flows are exercised, then navigation and partial updates work without CSP errors"
+  - "Given the admin script editor uses CodeMirror, when loaded and edited, then CodeMirror works without CSP errors"
+  - "Given Google Fonts are configured, when pages load, then fonts load without CSP errors"
+  - "Given browser devtools console, when using the product, then there are no CSP violations logged"
+  - "Given CSP rollout, when first deployed, then report-only mode is validated before enforcing mode"
 ---
 
 ## Goal

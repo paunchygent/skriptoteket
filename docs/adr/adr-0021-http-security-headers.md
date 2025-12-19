@@ -6,8 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-17
-epic: EPIC-09
-stories: ["ST-09-01"]
+links: ["EPIC-09", "ST-09-01"]
 ---
 
 ## Context

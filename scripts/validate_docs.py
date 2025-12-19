@@ -123,6 +123,9 @@ def expected_id_from_filename(doc_type: str, filename: str) -> str | None:
     if doc_type == "adr":
         match = re.match(r"^adr-(\d{4})-[a-z0-9-]+\.md$", filename)
         return f"ADR-{match.group(1)}" if match else None
+    if doc_type == "sprint":
+        match = re.match(r"^sprint-(\d{4}-\d{2}-\d{2})-[a-z0-9-]+\.md$", filename)
+        return f"SPR-{match.group(1)}" if match else None
     if doc_type == "prd":
         match = re.match(r"^prd-([a-z0-9-]+)-v(\d+\.\d+(?:\.\d+)?)\.md$", filename)
         return f"PRD-{match.group(1)}-v{match.group(2)}" if match else None
@@ -239,6 +242,43 @@ def validate_doc(path: Path, contract: dict[str, Any]) -> list[Violation]:
                 f"Unknown frontmatter keys not allowed: {unknown}. Update contract if needed.",
             )
         )
+
+    if doc_type == "sprint":
+        # Sprint-specific validation is intentionally shallow (frontmatter only), but strict on types.
+        starts = fm.get("starts")
+        ends = fm.get("ends")
+        if starts is not None and not is_iso_date(starts):
+            violations.append(Violation(norm, "Frontmatter 'starts' must be YYYY-MM-DD."))
+        if ends is not None and not is_iso_date(ends):
+            violations.append(Violation(norm, "Frontmatter 'ends' must be YYYY-MM-DD."))
+        if isinstance(starts, str) and isinstance(ends, str):
+            try:
+                start_date = date.fromisoformat(starts)
+                end_date = date.fromisoformat(ends)
+                if start_date > end_date:
+                    violations.append(
+                        Violation(norm, "Frontmatter 'starts' must be on/before 'ends'.")
+                    )
+            except ValueError:
+                # Covered by is_iso_date validation above.
+                pass
+
+        objective = fm.get("objective")
+        if objective is not None and not isinstance(objective, str):
+            violations.append(Violation(norm, "Frontmatter 'objective' must be a string."))
+
+        for key in ("stories", "epics", "adrs"):
+            value = fm.get(key)
+            if value is None:
+                continue
+            if not (isinstance(value, list) and all(isinstance(item, str) for item in value)):
+                violations.append(
+                    Violation(norm, f"Frontmatter '{key}' must be a list of strings.")
+                )
+
+        prd = fm.get("prd")
+        if prd is not None and not isinstance(prd, str):
+            violations.append(Violation(norm, "Frontmatter 'prd' must be a string."))
 
     return violations
 

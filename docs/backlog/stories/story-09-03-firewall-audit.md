@@ -6,6 +6,11 @@ epic: EPIC-09
 status: done
 owners: "agents"
 created: 2025-12-17
+acceptance_criteria:
+  - "Given UFW rules are listed, when audited, then the stale port 5000 allow-rule is removed"
+  - "Given UFW rules are listed, when audited, then all remaining rules have a documented purpose"
+  - "Given UFW is enabled, when audited, then only required ports are exposed (22, 80, 443)"
+  - "Given firewall changes are applied, when verified, then the final UFW status is recorded"
 ---
 
 ## Goal

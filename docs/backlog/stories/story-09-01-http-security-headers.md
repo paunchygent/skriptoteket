@@ -6,6 +6,13 @@ epic: EPIC-09
 status: done
 owners: "agents"
 created: 2025-12-17
+acceptance_criteria:
+  - "Given any HTTPS response, when headers are inspected, then Strict-Transport-Security is present with max-age=31536000 and includeSubDomains"
+  - "Given any HTTPS response, when headers are inspected, then X-Frame-Options is present and set to DENY"
+  - "Given any HTTPS response, when headers are inspected, then X-Content-Type-Options is present and set to nosniff"
+  - "Given any HTTPS response, when headers are inspected, then Referrer-Policy is present and set to strict-origin-when-cross-origin"
+  - "Given any HTTPS response, when headers are inspected, then Permissions-Policy is present and disables geolocation, camera, and microphone"
+  - "Given nginx error responses, when headers are inspected, then the security headers are still present (nginx add_header always)"
 ---
 
 ## Goal

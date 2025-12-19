@@ -27,6 +27,7 @@ Target Python is **3.13–3.14**.
 - `src/skriptoteket/`: production code (DDD/Clean layers + DI + web)
 - `migrations/`, `alembic.ini`: DB migrations (Alembic)
 - `docs/`: PRD/ADRs/backlog (start at `docs/index.md`); contract-enforced via `docs/_meta/docs-contract.yaml`
+- **Docs workflow (REQUIRED)**: follow `docs/reference/ref-sprint-planning-workflow.md` for PRD → ADR → epic → story → sprint planning.
 - `.agent/`: agent workflow helpers (`.agent/readme-first.md`, `.agent/handoff.md`, prompt template) + coding rules (`.agent/rules/`)
 - `scripts/`: repo tooling (e.g., `scripts/validate_docs.py`)
 

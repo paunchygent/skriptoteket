@@ -129,6 +129,7 @@ Read `.agent/rules/000-rule-index.md` for the complete rulebook. Key points:
 
 - Contract: `docs/_meta/docs-contract.yaml`
 - Templates: `docs/templates/`
+- Planning workflow (REQUIRED): `docs/reference/ref-sprint-planning-workflow.md`
 - Run `pdm run docs-validate` before committing doc changes
 - Agent helpers: `.agent/readme-first.md`, `.agent/handoff.md`
 

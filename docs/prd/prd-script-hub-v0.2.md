@@ -11,9 +11,9 @@ version: "0.2"
 
 ## Summary
 
-This document outlines key features planned for the post-MVP (v0.2) release of the Script Hub. The primary focus is enhancing tool capability through statefulness and expanding the governance model.
+This document outlines key features planned for the post-MVP (v0.2) release of the Script Hub. The primary focus is enabling **stateful, multi-turn tools** with a **safe, typed UI contract** (outputs + actions + persisted state) and paving the way for curated “owner apps” without exposing arbitrary UI/JS to end users.
 
-## Feature: User-Specific Tool Memory
+## Feature: Tool Sessions (User-Specific State)
 
 ### Context & Problem
 Currently, tools are **stateless**. Every execution is an isolated event. This prevents tools from:
@@ -22,43 +22,45 @@ Currently, tools are **stateless**. Every execution is an isolated event. This p
 3.  Providing incremental processing (e.g., "Compare this upload to the last one").
 
 ### Solution
-Implement a **small, persistent, user-specific JSON store** (< 50KB) for each tool.
+Implement a **small, persistent, user-specific JSON state** for each tool, stored as a “tool session”.
 
 ### Technical Requirements
-1.  **Storage**: New table `tool_user_state` (`user_id`, `tool_id`, `state_data` JSONB).
-2.  **Injection**: The runner injects the previous state into the container (e.g., as `memory.json`).
-3.  **Extraction**: The runner extracts the updated state after execution and updates the database.
-4.  **Contract**:
-    *   **Env Var**: `SKRIPTOTEKET_MEMORY_PATH` points to the read/write JSON file.
-    *   **Concurrency**: User-scoped locking or "Last Write Wins" policy (acceptable for v0.2).
-5.  **Controls**: Users must have a "Clear Memory" option in the "My Tools" interface to reset a tool's state.
+1.  **Storage**: New table `tool_sessions` keyed by (`tool_id`, `user_id`, `context`) with:
+    - `state` JSONB (size-capped)
+    - `state_rev` integer (optimistic concurrency)
+2.  **Injection**: The platform injects the prior session state into each execution request (as structured JSON), not via ad-hoc artifacts.
+3.  **Extraction**: The execution result returns updated `state` which the platform validates, size-caps, and persists.
+4.  **Concurrency**: Use `expected_state_rev` on each “turn”; reject stale updates (multi-tab safety).
+5.  **Controls**: Users must have a “Clear memory” action to reset session state.
 
 ### User Story
 > "As a Special Educator, I want the 'Attendance Analyzer' to remember which students I flagged last week, so I don't have to manually filter them out of this week's report."
 
-## Feature: Interactive Execution (Artifact-Driven UI)
+## Feature: Interactive Tool UI (Outputs + Actions + State)
 
 ### Context & Problem
 Currently, script execution is **linear**: Input -> Processing -> Final Output.
 Complex tasks often require a **human-in-the-loop** to verify or organize data (e.g., grouping students into breakout sessions) before finalizing the result. Doing this strictly via file re-uploads is tedious.
 
 ### Solution
-Allow scripts to request a **Rich UI** (specifically a "Slot-ID Grid") by returning a standardized data artifact. The platform renders this UI, allowing the user to manipulate the data visually and save the result back to the tool's memory.
+Adopt a **typed tool UI contract** where each “turn” returns:
+
+- `outputs[]`: structured, platform-rendered UI blocks (tables, markdown, JSON viewers, artifact previews)
+- `next_actions[]`: a list of allowed next steps with an input schema (the platform renders forms)
+- `state`: small persisted JSON, used to preserve multi-turn state across sessions
+
+Interactivity is provided by the platform’s UI components (safe), not arbitrary script-provided JavaScript.
 
 ### Technical Requirements
-1.  **Dependencies**: Requires **User-Specific Tool Memory** (above) to persist the user's interactive choices.
-2.  **Protocol (Script Output)**:
-    *   Scripts can output a reserved artifact file: `ui_schema.json`.
-    *   Example Content: `{"ui_type": "slot_grid_v1", "data": {...}}`.
-    *   If present, the frontend **replaces** the standard HTML result view with the specified UI Component (e.g., the Slot-ID Grid).
-3.  **Frontend (Web App)**:
-    *   Detects `ui_schema.json`.
-    *   Initializes the specific JavaScript GUI library (e.g., for the Slot Grid).
-    *   Passes the JSON data to the library.
-4.  **Feedback Loop (Persistence)**:
-    *   **Endpoint**: `POST /api/tools/{tool_id}/memory`.
-    *   **Action**: Receives the modified state from the UI and directly saves it to the `tool_user_state` table.
-    *   **Next Run**: The next time the script runs, it reads this saved state to pre-populate the grid (e.g., "Student A was in Group 1 last time").
+1.  **Dependencies**: Requires **Tool Sessions** (above).
+2.  **Contract**: Extend the runner result contract to return structured `outputs`, `next_actions`, and `state` (contract v2).
+3.  **Frontend**:
+    - Renders outputs using allowlisted UI components (no custom JS from tools).
+    - Renders action forms based on a constrained schema (platform-defined).
+4.  **Feedback loop**:
+    - Users invoke actions (turn-taking).
+    - Each action produces a new run + updated state.
+    - The platform persists state and rehydrates it for the next turn.
 
 ### User Story
 > "As a Teacher creating seating charts, I want to upload my class list and see a drag-and-drop grid. The system should remember where I placed specific students last time so I only have to assign the new transfer student."
@@ -143,19 +145,16 @@ Implementing this in individual scripts is inefficient because:
 3.  **Performance:** Loading models for every 5-second script run is too slow.
 
 ### Solution
-Deploy a dedicated **Internal NLP Microservice** (hosting LanguageTool and spaCy models).
-Provide a simple Python client (`skriptoteket.nlp`) inside the runner that allows scripts to send text and receive analysis.
+Integrate NLP capabilities as **backend-executed actions** that produce typed outputs (tables, metrics, annotations).
+This keeps the runner network-isolated and centralizes access control, quotas, and observability.
 
 ### Technical Requirements
-1.  **Infrastructure**:
-    *   New Container: `nlp-service` (FastAPI wrapper around spaCy + LanguageTool server).
-    *   **Network Strategy**: Use a specific **Internal Docker Network** linking only the `runner` and `nlp-service`. This maintains the "No Internet" security policy for scripts while allowing them to reach this specific utility.
-2.  **Client Library**:
-    *   Inject a helper library `skriptoteket.nlp` into the runner.
-    *   Methods: `check_grammar(text, lang="sv")`, `get_metrics(text)`.
-3.  **Capabilities**:
-    *   **Grammar**: Detect typos, grammar errors (via LanguageTool).
-    *   **Metrics**: LIX, word count, sentence length, named entities (via spaCy).
+1.  **Backend capability surface**:
+    - Backend connects to the NLP service (internal) and exposes allowlisted “capability actions” (e.g. `cap.nlp.analyze_language`).
+2.  **Authorization & quotas**:
+    - Only enabled for specific tools or curated apps (policy-driven).
+3.  **Outputs**:
+    - Results are returned as typed outputs (e.g. metrics table, findings list), not as HTML/JS.
 
 ### User Story
 > "As a Language Teacher, I want to upload a folder of student essays and get a summary table showing the LIX score and common grammar mistakes for each student, without me having to check them manually."
@@ -165,3 +164,23 @@ Provide a simple Python client (`skriptoteket.nlp`) inside the runner that allow
 
 ## Feature: Interactive Inputs (Placeholder)
 *To be defined: Support for text/dropdown inputs in addition to file uploads.*
+
+## Feature: Curated Apps (Owner-Authored, Platform-Rendered UI)
+
+### Context & Problem
+Some “apps” should be more capable than user-authored scripts (advanced flows, richer outputs, deeper backend integrations),
+but exposing those capabilities broadly increases security and UX risk.
+
+### Solution
+Introduce a curated app registry shipped with the repo (or a trusted package) that:
+
+- is visible in Katalog (like tools)
+- is runnable by end users
+- is **not** editable via the tool editor UI
+- is **not** versioned via `tool_versions`
+- returns typed outputs/actions/state and is rendered by the platform UI (same contract, higher policy caps)
+
+### Technical Requirements
+1. Registry: a curated app list with `app_id`, `app_version`, metadata, and a minimum required role.
+2. Execution: a curated app execution path that can call internal services safely and emits the same typed UI contract.
+3. Persistence: runs are stored for auditability with a `source_kind` distinguishing curated runs from tool-version runs.

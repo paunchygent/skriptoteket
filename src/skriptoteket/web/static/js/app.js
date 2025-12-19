@@ -109,6 +109,42 @@
     });
   }
 
+  var COPY_FEEDBACK_MS = 2000;
+
+  function initCopyButtons(root) {
+    var buttons = root.querySelectorAll("[data-huleedu-copy-target]");
+    buttons.forEach(function (button) {
+      if (button.dataset.huleeduCopyInitialized === "true") return;
+      button.dataset.huleeduCopyInitialized = "true";
+
+      var targetId = button.dataset.huleeduCopyTarget;
+      if (!targetId) return;
+
+      button.addEventListener("click", function (evt) {
+        evt.preventDefault();
+        var target = document.getElementById(targetId);
+        if (!target) return;
+
+        var text = target.value !== undefined ? target.value : target.textContent;
+        if (!text) return;
+
+        navigator.clipboard.writeText(text).then(function () {
+          var originalText = button.textContent;
+          var successText = button.dataset.huleeduCopySuccess || "✓ Kopierat!";
+          button.textContent = successText;
+          button.classList.add("btn-success");
+          button.classList.remove("btn-primary");
+
+          setTimeout(function () {
+            button.textContent = originalText;
+            button.classList.remove("btn-success");
+            button.classList.add("btn-primary");
+          }, COPY_FEEDBACK_MS);
+        });
+      });
+    });
+  }
+
   var TOAST_DEFAULT_AUTO_DISMISS_MS = 12000;
   var TOAST_EXIT_ANIMATION_MS = 300;
 
@@ -314,6 +350,7 @@
     cleanupCodeMirrorEditors();
     initToasts();
     initFileInputs(root);
+    initCopyButtons(root);
     initCodeMirrorEditors(root);
   }
 

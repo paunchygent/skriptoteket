@@ -2,7 +2,7 @@
 type: epic
 id: EPIC-05
 title: "HuleEdu design system harmonization"
-status: done
+status: active
 owners: "agents"
 created: 2025-12-15
 outcome: "Skriptoteket frontend uses HuleEdu design tokens and Brutalist styling, ensuring visual consistency for future HuleEdu integration."
@@ -16,6 +16,7 @@ This epic applies the HuleEdu design system across all Skriptoteket web template
 - **Template migration**: Update all templates to use HuleEdu component classes
 - **HTMX UX enhancements**: Loading states, toast notifications, form improvements (per REF-htmx-ux-enhancement-plan)
 - **CodeMirror theming**: Style code editor to match design language
+- **Responsive/mobile adaptation**: Ensure usability on tablets and phones (per ADR-0020)
 
 ## Stories
 
@@ -26,6 +27,9 @@ This epic applies the HuleEdu design system across all Skriptoteket web template
 - [ST-05-05: Admin template migration](../stories/story-05-05-admin-templates.md) (DONE)
 - [ST-05-06: HTMX loading and toast enhancements](../stories/story-05-06-htmx-enhancements.md)
 - [ST-05-07: Frontend stabilisering och modern CSS](../stories/story-05-07-frontend-stabilization.md) (IN PROGRESS)
+- [ST-05-08: Responsive header with mobile navigation](../stories/story-05-08-responsive-header.md)
+- [ST-05-09: CodeMirror minimum height floor](../stories/story-05-09-codemirror-mobile-floor.md)
+- [ST-05-10: Script editor responsive layout](../stories/story-05-10-editor-layout-mobile.md)
 
 ## Risks
 
@@ -37,5 +41,6 @@ This epic applies the HuleEdu design system across all Skriptoteket web template
 
 - ADR-0001 (server-driven HTMX UI approach)
 - ADR-0017 (HuleEdu design system adoption)
+- ADR-0020 (responsive mobile adaptation strategy)
 - REF-htmx-ux-enhancement-plan (implementation guide)
 - EPIC-04 ST-04-03 (admin script editor - already exists, styling applied here)

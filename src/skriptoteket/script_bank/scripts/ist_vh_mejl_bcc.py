@@ -148,20 +148,45 @@ def run_tool(input_path: str, output_dir: str) -> str:
     col_indices = {col: headers.index(col) for col in ordered_cols}
 
     all_emails: list[str] = []
+    total_email_occurrences = 0
     col_email_counts: dict[str, int] = {}
 
     for col in ordered_cols:
         idx = col_indices[col]
         cells = [row[idx] for row in data_rows if idx < len(row)]
         emails = harvest_emails_from_cells(cells)
+        total_email_occurrences += len(emails)
         new_emails = [e for e in emails if e not in all_emails]
         col_email_counts[col] = len(new_emails)
         all_emails.extend(new_emails)
 
+    duplicates_removed = total_email_occurrences - len(all_emails)
+
+    if not all_emails:
+        return f"""
+        <div class="tool-result">
+            <div class="alert alert-warning">
+                <strong>Inga e‑postadresser hittades</strong>
+            </div>
+            <p>Filen innehöll <strong>{len(data_rows)}</strong> rader men inga giltiga
+            e‑postadresser kunde extraheras.</p>
+            <details>
+                <summary>Kolumner som genomsöktes</summary>
+                <ul>
+                    {"".join(f"<li>{col}</li>" for col in headers[:10])}
+                    {"<li>...</li>" if len(headers) > 10 else ""}
+                </ul>
+            </details>
+            <p><small>Tips: Kontrollera att filen innehåller kolumner med e‑postadresser
+            (t.ex. "Vårdnadshavare e-post", "Parent email").</small></p>
+        </div>
+        """
+
     email_string = ";".join(all_emails)
 
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    artifact_path = output / f"emails_{timestamp}.txt"
+    artifact_name = f"emails_{timestamp}.txt"
+    artifact_path = output / artifact_name
     artifact_path.write_text(email_string, encoding="utf-8")
 
     stats_rows = "".join(
@@ -170,21 +195,44 @@ def run_tool(input_path: str, output_dir: str) -> str:
         if count > 0
     )
 
+    dup_info = (
+        f"<br><small>({duplicates_removed} dubbletter filtrerades bort)</small>"
+        if duplicates_removed > 0
+        else ""
+    )
+
     return f"""
-    <div style="font-family: system-ui, sans-serif;">
-        <h3>Resultat</h3>
-        <p><strong>{len(all_emails)}</strong> unika e‑postadresser hittades.</p>
+    <div class="tool-result">
+        <div class="alert alert-success">
+            <strong>{len(all_emails)}</strong> unika e‑postadresser extraherades
+            från <strong>{len(data_rows)}</strong> rader.{dup_info}
+        </div>
 
         <h4>E‑postadresser (semikolonseparerade)</h4>
-        <textarea readonly style="width:100%; min-height:100px; font-family:monospace;"
-            onclick="this.select()">{email_string}</textarea>
-        <p><small>Klicka i textrutan och tryck Ctrl+C för att kopiera.</small></p>
+        <textarea id="email-output" readonly
+            style="width:100%; min-height:100px; font-family:monospace;
+                   padding:8px; border-radius:4px;">{email_string}</textarea>
 
-        <details>
+        <div style="margin-top:12px;">
+            <button type="button" class="btn btn-primary"
+                    data-huleedu-copy-target="email-output"
+                    data-huleedu-copy-success="✓ Kopierat!">
+                📋 Kopiera till urklipp
+            </button>
+        </div>
+        <p style="margin-top:8px;">
+            <small>Filen <code>{artifact_name}</code> sparades som artifact.</small>
+        </p>
+
+        <details style="margin-top:16px;">
             <summary>Statistik per kolumn</summary>
-            <table border="1" cellpadding="4" style="border-collapse:collapse;">
-                <tr><th>Kolumn</th><th>Nya e‑postadresser</th></tr>
-                {stats_rows}
+            <table class="table" style="margin-top:8px;">
+                <thead>
+                    <tr><th>Kolumn</th><th>Nya e‑postadresser</th></tr>
+                </thead>
+                <tbody>
+                    {stats_rows}
+                </tbody>
             </table>
         </details>
     </div>
