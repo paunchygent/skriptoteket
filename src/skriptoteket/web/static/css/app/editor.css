@@ -96,7 +96,16 @@
     overflow-x: hidden;
   }
 
-  .CodeMirror {
+  /* Allow parent containers to expand for CodeMirror height (desktop uses min-height: 0 for flex shrink) */
+  .huleedu-editor-code-card,
+  .huleedu-editor-form,
+  .huleedu-editor-textarea-wrapper {
+    min-height: auto;
+  }
+
+  /* Match specificity of global .huleedu-editor-textarea-wrapper .CodeMirror rule */
+  .CodeMirror,
+  .huleedu-editor-textarea-wrapper .CodeMirror {
     max-width: 100% !important;
     min-height: 350px !important; /* 15-20 lines at 16px font (~22px line-height) */
     font-size: 16px !important; /* Prevent iOS/Edge auto-zoom on input focus */
