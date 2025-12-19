@@ -44,3 +44,10 @@ repos:
         language: system
         files: ^docs/
         pass_filenames: false
+
+      - id: agent-doc-budgets
+        name: Agent docs line budgets (.agent/*)
+        entry: pdm run python -m scripts.check_agent_doc_budgets
+        language: system
+        files: ^\.agent/(readme-first\.md|handoff\.md)$
+        pass_filenames: false

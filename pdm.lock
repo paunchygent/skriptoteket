@@ -5,7 +5,7 @@
 groups = ["default", "analysis", "dev", "docs", "llm", "monorepo-tools", "tui"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:ced8b8244150ba74db80e064bf104e2141c80d9ee86a03d06c734f2a532c8fd6"
+content_hash = "sha256:d58dde783d7b210f2c744de41014cddfd4916193d2773d344978bdb1f83b961f"
 
 [[metadata.targets]]
 requires_python = ">=3.13,<3.14"
@@ -205,7 +205,7 @@ name = "attrs"
 version = "25.4.0"
 requires_python = ">=3.9"
 summary = "Classes Without Boilerplate"
-groups = ["default", "monorepo-tools"]
+groups = ["default", "dev", "monorepo-tools"]
 marker = "python_version >= \"3.13\" and python_version < \"3.14\""
 files = [
     {file = "attrs-25.4.0-py3-none-any.whl", hash = "sha256:adcf7e2a1fb3b36ac48d97835bb6d8ade15b8dcce26aba8bf1d14847b57a3373"},
@@ -296,7 +296,7 @@ name = "certifi"
 version = "2025.11.12"
 requires_python = ">=3.7"
 summary = "Python package for providing Mozilla's CA Bundle."
-groups = ["default", "docs", "llm", "monorepo-tools"]
+groups = ["default", "dev", "docs", "llm", "monorepo-tools"]
 marker = "python_version >= \"3.13\" and python_version < \"3.14\""
 files = [
     {file = "certifi-2025.11.12-py3-none-any.whl", hash = "sha256:97de8790030bbd5c2d96b7ec782fc2f7820ef8dba6db909ccf95449f2d062d4b"},
@@ -308,7 +308,7 @@ name = "cffi"
 version = "2.0.0"
 requires_python = ">=3.9"
 summary = "Foreign Function Interface for Python calling C code."
-groups = ["default", "monorepo-tools"]
+groups = ["default", "dev", "monorepo-tools"]
 marker = "python_version >= \"3.13\" and python_version < \"3.14\""
 dependencies = [
     "pycparser; implementation_name != \"PyPy\"",
@@ -706,8 +706,8 @@ files = [
 
 [[package]]
 name = "fastapi"
-version = "0.124.4"
-requires_python = ">=3.8"
+version = "0.125.0"
+requires_python = ">=3.9"
 summary = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
 groups = ["default"]
 marker = "python_version >= \"3.13\" and python_version < \"3.14\""
@@ -718,14 +718,14 @@ dependencies = [
     "typing-extensions>=4.8.0",
 ]
 files = [
-    {file = "fastapi-0.124.4-py3-none-any.whl", hash = "sha256:6d1e703698443ccb89e50abe4893f3c84d9d6689c0cf1ca4fad6d3c15cf69f15"},
-    {file = "fastapi-0.124.4.tar.gz", hash = "sha256:0e9422e8d6b797515f33f500309f6e1c98ee4e85563ba0f2debb282df6343763"},
+    {file = "fastapi-0.125.0-py3-none-any.whl", hash = "sha256:2570ec4f3aecf5cca8f0428aed2398b774fcdfee6c2116f86e80513f2f86a7a1"},
+    {file = "fastapi-0.125.0.tar.gz", hash = "sha256:16b532691a33e2c5dee1dac32feb31dc6eb41a3dd4ff29a95f9487cb21c054c0"},
 ]
 
 [[package]]
 name = "fastparquet"
-version = "2024.11.0"
-requires_python = ">=3.9"
+version = "2025.12.0"
+requires_python = ">=3.10"
 summary = "Python support for Parquet file format"
 groups = ["analysis"]
 marker = "python_version >= \"3.13\" and python_version < \"3.14\""
@@ -737,15 +737,15 @@ dependencies = [
     "pandas>=1.5.0",
 ]
 files = [
-    {file = "fastparquet-2024.11.0-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:59e5c5b51083d5b82572cdb7aed0346e3181e3ac9d2e45759da2e804bdafa7ee"},
-    {file = "fastparquet-2024.11.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:bdadf7b6bad789125b823bfc5b0a719ba5c4a2ef965f973702d3ea89cff057f6"},
-    {file = "fastparquet-2024.11.0-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:46b2db02fc2a1507939d35441c8ab211d53afd75d82eec9767d1c3656402859b"},
-    {file = "fastparquet-2024.11.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a3afdef2895c9f459135a00a7ed3ceafebfbce918a9e7b5d550e4fae39c1b64d"},
-    {file = "fastparquet-2024.11.0-cp313-cp313-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:36b5c9bd2ffaaa26ff45d59a6cefe58503dd748e0c7fad80dd905749da0f2b9e"},
-    {file = "fastparquet-2024.11.0-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:6b7df5d3b61a19d76e209fe8d3133759af1c139e04ebc6d43f3cc2d8045ef338"},
-    {file = "fastparquet-2024.11.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:8b35823ac7a194134e5f82fa4a9659e42e8f9ad1f2d22a55fbb7b9e4053aabbb"},
-    {file = "fastparquet-2024.11.0-cp313-cp313-win_amd64.whl", hash = "sha256:d20632964e65530374ff7cddd42cc06aa0a1388934903693d6d22592a5ba827b"},
-    {file = "fastparquet-2024.11.0.tar.gz", hash = "sha256:e3b1fc73fd3e1b70b0de254bae7feb890436cb67e99458b88cb9bd3cc44db419"},
+    {file = "fastparquet-2025.12.0-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:1bd79ca75977aaeaae8d2a6cb1958e806991f0ff23207b938522a59a724491b2"},
+    {file = "fastparquet-2025.12.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:b6db801b72433d8227fcb92009a631f14d6d49a43b3c599911b58a8a6ffde9e3"},
+    {file = "fastparquet-2025.12.0-cp313-cp313-manylinux1_i686.manylinux_2_28_i686.manylinux_2_5_i686.whl", hash = "sha256:23cce7202de91b64abb251cec07125d94e8108eb99aab6ffa42570a89a5c869d"},
+    {file = "fastparquet-2025.12.0-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:038c3ed1f211f538cd03df7b053cc842677efd5832e37b000a8c721584ff42b4"},
+    {file = "fastparquet-2025.12.0-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:424ffcfc89c678eb8e695ff882d114e46beda8b7e13be58b6793f2ee07c84a6f"},
+    {file = "fastparquet-2025.12.0-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:f25aae3e585dd033ed02ee167a825bf1fcb440629c63f7d59d6c4d2789c327a3"},
+    {file = "fastparquet-2025.12.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:90ac4a51e5acb2644ec111532c8fcfc128efcc351ba2ee914394a58460310b93"},
+    {file = "fastparquet-2025.12.0-cp313-cp313-win_amd64.whl", hash = "sha256:7ac92db3b3200fe3be07363277678bfd532c6723510b40c20510631ca434a049"},
+    {file = "fastparquet-2025.12.0.tar.gz", hash = "sha256:85f807d3846c7691855a68ed7ff6ee40654b72b997f5b1199e6310a1e19d1cd5"},
 ]
 
 [[package]]
@@ -913,7 +913,7 @@ files = [
 
 [[package]]
 name = "google-genai"
-version = "1.55.0"
+version = "1.56.0"
 requires_python = ">=3.10"
 summary = "GenAI Python SDK"
 groups = ["llm"]
@@ -921,7 +921,7 @@ marker = "python_version >= \"3.13\" and python_version < \"3.14\""
 dependencies = [
     "anyio<5.0.0,>=4.8.0",
     "distro<2,>=1.7.0",
-    "google-auth[requests]<3.0.0,>=2.14.1",
+    "google-auth[requests]<3.0.0,>=2.45.0",
     "httpx<1.0.0,>=0.28.1",
     "pydantic<3.0.0,>=2.9.0",
     "requests<3.0.0,>=2.28.1",
@@ -931,8 +931,8 @@ dependencies = [
     "websockets<15.1.0,>=13.0.0",
 ]
 files = [
-    {file = "google_genai-1.55.0-py3-none-any.whl", hash = "sha256:98c422762b5ff6e16b8d9a1e4938e8e0ad910392a5422e47f5301498d7f373a1"},
-    {file = "google_genai-1.55.0.tar.gz", hash = "sha256:ae9f1318fedb05c7c1b671a4148724751201e8908a87568364a309804064d986"},
+    {file = "google_genai-1.56.0-py3-none-any.whl", hash = "sha256:9e6b11e0c105ead229368cb5849a480e4d0185519f8d9f538d61ecfcf193b052"},
+    {file = "google_genai-1.56.0.tar.gz", hash = "sha256:0491af33c375f099777ae207d9621f044e27091fafad4c50e617eba32165e82f"},
 ]
 
 [[package]]
@@ -940,7 +940,7 @@ name = "greenlet"
 version = "3.3.0"
 requires_python = ">=3.10"
 summary = "Lightweight in-process concurrent programming"
-groups = ["default"]
+groups = ["default", "dev"]
 marker = "python_version >= \"3.13\" and python_version < \"3.14\""
 files = [
     {file = "greenlet-3.3.0-cp313-cp313-macosx_11_0_universal2.whl", hash = "sha256:a1e41a81c7e2825822f4e068c48cb2196002362619e2d70b148f20a831c00739"},
@@ -974,7 +974,7 @@ name = "h11"
 version = "0.16.0"
 requires_python = ">=3.8"
 summary = "A pure-Python, bring-your-own-I/O implementation of HTTP/1.1"
-groups = ["default", "llm", "monorepo-tools"]
+groups = ["default", "dev", "llm", "monorepo-tools"]
 marker = "python_version >= \"3.13\" and python_version < \"3.14\""
 files = [
     {file = "h11-0.16.0-py3-none-any.whl", hash = "sha256:63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86"},
@@ -1050,7 +1050,7 @@ name = "idna"
 version = "3.11"
 requires_python = ">=3.8"
 summary = "Internationalized Domain Names in Applications (IDNA)"
-groups = ["default", "docs", "llm", "monorepo-tools"]
+groups = ["default", "dev", "docs", "llm", "monorepo-tools"]
 marker = "python_version >= \"3.13\" and python_version < \"3.14\""
 files = [
     {file = "idna-3.11-py3-none-any.whl", hash = "sha256:771a87f49d9defaf64091e6e6fe9c18d4833f140bd19464795bc32d966ca37ea"},
@@ -1451,7 +1451,7 @@ files = [
 
 [[package]]
 name = "mkdocs-material"
-version = "9.7.0"
+version = "9.7.1"
 requires_python = ">=3.8"
 summary = "Documentation that simply works"
 groups = ["docs"]
@@ -1467,11 +1467,11 @@ dependencies = [
     "paginate>=0.5",
     "pygments>=2.16",
     "pymdown-extensions>=10.2",
-    "requests>=2.26",
+    "requests>=2.30",
 ]
 files = [
-    {file = "mkdocs_material-9.7.0-py3-none-any.whl", hash = "sha256:da2866ea53601125ff5baa8aa06404c6e07af3c5ce3d5de95e3b52b80b442887"},
-    {file = "mkdocs_material-9.7.0.tar.gz", hash = "sha256:602b359844e906ee402b7ed9640340cf8a474420d02d8891451733b6b02314ec"},
+    {file = "mkdocs_material-9.7.1-py3-none-any.whl", hash = "sha256:3f6100937d7d731f87f1e3e3b021c97f7239666b9ba1151ab476cabb96c60d5c"},
+    {file = "mkdocs_material-9.7.1.tar.gz", hash = "sha256:89601b8f2c3e6c6ee0a918cc3566cb201d40bf37c3cd3c2067e26fadb8cce2b8"},
 ]
 
 [[package]]
@@ -1702,6 +1702,21 @@ files = [
 ]
 
 [[package]]
+name = "outcome"
+version = "1.3.0.post0"
+requires_python = ">=3.7"
+summary = "Capture the outcome of Python function calls."
+groups = ["dev"]
+marker = "python_version >= \"3.13\" and python_version < \"3.14\""
+dependencies = [
+    "attrs>=19.2.0",
+]
+files = [
+    {file = "outcome-1.3.0.post0-py2.py3-none-any.whl", hash = "sha256:e771c5ce06d1415e356078d3bdd68523f284b4ce5419828922b6871e65eda82b"},
+    {file = "outcome-1.3.0.post0.tar.gz", hash = "sha256:9dcf02e65f2971b80047b377468e72a268e15c0af3cf1238e6ff14f7f91143b8"},
+]
+
+[[package]]
 name = "packaging"
 version = "25.0"
 requires_python = ">=3.8"
@@ -1758,18 +1773,18 @@ files = [
 
 [[package]]
 name = "pandas-stubs"
-version = "2.3.3.251201"
+version = "2.3.3.251219"
 requires_python = ">=3.10"
 summary = "Type annotations for pandas"
 groups = ["monorepo-tools"]
 marker = "python_version >= \"3.13\" and python_version < \"3.14\""
 dependencies = [
-    "numpy>=1.23.5",
+    "numpy<=2.3.5,>=1.23.5",
     "types-pytz>=2022.1.1",
 ]
 files = [
-    {file = "pandas_stubs-2.3.3.251201-py3-none-any.whl", hash = "sha256:eb5c9b6138bd8492fd74a47b09c9497341a278fcfbc8633ea4b35b230ebf4be5"},
-    {file = "pandas_stubs-2.3.3.251201.tar.gz", hash = "sha256:7a980f4f08cff2a6d7e4c6d6d26f4c5fcdb82a6f6531489b2f75c81567fe4536"},
+    {file = "pandas_stubs-2.3.3.251219-py3-none-any.whl", hash = "sha256:ccc6337febb51d6d8a08e4c96b479478a0da0ef704b5e08bd212423fe1cb549c"},
+    {file = "pandas_stubs-2.3.3.251219.tar.gz", hash = "sha256:dc2883e6daff49d380d1b5a2e864983ab9be8cd9a661fa861e3dea37559a5af4"},
 ]
 
 [[package]]
@@ -1830,6 +1845,28 @@ marker = "python_version >= \"3.13\" and python_version < \"3.14\""
 files = [
     {file = "platformdirs-4.5.1-py3-none-any.whl", hash = "sha256:d03afa3963c806a9bed9d5125c8f4cb2fdaf74a55ab60e5d59b3fde758104d31"},
     {file = "platformdirs-4.5.1.tar.gz", hash = "sha256:61d5cdcc6065745cdd94f0f878977f8de9437be93de97c1c12f853c9c0cdcbda"},
+]
+
+[[package]]
+name = "playwright"
+version = "1.57.0"
+requires_python = ">=3.9"
+summary = "A high-level API to automate web browsers"
+groups = ["dev"]
+marker = "python_version >= \"3.13\" and python_version < \"3.14\""
+dependencies = [
+    "greenlet<4.0.0,>=3.1.1",
+    "pyee<14,>=13",
+]
+files = [
+    {file = "playwright-1.57.0-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:9351c1ac3dfd9b3820fe7fc4340d96c0d3736bb68097b9b7a69bd45d25e9370c"},
+    {file = "playwright-1.57.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:a4a9d65027bce48eeba842408bcc1421502dfd7e41e28d207e94260fa93ca67e"},
+    {file = "playwright-1.57.0-py3-none-macosx_11_0_universal2.whl", hash = "sha256:99104771abc4eafee48f47dac2369e0015516dc1ce8c409807d2dd440828b9a4"},
+    {file = "playwright-1.57.0-py3-none-manylinux1_x86_64.whl", hash = "sha256:284ed5a706b7c389a06caa431b2f0ba9ac4130113c3a779767dda758c2497bb1"},
+    {file = "playwright-1.57.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:38a1bae6c0a07839cdeaddbc0756b3b2b85e476c07945f64ece08f1f956a86f1"},
+    {file = "playwright-1.57.0-py3-none-win32.whl", hash = "sha256:1dd93b265688da46e91ecb0606d36f777f8eadcf7fbef12f6426b20bf0c9137c"},
+    {file = "playwright-1.57.0-py3-none-win_amd64.whl", hash = "sha256:6caefb08ed2c6f29d33b8088d05d09376946e49a73be19271c8cd5384b82b14c"},
+    {file = "playwright-1.57.0-py3-none-win_arm64.whl", hash = "sha256:5f065f5a133dbc15e6e7c71e7bc04f258195755b1c32a432b792e28338c8335e"},
 ]
 
 [[package]]
@@ -2001,7 +2038,7 @@ name = "pycparser"
 version = "2.23"
 requires_python = ">=3.8"
 summary = "C parser in Python"
-groups = ["default", "monorepo-tools"]
+groups = ["default", "dev", "monorepo-tools"]
 marker = "python_version >= \"3.13\" and python_version < \"3.14\" and implementation_name != \"PyPy\""
 files = [
     {file = "pycparser-2.23-py3-none-any.whl", hash = "sha256:e5c6e8d3fbad53479cab09ac03729e0a9faf2bee3db8208a550daf5af81a5934"},
@@ -2084,6 +2121,21 @@ files = [
 ]
 
 [[package]]
+name = "pyee"
+version = "13.0.0"
+requires_python = ">=3.8"
+summary = "A rough port of Node.js's EventEmitter to Python with a few tricks of its own"
+groups = ["dev"]
+marker = "python_version >= \"3.13\" and python_version < \"3.14\""
+dependencies = [
+    "typing-extensions",
+]
+files = [
+    {file = "pyee-13.0.0-py3-none-any.whl", hash = "sha256:48195a3cddb3b1515ce0695ed76036b5ccc2ef3a9f963ff9f77aec0139845498"},
+    {file = "pyee-13.0.0.tar.gz", hash = "sha256:b391e3c5a434d1f5118a25615001dbc8f669cf410ab67d04c4d4e07c55481c37"},
+]
+
+[[package]]
 name = "pygments"
 version = "2.19.2"
 requires_python = ">=3.8"
@@ -2160,6 +2212,18 @@ marker = "python_version >= \"3.13\" and python_version < \"3.14\""
 files = [
     {file = "pyphen-0.17.2-py3-none-any.whl", hash = "sha256:3a07fb017cb2341e1d9ff31b8634efb1ae4dc4b130468c7c39dd3d32e7c3affd"},
     {file = "pyphen-0.17.2.tar.gz", hash = "sha256:f60647a9c9b30ec6c59910097af82bc5dd2d36576b918e44148d8b07ef3b4aa3"},
+]
+
+[[package]]
+name = "pysocks"
+version = "1.7.1"
+requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+summary = "A Python SOCKS client module. See https://github.com/Anorov/PySocks for more information."
+groups = ["dev"]
+marker = "python_version >= \"3.13\" and python_version < \"3.14\""
+files = [
+    {file = "PySocks-1.7.1-py3-none-any.whl", hash = "sha256:2725bd0a9925919b9b51739eea5f9e2bae91e83288108a9ad338b2e3a4435ee5"},
+    {file = "PySocks-1.7.1.tar.gz", hash = "sha256:3f8804571ebe159c380ac6de37643bb4685970655d3bba243530d6558b799aa0"},
 ]
 
 [[package]]
@@ -2308,14 +2372,14 @@ files = [
 
 [[package]]
 name = "python-multipart"
-version = "0.0.20"
-requires_python = ">=3.8"
+version = "0.0.21"
+requires_python = ">=3.10"
 summary = "A streaming multipart parser for Python"
 groups = ["default"]
 marker = "python_version >= \"3.13\" and python_version < \"3.14\""
 files = [
-    {file = "python_multipart-0.0.20-py3-none-any.whl", hash = "sha256:8a62d3a8335e06589fe01f2a3e178cdcc632f3fbe0d492ad9ee0ec35aab1f104"},
-    {file = "python_multipart-0.0.20.tar.gz", hash = "sha256:8dd0cab45b8e23064ae09147625994d090fa46f5b0d1e13af944c331a7fa9d13"},
+    {file = "python_multipart-0.0.21-py3-none-any.whl", hash = "sha256:cf7a6713e01c87aa35387f4774e812c4361150938d20d232800f75ffcf266090"},
+    {file = "python_multipart-0.0.21.tar.gz", hash = "sha256:7137ebd4d3bbf70ea1622998f902b97a29434a9e8dc40eb203bbcf7c2a2cba92"},
 ]
 
 [[package]]
@@ -2501,31 +2565,31 @@ files = [
 
 [[package]]
 name = "ruff"
-version = "0.14.9"
+version = "0.14.10"
 requires_python = ">=3.7"
 summary = "An extremely fast Python linter and code formatter, written in Rust."
 groups = ["monorepo-tools"]
 marker = "python_version >= \"3.13\" and python_version < \"3.14\""
 files = [
-    {file = "ruff-0.14.9-py3-none-linux_armv6l.whl", hash = "sha256:f1ec5de1ce150ca6e43691f4a9ef5c04574ad9ca35c8b3b0e18877314aba7e75"},
-    {file = "ruff-0.14.9-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:ed9d7417a299fc6030b4f26333bf1117ed82a61ea91238558c0268c14e00d0c2"},
-    {file = "ruff-0.14.9-py3-none-macosx_11_0_arm64.whl", hash = "sha256:d5dc3473c3f0e4a1008d0ef1d75cee24a48e254c8bed3a7afdd2b4392657ed2c"},
-    {file = "ruff-0.14.9-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:84bf7c698fc8f3cb8278830fb6b5a47f9bcc1ed8cb4f689b9dd02698fa840697"},
-    {file = "ruff-0.14.9-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:aa733093d1f9d88a5d98988d8834ef5d6f9828d03743bf5e338bf980a19fce27"},
-    {file = "ruff-0.14.9-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:6a1cfb04eda979b20c8c19550c8b5f498df64ff8da151283311ce3199e8b3648"},
-    {file = "ruff-0.14.9-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:1e5cb521e5ccf0008bd74d5595a4580313844a42b9103b7388eca5a12c970743"},
-    {file = "ruff-0.14.9-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:cd429a8926be6bba4befa8cdcf3f4dd2591c413ea5066b1e99155ed245ae42bb"},
-    {file = "ruff-0.14.9-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:ab208c1b7a492e37caeaf290b1378148f75e13c2225af5d44628b95fd7834273"},
-    {file = "ruff-0.14.9-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:72034534e5b11e8a593f517b2f2f2b273eb68a30978c6a2d40473ad0aaa4cb4a"},
-    {file = "ruff-0.14.9-py3-none-manylinux_2_31_riscv64.whl", hash = "sha256:712ff04f44663f1b90a1195f51525836e3413c8a773574a7b7775554269c30ed"},
-    {file = "ruff-0.14.9-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:a111fee1db6f1d5d5810245295527cda1d367c5aa8f42e0fca9a78ede9b4498b"},
-    {file = "ruff-0.14.9-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:8769efc71558fecc25eb295ddec7d1030d41a51e9dcf127cbd63ec517f22d567"},
-    {file = "ruff-0.14.9-py3-none-musllinux_1_2_i686.whl", hash = "sha256:347e3bf16197e8a2de17940cd75fd6491e25c0aa7edf7d61aa03f146a1aa885a"},
-    {file = "ruff-0.14.9-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:7715d14e5bccf5b660f54516558aa94781d3eb0838f8e706fb60e3ff6eff03a8"},
-    {file = "ruff-0.14.9-py3-none-win32.whl", hash = "sha256:df0937f30aaabe83da172adaf8937003ff28172f59ca9f17883b4213783df197"},
-    {file = "ruff-0.14.9-py3-none-win_amd64.whl", hash = "sha256:c0b53a10e61df15a42ed711ec0bda0c582039cf6c754c49c020084c55b5b0bc2"},
-    {file = "ruff-0.14.9-py3-none-win_arm64.whl", hash = "sha256:8e821c366517a074046d92f0e9213ed1c13dbc5b37a7fc20b07f79b64d62cc84"},
-    {file = "ruff-0.14.9.tar.gz", hash = "sha256:35f85b25dd586381c0cc053f48826109384c81c00ad7ef1bd977bfcc28119d5b"},
+    {file = "ruff-0.14.10-py3-none-linux_armv6l.whl", hash = "sha256:7a3ce585f2ade3e1f29ec1b92df13e3da262178df8c8bdf876f48fa0e8316c49"},
+    {file = "ruff-0.14.10-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:674f9be9372907f7257c51f1d4fc902cb7cf014b9980152b802794317941f08f"},
+    {file = "ruff-0.14.10-py3-none-macosx_11_0_arm64.whl", hash = "sha256:d85713d522348837ef9df8efca33ccb8bd6fcfc86a2cde3ccb4bc9d28a18003d"},
+    {file = "ruff-0.14.10-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:6987ebe0501ae4f4308d7d24e2d0fe3d7a98430f5adfd0f1fead050a740a3a77"},
+    {file = "ruff-0.14.10-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:16a01dfb7b9e4eee556fbfd5392806b1b8550c9b4a9f6acd3dbe6812b193c70a"},
+    {file = "ruff-0.14.10-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:7165d31a925b7a294465fa81be8c12a0e9b60fb02bf177e79067c867e71f8b1f"},
+    {file = "ruff-0.14.10-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:c561695675b972effb0c0a45db233f2c816ff3da8dcfbe7dfc7eed625f218935"},
+    {file = "ruff-0.14.10-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:4bb98fcbbc61725968893682fd4df8966a34611239c9fd07a1f6a07e7103d08e"},
+    {file = "ruff-0.14.10-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:f24b47993a9d8cb858429e97bdf8544c78029f09b520af615c1d261bf827001d"},
+    {file = "ruff-0.14.10-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:59aabd2e2c4fd614d2862e7939c34a532c04f1084476d6833dddef4afab87e9f"},
+    {file = "ruff-0.14.10-py3-none-manylinux_2_31_riscv64.whl", hash = "sha256:213db2b2e44be8625002dbea33bb9c60c66ea2c07c084a00d55732689d697a7f"},
+    {file = "ruff-0.14.10-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:b914c40ab64865a17a9a5b67911d14df72346a634527240039eb3bd650e5979d"},
+    {file = "ruff-0.14.10-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:1484983559f026788e3a5c07c81ef7d1e97c1c78ed03041a18f75df104c45405"},
+    {file = "ruff-0.14.10-py3-none-musllinux_1_2_i686.whl", hash = "sha256:c70427132db492d25f982fffc8d6c7535cc2fd2c83fc8888f05caaa248521e60"},
+    {file = "ruff-0.14.10-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:5bcf45b681e9f1ee6445d317ce1fa9d6cba9a6049542d1c3d5b5958986be8830"},
+    {file = "ruff-0.14.10-py3-none-win32.whl", hash = "sha256:104c49fc7ab73f3f3a758039adea978869a918f31b73280db175b43a2d9b51d6"},
+    {file = "ruff-0.14.10-py3-none-win_amd64.whl", hash = "sha256:466297bd73638c6bdf06485683e812db1c00c7ac96d4ddd0294a338c62fdc154"},
+    {file = "ruff-0.14.10-py3-none-win_arm64.whl", hash = "sha256:e51d046cf6dda98a4633b8a8a771451107413b0f07183b2bef03f075599e44e6"},
+    {file = "ruff-0.14.10.tar.gz", hash = "sha256:9a2e830f075d1a42cd28420d7809ace390832a490ed0966fe373ba288e77aaf4"},
 ]
 
 [[package]]
@@ -2563,6 +2627,26 @@ files = [
 ]
 
 [[package]]
+name = "selenium"
+version = "4.39.0"
+requires_python = ">=3.10"
+summary = "Official Python bindings for Selenium WebDriver"
+groups = ["dev"]
+marker = "python_version >= \"3.13\" and python_version < \"3.14\""
+dependencies = [
+    "certifi>=2025.10.5",
+    "trio-websocket<1.0,>=0.12.2",
+    "trio<1.0,>=0.31.0",
+    "typing-extensions<5.0,>=4.15.0",
+    "urllib3[socks]<3.0,>=2.5.0",
+    "websocket-client<2.0,>=1.8.0",
+]
+files = [
+    {file = "selenium-4.39.0-py3-none-any.whl", hash = "sha256:c85f65d5610642ca0f47dae9d5cc117cd9e831f74038bc09fe1af126288200f9"},
+    {file = "selenium-4.39.0.tar.gz", hash = "sha256:12f3325f02d43b6c24030fc9602b34a3c6865abbb1db9406641d13d108aa1889"},
+]
+
+[[package]]
 name = "shellingham"
 version = "1.5.4"
 requires_python = ">=3.7"
@@ -2591,11 +2675,22 @@ name = "sniffio"
 version = "1.3.1"
 requires_python = ">=3.7"
 summary = "Sniff out which async library your code is running under"
-groups = ["llm"]
+groups = ["dev", "llm"]
 marker = "python_version >= \"3.13\" and python_version < \"3.14\""
 files = [
     {file = "sniffio-1.3.1-py3-none-any.whl", hash = "sha256:2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2"},
     {file = "sniffio-1.3.1.tar.gz", hash = "sha256:f4324edc670a0f49750a81b895f35c3adb843cca46f0530f79fc1babb23789dc"},
+]
+
+[[package]]
+name = "sortedcontainers"
+version = "2.4.0"
+summary = "Sorted Containers -- Sorted List, Sorted Dict, Sorted Set"
+groups = ["dev"]
+marker = "python_version >= \"3.13\" and python_version < \"3.14\""
+files = [
+    {file = "sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0"},
+    {file = "sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88"},
 ]
 
 [[package]]
@@ -2724,7 +2819,7 @@ files = [
 
 [[package]]
 name = "textual"
-version = "6.10.0"
+version = "6.11.0"
 requires_python = "<4.0,>=3.9"
 summary = "Modern Text User Interface framework"
 groups = ["tui"]
@@ -2738,8 +2833,8 @@ dependencies = [
     "typing-extensions<5.0.0,>=4.4.0",
 ]
 files = [
-    {file = "textual-6.10.0-py3-none-any.whl", hash = "sha256:b33ffe37bc5f33e76cbe5a2018b4e9e5704f89bb3db0dbf04319261e0369bd3b"},
-    {file = "textual-6.10.0.tar.gz", hash = "sha256:87f52a21fe7527e472c1f1cf01faff95673c8378690b0e1b755ec93a0484dae9"},
+    {file = "textual-6.11.0-py3-none-any.whl", hash = "sha256:9e663b73ed37123a9b13c16a0c85e09ef917a4cfded97814361ed5cccfa40f89"},
+    {file = "textual-6.11.0.tar.gz", hash = "sha256:08237ebda0cfbbfd1a4e2fd3039882b35894a73994f6f0fcc12c5b0d78acf3cc"},
 ]
 
 [[package]]
@@ -2789,8 +2884,47 @@ files = [
 ]
 
 [[package]]
+name = "trio"
+version = "0.32.0"
+requires_python = ">=3.10"
+summary = "A friendly Python library for async concurrency and I/O"
+groups = ["dev"]
+marker = "python_version >= \"3.13\" and python_version < \"3.14\""
+dependencies = [
+    "attrs>=23.2.0",
+    "cffi>=1.14; os_name == \"nt\" and implementation_name != \"pypy\"",
+    "exceptiongroup; python_version < \"3.11\"",
+    "idna",
+    "outcome",
+    "sniffio>=1.3.0",
+    "sortedcontainers",
+]
+files = [
+    {file = "trio-0.32.0-py3-none-any.whl", hash = "sha256:4ab65984ef8370b79a76659ec87aa3a30c5c7c83ff250b4de88c29a8ab6123c5"},
+    {file = "trio-0.32.0.tar.gz", hash = "sha256:150f29ec923bcd51231e1d4c71c7006e65247d68759dd1c19af4ea815a25806b"},
+]
+
+[[package]]
+name = "trio-websocket"
+version = "0.12.2"
+requires_python = ">=3.8"
+summary = "WebSocket library for Trio"
+groups = ["dev"]
+marker = "python_version >= \"3.13\" and python_version < \"3.14\""
+dependencies = [
+    "exceptiongroup; python_version < \"3.11\"",
+    "outcome>=1.2.0",
+    "trio>=0.11",
+    "wsproto>=0.14",
+]
+files = [
+    {file = "trio_websocket-0.12.2-py3-none-any.whl", hash = "sha256:df605665f1db533f4a386c94525870851096a223adcb97f72a07e8b4beba45b6"},
+    {file = "trio_websocket-0.12.2.tar.gz", hash = "sha256:22c72c436f3d1e264d0910a3951934798dcc5b00ae56fc4ee079d46c7cf20fae"},
+]
+
+[[package]]
 name = "typer"
-version = "0.20.0"
+version = "0.20.1"
 requires_python = ">=3.8"
 summary = "Typer, build great CLIs. Easy to code. Based on Python type hints."
 groups = ["default"]
@@ -2802,8 +2936,8 @@ dependencies = [
     "typing-extensions>=3.7.4.3",
 ]
 files = [
-    {file = "typer-0.20.0-py3-none-any.whl", hash = "sha256:5b463df6793ec1dca6213a3cf4c0f03bc6e322ac5e16e13ddd622a889489784a"},
-    {file = "typer-0.20.0.tar.gz", hash = "sha256:1aaf6494031793e4876fb0bacfa6a912b551cf43c1e63c800df8b1a866720c37"},
+    {file = "typer-0.20.1-py3-none-any.whl", hash = "sha256:4b3bde918a67c8e03d861aa02deca90a95bbac572e71b1b9be56ff49affdb5a8"},
+    {file = "typer-0.20.1.tar.gz", hash = "sha256:68585eb1b01203689c4199bc440d6be616f0851e9f0eb41e4a778845c5a0fd5b"},
 ]
 
 [[package]]
@@ -2918,7 +3052,7 @@ name = "typing-extensions"
 version = "4.15.0"
 requires_python = ">=3.9"
 summary = "Backported and Experimental Type Hints for Python 3.9+"
-groups = ["default", "llm", "monorepo-tools", "tui"]
+groups = ["default", "dev", "llm", "monorepo-tools", "tui"]
 marker = "python_version >= \"3.13\" and python_version < \"3.14\""
 files = [
     {file = "typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548"},
@@ -2969,8 +3103,25 @@ name = "urllib3"
 version = "2.6.2"
 requires_python = ">=3.9"
 summary = "HTTP library with thread-safe connection pooling, file post, and more."
-groups = ["default", "docs", "llm", "monorepo-tools"]
+groups = ["default", "dev", "docs", "llm", "monorepo-tools"]
 marker = "python_version >= \"3.13\" and python_version < \"3.14\""
+files = [
+    {file = "urllib3-2.6.2-py3-none-any.whl", hash = "sha256:ec21cddfe7724fc7cb4ba4bea7aa8e2ef36f607a4bab81aa6ce42a13dc3f03dd"},
+    {file = "urllib3-2.6.2.tar.gz", hash = "sha256:016f9c98bb7e98085cb2b4b17b87d2c702975664e4f060c6532e64d1c1a5e797"},
+]
+
+[[package]]
+name = "urllib3"
+version = "2.6.2"
+extras = ["socks"]
+requires_python = ">=3.9"
+summary = "HTTP library with thread-safe connection pooling, file post, and more."
+groups = ["dev"]
+marker = "python_version >= \"3.13\" and python_version < \"3.14\""
+dependencies = [
+    "pysocks!=1.5.7,<2.0,>=1.5.6",
+    "urllib3==2.6.2",
+]
 files = [
     {file = "urllib3-2.6.2-py3-none-any.whl", hash = "sha256:ec21cddfe7724fc7cb4ba4bea7aa8e2ef36f607a4bab81aa6ce42a13dc3f03dd"},
     {file = "urllib3-2.6.2.tar.gz", hash = "sha256:016f9c98bb7e98085cb2b4b17b87d2c702975664e4f060c6532e64d1c1a5e797"},
@@ -3147,6 +3298,18 @@ files = [
 ]
 
 [[package]]
+name = "websocket-client"
+version = "1.9.0"
+requires_python = ">=3.9"
+summary = "WebSocket client for Python with low level API options"
+groups = ["dev"]
+marker = "python_version >= \"3.13\" and python_version < \"3.14\""
+files = [
+    {file = "websocket_client-1.9.0-py3-none-any.whl", hash = "sha256:af248a825037ef591efbf6ed20cc5faa03d3b47b9e5a2230a529eeee1c1fc3ef"},
+    {file = "websocket_client-1.9.0.tar.gz", hash = "sha256:9e813624b6eb619999a97dc7958469217c3176312b3a16a4bd1bc7e08a46ec98"},
+]
+
+[[package]]
 name = "websockets"
 version = "15.0.1"
 requires_python = ">=3.9"
@@ -3203,6 +3366,21 @@ files = [
     {file = "wrapt-2.0.1-cp313-cp313t-win_arm64.whl", hash = "sha256:4b55cacc57e1dc2d0991dbe74c6419ffd415fb66474a02335cb10efd1aa3f84f"},
     {file = "wrapt-2.0.1-py3-none-any.whl", hash = "sha256:4d2ce1bf1a48c5277d7969259232b57645aae5686dba1eaeade39442277afbca"},
     {file = "wrapt-2.0.1.tar.gz", hash = "sha256:9c9c635e78497cacb81e84f8b11b23e0aacac7a136e73b8e5b2109a1d9fc468f"},
+]
+
+[[package]]
+name = "wsproto"
+version = "1.3.2"
+requires_python = ">=3.10"
+summary = "Pure-Python WebSocket protocol implementation"
+groups = ["dev"]
+marker = "python_version >= \"3.13\" and python_version < \"3.14\""
+dependencies = [
+    "h11<1,>=0.16.0",
+]
+files = [
+    {file = "wsproto-1.3.2-py3-none-any.whl", hash = "sha256:61eea322cdf56e8cc904bd3ad7573359a242ba65688716b0710a5eb12beab584"},
+    {file = "wsproto-1.3.2.tar.gz", hash = "sha256:b86885dcf294e15204919950f666e06ffc6c7c114ca900b060d6e16293528294"},
 ]
 
 [[package]]

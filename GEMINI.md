@@ -13,6 +13,7 @@ Roles hierarchy: **user → contributor → admin → superuser**. Tools are tag
 ```bash
 # Setup
 pdm install -G monorepo-tools
+pdm run precommit-install        # REQUIRED: install git hooks
 
 # Database
 docker compose up -d db
@@ -37,9 +38,10 @@ pdm run dev-db-reset            # Reset database volumes
 
 # Code quality
 pdm run format                  # Ruff format
-pdm run lint                    # Ruff check
+pdm run lint                    # Ruff check + agent-doc budgets + docs contract
 pdm run lint-fix                # Auto-fix lint issues
 pdm run typecheck               # Mypy
+pdm run precommit-run           # REQUIRED: run full pre-commit suite before push
 
 # Testing
 pdm run test                    # Run tests (excludes financial/slow/docker)
@@ -124,12 +126,25 @@ Read `.agent/rules/000-rule-index.md` for the complete rulebook. Key points:
 - **Never force push**: If you need to fix something, make a new commit
 - This prevents sync issues between local, remote, and deployed servers
 
+## Agent Docs Budgets (Enforced)
+
+- Keep `.agent/readme-first.md` ≤ 300 lines and `.agent/handoff.md` ≤ 200 lines (enforced by pre-commit).
+- `.agent/handoff.md` should only keep current sprint-critical backend/frontend info; keep older/completed details in
+  `.agent/readme-first.md` (links only) + `docs/`.
+
 ## Testing
 
 - **Protocol mocking**: Mock protocols, not implementations
 - **Explicit fixtures**: Import from `tests/fixtures/`; no conftest magic
 - **Testcontainers**: PostgreSQL integration tests use testcontainers
 - **Markers**: `@pytest.mark.unit`, `@pytest.mark.integration`, `@pytest.mark.docker`, `@pytest.mark.slow`, `@pytest.mark.financial`
+
+### Browser Automation
+
+Playwright (recommended), Selenium, Puppeteer available. Run via `pdm run python scripts/<script>.py`.
+
+- **Credentials**: `superuser@local.dev` / `superuser-password`
+- **HTMX caveat**: Avoid `waitForNavigation()` - use explicit URL waits
 
 ## Documentation Contract
 
@@ -147,21 +162,6 @@ Read `.agent/rules/000-rule-index.md` for the complete rulebook. Key points:
 - **Security**: Argon2 password hashing
 - **Testing**: pytest, pytest-asyncio, testcontainers, httpx
 - **Quality**: Ruff (100 char lines), Mypy
-
-## Puppeteer Visual Testing
-
-For UI screenshots, use Puppeteer with the following login pattern:
-
-```javascript
-// Credentials from .env: BOOTSTRAP_SUPERUSER_EMAIL, BOOTSTRAP_SUPERUSER_PASSWORD
-await page.goto('http://127.0.0.1:8000/login', { waitUntil: 'networkidle0' });
-await page.type('input[name="email"]', 'superuser@local.dev');
-await page.type('input[name="password"]', 'superuser-password');
-await page.evaluate(() => document.querySelector('form').submit());
-await new Promise(r => setTimeout(r, 1500)); // Wait for redirect
-```
-
-**DO NOT** use `page.click()` + `waitForNavigation()` - it times out with HTMX forms.
 
 ## Home Server Deployment
 

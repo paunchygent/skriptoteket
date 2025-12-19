@@ -81,6 +81,10 @@ dev = [
     # If you want local PDF generation alternatives / experiments
     "reportlab",
     "types-reportlab",
+
+    # Browser automation for visual testing
+    "playwright",
+    "selenium",
 ]
 
 # Optional groups (install when needed)
@@ -265,7 +269,11 @@ serve = "uvicorn --app-dir src skriptoteket.web.app:app --host 0.0.0.0 --port 80
 
 # Code quality
 format = "ruff format --force-exclude ."
-lint = "ruff check --force-exclude ."
+lint = { composite = [
+    "ruff check --force-exclude .",
+    "python -m scripts.check_agent_doc_budgets",
+    "python -m scripts.validate_docs",
+] }
 lint-fix = "ruff check --fix --force-exclude ."
 typecheck = "mypy --config-file pyproject.toml src tests"
 
@@ -275,7 +283,7 @@ test-parallel = "pytest -n auto"
 test-sequential = "pytest -n 0"
 
 # Docs-as-code governance
-docs-validate = "python scripts/validate_docs.py"
+docs-validate = "python -m scripts.validate_docs"
 
 # Database
 db-upgrade = "alembic upgrade head"

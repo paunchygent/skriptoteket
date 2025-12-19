@@ -8,11 +8,26 @@ Use this file as the starting point when you begin a new session.
 - **Preserve template structure**: when editing `.agent/handoff.md` or the next-session prompt template, keep headings and section order unchanged; only fill in content.
 - **No secrets**: never include API keys/tokens, passwords, or personal data in `.agent/` or `docs/`.
 - **Use the prompt template for new agents/devs**: if the user asks for a “message to a new developer/agent”, generate it by filling `.agent/next-session-instruction-prompt-template.md` (address the recipient as “you”).
+- **Pre-commit required**: run `pdm run precommit-install` once, then `pdm run precommit-run` before pushing.
+- **Agent-doc size budgets**: keep `.agent/readme-first.md` ≤ 300 lines and `.agent/handoff.md` ≤ 200 lines (enforced by pre-commit).
+
+## Pre-commit & quality gates (required)
+
+- Install hooks: `pdm install -G monorepo-tools` then `pdm run precommit-install`
+- Run before push: `pdm run precommit-run`
+- Quick local gate: `pdm run lint` (Ruff + agent-doc budgets + docs contract)
 
 ## What this repo is
 
 Skriptoteket is a teacher-first Script Hub: users log in, browse tools by profession/category, upload files, and receive results.
 Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future HuleEdu SSO is planned via identity federation.
+
+## Current sprint dashboard (keep current only)
+
+- Sprint: `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md` (SPR-2025-12-22)
+- Backend now: ST-10-03 (normalizer) — next: implement deterministic `UiPayloadNormalizerProtocol`
+  - Entry points: `src/skriptoteket/protocols/tool_ui.py`, `src/skriptoteket/domain/scripting/ui/`
+- Frontend now: N/A (keep frontend history in story docs; handoff stays lean)
 
 ## Current EPIC-04 decisions (dynamic scripts)
 
@@ -44,3 +59,8 @@ Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future H
 ## Session handoff
 
 Before ending a session, update `.agent/handoff.md` with what changed, decisions, and next steps.
+
+Completed/older stories belong in story docs + link index here (not in `.agent/handoff.md`):
+
+- ST-05-12: `docs/backlog/stories/story-05-12-mobile-editor-ux.md`
+- ST-05-11: `docs/backlog/stories/story-05-11-hamburger-htmx-bug.md`

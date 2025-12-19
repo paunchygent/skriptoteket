@@ -2,7 +2,7 @@
 type: story
 id: ST-05-12
 title: "Mobile editor UX: iOS file upload, CodeMirror ordering, width overflow, nav overlay"
-status: in-progress
+status: in_progress
 owners: "agents"
 created: 2025-12-19
 epic: "EPIC-05"
@@ -60,6 +60,14 @@ Four mobile UX issues were discovered during ST-05-11 verification:
 **Files affected:**
 - `src/skriptoteket/web/static/css/app/components.css:447` (mobile nav positioning)
 - `src/skriptoteket/web/static/css/app/layout.css` (header relative positioning)
+
+### Issue 5: Mobile Editor Clipped / No Vertical Scroll
+
+**Symptom:** On mobile (<1024px), CodeMirror shows only a few lines and the editor+sidebar content is clipped instead of scrollable.
+
+**Root cause:** Desktop containment rules (`height: 100%` + `overflow: hidden`) still apply to key editor containers (e.g. `.huleedu-editor-main`, `.huleedu-editor-code-card`, `.huleedu-editor-form`, `.huleedu-editor-sidebar`). The existing mobile overrides do not override these properties effectively, so CodeMirror can still be clipped even when it has a `min-height`.
+
+**Files affected:** `src/skriptoteket/web/static/css/app/editor.css`
 
 ## Implementation Plan
 
@@ -137,6 +145,35 @@ Also add header relative positioning for `top: 100%` to work:
 }
 ```
 
+### Fix 5: Mobile Editor Vertical Growth (Editor-scoped)
+Prefer an editor-scoped change over altering the global frame (`.huleedu-frame`).
+
+Override the remaining desktop containment rules on mobile so stacked editor sections can grow naturally and the page can scroll:
+
+```css
+/* editor.css, on mobile */
+@media (max-width: 1024px) {
+  /* Avoid flex sizing clamping stacked panels to viewport height */
+  .huleedu-editor-page { display: block; height: auto; min-height: 100vh; }
+
+  /* Let editor sections grow naturally */
+  .huleedu-editor-layout { display: flex; flex-direction: column; }
+  .huleedu-editor-main,
+  .huleedu-editor-sidebar,
+  .huleedu-editor-code-card,
+  .huleedu-editor-form { height: auto; overflow: visible; }
+
+  /* Ensure CodeMirror has stable visible height */
+  .huleedu-editor-textarea-wrapper { height: clamp(350px, 40vh, 520px); }
+  .huleedu-editor-textarea-wrapper .CodeMirror { height: 100% !important; min-height: 100% !important; }
+
+  /* Prevent file input + run button layout overflow */
+  .huleedu-editor-run-form { flex-wrap: wrap; }
+  .huleedu-editor-file-field { flex: 1 1 100%; max-width: none; }
+  .huleedu-editor-run-form button[type="submit"] { width: 100%; }
+}
+```
+
 ## Files to Modify
 
 ```text
@@ -153,6 +190,7 @@ src/skriptoteket/web/static/css/app/layout.css          # Header relative positi
 2. **CodeMirror ordering:** Open Testyta on mobile viewport (<1024px) - CodeMirror should appear first, metadata below
 3. **Width overflow:** Navigate between Testyta panels on mobile - no horizontal scroll should appear
 4. **Mobile nav overlay:** Open hamburger in Testyta - dropdown should overlay content, not compress it
+5. **CodeMirror height + scroll:** Open Testyta on mobile - CodeMirror shows ~15-20 lines and page scrolls vertically to reach full editor + sidebar
 
 ## Notes
 

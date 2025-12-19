@@ -34,11 +34,12 @@ Target Python is **3.13–3.14**.
 ## Key Commands
 
 - Setup: `pdm install -G monorepo-tools`
+- Pre-commit (REQUIRED): `pdm run precommit-install` then `pdm run precommit-run`
 - DB (dev): `docker compose up -d db` then `pdm run db-upgrade`
 - Bootstrap first superuser: `pdm run bootstrap-superuser`
 - Run: `pdm run dev`
 - Docker dev workflow: `pdm run dev-start` / `pdm run dev-stop` / `pdm run dev-build-start` / `pdm run dev-build-start-clean` / `pdm run dev-db-reset`
-- Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test`
+- Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test` (lint runs Ruff + agent-doc budgets + docs contract)
 - Docs: `pdm run docs-validate`
 
 ## Tool Execution (Local Dev Only)
@@ -61,12 +62,25 @@ The default `ARTIFACTS_ROOT=/var/lib/skriptoteket/artifacts` doesn't exist local
 - Keep files small (<400–500 LOC); Ruff format + lint (100 chars)
 - Use Pydantic for cross-boundary models; `dataclasses` only inside a single domain
 
+### Browser Automation
+
+Playwright (recommended), Selenium, Puppeteer available. Run via `pdm run python scripts/<script>.py`.
+
+- **Credentials**: `superuser@local.dev` / `superuser-password`
+- **HTMX caveat**: Avoid `waitForNavigation()` - use explicit URL waits
+
 ## Git Workflow
 
 - **Never use `git commit --amend`**: always create fresh commits for fixes discovered after the initial commit
 - **Never force push**: if you need to fix something, make a new commit
 - Include what/why + how to test in commit messages
 - Run `pdm run docs-validate` for doc changes
+
+## Agent docs size budgets (enforced)
+
+- Keep `.agent/readme-first.md` ≤ 300 lines and `.agent/handoff.md` ≤ 200 lines (enforced by pre-commit).
+- `.agent/handoff.md` should only keep current sprint-critical backend/frontend info; move completed story detail to
+  `.agent/readme-first.md` (links only) + `docs/`.
 
 ## Security
 
