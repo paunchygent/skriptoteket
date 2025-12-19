@@ -31,4 +31,3 @@ def test_curated_ui_policy_profile_values() -> None:
     assert CURATED_UI_POLICY.caps.vega_lite_spec_max_bytes == 256 * 1024
 
     assert UiOutputKind.VEGA_LITE in CURATED_UI_POLICY.allowed_output_kinds
-

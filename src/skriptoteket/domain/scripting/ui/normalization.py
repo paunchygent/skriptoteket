@@ -12,4 +12,3 @@ class UiNormalizationResult(BaseModel):
 
     ui_payload: UiPayloadV2
     state: dict[str, JsonValue] = Field(default_factory=dict)
-

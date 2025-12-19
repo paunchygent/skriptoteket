@@ -183,4 +183,3 @@ def get_ui_policy(*, profile_id: UiPolicyProfileId) -> UiPolicy:
     if profile_id is UiPolicyProfileId.CURATED:
         return CURATED_UI_POLICY
     raise ValueError(f"Unknown UiPolicyProfileId: {profile_id}")
-
