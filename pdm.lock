@@ -5,7 +5,7 @@
 groups = ["default", "analysis", "dev", "docs", "llm", "monorepo-tools", "tui"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:d58dde783d7b210f2c744de41014cddfd4916193d2773d344978bdb1f83b961f"
+content_hash = "sha256:973b8349b28cfdcb962d98cdfa1819d01ccb320fd76becb46835ce203b1fb98f"
 
 [[metadata.targets]]
 requires_python = ">=3.13,<3.14"
@@ -1914,6 +1914,18 @@ dependencies = [
 files = [
     {file = "pre_commit-4.5.1-py2.py3-none-any.whl", hash = "sha256:3b3afd891e97337708c1674210f8eba659b52a38ea5f822ff142d10786221f77"},
     {file = "pre_commit-4.5.1.tar.gz", hash = "sha256:eb545fcff725875197837263e977ea257a402056661f09dae08e4b149b030a61"},
+]
+
+[[package]]
+name = "prometheus-client"
+version = "0.23.1"
+requires_python = ">=3.9"
+summary = "Python client for the Prometheus monitoring system."
+groups = ["default"]
+marker = "python_version >= \"3.13\" and python_version < \"3.14\""
+files = [
+    {file = "prometheus_client-0.23.1-py3-none-any.whl", hash = "sha256:dd1913e6e76b59cfe44e7a4b83e01afc9873c1bdfd2ed8739f1e76aeca115f99"},
+    {file = "prometheus_client-0.23.1.tar.gz", hash = "sha256:6ae8f9081eaaaf153a2e959d2e6c4f4fb57b12ef76c8c7980202f1e57b48b2ce"},
 ]
 
 [[package]]

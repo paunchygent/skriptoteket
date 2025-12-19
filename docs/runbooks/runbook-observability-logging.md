@@ -110,3 +110,72 @@ When adding new log statements, verify:
 - [ ] Error messages don't expose internal system details
 - [ ] File paths don't reveal user-specific information
 
+## Health Check Endpoint
+
+`GET /healthz` returns HuleEdu-standard JSON payload:
+
+```json
+{
+  "service": "skriptoteket",
+  "status": "healthy|degraded|unhealthy",
+  "message": "Service is healthy",
+  "version": "0.1.0",
+  "environment": "production",
+  "checks": {
+    "service_responsive": true,
+    "dependencies_available": true
+  },
+  "dependencies": {
+    "database": {"status": "healthy"}
+  }
+}
+```
+
+Response codes:
+
+- `200 OK` - Service is healthy
+- `503 Service Unavailable` - Service is degraded/unhealthy
+
+Docker compose uses `/healthz` for container health checks. Database connectivity is verified with a 2-second timeout.
+
+### Local example
+
+```bash
+curl -s http://127.0.0.1:8000/healthz | jq
+```
+
+### Production example
+
+```bash
+ssh hemma "curl -s http://localhost:8000/healthz" | jq
+```
+
+## Prometheus Metrics Endpoint
+
+`GET /metrics` exposes Prometheus-compatible metrics for scraping.
+
+### Metrics exposed
+
+| Metric | Type | Labels | Description |
+|--------|------|--------|-------------|
+| `skriptoteket_http_requests_total` | Counter | method, endpoint, status_code | Total HTTP requests |
+| `skriptoteket_http_request_duration_seconds` | Histogram | method, endpoint | Request latency |
+
+Labels use route patterns (e.g., `/tools/{id}`) to avoid high cardinality.
+
+### Local example
+
+```bash
+curl -s http://127.0.0.1:8000/metrics | head -50
+```
+
+### Prometheus scrape config
+
+```yaml
+scrape_configs:
+  - job_name: 'skriptoteket'
+    static_configs:
+      - targets: ['skriptoteket-web:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+```

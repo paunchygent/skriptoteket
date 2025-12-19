@@ -33,6 +33,9 @@ dependencies = [
     # Security
     "argon2-cffi",
 
+    # Observability
+    "prometheus-client>=0.20.0",
+
     # Tool registry + docs contract validation helpers
     "pyyaml",
 
