@@ -14,13 +14,32 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-19
-- Branch / commit: `main` @ `3b3c49a` (dirty)
+- Branch / commit: `main` @ `14cd308`
 - Current sprint: `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md`
 - Backend now: ST-10-03 Session C (cleanup refactor: SRP modularize the UI payload normalizer)
+- Observability now: ST-07-02 (Health & Metrics endpoints) - ready for next session
 - Frontend now: N/A (completed work moved to `.agent/readme-first.md`)
-- Goal of next session: refactor the normalizer into SRP modules (no behavior change; no shims)
 
-## 2025-12-19 ST-05-12 Mobile Editor Scroll Follow-up (IN PROGRESS)
+## 2025-12-19 ST-07-02 Health & Metrics (PLANNED)
+
+**Story:** `docs/backlog/stories/story-07-02-healthz-and-metrics-endpoints.md`
+
+Files to modify:
+- `src/skriptoteket/web/app.py:43-45` → Replace `/health` with `/healthz` + HuleEdu payload
+- `src/skriptoteket/web/middleware/metrics.py` (new) → HTTP metrics middleware
+- `compose.prod.yaml:30` + `compose.yaml` → Update healthcheck to `/healthz`
+- `pyproject.toml` → Add `prometheus-client`
+- `docs/runbooks/runbook-observability-logging.md` → Add health/metrics section
+
+Reference: `docs/reference/reports/ref-external-observability-integration.md` (Section 3-5)
+
+## 2025-12-19 ST-07-04 Logging Redaction (DONE)
+
+- Redaction processor: `src/skriptoteket/observability/logging.py`
+- Tests: `tests/unit/observability/test_logging_redaction.py`
+- Policy: `docs/runbooks/runbook-observability-logging.md`
+
+## 2025-12-19 ST-05-12 Mobile Editor Scroll Follow-up (DONE)
 
 - DONE: verified on real iOS device in deployed app (Testyta + Mina verktyg); story marked `done` in `docs/backlog/stories/story-05-12-mobile-editor-ux.md`.
 
