@@ -5,9 +5,10 @@ import sys
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Any
 
 import yaml
+
+type YamlMapping = dict[str, object]
 
 CONTRACT_PATH = Path("docs/_meta/docs-contract.yaml")
 FRONTMATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n", re.DOTALL)
@@ -23,15 +24,22 @@ def normalize_path(path: Path) -> str:
     return str(path).replace("\\", "/")
 
 
-def load_contract() -> dict[str, Any]:
+def _to_str_key_mapping(value: object) -> YamlMapping | None:
+    if not isinstance(value, dict):
+        return None
+    return {str(k): v for k, v in value.items()}
+
+
+def load_contract() -> YamlMapping:
     if not CONTRACT_PATH.exists():
         raise SystemExit(
             f"[docs-validate] Missing contract: {CONTRACT_PATH}\n"
             "Create it or restore it. This file is the source of truth."
         )
 
-    contract = yaml.safe_load(CONTRACT_PATH.read_text(encoding="utf-8")) or {}
-    if not isinstance(contract, dict):
+    raw_contract = yaml.safe_load(CONTRACT_PATH.read_text(encoding="utf-8")) or {}
+    contract = _to_str_key_mapping(raw_contract)
+    if contract is None:
         raise SystemExit("[docs-validate] Contract must parse to a YAML mapping/object.")
 
     if "types" not in contract:
@@ -42,7 +50,7 @@ def load_contract() -> dict[str, Any]:
     return contract
 
 
-def parse_frontmatter(text: str) -> tuple[dict[str, Any] | None, str | None]:
+def parse_frontmatter(text: str) -> tuple[YamlMapping | None, str | None]:
     if not text.startswith("---"):
         return None, "Missing YAML frontmatter block at top of file."
 
@@ -51,17 +59,17 @@ def parse_frontmatter(text: str) -> tuple[dict[str, Any] | None, str | None]:
         return None, "Frontmatter not closed. Expected a second '---' delimiter."
 
     try:
-        frontmatter = yaml.safe_load(match.group(1)) or {}
+        raw_frontmatter = yaml.safe_load(match.group(1)) or {}
     except Exception as exc:  # noqa: BLE001
         return None, f"Invalid YAML in frontmatter: {exc}"
 
-    if not isinstance(frontmatter, dict):
+    frontmatter = _to_str_key_mapping(raw_frontmatter)
+    if frontmatter is None:
         return None, "Frontmatter must parse to a YAML mapping/object."
-
     return frontmatter, None
 
 
-def is_iso_date(value: Any) -> bool:
+def is_iso_date(value: object) -> bool:
     if isinstance(value, date):
         return True
     if isinstance(value, str):
@@ -81,7 +89,7 @@ def top_level_folder(path: Path) -> str | None:
     return None
 
 
-def validate_path_rules(path: Path, contract: dict[str, Any]) -> list[Violation]:
+def validate_path_rules(path: Path, contract: YamlMapping) -> list[Violation]:
     violations: list[Violation] = []
 
     if not path.parts or path.parts[0] != "docs":
@@ -110,7 +118,7 @@ def validate_path_rules(path: Path, contract: dict[str, Any]) -> list[Violation]
     return violations
 
 
-def match_type_by_folder(path: Path, contract: dict[str, Any]) -> str | None:
+def match_type_by_folder(path: Path, contract: YamlMapping) -> str | None:
     norm = normalize_path(path)
     for doc_type, rule in contract["types"].items():
         folder = str(rule["folder"]).rstrip("/").replace("\\", "/")
@@ -150,7 +158,7 @@ def expected_id_from_filename(doc_type: str, filename: str) -> str | None:
     return None
 
 
-def validate_doc(path: Path, contract: dict[str, Any]) -> list[Violation]:
+def validate_doc(path: Path, contract: YamlMapping) -> list[Violation]:
     violations: list[Violation] = []
     norm = normalize_path(path)
 

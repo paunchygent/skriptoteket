@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Any
+
+type ErrorDetails = dict[str, object]
 
 
 class ErrorCode(StrEnum):
@@ -43,12 +44,12 @@ class DomainError(Exception):
         *,
         code: ErrorCode,
         message: str,
-        details: dict[str, Any] | None = None,
+        details: ErrorDetails | None = None,
     ) -> None:
         super().__init__(message)
         self.code = code
         self.message = message
-        self.details = details or {}
+        self.details: ErrorDetails = details if details is not None else {}
 
 
 def not_found(resource: str, resource_id: str) -> DomainError:
@@ -59,5 +60,5 @@ def not_found(resource: str, resource_id: str) -> DomainError:
     )
 
 
-def validation_error(message: str, details: dict[str, Any] | None = None) -> DomainError:
+def validation_error(message: str, details: ErrorDetails | None = None) -> DomainError:
     return DomainError(code=ErrorCode.VALIDATION_ERROR, message=message, details=details)

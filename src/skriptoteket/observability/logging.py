@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import re
 from collections.abc import Mapping
-from typing import Any, Literal
+from typing import Literal
 
 import structlog
 from structlog.types import EventDict, WrappedLogger
@@ -19,13 +19,16 @@ _SENSITIVE_KEY_PATTERNS = re.compile(
 _REDACTED = "[REDACTED]"
 
 
-def _redact_value(value: Any) -> Any:
+def _redact_value(value: object) -> object:
     """Recursively redact sensitive values in nested structures."""
     if isinstance(value, Mapping):
-        return {
-            k: _REDACTED if _SENSITIVE_KEY_PATTERNS.search(k) else _redact_value(v)
-            for k, v in value.items()
-        }
+        redacted: dict[object, object] = {}
+        for key, item in value.items():
+            if isinstance(key, str) and _SENSITIVE_KEY_PATTERNS.search(key):
+                redacted[key] = _REDACTED
+                continue
+            redacted[key] = _redact_value(item)
+        return redacted
     if isinstance(value, list):
         return [_redact_value(item) for item in value]
     return value
@@ -52,7 +55,7 @@ def _add_service_context(*, service_name: str, environment: str):
 
 def _add_trace_context(logger: WrappedLogger, method_name: str, event_dict: EventDict) -> EventDict:
     try:
-        from opentelemetry import trace  # type: ignore[import-not-found]
+        from opentelemetry import trace
 
         span = trace.get_current_span()
         if span and span.is_recording():
