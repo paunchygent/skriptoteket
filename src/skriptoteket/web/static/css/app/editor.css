@@ -98,7 +98,8 @@
 
   .CodeMirror {
     max-width: 100% !important;
-    min-height: 40vh; /* Show enough lines for context (~15-20 lines) */
+    min-height: 350px !important; /* 15-20 lines at 16px font (~22px line-height) */
+    font-size: 16px !important; /* Prevent iOS/Edge auto-zoom on input focus */
   }
 
   .huleedu-editor-page {
