@@ -8,9 +8,10 @@ created: 2025-12-19
 epic: "EPIC-05"
 acceptance_criteria:
   - "Given iOS Safari, when user taps 'Välj fil' on tool run page, then file picker opens without 'Åtgärden tillåts inte' error"
-  - "Given mobile viewport (<1024px), when Testyta loads, then CodeMirror editor appears at top and metadata sidebar appears below"
+  - "Given mobile viewport (<1024px), when Testyta loads, then KÄLLKOD (CodeMirror) appears at top with min 40vh height (~15-20 lines visible), and REDIGERING sidebar appears below"
   - "Given mobile viewport, when navigating between Testyta panels, then viewport width stays within screen bounds (no horizontal scroll)"
   - "Given mobile viewport, when hamburger menu opens in Testyta, then dropdown overlays content cleanly without compressing editor panels"
+  - "Given mobile viewport, the editor page scrolls vertically to accommodate expanded CodeMirror + sidebar without excessive internal scrolling"
 ---
 
 ## Context

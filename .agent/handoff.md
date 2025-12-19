@@ -13,8 +13,8 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-19
-- Branch / commit: `main` @ `24b1fd6`
-- Goal of next session: N/A - ST-05-12 complete.
+- Branch / commit: `main` @ `9b8167c`
+- Goal of next session: Verify ST-05-12 on iOS device.
 
 ## 2025-12-19 ST-05-12 Mobile Editor UX Issues (IMPLEMENTED)
 
@@ -67,6 +67,12 @@ Keep this file updated so the next session can pick up work quickly.
 - Mobile nav overlays content (doesn't push/compress)
 - Editor shows CodeMirror first, sidebar below
 - No horizontal scroll / width overflow
+
+**Follow-up fixes (commit pending):**
+- Mobile nav positioning: Reverted nav outside header, uses `position: absolute` relative to `.huleedu-frame`
+- CodeMirror height: Added `min-height: 40vh` for ~15-20 lines visible
+- Sidebar: Removed `max-height: 40vh` constraint, sizes naturally
+- Editor page: Added `min-height: 100vh` for vertical scrolling
 
 ---
 

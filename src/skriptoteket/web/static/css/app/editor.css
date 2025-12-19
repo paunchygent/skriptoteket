@@ -77,13 +77,14 @@
     width: 100%;
     max-width: none;
     height: auto;
-    max-height: 40vh;
-    overflow-y: auto;
+    max-height: none; /* Remove constraint - let sidebar size naturally */
+    overflow-y: visible;
   }
 
   .huleedu-editor-main {
     width: 100%;
     flex: 1 1 auto;
+    min-height: 50vh; /* Ensure CodeMirror has reasonable height */
   }
 
   /* Prevent viewport overflow from CodeMirror width calculations */
@@ -97,11 +98,13 @@
 
   .CodeMirror {
     max-width: 100% !important;
+    min-height: 40vh; /* Show enough lines for context (~15-20 lines) */
   }
 
   .huleedu-editor-page {
-    overflow-y: auto; /* Fallback for mobile */
+    overflow-y: auto;
     height: auto;
+    min-height: 100vh; /* Allow page to scroll vertically */
   }
 
   /* Ensure touch targets are at least 44x44px */
