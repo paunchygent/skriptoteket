@@ -103,10 +103,11 @@
     min-height: auto;
   }
 
-  /* Match specificity of global .huleedu-editor-textarea-wrapper .CodeMirror rule */
+  /* Override global height: 100% and min-height: 0 for mobile */
   .CodeMirror,
   .huleedu-editor-textarea-wrapper .CodeMirror {
     max-width: 100% !important;
+    height: auto !important; /* Override global height: 100% - allows min-height to work */
     min-height: 350px !important; /* 15-20 lines at 16px font (~22px line-height) */
     font-size: 16px !important; /* Prevent iOS/Edge auto-zoom on input focus */
   }
