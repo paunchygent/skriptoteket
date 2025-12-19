@@ -87,7 +87,7 @@
   margin: 0 var(--huleedu-space-3);
 }
 
-/* Mobile: hide desktop nav, show hamburger */
+/* Mobile: hide desktop nav and logout, show hamburger */
 @media (max-width: 767px) {
   .huleedu-header-nav {
     display: none;
@@ -98,6 +98,11 @@
   }
 
   .huleedu-header-separator {
+    display: none;
+  }
+
+  /* Hide logout button on mobile - it's in the mobile nav dropdown */
+  .huleedu-header-logout {
     display: none;
   }
 }

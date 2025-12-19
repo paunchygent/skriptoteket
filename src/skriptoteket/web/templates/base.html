@@ -42,7 +42,7 @@
           </button>
         {% endif %}
         {% if user %}
-        <form method="post" action="/logout">
+        <form method="post" action="/logout" class="huleedu-header-logout">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
           <button type="submit" class="huleedu-btn huleedu-btn-secondary huleedu-btn-sm">Logga ut</button>
         </form>
@@ -59,6 +59,10 @@
           <a href="/admin/suggestions">Förslag</a>
           <a href="/admin/tools">Testyta</a>
         {% endif %}
+        <form method="post" action="/logout" class="huleedu-mobile-nav-logout">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+          <button type="submit">Logga ut</button>
+        </form>
       </nav>
       {% endif %}
       <main class="{% block main_class %}huleedu-main{% endblock %}">

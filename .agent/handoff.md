@@ -13,8 +13,24 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-19
-- Branch / commit: `main` (dirty working tree)
-- Goal of the session: Complete EPIC-05 frontend responsive stories (ST-05-07, ST-05-08, ST-05-10).
+- Branch / commit: `main` @ `5cab54b`
+- Goal of the session: Deploy EPIC-05 responsive frontend to production.
+
+## 2025-12-19 EPIC-05 Responsive Frontend Deployment
+
+**Deployed:** commit `5cab54b` to production (`hemma.hule.education`)
+
+**Changes deployed:**
+- EPIC-05 responsive frontend (ST-05-07, ST-05-08, ST-05-10)
+- EPIC-10 documentation (planning only, no code)
+
+**Verification:**
+- CSS deployed: hamburger styles present in `/static/css/app/components.css`
+- JS deployed: hamburger toggle handler present in `/static/js/app.js`
+- Mobile login page: responsive layout working correctly
+
+**Note:** Hamburger menu only appears for authenticated users (by design).
+Manual verification recommended: log in and resize browser to <768px to confirm hamburger appears.
 
 ## What changed
 
