@@ -62,6 +62,11 @@ Interactivity is provided by the platform’s UI components (safe), not arbitrar
     - Each action produces a new run + updated state.
     - The platform persists state and rehydrates it for the next turn.
 
+### Implementation Notes
+
+- Default UI approach remains server-rendered/HTMX for most pages.
+- High-complexity editor/runtime surfaces may use embedded SPA islands aligned with HuleEdu (ADR-0025).
+
 ### User Story
 > "As a Teacher creating seating charts, I want to upload my class list and see a drag-and-drop grid. The system should remember where I placed specific students last time so I only have to assign the new transfer student."
 

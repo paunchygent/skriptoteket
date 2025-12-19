@@ -12,13 +12,36 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2025-12-17
+- Date: 2025-12-19
 - Branch / commit: `main` (dirty working tree)
-- Goal of the session: Fix script editor UI sizing/scroll + CodeMirror init + file input hiding (ST-06-08).
+- Goal of the session: Complete EPIC-05 frontend responsive stories (ST-05-07, ST-05-08, ST-05-10).
 
 ## What changed
 
-### Current session (ST-06-08 Editor UI fixes: sizing, borders, CodeMirror init, file input)
+### Current session (EPIC-05 Responsive Frontend: ST-05-07, ST-05-08, ST-05-10)
+
+**ST-05-07 (Frontend stabilization) - VALIDATED:**
+- `src/skriptoteket/web/static/css/app/base.css:62-66` - `@supports clamp()` fluid typography confirmed working
+- `src/skriptoteket/web/static/css/app/layout.css:14-35` - `@supports dvh` progressive enhancement confirmed working
+
+**ST-05-08 (Responsive header with hamburger menu) - DONE:**
+- `src/skriptoteket/web/static/css/app/components.css:409-491` - Added hamburger button styles (44x44px touch target), X animation on expand, mobile nav dropdown
+- `src/skriptoteket/web/static/css/app/layout.css:90-103` - Mobile media query hides desktop nav and header separator at <768px
+- `src/skriptoteket/web/templates/base.html:36-42` - Hamburger button markup with `aria-expanded`, `aria-controls`
+- `src/skriptoteket/web/templates/base.html:51-62` - Mobile nav dropdown with same links as desktop nav
+- `src/skriptoteket/web/static/js/app.js:405-421` - Hamburger toggle handler (click toggles `aria-expanded` and `hidden`)
+
+**ST-05-10 (Editor responsive layout) - DONE:**
+- `src/skriptoteket/web/static/css/app/editor.css:68-100` - At ≤1024px: flex column layout, sidebar `order: -1` (appears above code), `max-height: 40vh` with scroll, touch targets 44px min-height
+
+**Live verification (Puppeteer screenshots):**
+- Mobile (375px): Hamburger visible, menu opens with all nav links, editor sidebar above code
+- Tablet (768px): Desktop nav visible, no hamburger
+- Desktop (1440px): Full layout, two-column editor
+
+**QC gates:** `pdm run lint` and `pdm run typecheck` both pass.
+
+### Previous session (ST-06-08 Editor UI fixes: sizing, borders, CodeMirror init, file input)
 
 - Layout refactor (less brittle across browsers; avoids `calc(100vh - …)`/JS sizing):
   - `src/skriptoteket/web/static/css/app.css` - make `.huleedu-frame` a flex column + use `100dvh`; editor page uses flex/grid with `min-height: 0` + `minmax(0, 1fr)` to keep CodeMirror scroll inside container; toolbar stays pinned within code card.

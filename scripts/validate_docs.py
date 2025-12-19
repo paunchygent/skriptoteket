@@ -129,6 +129,9 @@ def expected_id_from_filename(doc_type: str, filename: str) -> str | None:
     if doc_type == "prd":
         match = re.match(r"^prd-([a-z0-9-]+)-v(\d+\.\d+(?:\.\d+)?)\.md$", filename)
         return f"PRD-{match.group(1)}-v{match.group(2)}" if match else None
+    if doc_type == "release":
+        match = re.match(r"^release-([a-z0-9-]+)-v(\d+\.\d+(?:\.\d+)?)\.md$", filename)
+        return f"REL-{match.group(1)}-v{match.group(2)}" if match else None
     if doc_type == "epic":
         match = re.match(r"^epic-(\d{2})-[a-z0-9-]+\.md$", filename)
         return f"EPIC-{match.group(1)}" if match else None
@@ -279,6 +282,11 @@ def validate_doc(path: Path, contract: dict[str, Any]) -> list[Violation]:
         prd = fm.get("prd")
         if prd is not None and not isinstance(prd, str):
             violations.append(Violation(norm, "Frontmatter 'prd' must be a string."))
+
+    if doc_type == "release":
+        released = fm.get("released")
+        if released is not None and not is_iso_date(released):
+            violations.append(Violation(norm, "Frontmatter 'released' must be YYYY-MM-DD."))
 
     return violations
 

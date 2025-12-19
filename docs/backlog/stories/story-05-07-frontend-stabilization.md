@@ -2,7 +2,7 @@
 type: story
 id: ST-05-07
 title: "Frontend stabilisering och modern CSS"
-status: in_progress
+status: done
 owners: "agents"
 created: 2025-12-17
 epic: "EPIC-05"

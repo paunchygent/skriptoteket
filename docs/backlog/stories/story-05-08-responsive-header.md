@@ -2,7 +2,7 @@
 type: story
 id: ST-05-08
 title: "Responsive header with mobile navigation"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-18
 epic: "EPIC-05"

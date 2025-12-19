@@ -67,12 +67,35 @@
 
 @media (max-width: 1024px) {
   .huleedu-editor-layout {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: unset;
+  }
+
+  .huleedu-editor-sidebar {
+    order: -1; /* Sidebar first on mobile */
+    width: 100%;
+    max-width: none;
+    height: auto;
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+
+  .huleedu-editor-main {
+    width: 100%;
+    flex: 1 1 auto;
   }
 
   .huleedu-editor-page {
     overflow-y: auto; /* Fallback for mobile */
     height: auto;
+  }
+
+  /* Ensure touch targets are at least 44x44px */
+  .huleedu-editor-sidebar .huleedu-btn {
+    min-height: 44px;
+    padding-top: var(--huleedu-space-3);
+    padding-bottom: var(--huleedu-space-3);
   }
 }
 
@@ -157,7 +180,7 @@
   flex: 1 1 auto; /* Fill remaining height; allow shrink */
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  min-height: 250px; /* Floor: ensure ~10-12 lines visible even on mobile */
   min-width: 0;
 }
 

@@ -18,6 +18,7 @@ docs/
   index.md                # entrypoint (eller README.md om ni föredrar)
   adr/
   prd/
+  releases/
   backlog/
     epics/
     stories/
@@ -42,6 +43,7 @@ version: 1
 allowed_top_level:
   - adr
   - prd
+  - releases
   - backlog
   - runbooks
   - reference
@@ -85,6 +87,14 @@ types:
     status_allowed: ["draft", "active", "superseded"]
     required: ["product", "version"]
     optional: ["goals", "non_goals", "metrics"]
+
+  release:
+    folder: docs/releases
+    filename_regex: "^release-[a-z0-9-]+-v\\d+\\.\\d+(?:\\.\\d+)?\\.md$"
+    id_regex: "^REL-[a-z0-9-]+-v\\d+\\.\\d+(?:\\.\\d+)?$"
+    status_allowed: ["draft", "published", "superseded"]
+    required: ["product", "version"]
+    optional: ["released"]
 
   epic:
     folder: docs/backlog/epics

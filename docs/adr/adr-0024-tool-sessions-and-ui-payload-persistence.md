@@ -33,6 +33,27 @@ Add a `tool_sessions` table keyed by (`tool_id`, `user_id`, `context`) containin
 - `state_rev` integer used for optimistic concurrency
 - `created_at` / `updated_at`
 
+DB sketch (columns, not final):
+
+```sql
+tool_sessions (
+  id uuid primary key,
+  tool_id uuid not null,
+  user_id uuid not null,
+  context text not null,
+  state jsonb not null default '{}'::jsonb,
+  state_rev integer not null default 0,
+  created_at timestamptz not null,
+  updated_at timestamptz not null,
+  unique (tool_id, user_id, context)
+)
+```
+
+Notes:
+
+- `context` enables separate session state for the same tool in different UX flows (e.g. `"default"` vs `"testyta"`).
+- The application is the enforcement point for state size caps; DB does not attempt to enforce JSON size.
+
 ### 2) Store normalized UI payload per run
 
 Extend `tool_runs` with a stored, normalized `ui_payload` JSONB.
@@ -40,12 +61,24 @@ Extend `tool_runs` with a stored, normalized `ui_payload` JSONB.
 - `ui_payload` is produced by a deterministic normalizer (policy-driven allowlists + size budgets).
 - The normalizer is the only code allowed to write `ui_payload` (no raw runner payload persistence).
 
+`ui_payload` is the **rendering source of truth** (SSR and SPA use it), and should be sufficient for:
+
+- replaying what the user saw (outputs + actions + system notices)
+- auditing runs (what was rendered and why)
+- deterministic rendering (same payload → same UI)
+
 ### 3) Support multiple run “source kinds”
 
 Extend `tool_runs` to represent either:
 
 - tool-version runs: `source_kind="tool_version"` with `tool_id` + `version_id`
-- curated app runs: `source_kind="curated_app"` with `curated_app_id` + `curated_app_version`
+- curated app runs: `source_kind="curated_app"` with `tool_id` (catalog entry) + `curated_app_id` +
+  `curated_app_version`
+
+Notes:
+
+- Curated apps still appear in Katalog as a catalog entry, so they get a `tool_id` (see ADR-0023).
+- `curated_app_id` is the stable identifier; `tool_id` may be a deterministic UUID derived from it.
 
 ### 4) Minimal API surface
 
@@ -55,6 +88,167 @@ Provide a minimal API for interactive “turn taking”:
 - `get_session_state`: return current state + available actions
 - `get_run`: return stored `ui_payload` + logs/artifacts metadata
 - `list_artifacts`: return stored artifacts for a run
+
+## API shape (minimal, sketch)
+
+These endpoints are intentionally small so they can back both SSR pages and SPA islands (ADR-0025).
+
+### 1) `start_action`
+
+Starts a turn, executes, persists run + state. Requires optimistic concurrency.
+
+Request (example):
+
+```json
+{
+  "tool_id": "uuid",
+  "context": "default",
+  "action_id": "confirm_flags",
+  "input": { "notify_guardians": true },
+  "expected_state_rev": 3
+}
+```
+
+Response (example):
+
+```json
+{
+  "run_id": "uuid",
+  "state_rev": 4
+}
+```
+
+### 2) `get_session_state`
+
+Returns the current session state for a tool in a context.
+
+Response (example):
+
+```json
+{
+  "tool_id": "uuid",
+  "context": "default",
+  "state": {},
+  "state_rev": 4,
+  "latest_run_id": "uuid"
+}
+```
+
+### 3) `get_run`
+
+Returns the stored normalized `ui_payload` for replay/rendering.
+
+Response (example):
+
+```json
+{
+  "run_id": "uuid",
+  "status": "succeeded",
+  "ui_payload": { "contract_version": 2, "outputs": [], "next_actions": [] },
+  "artifacts": [{ "path": "output/report.pdf", "bytes": 120000 }]
+}
+```
+
+### 4) `list_artifacts`
+
+Returns artifacts metadata + download URLs (the download route itself may reuse existing infrastructure).
+
+Response (example):
+
+```json
+{
+  "run_id": "uuid",
+  "artifacts": [
+    { "path": "output/report.pdf", "bytes": 120000, "download_url": "/api/runs/uuid/artifacts/report.pdf" }
+  ]
+}
+```
+
+## UI policy profiles (default vs curated)
+
+Normalization is policy-driven to support:
+
+- strict safety/UX constraints for user-authored tools (default)
+- a curated owner-authored path with higher budgets and additional UI capabilities (curated)
+
+The policy profile is selected per tool/run (see `UiPolicyProviderProtocol` below).
+
+### Default policy (user-authored tools)
+
+Intended for contributor/admin-authored scripts executed in the runner.
+
+- Output kinds: `notice`, `markdown`, `table`, `json`, `html_sandboxed`
+- No arbitrary JS; `html_sandboxed` is always iframe-sandboxed without scripts.
+- Tight budgets (example starting point):
+  - max `state`: 16 KiB
+  - max `ui_payload`: 64 KiB
+  - max outputs: 20
+  - table: max 200 rows, max 20 columns
+
+### Curated policy (owner-authored curated apps)
+
+Intended for curated apps shipped from the repo and not editable via the tool editor workflow.
+
+- Output kinds: default allowlist + optionally `vega_lite`
+- Higher budgets (example starting point):
+  - max `state`: 64 KiB
+  - max `ui_payload`: 256 KiB
+  - table: max 1000 rows, max 50 columns
+
+Curated policy is not “unlimited”; it remains capped to protect DB size and UX stability.
+
+## Validation rules (initial allowlists + caps)
+
+The application validates and normalizes all UI-relevant payloads before storage:
+
+- Allowed output kinds and action field kinds are enforced by policy profile.
+- Unknown kinds are dropped and replaced with a system notice output.
+- All strings are size-capped; output lists are count-capped.
+- Nested JSON (`state`, `json` output) is depth-capped and key-count-capped.
+
+### Vega-Lite restrictions (when enabled)
+
+If `vega_lite` is enabled by policy, the platform must apply strict restrictions:
+
+- Disallow remote data (`data.url`); allow inline `data.values` only.
+- Cap `data.values` row count and total bytes.
+- Disallow transforms/params that can cause heavy computation or unexpected behavior.
+- Allowlist mark types (e.g. `bar`, `line`, `area`, `point`) and basic encodings.
+- Cap total spec size (bytes) and reject specs that exceed it.
+
+## Deterministic UI payload normalizer (sketch)
+
+Normalization must be deterministic and unit-testable. Inputs to normalization:
+
+1. Raw execution result (runner contract v2 or curated app contract v2)
+2. Backend-injected actions/capabilities (policy-gated)
+3. The selected UI policy profile (budgets + allowlists)
+
+High-level algorithm:
+
+1. Validate contract version, status, and basic field types.
+2. Normalize `state` (ensure JSON object; cap size/depth; record truncation as a notice).
+3. Normalize `outputs[]`:
+   - validate kind is allowlisted by policy
+   - apply kind-specific caps (e.g. table rows/cols, markdown length)
+   - replace invalid outputs with `notice` outputs (do not store raw invalid data)
+4. Merge `next_actions[]` with backend-injected actions:
+   - action IDs must be unique; conflicts are treated as contract violations
+   - ordering is deterministic (e.g. sort by `action_id` within source buckets)
+5. Produce a canonical `ui_payload` that SSR and SPA islands can render byte-for-byte consistently.
+
+## Protocol seams (protocol-first DI)
+
+To keep the design protocol-first and unit-testable, introduce these seams:
+
+- `UiPolicyProviderProtocol`:
+  - decides which policy profile (default/curated) applies to a tool/run and exposes budgets/allowlists
+- `BackendActionProviderProtocol`:
+  - returns backend-injected actions/capabilities allowed for the subject + user + policy
+- `UiPayloadNormalizerProtocol`:
+  - takes raw contract v2 + backend-injected actions + budgets and returns the stored `ui_payload`
+
+Implementations live in infrastructure; application handlers depend on protocols only.
 
 ## Consequences
 
@@ -69,4 +263,3 @@ Provide a minimal API for interactive “turn taking”:
 - Adds DB schema changes (new table + new columns) and migration complexity.
 - Requires careful size budgeting to avoid DB bloat (state/payload caps are mandatory).
 - Requires clear ownership for where actions come from (runner vs backend vs curated).
-

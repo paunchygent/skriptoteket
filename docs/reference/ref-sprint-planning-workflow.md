@@ -105,3 +105,27 @@ Use `docs/templates/template-sprint-plan.md` as the starting point and save unde
 - Update epic status if the epic outcome is now complete.
 - Capture any follow-ups as new `ready` or `blocked` stories (do not keep hidden TODOs).
 - If the sprint introduced a new operational concern, add/update a runbook.
+
+## Releases (REQUIRED when shipping a version)
+
+When a PRD milestone is ready to ship (e.g. v0.1), cut a release as an explicit Docs-as-Code artifact.
+
+### Release notes
+
+- Create a release notes doc under `docs/releases/` using `docs/templates/template-release-notes.md`.
+- Status progression:
+  - `draft`: planned / preparing the release
+  - `published`: release shipped (set `released: YYYY-MM-DD`)
+  - `superseded`: a later release replaces these notes (optional, e.g. hotfix rollups)
+- Release notes MUST link to the PRD(s) and key ADR(s) that define scope and major decisions.
+
+### Minimum content for a release
+
+- Summary + highlights (user-visible value)
+- Compatibility/upgrade notes (DB migrations, config/env changes, operational concerns)
+- Known issues / limitations (explicitly documented)
+
+### Repo hygiene (recommended)
+
+- Tag the release in git (e.g. `v0.1.0`) and align the release notes `version` accordingly.
+- Keep SSR/HTMX as the default UI paradigm; SPA islands must be scoped via ADR-0025.

@@ -34,12 +34,33 @@
           {% endif %}
         </div>
         {% if user %}
+          <button class="huleedu-hamburger"
+                  aria-expanded="false"
+                  aria-controls="mobile-nav"
+                  aria-label="Meny">
+            <span></span><span></span><span></span>
+          </button>
+        {% endif %}
+        {% if user %}
         <form method="post" action="/logout">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
           <button type="submit" class="huleedu-btn huleedu-btn-secondary huleedu-btn-sm">Logga ut</button>
         </form>
         {% endif %}
       </header>
+      {% if user %}
+      <nav id="mobile-nav" class="huleedu-mobile-nav" hidden>
+        <a href="/browse">Katalog</a>
+        {% if user.role != "user" %}
+          <a href="/my-tools">Mina verktyg</a>
+          <a href="/suggestions/new">Föreslå skript</a>
+        {% endif %}
+        {% if user.role in ["admin", "superuser"] %}
+          <a href="/admin/suggestions">Förslag</a>
+          <a href="/admin/tools">Testyta</a>
+        {% endif %}
+      </nav>
+      {% endif %}
       <main class="{% block main_class %}huleedu-main{% endblock %}">
         {% block content %}{% endblock %}
       </main>

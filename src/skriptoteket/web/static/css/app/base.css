@@ -59,6 +59,12 @@ h1 { font-size: var(--huleedu-text-3xl); }
 h2 { font-size: var(--huleedu-text-2xl); }
 h3 { font-size: var(--huleedu-text-xl); }
 
+/* Fluid typography: scale headings smoothly between mobile and desktop */
+@supports (font-size: clamp(1rem, 1vw, 2rem)) {
+  h1 { font-size: clamp(var(--huleedu-text-2xl), 2vw + 1rem, var(--huleedu-text-3xl)); }
+  h2 { font-size: clamp(var(--huleedu-text-xl), 1.5vw + 0.875rem, var(--huleedu-text-2xl)); }
+}
+
 p {
   margin: 0 0 var(--huleedu-space-4) 0;
 }

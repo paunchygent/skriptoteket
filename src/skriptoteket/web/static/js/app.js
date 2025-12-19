@@ -402,6 +402,24 @@
     dismissToast(toast);
   });
 
+  // Hamburger menu toggle
+  document.addEventListener("click", function (evt) {
+    if (!evt || !evt.target) return;
+
+    var btn = evt.target.closest(".huleedu-hamburger");
+    if (!btn) return;
+
+    var navId = btn.getAttribute("aria-controls");
+    if (!navId) return;
+
+    var nav = document.getElementById(navId);
+    if (!nav) return;
+
+    var expanded = btn.getAttribute("aria-expanded") === "true";
+    btn.setAttribute("aria-expanded", !expanded);
+    nav.hidden = expanded;
+  });
+
   // Keep underlying <textarea> values in sync for both native submits and HTMX-boosted requests.
   document.addEventListener(
     "submit",

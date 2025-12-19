@@ -30,6 +30,10 @@ outcome: "End users can run multi-turn tools with typed outputs/actions/state, a
 - [ST-10-04: Interactive tool API endpoints (start_action + read APIs)](../stories/story-10-04-interactive-tool-api.md)
 - [ST-10-05: Curated apps registry and catalog integration](../stories/story-10-05-curated-apps-registry.md)
 - [ST-10-06: Curated app execution + persisted runs](../stories/story-10-06-curated-apps-execution.md)
+- [ST-10-07: SSR rendering for typed outputs/actions](../stories/story-10-07-ssr-renderer-for-typed-ui.md)
+- [ST-10-08: Frontend toolchain for SPA islands](../stories/story-10-08-spa-island-toolchain.md)
+- [ST-10-09: Editor SPA island MVP](../stories/story-10-09-editor-spa-island-mvp.md)
+- [ST-10-10: Runtime SPA island MVP (end-user interactive tool UI)](../stories/story-10-10-runtime-spa-island-mvp.md)
 
 ## Risks
 
@@ -42,3 +46,4 @@ outcome: "End users can run multi-turn tools with typed outputs/actions/state, a
 - ADR-0022 (Tool UI contract v2)
 - ADR-0023 (Curated apps)
 - ADR-0024 (Persistence model)
+- ADR-0025 (Embedded SPA islands)

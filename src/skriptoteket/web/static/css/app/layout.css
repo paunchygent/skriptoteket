@@ -8,17 +8,30 @@
   flex-direction: column;
   min-height: 100vh;
   height: 100vh;
-  min-height: 100dvh;
-  height: 100dvh;
   overflow: hidden;
+}
+
+/* Progressive enhancement: use dynamic viewport height where supported */
+@supports (height: 100dvh) {
+  .huleedu-frame {
+    min-height: 100dvh;
+    height: 100dvh;
+  }
 }
 
 @media (min-width: 768px) {
   .huleedu-frame {
     min-height: calc(100vh - var(--huleedu-space-8));
     height: calc(100vh - var(--huleedu-space-8));
-    min-height: calc(100dvh - var(--huleedu-space-8));
-    height: calc(100dvh - var(--huleedu-space-8));
+  }
+}
+
+@media (min-width: 768px) {
+  @supports (height: 100dvh) {
+    .huleedu-frame {
+      min-height: calc(100dvh - var(--huleedu-space-8));
+      height: calc(100dvh - var(--huleedu-space-8));
+    }
   }
 }
 
@@ -72,6 +85,21 @@
   height: 24px;
   background-color: var(--huleedu-navy-30);
   margin: 0 var(--huleedu-space-3);
+}
+
+/* Mobile: hide desktop nav, show hamburger */
+@media (max-width: 767px) {
+  .huleedu-header-nav {
+    display: none;
+  }
+
+  .huleedu-header {
+    flex-wrap: wrap;
+  }
+
+  .huleedu-header-separator {
+    display: none;
+  }
 }
 
 .huleedu-main {

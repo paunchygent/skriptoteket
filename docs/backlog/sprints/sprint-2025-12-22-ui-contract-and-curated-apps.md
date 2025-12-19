@@ -11,7 +11,7 @@ objective: "Establish the contract + persistence foundations for typed outputs/a
 prd: "PRD-script-hub-v0.2"
 epics: ["EPIC-10"]
 stories: ["ST-10-01", "ST-10-02", "ST-10-03"]
-adrs: ["ADR-0022", "ADR-0023", "ADR-0024"]
+adrs: ["ADR-0022", "ADR-0023", "ADR-0024", "ADR-0025"]
 ---
 
 ## Objective
@@ -35,6 +35,7 @@ Establish the contract + persistence foundations for typed outputs/actions/state
 - ADR-0022: Tool UI contract v2
 - ADR-0024: Tool sessions and UI payload persistence
 - ADR-0023: Curated apps registry and execution (review in parallel; implement later)
+- ADR-0025: Embedded SPA islands (scope + coexistence + tooling)
 
 ## Risks / edge cases
 
@@ -62,4 +63,3 @@ Establish the contract + persistence foundations for typed outputs/actions/state
 ## Notes / follow-ups
 
 - Next sprint: ST-10-04, ST-10-05, ST-10-06 (API endpoints + curated apps registry/execution).
-

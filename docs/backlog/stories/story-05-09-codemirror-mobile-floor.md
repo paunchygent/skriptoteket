@@ -2,7 +2,7 @@
 type: story
 id: ST-05-09
 title: "CodeMirror minimum height floor"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-18
 epic: "EPIC-05"

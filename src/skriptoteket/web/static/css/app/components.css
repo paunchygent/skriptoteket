@@ -404,3 +404,88 @@
   color: var(--huleedu-burgundy);
   border-bottom-color: var(--huleedu-burgundy);
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HAMBURGER MENU (Mobile Navigation)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.huleedu-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 44px;
+  height: 44px;
+  padding: var(--huleedu-space-2);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.huleedu-hamburger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background-color: var(--huleedu-navy);
+  transition: transform var(--huleedu-duration-default) var(--huleedu-ease-default),
+              opacity var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+/* Hamburger "X" state when expanded */
+.huleedu-hamburger[aria-expanded="true"] span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+.huleedu-hamburger[aria-expanded="true"] span:nth-child(2) {
+  opacity: 0;
+}
+.huleedu-hamburger[aria-expanded="true"] span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/* Mobile navigation dropdown */
+.huleedu-mobile-nav {
+  display: none;
+  flex-direction: column;
+  padding: var(--huleedu-space-4);
+  background-color: var(--huleedu-canvas);
+  border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+}
+
+.huleedu-mobile-nav:not([hidden]) {
+  display: flex;
+}
+
+.huleedu-mobile-nav a {
+  display: block;
+  padding: var(--huleedu-space-3) 0;
+  font-size: var(--huleedu-text-sm);
+  font-weight: var(--huleedu-font-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-70);
+  border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy-10);
+}
+
+.huleedu-mobile-nav a:last-child {
+  border-bottom: none;
+}
+
+.huleedu-mobile-nav a:hover {
+  color: var(--huleedu-burgundy);
+}
+
+/* Mobile: show hamburger */
+@media (max-width: 767px) {
+  .huleedu-hamburger {
+    display: flex;
+  }
+}
+
+/* Desktop: ensure hamburger + mobile nav are hidden */
+@media (min-width: 768px) {
+  .huleedu-hamburger,
+  .huleedu-mobile-nav {
+    display: none !important;
+  }
+}

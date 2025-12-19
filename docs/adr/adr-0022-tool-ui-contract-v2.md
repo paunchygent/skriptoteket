@@ -46,6 +46,76 @@ Adopt a new **Tool UI contract v2** as a typed boundary between execution and re
 
 Contract v1 is not supported once v2 is adopted; runner and app are upgraded together and mismatched versions are treated as contract violations.
 
+### 1a) Concrete `result.json` schema (v2)
+
+Example (shape, not final field list):
+
+```json
+{
+  "contract_version": 2,
+  "status": "succeeded",
+  "error_summary": null,
+  "outputs": [
+    { "kind": "notice", "level": "info", "message": "Run completed." },
+    { "kind": "markdown", "markdown": "# Attendance summary\\n- Present: 24\\n- Absent: 2" },
+    {
+      "kind": "table",
+      "title": "Students flagged",
+      "columns": [{ "key": "name", "label": "Name" }, { "key": "reason", "label": "Reason" }],
+      "rows": [{ "name": "Ada", "reason": "Late 3x" }]
+    }
+  ],
+  "next_actions": [
+    {
+      "action_id": "confirm_flags",
+      "label": "Confirm flags",
+      "kind": "form",
+      "fields": [{ "name": "notify_guardians", "kind": "boolean", "label": "Notify guardians" }]
+    }
+  ],
+  "state": { "flags_confirmed": true },
+  "artifacts": [{ "path": "output/report.pdf", "bytes": 120000 }]
+}
+```
+
+#### Output kinds (initial allowlist)
+
+The platform defines an allowlist of output kinds. The initial contract supports:
+
+- `notice`: `{level: info|warning|error, message: string}`
+- `markdown`: `{markdown: string}`
+- `table`: `{title?: string, columns: [{key, label}], rows: [{...}]}` (size-capped)
+- `json`: `{title?: string, value: object|array|number|string|boolean|null}` (size-capped)
+- `html_sandboxed`: `{html: string}` rendered in an iframe sandbox without scripts
+
+Optional (policy-gated, likely curated-only at first):
+
+- `vega_lite`: `{spec: object}` rendered by the platform chart component under strict restrictions (see ADR-0024)
+
+#### `next_actions` schema (constrained, platform-rendered)
+
+`next_actions[]` defines what the user can do next. Actions are rendered by the platform as forms and are executed via
+`start_action` (ADR-0024).
+
+Minimal shape:
+
+- `action_id: string` (stable key; must be unique after merge with backend-injected actions)
+- `label: string`
+- `kind: "form"`
+- `fields[]`: a constrained field list that both SSR and SPA islands can render
+
+Field kinds (initial allowlist):
+
+- `string` (single-line), `text` (multi-line)
+- `integer`, `number`
+- `boolean`
+- `enum` (single select), `multi_enum` (multi select)
+
+#### State
+
+`state` is a small JSON object intended for platform persistence (tool session) and replay. It is always subject to
+strict size caps and validation.
+
 ### 2) All interactivity is platform-rendered (no arbitrary JS)
 
 Tools MUST NOT return executable script content for the UI.
@@ -62,6 +132,16 @@ The application normalizes execution output into a stored `ui_payload` using:
 - deterministic truncation rules
 
 Normalization must be pure and unit-testable.
+
+## Compatibility with ADR-0015 (contract v1)
+
+ADR-0015 defines contract v1 (`html_output`, `error_summary`, `artifacts`).
+
+Contract v2 replaces v1:
+
+- `html_output` is replaced by `outputs[]` with `kind="html_sandboxed"` (if HTML is used at all).
+- `error_summary` and `artifacts[]` semantics remain the same.
+- New fields: `next_actions[]` and `state`.
 
 ## Consequences
 

@@ -2,7 +2,7 @@
 type: story
 id: ST-05-10
 title: "Script editor responsive layout"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-18
 epic: "EPIC-05"
