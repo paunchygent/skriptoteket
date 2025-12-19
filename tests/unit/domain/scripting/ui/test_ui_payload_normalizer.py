@@ -69,7 +69,9 @@ def test_normalizer_enforces_markdown_table_html_caps_and_adds_notice() -> None:
 
     assert len(table_out.columns) <= policy.caps.table_max_cols
     assert len(table_out.rows) <= policy.caps.table_max_rows
-    assert _utf8_len(table_out.rows[0]["c0"]) <= policy.caps.table_cell_max_bytes
+    cell = table_out.rows[0]["c0"]
+    assert isinstance(cell, str)
+    assert _utf8_len(cell) <= policy.caps.table_cell_max_bytes
 
     assert any(
         isinstance(o, UiNoticeOutput) and o.message.startswith("System notice:")
@@ -143,7 +145,7 @@ def test_normalizer_is_deterministic_across_input_ordering() -> None:
         }
     )
 
-    backend1 = [
+    backend1: list[dict[str, object]] = [
         {
             "action_id": "backend_d",
             "label": "D",
