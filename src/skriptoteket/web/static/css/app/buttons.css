@@ -8,24 +8,19 @@
   color: var(--huleedu-canvas);
 }
 
+.huleedu-btn:hover {
+  background-color: var(--huleedu-burgundy);
+  color: var(--huleedu-canvas);
+}
+
 .huleedu-btn-navy:hover {
   background-color: var(--huleedu-navy);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
-  color: var(--huleedu-canvas); /* Keep white text on hover (for <a> elements) */
+  color: var(--huleedu-canvas);
 }
 
-/*
- * Large CTA buttons: no color change on hover to avoid sticky hover on touch.
- * Uses subtle inset shadow (press effect) instead of color swap.
- */
-.huleedu-btn:not(.huleedu-btn-navy):not(.huleedu-btn-secondary):not(.huleedu-btn-sm):hover {
-  background-color: var(--huleedu-burgundy);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-.huleedu-btn-navy:not(.huleedu-btn-sm):hover {
-  background-color: var(--huleedu-navy);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+.huleedu-btn-secondary:hover {
+  background-color: transparent;
+  color: var(--huleedu-navy);
 }
 
 /* Small button variant */
@@ -72,7 +67,7 @@
 }
 
 .huleedu-btn-danger:hover {
-  background-color: #b91c1c;
+  background-color: var(--huleedu-error);
 }
 
 /* Active/pressed state for CTA buttons - clear press feedback */
@@ -87,29 +82,22 @@
 }
 
 /*
- * Touch devices: disable hover color swap to avoid "sticky" :hover after tap.
- * Keeps buttons in deterministic published/unpublished visual states.
+ * Desktop pointer hover: add a subtle amber outline.
  */
-@media (hover: none), (pointer: coarse) {
-  .huleedu-btn:not(.huleedu-btn-secondary):not(.huleedu-btn-navy):not(.huleedu-btn-danger):not(:disabled):hover {
-    background-color: var(--huleedu-burgundy);
-    box-shadow: none;
+@media (hover: hover) and (pointer: fine) {
+  .huleedu-btn {
+    transition:
+      background-color var(--huleedu-duration-default) var(--huleedu-ease-default),
+      border-color var(--huleedu-duration-default) var(--huleedu-ease-default),
+      box-shadow var(--huleedu-duration-default) var(--huleedu-ease-default);
   }
 
-  .huleedu-btn-navy:not(:disabled):hover {
-    background-color: var(--huleedu-navy);
-    color: var(--huleedu-canvas);
-    box-shadow: none;
+  /* Keep button identity; use a subtle amber outline on hover. */
+  .huleedu-btn:not(.huleedu-btn-secondary):not(:disabled):not(:active):hover {
+    box-shadow: 0 0 0 2px var(--huleedu-warning);
   }
 
-  .huleedu-btn-secondary:not(:disabled):hover {
-    background-color: transparent;
-    color: var(--huleedu-navy);
-    box-shadow: none;
-  }
-
-  .huleedu-btn-danger:not(:disabled):hover {
-    background-color: var(--huleedu-error);
-    box-shadow: none;
+  .huleedu-btn-secondary:not(:disabled):not(:active):hover {
+    border-color: var(--huleedu-warning);
   }
 }

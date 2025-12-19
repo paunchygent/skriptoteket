@@ -477,7 +477,7 @@
 }
 
 .huleedu-mobile-nav a:hover {
-  color: var(--huleedu-burgundy);
+  color: var(--huleedu-warning);
 }
 
 /* Mobile nav logout button - styled like nav links */
@@ -487,7 +487,7 @@
   padding-top: var(--huleedu-space-2);
 }
 
-.huleedu-mobile-nav-logout button {
+.huleedu-mobile-nav-logout button:not(.huleedu-btn) {
   display: block;
   width: 100%;
   padding: var(--huleedu-space-3) 0;
@@ -502,8 +502,18 @@
   text-align: left;
 }
 
-.huleedu-mobile-nav-logout button:hover {
-  color: var(--huleedu-navy);
+.huleedu-mobile-nav-logout button:not(.huleedu-btn):hover {
+  color: var(--huleedu-warning);
+}
+
+/* If logout is rendered as a proper button, don't override its design system styles. */
+.huleedu-mobile-nav-logout button.huleedu-btn {
+  padding: var(--huleedu-space-3) var(--huleedu-space-4);
+  text-align: center;
+}
+
+.huleedu-mobile-nav-logout button.huleedu-btn:hover {
+  color: var(--huleedu-warning);
 }
 
 /* Remove border from last nav link before logout */

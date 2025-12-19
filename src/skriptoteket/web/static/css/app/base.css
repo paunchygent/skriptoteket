@@ -78,6 +78,12 @@ a:hover {
   color: var(--huleedu-burgundy);
 }
 
+/* App override: link hover uses amber for cohesion with hover affordances */
+.huleedu-link:hover {
+  color: var(--huleedu-warning);
+  border-color: var(--huleedu-warning);
+}
+
 strong {
   font-weight: var(--huleedu-font-semibold);
 }
@@ -98,4 +104,3 @@ pre {
   overflow-x: auto;
   border: var(--huleedu-border-width) solid var(--huleedu-navy-20);
 }
-

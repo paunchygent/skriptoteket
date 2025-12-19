@@ -62,7 +62,9 @@
         {% endif %}
         <form method="post" action="/logout" class="huleedu-mobile-nav-logout">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-          <button type="submit">Logga ut</button>
+          <button type="submit" class="huleedu-btn huleedu-btn-secondary huleedu-btn-sm huleedu-w-full">
+            Logga ut
+          </button>
         </form>
       </nav>
       {% endif %}
