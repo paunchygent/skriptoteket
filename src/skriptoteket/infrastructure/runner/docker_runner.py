@@ -4,9 +4,10 @@ import asyncio
 import io
 import tarfile
 import time
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import PurePosixPath
-from typing import Any
+from typing import Protocol
 from uuid import UUID
 
 import structlog
@@ -23,6 +24,61 @@ from skriptoteket.infrastructure.runner.result_contract import parse_runner_resu
 from skriptoteket.protocols.runner import ArtifactManagerProtocol, ToolRunnerProtocol
 
 logger = structlog.get_logger(__name__)
+
+
+class DockerContainerProtocol(Protocol):
+    def put_archive(self, *, path: str, data: bytes) -> bool: ...
+
+    def start(self) -> None: ...
+
+    def wait(self, *, timeout: int) -> object: ...
+
+    def kill(self) -> None: ...
+
+    def logs(self, *, stdout: bool, stderr: bool) -> bytes: ...
+
+    def get_archive(self, *, path: str) -> tuple[Iterable[bytes], object]: ...
+
+    def remove(self, *, force: bool) -> None: ...
+
+
+class DockerVolumeProtocol(Protocol):
+    @property
+    def name(self) -> str: ...
+
+    def remove(self, *, force: bool) -> None: ...
+
+
+class DockerVolumesClientProtocol(Protocol):
+    def create(self, *, labels: dict[str, str]) -> DockerVolumeProtocol: ...
+
+
+class DockerContainersClientProtocol(Protocol):
+    def create(
+        self,
+        *,
+        image: str,
+        environment: dict[str, str],
+        command: list[str],
+        working_dir: str,
+        network_mode: str,
+        user: str,
+        cap_drop: list[str],
+        pids_limit: int,
+        read_only: bool,
+        tmpfs: dict[str, str],
+        volumes: dict[str, dict[str, str]],
+        mem_limit: str,
+        nano_cpus: int,
+        labels: dict[str, str],
+    ) -> DockerContainerProtocol: ...
+
+
+class DockerClientProtocol(Protocol):
+    volumes: DockerVolumesClientProtocol
+    containers: DockerContainersClientProtocol
+
+    def close(self) -> None: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -181,9 +237,9 @@ class DockerToolRunner(ToolRunnerProtocol):
         input_filename: str,
         input_bytes: bytes,
     ) -> ToolExecutionResult:
-        import docker  # type: ignore[import-untyped]
-        from docker.errors import DockerException, NotFound  # type: ignore[import-untyped]
-        from requests.exceptions import ReadTimeout  # type: ignore[import-untyped]
+        import docker
+        from docker.errors import DockerException, NotFound
+        from requests.exceptions import ReadTimeout
 
         start_time = time.monotonic()
         timeout_seconds = (
@@ -207,7 +263,7 @@ class DockerToolRunner(ToolRunnerProtocol):
         )
 
         nano_cpus = int(self._limits.cpu_limit * 1_000_000_000)
-        env = {
+        env: dict[str, str] = {
             "HOME": "/tmp/home",
             "XDG_CACHE_HOME": "/tmp/home/.cache",
             "SKRIPTOTEKET_SCRIPT_PATH": "/work/script.py",
@@ -218,8 +274,8 @@ class DockerToolRunner(ToolRunnerProtocol):
         }
 
         client = docker.from_env()
-        container = None
-        work_volume = None
+        container: DockerContainerProtocol | None = None
+        work_volume: DockerVolumeProtocol | None = None
 
         try:
             work_volume = client.volumes.create(
@@ -451,11 +507,11 @@ class DockerToolRunner(ToolRunnerProtocol):
     def _store_output_archive(
         self,
         *,
-        container: Any,
+        container: DockerContainerProtocol,
         run_id: UUID,
         reported_artifacts: list[RunnerArtifact],
     ) -> ArtifactsManifest:
-        from docker.errors import DockerException, NotFound  # type: ignore[import-untyped]
+        from docker.errors import DockerException, NotFound
 
         try:
             tar_stream, _ = container.get_archive(path="/work/output")
@@ -470,7 +526,7 @@ class DockerToolRunner(ToolRunnerProtocol):
     def _store_output_archive_safely(
         self,
         *,
-        container: Any,
+        container: DockerContainerProtocol,
         run_id: UUID,
     ) -> ArtifactsManifest:
         try:
