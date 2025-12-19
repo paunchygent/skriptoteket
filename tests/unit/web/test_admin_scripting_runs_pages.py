@@ -2,15 +2,16 @@ from __future__ import annotations
 
 import io
 import uuid
+from collections.abc import Awaitable, Callable, Mapping
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any
+from typing import Protocol, runtime_checkable
 from unittest.mock import AsyncMock
 
 import pytest
 from fastapi import UploadFile
 from starlette.requests import Request
-from starlette.responses import FileResponse
+from starlette.responses import FileResponse, Response
 
 from skriptoteket.application.scripting.commands import RunSandboxResult
 from skriptoteket.config import Settings
@@ -33,9 +34,42 @@ from skriptoteket.protocols.scripting import (
 )
 from skriptoteket.web.pages import admin_scripting_runs
 
+type _AsyncHandler = Callable[..., Awaitable[Response]]
 
-def _original(fn: Any) -> Any:
-    return getattr(fn, "__dishka_orig_func__", fn)
+
+@runtime_checkable
+class _DishkaWrappedHandler(Protocol):
+    __dishka_orig_func__: _AsyncHandler
+
+    def __call__(self, *args: object, **kwargs: object) -> Awaitable[Response]: ...
+
+
+@runtime_checkable
+class _TemplateProtocol(Protocol):
+    name: str
+
+
+@runtime_checkable
+class _TemplateResponseProtocol(Protocol):
+    status_code: int
+    template: _TemplateProtocol
+    context: Mapping[str, object]
+
+
+def _as_str_key_mapping(value: object) -> Mapping[str, object]:
+    assert isinstance(value, Mapping)
+    for key in value.keys():
+        assert isinstance(key, str)
+    return value
+
+
+def _as_list(value: object) -> list[object]:
+    assert isinstance(value, list)
+    return value
+
+
+def _original(fn: _AsyncHandler | _DishkaWrappedHandler) -> _AsyncHandler:
+    return fn.__dishka_orig_func__ if isinstance(fn, _DishkaWrappedHandler) else fn
 
 
 def _request(*, path: str, method: str = "GET", headers: dict[str, str] | None = None) -> Request:
@@ -208,6 +242,7 @@ async def test_run_sandbox_hx_request_domain_error_returns_inline_html() -> None
         file=file,
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 400
     assert response.template.name == "admin/partials/run_error_with_toast.html"
     assert response.context["type"] == "error"
@@ -255,12 +290,13 @@ async def test_run_sandbox_hx_request_success_renders_run_result_partial() -> No
         file=file,
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 200
     assert response.template.name == "admin/partials/run_result_with_toast.html"
     assert response.context["run"] == run
-    assert response.context["artifacts"][0]["download_url"] == (
-        f"/admin/tool-runs/{run.id}/artifacts/a1"
-    )
+    artifacts = _as_list(response.context["artifacts"])
+    first = _as_str_key_mapping(artifacts[0])
+    assert first["download_url"] == f"/admin/tool-runs/{run.id}/artifacts/a1"
 
     called_command = handler.handle.call_args.kwargs["command"]
     assert called_command.tool_id == tool_id
@@ -312,6 +348,7 @@ async def test_run_sandbox_non_hx_success_renders_editor_with_run() -> None:
         file=file,
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 200
     assert response.template.name == "admin/script_editor.html"
     assert response.context["csrf_token"] == session.csrf_token
@@ -343,6 +380,7 @@ async def test_get_run_renders_run_partial_for_owner() -> None:
         user=user,
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 200
     assert response.template.name == "admin/partials/run_result_with_toast.html"
     assert response.context["run"] == run

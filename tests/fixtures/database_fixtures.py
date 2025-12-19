@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-from testcontainers.postgres import PostgresContainer  # type: ignore[import-untyped]
+from testcontainers.postgres import PostgresContainer
 
 
 def _to_async_database_url(url: str) -> str:

@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Awaitable, Callable
 from datetime import datetime, timedelta, timezone
-from typing import Any
+from typing import Protocol, runtime_checkable
 from unittest.mock import AsyncMock
 
 import pytest
 from starlette.requests import Request
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, Response
 
 from skriptoteket.application.catalog.queries import ListToolsForAdminResult
 from skriptoteket.domain.catalog.models import Tool
@@ -20,9 +21,30 @@ from skriptoteket.protocols.catalog import (
 )
 from skriptoteket.web.pages import admin_tools
 
+type _AsyncHandler = Callable[..., Awaitable[Response]]
 
-def _original(fn: Any) -> Any:
-    return getattr(fn, "__dishka_orig_func__", fn)
+
+@runtime_checkable
+class _DishkaWrappedHandler(Protocol):
+    __dishka_orig_func__: _AsyncHandler
+
+    def __call__(self, *args: object, **kwargs: object) -> Awaitable[Response]: ...
+
+
+@runtime_checkable
+class _TemplateProtocol(Protocol):
+    name: str
+
+
+@runtime_checkable
+class _TemplateResponseProtocol(Protocol):
+    status_code: int
+    template: _TemplateProtocol
+    context: dict[str, object]
+
+
+def _original(fn: _AsyncHandler | _DishkaWrappedHandler) -> _AsyncHandler:
+    return fn.__dishka_orig_func__ if isinstance(fn, _DishkaWrappedHandler) else fn
 
 
 def _request(*, path: str, method: str = "GET") -> Request:
@@ -96,6 +118,7 @@ async def test_list_tools_renders_admin_tools_template_with_csrf_and_tools() -> 
         updated="1",
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 200
     assert response.template.name == "admin_tools.html"
     assert response.context["csrf_token"] == session.csrf_token
@@ -169,6 +192,7 @@ async def test_publish_tool_domain_error_renders_template_with_status_and_error(
         session=session,
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 409
     assert response.template.name == "admin_tools.html"
     assert response.context["csrf_token"] == session.csrf_token
@@ -226,6 +250,7 @@ async def test_depublish_tool_domain_error_renders_template_with_status_and_erro
         session=session,
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 403
     assert response.template.name == "admin_tools.html"
     assert response.context["csrf_token"] == session.csrf_token

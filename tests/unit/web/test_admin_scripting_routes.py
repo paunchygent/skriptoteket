@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Mapping
+from typing import Protocol, runtime_checkable
 from unittest.mock import AsyncMock
 
 import pytest
@@ -13,6 +15,7 @@ from skriptoteket.application.scripting.commands import (
     SaveDraftVersionResult,
     SubmitForReviewResult,
 )
+from skriptoteket.domain.catalog.models import Tool
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.models import VersionState
@@ -40,6 +43,18 @@ from tests.unit.web.admin_scripting_test_support import (
 )
 
 
+@runtime_checkable
+class _TemplateProtocol(Protocol):
+    name: str
+
+
+@runtime_checkable
+class _TemplateResponseProtocol(Protocol):
+    status_code: int
+    template: _TemplateProtocol
+    context: Mapping[str, object]
+
+
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_script_editor_for_tool_renders_starter_template_when_no_versions() -> None:
@@ -64,9 +79,12 @@ async def test_script_editor_for_tool_renders_starter_template_when_no_versions(
         session=session,
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 200
     assert response.template.name == "admin/script_editor.html"
-    assert "Received file of" in response.context["editor_source_code"]
+    editor_source_code = response.context["editor_source_code"]
+    assert isinstance(editor_source_code, str)
+    assert "Received file of" in editor_source_code
 
 
 @pytest.mark.unit
@@ -127,10 +145,15 @@ async def test_update_tool_metadata_domain_error_renders_editor_with_error() -> 
         summary="Summary",
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 400
     assert response.template.name == "admin/script_editor.html"
-    assert response.context["tool"].title == " "
-    assert response.context["error"]
+    tool_in_context = response.context["tool"]
+    assert isinstance(tool_in_context, Tool)
+    assert tool_in_context.title == " "
+    error = response.context["error"]
+    assert isinstance(error, str)
+    assert error
 
 
 @pytest.mark.unit
@@ -159,9 +182,12 @@ async def test_version_history_renders_partial_for_admin() -> None:
         user=user,
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 200
     assert response.template.name == "admin/partials/version_list.html"
-    assert response.context["tool"].id == tool.id
+    tool_in_context = response.context["tool"]
+    assert isinstance(tool_in_context, Tool)
+    assert tool_in_context.id == tool.id
     assert response.context["versions"] == versions
 
 
@@ -230,6 +256,7 @@ async def test_script_editor_for_version_renders_editor_when_allowed() -> None:
         session=session,
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 200
     assert response.template.name == "admin/script_editor.html"
 
@@ -308,6 +335,7 @@ async def test_create_draft_invalid_derived_from_uuid_renders_error() -> None:
         derived_from_version_id="not-a-uuid",
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 400
     assert response.template.name == "admin/script_editor.html"
 

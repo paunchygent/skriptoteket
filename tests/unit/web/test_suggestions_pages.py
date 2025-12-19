@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Awaitable, Callable, Mapping
 from datetime import datetime, timedelta, timezone
-from typing import Any
+from typing import Protocol, runtime_checkable
 from unittest.mock import AsyncMock
 
 import pytest
 from starlette.requests import Request
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, Response
 
 from skriptoteket.application.catalog.queries import (
     ListAllCategoriesResult,
@@ -42,9 +43,37 @@ from skriptoteket.protocols.suggestions import (
 )
 from skriptoteket.web.pages import suggestions
 
+type _AsyncHandler = Callable[..., Awaitable[Response]]
 
-def _original(fn: Any) -> Any:
-    return getattr(fn, "__dishka_orig_func__", fn)
+
+@runtime_checkable
+class _DishkaWrappedHandler(Protocol):
+    __dishka_orig_func__: _AsyncHandler
+
+    def __call__(self, *args: object, **kwargs: object) -> Awaitable[Response]: ...
+
+
+@runtime_checkable
+class _TemplateProtocol(Protocol):
+    name: str
+
+
+@runtime_checkable
+class _TemplateResponseProtocol(Protocol):
+    status_code: int
+    template: _TemplateProtocol
+    context: Mapping[str, object]
+
+
+def _as_str_key_mapping(value: object) -> Mapping[str, object]:
+    assert isinstance(value, Mapping)
+    for key in value.keys():
+        assert isinstance(key, str)
+    return value
+
+
+def _original(fn: _AsyncHandler | _DishkaWrappedHandler) -> _AsyncHandler:
+    return fn.__dishka_orig_func__ if isinstance(fn, _DishkaWrappedHandler) else fn
 
 
 def _request(*, path: str, method: str = "GET") -> Request:
@@ -168,13 +197,15 @@ async def test_new_suggestion_page_renders_form_with_taxonomy_lists() -> None:
         submitted=None,
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 200
     assert response.template.name == "suggestions_new.html"
     assert response.context["csrf_token"] == session.csrf_token
     assert response.context["error"] is None
     assert response.context["professions"] == professions
     assert response.context["categories"] == categories
-    assert response.context["form"]["title"] == ""
+    form = _as_str_key_mapping(response.context["form"])
+    assert form["title"] == ""
 
 
 @pytest.mark.unit
@@ -241,12 +272,14 @@ async def test_submit_suggestion_validation_error_renders_template_with_status_4
         session=session,
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 400
     assert response.template.name == "suggestions_new.html"
     assert response.context["error"] == "Bad input"
     assert response.context["submitted"] is None
-    assert response.context["form"]["title"] == "Title"
-    assert response.context["form"]["profession_slugs"] == ["teacher"]
+    form = _as_str_key_mapping(response.context["form"])
+    assert form["title"] == "Title"
+    assert form["profession_slugs"] == ["teacher"]
 
 
 @pytest.mark.unit
@@ -267,6 +300,7 @@ async def test_suggestions_review_queue_renders_queue_template() -> None:
         session=session,
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 200
     assert response.template.name == "suggestions_review_queue.html"
     assert response.context["csrf_token"] == session.csrf_token
@@ -305,13 +339,15 @@ async def test_suggestion_review_detail_success_sets_can_decide_for_pending() ->
         saved="1",
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 200
     assert response.template.name == "suggestions_review_detail.html"
     assert response.context["saved"] == "1"
     assert response.context["suggestion"] == suggestion
     assert response.context["decisions"] == decisions
     assert response.context["can_decide"] is True
-    assert response.context["form"]["decision"] == "accept"
+    form = _as_str_key_mapping(response.context["form"])
+    assert form["decision"] == "accept"
 
 
 @pytest.mark.unit
@@ -339,6 +375,7 @@ async def test_suggestion_review_detail_not_found_renders_template_with_404() ->
         saved=None,
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 404
     assert response.template.name == "suggestions_review_detail.html"
     assert response.context["suggestion"] is None
@@ -428,6 +465,7 @@ async def test_decide_suggestion_domain_error_renders_detail_template_with_statu
         session=None,
     )
 
+    assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 409
     assert response.template.name == "suggestions_review_detail.html"
     assert response.context["error"] == "Already reviewed"

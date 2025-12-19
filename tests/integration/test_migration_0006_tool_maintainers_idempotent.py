@@ -8,7 +8,7 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
-from testcontainers.postgres import PostgresContainer  # type: ignore[import-untyped]
+from testcontainers.postgres import PostgresContainer
 
 
 def _to_async_database_url(url: str) -> str:

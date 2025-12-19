@@ -1,18 +1,29 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Awaitable, Callable
 from datetime import datetime, timedelta, timezone
-from typing import Any
+from typing import Protocol, runtime_checkable
 
 from starlette.requests import Request
+from starlette.responses import Response
 
 from skriptoteket.domain.catalog.models import Tool
 from skriptoteket.domain.identity.models import AuthProvider, Role, Session, User
 from skriptoteket.domain.scripting.models import ToolVersion, VersionState, compute_content_hash
 
+type _AsyncHandler = Callable[..., Awaitable[Response]]
 
-def _original(fn: Any) -> Any:
-    return getattr(fn, "__dishka_orig_func__", fn)
+
+@runtime_checkable
+class _DishkaWrappedHandler(Protocol):
+    __dishka_orig_func__: _AsyncHandler
+
+    def __call__(self, *args: object, **kwargs: object) -> Awaitable[Response]: ...
+
+
+def _original(fn: _AsyncHandler | _DishkaWrappedHandler) -> _AsyncHandler:
+    return fn.__dishka_orig_func__ if isinstance(fn, _DishkaWrappedHandler) else fn
 
 
 def _request(*, path: str, headers: dict[str, str] | None = None) -> Request:
