@@ -30,4 +30,3 @@ rapportmallar, cache/lagring, etc).
   - `docs/runbooks/runbook-script-bank-seeding.md`
 - Test:
   - `tests/unit/test_script_bank.py`
-

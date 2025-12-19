@@ -98,4 +98,3 @@ Tips: Kör `--slug ...` när du bara vill uppdatera ett specifikt verktyg.
 - För att backa kod:
   - Öppna skripteditor, välj en tidigare version, skapa ett nytt utkast baserat på den och publicera.
   - (Superuser-rollbackflöde är separat och kan byggas senare.)
-

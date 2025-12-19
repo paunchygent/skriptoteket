@@ -18,4 +18,3 @@ dependencies: ["ADR-0022", "ADR-0024", "ADR-0025", "ST-10-02", "ST-10-03", "ST-1
 
 Typed outputs/actions/state enable safe platform-rendered interactivity. A SPA island can provide a richer UX for
 multi-turn tools and curated apps while keeping the rest of Skriptoteket server-rendered.
-

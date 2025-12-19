@@ -42,4 +42,3 @@ tools can ship without blocking on SPA islands.
 
 - `pdm run docs-validate`
 - `pdm run test` (SSR rendering helpers + output component tests if present)
-

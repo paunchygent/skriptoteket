@@ -25,4 +25,3 @@ Reference: `docs/reference/reports/ref-external-observability-integration.md`.
 - Add OTEL SDK + exporter wiring behind env flags.
 - Instrument FastAPI + key application operations (execution/runner).
 - Document environment variables and validation steps in runbooks.
-

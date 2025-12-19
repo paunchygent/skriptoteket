@@ -18,4 +18,3 @@ dependencies: ["ADR-0024"]
 ## Context
 
 Multi-turn tools require a small persisted state per user and tool, with concurrency controls to avoid multi-tab races.
-

@@ -18,4 +18,3 @@ dependencies: ["ADR-0023", "ADR-0024", "ST-10-03"]
 
 Curated apps must be auditable and consistent with tool execution UX, while remaining separate from the tool version
 governance model.
-

@@ -40,4 +40,3 @@ This document is `draft` until the release is cut and a `released:` date is reco
 
 - Mobile/touch UX improvements are planned separately (responsive adaptation stories).
 - HTML tool output is sandboxed and cannot execute scripts; richer interactivity requires the v0.2 UI contract.
-

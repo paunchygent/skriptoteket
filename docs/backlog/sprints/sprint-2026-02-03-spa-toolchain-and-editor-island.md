@@ -43,4 +43,3 @@ contributor tool editors.
 
 - `pdm run docs-validate`
 - `pdm run test` (or frontend unit tests if added in ST-10-08)
-

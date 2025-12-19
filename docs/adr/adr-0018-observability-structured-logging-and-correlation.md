@@ -50,4 +50,3 @@ Implementation:
 - Logs become queryable by `service.name`, `deployment.environment`, `correlation_id` (and later `trace_id`) in Loki.
 - Exception debugging improves via consistent callsite fields and structured context.
 - Requires discipline to avoid logging PII/secrets; follow-up work adds redaction + policy (ST-07-04).
-

@@ -50,4 +50,3 @@ for_type: release
 - PRD(s):
 - ADR(s):
 - Epic(s) / stories:
-

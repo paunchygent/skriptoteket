@@ -103,4 +103,3 @@ To prevent HTMX from interfering with the SPA island:
 - Introduces a second frontend toolchain (pnpm/Vite) alongside Python tooling.
 - Requires clear boundaries to avoid “two paradigms everywhere”.
 - Requires careful CSS isolation to avoid Tailwind/global style conflicts with existing CSS.
-

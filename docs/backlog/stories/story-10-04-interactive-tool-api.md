@@ -18,4 +18,3 @@ dependencies: ["ADR-0024", "ST-10-02", "ST-10-03"]
 
 Interactive tools require a minimal API surface that supports turn-taking and state persistence while remaining
 compatible with the existing server-rendered UI.
-

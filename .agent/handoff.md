@@ -14,24 +14,23 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-19
-- Branch / commit: `main` @ `14cd308`
+- Branch / commit: `main` @ `6ed0b5f` (uncommitted changes for ST-07-02)
 - Current sprint: `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md`
 - Backend now: ST-10-03 Session C (cleanup refactor: SRP modularize the UI payload normalizer)
-- Observability now: ST-07-02 (Health & Metrics endpoints) - ready for next session
 - Frontend now: N/A (completed work moved to `.agent/readme-first.md`)
 
-## 2025-12-19 ST-07-02 Health & Metrics (PLANNED)
+## 2025-12-19 ST-07-02 Health & Metrics (DONE)
 
 **Story:** `docs/backlog/stories/story-07-02-healthz-and-metrics-endpoints.md`
 
-Files to modify:
-- `src/skriptoteket/web/app.py:43-45` → Replace `/health` with `/healthz` + HuleEdu payload
-- `src/skriptoteket/web/middleware/metrics.py` (new) → HTTP metrics middleware
-- `compose.prod.yaml:30` + `compose.yaml` → Update healthcheck to `/healthz`
-- `pyproject.toml` → Add `prometheus-client`
-- `docs/runbooks/runbook-observability-logging.md` → Add health/metrics section
-
-Reference: `docs/reference/reports/ref-external-observability-integration.md` (Section 3-5)
+Implementation (HuleEdu singleton pattern):
+- `src/skriptoteket/observability/metrics.py` - Prometheus metrics singleton
+- `src/skriptoteket/observability/health.py` - Health check logic with 2s DB timeout
+- `src/skriptoteket/web/middleware/metrics.py` - HTTP metrics middleware (uses singleton)
+- `src/skriptoteket/web/routes/observability.py` - `/healthz` and `/metrics` endpoints
+- `compose.yaml` + `compose.prod.yaml` - Updated healthcheck URL to `/healthz`
+- `pyproject.toml` - Added `prometheus-client>=0.20.0`
+- `docs/runbooks/runbook-observability-logging.md` - Added Health/Metrics sections
 
 ## 2025-12-19 ST-07-04 Logging Redaction (DONE)
 
@@ -47,8 +46,9 @@ Reference: `docs/reference/reports/ref-external-observability-integration.md` (S
 
 - Home/login confirmation: controlled line breaks + safe email wrapping in `src/skriptoteket/web/templates/home.html`.
 - Browse lists: add spacing between long labels and arrow in `src/skriptoteket/web/static/css/app/components.css`.
-- Publish/unpublish: disable hover color-swap on touch to prevent “sticky hover” in `src/skriptoteket/web/static/css/app/buttons.css`.
-- Verification: `pdm run dev` + `pdm run ui-smoke` (Playwright, iPhone profile) → screenshots in `.artifacts/ui-smoke/`.
+- Buttons: remove hover color-swap (no burgundy→navy swap), add amber hover outline/border in `src/skriptoteket/web/static/css/app/buttons.css`.
+- Mobile nav: style hamburger “Logga ut” as a proper secondary button (navy outline) + amber hover in `src/skriptoteket/web/templates/base.html` + `src/skriptoteket/web/static/css/app/components.css`.
+- Verification: `pdm run ui-smoke` (Playwright: iPhone + desktop hover) → screenshots in `.artifacts/ui-smoke/`.
 
 ## 2025-12-19 ST-05-12 Mobile Editor UX Issues (DONE)
 

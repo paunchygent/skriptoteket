@@ -20,4 +20,3 @@ Skriptoteket handles school-related data. Observability must not become a data l
 
 - Add a redaction processor to structlog configuration.
 - Add a short policy section to the observability runbook and reference it from relevant stories/ADRs.
-

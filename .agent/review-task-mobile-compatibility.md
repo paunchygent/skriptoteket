@@ -1,8 +1,8 @@
 # Review Task: Mobile/Touch Screen Compatibility Planning
 
-**Reviewer:** Lead Architect  
-**Created:** 2025-12-18  
-**Status:** Awaiting Review  
+**Reviewer:** Lead Architect
+**Created:** 2025-12-18
+**Status:** Awaiting Review
 
 ---
 

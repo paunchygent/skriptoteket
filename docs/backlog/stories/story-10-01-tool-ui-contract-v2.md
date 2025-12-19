@@ -2,7 +2,7 @@
 type: story
 id: ST-10-01
 title: "Tool UI contract v2 (runner result.json)"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2025-12-19
 epic: "EPIC-10"

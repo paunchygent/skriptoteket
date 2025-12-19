@@ -19,4 +19,3 @@ dependencies: ["ADR-0025", "ST-10-08"]
 The admin and contributor editor surfaces are at the complexity boundary for Jinja + HTMX + raw JS, especially around
 CodeMirror sizing, state, and richer editor interactions. This story delivers the minimal embedded SPA island that can
 grow.
-

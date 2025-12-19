@@ -204,4 +204,3 @@ When the v0.2 scope is complete enough to ship:
 - Create `docs/releases/release-script-hub-v0.2.md` from `docs/templates/template-release-notes.md`.
 - Set `status: published` and add `released: YYYY-MM-DD`.
 - Link the release notes to the shipped PRD/ADRs and the completed sprint(s).
-

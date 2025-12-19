@@ -99,9 +99,9 @@ def add_trace_context(logger: Any, method_name: str, event_dict: dict) -> dict:
 def configure_logging(service_name: str, log_level: str = "INFO"):
     """Configure structured JSON logging."""
     import logging
-    
+
     os.environ.setdefault("SERVICE_NAME", service_name)
-    
+
     processors = [
         structlog.contextvars.merge_contextvars,
         add_service_context,
@@ -118,7 +118,7 @@ def configure_logging(service_name: str, log_level: str = "INFO"):
         structlog.processors.format_exc_info,
         structlog.processors.JSONRenderer(),
     ]
-    
+
     logging.basicConfig(format="%(message)s", level=getattr(logging, log_level))
     structlog.configure(
         processors=processors,
@@ -172,18 +172,18 @@ def init_tracing(service_name: str) -> trace.Tracer:
         "deployment.environment": os.getenv("ENVIRONMENT", "development"),
         "service.namespace": "huleedu",
     })
-    
+
     # OTLP exporter (Jaeger supports OTLP on port 4317)
     otlp_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://jaeger:4317")
     exporter = OTLPSpanExporter(endpoint=otlp_endpoint, insecure=True)
-    
+
     provider = TracerProvider(resource=resource)
     provider.add_span_processor(BatchSpanProcessor(exporter))
     trace.set_tracer_provider(provider)
-    
+
     # W3C Trace Context for cross-service propagation
     set_global_textmap(TraceContextTextMapPropagator())
-    
+
     return trace.get_tracer(service_name)
 ```
 
@@ -296,18 +296,18 @@ async def metrics_middleware(request, call_next):
     start = time.time()
     response = await call_next(request)
     duration = time.time() - start
-    
+
     http_requests.labels(
         method=request.method,
         endpoint=request.path,
         status_code=str(response.status_code),
     ).inc()
-    
+
     http_duration.labels(
         method=request.method,
         endpoint=request.path,
     ).observe(duration)
-    
+
     return response
 ```
 
@@ -383,7 +383,7 @@ async def health_check():
     checks = {"service_responsive": True, "dependencies_available": True}
     dependencies = {}
     overall_status = "healthy"
-    
+
     # Check database
     try:
         async with engine.begin() as conn:
@@ -393,10 +393,10 @@ async def health_check():
         dependencies["database"] = {"status": "unhealthy", "error": str(e)}
         overall_status = "degraded"
         checks["dependencies_available"] = False
-    
+
     # Check other dependencies (Redis, Kafka, etc.)
     # ...
-    
+
     status_code = 200 if overall_status == "healthy" else 503
     return jsonify({
         "service": settings.SERVICE_NAME,

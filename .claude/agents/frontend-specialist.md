@@ -119,7 +119,7 @@ export const useAuthStore = defineStore('auth', () => {
   Define schema matching BFF's screen-specific DTO
   export const BatchClientStatusSchema = z.enum([
   'pending_content', 'ready', 'processing',
-  'completed_successfully', 'completed_with_failures', 
+  'completed_successfully', 'completed_with_failures',
   'failed', 'cancelled'
 ])
 

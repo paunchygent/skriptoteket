@@ -31,4 +31,3 @@ Reference: `docs/reference/reports/ref-external-observability-integration.md`.
 
 - Avoid logging tool stdout/stderr/html (already persisted to DB); log metadata only.
 - Include optional trace fields (`trace_id`, `span_id`) when OpenTelemetry is enabled.
-

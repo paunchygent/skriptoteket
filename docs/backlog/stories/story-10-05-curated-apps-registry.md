@@ -17,4 +17,3 @@ dependencies: ["ADR-0023"]
 
 Curated apps allow the owner to ship richer “apps” safely without exposing those capabilities to user-authored scripts
 or the editor workflow.
-

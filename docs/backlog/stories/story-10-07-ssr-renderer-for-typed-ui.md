@@ -18,4 +18,3 @@ dependencies: ["ADR-0022", "ST-10-03", "ST-10-04"]
 
 Even with SPA islands approved for high-complexity surfaces, Skriptoteket should be able to render typed outputs and
 actions in server-rendered pages to keep the default UI paradigm consistent and to allow incremental rollout.
-

@@ -34,4 +34,3 @@ outcome: "Skriptoteket is operable in production with HuleEdu-compatible logs, c
 
 - HuleEdu observability stack (Loki/Promtail, Prometheus/Grafana, Jaeger).
 - Agreement on service naming (`service.name`) and environments (`deployment.environment`).
-

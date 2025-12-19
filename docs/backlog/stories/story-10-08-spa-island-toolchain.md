@@ -18,4 +18,3 @@ dependencies: ["ADR-0025"]
 
 To keep SPA islands aligned with HuleEdu, we need a first-class frontend toolchain in the repo. This must coexist with
 the existing SSR/HTMX app without turning the entire site into a SPA.
-

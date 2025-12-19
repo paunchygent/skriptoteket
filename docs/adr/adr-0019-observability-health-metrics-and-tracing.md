@@ -33,4 +33,3 @@ Implement standard observability endpoints and tracing:
 - Enables Grafana dashboards and Alertmanager rules for uptime/error rate/latency.
 - Adds runtime dependencies (prometheus client, OTEL SDK/exporter) and operational configuration (env vars, scrape jobs).
 - Requires careful metric label design to avoid high cardinality and expensive queries.
-
