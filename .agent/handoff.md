@@ -13,10 +13,10 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-19
-- Branch / commit: `main` @ `5e66f8f`
-- Goal of next session: Implement ST-05-12 mobile editor UX fixes.
+- Branch / commit: `main` @ pending commit
+- Goal of next session: Deploy ST-05-12 and verify on iOS device.
 
-## 2025-12-19 ST-05-12 Mobile Editor UX Issues (READY for implementation)
+## 2025-12-19 ST-05-12 Mobile Editor UX Issues (IMPLEMENTED)
 
 **Story:** `docs/backlog/stories/story-05-12-mobile-editor-ux.md`
 
@@ -42,7 +42,23 @@ Keep this file updated so the next session can pick up work quickly.
 - `src/skriptoteket/web/static/css/app/components.css:447`
 - `src/skriptoteket/web/static/css/app/layout.css`
 
-**Implementation deferred to next session.** See story file for detailed root cause analysis and code snippets.
+**Implementation completed:**
+
+1. **iOS file upload blocked** - Added `accept="*/*"` to file inputs
+   - `src/skriptoteket/web/templates/tools/run.html:36`
+   - `src/skriptoteket/web/templates/admin/script_editor.html:73`
+
+2. **Wrong section ordering** - Removed `order: -1` from `.huleedu-editor-sidebar`
+   - `src/skriptoteket/web/static/css/app/editor.css:76` (now a comment explaining the removal)
+
+3. **Width overflow** - Added `max-width: 100vw; overflow-x: hidden` constraints
+   - `src/skriptoteket/web/static/css/app/editor.css:89-100`
+
+4. **Mobile nav collapses content** - Added `position: absolute` overlay positioning
+   - `src/skriptoteket/web/static/css/app/components.css:453-459`
+   - `src/skriptoteket/web/static/css/app/layout.css:98`
+
+**QC passed:** `pdm run lint` and `pdm run typecheck` both pass.
 
 ---
 

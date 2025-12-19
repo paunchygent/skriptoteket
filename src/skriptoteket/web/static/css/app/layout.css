@@ -95,6 +95,7 @@
 
   .huleedu-header {
     flex-wrap: wrap;
+    position: relative; /* For absolute positioning of mobile nav dropdown */
   }
 
   .huleedu-header-separator {

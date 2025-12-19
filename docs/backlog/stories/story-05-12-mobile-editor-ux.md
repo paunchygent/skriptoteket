@@ -2,7 +2,7 @@
 type: story
 id: ST-05-12
 title: "Mobile editor UX: iOS file upload, CodeMirror ordering, width overflow, nav overlay"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-19
 epic: "EPIC-05"

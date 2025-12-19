@@ -443,13 +443,20 @@
   transform: translateY(-6px) rotate(-45deg);
 }
 
-/* Mobile navigation dropdown */
+/* Mobile navigation dropdown - overlays content when expanded */
 .huleedu-mobile-nav {
   display: none;
   flex-direction: column;
   padding: var(--huleedu-space-4);
   background-color: var(--huleedu-canvas);
   border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+  /* Overlay positioning - sits below header without pushing content */
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .huleedu-mobile-nav:not([hidden]) {

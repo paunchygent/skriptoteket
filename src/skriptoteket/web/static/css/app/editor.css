@@ -73,7 +73,7 @@
   }
 
   .huleedu-editor-sidebar {
-    order: -1; /* Sidebar first on mobile */
+    /* Removed: order: -1; - CodeMirror should appear first on mobile */
     width: 100%;
     max-width: none;
     height: auto;
@@ -84,6 +84,19 @@
   .huleedu-editor-main {
     width: 100%;
     flex: 1 1 auto;
+  }
+
+  /* Prevent viewport overflow from CodeMirror width calculations */
+  .huleedu-editor-main,
+  .huleedu-editor-code-card,
+  .huleedu-editor-form,
+  .huleedu-editor-textarea-wrapper {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .CodeMirror {
+    max-width: 100% !important;
   }
 
   .huleedu-editor-page {
