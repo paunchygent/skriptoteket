@@ -2,7 +2,7 @@
 type: story
 id: ST-10-03
 title: "UI payload normalizer + storage on tool runs"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2025-12-19
 epic: "EPIC-10"
@@ -21,4 +21,3 @@ The platform must render tool outputs safely and consistently. Normalization is 
 - output/action allowlists
 - size budgets
 - deterministic behavior (unit-testable)
-

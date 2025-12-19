@@ -2,10 +2,11 @@
 type: adr
 id: ADR-0022
 title: "Tool UI contract v2 (typed outputs, actions, and state)"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-19
+updated: 2025-12-19
 links: ["PRD-script-hub-v0.2", "EPIC-10"]
 ---
 

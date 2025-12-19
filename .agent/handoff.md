@@ -722,3 +722,27 @@ curl -sI https://skriptoteket.hule.education/login | grep -iE 'strict|x-frame|x-
   - `GET /admin/tools` renderar och listar verktyg.
   - `GET /admin/tools/{tool_id}` renderar editorn (200) och innehåller `hx-indicator="#sandbox-run-button"` samt tom `#run-result` (för `:empty`-regeln).
   - `GET /static/css/app/editor.css` innehåller `max-height` + `overflow: auto` för `.huleedu-editor-run-result` samt `:empty { display: none; }`.
+
+---
+
+## 2025-12-19 SPR-2025-12-22 Session A (DONE)
+
+**Scope:** Contract/policy seams only (no DB/API/runner/UI changes)
+
+**Decisions confirmed:**
+- Contract v2 allowlists: outputs `notice|markdown|table|json|html_sandboxed` (+ `vega_lite` curated-only); action fields `string|text|integer|number|boolean|enum|multi_enum`
+- Normalizer protocol returns combined `{ui_payload, state}` (single enforcement point)
+- Budgets/caps approved (default vs curated); `vega_lite` enabled in curated now, restrictions must be enforced later
+
+**Implemented (files):**
+- Protocol seams: `src/skriptoteket/protocols/tool_ui.py`
+- Contract v2 boundary models: `src/skriptoteket/domain/scripting/ui/contract_v2.py`
+- Policy profiles + caps: `src/skriptoteket/domain/scripting/ui/policy.py`
+- Normalization result type: `src/skriptoteket/domain/scripting/ui/normalization.py`
+- Tests: `tests/unit/domain/scripting/ui/test_policy_profiles.py`, `tests/unit/domain/scripting/ui/test_contract_v2_models.py`
+- Docs: `docs/adr/adr-0022-tool-ui-contract-v2.md`, `docs/adr/adr-0024-tool-sessions-and-ui-payload-persistence.md`, `docs/backlog/stories/story-10-03-ui-payload-normalizer.md`
+
+**How to verify:**
+- Unit tests: `pdm run pytest tests/unit/domain/scripting/ui`
+- Full suite: `pdm run test`
+- Docs contract: `pdm run docs-validate`

@@ -2,10 +2,11 @@
 type: adr
 id: ADR-0024
 title: "Tool sessions and UI payload persistence"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-19
+updated: 2025-12-19
 links: ["ADR-0022", "ADR-0023", "PRD-script-hub-v0.2", "EPIC-10"]
 ---
 
@@ -179,21 +180,35 @@ Intended for contributor/admin-authored scripts executed in the runner.
 
 - Output kinds: `notice`, `markdown`, `table`, `json`, `html_sandboxed`
 - No arbitrary JS; `html_sandboxed` is always iframe-sandboxed without scripts.
-- Tight budgets (example starting point):
-  - max `state`: 16 KiB
-  - max `ui_payload`: 64 KiB
-  - max outputs: 20
-  - table: max 200 rows, max 20 columns
+- Budgets + caps (initial):
+  - max `state`: 64 KiB
+  - max `ui_payload`: 256 KiB
+  - max outputs: 50
+  - max next_actions: 10
+  - action fields: max 25 fields/action
+  - markdown: max 64 KiB
+  - html_sandboxed: max 96 KiB
+  - json output: max 96 KiB; max depth 10; max keys 1000; max array length 2000
+  - table: max 750 rows; max 40 columns; max 512 bytes/cell
+  - enum: max 100 options; multi_enum: max 200 options
 
 ### Curated policy (owner-authored curated apps)
 
 Intended for curated apps shipped from the repo and not editable via the tool editor workflow.
 
-- Output kinds: default allowlist + optionally `vega_lite`
-- Higher budgets (example starting point):
-  - max `state`: 64 KiB
-  - max `ui_payload`: 256 KiB
-  - table: max 1000 rows, max 50 columns
+- Output kinds: default allowlist + `vega_lite` (enabled)
+- Budgets + caps (initial):
+  - max `state`: 256 KiB
+  - max `ui_payload`: 512 KiB
+  - max outputs: 150
+  - max next_actions: 25
+  - action fields: max 60 fields/action
+  - markdown: max 256 KiB
+  - html_sandboxed: max 192 KiB
+  - json output: max 256 KiB; max depth 20; max keys 5000; max array length 10000
+  - table: max 2500 rows; max 80 columns; max 1024 bytes/cell
+  - vega_lite: max 256 KiB/spec (restrictions required below)
+  - enum: max 300 options; multi_enum: max 600 options
 
 Curated policy is not “unlimited”; it remains capped to protect DB size and UX stability.
 
@@ -263,3 +278,5 @@ Implementations live in infrastructure; application handlers depend on protocols
 - Adds DB schema changes (new table + new columns) and migration complexity.
 - Requires careful size budgeting to avoid DB bloat (state/payload caps are mandatory).
 - Requires clear ownership for where actions come from (runner vs backend vs curated).
+- `vega_lite` is enabled in the curated policy profile; the restrictions described above MUST be implemented before the
+  platform accepts and renders vega-lite outputs (security/performance risk).
