@@ -16,7 +16,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Date: 2025-12-20
 - Branch / commit: `main` @ `9308cd6` (dirty working tree)
 - Current sprint: `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md`
-- Backend now: ST-10-04 (interactive tool API endpoints) is done
+- Backend now: ST-10-07 (SSR rendering for typed outputs/actions) is done
 - Frontend now: N/A (completed work moved to `.agent/readme-first.md`)
 
 ## 2025-12-19 ST-07-02 Health & Metrics (DONE)
@@ -68,8 +68,9 @@ Implementation (HuleEdu singleton pattern):
 - App: ST-10-04 interactive tool API endpoints: `src/skriptoteket/application/scripting/handlers/start_action.py`, `src/skriptoteket/web/routes/interactive_tools.py`.
 - Repo: compute `get_session_state.latest_run_id` at read time (no schema change): `src/skriptoteket/protocols/scripting.py`, `src/skriptoteket/infrastructure/repositories/tool_run_repository.py`.
 - DB: migrations `0008_tool_runs_ui_payload` + `0009_tool_sessions` + idempotency tests `tests/integration/test_migration_0008_tool_runs_ui_payload_idempotent.py` and `tests/integration/test_migration_0009_tool_sessions_idempotent.py`.
-- UI: run results render from `run.ui_payload.outputs` via `src/skriptoteket/web/templates/partials/ui_outputs.html` (iframe sandbox for `html_sandboxed`).
+- UI: SSR renders `run.ui_payload.outputs` + `run.ui_payload.next_actions` via `src/skriptoteket/web/templates/partials/ui_outputs.html` + `src/skriptoteket/web/templates/partials/ui_actions.html` (POST `/tools/interactive/start_action`; parser `src/skriptoteket/web/interactive_action_forms.py`; tests `tests/unit/web/test_interactive_actions_pages.py`).
 - Typing: OpenTelemetry stubs + no-`Any` tracing facade fixes: `stubs/opentelemetry/`, `src/skriptoteket/observability/tracing.py`.
+- Docs: removed credentials from `docs/runbooks/runbook-home-server.md` (no secrets in repo).
 
 ### Current session (EPIC-05 Responsive Frontend: ST-05-07, ST-05-08, ST-05-10)
 
@@ -126,18 +127,18 @@ Implementation (HuleEdu singleton pattern):
 - Typecheck: `pdm run typecheck`.
 - Unit tests: `pdm run pytest tests/unit/domain/scripting/ui` + `pdm run pytest tests/unit/infrastructure/runner/test_result_contract.py tests/unit/infrastructure/runner/test_docker_runner.py tests/unit/application/test_scripting_execute_tool_version_handler.py tests/unit/domain/scripting/test_models.py`.
 - Migration idempotency: `pdm run pytest -m docker --override-ini addopts='' tests/integration/test_migration_0008_tool_runs_ui_payload_idempotent.py tests/integration/test_migration_0009_tool_sessions_idempotent.py`.
-- Live check (UI change): `pdm run dev > .artifacts/dev.log 2>&1 &` then `curl -s -o /dev/null -w "%{http_code}\\n" http://127.0.0.1:8000/login` → `200`.
-- Verified (2025-12-20): `pdm run lint`, `pdm run typecheck`, `pdm run pytest tests/unit/application/scripting/handlers/test_interactive_tool_api.py`, `curl -s -o /dev/null -w "%{http_code}\\n" -X POST http://127.0.0.1:8000/api/start_action -H "Content-Type: application/json" -d '{}'` → `303`.
+- Live check (2025-12-20): `DOCKER_BUILDKIT=0 COMPOSE_DOCKER_CLI_BUILD=0 docker compose -f compose.prod.yaml --profile build-only build runner`; login via curl cookie jar; `POST /api/start_action` for local dev tool `st-10-07-interactive-counter`; open `/my-runs/<run_id>` and submit action form (POST `/tools/interactive/start_action`) → outputs update and `_expected_state_rev` increments.
+- Verified (2025-12-20): `pdm run lint`, `pdm run typecheck`, `pdm run pytest tests/unit/web/test_interactive_actions_pages.py`.
 
 ## Known issues / risks
 
 - `vega_lite` restrictions are not implemented yet; do not accept/render vega-lite outputs until restrictions exist (ADR-0024).
 - Dev DB can get bloated with test accounts: avoid creating new superusers for UI checks (reuse `.env` bootstrap account).
-- Next actions (`ui_payload.next_actions`) are persisted but not rendered yet (ST-10-04 follow-ups).
+- SSR action forms are minimal: no required/default/placeholder/help text yet; supported types match contract allowlist.
 
 ## Next steps (recommended order)
 
-- Frontend: render `next_actions` in UI and wire `start_action` (per ADR-0024).
+- Frontend: improve SSR action form UX (required/defaults/help text, tighter layout) while keeping the allowlists intact.
 - Backend: if multi-context sessions are needed, decide how to correlate `tool_sessions.context` ↔ tool runs (currently latest_run_id is computed from `tool_runs` per tool+user).
 - Backend: confirm vega-lite approach (implement restrictions vs keep blocked); current implementation blocks `vega_lite` outputs with a system notice.
 

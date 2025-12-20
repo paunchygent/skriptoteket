@@ -10,18 +10,29 @@ from fastapi import APIRouter, Depends, File, Request, UploadFile
 from fastapi.responses import HTMLResponse, Response
 
 from skriptoteket.application.scripting.commands import RunActiveToolCommand
-from skriptoteket.domain.errors import DomainError, not_found
+from skriptoteket.application.scripting.interactive_tools import (
+    GetSessionStateQuery,
+    StartActionCommand,
+)
+from skriptoteket.domain.errors import DomainError, not_found, validation_error
 from skriptoteket.domain.identity.models import Session, User
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
-from skriptoteket.domain.scripting.models import RunStatus, ToolRun
+from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolRun
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
+from skriptoteket.protocols.interactive_tools import (
+    GetSessionStateHandlerProtocol,
+    StartActionHandlerProtocol,
+)
 from skriptoteket.protocols.scripting import (
     RunActiveToolHandlerProtocol,
+    ToolRunRepositoryProtocol,
     ToolVersionRepositoryProtocol,
 )
 from skriptoteket.web.auth.dependencies import get_current_session, require_user
+from skriptoteket.web.interactive_action_forms import parse_action_input
 from skriptoteket.web.pages.admin_scripting_support import (
     is_hx_request,
+    parse_uuid,
     status_code_for_error,
 )
 from skriptoteket.web.templating import templates
@@ -47,6 +58,20 @@ def _user_artifacts_for_run(run: ToolRun) -> list[dict[str, object]]:
         }
         for artifact in manifest.artifacts
     ]
+
+
+async def _load_production_run_for_user(
+    *,
+    runs: ToolRunRepositoryProtocol,
+    run_id: UUID,
+    user: User,
+) -> ToolRun:
+    run = await runs.get_by_id(run_id=run_id)
+    if run is None or run.requested_by_user_id != user.id:
+        raise not_found("ToolRun", str(run_id))
+    if run.context is not RunContext.PRODUCTION:
+        raise not_found("ToolRun", str(run_id))
+    return run
 
 
 async def _load_runnable_tool(
@@ -107,6 +132,7 @@ async def execute_tool(
     slug: str,
     handler: FromDishka[RunActiveToolHandlerProtocol],
     tools: FromDishka[ToolRepositoryProtocol],
+    sessions: FromDishka[GetSessionStateHandlerProtocol],
     user: User = Depends(require_user),
     session: Session | None = Depends(get_current_session),
     file: UploadFile = File(...),
@@ -160,6 +186,20 @@ async def execute_tool(
         )
 
     # Success - render result
+    interactive_context = "default"
+    interactive_state_rev: int | None = None
+    if run.ui_payload is not None and run.ui_payload.next_actions:
+        try:
+            session_state = (
+                await sessions.handle(
+                    actor=user,
+                    query=GetSessionStateQuery(tool_id=run.tool_id, context=interactive_context),
+                )
+            ).session_state
+            interactive_state_rev = session_state.state_rev
+        except DomainError:
+            interactive_state_rev = None
+
     if hx_request:
         succeeded = _run_succeeded(run.status)
         return templates.TemplateResponse(
@@ -169,6 +209,8 @@ async def execute_tool(
                 "request": request,
                 "run": run,
                 "artifacts": _user_artifacts_for_run(run),
+                "interactive_context": interactive_context,
+                "interactive_state_rev": interactive_state_rev,
                 "message": "Körning lyckades." if succeeded else "Körning misslyckades.",
                 "type": "success" if succeeded else "error",
             },
@@ -183,5 +225,180 @@ async def execute_tool(
             "csrf_token": csrf_token,
             "run": run,
             "artifacts": _user_artifacts_for_run(run),
+            "interactive_context": interactive_context,
+            "interactive_state_rev": interactive_state_rev,
+        },
+    )
+
+
+@router.post("/interactive/start_action", response_class=HTMLResponse)
+@inject
+async def start_interactive_action(
+    request: Request,
+    handler: FromDishka[StartActionHandlerProtocol],
+    runs: FromDishka[ToolRunRepositoryProtocol],
+    user: User = Depends(require_user),
+    session: Session | None = Depends(get_current_session),
+) -> Response:
+    csrf_token = session.csrf_token if session else ""
+    hx_request = is_hx_request(request)
+
+    action_error: str | None = None
+    interactive_context = "default"
+    interactive_state_rev: int | None = None
+
+    run: ToolRun | None = None
+    try:
+        form = await request.form()
+        run_id_raw = form.get("_run_id")
+        run_id = parse_uuid(run_id_raw if isinstance(run_id_raw, str) else None)
+        if run_id is None:
+            raise validation_error("run_id is required")
+
+        action_id_raw = form.get("_action_id")
+        if not isinstance(action_id_raw, str) or not action_id_raw.strip():
+            raise validation_error("action_id is required")
+        action_id = action_id_raw.strip()
+
+        context_raw = form.get("_context")
+        if isinstance(context_raw, str) and context_raw.strip():
+            interactive_context = context_raw.strip()
+
+        expected_state_rev_raw = form.get("_expected_state_rev")
+        if not isinstance(expected_state_rev_raw, str) or expected_state_rev_raw.strip() == "":
+            raise validation_error("expected_state_rev is required")
+        try:
+            interactive_state_rev = int(expected_state_rev_raw)
+        except ValueError as exc:
+            raise validation_error(
+                "expected_state_rev must be an integer",
+                details={"expected_state_rev": expected_state_rev_raw},
+            ) from exc
+
+        run = await _load_production_run_for_user(runs=runs, run_id=run_id, user=user)
+
+        if run.ui_payload is None:
+            raise validation_error("Run has no ui_payload", details={"run_id": str(run.id)})
+
+        action = next(
+            (
+                candidate
+                for candidate in run.ui_payload.next_actions
+                if candidate.action_id == action_id
+            ),
+            None,
+        )
+        if action is None:
+            raise validation_error(
+                "Action not found on run",
+                details={"run_id": str(run.id), "action_id": action_id},
+            )
+
+        parsed_input = parse_action_input(action=action, form=form)
+        result = await handler.handle(
+            actor=user,
+            command=StartActionCommand(
+                tool_id=run.tool_id,
+                context=interactive_context,
+                action_id=action_id,
+                input=parsed_input,
+                expected_state_rev=interactive_state_rev,
+            ),
+        )
+
+        interactive_state_rev = result.state_rev
+        run = await _load_production_run_for_user(runs=runs, run_id=result.run_id, user=user)
+    except DomainError as exc:
+        action_error = ui_error_message(exc)
+        status_code = status_code_for_error(exc)
+
+        if hx_request:
+            if run is None:
+                return templates.TemplateResponse(
+                    request=request,
+                    name="tools/partials/run_error_with_toast.html",
+                    context={
+                        "request": request,
+                        "error": action_error,
+                        "message": "Åtgärden misslyckades.",
+                        "type": "error",
+                    },
+                    status_code=status_code,
+                )
+
+            return templates.TemplateResponse(
+                request=request,
+                name="tools/partials/run_result_with_toast.html",
+                context={
+                    "request": request,
+                    "run": run,
+                    "artifacts": _user_artifacts_for_run(run),
+                    "interactive_context": interactive_context,
+                    "interactive_state_rev": interactive_state_rev,
+                    "action_error": action_error,
+                    "message": "Åtgärden misslyckades.",
+                    "type": "error",
+                },
+                status_code=status_code,
+            )
+
+        if run is None:
+            return templates.TemplateResponse(
+                request=request,
+                name="error.html",
+                context={
+                    "request": request,
+                    "user": user,
+                    "csrf_token": csrf_token,
+                    "error_code": str(status_code),
+                    "message": action_error,
+                },
+                status_code=status_code,
+            )
+
+        return templates.TemplateResponse(
+            request=request,
+            name="tools/result.html",
+            context={
+                "request": request,
+                "user": user,
+                "csrf_token": csrf_token,
+                "run": run,
+                "artifacts": _user_artifacts_for_run(run),
+                "interactive_context": interactive_context,
+                "interactive_state_rev": interactive_state_rev,
+                "action_error": action_error,
+            },
+            status_code=status_code,
+        )
+
+    if hx_request:
+        succeeded = _run_succeeded(run.status) if run is not None else False
+        return templates.TemplateResponse(
+            request=request,
+            name="tools/partials/run_result_with_toast.html",
+            context={
+                "request": request,
+                "run": run,
+                "artifacts": [] if run is None else _user_artifacts_for_run(run),
+                "interactive_context": interactive_context,
+                "interactive_state_rev": interactive_state_rev,
+                "message": "Åtgärden kördes." if succeeded else "Åtgärden kördes (med fel).",
+                "type": "success" if succeeded else "error",
+            },
+        )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="tools/result.html",
+        context={
+            "request": request,
+            "user": user,
+            "csrf_token": csrf_token,
+            "run": run,
+            "artifacts": [] if run is None else _user_artifacts_for_run(run),
+            "interactive_context": interactive_context,
+            "interactive_state_rev": interactive_state_rev,
+            "action_error": action_error,
         },
     )

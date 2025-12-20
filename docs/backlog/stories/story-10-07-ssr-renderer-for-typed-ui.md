@@ -2,7 +2,7 @@
 type: story
 id: ST-10-07
 title: "SSR rendering for typed outputs/actions"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-19
 epic: "EPIC-10"

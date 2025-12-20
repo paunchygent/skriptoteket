@@ -28,6 +28,22 @@
     </div>
   {% endif %}
 
+  {% set interactive_state_rev = interactive_state_rev | default(none) %}
+  {% if run.ui_payload and run.ui_payload.next_actions and interactive_state_rev is not none %}
+    <div class="huleedu-stack-sm">
+      <strong>Fortsätt</strong>
+
+      {% if action_error %}
+        <div class="huleedu-alert huleedu-alert-error">
+          {{ action_error }}
+        </div>
+      {% endif %}
+
+      {% set next_actions = run.ui_payload.next_actions %}
+      {% include "partials/ui_actions.html" %}
+    </div>
+  {% endif %}
+
   {% if artifacts %}
     <div class="huleedu-stack-sm">
       <strong>Filer</strong>
