@@ -7,7 +7,7 @@ from pydantic import JsonValue
 
 from skriptoteket.domain.curated_apps.models import CuratedAppDefinition
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result
+from skriptoteket.domain.scripting.execution import ToolExecutionResult
 
 
 class CuratedAppRegistryProtocol(Protocol):
@@ -22,10 +22,10 @@ class CuratedAppExecutorProtocol(Protocol):
     async def execute_action(
         self,
         *,
+        run_id: UUID,
         app: CuratedAppDefinition,
         actor: User,
         action_id: str,
         input: dict[str, JsonValue],
         state: dict[str, JsonValue],
-    ) -> ToolUiContractV2Result: ...
-
+    ) -> ToolExecutionResult: ...

@@ -25,8 +25,7 @@ Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future H
 ## Current sprint dashboard (keep current only)
 
 - Sprint: `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md` (SPR-2025-12-22)
-- Backend now: ST-10-03 (normalizer) — next: cleanup refactor `src/skriptoteket/domain/scripting/ui/normalizer.py`
-  - Entry points: `src/skriptoteket/protocols/scripting_ui.py`, `src/skriptoteket/domain/scripting/ui/normalizer.py`
+- Backend now: ST-10-06 (curated app execution + persisted runs) is done — next: ST-10-08
 - Frontend now: N/A (keep frontend history in story docs; handoff stays lean)
 
 ## Current EPIC-04 decisions (dynamic scripts)

@@ -8,7 +8,7 @@ from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result
 
 
 class ToolExecutionResult(BaseModel):
-    """Final execution result produced by ToolRunnerProtocol (not a DB model)."""
+    """Final execution result produced by an execution provider (not a DB model)."""
 
     model_config = ConfigDict(frozen=True)
 

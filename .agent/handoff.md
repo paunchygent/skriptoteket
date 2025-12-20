@@ -16,7 +16,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Date: 2025-12-20
 - Branch / commit: `main` @ `9308cd6` (dirty working tree)
 - Current sprint: `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md`
-- Backend now: ST-10-05 (Curated apps registry + catalog integration) is done; next: ST-10-06
+- Backend now: ST-10-06 (Curated app execution + persisted runs) is done; next: ST-10-08
 - Frontend now: N/A (completed work moved to `.agent/readme-first.md`)
 
 ## 2025-12-19 ST-07-02 Health & Metrics (DONE)
@@ -68,7 +68,7 @@ Implementation (HuleEdu singleton pattern):
 - App: ST-10-04 interactive tool API endpoints: `src/skriptoteket/application/scripting/handlers/start_action.py`, `src/skriptoteket/web/routes/interactive_tools.py`.
 - Repo: compute `get_session_state.latest_run_id` at read time (no schema change): `src/skriptoteket/protocols/scripting.py`, `src/skriptoteket/infrastructure/repositories/tool_run_repository.py`.
 - DB: migrations `0008_tool_runs_ui_payload` + `0009_tool_sessions` + `0010_curated_apps_runs` (tool_runs source_kind + allow curated tool_id in runs/sessions).
-- Curated apps: registry+executor + `/apps/<app_id>` page + catalog integration: `src/skriptoteket/infrastructure/curated_apps/`, `src/skriptoteket/web/pages/curated_apps.py`, `src/skriptoteket/web/templates/apps/detail.html`, `src/skriptoteket/web/templates/browse_tools.html`, `src/skriptoteket/application/scripting/handlers/start_action.py`, `src/skriptoteket/application/scripting/handlers/get_interactive_session_state.py`.
+- Curated apps: registry+executor (+ artifacts under `ARTIFACTS_ROOT/<run_id>/...`) + `/apps/<app_id>` page + catalog integration: `src/skriptoteket/infrastructure/curated_apps/executor.py`, `src/skriptoteket/application/scripting/handlers/start_action.py`, `src/skriptoteket/infrastructure/artifacts/filesystem.py`, `src/skriptoteket/web/pages/curated_apps.py`, `src/skriptoteket/web/templates/apps/detail.html`, `src/skriptoteket/web/templates/browse_tools.html`, `src/skriptoteket/application/scripting/handlers/get_interactive_session_state.py`.
 - UI: SSR renders `run.ui_payload.outputs` + `run.ui_payload.next_actions` via `src/skriptoteket/web/templates/partials/ui_outputs.html` + `src/skriptoteket/web/templates/partials/ui_actions.html` (POST `/tools/interactive/start_action`; parser `src/skriptoteket/web/interactive_action_forms.py`; tests `tests/unit/web/test_interactive_actions_pages.py`).
 - Typing: OpenTelemetry stubs + no-`Any` tracing facade fixes: `stubs/opentelemetry/`, `src/skriptoteket/observability/tracing.py`.
 - Docs: removed credentials from `docs/runbooks/runbook-home-server.md` (no secrets in repo).
@@ -128,12 +128,13 @@ Implementation (HuleEdu singleton pattern):
 - Typecheck: `pdm run typecheck`.
 - Unit tests: `pdm run pytest tests/unit/domain/scripting/ui` + `pdm run pytest tests/unit/infrastructure/runner/test_result_contract.py tests/unit/infrastructure/runner/test_docker_runner.py tests/unit/application/test_scripting_execute_tool_version_handler.py tests/unit/domain/scripting/test_models.py`.
 - Migration idempotency: `pdm run pytest -m docker --override-ini addopts='' tests/integration/test_migration_0008_tool_runs_ui_payload_idempotent.py tests/integration/test_migration_0009_tool_sessions_idempotent.py`.
-- Live check (2025-12-20): `pdm run db-upgrade`; login via curl cookie jar; `/browse/gemensamt/ovrigt` shows curated app → open `/apps/demo.counter` → Starta → Öka (step=2) via POST `/tools/interactive/start_action` (HTMX) → output updates (`Räknare: 0` → `Räknare: 2`) and `_expected_state_rev` increments.
-- Verified (2025-12-20): `pdm run lint`, `pdm run typecheck`, `pdm run pytest tests/unit/application/catalog/test_list_tools_by_tags_handler.py tests/unit/application/scripting/handlers/test_interactive_tool_api.py`.
+- Live check (2025-12-20): `pdm run db-upgrade`; login via curl cookie jar; `/browse/gemensamt/ovrigt` shows curated app → open `/apps/demo.counter` → Starta → Öka (step=2) → Spara som fil (action_id=`export`) → file stored at `ARTIFACTS_ROOT/<run_id>/output/counter.txt` and downloadable via `/my-runs/<run_id>/artifacts/output_counter_txt` (200).
+- Verified (2025-12-20): `pdm run lint`, `pdm run typecheck`, `pdm run pytest tests/unit/application/scripting/handlers/test_interactive_tool_api.py tests/unit/infrastructure/runner/test_artifact_manager.py`, `pdm run docs-validate`.
 
 ## Known issues / risks
 
 - `vega_lite` restrictions are not implemented yet; do not accept/render vega-lite outputs until restrictions exist (ADR-0024).
+- `pdm run pytest tests/unit/test_ist_vh_mejl_bcc.py` has 2 failures expecting HTML strings (tool now returns typed payload); treat as separate cleanup.
 - Dev DB can get bloated with test accounts: avoid creating new superusers for UI checks (reuse `.env` bootstrap account).
 - SSR action forms are minimal: no required/default/placeholder/help text yet; supported types match contract allowlist.
 

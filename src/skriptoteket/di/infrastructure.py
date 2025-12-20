@@ -196,8 +196,8 @@ class InfrastructureProvider(Provider):
         return InMemoryCuratedAppRegistry(settings=settings)
 
     @provide(scope=Scope.APP)
-    def curated_app_executor(self) -> CuratedAppExecutorProtocol:
-        return InMemoryCuratedAppExecutor()
+    def curated_app_executor(self, settings: Settings) -> CuratedAppExecutorProtocol:
+        return InMemoryCuratedAppExecutor(artifacts_root=settings.ARTIFACTS_ROOT)
 
     # Repositories
 

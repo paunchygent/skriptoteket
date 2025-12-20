@@ -30,6 +30,8 @@ from skriptoteket.domain.curated_apps.models import (
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
+from skriptoteket.domain.scripting.execution import ToolExecutionResult
 from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolRun
 from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result, UiPayloadV2
@@ -360,7 +362,22 @@ async def test_start_action_executes_curated_app_without_tool_version(now: datet
     )
 
     curated_executor = AsyncMock(spec=CuratedAppExecutorProtocol)
-    curated_executor.execute_action.return_value = raw_result
+    artifacts_manifest = ArtifactsManifest(
+        artifacts=[
+            {
+                "artifact_id": "output_counter_txt",
+                "path": "output/counter.txt",
+                "bytes": 12,
+            }
+        ]
+    )
+    curated_executor.execute_action.return_value = ToolExecutionResult(
+        status=RunStatus.SUCCEEDED,
+        stdout="",
+        stderr="",
+        ui_result=raw_result,
+        artifacts_manifest=artifacts_manifest,
+    )
 
     runs_repo = AsyncMock(spec=ToolRunRepositoryProtocol)
     runs_repo.create.return_value = make_tool_run(
@@ -435,6 +452,12 @@ async def test_start_action_executes_curated_app_without_tool_version(now: datet
     assert created_run.version_id is None
     assert created_run.curated_app_id == app_id
     assert created_run.curated_app_version == "test"
+
+    curated_executor.execute_action.assert_awaited_once()
+    assert curated_executor.execute_action.call_args.kwargs["run_id"] == run_id
+
+    updated_run = runs_repo.update.call_args.kwargs["run"]
+    assert updated_run.artifacts_manifest == artifacts_manifest.model_dump()
 
     sessions.update_state.assert_awaited_once()
 

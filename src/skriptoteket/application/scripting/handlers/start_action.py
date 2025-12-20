@@ -13,6 +13,8 @@ from skriptoteket.application.scripting.interactive_tools import (
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
+from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
+from skriptoteket.domain.scripting.execution import ToolExecutionResult
 from skriptoteket.domain.scripting.models import (
     RunContext,
     RunStatus,
@@ -45,14 +47,6 @@ from skriptoteket.protocols.scripting_ui import (
 )
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
-
-
-def _status_from_contract(status: str) -> RunStatus:
-    if status == "succeeded":
-        return RunStatus.SUCCEEDED
-    if status == "timed_out":
-        return RunStatus.TIMED_OUT
-    return RunStatus.FAILED
 
 
 class StartActionHandler(StartActionHandlerProtocol):
@@ -136,9 +130,11 @@ class StartActionHandler(StartActionHandlerProtocol):
             await self._runs.create(run=run)
 
         domain_error_to_raise: DomainError | None = None
-        raw_result: ToolUiContractV2Result
+        execution_result: ToolExecutionResult | None = None
+        fallback_ui_result: ToolUiContractV2Result | None = None
         try:
-            raw_result = await self._curated_executor.execute_action(
+            execution_result = await self._curated_executor.execute_action(
+                run_id=run_id,
                 app=app,
                 actor=actor,
                 action_id=command.action_id,
@@ -147,7 +143,7 @@ class StartActionHandler(StartActionHandlerProtocol):
             )
         except DomainError as exc:
             domain_error_to_raise = exc
-            raw_result = ToolUiContractV2Result(
+            fallback_ui_result = ToolUiContractV2Result(
                 status="failed",
                 error_summary=exc.message,
                 outputs=[],
@@ -160,7 +156,7 @@ class StartActionHandler(StartActionHandlerProtocol):
                 code=ErrorCode.INTERNAL_ERROR,
                 message="Execution failed (internal error).",
             )
-            raw_result = ToolUiContractV2Result(
+            fallback_ui_result = ToolUiContractV2Result(
                 status="failed",
                 error_summary="Execution failed (internal error).",
                 outputs=[],
@@ -170,11 +166,30 @@ class StartActionHandler(StartActionHandlerProtocol):
             )
 
         finish_now = self._clock.now()
+        if execution_result is None:
+            execution_result = ToolExecutionResult(
+                status=RunStatus.FAILED,
+                stdout="",
+                stderr="",
+                ui_result=(
+                    fallback_ui_result
+                    if fallback_ui_result is not None
+                    else ToolUiContractV2Result(
+                        status="failed",
+                        error_summary=None,
+                        outputs=[],
+                        next_actions=[],
+                        state=None,
+                        artifacts=[],
+                    )
+                ),
+                artifacts_manifest=ArtifactsManifest(artifacts=[]),
+            )
 
         normalization_result: UiNormalizationResult
         try:
             normalization_result = self._normalize_result(
-                raw_result=raw_result,
+                raw_result=execution_result.ui_result,
                 backend_actions=backend_actions_list,
                 policy=policy,
             )
@@ -199,12 +214,12 @@ class StartActionHandler(StartActionHandlerProtocol):
 
         finished = finish_run(
             run=run,
-            status=_status_from_contract(raw_result.status),
+            status=execution_result.status,
             now=finish_now,
-            stdout="",
-            stderr="",
-            artifacts_manifest={"artifacts": []},
-            error_summary=raw_result.error_summary,
+            stdout=execution_result.stdout,
+            stderr=execution_result.stderr,
+            artifacts_manifest=execution_result.artifacts_manifest.model_dump(),
+            error_summary=execution_result.ui_result.error_summary,
             ui_payload=normalization_result.ui_payload,
         )
 
