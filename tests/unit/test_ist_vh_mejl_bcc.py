@@ -46,7 +46,7 @@ def test_harvest_emails_deduplicates_and_normalizes_case() -> None:
 
 
 @pytest.mark.unit
-def test_run_tool_writes_emails_artifact_and_returns_html(tmp_path: Path) -> None:
+def test_run_tool_writes_emails_artifact_and_returns_contract_v2(tmp_path: Path) -> None:
     input_path = tmp_path / "input.csv"
     input_path.write_text(
         "Student,Vårdnadshavare e-post\n"
@@ -57,13 +57,24 @@ def test_run_tool_writes_emails_artifact_and_returns_html(tmp_path: Path) -> Non
     )
 
     output_dir = tmp_path / "output"
-    html = run_tool(str(input_path), str(output_dir))
+    result = run_tool(str(input_path), str(output_dir))
 
+    # Verify artifact file was written
     artifacts = list(output_dir.glob("emails_*.txt"))
     assert len(artifacts) == 1
     assert artifacts[0].read_text(encoding="utf-8") == "a@example.com;b@example.com"
-    assert "a@example.com;b@example.com" in html
-    assert "unika" in html
+
+    # Verify Contract v2 dict structure
+    assert "outputs" in result
+    assert "next_actions" in result
+    assert isinstance(result["outputs"], list)
+    assert len(result["outputs"]) >= 1
+
+    # Verify notice output mentions unique emails
+    notice = result["outputs"][0]
+    assert notice["kind"] == "notice"
+    assert notice["level"] == "info"
+    assert "unika" in notice["message"]
 
 
 @pytest.mark.unit
@@ -72,7 +83,13 @@ def test_run_tool_rejects_unsupported_file_types(tmp_path: Path) -> None:
     input_path.write_text("nope", encoding="utf-8")
     output_dir = tmp_path / "output"
 
-    html = run_tool(str(input_path), str(output_dir))
+    result = run_tool(str(input_path), str(output_dir))
 
-    assert ".pdf" in html
-    assert "stöds inte" in html
+    # Verify Contract v2 error structure
+    assert "outputs" in result
+    assert len(result["outputs"]) == 1
+    error_output = result["outputs"][0]
+    assert error_output["kind"] == "notice"
+    assert error_output["level"] == "error"
+    assert ".pdf" in error_output["message"]
+    assert "stöds inte" in error_output["message"]

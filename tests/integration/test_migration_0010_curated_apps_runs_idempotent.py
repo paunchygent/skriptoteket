@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from pathlib import Path
 from uuid import uuid4
 
@@ -81,7 +82,7 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
                 "tool_id": tool_id,
                 "user_id": user_id,
                 "context": "default",
-                "state": {},
+                "state": json.dumps({}),
                 "state_rev": 0,
             },
         )
@@ -112,7 +113,7 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
                 "workdir_path": str(run_id),
                 "input_filename": "action.json",
                 "input_size_bytes": 0,
-                "artifacts_manifest": {"artifacts": []},
+                "artifacts_manifest": json.dumps({"artifacts": []}),
             },
         )
 
