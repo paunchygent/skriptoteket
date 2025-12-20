@@ -39,6 +39,7 @@ class PostgreSQLToolRunRepository(ToolRunRepositoryProtocol):
             stderr=run.stderr,
             artifacts_manifest=run.artifacts_manifest,
             error_summary=run.error_summary,
+            ui_payload=None if run.ui_payload is None else run.ui_payload.model_dump(),
         )
         self._session.add(model)
         await self._session.flush()
@@ -57,6 +58,7 @@ class PostgreSQLToolRunRepository(ToolRunRepositoryProtocol):
         model.stderr = run.stderr
         model.artifacts_manifest = run.artifacts_manifest
         model.error_summary = run.error_summary
+        model.ui_payload = None if run.ui_payload is None else run.ui_payload.model_dump()
 
         await self._session.flush()
         await self._session.refresh(model)

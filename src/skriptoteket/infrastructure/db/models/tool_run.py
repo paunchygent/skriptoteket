@@ -60,3 +60,4 @@ class ToolRunModel(Base):
         server_default=text("'{}'::jsonb"),
     )
     error_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ui_payload: Mapped[dict[str, object] | None] = mapped_column(JSONB, nullable=True)
