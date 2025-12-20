@@ -2,7 +2,7 @@
 type: story
 id: ST-07-03
 title: "OpenTelemetry tracing integration (OTLP export + propagation)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-16
 epic: "EPIC-07"

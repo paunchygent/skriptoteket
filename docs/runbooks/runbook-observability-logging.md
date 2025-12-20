@@ -179,3 +179,78 @@ scrape_configs:
     metrics_path: '/metrics'
     scrape_interval: 15s
 ```
+
+## OpenTelemetry Tracing
+
+Skriptoteket supports distributed tracing via OpenTelemetry with OTLP export to Jaeger.
+
+### Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OTEL_TRACING_ENABLED` | `false` | Enable tracing (explicit opt-in) |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4317` | OTLP collector endpoint (gRPC) |
+| `SERVICE_VERSION` | from `APP_VERSION` | Service version in traces |
+| `ENVIRONMENT` | `development` | Deployment environment |
+
+### Local Jaeger setup
+
+```bash
+# Start Jaeger all-in-one (OTLP + UI)
+docker run --rm -d --name jaeger \
+  -p 4317:4317 \
+  -p 16686:16686 \
+  jaegertracing/all-in-one:latest
+
+# Enable tracing in .env
+export OTEL_TRACING_ENABLED=true
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
+
+# Run dev server
+pdm run dev
+
+# View traces at http://localhost:16686
+```
+
+### Traced operations
+
+| Operation | Span Name | Key Attributes |
+|-----------|-----------|----------------|
+| HTTP request | `{METHOD} {route}` | `http.method`, `http.route`, `http.status_code` |
+| Tool execution | `execute_tool_version` | `tool.id`, `version.id`, `run.id`, `run.status` |
+| Docker runner | `docker_runner.execute` | `run.id`, `run.context`, `run.status`, `run.duration_seconds` |
+
+### Span events (Docker runner)
+
+- `volume_created` - Docker volume created
+- `container_started` - Container started
+- `container_finished` - Container finished (includes `timed_out` attribute)
+- `artifacts_extracted` - Artifacts extracted (includes `count` attribute)
+
+### Response headers
+
+Tracing middleware adds headers to responses for debugging:
+
+- `X-Trace-ID` - 32-char hex trace ID
+- `X-Span-ID` - 16-char hex span ID
+
+### Log correlation
+
+When tracing is enabled, structured logs include `trace_id` and `span_id` fields. To find logs for a trace:
+
+```bash
+# Get trace ID from response header
+curl -i http://127.0.0.1:8000/tools
+
+# Search logs by trace ID
+docker logs skriptoteket_web | rg "<trace-id>"
+```
+
+### W3C Trace Context
+
+Skriptoteket accepts `traceparent` header for distributed tracing:
+
+```bash
+curl -H "traceparent: 00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01" \
+  http://127.0.0.1:8000/tools
+```

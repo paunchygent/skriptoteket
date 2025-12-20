@@ -13,14 +13,13 @@ from uuid import UUID
 import structlog
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.scripting.execution import (
-    ArtifactsManifest,
-    RunnerArtifact,
-    ToolExecutionResult,
-)
+from skriptoteket.domain.scripting.artifacts import ArtifactsManifest, RunnerArtifact
+from skriptoteket.domain.scripting.execution import ToolExecutionResult
 from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolVersion
+from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result
 from skriptoteket.infrastructure.runner.capacity import RunnerCapacityLimiter
 from skriptoteket.infrastructure.runner.result_contract import parse_runner_result_json
+from skriptoteket.observability.tracing import get_tracer, trace_operation
 from skriptoteket.protocols.runner import ArtifactManagerProtocol, ToolRunnerProtocol
 
 logger = structlog.get_logger(__name__)
@@ -178,7 +177,6 @@ class DockerToolRunner(ToolRunnerProtocol):
         limits: DockerRunnerLimits,
         output_max_stdout_bytes: int,
         output_max_stderr_bytes: int,
-        output_max_html_bytes: int,
         output_max_error_summary_bytes: int,
         capacity: RunnerCapacityLimiter,
         artifacts: ArtifactManagerProtocol,
@@ -189,7 +187,6 @@ class DockerToolRunner(ToolRunnerProtocol):
         self._limits = limits
         self._output_max_stdout_bytes = output_max_stdout_bytes
         self._output_max_stderr_bytes = output_max_stderr_bytes
-        self._output_max_html_bytes = output_max_html_bytes
         self._output_max_error_summary_bytes = output_max_error_summary_bytes
         self._capacity = capacity
         self._artifacts = artifacts
@@ -241,6 +238,7 @@ class DockerToolRunner(ToolRunnerProtocol):
         from docker.errors import DockerException, NotFound
         from requests.exceptions import ReadTimeout
 
+        tracer = get_tracer("skriptoteket")
         start_time = time.monotonic()
         timeout_seconds = (
             self._sandbox_timeout_seconds
@@ -278,215 +276,253 @@ class DockerToolRunner(ToolRunnerProtocol):
         work_volume: DockerVolumeProtocol | None = None
 
         try:
-            work_volume = client.volumes.create(
-                labels={
-                    "skriptoteket.run_id": str(run_id),
-                    "skriptoteket.tool_version_id": str(version.id),
-                    "skriptoteket.tool_id": str(version.tool_id),
-                }
-            )
-
-            workdir_tar = _build_workdir_archive(
-                version=version,
-                input_filename=safe_input_filename,
-                input_bytes=input_bytes,
-            )
-
-            container = client.containers.create(
-                image=self._runner_image,
-                environment=env,
-                command=[
-                    "sh",
-                    "-lc",
-                    "set -euo pipefail; mkdir -p /tmp/home; "
-                    "/app/.venv/bin/python /runner/_runner.py",
-                ],
-                working_dir="/app",
-                network_mode="none",
-                user="runner",
-                cap_drop=["ALL"],
-                pids_limit=self._limits.pids_limit,
-                read_only=True,
-                tmpfs={
-                    "/tmp": self._limits.tmpfs_tmp,
+            with trace_operation(
+                tracer,
+                "docker_runner.execute",
+                {
+                    "run.id": str(run_id),
+                    "tool.id": str(version.tool_id),
+                    "version.id": str(version.id),
+                    "run.context": context.value,
                 },
-                volumes={work_volume.name: {"bind": "/work", "mode": "rw"}},
-                mem_limit=self._limits.memory_limit,
-                nano_cpus=nano_cpus,
-                labels={
-                    "skriptoteket.run_id": str(run_id),
-                    "skriptoteket.tool_version_id": str(version.id),
-                    "skriptoteket.tool_id": str(version.tool_id),
-                },
-            )
+            ) as span:
+                work_volume = client.volumes.create(
+                    labels={
+                        "skriptoteket.run_id": str(run_id),
+                        "skriptoteket.tool_version_id": str(version.id),
+                        "skriptoteket.tool_id": str(version.tool_id),
+                    }
+                )
+                span.add_event("volume_created")
 
-            container.put_archive(path="/work", data=workdir_tar)
-            container.start()
+                workdir_tar = _build_workdir_archive(
+                    version=version,
+                    input_filename=safe_input_filename,
+                    input_bytes=input_bytes,
+                )
 
-            timed_out = False
-            try:
-                container.wait(timeout=timeout_seconds)
-            except ReadTimeout:
-                timed_out = True
+                container = client.containers.create(
+                    image=self._runner_image,
+                    environment=env,
+                    command=[
+                        "sh",
+                        "-lc",
+                        "set -euo pipefail; mkdir -p /tmp/home; "
+                        "/app/.venv/bin/python /runner/_runner.py",
+                    ],
+                    working_dir="/app",
+                    network_mode="none",
+                    user="runner",
+                    cap_drop=["ALL"],
+                    pids_limit=self._limits.pids_limit,
+                    read_only=True,
+                    tmpfs={
+                        "/tmp": self._limits.tmpfs_tmp,
+                    },
+                    volumes={work_volume.name: {"bind": "/work", "mode": "rw"}},
+                    mem_limit=self._limits.memory_limit,
+                    nano_cpus=nano_cpus,
+                    labels={
+                        "skriptoteket.run_id": str(run_id),
+                        "skriptoteket.tool_version_id": str(version.id),
+                        "skriptoteket.tool_id": str(version.tool_id),
+                    },
+                )
+
+                container.put_archive(path="/work", data=workdir_tar)
+                container.start()
+                span.add_event("container_started")
+
+                timed_out = False
                 try:
-                    container.kill()
-                except DockerException:
-                    pass
-                try:
-                    container.wait(timeout=10)
+                    container.wait(timeout=timeout_seconds)
                 except ReadTimeout:
-                    pass
+                    timed_out = True
+                    try:
+                        container.kill()
+                    except DockerException:
+                        pass
+                    try:
+                        container.wait(timeout=10)
+                    except ReadTimeout:
+                        pass
 
-            stdout_raw = container.logs(stdout=True, stderr=False)
-            stderr_raw = container.logs(stdout=False, stderr=True)
+                span.add_event("container_finished", {"timed_out": str(timed_out)})
 
-            stdout = _truncate_utf8_bytes(data=stdout_raw, max_bytes=self._output_max_stdout_bytes)
-            stderr = _truncate_utf8_bytes(data=stderr_raw, max_bytes=self._output_max_stderr_bytes)
+                stdout_raw = container.logs(stdout=True, stderr=False)
+                stderr_raw = container.logs(stdout=False, stderr=True)
 
-            result_json_bytes: bytes | None = None
-            try:
-                tar_stream, _ = container.get_archive(path="/work/result.json")
-                result_json_bytes = _extract_first_file_from_tar_bytes(
-                    tar_bytes=b"".join(tar_stream)
+                stdout = _truncate_utf8_bytes(
+                    data=stdout_raw, max_bytes=self._output_max_stdout_bytes
                 )
-            except (NotFound, DockerException, RuntimeError):
-                result_json_bytes = None
-
-            if timed_out:
-                artifacts_manifest = self._store_output_archive_safely(
-                    container=container, run_id=run_id
-                )
-                logger.warning(
-                    "Runner execution timed out",
-                    run_id=str(run_id),
-                    tool_id=str(version.tool_id),
-                    tool_version_id=str(version.id),
-                    context=context.value,
-                    timeout_seconds=timeout_seconds,
-                    duration_seconds=round(time.monotonic() - start_time, 6),
+                stderr = _truncate_utf8_bytes(
+                    data=stderr_raw, max_bytes=self._output_max_stderr_bytes
                 )
 
-                return ToolExecutionResult(
-                    status=RunStatus.TIMED_OUT,
-                    stdout=stdout,
-                    stderr=stderr,
-                    html_output="",
-                    error_summary=_truncate_utf8_str(
+                result_json_bytes: bytes | None = None
+                try:
+                    tar_stream, _ = container.get_archive(path="/work/result.json")
+                    result_json_bytes = _extract_first_file_from_tar_bytes(
+                        tar_bytes=b"".join(tar_stream)
+                    )
+                except (NotFound, DockerException, RuntimeError):
+                    result_json_bytes = None
+
+                if timed_out:
+                    artifacts_manifest = self._store_output_archive_safely(
+                        container=container, run_id=run_id
+                    )
+                    span.add_event(
+                        "artifacts_extracted", {"count": str(len(artifacts_manifest.artifacts))}
+                    )
+                    span.set_attribute("run.status", RunStatus.TIMED_OUT.value)
+                    span.set_attribute(
+                        "run.duration_seconds", round(time.monotonic() - start_time, 6)
+                    )
+                    span.set_attribute("run.artifacts_count", len(artifacts_manifest.artifacts))
+
+                    logger.warning(
+                        "Runner execution timed out",
+                        run_id=str(run_id),
+                        tool_id=str(version.tool_id),
+                        tool_version_id=str(version.id),
+                        context=context.value,
+                        timeout_seconds=timeout_seconds,
+                        duration_seconds=round(time.monotonic() - start_time, 6),
+                    )
+
+                    timed_out_error_summary = _truncate_utf8_str(
                         value="Execution timed out.",
                         max_bytes=self._output_max_error_summary_bytes,
-                    ),
-                    artifacts_manifest=artifacts_manifest,
+                    )
+                    ui_result = ToolUiContractV2Result(
+                        status="timed_out",
+                        error_summary=timed_out_error_summary,
+                        outputs=[],
+                        next_actions=[],
+                        state=None,
+                        artifacts=[],
+                    )
+                    return ToolExecutionResult(
+                        status=RunStatus.TIMED_OUT,
+                        stdout=stdout,
+                        stderr=stderr,
+                        ui_result=ui_result,
+                        artifacts_manifest=artifacts_manifest,
+                    )
+
+                if result_json_bytes is None:
+                    artifacts_manifest = self._store_output_archive_safely(
+                        container=container, run_id=run_id
+                    )
+                    logger.warning(
+                        "Runner contract violation (missing result.json)",
+                        run_id=str(run_id),
+                        tool_id=str(version.tool_id),
+                        tool_version_id=str(version.id),
+                        context=context.value,
+                        duration_seconds=round(time.monotonic() - start_time, 6),
+                    )
+                    raise DomainError(
+                        code=ErrorCode.INTERNAL_ERROR,
+                        message="Execution failed (runner contract violation).",
+                        details={
+                            "reason": "missing result.json",
+                            "stdout": stdout,
+                            "stderr": stderr,
+                            "artifacts_manifest": artifacts_manifest.model_dump(),
+                        },
+                    )
+
+                try:
+                    runner_payload = parse_runner_result_json(result_json_bytes=result_json_bytes)
+                except DomainError as exc:
+                    artifacts_manifest = self._store_output_archive_safely(
+                        container=container, run_id=run_id
+                    )
+                    logger.warning(
+                        "Runner contract violation (invalid result.json)",
+                        run_id=str(run_id),
+                        tool_id=str(version.tool_id),
+                        tool_version_id=str(version.id),
+                        context=context.value,
+                        duration_seconds=round(time.monotonic() - start_time, 6),
+                    )
+                    raise DomainError(
+                        code=ErrorCode.INTERNAL_ERROR,
+                        message="Execution failed (runner contract violation).",
+                        details={
+                            "reason": "invalid result.json",
+                            "validation": exc.details,
+                            "stdout": stdout,
+                            "stderr": stderr,
+                            "artifacts_manifest": artifacts_manifest.model_dump(),
+                        },
+                    ) from exc
+
+                status = RunStatus(runner_payload.status)
+                runner_error_summary: str | None = (
+                    None
+                    if runner_payload.error_summary is None
+                    else _truncate_utf8_str(
+                        value=runner_payload.error_summary,
+                        max_bytes=self._output_max_error_summary_bytes,
+                    )
+                )
+                ui_result = (
+                    runner_payload
+                    if runner_payload.error_summary == runner_error_summary
+                    else runner_payload.model_copy(update={"error_summary": runner_error_summary})
                 )
 
-            if result_json_bytes is None:
-                artifacts_manifest = self._store_output_archive_safely(
-                    container=container, run_id=run_id
+                try:
+                    artifacts_manifest = self._store_output_archive(
+                        container=container,
+                        run_id=run_id,
+                        reported_artifacts=runner_payload.artifacts,
+                    )
+                except DomainError:
+                    logger.warning(
+                        "Artifact extraction violation",
+                        run_id=str(run_id),
+                        tool_id=str(version.tool_id),
+                        tool_version_id=str(version.id),
+                        context=context.value,
+                        duration_seconds=round(time.monotonic() - start_time, 6),
+                    )
+                    raise DomainError(
+                        code=ErrorCode.INTERNAL_ERROR,
+                        message="Execution failed (artifact extraction violation).",
+                        details={
+                            "stdout": stdout,
+                            "stderr": stderr,
+                        },
+                    )
+
+                span.add_event(
+                    "artifacts_extracted", {"count": str(len(artifacts_manifest.artifacts))}
                 )
-                logger.warning(
-                    "Runner contract violation (missing result.json)",
+                span.set_attribute("run.status", status.value)
+                span.set_attribute("run.duration_seconds", round(time.monotonic() - start_time, 6))
+                span.set_attribute("run.artifacts_count", len(artifacts_manifest.artifacts))
+
+                logger.info(
+                    "Runner execution finished",
                     run_id=str(run_id),
                     tool_id=str(version.tool_id),
                     tool_version_id=str(version.id),
                     context=context.value,
+                    status=status.value,
                     duration_seconds=round(time.monotonic() - start_time, 6),
+                    artifacts_count=len(artifacts_manifest.artifacts),
                 )
                 return ToolExecutionResult(
-                    status=RunStatus.FAILED,
+                    status=status,
                     stdout=stdout,
                     stderr=stderr,
-                    html_output="",
-                    error_summary=_truncate_utf8_str(
-                        value="Execution failed (runner contract violation).",
-                        max_bytes=self._output_max_error_summary_bytes,
-                    ),
+                    ui_result=ui_result,
                     artifacts_manifest=artifacts_manifest,
                 )
-
-            try:
-                runner_payload = parse_runner_result_json(result_json_bytes=result_json_bytes)
-            except DomainError:
-                artifacts_manifest = self._store_output_archive_safely(
-                    container=container, run_id=run_id
-                )
-                logger.warning(
-                    "Runner contract violation (invalid result.json)",
-                    run_id=str(run_id),
-                    tool_id=str(version.tool_id),
-                    tool_version_id=str(version.id),
-                    context=context.value,
-                    duration_seconds=round(time.monotonic() - start_time, 6),
-                )
-                return ToolExecutionResult(
-                    status=RunStatus.FAILED,
-                    stdout=stdout,
-                    stderr=stderr,
-                    html_output="",
-                    error_summary=_truncate_utf8_str(
-                        value="Execution failed (runner contract violation).",
-                        max_bytes=self._output_max_error_summary_bytes,
-                    ),
-                    artifacts_manifest=artifacts_manifest,
-                )
-
-            status = RunStatus(runner_payload.status)
-            html_output = _truncate_utf8_str(
-                value=runner_payload.html_output,
-                max_bytes=self._output_max_html_bytes,
-            )
-            error_summary = (
-                None
-                if runner_payload.error_summary is None
-                else _truncate_utf8_str(
-                    value=runner_payload.error_summary,
-                    max_bytes=self._output_max_error_summary_bytes,
-                )
-            )
-
-            try:
-                artifacts_manifest = self._store_output_archive(
-                    container=container,
-                    run_id=run_id,
-                    reported_artifacts=runner_payload.artifacts,
-                )
-            except DomainError:
-                logger.warning(
-                    "Artifact extraction violation",
-                    run_id=str(run_id),
-                    tool_id=str(version.tool_id),
-                    tool_version_id=str(version.id),
-                    context=context.value,
-                    duration_seconds=round(time.monotonic() - start_time, 6),
-                )
-                return ToolExecutionResult(
-                    status=RunStatus.FAILED,
-                    stdout=stdout,
-                    stderr=stderr,
-                    html_output="",
-                    error_summary=_truncate_utf8_str(
-                        value="Execution failed (artifact extraction violation).",
-                        max_bytes=self._output_max_error_summary_bytes,
-                    ),
-                    artifacts_manifest=ArtifactsManifest(artifacts=[]),
-                )
-
-            logger.info(
-                "Runner execution finished",
-                run_id=str(run_id),
-                tool_id=str(version.tool_id),
-                tool_version_id=str(version.id),
-                context=context.value,
-                status=status.value,
-                duration_seconds=round(time.monotonic() - start_time, 6),
-                artifacts_count=len(artifacts_manifest.artifacts),
-            )
-            return ToolExecutionResult(
-                status=status,
-                stdout=stdout,
-                stderr=stderr,
-                html_output=html_output,
-                error_summary=error_summary,
-                artifacts_manifest=artifacts_manifest,
-            )
 
         finally:
             if container is not None:

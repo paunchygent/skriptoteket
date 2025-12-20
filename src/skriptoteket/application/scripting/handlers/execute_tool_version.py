@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import time
+from datetime import datetime
+from typing import TYPE_CHECKING
+from uuid import UUID
 
 import structlog
 
@@ -10,8 +13,18 @@ from skriptoteket.application.scripting.commands import (
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.scripting.execution import ArtifactsManifest, ToolExecutionResult
-from skriptoteket.domain.scripting.models import RunStatus, finish_tool_run, start_tool_run
+from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
+from skriptoteket.domain.scripting.execution import ToolExecutionResult
+from skriptoteket.domain.scripting.models import (
+    RunStatus,
+    ToolVersion,
+    finish_tool_run,
+    start_tool_run,
+)
+from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result, UiFormAction
+from skriptoteket.domain.scripting.ui.normalization import UiNormalizationResult
+from skriptoteket.domain.scripting.ui.policy import UiPolicy
+from skriptoteket.observability.tracing import get_tracer, trace_operation
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.runner import ToolRunnerProtocol
@@ -20,7 +33,15 @@ from skriptoteket.protocols.scripting import (
     ToolRunRepositoryProtocol,
     ToolVersionRepositoryProtocol,
 )
+from skriptoteket.protocols.scripting_ui import (
+    BackendActionProviderProtocol,
+    UiPayloadNormalizerProtocol,
+    UiPolicyProviderProtocol,
+)
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+
+if TYPE_CHECKING:
+    from opentelemetry.trace import Span
 
 logger = structlog.get_logger(__name__)
 
@@ -54,6 +75,9 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         versions: ToolVersionRepositoryProtocol,
         runs: ToolRunRepositoryProtocol,
         runner: ToolRunnerProtocol,
+        ui_policy_provider: UiPolicyProviderProtocol,
+        backend_actions: BackendActionProviderProtocol,
+        ui_normalizer: UiPayloadNormalizerProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> None:
@@ -61,6 +85,9 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         self._versions = versions
         self._runs = runs
         self._runner = runner
+        self._ui_policy_provider = ui_policy_provider
+        self._backend_actions = backend_actions
+        self._ui_normalizer = ui_normalizer
         self._clock = clock
         self._id_generator = id_generator
 
@@ -85,8 +112,59 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
                 },
             )
 
+        profile_id = await self._ui_policy_provider.get_profile_id_for_tool(
+            tool_id=command.tool_id,
+            actor=actor,
+        )
+        policy = self._ui_policy_provider.get_policy(profile_id=profile_id)
+        backend_actions_list = await self._backend_actions.list_backend_actions(
+            tool_id=command.tool_id,
+            actor=actor,
+            policy=policy,
+        )
+
         now = self._clock.now()
         run_id = self._id_generator.new_uuid()
+
+        # Start tracing span for execution
+        tracer = get_tracer("skriptoteket")
+        with trace_operation(
+            tracer,
+            "execute_tool_version",
+            {
+                "tool.id": str(command.tool_id),
+                "version.id": str(command.version_id),
+                "run.id": str(run_id),
+                "run.context": command.context.value,
+                "actor.id": str(actor.id),
+            },
+        ) as span:
+            return await self._execute_with_span(
+                span=span,
+                actor=actor,
+                command=command,
+                run_id=run_id,
+                version=version,
+                now=now,
+                backend_actions_list=backend_actions_list,
+                policy=policy,
+                started_at=started_at,
+            )
+
+    async def _execute_with_span(
+        self,
+        *,
+        span: Span,
+        actor: User,
+        command: ExecuteToolVersionCommand,
+        run_id: UUID,
+        version: ToolVersion,
+        now: datetime,
+        backend_actions_list: list[UiFormAction],
+        policy: UiPolicy,
+        started_at: float,
+    ) -> ExecuteToolVersionResult:
+        """Execute tool version with tracing span context."""
         run = start_tool_run(
             run_id=run_id,
             tool_id=command.tool_id,
@@ -110,11 +188,14 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
             input_size_bytes=len(command.input_bytes),
         )
 
+        span.add_event("run_created", {"run_id": str(run_id)})
+
         async with self._uow:
             await self._runs.create(run=run)
 
         execution_result: ToolExecutionResult | None = None
         domain_error_to_raise: DomainError | None = None
+        fallback_raw_result: ToolUiContractV2Result | None = None
 
         try:
             compile(version.source_code, "<tool_version>", "exec")
@@ -137,12 +218,21 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
                 lineno=exc.lineno,
                 offset=exc.offset,
             )
+            span.add_event("syntax_error", {"message": exc.msg or ""})
+            syntax_error_summary = _format_syntax_error(exc)
+            fallback_raw_result = ToolUiContractV2Result(
+                status="failed",
+                error_summary=syntax_error_summary,
+                outputs=[],
+                next_actions=[],
+                state=None,
+                artifacts=[],
+            )
             execution_result = ToolExecutionResult(
                 status=RunStatus.FAILED,
                 stdout="",
                 stderr="",
-                html_output="",
-                error_summary=_format_syntax_error(exc),
+                ui_result=fallback_raw_result,
                 artifacts_manifest=ArtifactsManifest(artifacts=[]),
             )
         except DomainError as exc:
@@ -155,7 +245,16 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
                 actor_id=str(actor.id),
                 error_code=exc.code.value,
             )
+            span.add_event("domain_error", {"code": exc.code.value})
             domain_error_to_raise = exc
+            fallback_raw_result = ToolUiContractV2Result(
+                status="failed",
+                error_summary=exc.message,
+                outputs=[],
+                next_actions=[],
+                state=None,
+                artifacts=[],
+            )
         except Exception:  # noqa: BLE001
             logger.exception(
                 "Tool execution failed (unexpected exception)",
@@ -165,35 +264,105 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
                 context=command.context.value,
                 actor_id=str(actor.id),
             )
+            span.add_event("internal_error")
             domain_error_to_raise = DomainError(
                 code=ErrorCode.INTERNAL_ERROR,
                 message="Execution failed (internal error).",
             )
+            fallback_raw_result = ToolUiContractV2Result(
+                status="failed",
+                error_summary="Execution failed (internal error).",
+                outputs=[],
+                next_actions=[],
+                state=None,
+                artifacts=[],
+            )
 
         finish_now = self._clock.now()
+        raw_result = (
+            execution_result.ui_result if execution_result is not None else fallback_raw_result
+        )
+        if raw_result is None:
+            raw_result = ToolUiContractV2Result(
+                status="failed",
+                error_summary=None,
+                outputs=[],
+                next_actions=[],
+                state=None,
+                artifacts=[],
+            )
+
+        normalization_result: UiNormalizationResult
+        try:
+            normalization_result = self._ui_normalizer.normalize(
+                raw_result=raw_result,
+                backend_actions=backend_actions_list,
+                policy=policy,
+            )
+        except DomainError:
+            logger.exception(
+                "UI payload normalization failed",
+                run_id=str(run_id),
+                tool_id=str(command.tool_id),
+                tool_version_id=str(command.version_id),
+                context=command.context.value,
+                actor_id=str(actor.id),
+            )
+            normalization_result = self._ui_normalizer.normalize(
+                raw_result=ToolUiContractV2Result(
+                    status="failed",
+                    error_summary="Execution failed (ui_payload normalization error).",
+                    outputs=[],
+                    next_actions=[],
+                    state=None,
+                    artifacts=[],
+                ),
+                backend_actions=backend_actions_list,
+                policy=policy,
+            )
+            domain_error_to_raise = DomainError(
+                code=ErrorCode.INTERNAL_ERROR,
+                message="Execution failed (ui_payload normalization error).",
+            )
+
         if execution_result is None:
+            stdout = ""
+            stderr = ""
+            artifacts_manifest: dict[str, object] = {}
+            if domain_error_to_raise is not None:
+                stdout_candidate = domain_error_to_raise.details.get("stdout")
+                if isinstance(stdout_candidate, str):
+                    stdout = stdout_candidate
+                stderr_candidate = domain_error_to_raise.details.get("stderr")
+                if isinstance(stderr_candidate, str):
+                    stderr = stderr_candidate
+                artifacts_candidate = domain_error_to_raise.details.get("artifacts_manifest")
+                if isinstance(artifacts_candidate, dict):
+                    artifacts_manifest = artifacts_candidate
+
+            run_error_summary = (
+                None if domain_error_to_raise is None else domain_error_to_raise.message
+            )
             finished = finish_tool_run(
                 run=run,
                 status=RunStatus.FAILED,
                 now=finish_now,
-                html_output="",
-                stdout="",
-                stderr="",
-                artifacts_manifest={},
-                error_summary=None
-                if domain_error_to_raise is None
-                else domain_error_to_raise.message,
+                stdout=stdout,
+                stderr=stderr,
+                artifacts_manifest=artifacts_manifest,
+                error_summary=run_error_summary,
+                ui_payload=normalization_result.ui_payload,
             )
         else:
             finished = finish_tool_run(
                 run=run,
                 status=execution_result.status,
                 now=finish_now,
-                html_output=execution_result.html_output,
                 stdout=execution_result.stdout,
                 stderr=execution_result.stderr,
                 artifacts_manifest=execution_result.artifacts_manifest.model_dump(),
-                error_summary=execution_result.error_summary,
+                error_summary=execution_result.ui_result.error_summary,
+                ui_payload=normalization_result.ui_payload,
             )
 
         async with self._uow:
@@ -203,6 +372,11 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         artifacts = finished.artifacts_manifest.get("artifacts")
         if isinstance(artifacts, list):
             artifacts_count = len(artifacts)
+
+        # Set final span attributes
+        span.set_attribute("run.status", finished.status.value)
+        span.set_attribute("run.artifacts_count", artifacts_count)
+        span.set_attribute("run.duration_seconds", round(time.monotonic() - started_at, 6))
 
         logger.info(
             "Tool execution finished",

@@ -1,0 +1,6 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+
+def extract(carrier: Mapping[str, str]) -> object: ...
+def set_global_textmap(textmap: object) -> None: ...
