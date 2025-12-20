@@ -77,7 +77,8 @@ async def list_tools_by_tags(
 ) -> HTMLResponse:
     csrf_token = session.csrf_token if session else ""
     result = await handler.handle(
-        ListToolsByTagsQuery(profession_slug=profession_slug, category_slug=category_slug)
+        actor=user,
+        query=ListToolsByTagsQuery(profession_slug=profession_slug, category_slug=category_slug),
     )
     return templates.TemplateResponse(
         request=request,
@@ -89,5 +90,6 @@ async def list_tools_by_tags(
             "profession": result.profession,
             "category": result.category,
             "tools": result.tools,
+            "curated_apps": result.curated_apps,
         },
     )

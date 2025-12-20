@@ -16,7 +16,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Date: 2025-12-20
 - Branch / commit: `main` @ `9308cd6` (dirty working tree)
 - Current sprint: `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md`
-- Backend now: ST-10-07 (SSR rendering for typed outputs/actions) is done
+- Backend now: ST-10-05 (Curated apps registry + catalog integration) is done; next: ST-10-06
 - Frontend now: N/A (completed work moved to `.agent/readme-first.md`)
 
 ## 2025-12-19 ST-07-02 Health & Metrics (DONE)
@@ -67,7 +67,8 @@ Implementation (HuleEdu singleton pattern):
 - App: tool sessions persistence (state + optimistic concurrency): `src/skriptoteket/domain/scripting/tool_sessions.py`, `src/skriptoteket/protocols/tool_sessions.py`, `src/skriptoteket/infrastructure/repositories/tool_session_repository.py`, `src/skriptoteket/application/scripting/handlers/*tool_session_state.py`.
 - App: ST-10-04 interactive tool API endpoints: `src/skriptoteket/application/scripting/handlers/start_action.py`, `src/skriptoteket/web/routes/interactive_tools.py`.
 - Repo: compute `get_session_state.latest_run_id` at read time (no schema change): `src/skriptoteket/protocols/scripting.py`, `src/skriptoteket/infrastructure/repositories/tool_run_repository.py`.
-- DB: migrations `0008_tool_runs_ui_payload` + `0009_tool_sessions` + idempotency tests `tests/integration/test_migration_0008_tool_runs_ui_payload_idempotent.py` and `tests/integration/test_migration_0009_tool_sessions_idempotent.py`.
+- DB: migrations `0008_tool_runs_ui_payload` + `0009_tool_sessions` + `0010_curated_apps_runs` (tool_runs source_kind + allow curated tool_id in runs/sessions).
+- Curated apps: registry+executor + `/apps/<app_id>` page + catalog integration: `src/skriptoteket/infrastructure/curated_apps/`, `src/skriptoteket/web/pages/curated_apps.py`, `src/skriptoteket/web/templates/apps/detail.html`, `src/skriptoteket/web/templates/browse_tools.html`, `src/skriptoteket/application/scripting/handlers/start_action.py`, `src/skriptoteket/application/scripting/handlers/get_interactive_session_state.py`.
 - UI: SSR renders `run.ui_payload.outputs` + `run.ui_payload.next_actions` via `src/skriptoteket/web/templates/partials/ui_outputs.html` + `src/skriptoteket/web/templates/partials/ui_actions.html` (POST `/tools/interactive/start_action`; parser `src/skriptoteket/web/interactive_action_forms.py`; tests `tests/unit/web/test_interactive_actions_pages.py`).
 - Typing: OpenTelemetry stubs + no-`Any` tracing facade fixes: `stubs/opentelemetry/`, `src/skriptoteket/observability/tracing.py`.
 - Docs: removed credentials from `docs/runbooks/runbook-home-server.md` (no secrets in repo).
@@ -127,8 +128,8 @@ Implementation (HuleEdu singleton pattern):
 - Typecheck: `pdm run typecheck`.
 - Unit tests: `pdm run pytest tests/unit/domain/scripting/ui` + `pdm run pytest tests/unit/infrastructure/runner/test_result_contract.py tests/unit/infrastructure/runner/test_docker_runner.py tests/unit/application/test_scripting_execute_tool_version_handler.py tests/unit/domain/scripting/test_models.py`.
 - Migration idempotency: `pdm run pytest -m docker --override-ini addopts='' tests/integration/test_migration_0008_tool_runs_ui_payload_idempotent.py tests/integration/test_migration_0009_tool_sessions_idempotent.py`.
-- Live check (2025-12-20): `docker compose -f compose.prod.yaml --profile build-only build runner`; login via curl cookie jar; `POST /api/start_action` for local dev tool `st-10-07-interactive-counter`; open `/my-runs/<run_id>` and submit action form (POST `/tools/interactive/start_action`) → outputs update and `_expected_state_rev` increments.
-- Verified (2025-12-20): `pdm run lint`, `pdm run typecheck`, `pdm run pytest tests/unit/web/test_interactive_actions_pages.py`.
+- Live check (2025-12-20): `pdm run db-upgrade`; login via curl cookie jar; `/browse/gemensamt/ovrigt` shows curated app → open `/apps/demo.counter` → Starta → Öka (step=2) via POST `/tools/interactive/start_action` (HTMX) → output updates (`Räknare: 0` → `Räknare: 2`) and `_expected_state_rev` increments.
+- Verified (2025-12-20): `pdm run lint`, `pdm run typecheck`, `pdm run pytest tests/unit/application/catalog/test_list_tools_by_tags_handler.py tests/unit/application/scripting/handlers/test_interactive_tool_api.py`.
 
 ## Known issues / risks
 

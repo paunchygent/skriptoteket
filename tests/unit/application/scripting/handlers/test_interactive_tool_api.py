@@ -23,14 +23,33 @@ from skriptoteket.application.scripting.interactive_tools import (
     ListArtifactsQuery,
     StartActionCommand,
 )
+from skriptoteket.domain.curated_apps.models import (
+    CuratedAppDefinition,
+    CuratedAppPlacement,
+    curated_app_tool_id,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolRun
 from skriptoteket.domain.scripting.tool_sessions import ToolSession
+from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result, UiPayloadV2
+from skriptoteket.domain.scripting.ui.normalization import UiNormalizationResult
+from skriptoteket.domain.scripting.ui.policy import UiPolicyProfileId, get_ui_policy
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
+from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.curated_apps import (
+    CuratedAppExecutorProtocol,
+    CuratedAppRegistryProtocol,
+)
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
     ToolRunRepositoryProtocol,
+)
+from skriptoteket.protocols.scripting_ui import (
+    BackendActionProviderProtocol,
+    UiPayloadNormalizerProtocol,
+    UiPolicyProviderProtocol,
 )
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
@@ -168,14 +187,30 @@ async def test_start_action_executes_with_session_state_and_updates_state_rev(
 
     execute.handle.side_effect = _execute
 
+    curated_apps = Mock(spec=CuratedAppRegistryProtocol)
+    curated_apps.get_by_tool_id.return_value = None
+    curated_executor = AsyncMock(spec=CuratedAppExecutorProtocol)
+    runs_repo = AsyncMock(spec=ToolRunRepositoryProtocol)
+    ui_policy_provider = AsyncMock(spec=UiPolicyProviderProtocol)
+    backend_actions = AsyncMock(spec=BackendActionProviderProtocol)
+    ui_normalizer = Mock(spec=UiPayloadNormalizerProtocol)
+    clock = Mock(spec=ClockProtocol)
+
     id_generator = Mock(spec=IdGeneratorProtocol)
     id_generator.new_uuid.return_value = session_id
 
     handler = StartActionHandler(
         uow=uow,
         tools=tools,
+        curated_apps=curated_apps,
+        curated_executor=curated_executor,
         sessions=sessions,
+        runs=runs_repo,
         execute=execute,
+        ui_policy_provider=ui_policy_provider,
+        backend_actions=backend_actions,
+        ui_normalizer=ui_normalizer,
+        clock=clock,
         id_generator=id_generator,
     )
 
@@ -228,11 +263,27 @@ async def test_start_action_rejects_state_rev_conflict_without_executing(now: da
     id_generator = Mock(spec=IdGeneratorProtocol)
     id_generator.new_uuid.return_value = session_id
 
+    curated_apps = Mock(spec=CuratedAppRegistryProtocol)
+    curated_apps.get_by_tool_id.return_value = None
+    curated_executor = AsyncMock(spec=CuratedAppExecutorProtocol)
+    runs_repo = AsyncMock(spec=ToolRunRepositoryProtocol)
+    ui_policy_provider = AsyncMock(spec=UiPolicyProviderProtocol)
+    backend_actions = AsyncMock(spec=BackendActionProviderProtocol)
+    ui_normalizer = Mock(spec=UiPayloadNormalizerProtocol)
+    clock = Mock(spec=ClockProtocol)
+
     handler = StartActionHandler(
         uow=uow,
         tools=tools,
+        curated_apps=curated_apps,
+        curated_executor=curated_executor,
         sessions=sessions,
+        runs=runs_repo,
         execute=execute,
+        ui_policy_provider=ui_policy_provider,
+        backend_actions=backend_actions,
+        ui_normalizer=ui_normalizer,
+        clock=clock,
         id_generator=id_generator,
     )
 
@@ -251,6 +302,141 @@ async def test_start_action_rejects_state_rev_conflict_without_executing(now: da
     assert exc_info.value.code is ErrorCode.CONFLICT
     execute.handle.assert_not_called()
     sessions.update_state.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_start_action_executes_curated_app_without_tool_version(now: datetime) -> None:
+    actor = make_user(user_id=uuid4(), role=Role.USER)
+
+    app_id = "demo.test"
+    tool_id = curated_app_tool_id(app_id=app_id)
+    session_id = uuid4()
+    run_id = uuid4()
+
+    uow = FakeUow()
+    tools = AsyncMock(spec=ToolRepositoryProtocol)
+    tools.get_by_id.return_value = None
+
+    curated_app = CuratedAppDefinition(
+        app_id=app_id,
+        tool_id=tool_id,
+        app_version="test",
+        title="Test app",
+        summary=None,
+        min_role=Role.USER,
+        placements=[CuratedAppPlacement(profession_slug="larare", category_slug="ovrigt")],
+    )
+    curated_apps = Mock(spec=CuratedAppRegistryProtocol)
+    curated_apps.get_by_tool_id.return_value = curated_app
+
+    sessions = AsyncMock(spec=ToolSessionRepositoryProtocol)
+    sessions.get_or_create.return_value = make_tool_session(
+        session_id=session_id,
+        tool_id=tool_id,
+        user_id=actor.id,
+        context="default",
+        now=now,
+        state={},
+        state_rev=0,
+    )
+    sessions.update_state.return_value = make_tool_session(
+        session_id=session_id,
+        tool_id=tool_id,
+        user_id=actor.id,
+        context="default",
+        now=now,
+        state={"count": 2},
+        state_rev=1,
+    )
+
+    raw_result = ToolUiContractV2Result(
+        status="succeeded",
+        error_summary=None,
+        outputs=[],
+        next_actions=[],
+        state={"count": 2},
+        artifacts=[],
+    )
+
+    curated_executor = AsyncMock(spec=CuratedAppExecutorProtocol)
+    curated_executor.execute_action.return_value = raw_result
+
+    runs_repo = AsyncMock(spec=ToolRunRepositoryProtocol)
+    runs_repo.create.return_value = make_tool_run(
+        run_id=run_id,
+        tool_id=tool_id,
+        version_id=uuid4(),
+        requested_by_user_id=actor.id,
+        now=now,
+    )
+    runs_repo.update.return_value = make_tool_run(
+        run_id=run_id,
+        tool_id=tool_id,
+        version_id=uuid4(),
+        requested_by_user_id=actor.id,
+        now=now,
+    )
+
+    ui_policy_provider = AsyncMock(spec=UiPolicyProviderProtocol)
+    ui_policy_provider.get_profile_id_for_curated_app.return_value = UiPolicyProfileId.CURATED
+    ui_policy_provider.get_policy.return_value = get_ui_policy(profile_id=UiPolicyProfileId.CURATED)
+
+    backend_actions = AsyncMock(spec=BackendActionProviderProtocol)
+    backend_actions.list_backend_actions.return_value = []
+
+    ui_normalizer = Mock(spec=UiPayloadNormalizerProtocol)
+    ui_normalizer.normalize.return_value = UiNormalizationResult(
+        ui_payload=UiPayloadV2(outputs=[], next_actions=[]),
+        state={"count": 2},
+    )
+
+    clock = Mock(spec=ClockProtocol)
+    clock.now.return_value = now
+
+    execute = AsyncMock(spec=ExecuteToolVersionHandlerProtocol)
+
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    id_generator.new_uuid.side_effect = [session_id, run_id]
+
+    handler = StartActionHandler(
+        uow=uow,
+        tools=tools,
+        curated_apps=curated_apps,
+        curated_executor=curated_executor,
+        sessions=sessions,
+        runs=runs_repo,
+        execute=execute,
+        ui_policy_provider=ui_policy_provider,
+        backend_actions=backend_actions,
+        ui_normalizer=ui_normalizer,
+        clock=clock,
+        id_generator=id_generator,
+    )
+
+    result = await handler.handle(
+        actor=actor,
+        command=StartActionCommand(
+            tool_id=tool_id,
+            context="default",
+            action_id="start",
+            input={},
+            expected_state_rev=0,
+        ),
+    )
+
+    assert result.run_id == run_id
+    assert result.state_rev == 1
+    execute.handle.assert_not_called()
+
+    created_run = runs_repo.create.call_args.kwargs["run"]
+    assert created_run.tool_id == tool_id
+    assert created_run.source_kind.value == "curated_app"
+    assert created_run.version_id is None
+    assert created_run.curated_app_id == app_id
+    assert created_run.curated_app_version == "test"
+
+    sessions.update_state.assert_awaited_once()
 
 
 @pytest.mark.unit
@@ -293,9 +479,13 @@ async def test_get_session_state_returns_latest_run_id(now: datetime) -> None:
     id_generator = Mock(spec=IdGeneratorProtocol)
     id_generator.new_uuid.return_value = session_id
 
+    curated_apps = Mock(spec=CuratedAppRegistryProtocol)
+    curated_apps.get_by_tool_id.return_value = None
+
     handler = GetSessionStateHandler(
         uow=uow,
         tools=tools,
+        curated_apps=curated_apps,
         sessions=sessions,
         runs=runs,
         id_generator=id_generator,

@@ -10,10 +10,10 @@ from skriptoteket.domain.scripting.models import (
     ToolVersion,
     VersionState,
     create_draft_version,
-    finish_tool_run,
+    finish_run,
     publish_version,
     save_draft_snapshot,
-    start_tool_run,
+    start_tool_version_run,
     submit_for_review,
 )
 from skriptoteket.domain.scripting.ui.contract_v2 import UiPayloadV2
@@ -389,7 +389,7 @@ def test_start_and_finish_tool_run() -> None:
     run_id = uuid4()
 
     # Start
-    run = start_tool_run(
+    run = start_tool_version_run(
         run_id=run_id,
         tool_id=uuid4(),
         version_id=uuid4(),
@@ -405,7 +405,7 @@ def test_start_and_finish_tool_run() -> None:
     assert run.started_at == now
 
     # Finish
-    finished = finish_tool_run(
+    finished = finish_run(
         run=run,
         status=RunStatus.SUCCEEDED,
         now=now,
@@ -425,7 +425,7 @@ def test_start_tool_run_validation() -> None:
 
     # Empty workdir
     with pytest.raises(DomainError) as exc:
-        start_tool_run(
+        start_tool_version_run(
             run_id=uuid4(),
             tool_id=uuid4(),
             version_id=uuid4(),
@@ -440,7 +440,7 @@ def test_start_tool_run_validation() -> None:
 
     # Empty input filename
     with pytest.raises(DomainError) as exc:
-        start_tool_run(
+        start_tool_version_run(
             run_id=uuid4(),
             tool_id=uuid4(),
             version_id=uuid4(),
@@ -455,7 +455,7 @@ def test_start_tool_run_validation() -> None:
 
     # Negative size
     with pytest.raises(DomainError) as exc:
-        start_tool_run(
+        start_tool_version_run(
             run_id=uuid4(),
             tool_id=uuid4(),
             version_id=uuid4(),
@@ -472,7 +472,7 @@ def test_start_tool_run_validation() -> None:
 def test_finish_tool_run_validation() -> None:
     now = datetime.now(timezone.utc)
 
-    run = start_tool_run(
+    run = start_tool_version_run(
         run_id=uuid4(),
         tool_id=uuid4(),
         version_id=uuid4(),
@@ -485,7 +485,7 @@ def test_finish_tool_run_validation() -> None:
     )
 
     # 1. Fail if run already finished
-    finished = finish_tool_run(
+    finished = finish_run(
         run=run,
         status=RunStatus.SUCCEEDED,
         now=now,
@@ -496,7 +496,7 @@ def test_finish_tool_run_validation() -> None:
         ui_payload=UiPayloadV2(outputs=[], next_actions=[]),
     )
     with pytest.raises(DomainError) as exc:
-        finish_tool_run(
+        finish_run(
             run=finished,
             status=RunStatus.FAILED,
             now=now,
@@ -510,7 +510,7 @@ def test_finish_tool_run_validation() -> None:
 
     # 2. Fail if new status is RUNNING
     with pytest.raises(DomainError) as exc:
-        finish_tool_run(
+        finish_run(
             run=run,
             status=RunStatus.RUNNING,  # Invalid
             now=now,
@@ -525,7 +525,7 @@ def test_finish_tool_run_validation() -> None:
     # 3. Fail if finished_at before started_at
     past = datetime(2000, 1, 1, tzinfo=timezone.utc)
     with pytest.raises(DomainError) as exc:
-        finish_tool_run(
+        finish_run(
             run=run,
             status=RunStatus.SUCCEEDED,
             now=past,

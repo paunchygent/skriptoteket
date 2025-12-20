@@ -129,7 +129,12 @@ class ListCategoriesForProfessionHandlerProtocol(Protocol):
 
 
 class ListToolsByTagsHandlerProtocol(Protocol):
-    async def handle(self, query: ListToolsByTagsQuery) -> ListToolsByTagsResult: ...
+    async def handle(
+        self,
+        *,
+        actor: User,
+        query: ListToolsByTagsQuery,
+    ) -> ListToolsByTagsResult: ...
 
 
 class ListAllCategoriesHandlerProtocol(Protocol):

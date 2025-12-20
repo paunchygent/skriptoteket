@@ -2,7 +2,11 @@
   <div class="huleedu-muted">
     <span class="huleedu-pill">Körning: {{ run.status | run_status_label }}</span>
     <span class="huleedu-pill">ID: {{ run.id }}</span>
-    <span class="huleedu-pill">Version: {{ run.version_id }}</span>
+    {% if run.source_kind == "curated_app" %}
+      <span class="huleedu-pill">Curated app: {{ run.curated_app_id }} @ {{ run.curated_app_version }}</span>
+    {% else %}
+      <span class="huleedu-pill">Version: {{ run.version_id }}</span>
+    {% endif %}
   </div>
 
   {% if run.error_summary %}

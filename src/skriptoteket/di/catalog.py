@@ -40,6 +40,7 @@ from skriptoteket.protocols.catalog import (
     UpdateToolMetadataHandlerProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.protocols.scripting import ToolVersionRepositoryProtocol
@@ -75,8 +76,14 @@ class CatalogProvider(Provider):
         professions: ProfessionRepositoryProtocol,
         categories: CategoryRepositoryProtocol,
         tools: ToolRepositoryProtocol,
+        curated_apps: CuratedAppRegistryProtocol,
     ) -> ListToolsByTagsHandlerProtocol:
-        return ListToolsByTagsHandler(professions=professions, categories=categories, tools=tools)
+        return ListToolsByTagsHandler(
+            professions=professions,
+            categories=categories,
+            tools=tools,
+            curated_apps=curated_apps,
+        )
 
     @provide(scope=Scope.REQUEST)
     def list_tools_for_admin_handler(

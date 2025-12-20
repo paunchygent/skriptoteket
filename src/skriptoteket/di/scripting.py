@@ -38,6 +38,10 @@ from skriptoteket.application.scripting.handlers.update_tool_session_state impor
 )
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol, ToolRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.curated_apps import (
+    CuratedAppExecutorProtocol,
+    CuratedAppRegistryProtocol,
+)
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.interactive_tools import (
     GetRunHandlerProtocol,
@@ -81,15 +85,29 @@ class ScriptingProvider(Provider):
         self,
         uow: UnitOfWorkProtocol,
         tools: ToolRepositoryProtocol,
+        curated_apps: CuratedAppRegistryProtocol,
+        curated_executor: CuratedAppExecutorProtocol,
         sessions: ToolSessionRepositoryProtocol,
+        runs: ToolRunRepositoryProtocol,
         execute: ExecuteToolVersionHandlerProtocol,
+        ui_policy_provider: UiPolicyProviderProtocol,
+        backend_actions: BackendActionProviderProtocol,
+        ui_normalizer: UiPayloadNormalizerProtocol,
+        clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> StartActionHandlerProtocol:
         return StartActionHandler(
             uow=uow,
             tools=tools,
+            curated_apps=curated_apps,
+            curated_executor=curated_executor,
             sessions=sessions,
+            runs=runs,
             execute=execute,
+            ui_policy_provider=ui_policy_provider,
+            backend_actions=backend_actions,
+            ui_normalizer=ui_normalizer,
+            clock=clock,
             id_generator=id_generator,
         )
 
@@ -98,6 +116,7 @@ class ScriptingProvider(Provider):
         self,
         uow: UnitOfWorkProtocol,
         tools: ToolRepositoryProtocol,
+        curated_apps: CuratedAppRegistryProtocol,
         sessions: ToolSessionRepositoryProtocol,
         runs: ToolRunRepositoryProtocol,
         id_generator: IdGeneratorProtocol,
@@ -105,6 +124,7 @@ class ScriptingProvider(Provider):
         return GetInteractiveSessionStateHandler(
             uow=uow,
             tools=tools,
+            curated_apps=curated_apps,
             sessions=sessions,
             runs=runs,
             id_generator=id_generator,

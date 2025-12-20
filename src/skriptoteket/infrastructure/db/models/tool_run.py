@@ -16,18 +16,22 @@ class ToolRunModel(Base):
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
 
-    tool_id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True),
-        ForeignKey("tools.id", ondelete="CASCADE"),
-        index=True,
-        nullable=False,
-    )
-    version_id: Mapped[UUID] = mapped_column(
+    tool_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), index=True, nullable=False)
+    version_id: Mapped[UUID | None] = mapped_column(
         PGUUID(as_uuid=True),
         ForeignKey("tool_versions.id"),
         index=True,
-        nullable=False,
+        nullable=True,
     )
+
+    source_kind: Mapped[str] = mapped_column(
+        String(32),
+        index=True,
+        nullable=False,
+        server_default="tool_version",
+    )
+    curated_app_id: Mapped[str | None] = mapped_column(String(128), index=True, nullable=True)
+    curated_app_version: Mapped[str | None] = mapped_column(String(128), nullable=True)
 
     context: Mapped[str] = mapped_column(String(16), index=True, nullable=False)
     requested_by_user_id: Mapped[UUID] = mapped_column(

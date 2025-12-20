@@ -7,9 +7,11 @@ from skriptoteket.application.scripting.interactive_tools import (
 )
 from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.domain.scripting.models import RunContext
 from skriptoteket.domain.scripting.tool_sessions import normalize_tool_session_context
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
+from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.interactive_tools import GetSessionStateHandlerProtocol
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
@@ -23,12 +25,14 @@ class GetSessionStateHandler(GetSessionStateHandlerProtocol):
         *,
         uow: UnitOfWorkProtocol,
         tools: ToolRepositoryProtocol,
+        curated_apps: CuratedAppRegistryProtocol,
         sessions: ToolSessionRepositoryProtocol,
         runs: ToolRunRepositoryProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> None:
         self._uow = uow
         self._tools = tools
+        self._curated_apps = curated_apps
         self._sessions = sessions
         self._runs = runs
         self._id_generator = id_generator
@@ -43,8 +47,13 @@ class GetSessionStateHandler(GetSessionStateHandlerProtocol):
 
         async with self._uow:
             tool = await self._tools.get_by_id(tool_id=query.tool_id)
-            if tool is None or not tool.is_published or tool.active_version_id is None:
-                raise not_found("Tool", str(query.tool_id))
+            if tool is not None and tool.is_published and tool.active_version_id is not None:
+                pass
+            else:
+                app = self._curated_apps.get_by_tool_id(tool_id=query.tool_id)
+                if app is None:
+                    raise not_found("Tool", str(query.tool_id))
+                require_at_least_role(user=actor, role=app.min_role)
 
             session = await self._sessions.get_or_create(
                 session_id=self._id_generator.new_uuid(),
@@ -67,4 +76,3 @@ class GetSessionStateHandler(GetSessionStateHandlerProtocol):
                 latest_run_id=None if latest_run is None else latest_run.id,
             )
         )
-

@@ -15,6 +15,8 @@ from sqlalchemy.ext.asyncio import (
 from skriptoteket.config import Settings
 from skriptoteket.domain.scripting.ui.normalizer import DeterministicUiPayloadNormalizer
 from skriptoteket.infrastructure.clock import UTCClock
+from skriptoteket.infrastructure.curated_apps.executor import InMemoryCuratedAppExecutor
+from skriptoteket.infrastructure.curated_apps.registry import InMemoryCuratedAppRegistry
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.id_generator import UUID4Generator
 from skriptoteket.infrastructure.repositories.category_repository import (
@@ -60,6 +62,10 @@ from skriptoteket.protocols.catalog import (
     ToolRepositoryProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.curated_apps import (
+    CuratedAppExecutorProtocol,
+    CuratedAppRegistryProtocol,
+)
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
     PasswordHasherProtocol,
@@ -184,6 +190,14 @@ class InfrastructureProvider(Provider):
     @provide(scope=Scope.APP)
     def ui_normalizer(self) -> UiPayloadNormalizerProtocol:
         return DeterministicUiPayloadNormalizer()
+
+    @provide(scope=Scope.APP)
+    def curated_app_registry(self, settings: Settings) -> CuratedAppRegistryProtocol:
+        return InMemoryCuratedAppRegistry(settings=settings)
+
+    @provide(scope=Scope.APP)
+    def curated_app_executor(self) -> CuratedAppExecutorProtocol:
+        return InMemoryCuratedAppExecutor()
 
     # Repositories
 

@@ -5,7 +5,7 @@ from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.scripting.ui.contract_v2 import UiPayloadV2
@@ -21,6 +21,11 @@ class VersionState(StrEnum):
 class RunContext(StrEnum):
     SANDBOX = "sandbox"
     PRODUCTION = "production"
+
+
+class RunSourceKind(StrEnum):
+    TOOL_VERSION = "tool_version"
+    CURATED_APP = "curated_app"
 
 
 class RunStatus(StrEnum):
@@ -64,7 +69,10 @@ class ToolRun(BaseModel):
 
     id: UUID
     tool_id: UUID
-    version_id: UUID
+    source_kind: RunSourceKind = RunSourceKind.TOOL_VERSION
+    version_id: UUID | None = None
+    curated_app_id: str | None = None
+    curated_app_version: str | None = None
     context: RunContext
     requested_by_user_id: UUID
     status: RunStatus
@@ -81,6 +89,26 @@ class ToolRun(BaseModel):
     artifacts_manifest: dict[str, object]
     error_summary: str | None = None
     ui_payload: UiPayloadV2 | None = None
+
+    @model_validator(mode="after")
+    def _validate_source_fields(self) -> ToolRun:
+        if self.source_kind is RunSourceKind.TOOL_VERSION:
+            if self.version_id is None:
+                raise ValueError("version_id is required for tool_version runs")
+            if self.curated_app_id is not None or self.curated_app_version is not None:
+                raise ValueError("curated app fields must be null for tool_version runs")
+            return self
+
+        if self.source_kind is RunSourceKind.CURATED_APP:
+            if self.version_id is not None:
+                raise ValueError("version_id must be null for curated_app runs")
+            if self.curated_app_id is None or not self.curated_app_id.strip():
+                raise ValueError("curated_app_id is required for curated_app runs")
+            if self.curated_app_version is None or not self.curated_app_version.strip():
+                raise ValueError("curated_app_version is required for curated_app runs")
+            return self
+
+        raise ValueError(f"Unknown RunSourceKind: {self.source_kind}")
 
 
 class PublishVersionResult(BaseModel):
@@ -378,7 +406,7 @@ def rollback_to_version(
     )
 
 
-def start_tool_run(
+def start_tool_version_run(
     *,
     run_id: UUID,
     tool_id: UUID,
@@ -404,7 +432,10 @@ def start_tool_run(
     return ToolRun(
         id=run_id,
         tool_id=tool_id,
+        source_kind=RunSourceKind.TOOL_VERSION,
         version_id=version_id,
+        curated_app_id=None,
+        curated_app_version=None,
         context=context,
         requested_by_user_id=requested_by_user_id,
         status=RunStatus.RUNNING,
@@ -415,8 +446,56 @@ def start_tool_run(
         artifacts_manifest={},
     )
 
+def start_curated_app_run(
+    *,
+    run_id: UUID,
+    tool_id: UUID,
+    curated_app_id: str,
+    curated_app_version: str,
+    context: RunContext,
+    requested_by_user_id: UUID,
+    workdir_path: str,
+    input_filename: str,
+    input_size_bytes: int,
+    now: datetime,
+) -> ToolRun:
+    normalized_app_id = curated_app_id.strip()
+    if not normalized_app_id:
+        raise validation_error("curated_app_id is required")
 
-def finish_tool_run(
+    normalized_app_version = curated_app_version.strip()
+    if not normalized_app_version:
+        raise validation_error("curated_app_version is required")
+
+    normalized_workdir_path = workdir_path.strip()
+    if not normalized_workdir_path:
+        raise validation_error("workdir_path is required")
+    normalized_input_filename = input_filename.strip()
+    if not normalized_input_filename:
+        raise validation_error("input_filename is required")
+    if input_size_bytes < 0:
+        raise validation_error(
+            "input_size_bytes must be >= 0", details={"input_size_bytes": input_size_bytes}
+        )
+
+    return ToolRun(
+        id=run_id,
+        tool_id=tool_id,
+        source_kind=RunSourceKind.CURATED_APP,
+        version_id=None,
+        curated_app_id=normalized_app_id,
+        curated_app_version=normalized_app_version,
+        context=context,
+        requested_by_user_id=requested_by_user_id,
+        status=RunStatus.RUNNING,
+        started_at=now,
+        workdir_path=normalized_workdir_path,
+        input_filename=normalized_input_filename,
+        input_size_bytes=input_size_bytes,
+        artifacts_manifest={"artifacts": []},
+    )
+
+def finish_run(
     *,
     run: ToolRun,
     status: RunStatus,

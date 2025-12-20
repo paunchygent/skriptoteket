@@ -5,6 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 from skriptoteket.domain.catalog.models import Category, Profession, Tool
+from skriptoteket.domain.curated_apps.models import CuratedAppDefinition
 from skriptoteket.domain.identity.models import User
 
 
@@ -54,6 +55,7 @@ class ListToolsByTagsResult(BaseModel):
     profession: Profession
     category: Category
     tools: list[Tool]
+    curated_apps: list[CuratedAppDefinition]
 
 
 class ListToolsForAdminQuery(BaseModel):

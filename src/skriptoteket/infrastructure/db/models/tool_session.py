@@ -24,11 +24,7 @@ class ToolSessionModel(Base):
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
 
-    tool_id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True),
-        ForeignKey("tools.id", ondelete="CASCADE"),
-        nullable=False,
-    )
+    tool_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
     user_id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True),
         ForeignKey("users.id", ondelete="CASCADE"),

@@ -18,8 +18,8 @@ from skriptoteket.domain.scripting.execution import ToolExecutionResult
 from skriptoteket.domain.scripting.models import (
     RunStatus,
     ToolVersion,
-    finish_tool_run,
-    start_tool_run,
+    finish_run,
+    start_tool_version_run,
 )
 from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result, UiFormAction
 from skriptoteket.domain.scripting.ui.normalization import UiNormalizationResult
@@ -165,7 +165,7 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         started_at: float,
     ) -> ExecuteToolVersionResult:
         """Execute tool version with tracing span context."""
-        run = start_tool_run(
+        run = start_tool_version_run(
             run_id=run_id,
             tool_id=command.tool_id,
             version_id=command.version_id,
@@ -343,7 +343,7 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
             run_error_summary = (
                 None if domain_error_to_raise is None else domain_error_to_raise.message
             )
-            finished = finish_tool_run(
+            finished = finish_run(
                 run=run,
                 status=RunStatus.FAILED,
                 now=finish_now,
@@ -354,7 +354,7 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
                 ui_payload=normalization_result.ui_payload,
             )
         else:
-            finished = finish_tool_run(
+            finished = finish_run(
                 run=run,
                 status=execution_result.status,
                 now=finish_now,

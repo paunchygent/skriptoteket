@@ -2,7 +2,7 @@
 type: story
 id: ST-10-05
 title: "Curated apps registry and catalog integration"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-19
 epic: "EPIC-10"
