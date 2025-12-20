@@ -5,7 +5,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, field_validator
 
-from skriptoteket.domain.scripting.execution import RunnerArtifact
+from skriptoteket.domain.scripting.artifacts import RunnerArtifact
 
 
 class UiOutputKind(StrEnum):

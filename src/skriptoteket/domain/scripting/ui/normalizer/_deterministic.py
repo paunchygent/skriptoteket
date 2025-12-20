@@ -102,4 +102,3 @@ class DeterministicUiPayloadNormalizer:
             next_actions=actions,
         )
         return UiNormalizationResult(ui_payload=ui_payload, state=state_normalized)
-

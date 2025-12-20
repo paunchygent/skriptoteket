@@ -12,14 +12,22 @@
     </div>
   {% endif %}
 
-  <div>
-    <strong>HTML-förhandsvisning</strong>
-    <iframe
-      sandbox
-      srcdoc="{{ (run.html_output or '') | e }}"
-      style="width: 100%; min-height: 260px; border: var(--huleedu-border-width) solid var(--huleedu-navy); background-color: var(--huleedu-canvas);"
-    ></iframe>
-  </div>
+  {% if run.ui_payload %}
+    <div class="huleedu-stack-sm">
+      <strong>Resultat</strong>
+      {% set outputs = run.ui_payload.outputs %}
+      {% include "partials/ui_outputs.html" %}
+    </div>
+  {% else %}
+    <div>
+      <strong>HTML-förhandsvisning</strong>
+      <iframe
+        sandbox
+        srcdoc="{{ (run.html_output or '') | e }}"
+        style="width: 100%; min-height: 260px; border: var(--huleedu-border-width) solid var(--huleedu-navy); background-color: var(--huleedu-canvas);"
+      ></iframe>
+    </div>
+  {% endif %}
 
   <details>
     <summary>Utdata</summary>

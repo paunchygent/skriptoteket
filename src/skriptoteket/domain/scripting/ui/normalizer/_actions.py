@@ -93,4 +93,3 @@ def _normalize_actions(
         normalized = normalized[: policy.caps.max_next_actions]
 
     return normalized
-

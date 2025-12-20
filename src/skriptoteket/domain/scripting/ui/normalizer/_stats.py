@@ -32,4 +32,3 @@ class _NormalizationStats:
     ui_payload_outputs_dropped_due_to_budget: int = 0
     ui_payload_actions_dropped_due_to_budget: int = 0
     ui_payload_budget_notice_added: bool = False
-

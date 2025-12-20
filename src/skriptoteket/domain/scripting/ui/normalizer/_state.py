@@ -32,4 +32,3 @@ def _enforce_state_budget(
     candidate = {k: v for k, v in items[:best]}
     dropped = len(items) - best
     return (candidate, dropped)
-

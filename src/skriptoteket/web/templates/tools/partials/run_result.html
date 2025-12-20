@@ -11,7 +11,13 @@
     </div>
   {% endif %}
 
-  {% if run.html_output %}
+  {% if run.ui_payload %}
+    <div class="huleedu-stack-sm">
+      <strong>Resultat</strong>
+      {% set outputs = run.ui_payload.outputs %}
+      {% include "partials/ui_outputs.html" %}
+    </div>
+  {% elif run.html_output %}
     <div>
       <strong>Resultat</strong>
       <iframe

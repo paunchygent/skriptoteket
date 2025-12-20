@@ -150,4 +150,3 @@ def _normalize_outputs(
         normalized.append(output)
 
     return normalized
-

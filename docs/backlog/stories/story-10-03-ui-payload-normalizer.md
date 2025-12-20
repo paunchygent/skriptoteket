@@ -2,7 +2,7 @@
 type: story
 id: ST-10-03
 title: "UI payload normalizer + storage on tool runs"
-status: in_progress
+status: done
 owners: "agents"
 created: 2025-12-19
 epic: "EPIC-10"
