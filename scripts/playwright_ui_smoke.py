@@ -161,7 +161,9 @@ def main() -> None:
         hover_text = first_profession.evaluate("el => getComputedStyle(el).color")
         hover_arrow = first_profession.evaluate("el => getComputedStyle(el, '::after').color")
         assert hover_text != "rgb(217, 119, 6)", f"List text hover too strong: {hover_text}"
-        assert hover_arrow == "rgb(107, 28, 46)", f"Expected burgundy arrow hover, got: {hover_arrow}"
+        assert hover_arrow == "rgb(107, 28, 46)", (
+            f"Expected burgundy arrow hover, got: {hover_arrow}"
+        )
 
         page.goto(f"{base_url}/admin/tools", wait_until="domcontentloaded")
         expect(page.get_by_role("heading", name="Testyta")).to_be_visible()

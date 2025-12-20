@@ -13,10 +13,10 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2025-12-19
-- Branch / commit: `main` @ `6ed0b5f` (uncommitted changes for ST-07-02)
+- Date: 2025-12-20
+- Branch / commit: `main` @ `9308cd6` (dirty working tree)
 - Current sprint: `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md`
-- Backend now: ST-10-03 Session C (cleanup refactor: SRP modularize the UI payload normalizer)
+- Backend now: ST-10-02 (tool sessions + optimistic concurrency) is next
 - Frontend now: N/A (completed work moved to `.agent/readme-first.md`)
 
 ## 2025-12-19 ST-07-02 Health & Metrics (DONE)
@@ -61,8 +61,12 @@ Implementation (HuleEdu singleton pattern):
 ## What changed
 
 - This handoff is intentionally compressed to current sprint-critical work only (see `.agent/readme-first.md` for history).
-- Backend: contract v2 seams/policies/models/tests added (see `## 2025-12-19 SPR-2025-12-22 Session A (DONE)` below).
-- Backend: deterministic normalizer implemented + tests: `src/skriptoteket/domain/scripting/ui/normalizer.py`, `tests/unit/domain/scripting/ui/test_ui_payload_normalizer.py`.
+- Runner: contract v2 result.json only (no v1): `runner/_runner.py`.
+- App: strict v2 parsing + contract violations raise `DomainError(INTERNAL_ERROR)`: `src/skriptoteket/infrastructure/runner/result_contract.py`, `src/skriptoteket/infrastructure/runner/docker_runner.py`.
+- App: normalize + persist `tool_runs.ui_payload` (only via `DeterministicUiPayloadNormalizer`): `src/skriptoteket/application/scripting/handlers/execute_tool_version.py`, `src/skriptoteket/domain/scripting/models.py`, `src/skriptoteket/infrastructure/repositories/tool_run_repository.py`.
+- DB: migration `0008_tool_runs_ui_payload` + idempotency test `tests/integration/test_migration_0008_tool_runs_ui_payload_idempotent.py`.
+- UI: run results render from `run.ui_payload.outputs` via `src/skriptoteket/web/templates/partials/ui_outputs.html` (iframe sandbox for `html_sandboxed`).
+- Typing: OpenTelemetry stubs + no-`Any` tracing facade fixes: `stubs/opentelemetry/`, `src/skriptoteket/observability/tracing.py`.
 
 ### Current session (EPIC-05 Responsive Frontend: ST-05-07, ST-05-08, ST-05-10)
 
@@ -115,20 +119,24 @@ Implementation (HuleEdu singleton pattern):
 
 - Canonical local recipe: see `.agent/readme-first.md` (includes `ARTIFACTS_ROOT` note).
 - UI smoke (Playwright): `pdm run ui-smoke` (requires local dev server + `.env` bootstrap credentials; does not create users).
-- Quality gates: `pdm run lint` (runs Ruff + agent-doc budgets + docs-validate), then `pdm run test`.
-- Session A/B checks: `pdm run pytest tests/unit/domain/scripting/ui`.
+- Quality gates: `pdm run lint`.
+- Typecheck: `pdm run typecheck`.
+- Unit tests: `pdm run pytest tests/unit/domain/scripting/ui` + `pdm run pytest tests/unit/infrastructure/runner/test_result_contract.py tests/unit/infrastructure/runner/test_docker_runner.py tests/unit/application/test_scripting_execute_tool_version_handler.py tests/unit/domain/scripting/test_models.py`.
+- Migration idempotency: `pdm run pytest -m docker --override-ini addopts='' tests/integration/test_migration_0008_tool_runs_ui_payload_idempotent.py`.
+- Live check (UI change): `pdm run dev > .artifacts/dev.log 2>&1 &` then `curl -s -o /dev/null -w "%{http_code}\\n" http://127.0.0.1:8000/login` → `200`.
+- Verified (2025-12-20): `pdm run typecheck`, `pdm run lint`, `pdm run pytest tests/unit/domain/scripting/ui/test_ui_payload_normalizer.py tests/unit/infrastructure/runner/test_result_contract.py tests/unit/application/test_scripting_execute_tool_version_handler.py`.
 
 ## Known issues / risks
 
 - `vega_lite` restrictions are not implemented yet; do not accept/render vega-lite outputs until restrictions exist (ADR-0024).
 - Dev DB can get bloated with test accounts: avoid creating new superusers for UI checks (reuse `.env` bootstrap account).
-- `src/skriptoteket/domain/scripting/ui/normalizer.py` is ~676 LoC and violates SRP/file-size guidelines; refactor into smaller modules before continuing feature work.
+- Next actions (`ui_payload.next_actions`) are persisted but not rendered yet (ST-10-02/ST-10-04 follow-ups).
 
 ## Next steps (recommended order)
 
-- Backend: Session C cleanup: refactor `src/skriptoteket/domain/scripting/ui/normalizer.py` into SRP modules (no shims) and keep `pdm run lint` + `pdm run pytest tests/unit/domain/scripting/ui` green.
+- Backend: implement ST-10-02 tool sessions (persist normalized `state` + optimistic concurrency).
 - Backend: confirm vega-lite approach (implement restrictions vs keep blocked); current implementation blocks `vega_lite` outputs with a system notice.
-- Backend: Session D will add persistence + migrations (out of scope until explicitly started).
+- Follow-up: render `next_actions` in UI and wire `start_action` (per ADR-0024).
 
 ### ST-04-04 COMPLETED
 
