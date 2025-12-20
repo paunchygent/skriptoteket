@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from skriptoteket.config import Settings
+from skriptoteket.domain.scripting.ui.normalizer import DeterministicUiPayloadNormalizer
 from skriptoteket.infrastructure.clock import UTCClock
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.id_generator import UUID4Generator
@@ -44,6 +45,8 @@ from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLU
 from skriptoteket.infrastructure.runner.artifact_manager import FilesystemArtifactManager
 from skriptoteket.infrastructure.runner.capacity import RunnerCapacityLimiter
 from skriptoteket.infrastructure.runner.docker_runner import DockerRunnerLimits, DockerToolRunner
+from skriptoteket.infrastructure.scripting_ui.backend_actions import NoopBackendActionProvider
+from skriptoteket.infrastructure.scripting_ui.policy_provider import DefaultUiPolicyProvider
 from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordHasher
 from skriptoteket.infrastructure.token_generator import SecureTokenGenerator
 from skriptoteket.protocols.catalog import (
@@ -64,6 +67,11 @@ from skriptoteket.protocols.runner import ArtifactManagerProtocol, ToolRunnerPro
 from skriptoteket.protocols.scripting import (
     ToolRunRepositoryProtocol,
     ToolVersionRepositoryProtocol,
+)
+from skriptoteket.protocols.scripting_ui import (
+    BackendActionProviderProtocol,
+    UiPayloadNormalizerProtocol,
+    UiPolicyProviderProtocol,
 )
 from skriptoteket.protocols.suggestions import (
     SuggestionDecisionRepositoryProtocol,
@@ -156,11 +164,22 @@ class InfrastructureProvider(Provider):
             limits=limits,
             output_max_stdout_bytes=settings.RUN_OUTPUT_MAX_STDOUT_BYTES,
             output_max_stderr_bytes=settings.RUN_OUTPUT_MAX_STDERR_BYTES,
-            output_max_html_bytes=settings.RUN_OUTPUT_MAX_HTML_BYTES,
             output_max_error_summary_bytes=settings.RUN_OUTPUT_MAX_ERROR_SUMMARY_BYTES,
             capacity=capacity,
             artifacts=artifacts,
         )
+
+    @provide(scope=Scope.APP)
+    def ui_policy_provider(self) -> UiPolicyProviderProtocol:
+        return DefaultUiPolicyProvider()
+
+    @provide(scope=Scope.APP)
+    def backend_actions(self) -> BackendActionProviderProtocol:
+        return NoopBackendActionProvider()
+
+    @provide(scope=Scope.APP)
+    def ui_normalizer(self) -> UiPayloadNormalizerProtocol:
+        return DeterministicUiPayloadNormalizer()
 
     # Repositories
 

@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse, Response
 from skriptoteket.domain.catalog.models import Tool
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import Role, User
-from skriptoteket.domain.scripting.execution import ArtifactsManifest
+from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.models import ToolRun, ToolVersion, VersionState
 from skriptoteket.domain.scripting.policies import (
     can_view_version as _can_view_version,

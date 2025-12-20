@@ -10,7 +10,7 @@ from skriptoteket.application.scripting.commands import RunSandboxCommand
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.domain.identity.models import Role, Session, User
-from skriptoteket.domain.scripting.execution import ArtifactsManifest
+from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.models import RunStatus, ToolRun
 from skriptoteket.infrastructure.runner.path_safety import validate_output_path
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol, ToolRepositoryProtocol

@@ -12,7 +12,7 @@ from fastapi.responses import HTMLResponse, Response
 from skriptoteket.application.scripting.commands import RunActiveToolCommand
 from skriptoteket.domain.errors import DomainError, not_found
 from skriptoteket.domain.identity.models import Session, User
-from skriptoteket.domain.scripting.execution import ArtifactsManifest
+from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.models import RunStatus, ToolRun
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.scripting import (

@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse, HTMLResponse, Response
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import Session, User
-from skriptoteket.domain.scripting.execution import ArtifactsManifest
+from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.models import RunContext, ToolRun
 from skriptoteket.infrastructure.runner.path_safety import validate_output_path
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol

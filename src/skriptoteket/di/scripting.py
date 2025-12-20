@@ -34,6 +34,11 @@ from skriptoteket.protocols.scripting import (
     ToolRunRepositoryProtocol,
     ToolVersionRepositoryProtocol,
 )
+from skriptoteket.protocols.scripting_ui import (
+    BackendActionProviderProtocol,
+    UiPayloadNormalizerProtocol,
+    UiPolicyProviderProtocol,
+)
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 
@@ -47,6 +52,9 @@ class ScriptingProvider(Provider):
         versions: ToolVersionRepositoryProtocol,
         runs: ToolRunRepositoryProtocol,
         runner: ToolRunnerProtocol,
+        ui_policy_provider: UiPolicyProviderProtocol,
+        backend_actions: BackendActionProviderProtocol,
+        ui_normalizer: UiPayloadNormalizerProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> ExecuteToolVersionHandlerProtocol:
@@ -55,6 +63,9 @@ class ScriptingProvider(Provider):
             versions=versions,
             runs=runs,
             runner=runner,
+            ui_policy_provider=ui_policy_provider,
+            backend_actions=backend_actions,
+            ui_normalizer=ui_normalizer,
             clock=clock,
             id_generator=id_generator,
         )
