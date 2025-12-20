@@ -12,7 +12,7 @@ from docker.errors import NotFound
 from requests.exceptions import ReadTimeout
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.scripting.execution import ArtifactsManifest
+from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.models import (
     RunContext,
     RunStatus,
@@ -31,16 +31,20 @@ from skriptoteket.protocols.runner import ArtifactManagerProtocol
 def create_result_tar(
     *,
     status: str,
-    html_output: str,
+    outputs: list[dict[str, object]],
     error_summary: str | None = None,
+    next_actions: list[dict[str, object]] | None = None,
+    state: dict[str, object] | None = None,
     artifacts: list[dict[str, object]] | None = None,
-    contract_version: int = 1,
+    contract_version: int = 2,
 ) -> bytes:
     payload = {
         "contract_version": contract_version,
         "status": status,
-        "html_output": html_output,
         "error_summary": error_summary,
+        "outputs": outputs,
+        "next_actions": next_actions or [],
+        "state": state,
         "artifacts": artifacts or [],
     }
     result_bytes = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -110,7 +114,6 @@ def runner(mock_capacity: MagicMock, mock_artifacts: MagicMock) -> DockerToolRun
         limits=limits,
         output_max_stdout_bytes=2048,
         output_max_stderr_bytes=2048,
-        output_max_html_bytes=2048,
         output_max_error_summary_bytes=2048,
         capacity=mock_capacity,
         artifacts=mock_artifacts,
@@ -148,7 +151,10 @@ async def test_execute_success(
     container.logs.side_effect = [b"stdout", b"stderr"]
     container.wait.return_value = {"StatusCode": 0}
 
-    result_tar = create_result_tar(status="succeeded", html_output="<p>Hi</p>")
+    result_tar = create_result_tar(
+        status="succeeded",
+        outputs=[{"kind": "html_sandboxed", "html": "<p>Hi</p>"}],
+    )
 
     def get_archive_side_effect(*, path: str):
         if path == "/work/result.json":
@@ -170,8 +176,8 @@ async def test_execute_success(
     assert result.status is RunStatus.SUCCEEDED
     assert result.stdout == "stdout"
     assert result.stderr == "stderr"
-    assert result.html_output == "<p>Hi</p>"
-    assert result.error_summary is None
+    assert result.ui_result.error_summary is None
+    assert result.ui_result.outputs[0].kind == "html_sandboxed"
     mock_artifacts.store_output_archive.assert_called_once()
     mock_capacity.try_acquire.assert_awaited_once()
     mock_capacity.release.assert_awaited_once()
@@ -196,16 +202,17 @@ async def test_execute_missing_result_json_returns_failed(
     container.wait.return_value = {"StatusCode": 0}
     container.get_archive.side_effect = NotFound("Not found")
 
-    result = await runner.execute(
-        run_id=uuid4(),
-        version=tool_version,
-        context=RunContext.SANDBOX,
-        input_filename="input.txt",
-        input_bytes=b"input",
-    )
+    with pytest.raises(DomainError) as exc_info:
+        await runner.execute(
+            run_id=uuid4(),
+            version=tool_version,
+            context=RunContext.SANDBOX,
+            input_filename="input.txt",
+            input_bytes=b"input",
+        )
 
-    assert result.status is RunStatus.FAILED
-    assert result.error_summary == "Execution failed (runner contract violation)."
+    assert exc_info.value.code is ErrorCode.INTERNAL_ERROR
+    assert exc_info.value.message == "Execution failed (runner contract violation)."
 
 
 @pytest.mark.unit
@@ -236,7 +243,7 @@ async def test_execute_timeout_returns_timed_out(
     )
 
     assert result.status is RunStatus.TIMED_OUT
-    assert result.error_summary == "Execution timed out."
+    assert result.ui_result.error_summary == "Execution timed out."
 
 
 @pytest.mark.unit
@@ -260,7 +267,7 @@ async def test_execute_artifact_extraction_violation_returns_failed(
 
     result_tar = create_result_tar(
         status="succeeded",
-        html_output="<p>Hi</p>",
+        outputs=[{"kind": "html_sandboxed", "html": "<p>Hi</p>"}],
         artifacts=[{"path": "output/report.txt", "bytes": 1}],
     )
 
@@ -277,13 +284,14 @@ async def test_execute_artifact_extraction_violation_returns_failed(
         message="Runner contract violation: unsafe artifact path",
     )
 
-    result = await runner.execute(
-        run_id=uuid4(),
-        version=tool_version,
-        context=RunContext.SANDBOX,
-        input_filename="input.txt",
-        input_bytes=b"input",
-    )
+    with pytest.raises(DomainError) as exc_info:
+        await runner.execute(
+            run_id=uuid4(),
+            version=tool_version,
+            context=RunContext.SANDBOX,
+            input_filename="input.txt",
+            input_bytes=b"input",
+        )
 
-    assert result.status is RunStatus.FAILED
-    assert result.error_summary == "Execution failed (artifact extraction violation)."
+    assert exc_info.value.code is ErrorCode.INTERNAL_ERROR
+    assert exc_info.value.message == "Execution failed (artifact extraction violation)."

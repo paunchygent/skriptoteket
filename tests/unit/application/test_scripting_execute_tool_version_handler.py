@@ -11,11 +11,8 @@ from skriptoteket.application.scripting.handlers.execute_tool_version import (
     ExecuteToolVersionHandler,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.scripting.execution import (
-    ArtifactsManifest,
-    StoredArtifact,
-    ToolExecutionResult,
-)
+from skriptoteket.domain.scripting.artifacts import ArtifactsManifest, StoredArtifact
+from skriptoteket.domain.scripting.execution import ToolExecutionResult
 from skriptoteket.domain.scripting.models import (
     RunContext,
     RunStatus,
@@ -23,12 +20,19 @@ from skriptoteket.domain.scripting.models import (
     VersionState,
     compute_content_hash,
 )
+from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result
+from skriptoteket.domain.scripting.ui.normalizer import DeterministicUiPayloadNormalizer
+from skriptoteket.domain.scripting.ui.policy import DEFAULT_UI_POLICY, UiPolicyProfileId
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.runner import ToolRunnerProtocol
 from skriptoteket.protocols.scripting import (
     ToolRunRepositoryProtocol,
     ToolVersionRepositoryProtocol,
+)
+from skriptoteket.protocols.scripting_ui import (
+    BackendActionProviderProtocol,
+    UiPolicyProviderProtocol,
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.identity_fixtures import make_user
@@ -96,12 +100,28 @@ async def test_execute_tool_version_commits_before_runner_execute(now: datetime)
     clock.now.side_effect = [now, now]
 
     runner = AsyncMock(spec=ToolRunnerProtocol)
+    ui_policy_provider = Mock(spec=UiPolicyProviderProtocol)
+    ui_policy_provider.get_profile_id_for_tool = AsyncMock(return_value=UiPolicyProfileId.DEFAULT)
+    ui_policy_provider.get_policy.return_value = DEFAULT_UI_POLICY
+
+    backend_actions = AsyncMock(spec=BackendActionProviderProtocol)
+    backend_actions.list_backend_actions.return_value = []
+
+    ui_normalizer = DeterministicUiPayloadNormalizer()
+
+    ui_result = ToolUiContractV2Result(
+        status="succeeded",
+        error_summary=None,
+        outputs=[{"kind": "html_sandboxed", "html": "<p>ok</p>"}],
+        next_actions=[],
+        state=None,
+        artifacts=[],
+    )
     execution_result = ToolExecutionResult(
         status=RunStatus.SUCCEEDED,
         stdout="ok",
         stderr="",
-        html_output="<p>ok</p>",
-        error_summary=None,
+        ui_result=ui_result,
         artifacts_manifest=ArtifactsManifest(
             artifacts=[
                 StoredArtifact(artifact_id="output_report_txt", path="output/report.txt", bytes=5)
@@ -128,6 +148,9 @@ async def test_execute_tool_version_commits_before_runner_execute(now: datetime)
         versions=versions_repo,
         runs=runs_repo,
         runner=runner,
+        ui_policy_provider=ui_policy_provider,
+        backend_actions=backend_actions,
+        ui_normalizer=ui_normalizer,
         clock=clock,
         id_generator=id_generator,
     )
@@ -144,6 +167,9 @@ async def test_execute_tool_version_commits_before_runner_execute(now: datetime)
     )
 
     assert result.run.status is RunStatus.SUCCEEDED
+    assert result.run.ui_payload is not None
+    assert result.run.ui_payload.contract_version == 2
+    assert any(output.kind == "html_sandboxed" for output in result.run.ui_payload.outputs)
     assert uow.enter_count == 2
     assert uow.exit_count == 2
     runs_repo.create.assert_awaited_once()
@@ -174,12 +200,23 @@ async def test_execute_tool_version_marks_failed_on_capacity_error(now: datetime
         code=ErrorCode.SERVICE_UNAVAILABLE,
         message="Runner is at capacity; retry.",
     )
+    ui_policy_provider = Mock(spec=UiPolicyProviderProtocol)
+    ui_policy_provider.get_profile_id_for_tool = AsyncMock(return_value=UiPolicyProfileId.DEFAULT)
+    ui_policy_provider.get_policy.return_value = DEFAULT_UI_POLICY
+
+    backend_actions = AsyncMock(spec=BackendActionProviderProtocol)
+    backend_actions.list_backend_actions.return_value = []
+
+    ui_normalizer = DeterministicUiPayloadNormalizer()
 
     handler = ExecuteToolVersionHandler(
         uow=uow,
         versions=versions_repo,
         runs=runs_repo,
         runner=runner,
+        ui_policy_provider=ui_policy_provider,
+        backend_actions=backend_actions,
+        ui_normalizer=ui_normalizer,
         clock=clock,
         id_generator=id_generator,
     )
@@ -201,6 +238,7 @@ async def test_execute_tool_version_marks_failed_on_capacity_error(now: datetime
     updated_run = runs_repo.update.call_args.kwargs["run"]
     assert updated_run.status is RunStatus.FAILED
     assert updated_run.error_summary == "Runner is at capacity; retry."
+    assert updated_run.ui_payload is not None
 
 
 @pytest.mark.unit
@@ -231,12 +269,23 @@ async def test_execute_tool_version_marks_failed_on_syntax_error_and_skips_runne
     clock.now.side_effect = [now, now]
 
     runner = AsyncMock(spec=ToolRunnerProtocol)
+    ui_policy_provider = Mock(spec=UiPolicyProviderProtocol)
+    ui_policy_provider.get_profile_id_for_tool = AsyncMock(return_value=UiPolicyProfileId.DEFAULT)
+    ui_policy_provider.get_policy.return_value = DEFAULT_UI_POLICY
+
+    backend_actions = AsyncMock(spec=BackendActionProviderProtocol)
+    backend_actions.list_backend_actions.return_value = []
+
+    ui_normalizer = DeterministicUiPayloadNormalizer()
 
     handler = ExecuteToolVersionHandler(
         uow=uow,
         versions=versions_repo,
         runs=runs_repo,
         runner=runner,
+        ui_policy_provider=ui_policy_provider,
+        backend_actions=backend_actions,
+        ui_normalizer=ui_normalizer,
         clock=clock,
         id_generator=id_generator,
     )
@@ -255,6 +304,7 @@ async def test_execute_tool_version_marks_failed_on_syntax_error_and_skips_runne
     assert result.run.status is RunStatus.FAILED
     assert result.run.error_summary is not None
     assert "SyntaxError" in result.run.error_summary
+    assert result.run.ui_payload is not None
     runner.execute.assert_not_awaited()
     assert uow.enter_count == 2
     assert uow.exit_count == 2
