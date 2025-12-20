@@ -45,10 +45,14 @@ pdm run dev-build-start-clean
 - **REQUIRED**: Keep multi-stage targets:
   - `production`: runtime-only deps
   - `development`: adds QC/dev dependencies (ruff/mypy/pytest/etc.)
-- **FORBIDDEN**: Using `docker buildx ...` / buildx-only workflows unless explicitly requested; use `docker compose build`
-  and `docker compose up --build`.
-- **NOTE**: Modern Docker uses BuildKit by default for builds (even when you run `docker compose build`). Build output may
-  mention BuildKit; this is expected and does not mean you're using a custom `buildx` workflow.
+- **REQUIRED**: Use BuildKit for all image builds (Docker uses BuildKit by default; the legacy builder is deprecated).
+- **FORBIDDEN**: Opting out of BuildKit (e.g. `DOCKER_BUILDKIT=0`) or using undocumented toggles (e.g.
+  `COMPOSE_DOCKER_CLI_BUILD=0`).
+- **REQUIRED**: Canonical build pattern:
+
+```bash
+docker compose build
+```
 
 ## 4. Secrets & Environment
 

@@ -127,7 +127,7 @@ Implementation (HuleEdu singleton pattern):
 - Typecheck: `pdm run typecheck`.
 - Unit tests: `pdm run pytest tests/unit/domain/scripting/ui` + `pdm run pytest tests/unit/infrastructure/runner/test_result_contract.py tests/unit/infrastructure/runner/test_docker_runner.py tests/unit/application/test_scripting_execute_tool_version_handler.py tests/unit/domain/scripting/test_models.py`.
 - Migration idempotency: `pdm run pytest -m docker --override-ini addopts='' tests/integration/test_migration_0008_tool_runs_ui_payload_idempotent.py tests/integration/test_migration_0009_tool_sessions_idempotent.py`.
-- Live check (2025-12-20): `DOCKER_BUILDKIT=0 COMPOSE_DOCKER_CLI_BUILD=0 docker compose -f compose.prod.yaml --profile build-only build runner`; login via curl cookie jar; `POST /api/start_action` for local dev tool `st-10-07-interactive-counter`; open `/my-runs/<run_id>` and submit action form (POST `/tools/interactive/start_action`) → outputs update and `_expected_state_rev` increments.
+- Live check (2025-12-20): `docker compose -f compose.prod.yaml --profile build-only build runner`; login via curl cookie jar; `POST /api/start_action` for local dev tool `st-10-07-interactive-counter`; open `/my-runs/<run_id>` and submit action form (POST `/tools/interactive/start_action`) → outputs update and `_expected_state_rev` increments.
 - Verified (2025-12-20): `pdm run lint`, `pdm run typecheck`, `pdm run pytest tests/unit/web/test_interactive_actions_pages.py`.
 
 ## Known issues / risks

@@ -73,7 +73,7 @@ docker compose -f compose.yaml -f compose.runner.yaml up -d
 Build the runner image with:
 
 ```bash
-docker build -f Dockerfile.runner -t skriptoteket-runner:latest .
+docker compose -f compose.prod.yaml --profile build-only build runner
 ```
 
 ## Transaction boundary (REQUIRED)
