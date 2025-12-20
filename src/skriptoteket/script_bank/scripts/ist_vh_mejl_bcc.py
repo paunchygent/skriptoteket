@@ -7,9 +7,9 @@ Vanligt användningsområden:
 - Du vill snabbt få ut en semikolonseparerad lista som går att klistra in i Outlooks BCC-fält.
 
 Runner-kontrakt:
-- Entrypoint: run_tool(input_path: str, output_dir: str) -> str
+- Entrypoint: run_tool(input_path: str, output_dir: str) -> dict
 - Input: CSV eller XLSX med rubrikrad
-- Output: HTML (för UI) + en fil `emails_<timestamp>.txt` som artifact
+- Output: Contract v2 dict with typed outputs + en fil `emails_<timestamp>.txt` som artifact
 """
 
 import re
@@ -127,7 +127,7 @@ def read_xlsx(path: Path) -> tuple[list[str], list[list[str]]]:
     return rows[0], rows[1:]
 
 
-def run_tool(input_path: str, output_dir: str) -> str:
+def run_tool(input_path: str, output_dir: str) -> dict:
     """Entrypoint: extrahera vårdnadshavares mejl från en klasslista."""
     path = Path(input_path)
     output = Path(output_dir)
@@ -139,10 +139,30 @@ def run_tool(input_path: str, output_dir: str) -> str:
     elif suffix in {".csv", ".txt"}:
         headers, data_rows = read_csv(path)
     else:
-        return f"<p class='error'>Filtypen '{suffix}' stöds inte. Använd .csv eller .xlsx.</p>"
+        return {
+            "outputs": [
+                {
+                    "kind": "notice",
+                    "level": "error",
+                    "message": f"Filtypen '{suffix}' stöds inte. Använd .csv eller .xlsx.",
+                }
+            ],
+            "next_actions": [],
+            "state": None,
+        }
 
     if not headers:
-        return "<p class='error'>Filen verkar tom eller saknar kolumnrubriker.</p>"
+        return {
+            "outputs": [
+                {
+                    "kind": "notice",
+                    "level": "error",
+                    "message": "Filen verkar tom eller saknar kolumnrubriker.",
+                }
+            ],
+            "next_actions": [],
+            "state": None,
+        }
 
     ordered_cols = prioritized_columns(headers)
     col_indices = {col: headers.index(col) for col in ordered_cols}
@@ -163,24 +183,32 @@ def run_tool(input_path: str, output_dir: str) -> str:
     duplicates_removed = total_email_occurrences - len(all_emails)
 
     if not all_emails:
-        return f"""
-        <div class="tool-result">
-            <div class="alert alert-warning">
-                <strong>Inga e‑postadresser hittades</strong>
-            </div>
-            <p>Filen innehöll <strong>{len(data_rows)}</strong> rader men inga giltiga
-            e‑postadresser kunde extraheras.</p>
-            <details>
-                <summary>Kolumner som genomsöktes</summary>
-                <ul>
-                    {"".join(f"<li>{col}</li>" for col in headers[:10])}
-                    {"<li>...</li>" if len(headers) > 10 else ""}
-                </ul>
-            </details>
-            <p><small>Tips: Kontrollera att filen innehåller kolumner med e‑postadresser
-            (t.ex. "Vårdnadshavare e-post", "Parent email").</small></p>
-        </div>
-        """
+        columns_searched = headers[:10]
+        if len(headers) > 10:
+            columns_searched.append("...")
+        return {
+            "outputs": [
+                {
+                    "kind": "notice",
+                    "level": "warning",
+                    "message": "Inga e-postadresser hittades",
+                },
+                {
+                    "kind": "markdown",
+                    "markdown": (
+                        f"Filen innehöll **{len(data_rows)}** rader men inga giltiga "
+                        f"e-postadresser kunde extraheras.\n\n"
+                        f"**Kolumner som genomsöktes:**\n"
+                        + "\n".join(f"- {col}" for col in columns_searched)
+                        + "\n\n"
+                        "*Tips: Kontrollera att filen innehåller kolumner med e-postadresser "
+                        '(t.ex. "Vårdnadshavare e-post", "Parent email").*'
+                    ),
+                },
+            ],
+            "next_actions": [],
+            "state": None,
+        }
 
     email_string = ";".join(all_emails)
 
@@ -189,61 +217,62 @@ def run_tool(input_path: str, output_dir: str) -> str:
     artifact_path = output / artifact_name
     artifact_path.write_text(email_string, encoding="utf-8")
 
-    stats_rows = "".join(
-        f"<tr><td>{col}</td><td>{count}</td></tr>"
+    # Build stats table rows
+    stats_table_rows = [
+        {"column": col, "count": count}
         for col, count in col_email_counts.items()
         if count > 0
-    )
+    ]
 
+    # Build notice message
     dup_info = (
-        f"<br><small>({duplicates_removed} dubbletter filtrerades bort)</small>"
+        f" ({duplicates_removed} dubbletter filtrerades bort)"
         if duplicates_removed > 0
         else ""
     )
+    notice_message = (
+        f"{len(all_emails)} unika e-postadresser extraherades "
+        f"från {len(data_rows)} rader.{dup_info}"
+    )
 
-    return f"""
-    <div class="tool-result">
-        <div class="alert alert-success">
-            <strong>{len(all_emails)}</strong> unika e‑postadresser extraherades
-            från <strong>{len(data_rows)}</strong> rader.{dup_info}
-        </div>
-
-        <h4>E‑postadresser (semikolonseparerade)</h4>
-        <textarea id="email-output" readonly
-            style="width:100%; min-height:100px; font-family:monospace;
-                   padding:8px; border-radius:4px;">{email_string}</textarea>
-
-        <div style="margin-top:12px;">
-            <button type="button" class="btn btn-primary"
-                    data-huleedu-copy-target="email-output"
-                    data-huleedu-copy-success="✓ Kopierat!">
-                📋 Kopiera till urklipp
-            </button>
-        </div>
-        <p style="margin-top:8px;">
-            <small>Filen <code>{artifact_name}</code> sparades som artifact.</small>
-        </p>
-
-        <details style="margin-top:16px;">
-            <summary>Statistik per kolumn</summary>
-            <table class="table" style="margin-top:8px;">
-                <thead>
-                    <tr><th>Kolumn</th><th>Nya e‑postadresser</th></tr>
-                </thead>
-                <tbody>
-                    {stats_rows}
-                </tbody>
-            </table>
-        </details>
-    </div>
-    """
+    return {
+        "outputs": [
+            {
+                "kind": "notice",
+                "level": "info",
+                "message": notice_message,
+            },
+            {
+                "kind": "markdown",
+                "markdown": (
+                    "## E-postadresser (semikolonseparerade)\n\n"
+                    f"```\n{email_string}\n```\n\n"
+                    "Kopiera ovan och klistra in i Outlooks BCC-fält.\n\n"
+                    f"*Filen `{artifact_name}` sparades som artifact.*"
+                ),
+            },
+            {
+                "kind": "table",
+                "title": "Statistik per kolumn",
+                "columns": [
+                    {"key": "column", "label": "Kolumn"},
+                    {"key": "count", "label": "Nya e-postadresser"},
+                ],
+                "rows": stats_table_rows,
+            },
+        ],
+        "next_actions": [],
+        "state": None,
+    }
 
 
 if __name__ == "__main__":
+    import json
     import sys
 
     if len(sys.argv) != 3:
         print(f"Usage: {sys.argv[0]} <input_file> <output_dir>")
         raise SystemExit(1)
 
-    print(run_tool(sys.argv[1], sys.argv[2]))
+    result = run_tool(sys.argv[1], sys.argv[2])
+    print(json.dumps(result, indent=2, ensure_ascii=False))
