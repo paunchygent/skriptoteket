@@ -2,7 +2,7 @@
 type: story
 id: ST-07-05
 title: "Deploy observability stack (Prometheus, Grafana, Jaeger, Loki)"
-status: in_progress
+status: done
 owners: "agents"
 created: 2025-12-20
 epic: "EPIC-07"
