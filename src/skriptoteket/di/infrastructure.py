@@ -38,6 +38,9 @@ from skriptoteket.infrastructure.repositories.tool_maintainer_repository import 
 )
 from skriptoteket.infrastructure.repositories.tool_repository import PostgreSQLToolRepository
 from skriptoteket.infrastructure.repositories.tool_run_repository import PostgreSQLToolRunRepository
+from skriptoteket.infrastructure.repositories.tool_session_repository import (
+    PostgreSQLToolSessionRepository,
+)
 from skriptoteket.infrastructure.repositories.tool_version_repository import (
     PostgreSQLToolVersionRepository,
 )
@@ -78,6 +81,7 @@ from skriptoteket.protocols.suggestions import (
     SuggestionRepositoryProtocol,
 )
 from skriptoteket.protocols.token_generator import TokenGeneratorProtocol
+from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 
@@ -220,6 +224,10 @@ class InfrastructureProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def tool_run_repo(self, session: AsyncSession) -> ToolRunRepositoryProtocol:
         return PostgreSQLToolRunRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def tool_session_repo(self, session: AsyncSession) -> ToolSessionRepositoryProtocol:
+        return PostgreSQLToolSessionRepository(session)
 
     @provide(scope=Scope.REQUEST)
     def script_suggestion_repo(self, session: AsyncSession) -> SuggestionRepositoryProtocol:

@@ -2,7 +2,7 @@
 type: story
 id: ST-10-02
 title: "Tool sessions (state + optimistic concurrency)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-19
 epic: "EPIC-10"
