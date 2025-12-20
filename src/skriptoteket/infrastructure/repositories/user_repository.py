@@ -11,6 +11,11 @@ from skriptoteket.protocols.identity import UserRepositoryProtocol
 
 
 class PostgreSQLUserRepository(UserRepositoryProtocol):
+    """PostgreSQL repository for users and authentication data.
+
+    Uses a request-scoped `AsyncSession`; commit/rollback is owned by the Unit of Work.
+    """
+
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 

@@ -16,7 +16,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Date: 2025-12-20
 - Branch / commit: `main` @ `9308cd6` (dirty working tree)
 - Current sprint: `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md`
-- Backend now: ST-10-02 (tool sessions + optimistic concurrency) is next
+- Backend now: ST-10-04 (interactive tool API endpoints) is done
 - Frontend now: N/A (completed work moved to `.agent/readme-first.md`)
 
 ## 2025-12-19 ST-07-02 Health & Metrics (DONE)
@@ -64,7 +64,10 @@ Implementation (HuleEdu singleton pattern):
 - Runner: contract v2 result.json only (no v1): `runner/_runner.py`.
 - App: strict v2 parsing + contract violations raise `DomainError(INTERNAL_ERROR)`: `src/skriptoteket/infrastructure/runner/result_contract.py`, `src/skriptoteket/infrastructure/runner/docker_runner.py`.
 - App: normalize + persist `tool_runs.ui_payload` (only via `DeterministicUiPayloadNormalizer`): `src/skriptoteket/application/scripting/handlers/execute_tool_version.py`, `src/skriptoteket/domain/scripting/models.py`, `src/skriptoteket/infrastructure/repositories/tool_run_repository.py`.
-- DB: migration `0008_tool_runs_ui_payload` + idempotency test `tests/integration/test_migration_0008_tool_runs_ui_payload_idempotent.py`.
+- App: tool sessions persistence (state + optimistic concurrency): `src/skriptoteket/domain/scripting/tool_sessions.py`, `src/skriptoteket/protocols/tool_sessions.py`, `src/skriptoteket/infrastructure/repositories/tool_session_repository.py`, `src/skriptoteket/application/scripting/handlers/*tool_session_state.py`.
+- App: ST-10-04 interactive tool API endpoints: `src/skriptoteket/application/scripting/handlers/start_action.py`, `src/skriptoteket/web/routes/interactive_tools.py`.
+- Repo: compute `get_session_state.latest_run_id` at read time (no schema change): `src/skriptoteket/protocols/scripting.py`, `src/skriptoteket/infrastructure/repositories/tool_run_repository.py`.
+- DB: migrations `0008_tool_runs_ui_payload` + `0009_tool_sessions` + idempotency tests `tests/integration/test_migration_0008_tool_runs_ui_payload_idempotent.py` and `tests/integration/test_migration_0009_tool_sessions_idempotent.py`.
 - UI: run results render from `run.ui_payload.outputs` via `src/skriptoteket/web/templates/partials/ui_outputs.html` (iframe sandbox for `html_sandboxed`).
 - Typing: OpenTelemetry stubs + no-`Any` tracing facade fixes: `stubs/opentelemetry/`, `src/skriptoteket/observability/tracing.py`.
 
@@ -122,21 +125,21 @@ Implementation (HuleEdu singleton pattern):
 - Quality gates: `pdm run lint`.
 - Typecheck: `pdm run typecheck`.
 - Unit tests: `pdm run pytest tests/unit/domain/scripting/ui` + `pdm run pytest tests/unit/infrastructure/runner/test_result_contract.py tests/unit/infrastructure/runner/test_docker_runner.py tests/unit/application/test_scripting_execute_tool_version_handler.py tests/unit/domain/scripting/test_models.py`.
-- Migration idempotency: `pdm run pytest -m docker --override-ini addopts='' tests/integration/test_migration_0008_tool_runs_ui_payload_idempotent.py`.
+- Migration idempotency: `pdm run pytest -m docker --override-ini addopts='' tests/integration/test_migration_0008_tool_runs_ui_payload_idempotent.py tests/integration/test_migration_0009_tool_sessions_idempotent.py`.
 - Live check (UI change): `pdm run dev > .artifacts/dev.log 2>&1 &` then `curl -s -o /dev/null -w "%{http_code}\\n" http://127.0.0.1:8000/login` → `200`.
-- Verified (2025-12-20): `pdm run typecheck`, `pdm run lint`, `pdm run pytest tests/unit/domain/scripting/ui/test_ui_payload_normalizer.py tests/unit/infrastructure/runner/test_result_contract.py tests/unit/application/test_scripting_execute_tool_version_handler.py`.
+- Verified (2025-12-20): `pdm run lint`, `pdm run typecheck`, `pdm run pytest tests/unit/application/scripting/handlers/test_interactive_tool_api.py`, `curl -s -o /dev/null -w "%{http_code}\\n" -X POST http://127.0.0.1:8000/api/start_action -H "Content-Type: application/json" -d '{}'` → `303`.
 
 ## Known issues / risks
 
 - `vega_lite` restrictions are not implemented yet; do not accept/render vega-lite outputs until restrictions exist (ADR-0024).
 - Dev DB can get bloated with test accounts: avoid creating new superusers for UI checks (reuse `.env` bootstrap account).
-- Next actions (`ui_payload.next_actions`) are persisted but not rendered yet (ST-10-02/ST-10-04 follow-ups).
+- Next actions (`ui_payload.next_actions`) are persisted but not rendered yet (ST-10-04 follow-ups).
 
 ## Next steps (recommended order)
 
-- Backend: implement ST-10-02 tool sessions (persist normalized `state` + optimistic concurrency).
+- Frontend: render `next_actions` in UI and wire `start_action` (per ADR-0024).
+- Backend: if multi-context sessions are needed, decide how to correlate `tool_sessions.context` ↔ tool runs (currently latest_run_id is computed from `tool_runs` per tool+user).
 - Backend: confirm vega-lite approach (implement restrictions vs keep blocked); current implementation blocks `vega_lite` outputs with a system notice.
-- Follow-up: render `next_actions` in UI and wire `start_action` (per ADR-0024).
 
 ### ST-04-04 COMPLETED
 
