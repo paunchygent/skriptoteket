@@ -21,6 +21,10 @@ services:
       ENVIRONMENT: production
       RUNNER_IMAGE: skriptoteket-runner:latest
       ARTIFACTS_ROOT: /app/.artifacts
+      # Observability (requires compose.observability.yaml running)
+      OTEL_TRACING_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      SERVICE_VERSION: "0.1.0"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - artifacts_data:/app/.artifacts

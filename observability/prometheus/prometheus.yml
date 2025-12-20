@@ -1,0 +1,35 @@
+# Prometheus configuration for Skriptoteket observability
+# Scrapes metrics from application and observability components
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'home-server'
+    environment: 'production'
+
+scrape_configs:
+  # Skriptoteket application metrics
+  - job_name: 'skriptoteket'
+    static_configs:
+      - targets: ['skriptoteket-web:8000']
+        labels:
+          service: 'skriptoteket'
+          environment: 'production'
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+
+  # Loki metrics
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['loki:3100']
+        labels:
+          service: 'loki'
+    metrics_path: '/metrics'

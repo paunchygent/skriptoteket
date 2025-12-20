@@ -317,6 +317,13 @@ dev-db-reset = { composite = [
     "docker compose -f compose.yaml -f compose.dev.yaml up -d",
 ] }
 
+# Observability stack (Prometheus, Grafana, Jaeger, Loki)
+obs-start = "docker compose -f compose.observability.yaml up -d"
+obs-stop = "docker compose -f compose.observability.yaml down"
+obs-restart = "docker compose -f compose.observability.yaml restart"
+obs-logs = "docker compose -f compose.observability.yaml logs -f"
+obs-status = "docker compose -f compose.observability.yaml ps"
+
 # Pre-commit convenience
 precommit-install = "pre-commit install"
 precommit-run = "pre-commit run --all-files"

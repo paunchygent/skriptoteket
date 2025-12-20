@@ -254,3 +254,128 @@ Skriptoteket accepts `traceparent` header for distributed tracing:
 curl -H "traceparent: 00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01" \
   http://127.0.0.1:8000/tools
 ```
+
+## Observability Stack Deployment
+
+The observability stack runs separately from the application via `compose.observability.yaml`.
+
+### Stack Components
+
+| Service | Port (External) | Port (Internal) | Purpose |
+|---------|-----------------|-----------------|---------|
+| Prometheus | 9091 | 9090 | Metrics collection |
+| Grafana | 3000 | 3000 | Dashboards |
+| Jaeger | 16686 | 16686 | Trace visualization |
+| Jaeger OTLP | 4317 | 4317 | Trace ingestion (gRPC) |
+| Loki | 3100 | 3100 | Log aggregation |
+| Promtail | - | 9080 | Log collection agent |
+
+### Deployment
+
+```bash
+# Start observability stack
+ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.observability.yaml up -d"
+
+# Check status
+ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.observability.yaml ps"
+
+# View logs
+ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.observability.yaml logs -f"
+
+# Stop stack
+ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.observability.yaml down"
+```
+
+### PDM Scripts
+
+```bash
+pdm run obs-start    # Start stack
+pdm run obs-stop     # Stop stack
+pdm run obs-restart  # Restart stack
+pdm run obs-logs     # Follow logs
+pdm run obs-status   # Check status
+```
+
+### Access URLs
+
+| Service | URL |
+|---------|-----|
+| Grafana | http://hemma.hule.education:3000 |
+| Prometheus | http://hemma.hule.education:9091 |
+| Jaeger UI | http://hemma.hule.education:16686 |
+
+### Grafana Credentials
+
+- **Admin user**: `admin`
+- **Admin password**: Set via `GRAFANA_ADMIN_PASSWORD` environment variable (default: `admin`)
+- **Anonymous access**: Enabled (Viewer role)
+
+### Enable Tracing in Application
+
+After deploying the observability stack, redeploy the application to enable tracing:
+
+```bash
+ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"
+```
+
+### Troubleshooting
+
+#### Prometheus not scraping metrics
+
+```bash
+# Check Prometheus targets
+curl http://hemma.hule.education:9091/api/v1/targets
+
+# Verify skriptoteket-web is reachable from prometheus
+ssh hemma "docker exec prometheus wget -qO- http://skriptoteket-web:8000/metrics | head -20"
+```
+
+#### Loki not receiving logs
+
+```bash
+# Check Promtail status
+ssh hemma "docker logs promtail --tail 50"
+
+# Verify Loki is ready
+ssh hemma "docker exec loki wget -qO- http://localhost:3100/ready"
+```
+
+#### Jaeger not receiving traces
+
+```bash
+# Verify OTEL_TRACING_ENABLED is set
+ssh hemma "docker exec skriptoteket-web printenv | grep OTEL"
+
+# Make a request and check for trace headers
+curl -i https://skriptoteket.hule.education/healthz
+# Look for X-Trace-ID header in response
+```
+
+#### Grafana datasource errors
+
+```bash
+# Check Grafana logs
+ssh hemma "docker logs grafana --tail 50"
+
+# Verify network connectivity from Grafana
+ssh hemma "docker exec grafana wget -qO- http://prometheus:9090/-/healthy"
+ssh hemma "docker exec grafana wget -qO- http://loki:3100/ready"
+```
+
+### Data Retention
+
+| Component | Retention | Configuration |
+|-----------|-----------|---------------|
+| Prometheus | 30 days | `--storage.tsdb.retention.time=30d` |
+| Loki | 30 days | `limits_config.retention_period: 30d` |
+| Jaeger | In-memory | Default (restart clears data) |
+| Grafana | Persistent | Volume: `grafana_data` |
+
+### Volume Locations
+
+All data is stored in Docker named volumes:
+
+- `prometheus_data` - Prometheus TSDB
+- `loki_data` - Loki chunks and indices
+- `promtail_positions` - Promtail file positions
+- `grafana_data` - Grafana dashboards and settings
