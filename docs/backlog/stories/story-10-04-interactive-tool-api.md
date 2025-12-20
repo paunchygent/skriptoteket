@@ -2,7 +2,7 @@
 type: story
 id: ST-10-04
 title: "Interactive tool API endpoints (start_action + read APIs)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-19
 epic: "EPIC-10"

@@ -1,0 +1,379 @@
+from __future__ import annotations
+
+import json
+from datetime import datetime
+from unittest.mock import AsyncMock, Mock
+from uuid import UUID, uuid4
+
+import pytest
+
+from skriptoteket.application.scripting.commands import (
+    ExecuteToolVersionCommand,
+    ExecuteToolVersionResult,
+)
+from skriptoteket.application.scripting.handlers.get_interactive_session_state import (
+    GetSessionStateHandler,
+)
+from skriptoteket.application.scripting.handlers.get_tool_run import GetRunHandler
+from skriptoteket.application.scripting.handlers.list_run_artifacts import ListArtifactsHandler
+from skriptoteket.application.scripting.handlers.start_action import StartActionHandler
+from skriptoteket.application.scripting.interactive_tools import (
+    GetRunQuery,
+    GetSessionStateQuery,
+    ListArtifactsQuery,
+    StartActionCommand,
+)
+from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolRun
+from skriptoteket.domain.scripting.tool_sessions import ToolSession
+from skriptoteket.protocols.catalog import ToolRepositoryProtocol
+from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.scripting import (
+    ExecuteToolVersionHandlerProtocol,
+    ToolRunRepositoryProtocol,
+)
+from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
+from skriptoteket.protocols.uow import UnitOfWorkProtocol
+from tests.fixtures.catalog_fixtures import make_tool
+from tests.fixtures.identity_fixtures import make_user
+
+
+class FakeUow(UnitOfWorkProtocol):
+    def __init__(self) -> None:
+        self.active = False
+        self.enter_count = 0
+        self.exit_count = 0
+
+    async def __aenter__(self) -> UnitOfWorkProtocol:
+        self.active = True
+        self.enter_count += 1
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb) -> None:
+        self.active = False
+        self.exit_count += 1
+
+
+def make_tool_run(
+    *,
+    run_id: UUID,
+    tool_id: UUID,
+    version_id: UUID,
+    requested_by_user_id: UUID,
+    now: datetime,
+    artifacts_manifest: dict[str, object] | None = None,
+) -> ToolRun:
+    return ToolRun(
+        id=run_id,
+        tool_id=tool_id,
+        version_id=version_id,
+        requested_by_user_id=requested_by_user_id,
+        context=RunContext.PRODUCTION,
+        status=RunStatus.SUCCEEDED,
+        started_at=now,
+        finished_at=now,
+        workdir_path="/tmp/run",
+        input_filename="action.json",
+        input_size_bytes=0,
+        html_output=None,
+        stdout="",
+        stderr="",
+        error_summary=None,
+        artifacts_manifest=artifacts_manifest or {"artifacts": []},
+        ui_payload=None,
+    )
+
+
+def make_tool_session(
+    *,
+    session_id: UUID,
+    tool_id: UUID,
+    user_id: UUID,
+    context: str,
+    now: datetime,
+    state: dict[str, object] | None = None,
+    state_rev: int = 0,
+) -> ToolSession:
+    return ToolSession(
+        id=session_id,
+        tool_id=tool_id,
+        user_id=user_id,
+        context=context,
+        state={} if state is None else state,
+        state_rev=state_rev,
+        created_at=now,
+        updated_at=now,
+    )
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_start_action_executes_with_session_state_and_updates_state_rev(
+    now: datetime,
+) -> None:
+    actor = make_user(user_id=uuid4())
+    tool_id = uuid4()
+    active_version_id = uuid4()
+    session_id = uuid4()
+
+    tool = make_tool(now=now, is_published=True, tool_id=tool_id).model_copy(
+        update={"active_version_id": active_version_id}
+    )
+
+    uow = FakeUow()
+    tools = AsyncMock(spec=ToolRepositoryProtocol)
+    tools.get_by_id.return_value = tool
+
+    sessions = AsyncMock(spec=ToolSessionRepositoryProtocol)
+    sessions.get_or_create.return_value = make_tool_session(
+        session_id=session_id,
+        tool_id=tool_id,
+        user_id=actor.id,
+        context="default",
+        now=now,
+        state={"step": "one"},
+        state_rev=3,
+    )
+    sessions.update_state.return_value = make_tool_session(
+        session_id=session_id,
+        tool_id=tool_id,
+        user_id=actor.id,
+        context="default",
+        now=now,
+        state={"step": "two"},
+        state_rev=4,
+    )
+
+    execute = AsyncMock(spec=ExecuteToolVersionHandlerProtocol)
+    run = make_tool_run(
+        run_id=uuid4(),
+        tool_id=tool_id,
+        version_id=active_version_id,
+        requested_by_user_id=actor.id,
+        now=now,
+    )
+
+    async def _execute(
+        *,
+        actor: object,
+        command: ExecuteToolVersionCommand,
+    ) -> ExecuteToolVersionResult:
+        del actor
+        assert uow.active is False
+        payload = json.loads(command.input_bytes.decode("utf-8"))
+        assert payload["action_id"] == "confirm_flags"
+        assert payload["input"] == {"notify_guardians": True}
+        assert payload["state"] == {"step": "one"}
+        return ExecuteToolVersionResult(run=run, normalized_state={"step": "two"})
+
+    execute.handle.side_effect = _execute
+
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    id_generator.new_uuid.return_value = session_id
+
+    handler = StartActionHandler(
+        uow=uow,
+        tools=tools,
+        sessions=sessions,
+        execute=execute,
+        id_generator=id_generator,
+    )
+
+    result = await handler.handle(
+        actor=actor,
+        command=StartActionCommand(
+            tool_id=tool_id,
+            context="default",
+            action_id="confirm_flags",
+            input={"notify_guardians": True},
+            expected_state_rev=3,
+        ),
+    )
+
+    assert result.run_id == run.id
+    assert result.state_rev == 4
+    assert uow.enter_count == 2
+    assert uow.exit_count == 2
+    sessions.update_state.assert_awaited_once()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_start_action_rejects_state_rev_conflict_without_executing(now: datetime) -> None:
+    actor = make_user(user_id=uuid4())
+    tool_id = uuid4()
+    active_version_id = uuid4()
+    session_id = uuid4()
+
+    tool = make_tool(now=now, is_published=True, tool_id=tool_id).model_copy(
+        update={"active_version_id": active_version_id}
+    )
+
+    uow = FakeUow()
+    tools = AsyncMock(spec=ToolRepositoryProtocol)
+    tools.get_by_id.return_value = tool
+
+    sessions = AsyncMock(spec=ToolSessionRepositoryProtocol)
+    sessions.get_or_create.return_value = make_tool_session(
+        session_id=session_id,
+        tool_id=tool_id,
+        user_id=actor.id,
+        context="default",
+        now=now,
+        state={"step": "one"},
+        state_rev=2,
+    )
+
+    execute = AsyncMock(spec=ExecuteToolVersionHandlerProtocol)
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    id_generator.new_uuid.return_value = session_id
+
+    handler = StartActionHandler(
+        uow=uow,
+        tools=tools,
+        sessions=sessions,
+        execute=execute,
+        id_generator=id_generator,
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(
+            actor=actor,
+            command=StartActionCommand(
+                tool_id=tool_id,
+                context="default",
+                action_id="confirm_flags",
+                input={},
+                expected_state_rev=3,
+            ),
+        )
+
+    assert exc_info.value.code is ErrorCode.CONFLICT
+    execute.handle.assert_not_called()
+    sessions.update_state.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_session_state_returns_latest_run_id(now: datetime) -> None:
+    actor = make_user(user_id=uuid4())
+    tool_id = uuid4()
+    active_version_id = uuid4()
+    session_id = uuid4()
+    run_id = uuid4()
+
+    tool = make_tool(now=now, is_published=True, tool_id=tool_id).model_copy(
+        update={"active_version_id": active_version_id}
+    )
+
+    uow = FakeUow()
+    tools = AsyncMock(spec=ToolRepositoryProtocol)
+    tools.get_by_id.return_value = tool
+
+    sessions = AsyncMock(spec=ToolSessionRepositoryProtocol)
+    sessions.get_or_create.return_value = make_tool_session(
+        session_id=session_id,
+        tool_id=tool_id,
+        user_id=actor.id,
+        context="default",
+        now=now,
+        state={"step": "one"},
+        state_rev=0,
+    )
+
+    runs = AsyncMock(spec=ToolRunRepositoryProtocol)
+    runs.get_latest_for_user_and_tool.return_value = make_tool_run(
+        run_id=run_id,
+        tool_id=tool_id,
+        version_id=active_version_id,
+        requested_by_user_id=actor.id,
+        now=now,
+    )
+
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    id_generator.new_uuid.return_value = session_id
+
+    handler = GetSessionStateHandler(
+        uow=uow,
+        tools=tools,
+        sessions=sessions,
+        runs=runs,
+        id_generator=id_generator,
+    )
+
+    result = await handler.handle(
+        actor=actor,
+        query=GetSessionStateQuery(tool_id=tool_id, context="default"),
+    )
+
+    assert result.session_state.tool_id == tool_id
+    assert result.session_state.context == "default"
+    assert result.session_state.state_rev == 0
+    assert result.session_state.latest_run_id == run_id
+    runs.get_latest_for_user_and_tool.assert_awaited_once()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_run_returns_artifact_download_urls(now: datetime) -> None:
+    actor = make_user(user_id=uuid4())
+    tool_id = uuid4()
+    version_id = uuid4()
+    run_id = uuid4()
+
+    run = make_tool_run(
+        run_id=run_id,
+        tool_id=tool_id,
+        version_id=version_id,
+        requested_by_user_id=actor.id,
+        now=now,
+        artifacts_manifest={
+            "artifacts": [
+                {
+                    "artifact_id": "output_report_pdf",
+                    "path": "output/report.pdf",
+                    "bytes": 123,
+                }
+            ]
+        },
+    )
+
+    uow = FakeUow()
+    runs = AsyncMock(spec=ToolRunRepositoryProtocol)
+    runs.get_by_id.return_value = run
+
+    handler = GetRunHandler(uow=uow, runs=runs)
+
+    result = await handler.handle(actor=actor, query=GetRunQuery(run_id=run_id))
+
+    assert result.run.run_id == run_id
+    assert result.run.status is RunStatus.SUCCEEDED
+    assert result.run.artifacts[0].download_url == f"/api/runs/{run_id}/artifacts/output_report_pdf"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_list_artifacts_raises_not_found_for_other_user(now: datetime) -> None:
+    actor = make_user(user_id=uuid4())
+    tool_id = uuid4()
+    version_id = uuid4()
+    run_id = uuid4()
+
+    run = make_tool_run(
+        run_id=run_id,
+        tool_id=tool_id,
+        version_id=version_id,
+        requested_by_user_id=uuid4(),
+        now=now,
+    )
+
+    uow = FakeUow()
+    runs = AsyncMock(spec=ToolRunRepositoryProtocol)
+    runs.get_by_id.return_value = run
+
+    handler = ListArtifactsHandler(uow=uow, runs=runs)
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(actor=actor, query=ListArtifactsQuery(run_id=run_id))
+
+    assert exc_info.value.code is ErrorCode.NOT_FOUND

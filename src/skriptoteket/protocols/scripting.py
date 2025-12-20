@@ -61,6 +61,14 @@ class ToolRunRepositoryProtocol(Protocol):
 
     async def update(self, *, run: ToolRun) -> ToolRun: ...
 
+    async def get_latest_for_user_and_tool(
+        self,
+        *,
+        user_id: UUID,
+        tool_id: UUID,
+        context: RunContext,
+    ) -> ToolRun | None: ...
+
     async def list_for_user(
         self,
         *,

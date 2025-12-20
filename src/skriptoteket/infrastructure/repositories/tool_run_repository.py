@@ -12,6 +12,11 @@ from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
 
 
 class PostgreSQLToolRunRepository(ToolRunRepositoryProtocol):
+    """PostgreSQL repository for tool run records.
+
+    Uses a request-scoped `AsyncSession`; commit/rollback is owned by the Unit of Work.
+    """
+
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
@@ -63,6 +68,25 @@ class PostgreSQLToolRunRepository(ToolRunRepositoryProtocol):
         await self._session.flush()
         await self._session.refresh(model)
         return ToolRun.model_validate(model)
+
+    async def get_latest_for_user_and_tool(
+        self,
+        *,
+        user_id: UUID,
+        tool_id: UUID,
+        context: RunContext,
+    ) -> ToolRun | None:
+        stmt = (
+            select(ToolRunModel)
+            .where(ToolRunModel.requested_by_user_id == user_id)
+            .where(ToolRunModel.tool_id == tool_id)
+            .where(ToolRunModel.context == context.value)
+            .order_by(ToolRunModel.started_at.desc())
+            .limit(1)
+        )
+        result = await self._session.execute(stmt)
+        model = result.scalar_one_or_none()
+        return ToolRun.model_validate(model) if model else None
 
     async def list_for_user(
         self,

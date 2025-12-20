@@ -393,4 +393,4 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         if domain_error_to_raise is not None:
             raise domain_error_to_raise
 
-        return ExecuteToolVersionResult(run=finished)
+        return ExecuteToolVersionResult(run=finished, normalized_state=normalization_result.state)

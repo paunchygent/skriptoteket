@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
 from skriptoteket.domain.scripting.models import RunContext, ToolRun, ToolVersion
 
@@ -21,6 +21,7 @@ class ExecuteToolVersionResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     run: ToolRun
+    normalized_state: dict[str, JsonValue] = Field(default_factory=dict)
 
 
 class CreateDraftVersionCommand(BaseModel):
