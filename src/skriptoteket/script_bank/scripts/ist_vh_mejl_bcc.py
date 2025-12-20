@@ -245,10 +245,8 @@ def run_tool(input_path: str, output_dir: str) -> dict:
             {
                 "kind": "markdown",
                 "markdown": (
-                    "## E-postadresser (semikolonseparerade)\n\n"
-                    f"```\n{email_string}\n```\n\n"
-                    "Kopiera ovan och klistra in i Outlooks BCC-fält.\n\n"
-                    f"*Filen `{artifact_name}` sparades som artifact.*"
+                    f"Ladda ner **{artifact_name}** och klistra in innehållet "
+                    "i Outlooks BCC-fält (semikolonseparerat)."
                 ),
             },
             {
