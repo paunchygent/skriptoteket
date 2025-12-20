@@ -4,11 +4,8 @@ from collections.abc import Iterable
 from typing import Protocol
 from uuid import UUID
 
-from skriptoteket.domain.scripting.execution import (
-    ArtifactsManifest,
-    RunnerArtifact,
-    ToolExecutionResult,
-)
+from skriptoteket.domain.scripting.artifacts import ArtifactsManifest, RunnerArtifact
+from skriptoteket.domain.scripting.execution import ToolExecutionResult
 from skriptoteket.domain.scripting.models import RunContext, ToolVersion
 
 

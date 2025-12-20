@@ -5,7 +5,7 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.scripting.execution import RunnerArtifact
+from skriptoteket.domain.scripting.artifacts import RunnerArtifact
 from skriptoteket.infrastructure.runner.artifact_manager import FilesystemArtifactManager
 
 

@@ -8,6 +8,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
+from skriptoteket.domain.scripting.ui.contract_v2 import UiPayloadV2
 
 
 class VersionState(StrEnum):
@@ -79,6 +80,7 @@ class ToolRun(BaseModel):
     stderr: str | None = None
     artifacts_manifest: dict[str, object]
     error_summary: str | None = None
+    ui_payload: UiPayloadV2 | None = None
 
 
 class PublishVersionResult(BaseModel):
@@ -419,11 +421,11 @@ def finish_tool_run(
     run: ToolRun,
     status: RunStatus,
     now: datetime,
-    html_output: str | None,
     stdout: str | None,
     stderr: str | None,
     artifacts_manifest: dict[str, object],
     error_summary: str | None,
+    ui_payload: UiPayloadV2 | None,
 ) -> ToolRun:
     if run.status is not RunStatus.RUNNING:
         raise DomainError(
@@ -443,10 +445,10 @@ def finish_tool_run(
         update={
             "status": status,
             "finished_at": now,
-            "html_output": html_output,
             "stdout": stdout,
             "stderr": stderr,
             "artifacts_manifest": artifacts_manifest,
             "error_summary": _normalize_optional_text(error_summary),
+            "ui_payload": ui_payload,
         }
     )

@@ -9,7 +9,7 @@ from pathlib import Path
 from uuid import UUID
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.scripting.execution import (
+from skriptoteket.domain.scripting.artifacts import (
     ArtifactsManifest,
     RunnerArtifact,
     StoredArtifact,

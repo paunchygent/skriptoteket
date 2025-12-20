@@ -1,24 +1,20 @@
 from __future__ import annotations
 
 import json
-from typing import Literal
+from typing import TypeGuard
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import ValidationError
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.scripting.execution import RunnerArtifact
+from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result
 from skriptoteket.infrastructure.runner.path_safety import validate_output_path
 
 
-class RunnerResultPayload(BaseModel):
-    contract_version: int
-    status: Literal["succeeded", "failed", "timed_out"]
-    html_output: str
-    error_summary: str | None
-    artifacts: list[RunnerArtifact] = Field(default_factory=list)
+def _is_object(value: object) -> TypeGuard[dict[str, object]]:
+    return isinstance(value, dict)
 
 
-def parse_runner_result_json(*, result_json_bytes: bytes) -> RunnerResultPayload:
+def parse_runner_result_json(*, result_json_bytes: bytes) -> ToolUiContractV2Result:
     try:
         raw = json.loads(result_json_bytes.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
@@ -27,21 +23,28 @@ def parse_runner_result_json(*, result_json_bytes: bytes) -> RunnerResultPayload
             message="Runner contract violation: invalid result.json",
         ) from exc
 
+    if not _is_object(raw):
+        raise DomainError(
+            code=ErrorCode.INTERNAL_ERROR,
+            message="Runner contract violation: invalid result.json schema",
+        )
+
+    contract_version = raw.get("contract_version")
+    if contract_version != 2:
+        raise DomainError(
+            code=ErrorCode.INTERNAL_ERROR,
+            message="Runner contract violation: unsupported contract_version",
+            details={"contract_version": contract_version},
+        )
+
     try:
-        payload = RunnerResultPayload.model_validate(raw)
+        payload = ToolUiContractV2Result.model_validate(raw)
     except ValidationError as exc:
         raise DomainError(
             code=ErrorCode.INTERNAL_ERROR,
             message="Runner contract violation: invalid result.json schema",
             details={"errors": exc.errors()},
         ) from exc
-
-    if payload.contract_version != 1:
-        raise DomainError(
-            code=ErrorCode.INTERNAL_ERROR,
-            message="Runner contract violation: unsupported contract_version",
-            details={"contract_version": payload.contract_version},
-        )
 
     for artifact in payload.artifacts:
         validate_output_path(path=artifact.path)

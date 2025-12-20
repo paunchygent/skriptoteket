@@ -16,6 +16,7 @@ from skriptoteket.domain.scripting.models import (
     start_tool_run,
     submit_for_review,
 )
+from skriptoteket.domain.scripting.ui.contract_v2 import UiPayloadV2
 
 
 def test_create_draft_version_success() -> None:
@@ -408,11 +409,11 @@ def test_start_and_finish_tool_run() -> None:
         run=run,
         status=RunStatus.SUCCEEDED,
         now=now,
-        html_output="<p>Done</p>",
         stdout="ok",
         stderr=None,
         artifacts_manifest={},
         error_summary=None,
+        ui_payload=UiPayloadV2(outputs=[], next_actions=[]),
     )
 
     assert finished.status == RunStatus.SUCCEEDED
@@ -488,22 +489,22 @@ def test_finish_tool_run_validation() -> None:
         run=run,
         status=RunStatus.SUCCEEDED,
         now=now,
-        html_output=None,
         stdout=None,
         stderr=None,
         artifacts_manifest={},
         error_summary=None,
+        ui_payload=UiPayloadV2(outputs=[], next_actions=[]),
     )
     with pytest.raises(DomainError) as exc:
         finish_tool_run(
             run=finished,
             status=RunStatus.FAILED,
             now=now,
-            html_output=None,
             stdout=None,
             stderr=None,
             artifacts_manifest={},
             error_summary=None,
+            ui_payload=UiPayloadV2(outputs=[], next_actions=[]),
         )
     assert exc.value.code == ErrorCode.CONFLICT
 
@@ -513,11 +514,11 @@ def test_finish_tool_run_validation() -> None:
             run=run,
             status=RunStatus.RUNNING,  # Invalid
             now=now,
-            html_output=None,
             stdout=None,
             stderr=None,
             artifacts_manifest={},
             error_summary=None,
+            ui_payload=UiPayloadV2(outputs=[], next_actions=[]),
         )
     assert exc.value.code == ErrorCode.VALIDATION_ERROR
 
@@ -528,10 +529,10 @@ def test_finish_tool_run_validation() -> None:
             run=run,
             status=RunStatus.SUCCEEDED,
             now=past,
-            html_output=None,
             stdout=None,
             stderr=None,
             artifacts_manifest={},
             error_summary=None,
+            ui_payload=UiPayloadV2(outputs=[], next_actions=[]),
         )
     assert exc.value.code == ErrorCode.VALIDATION_ERROR
