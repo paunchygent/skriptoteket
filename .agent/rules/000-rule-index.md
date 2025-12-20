@@ -32,6 +32,16 @@ scope: "all"
 ## Quality Assurance
 
 - [070-testing-standards.md](070-testing-standards.md): Testing strategies, protocol mocks, fixtures
+- [075-browser-automation.md](075-browser-automation.md): Playwright/Selenium patterns
+
+## Operations
+
+- [080-home-server-deployment.md](080-home-server-deployment.md): Home server deployment and operations
+- [090-observability-index.md](090-observability-index.md): Observability standards (logging, metrics, tracing)
+  - [091-structured-logging.md](091-structured-logging.md): Correlation IDs, JSON logs
+  - [092-health-and-metrics.md](092-health-and-metrics.md): /healthz, Prometheus metrics
+  - [093-distributed-tracing.md](093-distributed-tracing.md): OpenTelemetry, spans
+  - [094-observability-infrastructure.md](094-observability-infrastructure.md): Stack deployment
 
 ---
 

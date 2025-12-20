@@ -2,7 +2,7 @@
 type: adr
 id: ADR-0019
 title: "Observability: health, metrics, and tracing endpoints"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-16
