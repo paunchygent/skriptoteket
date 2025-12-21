@@ -101,4 +101,3 @@ class ListArtifactsResult(BaseModel):
 
     run_id: UUID
     artifacts: list[RunArtifact]
-

@@ -41,4 +41,3 @@ class InMemoryCuratedAppRegistry(CuratedAppRegistryProtocol):
 
     def get_by_tool_id(self, *, tool_id: UUID) -> CuratedAppDefinition | None:
         return self._apps_by_tool_id.get(tool_id)
-

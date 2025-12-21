@@ -48,8 +48,7 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
         )
         await conn.execute(
             text(
-                "SELECT id, tool_id, user_id, context, state, state_rev "
-                "FROM tool_sessions LIMIT 0"
+                "SELECT id, tool_id, user_id, context, state, state_rev FROM tool_sessions LIMIT 0"
             )
         )
 

@@ -89,3 +89,71 @@ Playwright (recommended), Selenium, Puppeteer available. Run via `pdm run python
 ## Security
 
 - Never commit secrets (API keys/tokens); use env vars / `.env` locally
+
+<available_skills>
+  <skill>
+    <name>brutalist-academic-ui</name>
+    <description>Opinionated frontend design for brutalist and academic interfaces. Grid-based layouts, systematic typography, monospace/serif pairings, high-contrast schemes. HTML, CSS, Tailwind, vanilla JS.</description>
+    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/brutalist-academic-ui/SKILL.md</location>
+  </skill>
+  <skill>
+    <name>claude-hooks-developer</name>
+    <description>Create, configure, and manage Claude Code hooks for workflow automation, validation, and security. Guides hook implementation, configuration patterns, and best practices.</description>
+    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/hooks/SKILL.md</location>
+  </skill>
+  <skill>
+    <name>distributed-tracing-specialist</name>
+    <description>Configure and use OpenTelemetry distributed tracing with Jaeger in HuleEdu services. Guides tracer initialization, span creation, W3C trace propagation, and correlation with logs/metrics. Integrates with Context7 for latest OpenTelemetry documentation.</description>
+    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/distributed-tracing/SKILL.md</location>
+  </skill>
+  <skill>
+    <name>jaeger-tracing-specialist</name>
+    <description>Jaeger/OpenTelemetry patterns plus Skriptoteket tracing conventions (async context propagation, correlation, debugging).</description>
+    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/jaeger-tracing/SKILL.md</location>
+  </skill>
+  <skill>
+    <name>loki-logql-query-specialist</name>
+    <description>Query and analyze logs using Loki and LogQL. Provides patterns for correlation ID tracing, error investigation, and service debugging using HuleEdu's structured logging. Integrates with Context7 for latest Loki documentation.</description>
+    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/loki-logql/SKILL.md</location>
+  </skill>
+  <skill>
+    <name>pdm-migration-specialist</name>
+    <description>Migrate pyproject.toml from pre-PDM 2.0 syntax to modern PEP-compliant format. Focuses on dev-dependencies to dependency-groups conversion and PEP 621 project metadata. Integrates with Context7 for latest PDM documentation.</description>
+    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/pdm/SKILL.md</location>
+  </skill>
+  <skill>
+    <name>playwright-testing</name>
+    <description>Browser automation with Playwright for Python. Recommended for visual testing. (project)</description>
+    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/playwright-testing/SKILL.md</location>
+  </skill>
+  <skill>
+    <name>prometheus-metrics-specialist</name>
+    <description>Instrument services with Prometheus metrics and write PromQL queries. Guides HuleEdu naming conventions, metrics middleware setup, and business vs operational metrics. Integrates with Context7 for latest Prometheus documentation.</description>
+    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/prometheus-metrics/SKILL.md</location>
+  </skill>
+  <skill>
+    <name>puppeteer-visual-testing</name>
+    <description>Screenshot capture and visual testing with Puppeteer v24.x for Vue frontend. (project)</description>
+    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/puppeteer-visual-testing/SKILL.md</location>
+  </skill>
+  <skill>
+    <name>repomix-package-builder</name>
+    <description>Create targeted repomix XML packages for AI code analysis. Suggests templates (metadata-flow, code-review, architecture, context) and file patterns based on task objectives. See reference.md for detailed workflows and patterns.</description>
+    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/repomix/SKILL.md</location>
+  </skill>
+  <skill>
+    <name>selenium-testing</name>
+    <description>Browser automation with Selenium WebDriver for Python. (project)</description>
+    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/selenium-testing/SKILL.md</location>
+  </skill>
+  <skill>
+    <name>skriptoteket-devops</name>
+    <description>DevOps and server management for Skriptoteket on home server (hemma.hule.education). Branched skill covering deploy, database, users, CLI, security, network, DNS, and troubleshooting.</description>
+    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/skriptoteket-devops/SKILL.md</location>
+  </skill>
+  <skill>
+    <name>structlog-logging-specialist</name>
+    <description>Configure and use Structlog for structured logging in HuleEdu services. Guides correlation context propagation, async-safe logging, and integration with error handling. Integrates with Context7 for latest Structlog documentation.</description>
+    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/structlog-logging/SKILL.md</location>
+  </skill>
+</available_skills>

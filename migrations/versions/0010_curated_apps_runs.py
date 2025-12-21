@@ -75,4 +75,3 @@ def downgrade() -> None:
         ["id"],
         ondelete="CASCADE",
     )
-

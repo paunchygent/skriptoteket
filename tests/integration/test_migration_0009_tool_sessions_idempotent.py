@@ -69,4 +69,3 @@ def test_migration_0009_tool_sessions_is_idempotent(
         command.upgrade(alembic_cfg, "head")
 
         asyncio.run(_smoke_schema_from_url(database_url=database_url))
-

@@ -100,8 +100,7 @@ def get_config() -> PlaywrightConfig:
         "--email",
         default=default_email,
         help=(
-            "Login email (default: PLAYWRIGHT_EMAIL or BOOTSTRAP_SUPERUSER_EMAIL "
-            "from env/dotenv)"
+            "Login email (default: PLAYWRIGHT_EMAIL or BOOTSTRAP_SUPERUSER_EMAIL from env/dotenv)"
         ),
     )
     parser.add_argument(

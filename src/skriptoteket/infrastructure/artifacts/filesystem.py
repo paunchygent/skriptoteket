@@ -45,4 +45,3 @@ def _slugify_artifact_id(path: str) -> str:
     normalized = path.strip().lower()
     normalized = re.sub(r"[^a-z0-9]+", "_", normalized).strip("_")
     return normalized or "artifact"
-

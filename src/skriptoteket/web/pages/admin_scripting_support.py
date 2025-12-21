@@ -33,6 +33,7 @@ def status_code_for_error(exc: DomainError) -> int:
         return 503
     return 500
 
+
 def redirect_with_hx(*, request: Request, url: str) -> RedirectResponse:
     response = RedirectResponse(url=url, status_code=303)
     if is_hx_request(request):

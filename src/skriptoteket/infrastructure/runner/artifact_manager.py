@@ -90,6 +90,7 @@ def _safe_extract_tar(
                 with extracted:
                     shutil.copyfileobj(extracted, out_file, length=_TAR_READ_CHUNK_BYTES)
 
+
 class FilesystemArtifactManager(ArtifactManagerProtocol):
     def __init__(self, *, artifacts_root: Path) -> None:
         self._artifacts_root = artifacts_root

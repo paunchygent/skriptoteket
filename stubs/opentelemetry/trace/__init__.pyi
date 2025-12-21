@@ -38,7 +38,6 @@ class Tracer(Protocol):
         kind: object | None = ...,
         attributes: Attributes | None = ...,
     ) -> ContextManager[Span]: ...
-
     def start_span(
         self,
         name: str,

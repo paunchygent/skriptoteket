@@ -132,4 +132,3 @@ async def save_draft_version(
     )
     set_toast_cookie(response=response, message="Sparat.", toast_type="success")
     return response
-

@@ -128,4 +128,4 @@ When a PRD milestone is ready to ship (e.g. v0.1), cut a release as an explicit 
 ### Repo hygiene (recommended)
 
 - Tag the release in git (e.g. `v0.1.0`) and align the release notes `version` accordingly.
-- Keep SSR/HTMX as the default UI paradigm; SPA islands must be scoped via ADR-0025.
+- Follow the current UI paradigm ADRs (currently: full SPA per ADR-0027).

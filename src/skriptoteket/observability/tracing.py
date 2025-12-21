@@ -76,12 +76,14 @@ def init_tracing(service_name: str) -> Tracer:
         environment = os.getenv("ENVIRONMENT", "development")
         otlp_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
 
-        resource = Resource.create({
-            "service.name": service_name,
-            "service.version": service_version,
-            "deployment.environment": environment,
-            "service.namespace": "huleedu",
-        })
+        resource = Resource.create(
+            {
+                "service.name": service_name,
+                "service.version": service_version,
+                "deployment.environment": environment,
+                "service.namespace": "huleedu",
+            }
+        )
 
         exporter = OTLPSpanExporter(endpoint=otlp_endpoint, insecure=True)
         provider = TracerProvider(resource=resource)

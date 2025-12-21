@@ -18,4 +18,3 @@ class NoopBackendActionProvider(BackendActionProviderProtocol):
     ) -> list[UiFormAction]:
         del tool_id, actor, policy
         return []
-

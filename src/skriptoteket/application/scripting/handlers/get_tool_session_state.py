@@ -51,4 +51,3 @@ class GetToolSessionStateHandler(GetToolSessionStateHandlerProtocol):
                 state_rev=session.state_rev,
             )
         )
-

@@ -28,4 +28,3 @@ class DefaultUiPolicyProvider(UiPolicyProviderProtocol):
 
     def get_policy(self, *, profile_id: UiPolicyProfileId) -> UiPolicy:
         return get_ui_policy(profile_id=profile_id)
-

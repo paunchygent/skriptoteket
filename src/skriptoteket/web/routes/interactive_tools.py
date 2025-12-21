@@ -150,4 +150,3 @@ async def download_artifact(
         filename=relative_path.name,
         media_type="application/octet-stream",
     )
-

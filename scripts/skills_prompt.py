@@ -73,7 +73,9 @@ def _iter_skill_files(root: Path) -> list[Path]:
     return skill_files
 
 
-def discover_skills(roots: list[Path], absolute_locations: bool) -> tuple[list[Skill], list[Violation]]:
+def discover_skills(
+    roots: list[Path], absolute_locations: bool
+) -> tuple[list[Skill], list[Violation]]:
     skills: list[Skill] = []
     violations: list[Violation] = []
 
@@ -96,11 +98,15 @@ def discover_skills(roots: list[Path], absolute_locations: bool) -> tuple[list[S
             name = fm.get("name")
             description = fm.get("description")
             if not isinstance(name, str) or not name.strip():
-                violations.append(Violation(skill_file, "Frontmatter must include a non-empty 'name' string."))
+                violations.append(
+                    Violation(skill_file, "Frontmatter must include a non-empty 'name' string.")
+                )
                 continue
             if not isinstance(description, str) or not description.strip():
                 violations.append(
-                    Violation(skill_file, "Frontmatter must include a non-empty 'description' string.")
+                    Violation(
+                        skill_file, "Frontmatter must include a non-empty 'description' string."
+                    )
                 )
                 continue
 
@@ -120,7 +126,9 @@ def discover_skills(roots: list[Path], absolute_locations: bool) -> tuple[list[S
     for name, paths in name_to_paths.items():
         if len(paths) > 1:
             path_list = ", ".join(normalize_path(p) for p in paths)
-            violations.append(Violation(paths[0], f"Duplicate skill name '{name}' found in: {path_list}"))
+            violations.append(
+                Violation(paths[0], f"Duplicate skill name '{name}' found in: {path_list}")
+            )
 
     skills.sort(key=lambda skill: skill.name)
     return skills, violations
@@ -198,7 +206,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if violations:
         for violation in violations:
-            print(f"[skills] {normalize_path(violation.path)}: {violation.message}", file=sys.stderr)
+            print(
+                f"[skills] {normalize_path(violation.path)}: {violation.message}", file=sys.stderr
+            )
         if args.validate:
             return 1
 

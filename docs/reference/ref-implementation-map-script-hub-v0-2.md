@@ -5,6 +5,7 @@ title: "Implementation map: Script Hub v0.2 roadmap (sessions + checkpoints)"
 status: active
 owners: "agents"
 created: 2025-12-19
+updated: 2025-12-21
 topic: "implementation-roadmap"
 links:
   - "PRD-script-hub-v0.2"
@@ -12,7 +13,7 @@ links:
   - "ADR-0022"
   - "ADR-0023"
   - "ADR-0024"
-  - "ADR-0025"
+  - "ADR-0027"
   - "SPR-2025-12-22"
   - "SPR-2026-01-06"
   - "SPR-2026-01-20"
@@ -23,11 +24,14 @@ links:
 This document maps the v0.2 initiative into an implementation route with session-sized targets, checkpoints, and
 concrete success criteria. It is intended for the developer/agent doing the work.
 
+Status note: Skriptoteket’s UI paradigm has been superseded by ADR-0027 (full SPA). Any SSR/HTMX-default or SPA-islands
+language in this document is historical and should not be used as a guardrail for new work.
+
 The planning source of truth is:
 
 - PRD: `docs/prd/prd-script-hub-v0.2.md`
 - ADRs: `docs/adr/adr-0022-tool-ui-contract-v2.md`, `docs/adr/adr-0023-curated-apps-registry-and-execution.md`,
-  `docs/adr/adr-0024-tool-sessions-and-ui-payload-persistence.md`, `docs/adr/adr-0025-embedded-spa-islands.md`
+  `docs/adr/adr-0024-tool-sessions-and-ui-payload-persistence.md`, `docs/adr/adr-0027-full-vue-vite-spa.md`
 - Epic: `docs/backlog/epics/epic-10-interactive-ui-contract-and-curated-apps.md`
 - Sprints: `docs/backlog/sprints/`
 
@@ -38,7 +42,7 @@ Non-negotiables for all sessions:
 - Protocol-first DI (depend on protocols, not concrete implementations).
 - Deterministic normalization: same input + policy → byte-identical stored `ui_payload`.
 - No arbitrary tool-provided UI JS; HTML remains sandboxed.
-- Keep SSR/HTMX default; SPA islands only for approved surfaces (ADR-0025).
+- UI paradigm: full SPA (ADR-0027). Avoid introducing new SSR/HTMX surfaces.
 
 Always run:
 

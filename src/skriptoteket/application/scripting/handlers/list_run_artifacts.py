@@ -57,7 +57,5 @@ class ListArtifactsHandler(ListArtifactsHandlerProtocol):
 
         return ListArtifactsResult(
             run_id=run.id,
-            artifacts=_artifacts_for_run(
-                run_id=run.id, artifacts_manifest=run.artifacts_manifest
-            ),
+            artifacts=_artifacts_for_run(run_id=run.id, artifacts_manifest=run.artifacts_manifest),
         )

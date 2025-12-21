@@ -53,4 +53,3 @@ class ClearToolSessionStateResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     session_state: ToolSessionState
-

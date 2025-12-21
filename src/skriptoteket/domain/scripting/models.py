@@ -446,6 +446,7 @@ def start_tool_version_run(
         artifacts_manifest={},
     )
 
+
 def start_curated_app_run(
     *,
     run_id: UUID,
@@ -494,6 +495,7 @@ def start_curated_app_run(
         input_size_bytes=input_size_bytes,
         artifacts_manifest={"artifacts": []},
     )
+
 
 def finish_run(
     *,

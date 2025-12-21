@@ -219,16 +219,12 @@ def run_tool(input_path: str, output_dir: str) -> dict:
 
     # Build stats table rows
     stats_table_rows = [
-        {"column": col, "count": count}
-        for col, count in col_email_counts.items()
-        if count > 0
+        {"column": col, "count": count} for col, count in col_email_counts.items() if count > 0
     ]
 
     # Build notice message
     dup_info = (
-        f" ({duplicates_removed} dubbletter filtrerades bort)"
-        if duplicates_removed > 0
-        else ""
+        f" ({duplicates_removed} dubbletter filtrerades bort)" if duplicates_removed > 0 else ""
     )
     notice_message = (
         f"{len(all_emails)} unika e-postadresser extraherades "

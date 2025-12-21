@@ -65,25 +65,17 @@ def main() -> None:
         expect(page2.locator("[data-spa-runtime-fallback='true']")).to_be_hidden()
         expect(runtime2.get_by_role("button", name="Öka")).to_be_visible()
 
-        step_field_2 = (
-            runtime2.get_by_role("spinbutton", name="Steg")
-            .first
-        )
+        step_field_2 = runtime2.get_by_role("spinbutton", name="Steg").first
         initial_count_2 = _extract_counter(runtime_text=runtime2.inner_text())
         step_field_2.fill("1")
         runtime2.get_by_role("button", name="Öka").click()
         expect(runtime2).to_contain_text(re.compile(rf"Räknare:\s*{initial_count_2 + 1}(?!\d)"))
 
         # Page1 now has stale expected_state_rev and should show a concurrency error + refresh path.
-        step_field_1 = (
-            runtime1.get_by_role("spinbutton", name="Steg")
-            .first
-        )
+        step_field_1 = runtime1.get_by_role("spinbutton", name="Steg").first
         step_field_1.fill("1")
         runtime1.get_by_role("button", name="Öka").click()
-        expect(runtime1).to_contain_text(
-            "Din session har ändrats i en annan flik."
-        )
+        expect(runtime1).to_contain_text("Din session har ändrats i en annan flik.")
         expect(runtime1.get_by_role("button", name="Uppdatera")).to_be_visible()
 
         runtime1.get_by_role("button", name="Uppdatera").click()
@@ -120,7 +112,9 @@ def main() -> None:
         expect(page1.locator("#result-container [data-spa-runtime-fallback='true']")).to_be_hidden(
             timeout=10_000
         )
-        expect(runtime_tool_run).to_contain_text(re.compile(r"(Lyckades|Misslyckades|Pågår|Tidsgräns)"))
+        expect(runtime_tool_run).to_contain_text(
+            re.compile(r"(Lyckades|Misslyckades|Pågår|Tidsgräns)")
+        )
         expect(runtime_tool_run).to_contain_text("Resultat")
         page1.screenshot(path=str(artifacts_dir / "tool-run.png"), full_page=True)
 

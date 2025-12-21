@@ -62,4 +62,3 @@ class UpdateToolSessionStateHandler(UpdateToolSessionStateHandlerProtocol):
                 state_rev=session.state_rev,
             )
         )
-

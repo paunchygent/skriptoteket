@@ -39,4 +39,3 @@ class ListArtifactsHandlerProtocol(Protocol):
         actor: User,
         query: ListArtifactsQuery,
     ) -> ListArtifactsResult: ...
-

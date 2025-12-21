@@ -56,4 +56,3 @@ class ClearToolSessionStateHandler(ClearToolSessionStateHandlerProtocol):
                 state_rev=session.state_rev,
             )
         )
-
