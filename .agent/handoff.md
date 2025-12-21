@@ -22,7 +22,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## 2025-12-21
 
-- ST-09-02 (CSP): added `Content-Security-Policy-Report-Only` at nginx reverse proxy (`~/infrastructure/nginx/conf.d/skriptoteket.conf` on hemma) with `script-src 'self'` + `script-src-attr 'none'` + `style-src 'unsafe-inline'` (CodeMirror) + Google Fonts + `frame-src 'self' about:` (for `srcdoc` iframes). Removed inline `onclick=` from admin versions list (Option A) by making link + rollback form siblings and using `hx-confirm`: `src/skriptoteket/web/templates/admin/partials/version_list.html`, `src/skriptoteket/web/static/css/app/editor.css`.
+- ST-09-02 (CSP): CSP is enforced at nginx reverse proxy (`~/infrastructure/nginx/conf.d/skriptoteket.conf` on hemma) with `script-src 'self'` + `script-src-attr 'none'` + `style-src 'unsafe-inline'` (CodeMirror) + Google Fonts + `frame-src 'self' about:` (for `srcdoc` iframes). Removed inline `onclick=` from admin versions list (Option A) by making link + rollback form siblings and using `hx-confirm`: `src/skriptoteket/web/templates/admin/partials/version_list.html`, `src/skriptoteket/web/static/css/app/editor.css`. Verified on prod (2025-12-21): no CSP console violations (Playwright probe).
 - ST-10-08 (SPA islands toolchain): pnpm workspace + Vite/Vue/Tailwind build to `/static` + Jinja manifest integration: `frontend/package.json`, `frontend/pnpm-workspace.yaml`, `frontend/islands/`, `src/skriptoteket/web/vite.py`, `src/skriptoteket/web/templating.py`.
 - PDM↔pnpm integration: `pdm run fe-install|fe-dev|fe-build|fe-build-watch|fe-preview|fe-type-check|fe-lint|fe-lint-fix` delegates to pnpm in the `frontend/` workspace: `pyproject.toml`. (ESLint 9 flat config: `frontend/islands/eslint.config.js`.)
 - Demo SPA page (`hx-boost="false"` around mount): `/spa/demo` → `src/skriptoteket/web/pages/spa_islands.py`, `src/skriptoteket/web/templates/spa/demo.html`.
@@ -62,7 +62,7 @@ Keep this file updated so the next session can pick up work quickly.
 - UI smoke (Playwright): `pdm run ui-smoke` (requires local dev server + `.env` bootstrap credentials; does not create users).
 - Editor island smoke (Playwright): `pdm run ui-editor-smoke` (requires Playwright browsers installed + `.env` bootstrap credentials; writes screenshots to `.artifacts/ui-editor-smoke`).
 - Runtime island smoke (Playwright): `pdm run ui-runtime-smoke` (requires Playwright browsers installed + `.env` bootstrap credentials; writes screenshots to `.artifacts/ui-runtime-smoke`).
-- CSP header (prod): `curl -sI https://skriptoteket.hule.education/login | rg -i content-security-policy` (Report-Only currently; enforce after a clean console run).
+- CSP header (prod, 2025-12-21): `curl -sI https://skriptoteket.hule.education/login | rg -i content-security-policy` (enforced; no Report-Only).
 - Quality gates: `pdm run lint`.
 - Typecheck: `pdm run typecheck`.
 - Unit tests: `pdm run pytest tests/unit/domain/scripting/ui` + `pdm run pytest tests/unit/infrastructure/runner/test_result_contract.py tests/unit/infrastructure/runner/test_docker_runner.py tests/unit/application/test_scripting_execute_tool_version_handler.py tests/unit/domain/scripting/test_models.py`.
