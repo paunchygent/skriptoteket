@@ -598,10 +598,23 @@
   document.addEventListener("click", function (evt) {
     if (!evt || !evt.target) return;
 
-    var toggle = evt.target.closest ? evt.target.closest("#help-toggle") : null;
+    var toggle = evt.target.closest ? evt.target.closest("[data-help-toggle]") : null;
     if (toggle) {
       evt.preventDefault();
-      lastHelpTrigger = toggle;
+
+      var mobileNav = document.getElementById("mobile-nav");
+      if (mobileNav && mobileNav.contains(toggle)) {
+        var menuBtn = document.querySelector('.huleedu-hamburger[aria-controls="mobile-nav"]');
+        if (menuBtn) {
+          menuBtn.setAttribute("aria-expanded", "false");
+          lastHelpTrigger = menuBtn;
+        } else {
+          lastHelpTrigger = toggle;
+        }
+        mobileNav.hidden = true;
+      } else {
+        lastHelpTrigger = toggle;
+      }
       toggleHelp();
       return;
     }

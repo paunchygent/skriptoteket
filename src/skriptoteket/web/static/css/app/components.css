@@ -515,15 +515,16 @@
 
 @media (max-width: 767px) {
   .huleedu-help-panel {
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    border-left-width: var(--huleedu-border-width);
-    border-right-width: 0;
-    border-top-width: 0;
-    border-bottom-width: 0;
-    box-shadow: none;
+    top: calc(
+      var(--huleedu-header-height) + var(--huleedu-space-4) + env(safe-area-inset-top, 0px)
+    );
+    right: calc(var(--huleedu-space-4) + env(safe-area-inset-right, 0px));
+    bottom: calc(var(--huleedu-space-4) + env(safe-area-inset-bottom, 0px));
+    left: calc(var(--huleedu-space-4) + env(safe-area-inset-left, 0px));
+    width: auto;
+    max-width: none;
+    border: var(--huleedu-border-width) solid var(--huleedu-navy);
+    box-shadow: var(--huleedu-shadow-brutal);
   }
 
   .huleedu-help-panel-content {

@@ -37,18 +37,19 @@
           <button id="help-toggle"
                   type="button"
                   class="huleedu-btn huleedu-btn-secondary huleedu-btn-sm"
+                  data-help-toggle
                   aria-expanded="false"
                   aria-controls="help-panel"
                   aria-haspopup="dialog">
             Hjälp
           </button>
+          <button class="huleedu-hamburger"
+                  aria-expanded="false"
+                  aria-controls="mobile-nav"
+                  aria-label="Meny">
+            <span></span><span></span><span></span>
+          </button>
           {% if user %}
-            <button class="huleedu-hamburger"
-                    aria-expanded="false"
-                    aria-controls="mobile-nav"
-                    aria-label="Meny">
-              <span></span><span></span><span></span>
-            </button>
             <form method="post" action="/logout" class="huleedu-header-logout">
               <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
               <button type="submit" class="huleedu-btn huleedu-btn-secondary huleedu-btn-sm">Logga ut</button>
@@ -57,25 +58,29 @@
         </div>
       </header>
       {# Mobile nav OUTSIDE header - uses position:absolute relative to .huleedu-frame #}
-      {% if user %}
       <nav id="mobile-nav" class="huleedu-mobile-nav" hidden>
-        <a href="/browse">Katalog</a>
-        {% if user.role != "user" %}
-          <a href="/my-tools">Mina verktyg</a>
-          <a href="/suggestions/new">Föreslå skript</a>
+        {% if user %}
+          <a href="#" hx-boost="false" data-help-toggle>Hjälp</a>
+          <a href="/browse">Katalog</a>
+          {% if user.role != "user" %}
+            <a href="/my-tools">Mina verktyg</a>
+            <a href="/suggestions/new">Föreslå skript</a>
+          {% endif %}
+          {% if user.role in ["admin", "superuser"] %}
+            <a href="/admin/suggestions">Förslag</a>
+            <a href="/admin/tools">Testyta</a>
+          {% endif %}
+          <form method="post" action="/logout" class="huleedu-mobile-nav-logout">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+            <button type="submit" class="huleedu-btn huleedu-btn-secondary huleedu-btn-sm huleedu-w-full">
+              Logga ut
+            </button>
+          </form>
+        {% else %}
+          <a href="/login">Logga in</a>
+          <a href="#" hx-boost="false" data-help-toggle>Hjälp</a>
         {% endif %}
-        {% if user.role in ["admin", "superuser"] %}
-          <a href="/admin/suggestions">Förslag</a>
-          <a href="/admin/tools">Testyta</a>
-        {% endif %}
-        <form method="post" action="/logout" class="huleedu-mobile-nav-logout">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-          <button type="submit" class="huleedu-btn huleedu-btn-secondary huleedu-btn-sm huleedu-w-full">
-            Logga ut
-          </button>
-        </form>
       </nav>
-      {% endif %}
       <main class="{% block main_class %}huleedu-main{% endblock %}">
         <div id="help-context" data-help-context-id="{%- block help_context_id -%}{%- endblock -%}" hidden></div>
         {% block content %}{% endblock %}
