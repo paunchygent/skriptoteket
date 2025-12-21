@@ -2,7 +2,7 @@
 type: story
 id: ST-08-02
 title: "Login help + micro-help"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-17
 epic: "EPIC-08"
@@ -24,11 +24,11 @@ Kontextberoende hjälp för `login.html` inklusive fält-hjälp för e-post och 
 
 ## Tasks
 
-- [ ] Lägg till `help_context_id="login"` för sidan
-- [ ] Lägg till sida-hjälp (topic) för login
-- [ ] Lägg till diskret fält-hjälp:
-  - [ ] E-post: placeholder exempel (t.ex. `namn@skola.se`) + kort tooltip
-  - [ ] Lösenord: kort tooltip + ev. placeholder (t.ex. `••••••••`)
+- [x] Lägg till `help_context_id="login"` för sidan
+- [x] Lägg till sida-hjälp (topic) för login
+- [x] Lägg till diskret fält-hjälp:
+  - [x] E-post: placeholder exempel (t.ex. `namn@skola.se`) + kort tooltip
+  - [x] Lösenord: kort tooltip + ev. placeholder (t.ex. `••••••••`)
 
 ## Files
 

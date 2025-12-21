@@ -2,7 +2,7 @@
 type: story
 id: ST-08-03
 title: "Post-login home help index (site map)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-17
 epic: "EPIC-08"
@@ -25,9 +25,9 @@ Ett “hjälpindex” för startsidan efter login som fungerar som en kort och l
 
 ## Tasks
 
-- [ ] Lägg till `help_context_id="home"` och koppla “Till hjälpindex” till logged-in index
-- [ ] Skapa help index för logged-in (role-aware) och länka till topics per sida
-- [ ] Säkerställ att copy är kort, actions-fokuserad och utan tekniska detaljer
+- [x] Lägg till `help_context_id="home"` och koppla “Till hjälpindex” till logged-in index
+- [x] Skapa help index för logged-in (role-aware) och länka till topics per sida
+- [x] Säkerställ att copy är kort, actions-fokuserad och utan tekniska detaljer
 
 ## Files
 

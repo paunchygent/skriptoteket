@@ -2,11 +2,16 @@
 type: epic
 id: EPIC-12
 title: "Advanced input and output handling"
-status: proposed
+status: active
 owners: "agents"
 created: 2025-12-21
 outcome: "Scripts can accept multiple input files, generate native PDFs, and access user-specific settings, enabling complex multi-file workflows without manual file merging."
+dependencies: ["EPIC-11"]
 ---
+
+> Status note: **EPIC-12 is blocked until EPIC-11 (full SPA migration) is complete**.  
+> ST-12-01 is delivered as a backend/runtime contract + minimal SSR wiring; all remaining EPIC-12 work should be
+> implemented directly in the SPA to avoid building UI twice.
 
 ## Scope
 
@@ -26,9 +31,9 @@ outcome: "Scripts can accept multiple input files, generate native PDFs, and acc
 ## Stories
 
 - [ST-12-01: Multi-file upload support](../stories/story-12-01-multi-file-upload.md)
-- ST-12-02: Native PDF output helper (future)
-- ST-12-03: Personalized tool settings (future)
-- ST-12-04: Interactive text/dropdown inputs (future)
+- [ST-12-02: Native PDF output helper](../stories/story-12-02-native-pdf-output-helper.md) (blocked)
+- [ST-12-03: Personalized tool settings](../stories/story-12-03-personalized-tool-settings.md) (blocked)
+- [ST-12-04: Interactive text/dropdown inputs](../stories/story-12-04-interactive-text-dropdown-inputs.md) (blocked)
 
 ## Risks
 
@@ -38,5 +43,6 @@ outcome: "Scripts can accept multiple input files, generate native PDFs, and acc
 
 ## Dependencies
 
-- ADR-0031 (Multi-file input contract) - to be created
+- ADR-0031 (Multi-file input contract)
+- EPIC-11 (Full SPA migration; especially ST-11-13 cutover)
 - PRD-script-hub-v0.2 (source requirements)

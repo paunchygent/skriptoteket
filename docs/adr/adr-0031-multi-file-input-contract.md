@@ -6,12 +6,12 @@ status: proposed
 owners: "agents"
 deciders: ["olof"]
 created: 2025-12-21
-links: ["PRD-script-hub-v0.2", "EPIC-12", "ADR-0014"]
+links: ["PRD-script-hub-v0.2", "EPIC-12", "ADR-0013", "ADR-0015"]
 ---
 
 ## Context
 
-The current runner contract (ADR-0014) restricts script execution to a **single input file**:
+The current execution model (ADR-0013) injects a **single input file** into the runner container:
 
 - User uploads one file via `<input type="file">`
 - Runner receives `input_filename` + `input_bytes`
@@ -28,6 +28,12 @@ PRD-script-hub-v0.2 defines "Advanced Input Handling" as a v0.2 feature requirin
 ## Decision
 
 Extend the runner input contract to support **multiple input files** while maintaining backward compatibility for single-file scripts.
+
+### 0) Filename rules and collisions
+
+- Filenames are sanitized to a safe “file name only” form (no paths).
+- If multiple uploaded files collide **after sanitization**, the request is rejected with a validation error instructing
+  the user to rename files locally.
 
 ### 1) Frontend: Multiple file upload
 
@@ -130,6 +136,6 @@ def run_tool(input_path: str, output_dir: str) -> dict:
 ### Tradeoffs / Risks
 
 - Increased upload size may hit timeouts (mitigate: per-file and total size caps)
-- Filename collisions if user uploads files with same name (mitigate: reject or rename)
+- Filename collisions if user uploads files with same name (mitigate: reject duplicates after sanitization)
 - More complex error handling for partial upload failures
 - Knowledge base needs updated patterns for LLM script generation

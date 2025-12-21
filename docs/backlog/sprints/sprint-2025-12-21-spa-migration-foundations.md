@@ -71,3 +71,4 @@ Establish the minimum viable “full SPA” foundation so further route-parity w
 
 - Next sprint starts route-parity vertical slices (browse + run + admin/editor).
 - ST-11-04 landed: `/api/*` migrated to `/api/v1/*` + OpenAPI export + `openapi-typescript` workflow (`pdm run fe-gen-api-types`).
+- ST-11-05 landed: SPA auth store + API client wrapper + router guards; `/` is public and `/browse` is protected; role-gated placeholders at `/my-tools` (contributor+) and `/admin/tools` (admin+); role-too-low routes go to `/forbidden`; API 401 clears auth and redirects to `/login?next=...` when on a protected route.

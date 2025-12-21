@@ -279,7 +279,8 @@ Följande Python-bibliotek finns förinstallerade i körmiljön:
 /work/
 ├── script.py          # Ditt skript
 ├── input/
-│   └── <filnamn>      # Uppladdad fil
+│   ├── <filnamn>      # Uppladdad fil (kan vara flera)
+│   └── <filnamn-2>
 ├── output/            # Artefakter sparas här
 └── result.json        # Genereras av runner
 
@@ -291,6 +292,7 @@ Följande Python-bibliotek finns förinstallerade i körmiljön:
 - `SKRIPTOTEKET_SCRIPT_PATH`: Sökväg till skriptet
 - `SKRIPTOTEKET_ENTRYPOINT`: Funktionsnamnet att anropa
 - `SKRIPTOTEKET_INPUT_PATH`: Sökväg till indata
+- `SKRIPTOTEKET_INPUT_MANIFEST`: JSON med metadata för alla uppladdade filer
 - `SKRIPTOTEKET_OUTPUT_DIR`: Katalog för artefakter
 - `SKRIPTOTEKET_RESULT_PATH`: Där result.json skrivs
 
@@ -356,6 +358,32 @@ def run_tool(input_path: str, output_dir: str) -> dict:
     wb.close()
 
     # Bearbeta...
+```
+
+### 7.3 Multi-fil indata (manifest)
+
+```python
+import json
+import os
+from pathlib import Path
+
+def run_tool(input_path: str, output_dir: str) -> dict:
+    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
+    manifest = json.loads(manifest_raw) if manifest_raw else {}
+    files = [Path(f["path"]) for f in manifest.get("files", [])]
+
+    # Alternativ: lista alla filer i input-katalogen
+    input_dir = Path(input_path).parent
+    all_files = list(input_dir.iterdir())
+
+    return {
+        "outputs": [
+            {"kind": "notice", "level": "info", "message": f"Filer: {len(files)}"},
+            {"kind": "json", "title": "input_manifest", "value": manifest},
+        ],
+        "next_actions": [],
+        "state": None,
+    }
 ```
 
 ### 7.3 Skapa PDF från HTML

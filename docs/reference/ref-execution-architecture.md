@@ -28,7 +28,8 @@ Script execution is **isolated** within ephemeral Docker containers, managed by 
 *   **Environment Variables (Container):**
     *   `SKRIPTOTEKET_ENTRYPOINT`: Function to call (default: `run_tool`).
     *   `SKRIPTOTEKET_SCRIPT_PATH`: Path to script (`/work/script.py`).
-    *   `SKRIPTOTEKET_INPUT_PATH`: Path to input file (`/work/input/<filename>`).
+    *   `SKRIPTOTEKET_INPUT_PATH`: Path to the first input file (`/work/input/<filename>`).
+    *   `SKRIPTOTEKET_INPUT_MANIFEST`: JSON listing all input files (`[{name,path,bytes}]`).
     *   `SKRIPTOTEKET_OUTPUT_DIR`: Directory for artifacts (`/work/output`).
 
 ## 2. Input/Output Data Flow
@@ -37,16 +38,16 @@ Data flows from the web request into the container and back via a standardized c
 
 ### Input
 1.  **Source:**
-    *   **KÖR:** User uploads a file via `POST /tools/{slug}/run`. Script source is fetched from the *active* version in DB.
-    *   **TESTKÖR:** User uploads a file via `POST /admin/tool-versions/{version_id}/run-sandbox`. Script source is fetched from the *specific* version (draft or published) in DB.
+    *   **KÖR:** User uploads one or more files via `POST /tools/{slug}/run`. Script source is fetched from the *active* version in DB.
+    *   **TESTKÖR:** User uploads one or more files via `POST /admin/tool-versions/{version_id}/run-sandbox`. Script source is fetched from the *specific* version (draft or published) in DB.
 2.  **Transformation:**
-    *   Input file and Script source are packaged into a **tar archive**.
-    *   Archive is streamed into the Docker container at `/work`.
+    *   Input files and Script source are packaged into a **tar archive**.
+    *   Archive is streamed into the Docker container at `/work`, placing all inputs under `/work/input/`.
 
 ### Output
 1.  **Destinations:**
     *   **Stdout/Stderr:** Captured and truncated (max ~200KB).
-    *   **Return Value:** The entrypoint function **must return a string**, which is treated as **HTML Output**.
+    *   **Return Value:** The entrypoint returns either a string (HTML, backwards compatible) or a dict (typed UI contract v2); the runner writes `result.json`.
     *   **Artifacts:** Any file written to `/work/output` is captured.
 2.  **Transformation:**
     *   Internal `_runner.py` wrapper catches exceptions and writes a `result.json`.
@@ -63,7 +64,7 @@ Both execution types converge on the `ToolRunnerProtocol` but start from differe
 3.  **Handler:** `RunActiveToolHandler`
     *   *Check:* Tool must be published and have an active version.
 4.  **Orchestrator:** `ExecuteToolVersionHandler`
-    *   *Action:* Creates `ToolRun` (status: PENDING).
+    *   *Action:* Creates `ToolRun` (status: RUNNING).
     *   *Action:* Calls `DockerToolRunner.execute` with `production_timeout`.
     *   *Action:* Updates `ToolRun` with result (status: SUCCEEDED/FAILED).
 
@@ -73,7 +74,7 @@ Both execution types converge on the `ToolRunnerProtocol` but start from differe
 3.  **Handler:** `RunSandboxHandler`
     *   *Check:* User must be contributor/maintainer.
 4.  **Orchestrator:** `ExecuteToolVersionHandler`
-    *   *Action:* Creates `ToolRun` (status: PENDING).
+    *   *Action:* Creates `ToolRun` (status: RUNNING).
     *   *Action:* Calls `DockerToolRunner.execute` with **`sandbox_timeout`**.
     *   *Action:* Updates `ToolRun` with result.
 
