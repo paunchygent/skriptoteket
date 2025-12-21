@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     ENABLE_DOCS: bool = True
 
-    # SPA islands (ADR-0025)
+    # Frontend dev server (legacy SSR + SPA islands; ADR-0025 superseded by ADR-0027)
     # If set, templates render SPA assets from the Vite dev server instead of the production
     # manifest.
     VITE_DEV_SERVER_URL: str | None = None

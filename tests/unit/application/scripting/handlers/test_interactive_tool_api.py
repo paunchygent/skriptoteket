@@ -561,7 +561,8 @@ async def test_get_run_returns_artifact_download_urls(now: datetime) -> None:
 
     assert result.run.run_id == run_id
     assert result.run.status is RunStatus.SUCCEEDED
-    assert result.run.artifacts[0].download_url == f"/api/runs/{run_id}/artifacts/output_report_pdf"
+    expected_url = f"/api/v1/runs/{run_id}/artifacts/output_report_pdf"
+    assert result.run.artifacts[0].download_url == expected_url
 
 
 @pytest.mark.unit

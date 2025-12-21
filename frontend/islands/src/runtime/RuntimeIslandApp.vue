@@ -341,9 +341,16 @@ function _uiErrorMessage(error: ApiErrorResponse | null, statusCode: number): st
   return "Ett oväntat fel inträffade.";
 }
 
+function _getCsrfToken(): string | null {
+  const input = document.querySelector("input[name='csrf_token']") as HTMLInputElement | null;
+  const value = input?.value?.trim() ?? "";
+  return value ? value : null;
+}
+
 async function _fetchRun(runId: string): Promise<void> {
-  const response = await fetch(`/api/runs/${runId}`, {
+  const response = await fetch(`/api/v1/runs/${runId}`, {
     method: "GET",
+    credentials: "include",
     headers: { Accept: "application/json" },
   });
 
@@ -357,8 +364,9 @@ async function _fetchRun(runId: string): Promise<void> {
 }
 
 async function _fetchSessionState(): Promise<void> {
-  const response = await fetch(`/api/tools/${props.toolId}/sessions/${props.context}`, {
+  const response = await fetch(`/api/v1/tools/${props.toolId}/sessions/${props.context}`, {
     method: "GET",
+    credentials: "include",
     headers: { Accept: "application/json" },
   });
 
@@ -461,10 +469,21 @@ async function submitAction(actionId: string): Promise<void> {
 
   isSubmitting.value = true;
   try {
+    const csrfToken = _getCsrfToken();
+    if (!csrfToken) {
+      actionError.value = "Din session saknar CSRF-token. Ladda om sidan och försök igen.";
+      return;
+    }
+
     const input = _buildActionInput(action);
-    const response = await fetch("/api/start_action", {
+    const response = await fetch("/api/v1/start_action", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "X-CSRF-Token": csrfToken,
+      },
       body: JSON.stringify({
         tool_id: props.toolId,
         context: props.context,

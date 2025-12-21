@@ -275,32 +275,58 @@ serve = "uvicorn --app-dir src skriptoteket.web.app:app --host 0.0.0.0 --port 80
 ui-smoke = "python -m scripts.playwright_ui_smoke"
 ui-editor-smoke = "python -m scripts.playwright_editor_island_smoke"
 ui-runtime-smoke = "python -m scripts.playwright_runtime_island_smoke"
+openapi-export-v1 = "python -m scripts.export_openapi_v1"
+fe-gen-api-types = { composite = [
+    "python -m scripts.export_openapi_v1",
+    "pnpm -C frontend --filter @skriptoteket/spa gen:api-types",
+] }
 
-# Frontend (SPA islands)
+# Frontend (full SPA; ADR-0027/ADR-0029)
 fe-install.cmd = "pnpm install"
 fe-install.working_dir = "frontend"
 
-fe-dev.cmd = "pnpm run dev"
+fe-dev.cmd = "pnpm --filter @skriptoteket/spa dev"
 fe-dev.working_dir = "frontend"
 
-fe-build.cmd = "pnpm run build"
+fe-build.cmd = "pnpm --filter @skriptoteket/spa build"
 fe-build.working_dir = "frontend"
 
-fe-build-watch.cmd = "pnpm run build:watch"
+fe-build-watch.cmd = "pnpm --filter @skriptoteket/spa build:watch"
 fe-build-watch.working_dir = "frontend"
 
-fe-preview.cmd = "pnpm run preview"
+fe-preview.cmd = "pnpm --filter @skriptoteket/spa preview"
 fe-preview.working_dir = "frontend"
 
-fe-type-check.cmd = "pnpm run type-check"
+fe-type-check.cmd = "pnpm --filter @skriptoteket/spa typecheck"
 fe-type-check.working_dir = "frontend"
 
-fe-lint.cmd = "pnpm run lint"
+fe-lint.cmd = "pnpm --filter @skriptoteket/spa lint"
 fe-lint.working_dir = "frontend"
 
-fe-lint-fix.cmd = "pnpm run lint:fix"
+fe-lint-fix.cmd = "pnpm --filter @skriptoteket/spa lint:fix"
 fe-lint-fix.working_dir = "frontend"
 
+# Frontend (legacy islands; to be deleted at EPIC-11 cutover)
+fe-dev-islands.cmd = "pnpm --filter @skriptoteket/islands dev"
+fe-dev-islands.working_dir = "frontend"
+
+fe-build-islands.cmd = "pnpm --filter @skriptoteket/islands build"
+fe-build-islands.working_dir = "frontend"
+
+fe-build-watch-islands.cmd = "pnpm --filter @skriptoteket/islands build:watch"
+fe-build-watch-islands.working_dir = "frontend"
+
+fe-preview-islands.cmd = "pnpm --filter @skriptoteket/islands preview"
+fe-preview-islands.working_dir = "frontend"
+
+fe-type-check-islands.cmd = "pnpm --filter @skriptoteket/islands type-check"
+fe-type-check-islands.working_dir = "frontend"
+
+fe-lint-islands.cmd = "pnpm --filter @skriptoteket/islands lint"
+fe-lint-islands.working_dir = "frontend"
+
+fe-lint-fix-islands.cmd = "pnpm --filter @skriptoteket/islands lint:fix"
+fe-lint-fix-islands.working_dir = "frontend"
 # Code quality
 format = "ruff format --force-exclude ."
 lint = { composite = [

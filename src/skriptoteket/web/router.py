@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 
+from skriptoteket.web.api.v1 import auth as api_v1_auth
 from skriptoteket.web.auth.dependencies import require_user
 from skriptoteket.web.pages import admin_scripting as admin_scripting_pages
 from skriptoteket.web.pages import admin_tools as admin_tools_pages
@@ -18,6 +19,10 @@ from skriptoteket.web.routes import interactive_tools as interactive_tools_route
 router = APIRouter()
 router.include_router(auth_pages.router)
 
+router.include_router(api_v1_auth.router)
+router.include_router(editor_routes.router)
+router.include_router(interactive_tools_routes.router)
+
 protected = APIRouter(dependencies=[Depends(require_user)])
 protected.include_router(home_pages.router)
 protected.include_router(browse_pages.router)
@@ -27,8 +32,6 @@ protected.include_router(my_runs_pages.router)
 protected.include_router(my_tools_pages.router)
 protected.include_router(suggestions_pages.router)
 protected.include_router(spa_islands_pages.router)
-protected.include_router(editor_routes.router)
-protected.include_router(interactive_tools_routes.router)
 protected.include_router(admin_tools_pages.router)
 protected.include_router(admin_scripting_pages.router)
 router.include_router(protected)

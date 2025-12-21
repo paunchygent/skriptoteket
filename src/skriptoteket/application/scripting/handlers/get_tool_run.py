@@ -33,7 +33,7 @@ def _artifacts_for_run(
             artifact_id=artifact.artifact_id,
             path=artifact.path,
             bytes=artifact.bytes,
-            download_url=f"/api/runs/{run_id}/artifacts/{artifact.artifact_id}",
+            download_url=f"/api/v1/runs/{run_id}/artifacts/{artifact.artifact_id}",
         )
         for artifact in manifest.artifacts
     ]

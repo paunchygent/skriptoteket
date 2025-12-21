@@ -28,9 +28,9 @@ from skriptoteket.protocols.interactive_tools import (
     StartActionHandlerProtocol,
 )
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
-from skriptoteket.web.auth.dependencies import require_user
+from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
 
-router = APIRouter(prefix="/api")
+router = APIRouter(prefix="/api/v1")
 
 
 async def _load_production_run_for_user(
@@ -80,7 +80,8 @@ def _resolve_artifact_path(
 async def start_action(
     command: StartActionCommand,
     handler: FromDishka[StartActionHandlerProtocol],
-    user: User = Depends(require_user),
+    user: User = Depends(require_user_api),
+    _: None = Depends(require_csrf_token),
 ) -> StartActionResult:
     return await handler.handle(actor=user, command=command)
 
@@ -91,7 +92,7 @@ async def get_session_state(
     tool_id: UUID,
     context: str,
     handler: FromDishka[GetSessionStateHandlerProtocol],
-    user: User = Depends(require_user),
+    user: User = Depends(require_user_api),
 ) -> GetSessionStateResult:
     return await handler.handle(
         actor=user,
@@ -104,7 +105,7 @@ async def get_session_state(
 async def get_run(
     run_id: UUID,
     handler: FromDishka[GetRunHandlerProtocol],
-    user: User = Depends(require_user),
+    user: User = Depends(require_user_api),
 ) -> GetRunResult:
     return await handler.handle(actor=user, query=GetRunQuery(run_id=run_id))
 
@@ -114,7 +115,7 @@ async def get_run(
 async def list_artifacts(
     run_id: UUID,
     handler: FromDishka[ListArtifactsHandlerProtocol],
-    user: User = Depends(require_user),
+    user: User = Depends(require_user_api),
 ) -> ListArtifactsResult:
     return await handler.handle(actor=user, query=ListArtifactsQuery(run_id=run_id))
 
@@ -127,7 +128,7 @@ async def download_artifact(
     artifact_id: str,
     settings: FromDishka[Settings],
     runs: FromDishka[ToolRunRepositoryProtocol],
-    user: User = Depends(require_user),
+    user: User = Depends(require_user_api),
 ) -> Response:
     del request
     run = await _load_production_run_for_user(runs=runs, run_id=run_id, actor=user)

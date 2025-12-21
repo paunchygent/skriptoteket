@@ -15,12 +15,12 @@ from skriptoteket.protocols.scripting import (
     CreateDraftVersionHandlerProtocol,
     SaveDraftVersionHandlerProtocol,
 )
-from skriptoteket.web.auth.dependencies import require_contributor
+from skriptoteket.web.auth.api_dependencies import require_contributor_api, require_csrf_token
 from skriptoteket.web.error_mapping import error_to_status
 from skriptoteket.web.toasts import set_toast_cookie
 from skriptoteket.web.ui_text import ui_error_message
 
-router = APIRouter(prefix="/api/editor")
+router = APIRouter(prefix="/api/v1/editor")
 
 
 class CreateDraftVersionRequest(BaseModel):
@@ -54,7 +54,8 @@ async def create_draft_version(
     tool_id: UUID,
     payload: CreateDraftVersionRequest,
     handler: FromDishka[CreateDraftVersionHandlerProtocol],
-    user: User = Depends(require_contributor),
+    user: User = Depends(require_contributor_api),
+    _: None = Depends(require_csrf_token),
 ) -> Response:
     try:
         result = await handler.handle(
@@ -97,7 +98,8 @@ async def save_draft_version(
     version_id: UUID,
     payload: SaveDraftVersionRequest,
     handler: FromDishka[SaveDraftVersionHandlerProtocol],
-    user: User = Depends(require_contributor),
+    user: User = Depends(require_contributor_api),
+    _: None = Depends(require_csrf_token),
 ) -> Response:
     try:
         result = await handler.handle(

@@ -67,12 +67,24 @@ function _normalizedOptionalString(value: string): string | null {
   return trimmed ? trimmed : null;
 }
 
+function _getCsrfToken(): string | null {
+  const input = document.querySelector("input[name='csrf_token']") as HTMLInputElement | null;
+  const value = input?.value?.trim() ?? "";
+  return value ? value : null;
+}
+
 async function save(): Promise<void> {
   if (isSaving.value) return;
   errorMessage.value = null;
   isSaving.value = true;
 
   try {
+    const csrfToken = _getCsrfToken();
+    if (!csrfToken) {
+      errorMessage.value = "Din session saknar CSRF-token. Ladda om sidan och försök igen.";
+      return;
+    }
+
     const entrypointValue = entrypoint.value.trim();
     if (!entrypointValue) {
       errorMessage.value = "Startfunktion krävs.";
@@ -89,8 +101,8 @@ async function save(): Promise<void> {
 
     const url =
       props.payload.save_mode === "snapshot"
-        ? `/api/editor/tool-versions/${selectedVersionId}/save`
-        : `/api/editor/tools/${props.payload.tool_id}/draft`;
+        ? `/api/v1/editor/tool-versions/${selectedVersionId}/save`
+        : `/api/v1/editor/tools/${props.payload.tool_id}/draft`;
 
     const body =
       props.payload.save_mode === "snapshot"
@@ -109,7 +121,8 @@ async function save(): Promise<void> {
 
     const response = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
       body: JSON.stringify(body),
     });
 
