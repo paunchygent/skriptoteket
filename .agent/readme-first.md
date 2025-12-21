@@ -61,5 +61,8 @@ Before ending a session, update `.agent/handoff.md` with what changed, decisions
 
 Completed/older stories belong in story docs + link index here (not in `.agent/handoff.md`):
 
+- ST-07-02: `docs/backlog/stories/story-07-02-healthz-and-metrics-endpoints.md`
+- ST-07-04: `docs/backlog/stories/story-07-04-logging-redaction-and-policy.md`
 - ST-05-12: `docs/backlog/stories/story-05-12-mobile-editor-ux.md`
 - ST-05-11: `docs/backlog/stories/story-05-11-hamburger-htmx-bug.md`
+- ST-04-04: `docs/backlog/stories/story-04-04-governance-audit-rollback.md`
