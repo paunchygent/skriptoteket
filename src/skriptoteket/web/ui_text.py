@@ -62,6 +62,16 @@ def ui_error_message(exc: DomainError) -> str:
     if exc.code is ErrorCode.VALIDATION_ERROR:
         if "expected_parent_version_id" in exc.details:
             return "Versionen stämmer inte längre. Ladda om och försök igen."
+        if exc.message == "At least one file is required.":
+            return "Välj minst en fil."
+        if exc.message == "Too many files uploaded.":
+            return "För många filer."
+        if exc.message == "Uploaded file is too large.":
+            return "Filen är för stor."
+        if exc.message == "Total upload size exceeded.":
+            return "Uppladdningen är för stor."
+        if exc.message == "Duplicate input filenames after sanitization; rename files locally.":
+            return "Flera filer har samma filnamn. Byt namn på filerna lokalt och försök igen."
         if exc.message == "Title is required":
             return "Titel krävs."
         if exc.message == "Title must be 255 characters or less":

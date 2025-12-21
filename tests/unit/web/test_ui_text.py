@@ -76,12 +76,20 @@ def test_ui_error_message_validation_expected_parent() -> None:
 @pytest.mark.parametrize(
     ("message", "expected"),
     [
+        ("At least one file is required.", "Välj minst en fil."),
+        ("Too many files uploaded.", "För många filer."),
+        ("Uploaded file is too large.", "Filen är för stor."),
+        ("Total upload size exceeded.", "Uppladdningen är för stor."),
+        (
+            "Duplicate input filenames after sanitization; rename files locally.",
+            "Flera filer har samma filnamn. Byt namn på filerna lokalt och försök igen.",
+        ),
         ("Title is required", "Titel krävs."),
         ("Title must be 255 characters or less", "Titeln får vara högst 255 tecken."),
         ("Other", "Ogiltig indata."),
     ],
 )
-def test_ui_error_message_validation_title_messages(message: str, expected: str) -> None:
+def test_ui_error_message_validation_messages(message: str, expected: str) -> None:
     exc = DomainError(code=ErrorCode.VALIDATION_ERROR, message=message, details={})
     assert ui_error_message(exc) == expected
 
