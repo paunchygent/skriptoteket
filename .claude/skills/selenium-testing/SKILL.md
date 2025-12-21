@@ -48,7 +48,7 @@ def _read_dotenv(path: Path) -> dict[str, str]:
     return values
 
 
-dotenv = _read_dotenv(Path(".env"))
+dotenv = _read_dotenv(Path(os.environ.get("DOTENV_PATH", ".env")))
 
 
 def _get_config_value(*, key: str, default: str | None = None) -> str | None:
@@ -56,13 +56,16 @@ def _get_config_value(*, key: str, default: str | None = None) -> str | None:
 
 
 base_url = _get_config_value(key="BASE_URL", default="http://127.0.0.1:8000") or "http://127.0.0.1:8000"
-email = _get_config_value(key="BOOTSTRAP_SUPERUSER_EMAIL")
-password = _get_config_value(key="BOOTSTRAP_SUPERUSER_PASSWORD")
+email = _get_config_value(key="PLAYWRIGHT_EMAIL") or _get_config_value(key="BOOTSTRAP_SUPERUSER_EMAIL")
+password = _get_config_value(key="PLAYWRIGHT_PASSWORD") or _get_config_value(
+    key="BOOTSTRAP_SUPERUSER_PASSWORD"
+)
 
 if not email or not password:
     raise SystemExit(
-        "Missing BOOTSTRAP_SUPERUSER_EMAIL/BOOTSTRAP_SUPERUSER_PASSWORD. "
-        "Set them in .env (gitignored) or export them in your shell."
+        "Missing credentials. Either set PLAYWRIGHT_EMAIL/PLAYWRIGHT_PASSWORD (recommended for prod) "
+        "or BOOTSTRAP_SUPERUSER_EMAIL/BOOTSTRAP_SUPERUSER_PASSWORD (dev). "
+        "Provide them in DOTENV_PATH (default: .env) or export them in your shell."
     )
 
 options = webdriver.ChromeOptions()

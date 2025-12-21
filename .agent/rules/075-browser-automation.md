@@ -12,14 +12,34 @@ scope: "testing"
 - REQUIRED: Use Playwright for new browser automation (Python).
 - REQUIRED: Put scripts in `scripts/` and run them via `pdm run python -m scripts.<module>`.
 - REQUIRED: Write artifacts (screenshots, traces) under `.artifacts/<script-name>/`.
-- REQUIRED: Reuse the bootstrap account from `.env`
-  (`BOOTSTRAP_SUPERUSER_EMAIL` / `BOOTSTRAP_SUPERUSER_PASSWORD`). Never hardcode or print credentials.
+- REQUIRED: Never hardcode or print credentials. Provide them via env vars or a gitignored dotenv file.
+- REQUIRED: Local dev smokes use `.env` with `BOOTSTRAP_SUPERUSER_EMAIL` / `BOOTSTRAP_SUPERUSER_PASSWORD`.
+- REQUIRED: Prod smokes use a separate gitignored dotenv (e.g. `.env.prod-smoke`) with `BASE_URL` +
+  `PLAYWRIGHT_EMAIL` / `PLAYWRIGHT_PASSWORD`, passed via `--dotenv` (or `DOTENV_PATH`).
 
 ## Repo Smoke Scripts
 
 - `pdm run ui-smoke` → screenshots in `.artifacts/ui-smoke/`
 - `pdm run ui-editor-smoke` → screenshots in `.artifacts/ui-editor-smoke/`
 - `pdm run ui-runtime-smoke` → screenshots in `.artifacts/ui-runtime-smoke/` (apps + `/tools/<slug>/run`)
+
+### Prod runs (recommended)
+
+Create a gitignored `.env.prod-smoke`:
+
+```bash
+BASE_URL=https://skriptoteket.example
+PLAYWRIGHT_EMAIL=...
+PLAYWRIGHT_PASSWORD=...
+```
+
+Run:
+
+```bash
+pdm run ui-smoke --dotenv .env.prod-smoke
+pdm run ui-editor-smoke --dotenv .env.prod-smoke
+pdm run ui-runtime-smoke --dotenv .env.prod-smoke
+```
 
 Prereqs:
 
@@ -109,17 +129,20 @@ pdm run playwright install --force
 
 ## Script Pattern (sync)
 
-Prefer reading config from `.env` / env vars and using explicit waits:
+Prefer using `scripts._playwright_config.get_config()` so scripts share the same CLI/env/dotenv behavior
+(including `--dotenv`):
 
 ```python
-import os
 from pathlib import Path
 
 from playwright.sync_api import expect, sync_playwright
 
-base_url = os.environ.get("BASE_URL", "http://127.0.0.1:8000")
-email = os.environ["BOOTSTRAP_SUPERUSER_EMAIL"]
-password = os.environ["BOOTSTRAP_SUPERUSER_PASSWORD"]
+from scripts._playwright_config import get_config
+
+config = get_config()
+base_url = config.base_url
+email = config.email
+password = config.password
 
 artifacts_dir = Path(".artifacts/my-script")
 artifacts_dir.mkdir(parents=True, exist_ok=True)

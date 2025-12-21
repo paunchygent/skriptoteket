@@ -24,6 +24,11 @@ pdm run ui-smoke
 pdm run ui-editor-smoke
 pdm run ui-runtime-smoke
 
+# Prod (recommended): gitignored `.env.prod-smoke` with `BASE_URL` + `PLAYWRIGHT_*`
+pdm run ui-smoke --dotenv .env.prod-smoke
+pdm run ui-editor-smoke --dotenv .env.prod-smoke
+pdm run ui-runtime-smoke --dotenv .env.prod-smoke
+
 # Run an ad-hoc script
 pdm run python -m scripts.<module>
 ```
@@ -85,13 +90,14 @@ pdm run playwright install
 ## Quick Pattern (sync)
 
 ```python
-import os
+from scripts._playwright_config import get_config
 
 from playwright.sync_api import sync_playwright
 
-base_url = os.environ.get("BASE_URL", "http://127.0.0.1:8000")
-email = os.environ["BOOTSTRAP_SUPERUSER_EMAIL"]
-password = os.environ["BOOTSTRAP_SUPERUSER_PASSWORD"]
+config = get_config()
+base_url = config.base_url
+email = config.email
+password = config.password
 
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)

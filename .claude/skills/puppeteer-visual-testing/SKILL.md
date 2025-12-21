@@ -37,10 +37,17 @@ All screenshots/recordings go under `.artifacts/` with descriptive names:
 
 ## Skriptoteket Login (CRITICAL)
 
-Credentials must be provided via `.env` (gitignored) or exported env vars:
+Credentials must be provided via a gitignored dotenv file (default: `.env`, override via `DOTENV_PATH`) or
+exported env vars.
 
-- `BOOTSTRAP_SUPERUSER_EMAIL`
-- `BOOTSTRAP_SUPERUSER_PASSWORD`
+For dev/local, use:
+
+- `BOOTSTRAP_SUPERUSER_EMAIL` / `BOOTSTRAP_SUPERUSER_PASSWORD`
+
+For prod smoke runs, prefer a separate `.env.prod-smoke` with:
+
+- `BASE_URL`
+- `PLAYWRIGHT_EMAIL` / `PLAYWRIGHT_PASSWORD`
 
 **Login pattern** (assumes `baseUrl`, `email`, `password` are set; see workflow below) - use `form.submit()` and wait with timeout:
 
@@ -74,11 +81,13 @@ function readDotenv(filePath = path.resolve(process.cwd(), '.env')) {
 }
 
 (async () => {
-  const dotenv = readDotenv();
+  const dotenv = readDotenv(process.env.DOTENV_PATH || path.resolve(process.cwd(), '.env'));
   const baseUrl = process.env.BASE_URL || dotenv.BASE_URL || 'http://127.0.0.1:8000';
-  const email = process.env.BOOTSTRAP_SUPERUSER_EMAIL || dotenv.BOOTSTRAP_SUPERUSER_EMAIL;
-  const password = process.env.BOOTSTRAP_SUPERUSER_PASSWORD || dotenv.BOOTSTRAP_SUPERUSER_PASSWORD;
-  if (!email || !password) throw new Error('Missing BOOTSTRAP_SUPERUSER_EMAIL/BOOTSTRAP_SUPERUSER_PASSWORD');
+  const email = process.env.PLAYWRIGHT_EMAIL || dotenv.PLAYWRIGHT_EMAIL
+    || process.env.BOOTSTRAP_SUPERUSER_EMAIL || dotenv.BOOTSTRAP_SUPERUSER_EMAIL;
+  const password = process.env.PLAYWRIGHT_PASSWORD || dotenv.PLAYWRIGHT_PASSWORD
+    || process.env.BOOTSTRAP_SUPERUSER_PASSWORD || dotenv.BOOTSTRAP_SUPERUSER_PASSWORD;
+  if (!email || !password) throw new Error('Missing credentials (PLAYWRIGHT_* or BOOTSTRAP_SUPERUSER_*)');
 
   const artifactsDir = path.resolve(process.cwd(), '.artifacts/puppeteer');
   fs.mkdirSync(artifactsDir, { recursive: true });
