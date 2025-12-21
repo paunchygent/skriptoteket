@@ -362,6 +362,172 @@
     initCodeMirrorEditors(root);
   }
 
+  /** @type {Element | null} */
+  var lastHelpTrigger = null;
+
+  function getHelpContextId() {
+    var marker = document.getElementById("help-context");
+    if (marker && marker.dataset && marker.dataset.helpContextId) {
+      return (marker.dataset.helpContextId || "").trim();
+    }
+
+    var body = document.body;
+    var ctx = body && body.dataset ? body.dataset.helpContextId : "";
+    return (ctx || "").trim();
+  }
+
+  function getHelpPanel() {
+    return document.getElementById("help-panel");
+  }
+
+  function getHelpBackdrop() {
+    return document.getElementById("help-backdrop");
+  }
+
+  function getHelpToggle() {
+    return document.getElementById("help-toggle");
+  }
+
+  function getHelpViewIndex() {
+    return document.getElementById("help-view-index");
+  }
+
+  function getHelpViewTopic() {
+    return document.getElementById("help-view-topic");
+  }
+
+  function isHelpOpen() {
+    var panel = getHelpPanel();
+    return !!(panel && panel.hidden === false);
+  }
+
+  function setHelpOpenState(open) {
+    var panel = getHelpPanel();
+    var backdrop = getHelpBackdrop();
+    var toggle = getHelpToggle();
+
+    if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    if (panel) {
+      panel.hidden = !open;
+      panel.setAttribute("aria-hidden", open ? "false" : "true");
+    }
+    if (backdrop) backdrop.hidden = !open;
+  }
+
+  function focusFirstHelpControl() {
+    var panel = getHelpPanel();
+    if (!panel) return;
+
+    var closeBtn = panel.querySelector("[data-help-close]");
+    if (closeBtn && closeBtn.focus) {
+      closeBtn.focus();
+      return;
+    }
+
+    if (panel.focus) panel.focus();
+  }
+
+  function focusFirstHelpIndexLink() {
+    var view = getHelpViewIndex();
+    if (!view) return;
+
+    var link = view.querySelector("[data-help-topic-link]");
+    if (link && link.focus) link.focus();
+  }
+
+  function focusFirstHelpTopicLink(topicId) {
+    var view = getHelpViewTopic();
+    if (!view) return;
+
+    var topic = view.querySelector('[data-help-topic="' + topicId + '"]');
+    if (!topic) return;
+
+    var backLink = topic.querySelector('[data-help-action="show-index"]');
+    if (backLink && backLink.focus) backLink.focus();
+  }
+
+  function hideAllHelpTopics() {
+    var view = getHelpViewTopic();
+    if (!view) return;
+    view.querySelectorAll("[data-help-topic]").forEach(function (topic) {
+      topic.hidden = true;
+    });
+  }
+
+  function showHelpIndex() {
+    var indexView = getHelpViewIndex();
+    var topicView = getHelpViewTopic();
+    if (indexView) indexView.hidden = false;
+    if (topicView) topicView.hidden = true;
+    hideAllHelpTopics();
+    focusFirstHelpIndexLink();
+  }
+
+  function showHelpTopic(topicId) {
+    var cleanId = (topicId || "").trim();
+    if (!cleanId) {
+      showHelpIndex();
+      return false;
+    }
+
+    var topicView = getHelpViewTopic();
+    if (!topicView) {
+      showHelpIndex();
+      return false;
+    }
+
+    var topic = topicView.querySelector('[data-help-topic="' + cleanId + '"]');
+    if (!topic) {
+      showHelpIndex();
+      return false;
+    }
+
+    hideAllHelpTopics();
+    topic.hidden = false;
+
+    var indexView = getHelpViewIndex();
+    if (indexView) indexView.hidden = true;
+    topicView.hidden = false;
+
+    focusFirstHelpTopicLink(cleanId);
+    return true;
+  }
+
+  function openHelp(opts) {
+    var options = opts || {};
+    setHelpOpenState(true);
+
+    var contextId = options.topicId || getHelpContextId();
+    if (contextId) {
+      var shown = showHelpTopic(contextId);
+      if (!shown) showHelpIndex();
+    } else {
+      showHelpIndex();
+    }
+
+    focusFirstHelpControl();
+  }
+
+  function closeHelp(returnFocus) {
+    if (!isHelpOpen()) return;
+
+    setHelpOpenState(false);
+
+    if (!returnFocus) return;
+    if (lastHelpTrigger && document.contains(lastHelpTrigger) && lastHelpTrigger.focus) {
+      lastHelpTrigger.focus();
+      return;
+    }
+
+    var toggle = getHelpToggle();
+    if (toggle && toggle.focus) toggle.focus();
+  }
+
+  function toggleHelp() {
+    if (isHelpOpen()) closeHelp(true);
+    else openHelp({});
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     init(document);
   });
@@ -428,6 +594,79 @@
     nav.hidden = expanded;
   });
 
+  // Help panel: open/close + in-panel navigation
+  document.addEventListener("click", function (evt) {
+    if (!evt || !evt.target) return;
+
+    var toggle = evt.target.closest ? evt.target.closest("#help-toggle") : null;
+    if (toggle) {
+      evt.preventDefault();
+      lastHelpTrigger = toggle;
+      toggleHelp();
+      return;
+    }
+
+    if (!isHelpOpen()) return;
+
+    var panel = getHelpPanel();
+    if (panel && evt.target.closest && evt.target.closest("#help-panel")) {
+      var closeBtn = evt.target.closest("[data-help-close]");
+      if (closeBtn) {
+        evt.preventDefault();
+        closeHelp(true);
+        return;
+      }
+
+      var showIndex = evt.target.closest('[data-help-action="show-index"]');
+      if (showIndex) {
+        evt.preventDefault();
+        showHelpIndex();
+        return;
+      }
+
+      var topicLink = evt.target.closest("[data-help-topic-link]");
+      if (topicLink) {
+        var topicId = topicLink.getAttribute("data-help-topic-link") || "";
+        evt.preventDefault();
+        showHelpTopic(topicId);
+        return;
+      }
+
+      return;
+    }
+
+    if (evt.target.closest && evt.target.closest("#help-backdrop")) {
+      evt.preventDefault();
+      closeHelp(true);
+      return;
+    }
+
+    // Outside click: close, but allow the click to continue.
+    closeHelp(false);
+  });
+
+  document.addEventListener("focusin", function (evt) {
+    if (!evt || !evt.target) return;
+    if (!isHelpOpen()) return;
+
+    var panel = getHelpPanel();
+    if (panel && panel.contains(evt.target)) return;
+
+    var toggle = getHelpToggle();
+    if (toggle && toggle.contains && toggle.contains(evt.target)) return;
+
+    closeHelp(false);
+  });
+
+  document.addEventListener("keydown", function (evt) {
+    if (!evt) return;
+    if (!isHelpOpen()) return;
+    if (evt.key !== "Escape") return;
+
+    evt.preventDefault();
+    closeHelp(true);
+  });
+
   // Keep underlying <textarea> values in sync for both native submits and HTMX-boosted requests.
   document.addEventListener(
     "submit",
@@ -470,5 +709,16 @@
 
       evt.detail.parameters[textarea.name] = textarea.value;
     });
+  });
+
+  document.body.addEventListener("htmx:beforeRequest", function (evt) {
+    if (!evt || !evt.detail) return;
+    if (!isHelpOpen()) return;
+
+    var trigger = evt.detail.elt || null;
+    var panel = getHelpPanel();
+    if (panel && trigger && panel.contains(trigger)) return;
+
+    closeHelp(false);
   });
 })();

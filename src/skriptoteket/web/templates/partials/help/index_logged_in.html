@@ -1,0 +1,43 @@
+<div class="huleedu-help-section">
+  <h3>Hjälpindex</h3>
+
+  <h4>Kom igång</h4>
+  <ul class="huleedu-list">
+    <li class="huleedu-list-item">
+      <a href="#" data-help-topic-link="home">Start</a>
+    </li>
+    <li class="huleedu-list-item">
+      <a href="#" data-help-topic-link="browse_professions">Katalog</a>
+    </li>
+    <li class="huleedu-list-item">
+      <a href="#" data-help-topic-link="tools_run">Kör ett verktyg</a>
+    </li>
+  </ul>
+
+  {% if user.role != "user" %}
+    <h4>Bidra</h4>
+    <ul class="huleedu-list">
+      <li class="huleedu-list-item">
+        <a href="#" data-help-topic-link="my_tools">Mina verktyg</a>
+      </li>
+      <li class="huleedu-list-item">
+        <a href="#" data-help-topic-link="suggestions_new">Föreslå skript</a>
+      </li>
+    </ul>
+  {% endif %}
+
+  {% if user.role in ["admin", "superuser"] %}
+    <h4>Admin</h4>
+    <ul class="huleedu-list">
+      <li class="huleedu-list-item">
+        <a href="#" data-help-topic-link="admin_suggestions">Förslag</a>
+      </li>
+      <li class="huleedu-list-item">
+        <a href="#" data-help-topic-link="admin_tools">Testyta</a>
+      </li>
+      <li class="huleedu-list-item">
+        <a href="#" data-help-topic-link="admin_editor">Skripteditorn</a>
+      </li>
+    </ul>
+  {% endif %}
+</div>

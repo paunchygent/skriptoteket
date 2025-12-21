@@ -2,7 +2,7 @@
 type: story
 id: ST-08-01
 title: "Help framework (toggle, index, close behavior)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-17
 epic: "EPIC-08"
@@ -41,19 +41,19 @@ Denna story definierar **ramverket**. Innehållet (copy) levereras i separata st
 
 ## Tasks
 
-- [ ] UI-shell: lägg till “Hjälp” i `src/skriptoteket/web/templates/base.html` (nära header-actions)
-- [ ] Help container: lägg till en panel/drawer i base-layout (kan vara dold som default)
-- [ ] Context loading:
-  - [ ] definiera en liten konvention för `help_context_id` per sida (t.ex. `"login"`, `"home"`, `"browse_professions"`, `"admin_tools"`, `"editor"`)
-  - [ ] definiera en “index”-vy som skiljer på logged-out och logged-in (t.ex. `index_logged_out` / `index_logged_in`)
-- [ ] Beteende (vanilla JS i `src/skriptoteket/web/static/js/app.js`):
-  - [ ] toggle open/close + uppdatera `aria-expanded`
-  - [ ] stäng på `Escape`
-  - [ ] stäng på click/focus utanför helpytan
-  - [ ] stäng på navigation/HTMX-interaktion (ex. `htmx:beforeRequest`)
-- [ ] Styling (HuleEdu tokens + befintliga komponenter):
-  - [ ] hjälp-panel känns som “kort/drawer” och är lätt att skanna (rubriker + punktlistor)
-  - [ ] tydlig men diskret hjälp-ikon för fält
+- [x] UI-shell: lägg till “Hjälp” i `src/skriptoteket/web/templates/base.html` (nära header-actions)
+- [x] Help container: lägg till en panel/drawer i base-layout (kan vara dold som default)
+- [x] Context loading:
+  - [x] definiera en liten konvention för `help_context_id` per sida (t.ex. `"login"`, `"home"`, `"browse_professions"`, `"admin_tools"`, `"editor"`)
+  - [x] definiera en “index”-vy som skiljer på logged-out och logged-in (t.ex. `index_logged_out` / `index_logged_in`)
+- [x] Beteende (vanilla JS i `src/skriptoteket/web/static/js/app.js`):
+  - [x] toggle open/close + uppdatera `aria-expanded`
+  - [x] stäng på `Escape`
+  - [x] stäng på click/focus utanför helpytan
+  - [x] stäng på navigation/HTMX-interaktion (ex. `htmx:beforeRequest`)
+- [x] Styling (HuleEdu tokens + befintliga komponenter):
+  - [x] hjälp-panel känns som “kort/drawer” och är lätt att skanna (rubriker + punktlistor)
+  - [x] tydlig men diskret hjälp-ikon för fält
 
 ## Files (expected)
 

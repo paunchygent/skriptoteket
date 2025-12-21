@@ -33,20 +33,28 @@
             </nav>
           {% endif %}
         </div>
-        {% if user %}
-          <button class="huleedu-hamburger"
+        <div class="huleedu-header-actions">
+          <button id="help-toggle"
+                  type="button"
+                  class="huleedu-btn huleedu-btn-secondary huleedu-btn-sm"
                   aria-expanded="false"
-                  aria-controls="mobile-nav"
-                  aria-label="Meny">
-            <span></span><span></span><span></span>
+                  aria-controls="help-panel"
+                  aria-haspopup="dialog">
+            Hjälp
           </button>
-        {% endif %}
-        {% if user %}
-        <form method="post" action="/logout" class="huleedu-header-logout">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-          <button type="submit" class="huleedu-btn huleedu-btn-secondary huleedu-btn-sm">Logga ut</button>
-        </form>
-        {% endif %}
+          {% if user %}
+            <button class="huleedu-hamburger"
+                    aria-expanded="false"
+                    aria-controls="mobile-nav"
+                    aria-label="Meny">
+              <span></span><span></span><span></span>
+            </button>
+            <form method="post" action="/logout" class="huleedu-header-logout">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+              <button type="submit" class="huleedu-btn huleedu-btn-secondary huleedu-btn-sm">Logga ut</button>
+            </form>
+          {% endif %}
+        </div>
       </header>
       {# Mobile nav OUTSIDE header - uses position:absolute relative to .huleedu-frame #}
       {% if user %}
@@ -69,9 +77,50 @@
       </nav>
       {% endif %}
       <main class="{% block main_class %}huleedu-main{% endblock %}">
+        <div id="help-context" data-help-context-id="{%- block help_context_id -%}{%- endblock -%}" hidden></div>
         {% block content %}{% endblock %}
       </main>
     </div>
+    <div id="help-backdrop" class="huleedu-help-backdrop" hidden></div>
+    <aside id="help-panel"
+           class="huleedu-help-panel"
+           hidden
+           aria-hidden="true"
+           aria-labelledby="help-panel-title"
+           role="dialog"
+           aria-modal="false"
+           tabindex="-1">
+      <header class="huleedu-help-panel-header">
+        <h2 id="help-panel-title" class="huleedu-help-panel-title">Hjälp</h2>
+        <button type="button" class="huleedu-help-close" data-help-close aria-label="Stäng">
+          &#215;
+        </button>
+      </header>
+      <div class="huleedu-help-panel-content">
+        <div id="help-view-index" data-help-view="index">
+          {% if user %}
+            {% include "partials/help/index_logged_in.html" %}
+          {% else %}
+            {% include "partials/help/index_logged_out.html" %}
+          {% endif %}
+        </div>
+        <div id="help-view-topic" data-help-view="topic" hidden>
+          {% include "partials/help/topics/login.html" %}
+          {% include "partials/help/topics/home.html" %}
+          {% include "partials/help/topics/browse_professions.html" %}
+          {% include "partials/help/topics/browse_categories.html" %}
+          {% include "partials/help/topics/browse_tools.html" %}
+          {% include "partials/help/topics/tools_run.html" %}
+          {% include "partials/help/topics/tools_result.html" %}
+          {% include "partials/help/topics/suggestions_new.html" %}
+          {% include "partials/help/topics/admin_suggestions.html" %}
+          {% include "partials/help/topics/admin_tools.html" %}
+          {% include "partials/help/topics/admin_editor.html" %}
+          {% include "partials/help/topics/my_tools.html" %}
+          {% include "partials/help/topics/apps_detail.html" %}
+        </div>
+      </div>
+    </aside>
     <div id="toast-container" class="huleedu-toast-container">
       {% if request.state.toast_message %}
         <div class="huleedu-toast huleedu-toast-{{ request.state.toast_type or 'success' }}"

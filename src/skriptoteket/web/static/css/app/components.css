@@ -409,6 +409,130 @@
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   HELP PANEL (Contextual "Hjälp")
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.huleedu-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--huleedu-space-3);
+  flex-shrink: 0;
+}
+
+.huleedu-help-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(28, 46, 74, 0.25); /* --huleedu-navy with opacity */
+  z-index: 1400;
+  /* Visual only: allow clicks to reach the underlying UI and let JS close the panel. */
+  pointer-events: none;
+}
+
+.huleedu-help-backdrop[hidden] {
+  display: none !important;
+}
+
+.huleedu-help-panel {
+  position: fixed;
+  top: calc(var(--huleedu-space-4) + var(--huleedu-header-height));
+  right: var(--huleedu-space-4);
+  bottom: var(--huleedu-space-4);
+  width: min(420px, calc(100vw - var(--huleedu-space-8)));
+  background-color: var(--huleedu-canvas);
+  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  box-shadow: var(--huleedu-shadow-brutal);
+  z-index: 1500;
+  display: flex;
+  flex-direction: column;
+}
+
+.huleedu-help-panel[hidden] {
+  display: none !important;
+}
+
+.huleedu-help-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--huleedu-space-3);
+  padding: var(--huleedu-space-4);
+  border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+}
+
+.huleedu-help-panel-title {
+  margin: 0;
+  font-size: var(--huleedu-text-lg);
+}
+
+.huleedu-help-close {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  cursor: pointer;
+  line-height: 1;
+  font-size: 26px;
+  color: var(--huleedu-navy);
+}
+
+.huleedu-help-close:hover {
+  background-color: var(--huleedu-navy);
+  color: var(--huleedu-canvas);
+}
+
+.huleedu-help-panel-content {
+  padding: var(--huleedu-space-4);
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+.huleedu-help-panel-content h3 {
+  font-size: var(--huleedu-text-lg);
+}
+
+.huleedu-help-panel-content h4 {
+  margin: var(--huleedu-space-5) 0 var(--huleedu-space-3) 0;
+  font-size: var(--huleedu-text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-60);
+}
+
+.huleedu-help-list {
+  margin: 0 0 var(--huleedu-space-4) var(--huleedu-space-5);
+  padding: 0;
+  list-style: disc;
+}
+
+.huleedu-help-list li {
+  margin-bottom: var(--huleedu-space-2);
+}
+
+@media (max-width: 767px) {
+  .huleedu-help-panel {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    border-left-width: var(--huleedu-border-width);
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    box-shadow: none;
+  }
+
+  .huleedu-help-panel-content {
+    padding: var(--huleedu-space-4);
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
    HAMBURGER MENU (Mobile Navigation)
    ═══════════════════════════════════════════════════════════════════════════ */
 
