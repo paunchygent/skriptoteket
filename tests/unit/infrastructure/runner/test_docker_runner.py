@@ -169,8 +169,7 @@ async def test_execute_success(
         run_id=uuid4(),
         version=tool_version,
         context=RunContext.SANDBOX,
-        input_filename="input.txt",
-        input_bytes=b"input",
+        input_files=[("input.txt", b"input")],
     )
 
     assert result.status is RunStatus.SUCCEEDED
@@ -181,6 +180,13 @@ async def test_execute_success(
     mock_artifacts.store_output_archive.assert_called_once()
     mock_capacity.try_acquire.assert_awaited_once()
     mock_capacity.release.assert_awaited_once()
+
+    env = client_instance.containers.create.call_args.kwargs["environment"]
+    assert env["SKRIPTOTEKET_INPUT_PATH"] == "/work/input/input.txt"
+    manifest = json.loads(env["SKRIPTOTEKET_INPUT_MANIFEST"])
+    assert manifest == {
+        "files": [{"name": "input.txt", "path": "/work/input/input.txt", "bytes": 5}]
+    }
 
 
 @pytest.mark.unit
@@ -207,8 +213,7 @@ async def test_execute_missing_result_json_returns_failed(
             run_id=uuid4(),
             version=tool_version,
             context=RunContext.SANDBOX,
-            input_filename="input.txt",
-            input_bytes=b"input",
+            input_files=[("input.txt", b"input")],
         )
 
     assert exc_info.value.code is ErrorCode.INTERNAL_ERROR
@@ -238,8 +243,7 @@ async def test_execute_timeout_returns_timed_out(
         run_id=uuid4(),
         version=tool_version,
         context=RunContext.SANDBOX,
-        input_filename="input.txt",
-        input_bytes=b"input",
+        input_files=[("input.txt", b"input")],
     )
 
     assert result.status is RunStatus.TIMED_OUT
@@ -289,8 +293,7 @@ async def test_execute_artifact_extraction_violation_returns_failed(
             run_id=uuid4(),
             version=tool_version,
             context=RunContext.SANDBOX,
-            input_filename="input.txt",
-            input_bytes=b"input",
+            input_files=[("input.txt", b"input")],
         )
 
     assert exc_info.value.code is ErrorCode.INTERNAL_ERROR

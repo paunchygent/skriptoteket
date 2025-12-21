@@ -15,6 +15,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
+from skriptoteket.domain.scripting.input_files import normalize_input_files
 from skriptoteket.domain.scripting.models import (
     RunStatus,
     ToolVersion,
@@ -165,6 +166,12 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         started_at: float,
     ) -> ExecuteToolVersionResult:
         """Execute tool version with tracing span context."""
+        normalized_input_files, input_manifest = normalize_input_files(
+            input_files=command.input_files
+        )
+        primary_filename = normalized_input_files[0][0]
+        total_size_bytes = sum(len(content) for _, content in normalized_input_files)
+
         run = start_tool_version_run(
             run_id=run_id,
             tool_id=command.tool_id,
@@ -172,8 +179,9 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
             context=command.context,
             requested_by_user_id=actor.id,
             workdir_path=str(run_id),
-            input_filename=command.input_filename,
-            input_size_bytes=len(command.input_bytes),
+            input_filename=primary_filename,
+            input_size_bytes=total_size_bytes,
+            input_manifest=input_manifest,
             now=now,
         )
 
@@ -184,11 +192,14 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
             tool_version_id=str(command.version_id),
             context=command.context.value,
             actor_id=str(actor.id),
-            input_filename=command.input_filename,
-            input_size_bytes=len(command.input_bytes),
+            input_filename=primary_filename,
+            input_files_count=len(normalized_input_files),
+            input_size_bytes=total_size_bytes,
         )
 
         span.add_event("run_created", {"run_id": str(run_id)})
+        span.set_attribute("run.input_files_count", len(normalized_input_files))
+        span.set_attribute("run.input_total_size_bytes", total_size_bytes)
 
         async with self._uow:
             await self._runs.create(run=run)
@@ -203,8 +214,7 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
                 run_id=run_id,
                 version=version,
                 context=command.context,
-                input_filename=command.input_filename,
-                input_bytes=command.input_bytes,
+                input_files=normalized_input_files,
             )
         except SyntaxError as exc:
             logger.warning(

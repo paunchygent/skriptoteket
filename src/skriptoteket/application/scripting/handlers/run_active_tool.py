@@ -72,8 +72,7 @@ class RunActiveToolHandler(RunActiveToolHandlerProtocol):
                 tool_id=tool.id,
                 version_id=version.id,
                 context=RunContext.PRODUCTION,
-                input_filename=command.input_filename,
-                input_bytes=command.input_bytes,
+                input_files=command.input_files,
             ),
         )
         return RunActiveToolResult(run=result.run)

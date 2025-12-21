@@ -42,6 +42,7 @@ class PostgreSQLToolRunRepository(ToolRunRepositoryProtocol):
             workdir_path=run.workdir_path,
             input_filename=run.input_filename,
             input_size_bytes=run.input_size_bytes,
+            input_manifest=run.input_manifest.model_dump(),
             html_output=run.html_output,
             stdout=run.stdout,
             stderr=run.stderr,

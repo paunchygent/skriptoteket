@@ -26,6 +26,5 @@ class ToolRunnerProtocol(Protocol):
         run_id: UUID,
         version: ToolVersion,
         context: RunContext,
-        input_filename: str,
-        input_bytes: bytes,
+        input_files: list[tuple[str, bytes]],
     ) -> ToolExecutionResult: ...

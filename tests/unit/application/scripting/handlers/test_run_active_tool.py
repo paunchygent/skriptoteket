@@ -16,6 +16,7 @@ from skriptoteket.application.scripting.handlers.run_active_tool import (
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.scripting.input_files import InputFileEntry, InputManifest
 from skriptoteket.domain.scripting.models import (
     RunContext,
     RunStatus,
@@ -101,6 +102,7 @@ def make_tool_run(
         workdir_path="/tmp/run",
         input_filename="test.xlsx",
         input_size_bytes=0,
+        input_manifest=InputManifest(files=[InputFileEntry(name="test.xlsx", bytes=0)]),
         html_output="<p>ok</p>",
         stdout="",
         stderr="",
@@ -132,8 +134,7 @@ async def test_run_active_tool_raises_not_found_when_tool_missing(now: datetime)
             actor=actor,
             command=RunActiveToolCommand(
                 tool_slug="nonexistent-tool",
-                input_filename="test.xlsx",
-                input_bytes=b"test",
+                input_files=[("test.xlsx", b"test")],
             ),
         )
 
@@ -170,8 +171,7 @@ async def test_run_active_tool_raises_not_found_when_tool_not_published(
             actor=actor,
             command=RunActiveToolCommand(
                 tool_slug=tool.slug,
-                input_filename="test.xlsx",
-                input_bytes=b"test",
+                input_files=[("test.xlsx", b"test")],
             ),
         )
 
@@ -209,8 +209,7 @@ async def test_run_active_tool_raises_not_found_when_no_active_version_id(
             actor=actor,
             command=RunActiveToolCommand(
                 tool_slug=tool.slug,
-                input_filename="test.xlsx",
-                input_bytes=b"test",
+                input_files=[("test.xlsx", b"test")],
             ),
         )
 
@@ -251,8 +250,7 @@ async def test_run_active_tool_raises_not_found_when_version_missing(
             actor=actor,
             command=RunActiveToolCommand(
                 tool_slug=tool.slug,
-                input_filename="test.xlsx",
-                input_bytes=b"test",
+                input_files=[("test.xlsx", b"test")],
             ),
         )
 
@@ -303,8 +301,7 @@ async def test_run_active_tool_raises_not_found_when_version_not_active(
             actor=actor,
             command=RunActiveToolCommand(
                 tool_slug=tool.slug,
-                input_filename="test.xlsx",
-                input_bytes=b"test",
+                input_files=[("test.xlsx", b"test")],
             ),
         )
 
@@ -360,8 +357,7 @@ async def test_run_active_tool_success_returns_tool_run(now: datetime) -> None:
         actor=actor,
         command=RunActiveToolCommand(
             tool_slug=tool.slug,
-            input_filename="test.xlsx",
-            input_bytes=b"test data",
+            input_files=[("test.xlsx", b"test data")],
         ),
     )
 
@@ -377,8 +373,7 @@ async def test_run_active_tool_success_returns_tool_run(now: datetime) -> None:
     assert cmd.tool_id == tool.id
     assert cmd.version_id == version.id
     assert cmd.context is RunContext.PRODUCTION
-    assert cmd.input_filename == "test.xlsx"
-    assert cmd.input_bytes == b"test data"
+    assert cmd.input_files == [("test.xlsx", b"test data")]
 
     assert uow.entered is True
     assert uow.exited is True

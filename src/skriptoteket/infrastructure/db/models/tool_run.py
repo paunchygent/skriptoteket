@@ -54,6 +54,11 @@ class ToolRunModel(Base):
     workdir_path: Mapped[str] = mapped_column(Text, nullable=False)
     input_filename: Mapped[str] = mapped_column(String(255), nullable=False)
     input_size_bytes: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    input_manifest: Mapped[dict[str, object]] = mapped_column(
+        JSONB,
+        nullable=False,
+        server_default=text("'{\"files\":[]}'::jsonb"),
+    )
 
     html_output: Mapped[str | None] = mapped_column(Text, nullable=True)
     stdout: Mapped[str | None] = mapped_column(Text, nullable=True)

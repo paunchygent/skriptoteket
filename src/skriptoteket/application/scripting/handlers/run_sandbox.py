@@ -83,8 +83,7 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
                 tool_id=command.tool_id,
                 version_id=command.version_id,
                 context=RunContext.SANDBOX,
-                input_filename=command.input_filename,
-                input_bytes=command.input_bytes,
+                input_files=command.input_files,
             ),
         )
         return RunSandboxResult(run=result.run)

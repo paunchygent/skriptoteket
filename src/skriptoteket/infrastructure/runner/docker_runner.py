@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import io
+import json
 import tarfile
 import time
 from collections.abc import Iterable
 from dataclasses import dataclass
-from pathlib import PurePosixPath
 from typing import Protocol
 from uuid import UUID
 
@@ -15,6 +15,7 @@ import structlog
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest, RunnerArtifact
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
+from skriptoteket.domain.scripting.input_files import normalize_input_files
 from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolVersion
 from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result
 from skriptoteket.infrastructure.runner.capacity import RunnerCapacityLimiter
@@ -106,9 +107,9 @@ def _truncate_utf8_str(*, value: str, max_bytes: int) -> str:
 
 
 def _build_workdir_archive(
-    *, version: ToolVersion, input_filename: str, input_bytes: bytes
+    *, version: ToolVersion, input_files: list[tuple[str, bytes]]
 ) -> bytes:
-    safe_input_filename = _sanitize_input_filename(input_filename=input_filename)
+    normalized_input_files, _ = normalize_input_files(input_files=input_files)
 
     tar_buffer = io.BytesIO()
     with tarfile.open(fileobj=tar_buffer, mode="w") as tar:
@@ -125,11 +126,12 @@ def _build_workdir_archive(
         input_dir_info.size = 0
         tar.addfile(input_dir_info)
 
-        input_path = f"input/{safe_input_filename}"
-        input_info = tarfile.TarInfo(name=input_path)
-        input_info.size = len(input_bytes)
-        input_info.mode = 0o644
-        tar.addfile(input_info, io.BytesIO(input_bytes))
+        for safe_name, content in normalized_input_files:
+            input_path = f"input/{safe_name}"
+            input_info = tarfile.TarInfo(name=input_path)
+            input_info.size = len(content)
+            input_info.mode = 0o644
+            tar.addfile(input_info, io.BytesIO(content))
 
     return tar_buffer.getvalue()
 
@@ -145,26 +147,6 @@ def _extract_first_file_from_tar_bytes(*, tar_bytes: bytes) -> bytes:
             with extracted:
                 return extracted.read()
     raise RuntimeError("No file found in tar archive")
-
-
-def _sanitize_input_filename(*, input_filename: str) -> str:
-    normalized = input_filename.strip()
-    if not normalized:
-        raise DomainError(code=ErrorCode.VALIDATION_ERROR, message="input_filename is required")
-
-    posix = PurePosixPath(normalized)
-    if posix.is_absolute() or ".." in posix.parts or "/" in normalized or "\\" in normalized:
-        raise DomainError(
-            code=ErrorCode.VALIDATION_ERROR, message="input_filename must be a file name"
-        )
-
-    if len(normalized) > 255:
-        raise DomainError(
-            code=ErrorCode.VALIDATION_ERROR,
-            message="input_filename must be 255 characters or less",
-        )
-
-    return normalized
 
 
 class DockerToolRunner(ToolRunnerProtocol):
@@ -197,8 +179,7 @@ class DockerToolRunner(ToolRunnerProtocol):
         run_id: UUID,
         version: ToolVersion,
         context: RunContext,
-        input_filename: str,
-        input_bytes: bytes,
+        input_files: list[tuple[str, bytes]],
     ) -> ToolExecutionResult:
         if not await self._capacity.try_acquire():
             logger.warning(
@@ -219,8 +200,7 @@ class DockerToolRunner(ToolRunnerProtocol):
                 run_id=run_id,
                 version=version,
                 context=context,
-                input_filename=input_filename,
-                input_bytes=input_bytes,
+                input_files=input_files,
             )
         finally:
             await self._capacity.release()
@@ -231,8 +211,7 @@ class DockerToolRunner(ToolRunnerProtocol):
         run_id: UUID,
         version: ToolVersion,
         context: RunContext,
-        input_filename: str,
-        input_bytes: bytes,
+        input_files: list[tuple[str, bytes]],
     ) -> ToolExecutionResult:
         import docker
         from docker.errors import DockerException, NotFound
@@ -245,8 +224,15 @@ class DockerToolRunner(ToolRunnerProtocol):
             if context is RunContext.SANDBOX
             else self._production_timeout_seconds
         )
-
-        safe_input_filename = _sanitize_input_filename(input_filename=input_filename)
+        normalized_input_files, _ = normalize_input_files(input_files=input_files)
+        primary_filename = normalized_input_files[0][0]
+        input_manifest = {
+            "files": [
+                {"name": name, "path": f"/work/input/{name}", "bytes": len(content)}
+                for name, content in normalized_input_files
+            ]
+        }
+        input_manifest_json = json.dumps(input_manifest, ensure_ascii=False, separators=(",", ":"))
 
         logger.info(
             "Runner execution start",
@@ -255,6 +241,7 @@ class DockerToolRunner(ToolRunnerProtocol):
             tool_version_id=str(version.id),
             context=context.value,
             timeout_seconds=timeout_seconds,
+            input_files_count=len(normalized_input_files),
             cpu_limit=self._limits.cpu_limit,
             memory_limit=self._limits.memory_limit,
             pids_limit=self._limits.pids_limit,
@@ -266,7 +253,8 @@ class DockerToolRunner(ToolRunnerProtocol):
             "XDG_CACHE_HOME": "/tmp/home/.cache",
             "SKRIPTOTEKET_SCRIPT_PATH": "/work/script.py",
             "SKRIPTOTEKET_ENTRYPOINT": version.entrypoint,
-            "SKRIPTOTEKET_INPUT_PATH": f"/work/input/{safe_input_filename}",
+            "SKRIPTOTEKET_INPUT_PATH": f"/work/input/{primary_filename}",
+            "SKRIPTOTEKET_INPUT_MANIFEST": input_manifest_json,
             "SKRIPTOTEKET_OUTPUT_DIR": "/work/output",
             "SKRIPTOTEKET_RESULT_PATH": "/work/result.json",
         }
@@ -297,8 +285,7 @@ class DockerToolRunner(ToolRunnerProtocol):
 
                 workdir_tar = _build_workdir_archive(
                     version=version,
-                    input_filename=safe_input_filename,
-                    input_bytes=input_bytes,
+                    input_files=normalized_input_files,
                 )
 
                 container = client.containers.create(

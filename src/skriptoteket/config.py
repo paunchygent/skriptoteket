@@ -50,6 +50,10 @@ class Settings(BaseSettings):
     RUN_OUTPUT_MAX_HTML_BYTES: int = 500_000
     RUN_OUTPUT_MAX_ERROR_SUMMARY_BYTES: int = 20_000
 
+    UPLOAD_MAX_FILES: int = 10
+    UPLOAD_MAX_FILE_BYTES: int = 20_000_000
+    UPLOAD_MAX_TOTAL_BYTES: int = 50_000_000
+
     # Tracing (ST-07-03) - opt-in for monolith
     OTEL_TRACING_ENABLED: bool = False
     OTEL_EXPORTER_OTLP_ENDPOINT: str = "http://localhost:4317"

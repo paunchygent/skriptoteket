@@ -6,55 +6,55 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.domain.scripting.input_files import sanitize_input_filename
 from skriptoteket.domain.scripting.models import ToolVersion, VersionState
 from skriptoteket.infrastructure.runner.docker_runner import (
     _build_workdir_archive,
     _extract_first_file_from_tar_bytes,
-    _sanitize_input_filename,
     _truncate_utf8_bytes,
     _truncate_utf8_str,
 )
 
-# --- _sanitize_input_filename tests ---
+# --- sanitize_input_filename tests ---
 
 
 def test_sanitize_input_filename_with_valid_name_returns_name() -> None:
-    result = _sanitize_input_filename(input_filename="report.csv")
+    result = sanitize_input_filename(input_filename="report.csv")
 
     assert result == "report.csv"
 
 
 def test_sanitize_input_filename_with_path_separator_raises_validation_error() -> None:
     with pytest.raises(DomainError) as exc_info:
-        _sanitize_input_filename(input_filename="dir/file.csv")
+        sanitize_input_filename(input_filename="dir/file.csv")
 
     assert exc_info.value.code == ErrorCode.VALIDATION_ERROR
 
 
 def test_sanitize_input_filename_with_backslash_raises_validation_error() -> None:
     with pytest.raises(DomainError) as exc_info:
-        _sanitize_input_filename(input_filename="dir\\file.csv")
+        sanitize_input_filename(input_filename="dir\\file.csv")
 
     assert exc_info.value.code == ErrorCode.VALIDATION_ERROR
 
 
 def test_sanitize_input_filename_with_parent_dir_traversal_raises_validation_error() -> None:
     with pytest.raises(DomainError) as exc_info:
-        _sanitize_input_filename(input_filename="..")
+        sanitize_input_filename(input_filename="..")
 
     assert exc_info.value.code == ErrorCode.VALIDATION_ERROR
 
 
 def test_sanitize_input_filename_with_empty_raises_validation_error() -> None:
     with pytest.raises(DomainError) as exc_info:
-        _sanitize_input_filename(input_filename="")
+        sanitize_input_filename(input_filename="")
 
     assert exc_info.value.code == ErrorCode.VALIDATION_ERROR
 
 
 def test_sanitize_input_filename_with_whitespace_only_raises_validation_error() -> None:
     with pytest.raises(DomainError) as exc_info:
-        _sanitize_input_filename(input_filename="   ")
+        sanitize_input_filename(input_filename="   ")
 
     assert exc_info.value.code == ErrorCode.VALIDATION_ERROR
 
@@ -63,7 +63,7 @@ def test_sanitize_input_filename_exceeding_255_chars_raises_validation_error() -
     long_name = "a" * 256
 
     with pytest.raises(DomainError) as exc_info:
-        _sanitize_input_filename(input_filename=long_name)
+        sanitize_input_filename(input_filename=long_name)
 
     assert exc_info.value.code == ErrorCode.VALIDATION_ERROR
 
@@ -71,7 +71,7 @@ def test_sanitize_input_filename_exceeding_255_chars_raises_validation_error() -
 def test_sanitize_input_filename_at_255_chars_returns_name() -> None:
     name_255 = "a" * 255
 
-    result = _sanitize_input_filename(input_filename=name_255)
+    result = sanitize_input_filename(input_filename=name_255)
 
     assert result == name_255
 
@@ -179,8 +179,7 @@ def test_build_workdir_archive_contains_script_and_input() -> None:
 
     archive_bytes = _build_workdir_archive(
         version=version,
-        input_filename="data.csv",
-        input_bytes=b"col1,col2\n1,2",
+        input_files=[("data.csv", b"col1,col2\n1,2")],
     )
 
     with tarfile.open(fileobj=io.BytesIO(archive_bytes), mode="r") as tar:
@@ -196,8 +195,7 @@ def test_build_workdir_archive_script_has_correct_content() -> None:
 
     archive_bytes = _build_workdir_archive(
         version=version,
-        input_filename="file.txt",
-        input_bytes=b"content",
+        input_files=[("file.txt", b"content")],
     )
 
     with tarfile.open(fileobj=io.BytesIO(archive_bytes), mode="r") as tar:
@@ -213,8 +211,7 @@ def test_build_workdir_archive_input_has_correct_content() -> None:
 
     archive_bytes = _build_workdir_archive(
         version=version,
-        input_filename="input.txt",
-        input_bytes=input_data,
+        input_files=[("input.txt", input_data)],
     )
 
     with tarfile.open(fileobj=io.BytesIO(archive_bytes), mode="r") as tar:

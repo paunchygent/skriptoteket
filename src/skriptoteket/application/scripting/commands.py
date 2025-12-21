@@ -6,6 +6,8 @@ from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
 from skriptoteket.domain.scripting.models import RunContext, ToolRun, ToolVersion
 
+type InputFile = tuple[str, bytes]
+
 
 class ExecuteToolVersionCommand(BaseModel):
     model_config = ConfigDict(frozen=True)
@@ -13,8 +15,7 @@ class ExecuteToolVersionCommand(BaseModel):
     tool_id: UUID
     version_id: UUID
     context: RunContext
-    input_filename: str
-    input_bytes: bytes
+    input_files: list[InputFile]
 
 
 class ExecuteToolVersionResult(BaseModel):
@@ -103,8 +104,7 @@ class RunSandboxCommand(BaseModel):
 
     tool_id: UUID
     version_id: UUID
-    input_filename: str
-    input_bytes: bytes
+    input_files: list[InputFile]
 
 
 class RunSandboxResult(BaseModel):
@@ -119,8 +119,7 @@ class RunActiveToolCommand(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     tool_slug: str
-    input_filename: str
-    input_bytes: bytes
+    input_files: list[InputFile]
 
 
 class RunActiveToolResult(BaseModel):

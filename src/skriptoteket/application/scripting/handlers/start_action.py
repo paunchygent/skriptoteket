@@ -15,6 +15,7 @@ from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
+from skriptoteket.domain.scripting.input_files import InputFileEntry, InputManifest
 from skriptoteket.domain.scripting.models import (
     RunContext,
     RunStatus,
@@ -123,6 +124,9 @@ class StartActionHandler(StartActionHandlerProtocol):
             workdir_path=str(run_id),
             input_filename="action.json",
             input_size_bytes=len(input_bytes),
+            input_manifest=InputManifest(
+                files=[InputFileEntry(name="action.json", bytes=len(input_bytes))]
+            ),
             now=now,
         )
 
@@ -317,8 +321,7 @@ class StartActionHandler(StartActionHandlerProtocol):
                     tool_id=command.tool_id,
                     version_id=active_version_id,
                     context=RunContext.PRODUCTION,
-                    input_filename="action.json",
-                    input_bytes=input_bytes,
+                    input_files=[("action.json", input_bytes)],
                 ),
             )
             run_id = result.run.id

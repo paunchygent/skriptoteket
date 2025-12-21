@@ -4,6 +4,7 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.domain.scripting.input_files import InputFileEntry, InputManifest
 from skriptoteket.domain.scripting.models import (
     RunContext,
     RunStatus,
@@ -398,6 +399,7 @@ def test_start_and_finish_tool_run() -> None:
         workdir_path="/tmp/run",
         input_filename="input.txt",
         input_size_bytes=100,
+        input_manifest=InputManifest(files=[InputFileEntry(name="input.txt", bytes=100)]),
         now=now,
     )
 
@@ -434,6 +436,7 @@ def test_start_tool_run_validation() -> None:
             workdir_path="  ",
             input_filename="input.txt",
             input_size_bytes=100,
+            input_manifest=InputManifest(files=[InputFileEntry(name="input.txt", bytes=100)]),
             now=now,
         )
     assert exc.value.code == ErrorCode.VALIDATION_ERROR
@@ -449,6 +452,7 @@ def test_start_tool_run_validation() -> None:
             workdir_path="/tmp/run",
             input_filename="  ",
             input_size_bytes=100,
+            input_manifest=InputManifest(files=[InputFileEntry(name="input.txt", bytes=100)]),
             now=now,
         )
     assert exc.value.code == ErrorCode.VALIDATION_ERROR
@@ -464,6 +468,7 @@ def test_start_tool_run_validation() -> None:
             workdir_path="/tmp/run",
             input_filename="input.txt",
             input_size_bytes=-1,
+            input_manifest=InputManifest(files=[InputFileEntry(name="input.txt", bytes=100)]),
             now=now,
         )
     assert exc.value.code == ErrorCode.VALIDATION_ERROR
@@ -481,6 +486,7 @@ def test_finish_tool_run_validation() -> None:
         workdir_path="/tmp/run",
         input_filename="input.txt",
         input_size_bytes=100,
+        input_manifest=InputManifest(files=[InputFileEntry(name="input.txt", bytes=100)]),
         now=now,
     )
 

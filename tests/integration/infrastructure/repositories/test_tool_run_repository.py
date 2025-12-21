@@ -7,6 +7,7 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.identity.models import AuthProvider, Role
+from skriptoteket.domain.scripting.input_files import InputFileEntry, InputManifest
 from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolRun, VersionState
 from skriptoteket.infrastructure.db.models.tool import ToolModel
 from skriptoteket.infrastructure.db.models.tool_version import ToolVersionModel
@@ -108,6 +109,7 @@ async def test_tool_run_create_get_and_update(db_session: AsyncSession) -> None:
         workdir_path=f"{run_id}/work",
         input_filename="input.txt",
         input_size_bytes=5,
+        input_manifest=InputManifest(files=[InputFileEntry(name="input.txt", bytes=5)]),
         html_output=None,
         stdout=None,
         stderr=None,
@@ -175,6 +177,7 @@ async def test_tool_run_update_missing_raises_not_found(db_session: AsyncSession
         workdir_path="missing/work",
         input_filename="input.txt",
         input_size_bytes=1,
+        input_manifest=InputManifest(files=[InputFileEntry(name="input.txt", bytes=1)]),
         html_output=None,
         stdout=None,
         stderr=None,

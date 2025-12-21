@@ -8,6 +8,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, model_validator
 
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
+from skriptoteket.domain.scripting.input_files import InputManifest
 from skriptoteket.domain.scripting.ui.contract_v2 import UiPayloadV2
 
 
@@ -82,6 +83,7 @@ class ToolRun(BaseModel):
     workdir_path: str
     input_filename: str
     input_size_bytes: int
+    input_manifest: InputManifest
 
     html_output: str | None = None
     stdout: str | None = None
@@ -416,6 +418,7 @@ def start_tool_version_run(
     workdir_path: str,
     input_filename: str,
     input_size_bytes: int,
+    input_manifest: InputManifest,
     now: datetime,
 ) -> ToolRun:
     normalized_workdir_path = workdir_path.strip()
@@ -443,6 +446,7 @@ def start_tool_version_run(
         workdir_path=normalized_workdir_path,
         input_filename=normalized_input_filename,
         input_size_bytes=input_size_bytes,
+        input_manifest=input_manifest,
         artifacts_manifest={},
     )
 
@@ -458,6 +462,7 @@ def start_curated_app_run(
     workdir_path: str,
     input_filename: str,
     input_size_bytes: int,
+    input_manifest: InputManifest,
     now: datetime,
 ) -> ToolRun:
     normalized_app_id = curated_app_id.strip()
@@ -493,6 +498,7 @@ def start_curated_app_run(
         workdir_path=normalized_workdir_path,
         input_filename=normalized_input_filename,
         input_size_bytes=input_size_bytes,
+        input_manifest=input_manifest,
         artifacts_manifest={"artifacts": []},
     )
 
