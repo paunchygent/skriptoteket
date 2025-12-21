@@ -3,17 +3,22 @@
 # Stage 1: Build frontend SPA assets
 FROM node:22-slim AS frontend-builder
 
-WORKDIR /app/frontend/islands
+WORKDIR /app
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy frontend files
-COPY frontend/islands/package.json frontend/islands/pnpm-lock.yaml ./
+# Copy workspace config and lockfile
+COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./frontend/
+COPY frontend/islands/package.json ./frontend/islands/
+
+# Install dependencies from workspace root
+WORKDIR /app/frontend
 RUN pnpm install --frozen-lockfile
 
-COPY frontend/islands/ ./
-RUN pnpm build
+# Copy source and build
+COPY frontend/islands/ ./islands/
+RUN pnpm --filter @skriptoteket/islands build
 
 
 # Stage 2: Build Python dependencies
@@ -78,6 +83,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --no-cache-dir pdm==2.26.2
 
 COPY --from=builder /app/__pypackages__ /app/__pypackages__
+# SPA assets are built to ../../src/skriptoteket/web/static/spa relative to frontend/islands
 COPY --from=frontend-builder /app/src/skriptoteket/web/static/spa ./src/skriptoteket/web/static/spa
 COPY pyproject.toml pdm.lock ./
 COPY alembic.ini ./
