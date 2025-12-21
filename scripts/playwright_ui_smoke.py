@@ -62,6 +62,34 @@ def main() -> None:
             f"Expected help panel height < viewport height, got {box['height']} >= {viewport['height']}"
         )
 
+    def _assert_login_micro_help(*, page: object) -> None:
+        email_input = page.locator("#login-email")
+        password_input = page.locator("#login-password")
+
+        email_input.focus()
+        expect(email_input).to_have_attribute("placeholder", "namn@skola.se")
+
+        password_input.focus()
+        expect(password_input).to_have_attribute("placeholder", "••••••••")
+        assert email_input.get_attribute("placeholder") is None, (
+            "Expected email ghost placeholder to be removed when leaving the field"
+        )
+
+        email_help_btn = page.get_by_role("button", name="Hjälp för e-post")
+        email_help_btn.click()
+        expect(page.locator("#login-email-help")).to_be_visible()
+        page.keyboard.press("Escape")
+        expect(page.locator("#login-email-help")).to_be_hidden()
+
+        password_help_btn = page.get_by_role("button", name="Hjälp för lösenord")
+        password_help_btn.click()
+        expect(page.locator("#login-password-help")).to_be_visible()
+        page.keyboard.press("Escape")
+        expect(page.locator("#login-password-help")).to_be_hidden()
+
+        # Blur the last focused field to restore placeholders.
+        page.get_by_role("heading", name="Logga in").click()
+
     def _open_help_from_mobile_nav(*, page: object) -> object:
         menu_btn = page.get_by_role("button", name="Meny")
         expect(menu_btn).to_be_visible()
@@ -89,6 +117,7 @@ def main() -> None:
 
         # Login
         page.goto(f"{base_url}/login", wait_until="domcontentloaded")
+        _assert_login_micro_help(page=page)
 
         # Mobile header regression: help is in the menu on small screens.
         help_toggle = page.locator("#help-toggle")
@@ -110,8 +139,8 @@ def main() -> None:
             page.keyboard.press("Escape")
             expect(help_panel).to_be_hidden()
 
-        page.get_by_label("E-post").fill(email)
-        page.get_by_label("Lösenord").fill(password)
+        page.locator("#login-email").fill(email)
+        page.locator("#login-password").fill(password)
         page.get_by_role("button", name="Logga in").click()
         expect(page.get_by_text("Inloggad som")).to_be_visible()
         page.screenshot(path=str(artifacts_dir / "home.png"), full_page=True)
@@ -208,7 +237,7 @@ def main() -> None:
         page.goto(f"{base_url}/login", wait_until="domcontentloaded")
 
         # Help panel (desktop): outside click + escape closes
-        help_btn = page.get_by_role("button", name="Hjälp")
+        help_btn = page.locator("#help-toggle")
         if help_btn.count() > 0:
             help_panel = page.locator("#help-panel")
 
@@ -232,8 +261,8 @@ def main() -> None:
             f"Expected amber outline on hover, got: {hover_shadow}"
         )
 
-        page.get_by_label("E-post").fill(email)
-        page.get_by_label("Lösenord").fill(password)
+        page.locator("#login-email").fill(email)
+        page.locator("#login-password").fill(password)
         login_btn.click()
         expect(page.get_by_text("Inloggad som")).to_be_visible()
 
@@ -246,7 +275,7 @@ def main() -> None:
         assert "217, 119, 6" in link_border, f"Expected amber link border hover, got: {link_border}"
 
         # Help panel collapses when user continues (navigation)
-        help_btn = page.get_by_role("button", name="Hjälp")
+        help_btn = page.locator("#help-toggle")
         if help_btn.count() > 0:
             help_panel = page.locator("#help-panel")
             help_btn.click()
