@@ -2,12 +2,12 @@
 type: adr
 id: ADR-0025
 title: "Embedded SPA islands for editor/runtime surfaces"
-status: accepted
+status: superseded
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-19
 updated: 2025-12-21
-links: ["EPIC-10", "ADR-0022", "ADR-0024"]
+links: ["EPIC-10", "ADR-0022", "ADR-0024", "ADR-0027"]
 ---
 
 ## Context
@@ -104,3 +104,7 @@ To prevent HTMX from interfering with the SPA island:
 - Introduces a second frontend toolchain (pnpm/Vite) alongside Python tooling.
 - Requires clear boundaries to avoid “two paradigms everywhere”.
 - Requires careful CSS isolation to avoid Tailwind/global style conflicts with existing CSS.
+
+## Status note
+
+This ADR is superseded by ADR-0027 (full Vue/Vite SPA migration).

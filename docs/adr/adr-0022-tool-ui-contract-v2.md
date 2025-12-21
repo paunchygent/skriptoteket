@@ -6,8 +6,8 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-19
-updated: 2025-12-19
-links: ["PRD-script-hub-v0.2", "EPIC-10"]
+updated: 2025-12-21
+links: ["PRD-script-hub-v0.2", "EPIC-10", "ADR-0027"]
 ---
 
 ## Context
@@ -103,7 +103,7 @@ Minimal shape:
 - `action_id: string` (stable key; must be unique after merge with backend-injected actions)
 - `label: string`
 - `kind: "form"`
-- `fields[]`: a constrained field list that both SSR and SPA islands can render
+- `fields[]`: a constrained field list that both SSR and SPA can render
 
 Field kinds (initial allowlist):
 

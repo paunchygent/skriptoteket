@@ -2,13 +2,17 @@
 type: reference
 id: REF-vue-spa-migration-assessment
 title: "Vue/Vite SPA Frontend Migration Assessment"
-status: active
+status: deprecated
 owners: "agents"
 created: 2025-12-15
+updated: 2025-12-21
 topic: "architecture"
+links: ["REF-vue-spa-migration-roadmap", "ADR-0027"]
 ---
 
 ## Executive Summary
+
+Status note: This assessment is superseded by the full SPA decision (ADR-0027) and the updated migration roadmap.
 
 This assessment evaluates the effort required to migrate Skriptoteket from its current server-rendered Jinja2/HTMX frontend to a separate Vue/Vite SPA. The migration is **feasible and low-risk** due to the existing protocol-based architecture: all handlers can be reused unchanged, requiring only a thin API layer (~23h backend) plus the Vue frontend (~39h). Total estimated effort is ~103 hours (5-7 weeks).
 

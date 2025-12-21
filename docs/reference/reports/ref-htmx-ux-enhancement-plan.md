@@ -2,17 +2,21 @@
 type: reference
 id: REF-htmx-ux-enhancement-plan
 title: "HTMX UX Enhancement: Developer Implementation Guide"
-status: active
+status: deprecated
 owners: "agents"
 created: 2025-12-15
+updated: 2025-12-21
 topic: "frontend"
 links:
   - ADR-0001
+  - ADR-0027
   - ADR-0017
   - EPIC-05
 ---
 
 ## Executive Summary
+
+Status note: This plan is superseded by the full SPA decision (ADR-0027) and is kept for historical reference only.
 
 This document provides a complete implementation guide for enhancing Skriptoteket's UX using HTMX. It serves as an alternative to the Vue SPA migration (see `ref-vue-spa-migration-assessment.md`), delivering SPA-like responsiveness while preserving the server-rendered architecture.
 

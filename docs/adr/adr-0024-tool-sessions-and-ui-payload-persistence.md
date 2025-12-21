@@ -6,8 +6,8 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-19
-updated: 2025-12-19
-links: ["ADR-0022", "ADR-0023", "PRD-script-hub-v0.2", "EPIC-10"]
+updated: 2025-12-21
+links: ["ADR-0022", "ADR-0023", "ADR-0027", "PRD-script-hub-v0.2", "EPIC-10"]
 ---
 
 ## Context
@@ -92,7 +92,7 @@ Provide a minimal API for interactive “turn taking”:
 
 ## API shape (minimal, sketch)
 
-These endpoints are intentionally small so they can back both SSR pages and SPA islands (ADR-0025).
+These endpoints are intentionally small so they can back the full SPA (ADR-0027) and any remaining legacy UI during migration.
 
 ### 1) `start_action`
 
@@ -250,7 +250,7 @@ High-level algorithm:
 4. Merge `next_actions[]` with backend-injected actions:
    - action IDs must be unique; conflicts are treated as contract violations
    - ordering is deterministic (e.g. sort by `action_id` within source buckets)
-5. Produce a canonical `ui_payload` that SSR and SPA islands can render byte-for-byte consistently.
+5. Produce a canonical `ui_payload` that SSR and SPA can render byte-for-byte consistently.
 
 ## Protocol seams (protocol-first DI)
 
