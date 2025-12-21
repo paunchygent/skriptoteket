@@ -271,6 +271,16 @@
               background-color var(--huleedu-duration-default) var(--huleedu-ease-default);
 }
 
+.huleedu-version-item-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.huleedu-version-item-action {
+  margin-top: 0.25rem;
+}
+
 .huleedu-version-item:hover {
   border-color: var(--huleedu-navy);
   background-color: var(--huleedu-navy-02);

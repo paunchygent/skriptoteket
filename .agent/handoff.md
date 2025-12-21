@@ -22,6 +22,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## 2025-12-21
 
+- ST-09-02 (CSP): added `Content-Security-Policy-Report-Only` at nginx reverse proxy (`~/infrastructure/nginx/conf.d/skriptoteket.conf` on hemma) with `script-src 'self'` + `script-src-attr 'none'` + `style-src 'unsafe-inline'` (CodeMirror) + Google Fonts + `frame-src 'self' about:` (for `srcdoc` iframes). Removed inline `onclick=` from admin versions list (Option A) by making link + rollback form siblings and using `hx-confirm`: `src/skriptoteket/web/templates/admin/partials/version_list.html`, `src/skriptoteket/web/static/css/app/editor.css`.
 - ST-10-08 (SPA islands toolchain): pnpm workspace + Vite/Vue/Tailwind build to `/static` + Jinja manifest integration: `frontend/package.json`, `frontend/pnpm-workspace.yaml`, `frontend/islands/`, `src/skriptoteket/web/vite.py`, `src/skriptoteket/web/templating.py`.
 - PDM↔pnpm integration: `pdm run fe-install|fe-dev|fe-build|fe-build-watch|fe-preview|fe-type-check|fe-lint|fe-lint-fix` delegates to pnpm in the `frontend/` workspace: `pyproject.toml`. (ESLint 9 flat config: `frontend/islands/eslint.config.js`.)
 - Demo SPA page (`hx-boost="false"` around mount): `/spa/demo` → `src/skriptoteket/web/pages/spa_islands.py`, `src/skriptoteket/web/templates/spa/demo.html`.
@@ -61,11 +62,13 @@ Keep this file updated so the next session can pick up work quickly.
 - UI smoke (Playwright): `pdm run ui-smoke` (requires local dev server + `.env` bootstrap credentials; does not create users).
 - Editor island smoke (Playwright): `pdm run ui-editor-smoke` (requires Playwright browsers installed + `.env` bootstrap credentials; writes screenshots to `.artifacts/ui-editor-smoke`).
 - Runtime island smoke (Playwright): `pdm run ui-runtime-smoke` (requires Playwright browsers installed + `.env` bootstrap credentials; writes screenshots to `.artifacts/ui-runtime-smoke`).
+- CSP header (prod): `curl -sI https://skriptoteket.hule.education/login | rg -i content-security-policy` (Report-Only currently; enforce after a clean console run).
 - Quality gates: `pdm run lint`.
 - Typecheck: `pdm run typecheck`.
 - Unit tests: `pdm run pytest tests/unit/domain/scripting/ui` + `pdm run pytest tests/unit/infrastructure/runner/test_result_contract.py tests/unit/infrastructure/runner/test_docker_runner.py tests/unit/application/test_scripting_execute_tool_version_handler.py tests/unit/domain/scripting/test_models.py`.
 - Migration idempotency: `pdm run pytest -m docker --override-ini addopts='' tests/integration/test_migration_0008_tool_runs_ui_payload_idempotent.py tests/integration/test_migration_0009_tool_sessions_idempotent.py`.
 - Live check (2025-12-20): `pdm run db-upgrade`; login via curl cookie jar; `/browse/gemensamt/ovrigt` shows curated app → open `/apps/demo.counter` → Starta → Öka (step=2) → Spara som fil (action_id=`export`) → file stored at `ARTIFACTS_ROOT/<run_id>/output/counter.txt` and downloadable via `/my-runs/<run_id>/artifacts/output_counter_txt` (200).
+- Live check (2025-12-21): `pdm run ui-smoke`, `pdm run ui-editor-smoke`, `pdm run ui-runtime-smoke` (artifacts under `.artifacts/`).
 - Live check (2025-12-21): `docker compose up -d db`, `pdm run db-upgrade`, `npm_config_cache=.tmp/npm-cache pdm run fe-build`, then `pdm run ui-editor-smoke` (verifies CodeMirror 6 mounts on `/admin/tools/<tool_id>` and Save creates/saves a version and redirects).
 - Live check (2025-12-21): `pdm run ui-runtime-smoke` (verifies runtime island mounts on `/apps/demo.counter` + `/my-runs/<run_id>` + `/tools/<slug>/run`, action updates UI, and concurrency "Uppdatera" refresh path works).
 - Production deploy (2025-12-21): `ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"` + `docker compose -f compose.observability.yaml up -d` (verified runner executes, SPA islands render).
