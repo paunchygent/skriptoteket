@@ -1,5 +1,22 @@
 # syntax=docker/dockerfile:1
 
+# Stage 1: Build frontend SPA assets
+FROM node:22-slim AS frontend-builder
+
+WORKDIR /app/frontend/islands
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy frontend files
+COPY frontend/islands/package.json frontend/islands/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+COPY frontend/islands/ ./
+RUN pnpm build
+
+
+# Stage 2: Build Python dependencies
 FROM python:3.13-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -61,6 +78,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --no-cache-dir pdm==2.26.2
 
 COPY --from=builder /app/__pypackages__ /app/__pypackages__
+COPY --from=frontend-builder /app/src/skriptoteket/web/static/spa ./src/skriptoteket/web/static/spa
 COPY pyproject.toml pdm.lock ./
 COPY alembic.ini ./
 COPY migrations ./migrations
