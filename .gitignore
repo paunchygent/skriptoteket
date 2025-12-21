@@ -49,6 +49,9 @@ tools/puppeteer/package-lock.json
 src/skriptoteket/web/static/spa/*
 !src/skriptoteket/web/static/spa/.gitkeep
 
+# OpenAPI schema export (generated)
+frontend/apps/skriptoteket/openapi.json
+
 # Local artifacts (runner output)
 .artifacts/
 

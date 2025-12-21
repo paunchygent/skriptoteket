@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-# Stage 1: Build frontend SPA assets
+# Stage 1: Build frontend assets (legacy SPA islands)
 FROM node:22-slim AS frontend-builder
 
 WORKDIR /app
@@ -83,7 +83,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --no-cache-dir pdm==2.26.2
 
 COPY --from=builder /app/__pypackages__ /app/__pypackages__
-# SPA assets are built to ../../src/skriptoteket/web/static/spa relative to frontend/islands
+# Legacy islands assets are built to ../../src/skriptoteket/web/static/spa relative to frontend/islands
 COPY --from=frontend-builder /app/src/skriptoteket/web/static/spa ./src/skriptoteket/web/static/spa
 COPY pyproject.toml pdm.lock ./
 COPY alembic.ini ./
