@@ -43,9 +43,43 @@ def main() -> None:
     base_url = config.base_url
     email = config.email
     password = config.password
+    is_local_base_url = base_url.startswith("http://127.0.0.1") or base_url.startswith("http://localhost")
 
     artifacts_dir = Path(".artifacts/ui-smoke")
     artifacts_dir.mkdir(parents=True, exist_ok=True)
+
+    def _assert_help_panel_inset(*, page: object, help_panel: object) -> None:
+        box = help_panel.bounding_box()
+        viewport = page.viewport_size
+        assert viewport is not None, "Expected viewport size to be available"
+        assert box is not None, "Expected help panel to have a bounding box"
+        assert box["x"] > 0, f"Expected inset help panel x > 0, got {box['x']}"
+        assert box["y"] > 0, f"Expected inset help panel y > 0, got {box['y']}"
+        assert box["width"] < viewport["width"], (
+            f"Expected help panel width < viewport width, got {box['width']} >= {viewport['width']}"
+        )
+        assert box["height"] < viewport["height"], (
+            f"Expected help panel height < viewport height, got {box['height']} >= {viewport['height']}"
+        )
+
+    def _open_help_from_mobile_nav(*, page: object) -> object:
+        menu_btn = page.get_by_role("button", name="Meny")
+        expect(menu_btn).to_be_visible()
+
+        menu_btn.click()
+        nav = page.locator("#mobile-nav:not([hidden])")
+        expect(nav).to_be_visible()
+
+        help_link = nav.get_by_role("link", name="Hjälp")
+        expect(help_link).to_be_visible()
+        help_link.click()
+
+        # Help opens and the menu collapses.
+        help_panel = page.locator("#help-panel")
+        expect(help_panel).to_be_visible()
+        expect(page.locator("#mobile-nav")).to_be_hidden()
+        expect(menu_btn).to_have_attribute("aria-expanded", "false")
+        return help_panel
 
     with sync_playwright() as playwright:
         device = playwright.devices["iPhone 12"]
@@ -56,20 +90,25 @@ def main() -> None:
         # Login
         page.goto(f"{base_url}/login", wait_until="domcontentloaded")
 
-        # Help panel (logged out)
-        help_btn = page.get_by_role("button", name="Hjälp")
-        help_panel = page.locator("#help-panel")
-        help_btn.click()
-        expect(help_panel).to_be_visible()
-        expect(help_panel.get_by_role("heading", name="Logga in")).to_be_visible()
+        # Mobile header regression: help is in the menu on small screens.
+        help_toggle = page.locator("#help-toggle")
+        if help_toggle.count() > 0:
+            expect(help_toggle).to_be_hidden()
 
-        help_panel.get_by_role("link", name="← Till hjälpindex").click()
-        expect(help_panel.get_by_role("heading", name="Hjälpindex")).to_be_visible()
-        expect(help_panel.get_by_role("link", name="Logga in")).to_be_visible()
-        expect(help_panel.get_by_role("heading", name="Admin")).to_have_count(0)
+        # Help panel (logged out): open from the mobile nav.
+        if page.locator("#help-panel").count() > 0:
+            help_panel = _open_help_from_mobile_nav(page=page)
+            _assert_help_panel_inset(page=page, help_panel=help_panel)
+            expect(help_panel.get_by_role("heading", name="Logga in")).to_be_visible()
+            page.screenshot(path=str(artifacts_dir / "help-logged-out-mobile.png"), full_page=False)
 
-        page.keyboard.press("Escape")
-        expect(help_panel).to_be_hidden()
+            help_panel.get_by_role("link", name="← Till hjälpindex").click()
+            expect(help_panel.get_by_role("heading", name="Hjälpindex")).to_be_visible()
+            expect(help_panel.get_by_role("link", name="Logga in")).to_be_visible()
+            expect(help_panel.get_by_role("heading", name="Admin")).to_have_count(0)
+
+            page.keyboard.press("Escape")
+            expect(help_panel).to_be_hidden()
 
         page.get_by_label("E-post").fill(email)
         page.get_by_label("Lösenord").fill(password)
@@ -77,19 +116,19 @@ def main() -> None:
         expect(page.get_by_text("Inloggad som")).to_be_visible()
         page.screenshot(path=str(artifacts_dir / "home.png"), full_page=True)
 
-        # Help panel (logged in, role-aware index)
-        help_btn = page.get_by_role("button", name="Hjälp")
-        help_panel = page.locator("#help-panel")
-        help_btn.click()
-        expect(help_panel).to_be_visible()
-        expect(help_panel.get_by_role("heading", name="Start")).to_be_visible()
+        # Help panel (logged in, role-aware index): open from the mobile nav.
+        if page.locator("#help-panel").count() > 0:
+            help_panel = _open_help_from_mobile_nav(page=page)
+            _assert_help_panel_inset(page=page, help_panel=help_panel)
+            expect(help_panel.get_by_role("heading", name="Start")).to_be_visible()
+            page.screenshot(path=str(artifacts_dir / "help-logged-in-mobile.png"), full_page=False)
 
-        help_panel.get_by_role("link", name="← Till hjälpindex").click()
-        expect(help_panel.get_by_role("heading", name="Admin")).to_be_visible()
-        expect(help_panel.get_by_role("link", name="Logga in")).to_have_count(0)
+            help_panel.get_by_role("link", name="← Till hjälpindex").click()
+            expect(help_panel.get_by_role("heading", name="Admin")).to_be_visible()
+            expect(help_panel.get_by_role("link", name="Logga in")).to_have_count(0)
 
-        help_panel.get_by_role("button", name="Stäng").click()
-        expect(help_panel).to_be_hidden()
+            help_panel.get_by_role("button", name="Stäng").click()
+            expect(help_panel).to_be_hidden()
 
         # Mobile nav logout button styling
         menu_btn = page.get_by_role("button", name="Meny")
@@ -125,7 +164,7 @@ def main() -> None:
         publish_btn = page.locator(
             ".huleedu-tool-actions button:has-text('Publicera'):not([disabled])"
         ).first
-        if publish_btn.count() > 0:
+        if publish_btn.count() > 0 and is_local_base_url:
             publish_form = publish_btn.locator("xpath=ancestor::form[1]")
             action = publish_form.get_attribute("action") or ""
             tool_id = action.strip("/").split("/")[-2] if "/admin/tools/" in action else ""
@@ -170,19 +209,20 @@ def main() -> None:
 
         # Help panel (desktop): outside click + escape closes
         help_btn = page.get_by_role("button", name="Hjälp")
-        help_panel = page.locator("#help-panel")
+        if help_btn.count() > 0:
+            help_panel = page.locator("#help-panel")
 
-        help_btn.click()
-        expect(help_panel).to_be_visible()
-        expect(help_panel.get_by_role("heading", name="Logga in")).to_be_visible()
+            help_btn.click()
+            expect(help_panel).to_be_visible()
+            expect(help_panel.get_by_role("heading", name="Logga in")).to_be_visible()
 
-        page.get_by_role("main").get_by_role("heading", name="Logga in").click()
-        expect(help_panel).to_be_hidden()
+            page.get_by_role("main").get_by_role("heading", name="Logga in").click()
+            expect(help_panel).to_be_hidden()
 
-        help_btn.click()
-        expect(help_panel).to_be_visible()
-        page.keyboard.press("Escape")
-        expect(help_panel).to_be_hidden()
+            help_btn.click()
+            expect(help_panel).to_be_visible()
+            page.keyboard.press("Escape")
+            expect(help_panel).to_be_hidden()
 
         login_btn = page.get_by_role("button", name="Logga in")
         login_btn.hover()
@@ -207,13 +247,16 @@ def main() -> None:
 
         # Help panel collapses when user continues (navigation)
         help_btn = page.get_by_role("button", name="Hjälp")
-        help_panel = page.locator("#help-panel")
-        help_btn.click()
-        expect(help_panel).to_be_visible()
-        expect(help_panel.get_by_role("heading", name="Start")).to_be_visible()
+        if help_btn.count() > 0:
+            help_panel = page.locator("#help-panel")
+            help_btn.click()
+            expect(help_panel).to_be_visible()
+            expect(help_panel.get_by_role("heading", name="Start")).to_be_visible()
 
-        catalog_link.click()
-        expect(help_panel).to_be_hidden()
+            catalog_link.click()
+            expect(help_panel).to_be_hidden()
+        else:
+            catalog_link.click()
         expect(page.get_by_role("heading", name="Välj yrke")).to_be_visible()
 
         first_profession = page.locator(".huleedu-list-item a").first

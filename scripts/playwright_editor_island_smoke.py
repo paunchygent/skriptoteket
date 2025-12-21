@@ -30,7 +30,7 @@ def main() -> None:
         context = browser.new_context(viewport={"width": 1280, "height": 800})
         page = context.new_page()
 
-        # Login (bootstrap account from .env)
+        # Login (credentials from scripts/_playwright_config.py: PLAYWRIGHT_* or BOOTSTRAP_*)
         page.goto(f"{base_url}/login", wait_until="domcontentloaded")
         page.get_by_label("E-post").fill(email)
         page.get_by_label("Lösenord").fill(password)

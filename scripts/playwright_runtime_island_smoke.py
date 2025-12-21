@@ -36,7 +36,7 @@ def main() -> None:
 
         page1 = context.new_page()
 
-        # Login (bootstrap account from .env)
+        # Login (credentials from scripts/_playwright_config.py: PLAYWRIGHT_* or BOOTSTRAP_*)
         page1.goto(f"{base_url}/login", wait_until="domcontentloaded")
         page1.get_by_label("E-post").fill(email)
         page1.get_by_label("Lösenord").fill(password)
@@ -93,16 +93,37 @@ def main() -> None:
         page1.screenshot(path=str(artifacts_dir / "runtime.png"), full_page=True)
 
         # Tool run page (/tools/<slug>/run): HTMX injects run_result, runtime island must mount.
-        tool_slug = "ist-vh-mejl-bcc"
-        response = page1.goto(
-            f"{base_url}/tools/{tool_slug}/run",
-            wait_until="domcontentloaded",
-        )
-        if response is None or response.status != 200:
+        page1.goto(f"{base_url}/admin/tools", wait_until="domcontentloaded")
+        expect(page1.get_by_role("heading", name="Testyta")).to_be_visible()
+
+        published_row = page1.locator(".huleedu-tool-row:has(.huleedu-dot-success)").first
+        if published_row.count() == 0:
             raise RuntimeError(
-                f"Tool run page did not load for slug {tool_slug!r}. "
-                "Ensure the script-bank tools are seeded and published (pdm run seed-script-bank)."
+                "No published tools found in /admin/tools; cannot smoke-test /tools/<slug>/run."
             )
+
+        edit_link = published_row.get_by_role("link", name="Redigera").first
+        if edit_link.count() == 0:
+            raise RuntimeError("Could not find a 'Redigera' link for the published tool row.")
+
+        edit_link.click()
+        page1.wait_for_url("**/admin/tools/**", wait_until="domcontentloaded")
+
+        slug_text = (page1.locator(".huleedu-muted small").first.text_content() or "").strip()
+        if slug_text.startswith("(") and slug_text.endswith(")"):
+            slug = slug_text[1:-1].strip()
+        else:
+            slug = slug_text
+
+        if not slug:
+            raise RuntimeError("Could not extract tool slug from the editor page header.")
+
+        response = page1.goto(f"{base_url}/tools/{slug}/run", wait_until="domcontentloaded")
+        if response is None or response.status != 200:
+            status = response.status if response is not None else None
+            raise RuntimeError(f"Tool run page did not load for slug {slug!r} (status: {status}).")
+
+        expect(page1.locator("input#file")).to_be_visible()
 
         page1.locator("input#file").set_input_files(str(sample_csv_path))
         page1.get_by_role("button", name="Kör").click()
