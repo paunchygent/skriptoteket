@@ -205,11 +205,14 @@ Session rule reminder:
 
 ---
 
-## EPIC-12: Advanced Input & Output Handling (Future)
+## EPIC-12: Advanced Input & Output Handling
+
+Status: **ST-12-01 is done**. Remaining EPIC-12 stories are **blocked until EPIC-11 is complete** (ST-11-13 cutover),
+so we implement user-facing UX once in the SPA.
 
 This section covers v0.2 features from PRD-script-hub-v0.2 that are not yet scheduled into sprints.
 
-### Session L — Multi-file input contract (ST-12-01)
+### Session L — Multi-file input contract (ST-12-01) (done)
 
 - Target:
   - Enable scripts to receive multiple input files with metadata discovery.
@@ -218,19 +221,22 @@ This section covers v0.2 features from PRD-script-hub-v0.2 that are not yet sche
   2. Update command layer to accept `list[tuple[str, bytes]]`.
   3. Update Docker runner to place all files in `/work/input/` and generate `SKRIPTOTEKET_INPUT_MANIFEST`.
   4. Preserve `SKRIPTOTEKET_INPUT_PATH` for backward compatibility with single-file scripts.
-  5. Update knowledge base with multi-file script patterns.
+  5. Reject filename collisions after sanitization with a clear validation error.
+  6. Enforce per-file and total upload caps while reading uploads (settings-driven).
+  7. Persist an `input_manifest` (names + bytes only) on `ToolRun` for audit/debugging.
+  8. Update knowledge base with multi-file script patterns.
 - Checkpoints (success criteria):
   - ST-12-01 acceptance criteria pass.
   - Single-file scripts continue to work unchanged.
-  - Integration test with multi-file upload.
+  - Migration contract test passes for `tool_runs.input_manifest`.
 - Dependencies:
   - ADR-0031 (Multi-file input contract)
 
-### Future sessions (not yet planned)
+### Future sessions (blocked until EPIC-11 cutover)
 
-- **ST-12-02**: Native PDF output helper (WeasyPrint wrapper)
-- **ST-12-03**: Personalized tool settings (settings schema + user memory)
-- **ST-12-04**: Interactive text/dropdown inputs (form inputs without file upload)
+- [ST-12-02: Native PDF output helper](../backlog/stories/story-12-02-native-pdf-output-helper.md)
+- [ST-12-03: Personalized tool settings](../backlog/stories/story-12-03-personalized-tool-settings.md)
+- [ST-12-04: Interactive text/dropdown inputs](../backlog/stories/story-12-04-interactive-text-dropdown-inputs.md)
 
 ---
 

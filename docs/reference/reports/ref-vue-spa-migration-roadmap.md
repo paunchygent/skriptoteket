@@ -504,6 +504,9 @@ This roadmap is implemented as `EPIC-11` and its stories:
 - ST-11-06..12: SPA views for browse/tools/runs/apps/suggestions/admin/editor
 - ST-11-13: cutover + deletion + Playwright E2E
 
+Downstream note: EPIC-12 work beyond ST-12-01 is **blocked until ST-11-13** so user-facing UX is implemented once in
+the SPA.
+
 ---
 
 ## Critical Review Points
@@ -526,13 +529,11 @@ SPA uses same httponly cookies. CSRF token flow:
 
 ```typescript
 const formData = new FormData()
-formData.append('file', file)
-await api.post(`/api/v1/tools/${slug}/run`, formData, {
-  headers: { 'Content-Type': 'multipart/form-data' }
-})
+for (const file of files) formData.append('files', file) // multi-file contract (ST-12-01 / ADR-0031)
+await api.post(`/api/v1/tools/${slug}/run`, formData)
 ```
 
-**Verify:** Endpoint accepts `UploadFile` from FastAPI.
+**Verify:** Backend expects `files: list[UploadFile]` and enforces per-file + total upload caps.
 
 ### Role Guards
 
