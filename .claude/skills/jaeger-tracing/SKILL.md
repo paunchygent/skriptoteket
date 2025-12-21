@@ -1,3 +1,8 @@
+---
+name: jaeger-tracing-specialist
+description: Jaeger/OpenTelemetry patterns plus Skriptoteket tracing conventions (async context propagation, correlation, debugging).
+---
+
 # Jaeger Distributed Tracing Specialist
 
 **Responsibility**: Jaeger/OpenTelemetry novel patterns + HuleEdu tracing conventions

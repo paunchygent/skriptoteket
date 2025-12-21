@@ -317,6 +317,10 @@ test-sequential = "pytest -n 0"
 # Docs-as-code governance
 docs-validate = "python -m scripts.validate_docs"
 
+# Agent skills (repo-local)
+skills-prompt = "python -m scripts.skills_prompt"
+skills-validate = "python -m scripts.skills_prompt --validate"
+
 # Database
 db-upgrade = "alembic upgrade head"
 

@@ -29,6 +29,7 @@ Target Python is **3.13–3.14**.
 - `docs/`: PRD/ADRs/backlog (start at `docs/index.md`); contract-enforced via `docs/_meta/docs-contract.yaml`
 - **Docs workflow (REQUIRED)**: follow `docs/reference/ref-sprint-planning-workflow.md` for PRD → ADR → epic → story → sprint planning.
 - `.agent/`: agent workflow helpers (`.agent/readme-first.md`, `.agent/handoff.md`, prompt template) + coding rules (`.agent/rules/`)
+- `.claude/skills/`: repo-local agent skills (workflow playbooks + helpers)
 - `scripts/`: repo tooling (e.g., `scripts/validate_docs.py`)
 
 ## Key Commands
@@ -42,6 +43,7 @@ Target Python is **3.13–3.14**.
 - Docker dev workflow: `pdm run dev-start` / `pdm run dev-stop` / `pdm run dev-build-start` / `pdm run dev-build-start-clean` / `pdm run dev-db-reset`
 - Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test` (lint runs Ruff + agent-doc budgets + docs contract)
 - Docs: `pdm run docs-validate`
+- Skills prompt: `pdm run skills-prompt` / `pdm run skills-validate` (scans `.claude/skills/`)
 
 ## Tool Execution (Local Dev Only)
 
