@@ -37,6 +37,7 @@ from skriptoteket.web.pages.admin_scripting_support import (
 )
 from skriptoteket.web.templating import templates
 from skriptoteket.web.ui_text import ui_error_message as _ui_error_message
+from skriptoteket.web.uploads import read_upload_files
 
 router = APIRouter()
 
@@ -164,19 +165,24 @@ async def _render_sandbox_editor(
 async def _execute_sandbox_run(
     *,
     handler: RunSandboxHandlerProtocol,
+    settings: Settings,
     actor: User,
     tool_id: UUID,
     version_id: UUID,
-    file: UploadFile,
+    files: list[UploadFile],
 ) -> ToolRun:
-    input_bytes = await file.read()
+    input_files = await read_upload_files(
+        files=files,
+        max_files=settings.UPLOAD_MAX_FILES,
+        max_file_bytes=settings.UPLOAD_MAX_FILE_BYTES,
+        max_total_bytes=settings.UPLOAD_MAX_TOTAL_BYTES,
+    )
     result = await handler.handle(
         actor=actor,
         command=RunSandboxCommand(
             tool_id=tool_id,
             version_id=version_id,
-            input_filename=file.filename or "input.bin",
-            input_bytes=input_bytes,
+            input_files=input_files,
         ),
     )
     return result.run
@@ -191,10 +197,11 @@ async def run_sandbox(
     tools: FromDishka[ToolRepositoryProtocol],
     maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
+    settings: FromDishka[Settings],
     user: User = Depends(require_contributor),
     session: Session | None = Depends(get_current_session),
     tool_id: str = Form(...),
-    file: UploadFile = File(...),
+    files: list[UploadFile] = File(...),
 ) -> Response:
     csrf_token = session.csrf_token if session else ""
     hx_request = _is_hx_request(request)
@@ -214,10 +221,11 @@ async def run_sandbox(
     try:
         run = await _execute_sandbox_run(
             handler=handler,
+            settings=settings,
             actor=user,
             tool_id=parsed_tool_id,
             version_id=version_id,
-            file=file,
+            files=files,
         )
     except DomainError as exc:
         if hx_request:

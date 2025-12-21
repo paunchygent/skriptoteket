@@ -12,6 +12,7 @@ from starlette.requests import Request
 
 from skriptoteket.application.scripting.interactive_tools import StartActionResult
 from skriptoteket.domain.identity.models import AuthProvider, Role, User
+from skriptoteket.domain.scripting.input_files import InputFileEntry, InputManifest
 from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolRun
 from skriptoteket.domain.scripting.ui.contract_v2 import (
     UiBooleanField,
@@ -107,6 +108,7 @@ def _run(
         workdir_path=str(run_id),
         input_filename="input.bin",
         input_size_bytes=1,
+        input_manifest=InputManifest(files=[InputFileEntry(name="input.bin", bytes=1)]),
         html_output=None,
         stdout=None,
         stderr=None,

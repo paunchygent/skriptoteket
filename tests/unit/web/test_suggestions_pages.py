@@ -42,6 +42,7 @@ from skriptoteket.protocols.suggestions import (
     SubmitSuggestionHandlerProtocol,
 )
 from skriptoteket.web.pages import suggestions
+from skriptoteket.web.ui_text import ui_error_message
 
 type _AsyncHandler = Callable[..., Awaitable[Response]]
 
@@ -419,7 +420,7 @@ async def test_decide_suggestion_invalid_decision_defaults_to_deny_and_redirects
 
     assert isinstance(response, RedirectResponse)
     assert response.status_code == 303
-    assert response.headers["location"] == f"/admin/suggestions/{suggestion_id}?saved=1"
+    assert response.headers["location"] == f"/admin/suggestions/{suggestion_id}"
 
     called_command = handler.handle.call_args.kwargs["command"]
     assert called_command.decision is SuggestionDecisionType.DENY
@@ -441,7 +442,8 @@ async def test_decide_suggestion_domain_error_renders_detail_template_with_statu
         suggestion=suggestion,
         decisions=decisions,
     )
-    handler.handle.side_effect = DomainError(code=ErrorCode.CONFLICT, message="Already reviewed")
+    exc = DomainError(code=ErrorCode.CONFLICT, message="Already reviewed")
+    handler.handle.side_effect = exc
     professions_handler.handle.return_value = ListProfessionsResult(professions=[_profession()])
     categories_handler.handle.return_value = ListAllCategoriesResult(categories=[_category()])
 
@@ -468,7 +470,7 @@ async def test_decide_suggestion_domain_error_renders_detail_template_with_statu
     assert isinstance(response, _TemplateResponseProtocol)
     assert response.status_code == 409
     assert response.template.name == "suggestions_review_detail.html"
-    assert response.context["error"] == "Already reviewed"
+    assert response.context["error"] == ui_error_message(exc)
     assert response.context["suggestion"] == suggestion
     assert response.context["decisions"] == decisions
     assert response.context["can_decide"] is True

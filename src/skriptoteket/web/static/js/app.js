@@ -111,8 +111,18 @@
 
       var emptyLabel = target.textContent || "Ingen fil vald";
       input.addEventListener("change", function () {
-        var fileName = input.files && input.files[0] ? input.files[0].name : "";
-        target.textContent = fileName || emptyLabel;
+        var files = input.files ? Array.from(input.files) : [];
+        if (files.length === 0) {
+          target.textContent = emptyLabel;
+          return;
+        }
+        if (files.length === 1) {
+          target.textContent = files[0].name;
+          return;
+        }
+
+        var names = files.map(function (file) { return file.name; });
+        target.textContent = files.length + " filer: " + names.join(", ");
       });
     });
   }
@@ -528,6 +538,71 @@
     else openHelp({});
   }
 
+  function closeAllFieldHelp() {
+    document.querySelectorAll("[data-field-help-tooltip]").forEach(function (tooltip) {
+      tooltip.hidden = true;
+    });
+
+    document.querySelectorAll("[data-field-help-toggle]").forEach(function (toggle) {
+      toggle.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  function isAnyFieldHelpOpen() {
+    return document.querySelectorAll("[data-field-help-tooltip]:not([hidden])").length > 0;
+  }
+
+  function toggleFieldHelp(toggle) {
+    var tooltipId = toggle.getAttribute("aria-controls") || "";
+    if (!tooltipId) return;
+
+    var tooltip = document.getElementById(tooltipId);
+    if (!tooltip) return;
+
+    var isOpen = tooltip.hidden === false;
+    closeAllFieldHelp();
+
+    if (isOpen) return;
+
+    tooltip.hidden = false;
+    toggle.setAttribute("aria-expanded", "true");
+  }
+
+  function ensureGhostPlaceholderOriginal(input) {
+    if (!input || !input.dataset) return "";
+    if (input.dataset.ghostPlaceholderOriginal !== undefined) {
+      return input.dataset.ghostPlaceholderOriginal || "";
+    }
+
+    var current = input.getAttribute("placeholder") || "";
+    input.dataset.ghostPlaceholderOriginal = current;
+    return current;
+  }
+
+  function applyGhostPlaceholder(input) {
+    if (!input || !input.dataset) return;
+
+    var ghost = (input.dataset.ghostPlaceholder || "").trim();
+    if (!ghost) return;
+
+    ensureGhostPlaceholderOriginal(input);
+    input.setAttribute("placeholder", ghost);
+  }
+
+  function restoreGhostPlaceholder(input) {
+    if (!input || !input.dataset) return;
+
+    if (!input.dataset.ghostPlaceholder) return;
+
+    var original = ensureGhostPlaceholderOriginal(input);
+    if (!original) {
+      input.removeAttribute("placeholder");
+      return;
+    }
+
+    input.setAttribute("placeholder", original);
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     init(document);
   });
@@ -592,6 +667,51 @@
     var expanded = btn.getAttribute("aria-expanded") === "true";
     btn.setAttribute("aria-expanded", !expanded);
     nav.hidden = expanded;
+  });
+
+  // Field micro-help: tooltip toggles + ghost placeholders
+  document.addEventListener("click", function (evt) {
+    if (!evt || !evt.target) return;
+
+    var toggle = evt.target.closest ? evt.target.closest("[data-field-help-toggle]") : null;
+    if (toggle) {
+      evt.preventDefault();
+      toggleFieldHelp(toggle);
+      return;
+    }
+
+    if (!isAnyFieldHelpOpen()) return;
+
+    var tooltip = evt.target.closest ? evt.target.closest("[data-field-help-tooltip]") : null;
+    if (tooltip) return;
+
+    closeAllFieldHelp();
+  });
+
+  document.addEventListener("focusin", function (evt) {
+    if (!evt || !evt.target) return;
+    if (!evt.target.matches) return;
+
+    if (evt.target.matches("input[data-ghost-placeholder], textarea[data-ghost-placeholder]")) {
+      applyGhostPlaceholder(evt.target);
+    }
+  });
+
+  document.addEventListener("focusout", function (evt) {
+    if (!evt || !evt.target) return;
+    if (!evt.target.matches) return;
+
+    if (evt.target.matches("input[data-ghost-placeholder], textarea[data-ghost-placeholder]")) {
+      restoreGhostPlaceholder(evt.target);
+    }
+  });
+
+  document.addEventListener("keydown", function (evt) {
+    if (!evt) return;
+    if (evt.key !== "Escape") return;
+    if (!isAnyFieldHelpOpen()) return;
+
+    closeAllFieldHelp();
   });
 
   // Help panel: open/close + in-panel navigation

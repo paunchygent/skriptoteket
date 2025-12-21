@@ -114,7 +114,7 @@ async def test_update_tool_metadata_success_redirects_with_hx_header() -> None:
     assert isinstance(response, RedirectResponse)
     assert response.status_code == 303
     assert response.headers["location"] == f"/admin/tools/{tool_id}"
-    assert response.headers["hx-redirect"] == f"/admin/tools/{tool_id}"
+    assert response.headers["hx-location"] == f"/admin/tools/{tool_id}"
 
 
 @pytest.mark.unit

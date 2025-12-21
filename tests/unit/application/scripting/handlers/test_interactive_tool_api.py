@@ -32,6 +32,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
+from skriptoteket.domain.scripting.input_files import InputFileEntry, InputManifest
 from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolRun
 from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result, UiPayloadV2
@@ -96,6 +97,7 @@ def make_tool_run(
         workdir_path="/tmp/run",
         input_filename="action.json",
         input_size_bytes=0,
+        input_manifest=InputManifest(files=[InputFileEntry(name="action.json", bytes=0)]),
         html_output=None,
         stdout="",
         stderr="",
@@ -181,7 +183,7 @@ async def test_start_action_executes_with_session_state_and_updates_state_rev(
     ) -> ExecuteToolVersionResult:
         del actor
         assert uow.active is False
-        payload = json.loads(command.input_bytes.decode("utf-8"))
+        payload = json.loads(command.input_files[0][1].decode("utf-8"))
         assert payload["action_id"] == "confirm_flags"
         assert payload["input"] == {"notify_guardians": True}
         assert payload["state"] == {"step": "one"}

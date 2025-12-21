@@ -14,6 +14,7 @@ from skriptoteket.application.scripting.interactive_tools import (
     GetSessionStateQuery,
     StartActionCommand,
 )
+from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, not_found, validation_error
 from skriptoteket.domain.identity.models import Session, User
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
@@ -37,6 +38,7 @@ from skriptoteket.web.pages.admin_scripting_support import (
 )
 from skriptoteket.web.templating import templates
 from skriptoteket.web.ui_text import ui_error_message
+from skriptoteket.web.uploads import read_upload_files
 
 router = APIRouter(prefix="/tools")
 
@@ -133,22 +135,27 @@ async def execute_tool(
     handler: FromDishka[RunActiveToolHandlerProtocol],
     tools: FromDishka[ToolRepositoryProtocol],
     sessions: FromDishka[GetSessionStateHandlerProtocol],
+    settings: FromDishka[Settings],
     user: User = Depends(require_user),
     session: Session | None = Depends(get_current_session),
-    file: UploadFile = File(...),
+    files: list[UploadFile] = File(...),
 ) -> Response:
     """Execute a published tool and return results."""
     csrf_token = session.csrf_token if session else ""
     hx_request = is_hx_request(request)
 
     try:
-        input_bytes = await file.read()
+        input_files = await read_upload_files(
+            files=files,
+            max_files=settings.UPLOAD_MAX_FILES,
+            max_file_bytes=settings.UPLOAD_MAX_FILE_BYTES,
+            max_total_bytes=settings.UPLOAD_MAX_TOTAL_BYTES,
+        )
         result = await handler.handle(
             actor=user,
             command=RunActiveToolCommand(
                 tool_slug=slug,
-                input_filename=file.filename or "input.bin",
-                input_bytes=input_bytes,
+                input_files=input_files,
             ),
         )
         run = result.run

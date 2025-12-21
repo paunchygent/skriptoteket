@@ -30,19 +30,34 @@
         class="huleedu-stack huleedu-mt-4"
       >
         <div>
-          <label for="file" class="huleedu-label">Ladda upp fil</label>
-          <label class="huleedu-file-wrapper huleedu-input">
-            <span class="huleedu-file-fake-button" aria-hidden="true">Välj fil</span>
-            <span id="file-name" class="huleedu-muted huleedu-file-name">Ingen fil vald</span>
-            <input
-              type="file"
-              id="file"
-              name="file"
-              required
-              class="huleedu-file-native"
-              data-huleedu-file-name-target="file-name"
-            />
-          </label>
+          <label for="files" class="huleedu-label">Ladda upp fil</label>
+          <div class="huleedu-input-with-help">
+            <label class="huleedu-file-wrapper huleedu-input">
+              <span class="huleedu-file-fake-button" aria-hidden="true">Välj fil</span>
+              <span id="file-name" class="huleedu-muted huleedu-file-name">Ingen fil vald</span>
+              <input
+                type="file"
+                id="files"
+                name="files"
+                multiple
+                required
+                class="huleedu-file-native"
+                data-huleedu-file-name-target="file-name"
+              />
+            </label>
+            <button type="button"
+                    class="huleedu-field-help-toggle"
+                    data-field-help-toggle
+                    aria-expanded="false"
+                    aria-controls="files-help"
+                    aria-label="Hjälp för filuppladdning">
+              ?
+            </button>
+            <div id="files-help" class="huleedu-field-help-tooltip" data-field-help-tooltip role="tooltip" hidden>
+              Vilken filtyp som fungerar beror på verktyget. Ladda upp den fil du vill att verktyget ska jobba med.
+              Om du får felmeddelande: prova en annan fil.
+            </div>
+          </div>
         </div>
         <div class="huleedu-flex huleedu-gap-4">
           <button type="submit" class="huleedu-btn huleedu-btn-icon huleedu-btn-loading">

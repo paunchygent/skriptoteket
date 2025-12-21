@@ -18,6 +18,7 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.catalog.models import Tool
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import AuthProvider, Role, Session, User
+from skriptoteket.domain.scripting.input_files import InputFileEntry, InputManifest
 from skriptoteket.domain.scripting.models import (
     RunContext,
     RunStatus,
@@ -175,6 +176,7 @@ def _run(
         workdir_path="/tmp/run",
         input_filename="input.bin",
         input_size_bytes=3,
+        input_manifest=InputManifest(files=[InputFileEntry(name="input.bin", bytes=3)]),
         html_output="<p>ok</p>",
         stdout="",
         stderr="",
@@ -192,6 +194,7 @@ async def test_run_sandbox_raises_validation_error_when_tool_id_invalid() -> Non
     versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
 
     user = _user(role=Role.ADMIN)
+    settings = Settings()
     request = _request(path="/admin/tool-versions/x/run-sandbox", method="POST")
     file = UploadFile(filename="input.bin", file=io.BytesIO(b"abc"))
 
@@ -203,10 +206,11 @@ async def test_run_sandbox_raises_validation_error_when_tool_id_invalid() -> Non
             tools=tools,
             maintainers=maintainers,
             versions_repo=versions_repo,
+            settings=settings,
             user=user,
             session=None,
             tool_id="not-a-uuid",
-            file=file,
+            files=[file],
         )
 
     assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
@@ -222,6 +226,7 @@ async def test_run_sandbox_hx_request_domain_error_returns_inline_html() -> None
     versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
 
     user = _user(role=Role.ADMIN)
+    settings = Settings()
     request = _request(
         path="/admin/tool-versions/x/run-sandbox",
         method="POST",
@@ -236,10 +241,11 @@ async def test_run_sandbox_hx_request_domain_error_returns_inline_html() -> None
         tools=tools,
         maintainers=maintainers,
         versions_repo=versions_repo,
+        settings=settings,
         user=user,
         session=None,
         tool_id=str(uuid.uuid4()),
-        file=file,
+        files=[file],
     )
 
     assert isinstance(response, _TemplateResponseProtocol)
@@ -258,6 +264,7 @@ async def test_run_sandbox_hx_request_success_renders_run_result_partial() -> No
     versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
 
     user = _user(role=Role.ADMIN)
+    settings = Settings()
     tool_id = uuid.uuid4()
     version_id = uuid.uuid4()
     run_id = uuid.uuid4()
@@ -284,10 +291,11 @@ async def test_run_sandbox_hx_request_success_renders_run_result_partial() -> No
         tools=tools,
         maintainers=maintainers,
         versions_repo=versions_repo,
+        settings=settings,
         user=user,
         session=None,
         tool_id=str(tool_id),
-        file=file,
+        files=[file],
     )
 
     assert isinstance(response, _TemplateResponseProtocol)
@@ -301,7 +309,7 @@ async def test_run_sandbox_hx_request_success_renders_run_result_partial() -> No
     called_command = handler.handle.call_args.kwargs["command"]
     assert called_command.tool_id == tool_id
     assert called_command.version_id == version_id
-    assert called_command.input_filename == "input.bin"
+    assert called_command.input_files[0][0] == "input.bin"
 
 
 @pytest.mark.unit
@@ -314,6 +322,7 @@ async def test_run_sandbox_non_hx_success_renders_editor_with_run() -> None:
 
     user = _user(role=Role.ADMIN)
     session = _session(user_id=user.id)
+    settings = Settings()
 
     tool_id = uuid.uuid4()
     version_id = uuid.uuid4()
@@ -342,10 +351,11 @@ async def test_run_sandbox_non_hx_success_renders_editor_with_run() -> None:
         tools=tools,
         maintainers=maintainers,
         versions_repo=versions_repo,
+        settings=settings,
         user=user,
         session=session,
         tool_id=str(tool_id),
-        file=file,
+        files=[file],
     )
 
     assert isinstance(response, _TemplateResponseProtocol)
