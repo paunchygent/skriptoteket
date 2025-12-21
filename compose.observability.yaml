@@ -9,6 +9,8 @@
 #   - External network: docker network create hule-network
 #   - Application running on hule-network (skriptoteket-web)
 
+name: skriptoteket-observability
+
 services:
   # Metrics collection and storage
   prometheus:

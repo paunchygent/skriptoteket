@@ -6,6 +6,8 @@
 # - External PostgreSQL: shared-postgres on hule-network
 # - Environment variables in .env (see .env.example.prod)
 
+name: skriptoteket
+
 services:
   web:
     build:
