@@ -156,6 +156,10 @@ export async function apiFetch<T>(path: string, options: ApiRequestOptions = {})
     return (await response.json()) as T;
   }
 
+  if (response.status === 401) {
+    auth.clear();
+  }
+
   throw await toApiError(response);
 }
 
@@ -166,4 +170,3 @@ export async function apiGet<T>(path: string): Promise<T> {
 export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
   return await apiFetch<T>(path, { method: "POST", body });
 }
-
