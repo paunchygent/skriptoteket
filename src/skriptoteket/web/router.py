@@ -12,6 +12,7 @@ from skriptoteket.web.pages import my_tools as my_tools_pages
 from skriptoteket.web.pages import spa_islands as spa_islands_pages
 from skriptoteket.web.pages import suggestions as suggestions_pages
 from skriptoteket.web.pages import tools as tools_pages
+from skriptoteket.web.routes import editor as editor_routes
 from skriptoteket.web.routes import interactive_tools as interactive_tools_routes
 
 router = APIRouter()
@@ -26,6 +27,7 @@ protected.include_router(my_runs_pages.router)
 protected.include_router(my_tools_pages.router)
 protected.include_router(suggestions_pages.router)
 protected.include_router(spa_islands_pages.router)
+protected.include_router(editor_routes.router)
 protected.include_router(interactive_tools_routes.router)
 protected.include_router(admin_tools_pages.router)
 protected.include_router(admin_scripting_pages.router)

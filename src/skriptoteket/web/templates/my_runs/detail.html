@@ -1,4 +1,9 @@
 {% extends "base.html" %}
+
+{% block scripts_extra %}
+  {{ vite_tags("src/entrypoints/runtime.ts") }}
+{% endblock %}
+
 {% block content %}
   <div class="huleedu-panel">
     <div class="huleedu-mb-4">

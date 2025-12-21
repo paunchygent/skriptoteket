@@ -2,6 +2,31 @@
    CODEMIRROR THEME OVERRIDES
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* CodeMirror 6 (SPA island) */
+.cm-editor {
+  font-family: var(--huleedu-font-mono) !important;
+  font-size: var(--huleedu-text-sm) !important;
+  background-color: var(--huleedu-canvas) !important;
+  border: var(--huleedu-border-width) solid var(--huleedu-navy) !important;
+  box-sizing: border-box !important;
+  color: var(--huleedu-navy) !important;
+}
+
+.cm-gutters {
+  background-color: var(--huleedu-navy-05) !important;
+  border-right: var(--huleedu-border-width) solid var(--huleedu-navy-20) !important;
+}
+
+.cm-cursor,
+.cm-dropCursor {
+  border-left-color: var(--huleedu-burgundy) !important;
+}
+
+.cm-selectionBackground,
+.cm-content ::selection {
+  background-color: var(--huleedu-burgundy-10) !important;
+}
+
 .CodeMirror {
   font-family: var(--huleedu-font-mono) !important;
   font-size: var(--huleedu-text-sm) !important;
@@ -158,7 +183,20 @@
   min-width: 0;
 }
 
+.huleedu-editor-codemirror {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
 .huleedu-editor-textarea-wrapper .CodeMirror {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+}
+
+.huleedu-editor-textarea-wrapper .cm-editor {
   flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
@@ -304,6 +342,13 @@
 
   /* Match CodeMirror to the wrapper height (keep editor usable, avoid collapse). */
   .huleedu-editor-textarea-wrapper .CodeMirror {
+    max-width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    font-size: 16px !important; /* Prevent iOS/Edge auto-zoom on input focus */
+  }
+
+  .huleedu-editor-textarea-wrapper .cm-editor {
     max-width: 100% !important;
     height: 100% !important;
     min-height: 100% !important;

@@ -273,6 +273,8 @@ kill-dev = "pkill -f 'uvicorn.*skriptoteket'"
 dev-docker = "uvicorn --app-dir src skriptoteket.web.app:app --reload --host 0.0.0.0 --port 8000"
 serve = "uvicorn --app-dir src skriptoteket.web.app:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'"
 ui-smoke = "python -m scripts.playwright_ui_smoke"
+ui-editor-smoke = "python -m scripts.playwright_editor_island_smoke"
+ui-runtime-smoke = "python -m scripts.playwright_runtime_island_smoke"
 
 # Frontend (SPA islands)
 fe-install.cmd = "pnpm install"

@@ -14,7 +14,11 @@ export default defineConfig({
     outDir: path.resolve(dirname, "../../src/skriptoteket/web/static/spa"),
     emptyOutDir: true,
     rollupOptions: {
-      input: ["src/entrypoints/demo.ts"],
+      input: [
+        "src/entrypoints/demo.ts",
+        "src/entrypoints/editor.ts",
+        "src/entrypoints/runtime.ts",
+      ],
     },
   },
   server: {

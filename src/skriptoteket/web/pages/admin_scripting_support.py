@@ -163,6 +163,17 @@ def editor_context(
         selected_version.id if (selected_version is not None and not is_draft) else None
     )
 
+    editor_spa_payload = {
+        "tool_id": str(tool.id),
+        "selected_version_id": str(selected_version.id) if selected_version is not None else None,
+        "save_mode": "snapshot" if is_draft else "create_draft",
+        "derived_from_version_id": (
+            str(derived_from_version_id) if derived_from_version_id is not None else None
+        ),
+        "entrypoint": editor_entrypoint,
+        "source_code": editor_source_code,
+    }
+
     return {
         "request": request,
         "user": user,
@@ -175,6 +186,7 @@ def editor_context(
         "save_action": save_action,
         "save_mode": "snapshot" if is_draft else "create_draft",
         "derived_from_version_id": derived_from_version_id,
+        "editor_spa_payload": editor_spa_payload,
         "run": run,
         "artifacts": artifacts_for_run(run) if run else [],
         "error": error,

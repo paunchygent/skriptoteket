@@ -1,4 +1,9 @@
 {% extends "base.html" %}
+
+{% block scripts_extra %}
+  {{ vite_tags("src/entrypoints/runtime.ts") }}
+{% endblock %}
+
 {% block content %}
   <div class="huleedu-card huleedu-panel huleedu-stack">
     <p><a class="huleedu-link" href="/browse">← Tillbaka till katalog</a></p>
@@ -30,4 +35,3 @@
     </div>
   </div>
 {% endblock %}
-
