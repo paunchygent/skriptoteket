@@ -18,6 +18,11 @@ class Settings(BaseSettings):
 
     ENABLE_DOCS: bool = True
 
+    # SPA islands (ADR-0025)
+    # If set, templates render SPA assets from the Vite dev server instead of the production
+    # manifest.
+    VITE_DEV_SERVER_URL: str | None = None
+
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/skriptoteket"
     DATABASE_ECHO: bool = False
 

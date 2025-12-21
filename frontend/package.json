@@ -1,0 +1,15 @@
+{
+  "name": "skriptoteket-monorepo",
+  "private": true,
+  "packageManager": "pnpm@10.26.1",
+  "scripts": {
+    "dev": "pnpm --filter @skriptoteket/islands dev",
+    "build": "pnpm --filter @skriptoteket/islands build",
+    "build:watch": "pnpm --filter @skriptoteket/islands build:watch",
+    "preview": "pnpm --filter @skriptoteket/islands preview",
+    "typecheck": "pnpm --filter @skriptoteket/islands typecheck",
+    "type-check": "pnpm --filter @skriptoteket/islands type-check",
+    "lint": "pnpm --filter @skriptoteket/islands lint",
+    "lint:fix": "pnpm --filter @skriptoteket/islands lint:fix"
+  }
+}

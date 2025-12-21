@@ -9,6 +9,7 @@ from skriptoteket.web.pages import curated_apps as curated_apps_pages
 from skriptoteket.web.pages import home as home_pages
 from skriptoteket.web.pages import my_runs as my_runs_pages
 from skriptoteket.web.pages import my_tools as my_tools_pages
+from skriptoteket.web.pages import spa_islands as spa_islands_pages
 from skriptoteket.web.pages import suggestions as suggestions_pages
 from skriptoteket.web.pages import tools as tools_pages
 from skriptoteket.web.routes import interactive_tools as interactive_tools_routes
@@ -24,6 +25,7 @@ protected.include_router(tools_pages.router)
 protected.include_router(my_runs_pages.router)
 protected.include_router(my_tools_pages.router)
 protected.include_router(suggestions_pages.router)
+protected.include_router(spa_islands_pages.router)
 protected.include_router(interactive_tools_routes.router)
 protected.include_router(admin_tools_pages.router)
 protected.include_router(admin_scripting_pages.router)

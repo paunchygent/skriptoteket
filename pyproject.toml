@@ -274,6 +274,31 @@ dev-docker = "uvicorn --app-dir src skriptoteket.web.app:app --reload --host 0.0
 serve = "uvicorn --app-dir src skriptoteket.web.app:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'"
 ui-smoke = "python -m scripts.playwright_ui_smoke"
 
+# Frontend (SPA islands)
+fe-install.cmd = "pnpm install"
+fe-install.working_dir = "frontend"
+
+fe-dev.cmd = "pnpm run dev"
+fe-dev.working_dir = "frontend"
+
+fe-build.cmd = "pnpm run build"
+fe-build.working_dir = "frontend"
+
+fe-build-watch.cmd = "pnpm run build:watch"
+fe-build-watch.working_dir = "frontend"
+
+fe-preview.cmd = "pnpm run preview"
+fe-preview.working_dir = "frontend"
+
+fe-type-check.cmd = "pnpm run type-check"
+fe-type-check.working_dir = "frontend"
+
+fe-lint.cmd = "pnpm run lint"
+fe-lint.working_dir = "frontend"
+
+fe-lint-fix.cmd = "pnpm run lint:fix"
+fe-lint-fix.working_dir = "frontend"
+
 # Code quality
 format = "ruff format --force-exclude ."
 lint = { composite = [

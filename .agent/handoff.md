@@ -16,13 +16,15 @@ Keep this file updated so the next session can pick up work quickly.
 - Date: 2025-12-21
 - Branch / commit: `main` @ `66905ee`
 - Current sprint: `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md`
-- Backend now: ST-10-06 done; fonts added to Dockerfiles for PDF generation
-- Frontend now: N/A (completed work moved to `.agent/readme-first.md`)
+- Backend now: ST-10-06 done
+- Frontend now: ST-10-08 done; next: ST-10-09
 
 ## 2025-12-21
 
-- Test fixes: removed future annotations from route modules; updated ist_vh_mejl_bcc to Contract v2; added `json.dumps()` to migration test JSONB
-- Docker fonts: `fontconfig`, `fonts-liberation2`, `fonts-dejavu-core`, `fonts-freefont-ttf`, `fonts-noto-core` in both Dockerfiles
+- ST-10-08 (SPA islands toolchain): pnpm workspace + Vite/Vue/Tailwind build to `/static` + Jinja manifest integration: `frontend/package.json`, `frontend/pnpm-workspace.yaml`, `frontend/islands/`, `src/skriptoteket/web/vite.py`, `src/skriptoteket/web/templating.py`.
+- PDM↔pnpm integration: `pdm run fe-install|fe-dev|fe-build|fe-build-watch|fe-preview|fe-type-check|fe-lint|fe-lint-fix` delegates to pnpm in the `frontend/` workspace: `pyproject.toml`. (ESLint 9 flat config: `frontend/islands/eslint.config.js`.)
+- Demo SPA page (`hx-boost="false"` around mount): `/spa/demo` → `src/skriptoteket/web/pages/spa_islands.py`, `src/skriptoteket/web/templates/spa/demo.html`.
+- Tests: `tests/unit/web/test_vite_assets.py`.
 
 ## What changed
 
@@ -49,12 +51,15 @@ Keep this file updated so the next session can pick up work quickly.
 ## How to run / verify
 
 - Canonical local recipe: see `.agent/readme-first.md` (includes `ARTIFACTS_ROOT` note).
+- Frontend build (prod-style): `pdm run fe-install` then `pdm run fe-build` (writes `src/skriptoteket/web/static/spa/manifest.json` + hashed assets).
+- Frontend dev (HMR): set `VITE_DEV_SERVER_URL=http://localhost:5173` in `.env` and run `pdm run fe-dev`.
 - UI smoke (Playwright): `pdm run ui-smoke` (requires local dev server + `.env` bootstrap credentials; does not create users).
 - Quality gates: `pdm run lint`.
 - Typecheck: `pdm run typecheck`.
 - Unit tests: `pdm run pytest tests/unit/domain/scripting/ui` + `pdm run pytest tests/unit/infrastructure/runner/test_result_contract.py tests/unit/infrastructure/runner/test_docker_runner.py tests/unit/application/test_scripting_execute_tool_version_handler.py tests/unit/domain/scripting/test_models.py`.
 - Migration idempotency: `pdm run pytest -m docker --override-ini addopts='' tests/integration/test_migration_0008_tool_runs_ui_payload_idempotent.py tests/integration/test_migration_0009_tool_sessions_idempotent.py`.
 - Live check (2025-12-20): `pdm run db-upgrade`; login via curl cookie jar; `/browse/gemensamt/ovrigt` shows curated app → open `/apps/demo.counter` → Starta → Öka (step=2) → Spara som fil (action_id=`export`) → file stored at `ARTIFACTS_ROOT/<run_id>/output/counter.txt` and downloadable via `/my-runs/<run_id>/artifacts/output_counter_txt` (200).
+- Live check (2025-12-21): `pdm run db-upgrade` + `pdm run fe-build`; login; open `/spa/demo` and confirm “SPA island (demo)” renders + counter increments.
 - Verified (2025-12-20): `pdm run lint`, `pdm run typecheck`, `pdm run pytest tests/unit/application/scripting/handlers/test_interactive_tool_api.py tests/unit/infrastructure/runner/test_artifact_manager.py`, `pdm run docs-validate`.
 
 ## Known issues / risks
@@ -65,7 +70,6 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Next steps (recommended order)
 
-- Frontend: improve SSR action form UX (required/defaults/help text, tighter layout) while keeping the allowlists intact.
+- Frontend: ST-10-09 editor SPA island MVP (mount on script editor; keep ADR-0025 HTMX coexistence rules).
 - Backend: if multi-context sessions are needed, decide how to correlate `tool_sessions.context` ↔ tool runs (currently latest_run_id is computed from `tool_runs` per tool+user).
 - Backend: confirm vega-lite approach (implement restrictions vs keep blocked); current implementation blocks `vega_lite` outputs with a system notice.
-

@@ -2,7 +2,7 @@
 type: story
 id: ST-10-08
 title: "Frontend toolchain for SPA islands (Vue/Vite/Tailwind)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-19
 epic: "EPIC-10"

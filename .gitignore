@@ -34,10 +34,20 @@ requirements.txt
 # Claude Code artifacts
 .claude/repomix_packages/
 
+# Node.js (SPA islands toolchain)
+node_modules/
+.pnpm-store/
+pnpm-debug.log*
+.eslintcache
+
 # Node.js (puppeteer for visual testing)
 tools/puppeteer/node_modules/
 tools/puppeteer/package.json
 tools/puppeteer/package-lock.json
+
+# SPA islands (Vite build output)
+src/skriptoteket/web/static/spa/*
+!src/skriptoteket/web/static/spa/.gitkeep
 
 # Local artifacts (runner output)
 .artifacts/
