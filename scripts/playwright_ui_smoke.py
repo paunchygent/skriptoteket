@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from playwright.sync_api import Error as PlaywrightError, expect, sync_playwright
+from playwright.sync_api import Error as PlaywrightError
+from playwright.sync_api import expect, sync_playwright
 
 from scripts._playwright_config import get_config
 
