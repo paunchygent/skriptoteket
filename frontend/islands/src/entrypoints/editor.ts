@@ -3,8 +3,6 @@ import { createApp, type App } from "vue";
 import EditorIslandApp from "../editor/EditorIslandApp.vue";
 import type { EditorBootPayload } from "../editor/types";
 
-import "../styles.css";
-
 type EditorIslandRoot = HTMLElement & {
   dataset: {
     spaEditorMounted?: string;

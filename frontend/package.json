@@ -1,15 +1,23 @@
 {
-  "name": "skriptoteket-monorepo",
+  "name": "skriptoteket-frontend",
   "private": true,
   "packageManager": "pnpm@10.26.1",
   "scripts": {
-    "dev": "pnpm --filter @skriptoteket/islands dev",
-    "build": "pnpm --filter @skriptoteket/islands build",
-    "build:watch": "pnpm --filter @skriptoteket/islands build:watch",
-    "preview": "pnpm --filter @skriptoteket/islands preview",
-    "typecheck": "pnpm --filter @skriptoteket/islands typecheck",
-    "type-check": "pnpm --filter @skriptoteket/islands type-check",
-    "lint": "pnpm --filter @skriptoteket/islands lint",
-    "lint:fix": "pnpm --filter @skriptoteket/islands lint:fix"
+    "dev": "pnpm --filter @skriptoteket/spa dev",
+    "build": "pnpm --filter @skriptoteket/spa build",
+    "preview": "pnpm --filter @skriptoteket/spa preview",
+    "typecheck": "pnpm --filter @skriptoteket/spa typecheck",
+    "lint": "pnpm --filter @skriptoteket/spa lint",
+
+    "dev:islands": "pnpm --filter @skriptoteket/islands dev",
+    "build:islands": "pnpm --filter @skriptoteket/islands build",
+    "build:watch:islands": "pnpm --filter @skriptoteket/islands build:watch",
+    "preview:islands": "pnpm --filter @skriptoteket/islands preview",
+    "typecheck:islands": "pnpm --filter @skriptoteket/islands typecheck",
+    "lint:islands": "pnpm --filter @skriptoteket/islands lint",
+    "lint:fix:islands": "pnpm --filter @skriptoteket/islands lint:fix",
+
+    "typecheck:all": "pnpm -r typecheck",
+    "lint:all": "pnpm -r lint"
   }
 }

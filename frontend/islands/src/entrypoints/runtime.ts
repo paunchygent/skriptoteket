@@ -2,8 +2,6 @@ import { createApp } from "vue";
 
 import RuntimeIslandApp from "../runtime/RuntimeIslandApp.vue";
 
-import "../styles.css";
-
 type RuntimeIslandRoot = HTMLElement & {
   dataset: {
     spaRuntime?: string;

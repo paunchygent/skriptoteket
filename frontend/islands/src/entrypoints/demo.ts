@@ -1,7 +1,6 @@
 import { createApp } from "vue";
 
 import DemoApp from "../DemoApp.vue";
-import "../styles.css";
 
 const root = document.getElementById("spa-island-demo");
 if (!root) {
@@ -10,4 +9,3 @@ if (!root) {
 
 const message = root.dataset.message ?? "Hej från Vue + Vite!";
 createApp(DemoApp, { message }).mount(root);
-

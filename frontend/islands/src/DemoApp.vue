@@ -1,8 +1,8 @@
 <template>
   <div class="huleedu-card huleedu-mt-4">
-    <h2 class="text-lg font-semibold">SPA island (demo)</h2>
+    <h2>SPA island (demo)</h2>
     <p class="huleedu-muted">{{ message }}</p>
-    <div class="mt-3 flex items-center gap-2">
+    <div class="huleedu-flex-center huleedu-gap-2 huleedu-mt-2">
       <button
         type="button"
         class="huleedu-btn huleedu-btn-navy huleedu-btn-sm"
@@ -10,7 +10,7 @@
       >
         Öka
       </button>
-      <span class="font-mono">count={{ count }}</span>
+      <code>count={{ count }}</code>
     </div>
   </div>
 </template>
@@ -22,4 +22,3 @@ defineProps<{ message: string }>();
 
 const count = ref(0);
 </script>
-
