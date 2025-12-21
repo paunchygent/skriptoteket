@@ -1,43 +1,19 @@
 from __future__ import annotations
 
-import os
 import re
 import uuid
 from pathlib import Path
 
 from playwright.sync_api import expect, sync_playwright
 
-
-def _read_dotenv(path: Path) -> dict[str, str]:
-    if not path.exists():
-        return {}
-
-    values: dict[str, str] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#") or "=" not in stripped:
-            continue
-        key, value = stripped.split("=", 1)
-        values[key.strip()] = value.strip()
-    return values
-
-
-def _get_config_value(*, key: str, dotenv: dict[str, str]) -> str | None:
-    return os.environ.get(key) or dotenv.get(key)
+from scripts._playwright_config import get_config
 
 
 def main() -> None:
-    dotenv = _read_dotenv(Path(".env"))
-
-    base_url = _get_config_value(key="BASE_URL", dotenv=dotenv) or "http://127.0.0.1:8000"
-    email = _get_config_value(key="BOOTSTRAP_SUPERUSER_EMAIL", dotenv=dotenv)
-    password = _get_config_value(key="BOOTSTRAP_SUPERUSER_PASSWORD", dotenv=dotenv)
-
-    if not email or not password:
-        raise SystemExit(
-            "Missing BOOTSTRAP_SUPERUSER_EMAIL/BOOTSTRAP_SUPERUSER_PASSWORD. "
-            "Set them in .env (gitignored) or export them in your shell."
-        )
+    config = get_config()
+    base_url = config.base_url
+    email = config.email
+    password = config.password
 
     artifacts_dir = Path(".artifacts/ui-editor-smoke")
     artifacts_dir.mkdir(parents=True, exist_ok=True)
