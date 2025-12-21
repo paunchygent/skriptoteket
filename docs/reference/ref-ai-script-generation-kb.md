@@ -8,8 +8,6 @@ created: 2025-12-20
 topic: "scripting"
 ---
 
-# AI Kunskapsbas: Skapa skript för Skriptoteket
-
 Detta dokument innehåller all information som en AI-assistent behöver för att hjälpa användare skapa skript enligt Skriptotekets datakontrakt.
 
 ---
@@ -19,6 +17,7 @@ Detta dokument innehåller all information som en AI-assistent behöver för att
 Skriptoteket är en plattform för att köra Python-skript som bearbetar uppladdade filer (CSV, XLSX, PDF, DOCX, etc.) och returnerar strukturerade resultat till användaren.
 
 **Nyckelkoncept:**
+
 - Användaren laddar upp en fil
 - Skriptet bearbetar filen
 - Skriptet returnerar UI-element (tabeller, meddelanden, markdown) och/eller nedladdningsbara artefakter

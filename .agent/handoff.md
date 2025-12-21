@@ -14,27 +14,31 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-21
-- Branch / commit: `main` @ `80969eb`
-- Current sprint: none (EPIC-10 sprint plans are done)
-- Backend now: ST-10-06 done
-- Frontend now: ST-10-10 done
-- Production: deployed + verified (runner + SPA islands working)
+- Branch / commit: `main` @ `15c0b52` (working tree dirty)
+- Current sprint: `SPR-2025-12-21` (EPIC-11 full SPA migration foundations)
+- Backend now: ST-11-04 done; start ST-11-05 (SPA auth/guards)
+- Frontend now: ST-11-01/02 foundations landed (workspace + `@skriptoteket/spa` scaffold + `@huleedu/ui` stub)
+- Production today: still SSR + SPA islands (legacy) until EPIC-11 cutover
 
 ## 2025-12-21
 
-- ST-08-01 (Hjälp-ramverk): global “Hjälp” toggle + help-panel/drawer i base-shell, roll-aware hjälpindex (inloggad/utloggad) + topic-stubbar + korrekt close-beteende (Escape, click/focus utanför, HTMX-interaktioner): `src/skriptoteket/web/templates/base.html`, `src/skriptoteket/web/templates/partials/help/`, `src/skriptoteket/web/static/js/app.js`, `src/skriptoteket/web/static/css/app/components.css`, `scripts/playwright_ui_smoke.py`. Context-id ligger i `#help-context` i `<main>` (behövs pga `hx-boost` som inte byter `<body>`). Verifierat lokalt (2025-12-21): `pdm run playwright install chromium` (om needed) + `pdm run ui-smoke` (skärmdumpar i `.artifacts/ui-smoke/`).
+- EPIC-11 planning + docs alignment (full SPA): new PRD/ADRs + epic/stories + sprint plan; superseded SSR/HTMX + islands ADRs: `docs/prd/prd-spa-frontend-v0.1.md`, `docs/adr/adr-0027-full-vue-vite-spa.md`, `docs/adr/adr-0028-spa-hosting-and-routing-integration.md`, `docs/adr/adr-0029-frontend-styling-pure-css-design-tokens.md`, `docs/adr/adr-0030-openapi-as-source-and-openapi-typescript.md`, `docs/backlog/epics/epic-11-full-vue-spa-migration.md`, `docs/backlog/sprints/sprint-2025-12-21-spa-migration-foundations.md`, `docs/reference/reports/ref-vue-spa-migration-roadmap.md` (validated: `pdm run docs-validate`).
+- Frontend foundations (ST-11-01/02): pnpm workspace now supports `apps/*` + `packages/*`; added `frontend/apps/skriptoteket` SPA scaffold and `frontend/packages/huleedu-ui` stub; removed Tailwind from legacy `frontend/islands` per ADR-0029 (validated: `pnpm -C frontend install`, `pnpm -C frontend lint`, `pnpm -C frontend typecheck`, `pnpm -C frontend build`, plus `pnpm -C frontend --filter @huleedu/ui lint|typecheck|build` and `pnpm -C frontend --filter @skriptoteket/islands lint|typecheck`).
+- ST-11-04 (API v1 + OpenAPI TS): migrated legacy `/api/*` JSON routes → `/api/v1/*` (no shim) + enforced `X-CSRF-Token` on `POST`s; added `/api/v1/auth/*`; added deterministic OpenAPI export + TS generation: `src/skriptoteket/web/routes/interactive_tools.py`, `src/skriptoteket/web/routes/editor.py`, `src/skriptoteket/web/api/v1/auth.py`, `src/skriptoteket/web/auth/api_dependencies.py`, `scripts/export_openapi_v1.py`, `frontend/apps/skriptoteket/src/api/openapi.d.ts`, `pyproject.toml`, tests `tests/unit/web/test_api_v1_auth_and_csrf_routes.py` (verify: `pdm run fe-gen-api-types`, `pnpm -C frontend --filter @skriptoteket/spa typecheck`, `pdm run pytest tests/unit/web/test_api_v1_auth_and_csrf_routes.py`).
+- ST-08-01 (Hjälp-ramverk): global “Hjälp” i base-shell. Mobile UX (post-ST-08-01): Hjälp ligger i hamburger-menyn (även utloggad), och hjälp-panelen är en inset overlay med safe-area insets (inte flush edge-to-edge). Close-beteende: Escape + click/focus utanför + HTMX `beforeRequest` stänger (click utanför är close-and-continue). Files: `src/skriptoteket/web/templates/base.html`, `src/skriptoteket/web/templates/partials/help/`, `src/skriptoteket/web/static/js/app.js`, `src/skriptoteket/web/static/css/app/layout.css`, `src/skriptoteket/web/static/css/app/components.css`, `scripts/playwright_ui_smoke.py`. Verifierat lokalt (2025-12-21): `pdm run ui-smoke` (inkl. `help-logged-*-mobile.png` i `.artifacts/ui-smoke/`) + manual mobile pass (Playwright artifacts i `.artifacts/manual-ux/`).
 - ST-09-02 (CSP): CSP is enforced at nginx reverse proxy (`~/infrastructure/nginx/conf.d/skriptoteket.conf` on hemma) with `script-src 'self'` + `script-src-attr 'none'` + `style-src 'unsafe-inline'` (CodeMirror) + Google Fonts + `frame-src 'self' about:` (for `srcdoc` iframes). Removed inline `onclick=` from admin versions list (Option A) by making link + rollback form siblings and using `hx-confirm`: `src/skriptoteket/web/templates/admin/partials/version_list.html`, `src/skriptoteket/web/static/css/app/editor.css`. Verified on prod (2025-12-21): no CSP console violations (Playwright probe).
 - ST-06-07 (toasts): admin actions now show success/error toasts without full reloads by using HTMX `HX-Location` redirects + toast cookies; added error toasts and rollback success toast; suggestions decision now uses toast + removes the inline “saved” banner: `src/skriptoteket/web/pages/admin_scripting_support.py`, `src/skriptoteket/web/pages/admin_scripting.py`, `src/skriptoteket/web/pages/suggestions.py`, `src/skriptoteket/web/templates/suggestions_review_detail.html`, `src/skriptoteket/web/htmx.py`.
 - ST-10-08 (SPA islands toolchain): pnpm workspace + Vite/Vue/Tailwind build to `/static` + Jinja manifest integration: `frontend/package.json`, `frontend/pnpm-workspace.yaml`, `frontend/islands/`, `src/skriptoteket/web/vite.py`, `src/skriptoteket/web/templating.py`.
 - PDM↔pnpm integration: `pdm run fe-install|fe-dev|fe-build|fe-build-watch|fe-preview|fe-type-check|fe-lint|fe-lint-fix` delegates to pnpm in the `frontend/` workspace: `pyproject.toml`. (ESLint 9 flat config: `frontend/islands/eslint.config.js`.)
 - Demo SPA page (`hx-boost="false"` around mount): `/spa/demo` → `src/skriptoteket/web/pages/spa_islands.py`, `src/skriptoteket/web/templates/spa/demo.html`.
-- ST-10-09 (editor SPA island MVP): CodeMirror 6 Vue island + JSON save endpoints + HTMX-safe embed on `/admin/tools/{tool_id}` + `/admin/tool-versions/{version_id}`: `frontend/islands/src/entrypoints/editor.ts`, `frontend/islands/src/editor/*`, `src/skriptoteket/web/routes/editor.py`, `src/skriptoteket/web/templates/admin/script_editor.html`, `src/skriptoteket/web/pages/admin_scripting_support.py`, `src/skriptoteket/web/static/css/app/editor.css`, `tests/unit/web/test_editor_api_routes.py`.
-- ST-10-10 (runtime SPA island MVP): Vue runtime island renders stored `ui_payload` + `next_actions` on interactive pages and calls `POST /api/start_action` with optimistic concurrency: `frontend/islands/src/entrypoints/runtime.ts`, `frontend/islands/src/runtime/*`, `src/skriptoteket/web/templates/tools/partials/run_result.html`, `src/skriptoteket/web/templates/apps/detail.html`, `src/skriptoteket/web/templates/my_runs/detail.html`.
+- ST-10-09 (editor SPA island MVP): CodeMirror 6 Vue island + JSON save endpoints + HTMX-safe embed on `/admin/tools/{tool_id}` + `/admin/tool-versions/{version_id}`: `frontend/islands/src/entrypoints/editor.ts`, `frontend/islands/src/editor/*`, `src/skriptoteket/web/routes/editor.py` (`/api/v1/editor/*`), `src/skriptoteket/web/templates/admin/script_editor.html`, `src/skriptoteket/web/pages/admin_scripting_support.py`, `src/skriptoteket/web/static/css/app/editor.css`, `tests/unit/web/test_editor_api_routes.py`.
+- ST-10-10 (runtime SPA island MVP): Vue runtime island renders stored `ui_payload` + `next_actions` on interactive pages and calls `POST /api/v1/start_action` with optimistic concurrency: `frontend/islands/src/entrypoints/runtime.ts`, `frontend/islands/src/runtime/*`, `src/skriptoteket/web/templates/tools/partials/run_result.html`, `src/skriptoteket/web/templates/apps/detail.html`, `src/skriptoteket/web/templates/my_runs/detail.html`.
 - Tests: `tests/unit/web/test_vite_assets.py`.
 
 ## What changed
 
 - This handoff is intentionally compressed to current sprint-critical work only (see `.agent/readme-first.md` for history).
+- UI paradigm decision changed: full SPA is now the target (ADR-0027); SSR/HTMX and SPA islands are superseded and will be deleted at cutover.
 - Docker: multi-stage Dockerfile builds frontend SPA assets (Node.js stage → pnpm workspace → Vite build → copy to production image): `Dockerfile`.
 - Docker: compose project names added to avoid orphan warnings: `compose.prod.yaml` (`skriptoteket`), `compose.observability.yaml` (`skriptoteket-observability`).
 - Runner: contract v2 result.json only (no v1): `runner/_runner.py`.
@@ -51,6 +55,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Decisions (and links)
 
+- Full SPA migration: ADR-0027..0030 + PRD `PRD-spa-frontend-v0.1` + EPIC-11.
 - Contract v2 allowlists (ADR-0022): outputs `notice|markdown|table|json|html_sandboxed` (+ `vega_lite` curated-only); action fields `string|text|integer|number|boolean|enum|multi_enum`.
 - Normalizer returns combined result `{ui_payload, state}` via `UiNormalizationResult` (ADR-0024).
 - Policy budgets/caps approved (default vs curated) in `src/skriptoteket/domain/scripting/ui/policy.py`.
@@ -59,11 +64,14 @@ Keep this file updated so the next session can pick up work quickly.
 ## How to run / verify
 
 - Canonical local recipe: see `.agent/readme-first.md` (includes `ARTIFACTS_ROOT` note).
-- Frontend build (prod-style): `pdm run fe-install` then `pdm run fe-build` (writes `src/skriptoteket/web/static/spa/manifest.json` + hashed assets).
-- Frontend dev (HMR): set `VITE_DEV_SERVER_URL=http://localhost:5173` in `.env` and run `pdm run fe-dev`.
-- UI smoke (Playwright): `pdm run ui-smoke` (requires local dev server + `.env` bootstrap credentials; does not create users).
-- Editor island smoke (Playwright): `pdm run ui-editor-smoke` (requires Playwright browsers installed + `.env` bootstrap credentials; writes screenshots to `.artifacts/ui-editor-smoke`).
-- Runtime island smoke (Playwright): `pdm run ui-runtime-smoke` (requires Playwright browsers installed + `.env` bootstrap credentials; writes screenshots to `.artifacts/ui-runtime-smoke`).
+- Frontend install: `pdm run fe-install` (or `pnpm -C frontend install`)
+- SPA dev: `pdm run fe-dev` (or `pnpm -C frontend --filter @skriptoteket/spa dev`)
+- SPA build: `pdm run fe-build` (or `pnpm -C frontend --filter @skriptoteket/spa build`)
+- UI package checks: `pnpm -C frontend --filter @huleedu/ui lint|typecheck|build`
+- Islands (legacy) checks: `pdm run fe-dev-islands` / `pdm run fe-build-islands` (or `pnpm -C frontend --filter @skriptoteket/islands ...`)
+- UI smoke (Playwright): `pdm run ui-smoke` (dev: `.env` `BOOTSTRAP_SUPERUSER_*`; prod: `--dotenv .env.prod-smoke` with `PLAYWRIGHT_*`; does not create users).
+- Editor island smoke (Playwright): `pdm run ui-editor-smoke` (dev: `.env` `BOOTSTRAP_SUPERUSER_*`; prod: `--dotenv .env.prod-smoke`; screenshots in `.artifacts/ui-editor-smoke`).
+- Runtime island smoke (Playwright): `pdm run ui-runtime-smoke` (dev: `.env` `BOOTSTRAP_SUPERUSER_*`; prod: `--dotenv .env.prod-smoke`; screenshots in `.artifacts/ui-runtime-smoke`).
 - CSP header (prod, 2025-12-21): `curl -sI https://skriptoteket.hule.education/login | rg -i content-security-policy` (enforced; no Report-Only).
 - Quality gates: `pdm run lint`.
 - Typecheck: `pdm run typecheck`.
@@ -71,7 +79,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Migration idempotency: `pdm run pytest -m docker --override-ini addopts='' tests/integration/test_migration_0008_tool_runs_ui_payload_idempotent.py tests/integration/test_migration_0009_tool_sessions_idempotent.py`.
 - Live check (2025-12-20): `pdm run db-upgrade`; login via curl cookie jar; `/browse/gemensamt/ovrigt` shows curated app → open `/apps/demo.counter` → Starta → Öka (step=2) → Spara som fil (action_id=`export`) → file stored at `ARTIFACTS_ROOT/<run_id>/output/counter.txt` and downloadable via `/my-runs/<run_id>/artifacts/output_counter_txt` (200).
 - Live check (2025-12-21): `pdm run ui-smoke`, `pdm run ui-editor-smoke`, `pdm run ui-runtime-smoke` (artifacts under `.artifacts/`).
-- Live check (2025-12-21): `docker compose up -d db`, `pdm run db-upgrade`, `npm_config_cache=.tmp/npm-cache pdm run fe-build`, then `pdm run ui-editor-smoke` (verifies CodeMirror 6 mounts on `/admin/tools/<tool_id>` and Save creates/saves a version and redirects).
+- Live check (2025-12-21): `docker compose up -d db`, `pdm run db-upgrade`, `npm_config_cache=.tmp/npm-cache pdm run fe-build-islands`, then `pdm run ui-editor-smoke` (verifies CodeMirror 6 mounts on `/admin/tools/<tool_id>` and Save creates/saves a version and redirects).
 - Live check (2025-12-21): `pdm run ui-runtime-smoke` (verifies runtime island mounts on `/apps/demo.counter` + `/my-runs/<run_id>` + `/tools/<slug>/run`, action updates UI, and concurrency "Uppdatera" refresh path works).
 - Live check (2025-12-21): with local dev server running on `http://127.0.0.1:8000`, used Playwright (via `pdm run python`) to exercise editor submit-review → publish → metadata save and suggestions submit → deny; verified toasts appear ("Skickat för granskning.", "Version publicerad.", "Metadata sparad.", "Förslag avslaget.").
 - Production deploy (2025-12-21): `ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"` + `docker compose -f compose.observability.yaml up -d` (verified runner executes, SPA islands render).
@@ -79,12 +87,15 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Known issues / risks
 
+- Frontend scripts are split: `pdm run fe-*` targets the SPA (`@skriptoteket/spa`), and `pdm run fe-*-islands` targets legacy islands (`@skriptoteket/islands`).
 - `vega_lite` restrictions are not implemented yet; do not accept/render vega-lite outputs until restrictions exist (ADR-0024).
 - Dev DB can get bloated with test accounts: avoid creating new superusers for UI checks (reuse `.env` bootstrap account).
 - SSR action forms are minimal: no required/default/placeholder/help text yet; supported types match contract allowlist.
 
 ## Next steps (recommended order)
 
+- EPIC-11: implement ST-11-05 next (SPA auth store + router guards).
+- EPIC-11: implement ST-11-03 (FastAPI history fallback + manifest/asset integration for the full SPA).
 - Admin UX: ST-06-08 (editor UI fixes) should be re-audited against the SPA island editor; close or rescope.
 - Governance: ST-02-02 (admin nomination + superuser approval) to complete the auditable promotion gate.
 - Backend: if multi-context sessions are needed, decide how to correlate `tool_sessions.context` ↔ tool runs (currently latest_run_id is computed from `tool_runs` per tool+user).

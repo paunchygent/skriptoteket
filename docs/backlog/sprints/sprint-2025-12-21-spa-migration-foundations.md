@@ -70,3 +70,4 @@ Establish the minimum viable “full SPA” foundation so further route-parity w
 ## Notes / follow-ups
 
 - Next sprint starts route-parity vertical slices (browse + run + admin/editor).
+- ST-11-04 landed: `/api/*` migrated to `/api/v1/*` + OpenAPI export + `openapi-typescript` workflow (`pdm run fe-gen-api-types`).

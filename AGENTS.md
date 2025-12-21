@@ -1,6 +1,7 @@
 # Repository Guidelines
 
-This repository hosts **Skriptoteket**, a teacher-first Script Hub built with FastAPI (server-rendered UI) and PostgreSQL.
+This repository hosts **Skriptoteket**, a teacher-first Script Hub with a FastAPI backend and PostgreSQL.
+UI is migrating to a **Vue/Vite SPA** (see `docs/adr/adr-0027-full-vue-vite-spa.md`); legacy SSR/Jinja/HTMX remains until cutover.
 Target Python is **3.13–3.14**.
 
 ## Product Overview
@@ -14,7 +15,7 @@ Target Python is **3.13–3.14**.
 - **No legacy support / workarounds**: do the full refactor; delete old paths instead of shims
 - **No vibe-coding**: follow established patterns and rules in `.agent/rules/000-rule-index.md`
 - **No unapproved reverts**: do not revert/restore changes you did not personally make without explicit user guidance (assume they may be user-added)
-- **Session rule (REQUIRED)**: for any UI/route change, do a live functional check (run the app and verify the page renders) and record how you verified it in `.agent/handoff.md`
+- **Session rule (REQUIRED)**: for any UI/route change, do a live functional check (run the backend and/or Vite as appropriate; verify it renders) and record how you verified it in `.agent/handoff.md`
 - **Protocol-first DI**: depend on `typing.Protocol`, not concrete implementations
 - **Layer boundaries**: domain is pure; web/api are thin; infrastructure implements protocols
 - **Transactions**: Unit of Work owns commit/rollback; repositories never commit
@@ -28,6 +29,7 @@ Target Python is **3.13–3.14**.
 - `migrations/`, `alembic.ini`: DB migrations (Alembic)
 - `docs/`: PRD/ADRs/backlog (start at `docs/index.md`); contract-enforced via `docs/_meta/docs-contract.yaml`
 - **Docs workflow (REQUIRED)**: follow `docs/reference/ref-sprint-planning-workflow.md` for PRD → ADR → epic → story → sprint planning.
+- `frontend/`: pnpm workspace (Vue/Vite) — `apps/skriptoteket` (SPA), `packages/huleedu-ui` (component library), `islands/` (legacy; to be deleted at cutover)
 - `.agent/`: agent workflow helpers (`.agent/readme-first.md`, `.agent/handoff.md`, prompt template) + coding rules (`.agent/rules/`)
 - `.claude/skills/`: repo-local agent skills (workflow playbooks + helpers)
 - `scripts/`: repo tooling (e.g., `scripts/validate_docs.py`)
@@ -39,6 +41,10 @@ Target Python is **3.13–3.14**.
 - DB (dev): `docker compose up -d db` then `pdm run db-upgrade`
 - Bootstrap first superuser: `pdm run bootstrap-superuser`
 - Run: `pdm run dev`
+- Frontend deps: `pdm run fe-install` (or `pnpm -C frontend install`)
+- SPA dev: `pdm run fe-dev` (or `pnpm -C frontend --filter @skriptoteket/spa dev`)
+- SPA build: `pdm run fe-build` (or `pnpm -C frontend --filter @skriptoteket/spa build`)
+- Legacy islands (until cutover): `pdm run fe-dev-islands` / `pdm run fe-build-islands`
 - **Dev services are long-running**: do not stop `pdm run dev` or `docker compose up -d db` unless explicitly requested.
 - Docker dev workflow: `pdm run dev-start` / `pdm run dev-stop` / `pdm run dev-build-start` / `pdm run dev-build-start-clean` / `pdm run dev-db-reset`
 - Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test` (lint runs Ruff + agent-doc budgets + docs contract)
@@ -71,7 +77,10 @@ Playwright (recommended), Selenium, Puppeteer available. Run via `pdm run python
 
 - **Do not create new superusers for UI checks**: reuse the existing local dev bootstrap account in `.env`
   (`BOOTSTRAP_SUPERUSER_EMAIL` / `BOOTSTRAP_SUPERUSER_PASSWORD`). Creating new accounts bloats the dev DB.
-- **HTMX caveat**: Avoid `waitForNavigation()` - use explicit URL waits
+- **Prod smoke tests (recommended)**: keep `BOOTSTRAP_SUPERUSER_*` for provisioning/local dev; store prod UI smoke
+  credentials in a gitignored `.env.prod-smoke` (`BASE_URL`, `PLAYWRIGHT_EMAIL`, `PLAYWRIGHT_PASSWORD`) and run
+  `pdm run ui-smoke --dotenv .env.prod-smoke` (same for `ui-editor-smoke` / `ui-runtime-smoke`).
+- **Legacy SSR/HTMX caveat**: Avoid `waitForNavigation()` - use explicit URL waits
 
 ## Git Workflow
 

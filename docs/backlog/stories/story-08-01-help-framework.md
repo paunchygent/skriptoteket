@@ -64,5 +64,8 @@ Denna story definierar **ramverket**. Innehållet (copy) levereras i separata st
 
 ## Notes
 
+- Mobile UX note (2025-12-21): Hjälp-entry ligger i hamburger-menyn på små skärmar (även utloggad), och
+  hjälp-panelen är en inset overlay med safe-area insets (inte flush edge-to-edge). Close-beteende är
+  fortsatt “close-and-continue” vid click utanför.
 - All hjälpcopy ska vara på svenska och fokusera på vad användaren kan göra (inte implementation).
 - Undvik duplicering: ramverket + beteende definieras här, sid-specifik copy i respektive story.

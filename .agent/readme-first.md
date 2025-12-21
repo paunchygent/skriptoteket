@@ -24,11 +24,11 @@ Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future H
 
 ## Current sprint dashboard (keep current only)
 
-- Sprint: none (EPIC-10 sprint plans are done)
-- Backend now: ST-10-06 (curated app execution + persisted runs) is done
-- Frontend now: ST-10-10 (runtime SPA island MVP) is done; production deployed + verified
-- Active polish: EPIC-06 (ST-06-07 done; ST-06-08 ready)
-- Security: EPIC-09 ST-09-02 is in progress (separate track)
+- Sprint: `SPR-2025-12-21` (EPIC-11 full SPA migration foundations) is active
+- Decision: full Vue/Vite SPA (ADR-0027) is accepted; ADR-0001/ADR-0025 are superseded
+- Frontend now: ST-11-01/02 foundations in progress (workspace + `@skriptoteket/spa` scaffold + `@huleedu/ui` stub)
+- Backend next: ST-11-04/05 (API v1 + OpenAPI→TypeScript + auth/route guards)
+- Production today: still SSR + SPA islands (legacy) until EPIC-11 cutover
 
 ## Current EPIC-04 decisions (dynamic scripts)
 
@@ -43,6 +43,9 @@ Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future H
 2. `.agent/rules/000-rule-index.md` (engineering rules and patterns)
 3. `AGENTS.md` (repo contributor guide)
 4. `doc_structure_requirements.md` (docs-contract governance)
+5. `docs/prd/prd-spa-frontend-v0.1.md` (SPA migration PRD)
+6. `docs/backlog/epics/epic-11-full-vue-spa-migration.md` (epic + story index)
+7. `docs/backlog/sprints/sprint-2025-12-21-spa-migration-foundations.md` (current sprint plan)
 
 ## Where to work
 

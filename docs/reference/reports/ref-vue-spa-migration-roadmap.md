@@ -116,21 +116,21 @@ From `src/skriptoteket/web/router.py`:
 - `my_tools_pages.router` → `/my-tools`
 - `suggestions_pages.router` → `/suggestions/*`
 - `spa_islands_pages.router` → `/spa/demo`, etc.
-- `editor_routes.router` → `/api/editor/*` (JSON)
-- `interactive_tools_routes.router` → `/api/*` (JSON)
+- `editor_routes.router` → `/api/v1/editor/*` (JSON)
+- `interactive_tools_routes.router` → `/api/v1/*` (JSON)
 - `admin_tools_pages.router` → `/admin/tools`
 - `admin_scripting_pages.router` → `/admin/tool-versions/*`
 
 ### Existing JSON API Endpoints
 
 ```text
-POST /api/editor/tools/{tool_id}/draft           → SaveResult
-POST /api/editor/tool-versions/{version_id}/save → SaveResult
-POST /api/start_action                           → StartActionResult
-GET  /api/tools/{tool_id}/sessions/{context}     → GetSessionStateResult
-GET  /api/runs/{run_id}                          → GetRunResult
-GET  /api/runs/{run_id}/artifacts                → ListArtifactsResult
-GET  /api/runs/{run_id}/artifacts/{artifact_id}  → FileResponse
+POST /api/v1/editor/tools/{tool_id}/draft           → SaveResult
+POST /api/v1/editor/tool-versions/{version_id}/save → SaveResult
+POST /api/v1/start_action                           → StartActionResult
+GET  /api/v1/tools/{tool_id}/sessions/{context}     → GetSessionStateResult
+GET  /api/v1/runs/{run_id}                          → GetRunResult
+GET  /api/v1/runs/{run_id}/artifacts                → ListArtifactsResult
+GET  /api/v1/runs/{run_id}/artifacts/{artifact_id}  → FileResponse
 ```
 
 ### Template Structure
@@ -334,7 +334,7 @@ src/skriptoteket/web/api/
 | `/api/v1/admin/suggestions/{id}` | GET | New: suggestion detail for review |
 | `/api/v1/admin/suggestions/{id}/decision` | POST | `DecideSuggestionHandler` |
 
-**Keep existing:** `/api/editor/*`, `/api/start_action`, `/api/runs/*`, `/api/tools/{id}/sessions/*`
+**Keep existing (already migrated to v1):** `/api/v1/editor/*`, `/api/v1/start_action`, `/api/v1/runs/*`, `/api/v1/tools/{id}/sessions/*`
 
 ---
 

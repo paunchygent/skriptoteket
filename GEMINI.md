@@ -4,7 +4,8 @@ This file provides guidance to Gemini-based coding agents when working with code
 
 ## Project Overview
 
-**Skriptoteket** (Script Hub) is a teacher-first platform for running curated, upload-based tools via a server-driven web UI. Built with FastAPI (Python 3.13+) and PostgreSQL, using DDD/Clean Architecture with Dishka DI.
+**Skriptoteket** (Script Hub) is a teacher-first platform for running curated, upload-based tools. Built with FastAPI (Python 3.13+) and PostgreSQL, using DDD/Clean Architecture with Dishka DI.
+UI direction: migrate to a full Vue/Vite SPA (see `docs/adr/adr-0027-full-vue-vite-spa.md`); legacy SSR/Jinja/HTMX remains until cutover.
 
 Roles hierarchy: **user → contributor → admin → superuser**. Tools are tagged by profession and category. Future: HuleEdu SSO via identity federation (identity external; roles remain local).
 
@@ -24,6 +25,12 @@ pdm run provision-user          # Create additional users
 # Development
 pdm run dev                     # Local server at http://127.0.0.1:8000
 pdm run dev-docker              # Server bound to 0.0.0.0 (for Docker)
+
+# Frontend (SPA)
+pdm run fe-install              # Install pnpm deps (frontend/)
+pdm run fe-dev                  # Vite dev server (SPA)
+pdm run fe-build                # SPA production build
+pdm run fe-dev-islands          # Legacy islands dev server (until cutover)
 
 # Tool execution (local dev only)
 # Add to .env: ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts
@@ -156,7 +163,9 @@ Playwright (recommended), Selenium, Puppeteer available. Run via `pdm run python
 
 ## Tech Stack
 
-- **Runtime**: Python 3.13+, FastAPI, Uvicorn, Jinja2, HTMX
+- **Frontend (target)**: Vue 3, Vite, Vue Router, Pinia (ADR-0027)
+- **Frontend (legacy until cutover)**: Jinja2, HTMX, embedded SPA islands
+- **Runtime**: Python 3.13+, FastAPI, Uvicorn
 - **Database**: PostgreSQL (asyncpg), SQLAlchemy 2.x (async), Alembic
 - **DI**: Dishka (protocol-first)
 - **Security**: Argon2 password hashing
