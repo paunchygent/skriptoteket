@@ -2,10 +2,11 @@
 type: adr
 id: ADR-0025
 title: "Embedded SPA islands for editor/runtime surfaces"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-19
+updated: 2025-12-21
 links: ["EPIC-10", "ADR-0022", "ADR-0024"]
 ---
 

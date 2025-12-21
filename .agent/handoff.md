@@ -17,13 +17,15 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch / commit: `main` @ `66905ee`
 - Current sprint: `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md`
 - Backend now: ST-10-06 done
-- Frontend now: ST-10-08 done; next: ST-10-09
+- Frontend now: ST-10-10 done
 
 ## 2025-12-21
 
 - ST-10-08 (SPA islands toolchain): pnpm workspace + Vite/Vue/Tailwind build to `/static` + Jinja manifest integration: `frontend/package.json`, `frontend/pnpm-workspace.yaml`, `frontend/islands/`, `src/skriptoteket/web/vite.py`, `src/skriptoteket/web/templating.py`.
 - PDM↔pnpm integration: `pdm run fe-install|fe-dev|fe-build|fe-build-watch|fe-preview|fe-type-check|fe-lint|fe-lint-fix` delegates to pnpm in the `frontend/` workspace: `pyproject.toml`. (ESLint 9 flat config: `frontend/islands/eslint.config.js`.)
 - Demo SPA page (`hx-boost="false"` around mount): `/spa/demo` → `src/skriptoteket/web/pages/spa_islands.py`, `src/skriptoteket/web/templates/spa/demo.html`.
+- ST-10-09 (editor SPA island MVP): CodeMirror 6 Vue island + JSON save endpoints + HTMX-safe embed on `/admin/tools/{tool_id}` + `/admin/tool-versions/{version_id}`: `frontend/islands/src/entrypoints/editor.ts`, `frontend/islands/src/editor/*`, `src/skriptoteket/web/routes/editor.py`, `src/skriptoteket/web/templates/admin/script_editor.html`, `src/skriptoteket/web/pages/admin_scripting_support.py`, `src/skriptoteket/web/static/css/app/editor.css`, `tests/unit/web/test_editor_api_routes.py`.
+- ST-10-10 (runtime SPA island MVP): Vue runtime island renders stored `ui_payload` + `next_actions` on interactive pages and calls `POST /api/start_action` with optimistic concurrency: `frontend/islands/src/entrypoints/runtime.ts`, `frontend/islands/src/runtime/*`, `src/skriptoteket/web/templates/tools/partials/run_result.html`, `src/skriptoteket/web/templates/apps/detail.html`, `src/skriptoteket/web/templates/my_runs/detail.html`.
 - Tests: `tests/unit/web/test_vite_assets.py`.
 
 ## What changed
@@ -54,12 +56,15 @@ Keep this file updated so the next session can pick up work quickly.
 - Frontend build (prod-style): `pdm run fe-install` then `pdm run fe-build` (writes `src/skriptoteket/web/static/spa/manifest.json` + hashed assets).
 - Frontend dev (HMR): set `VITE_DEV_SERVER_URL=http://localhost:5173` in `.env` and run `pdm run fe-dev`.
 - UI smoke (Playwright): `pdm run ui-smoke` (requires local dev server + `.env` bootstrap credentials; does not create users).
+- Editor island smoke (Playwright): `pdm run ui-editor-smoke` (requires Playwright browsers installed + `.env` bootstrap credentials; writes screenshots to `.artifacts/ui-editor-smoke`).
+- Runtime island smoke (Playwright): `pdm run ui-runtime-smoke` (requires Playwright browsers installed + `.env` bootstrap credentials; writes screenshots to `.artifacts/ui-runtime-smoke`).
 - Quality gates: `pdm run lint`.
 - Typecheck: `pdm run typecheck`.
 - Unit tests: `pdm run pytest tests/unit/domain/scripting/ui` + `pdm run pytest tests/unit/infrastructure/runner/test_result_contract.py tests/unit/infrastructure/runner/test_docker_runner.py tests/unit/application/test_scripting_execute_tool_version_handler.py tests/unit/domain/scripting/test_models.py`.
 - Migration idempotency: `pdm run pytest -m docker --override-ini addopts='' tests/integration/test_migration_0008_tool_runs_ui_payload_idempotent.py tests/integration/test_migration_0009_tool_sessions_idempotent.py`.
 - Live check (2025-12-20): `pdm run db-upgrade`; login via curl cookie jar; `/browse/gemensamt/ovrigt` shows curated app → open `/apps/demo.counter` → Starta → Öka (step=2) → Spara som fil (action_id=`export`) → file stored at `ARTIFACTS_ROOT/<run_id>/output/counter.txt` and downloadable via `/my-runs/<run_id>/artifacts/output_counter_txt` (200).
-- Live check (2025-12-21): `pdm run db-upgrade` + `pdm run fe-build`; login; open `/spa/demo` and confirm “SPA island (demo)” renders + counter increments.
+- Live check (2025-12-21): `docker compose up -d db`, `pdm run db-upgrade`, `npm_config_cache=.tmp/npm-cache pdm run fe-build`, then `pdm run ui-editor-smoke` (verifies CodeMirror 6 mounts on `/admin/tools/<tool_id>` and Save creates/saves a version and redirects).
+- Live check (2025-12-21): `pdm run ui-runtime-smoke` (verifies runtime island mounts on `/apps/demo.counter` + `/my-runs/<run_id>` + `/tools/<slug>/run`, action updates UI, and concurrency “Uppdatera” refresh path works).
 - Verified (2025-12-20): `pdm run lint`, `pdm run typecheck`, `pdm run pytest tests/unit/application/scripting/handlers/test_interactive_tool_api.py tests/unit/infrastructure/runner/test_artifact_manager.py`, `pdm run docs-validate`.
 
 ## Known issues / risks
@@ -70,6 +75,5 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Next steps (recommended order)
 
-- Frontend: ST-10-09 editor SPA island MVP (mount on script editor; keep ADR-0025 HTMX coexistence rules).
 - Backend: if multi-context sessions are needed, decide how to correlate `tool_sessions.context` ↔ tool runs (currently latest_run_id is computed from `tool_runs` per tool+user).
 - Backend: confirm vega-lite approach (implement restrictions vs keep blocked); current implementation blocks `vega_lite` outputs with a system notice.

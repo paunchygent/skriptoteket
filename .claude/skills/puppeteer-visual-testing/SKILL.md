@@ -30,26 +30,26 @@ NODE_PATH=tools/puppeteer/node_modules node script.js
 
 ## Output
 
-All screenshots/recordings go to `/tmp/` with descriptive names:
+All screenshots/recordings go under `.artifacts/` with descriptive names:
 
-- `/tmp/admin-tools-1440x900.png`
-- `/tmp/script-editor.png`
+- `.artifacts/puppeteer/admin-tools-1440x900.png`
+- `.artifacts/puppeteer/script-editor.png`
 
 ## Skriptoteket Login (CRITICAL)
 
-Credentials are in `.env`:
+Credentials must be provided via `.env` (gitignored) or exported env vars:
 
-- Email: `BOOTSTRAP_SUPERUSER_EMAIL` (usually `superuser@local.dev`)
-- Password: `BOOTSTRAP_SUPERUSER_PASSWORD` (usually `superuser-password`)
+- `BOOTSTRAP_SUPERUSER_EMAIL`
+- `BOOTSTRAP_SUPERUSER_PASSWORD`
 
-**Login pattern** - use `form.submit()` and wait with timeout:
+**Login pattern** (assumes `baseUrl`, `email`, `password` are set; see workflow below) - use `form.submit()` and wait with timeout:
 
 ```javascript
-await page.goto('http://127.0.0.1:8000/login', { waitUntil: 'networkidle0' });
-await page.type('input[name="email"]', 'superuser@local.dev');
-await page.type('input[name="password"]', 'superuser-password');
+await page.goto(`${baseUrl}/login`, { waitUntil: 'networkidle0' });
+await page.type('input[name="email"]', email);
+await page.type('input[name="password"]', password);
 await page.evaluate(() => document.querySelector('form').submit());
-await new Promise(r => setTimeout(r, 1500)); // Wait for redirect
+await page.waitForFunction(() => document.body.textContent?.includes('Inloggad som'), { timeout: 10_000 });
 ```
 
 **DO NOT** use `page.click()` + `waitForNavigation()` - it times out with HTMX forms.
@@ -58,22 +58,45 @@ await new Promise(r => setTimeout(r, 1500)); // Wait for redirect
 
 ```javascript
 const puppeteer = require('puppeteer');
+const fs = require('fs');
+const path = require('path');
+
+function readDotenv(filePath = path.resolve(process.cwd(), '.env')) {
+  if (!fs.existsSync(filePath)) return {};
+  const out = {};
+  for (const rawLine of fs.readFileSync(filePath, 'utf8').split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#') || !line.includes('=')) continue;
+    const idx = line.indexOf('=');
+    out[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+  }
+  return out;
+}
 
 (async () => {
+  const dotenv = readDotenv();
+  const baseUrl = process.env.BASE_URL || dotenv.BASE_URL || 'http://127.0.0.1:8000';
+  const email = process.env.BOOTSTRAP_SUPERUSER_EMAIL || dotenv.BOOTSTRAP_SUPERUSER_EMAIL;
+  const password = process.env.BOOTSTRAP_SUPERUSER_PASSWORD || dotenv.BOOTSTRAP_SUPERUSER_PASSWORD;
+  if (!email || !password) throw new Error('Missing BOOTSTRAP_SUPERUSER_EMAIL/BOOTSTRAP_SUPERUSER_PASSWORD');
+
+  const artifactsDir = path.resolve(process.cwd(), '.artifacts/puppeteer');
+  fs.mkdirSync(artifactsDir, { recursive: true });
+
   const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
   await page.setViewport({ width: 1440, height: 900 });
 
   // Login
-  await page.goto('http://127.0.0.1:8000/login', { waitUntil: 'networkidle0' });
-  await page.type('input[name="email"]', 'superuser@local.dev');
-  await page.type('input[name="password"]', 'superuser-password');
+  await page.goto(`${baseUrl}/login`, { waitUntil: 'networkidle0' });
+  await page.type('input[name="email"]', email);
+  await page.type('input[name="password"]', password);
   await page.evaluate(() => document.querySelector('form').submit());
-  await new Promise(r => setTimeout(r, 1500));
+  await page.waitForFunction(() => document.body.textContent?.includes('Inloggad som'), { timeout: 10_000 });
 
   // Navigate and screenshot
-  await page.goto('http://127.0.0.1:8000/admin/tools', { waitUntil: 'networkidle0' });
-  await page.screenshot({ path: '/tmp/admin-tools.png' });
+  await page.goto(`${baseUrl}/admin/tools`, { waitUntil: 'networkidle0' });
+  await page.screenshot({ path: path.join(artifactsDir, 'admin-tools.png'), fullPage: true });
 
   await browser.close();
 })();

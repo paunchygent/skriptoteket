@@ -26,7 +26,7 @@ Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future H
 
 - Sprint: `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md` (SPR-2025-12-22)
 - Backend now: ST-10-06 (curated app execution + persisted runs) is done
-- Frontend now: ST-10-08 (SPA islands toolchain) is done — next: ST-10-09
+- Frontend now: ST-10-09 (editor SPA island MVP) is done
 
 ## Current EPIC-04 decisions (dynamic scripts)
 

@@ -2,7 +2,7 @@
 type: story
 id: ST-10-09
 title: "Editor SPA island MVP (admin/contributor)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-19
 epic: "EPIC-10"

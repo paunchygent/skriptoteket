@@ -7,90 +7,145 @@ scope: "testing"
 
 # 075: Browser Automation
 
-## Available Tools
+## Defaults (REQUIRED)
 
-| Tool | Language | Install |
-|------|----------|---------|
-| Playwright | Python | `pdm install -G dev` (included) |
-| Selenium | Python | `pdm install -G dev` (included) |
-| Puppeteer | Node.js | `npm install puppeteer` |
+- REQUIRED: Use Playwright for new browser automation (Python).
+- REQUIRED: Put scripts in `scripts/` and run them via `pdm run python -m scripts.<module>`.
+- REQUIRED: Write artifacts (screenshots, traces) under `.artifacts/<script-name>/`.
+- REQUIRED: Reuse the bootstrap account from `.env`
+  (`BOOTSTRAP_SUPERUSER_EMAIL` / `BOOTSTRAP_SUPERUSER_PASSWORD`). Never hardcode or print credentials.
 
-## Running Scripts
+## Repo Smoke Scripts
 
-All browser automation scripts go in `scripts/` and run via terminal:
+- `pdm run ui-smoke` → screenshots in `.artifacts/ui-smoke/`
+- `pdm run ui-editor-smoke` → screenshots in `.artifacts/ui-editor-smoke/`
+- `pdm run ui-runtime-smoke` → screenshots in `.artifacts/ui-runtime-smoke/` (apps + `/tools/<slug>/run`)
+
+Prereqs:
+
+- Playwright installed locally: `pdm install -G dev`
+- App running at `BASE_URL` (defaults to `http://127.0.0.1:8000`)
+- For SPA island pages (e.g. editor), ensure the JS/CSS is available:
+  - Prod-style assets: `pdm run fe-install && pdm run fe-build`, or
+  - Dev/HMR: set `VITE_DEV_SERVER_URL=http://localhost:5173` and run `pdm run fe-dev`
+    (keep `pdm run dev` running too).
+
+## One-time Browser Install
+
+Playwright needs browser binaries installed locally (per Playwright version).
 
 ```bash
-pdm run python scripts/my_visual_test.py
+# Install default browsers (Chromium + Firefox + WebKit)
+pdm run playwright install
+
+# Install specific browsers
+pdm run playwright install chromium webkit firefox
+
+# Linux/CI: install browser OS dependencies too
+pdm run playwright install --with-deps
+
+# List installed browsers (across all Playwright installs)
+pdm run playwright install --list
+
+# Force reinstall (useful if cache is inconsistent)
+pdm run playwright install --force
+
+# Uninstall browsers from all Playwright installs on this machine
+pdm run playwright uninstall --all
 ```
 
-## Playwright (Recommended)
+Playwright-managed browser cache locations:
+
+- Windows: `%USERPROFILE%\\AppData\\Local\\ms-playwright`
+- macOS: `~/Library/Caches/ms-playwright`
+- Linux: `~/.cache/ms-playwright`
+
+To override browser download/search location, set `PLAYWRIGHT_BROWSERS_PATH=/absolute/path` for both:
+
+- `pdm run playwright install ...`
+- any script/test runs that use Playwright
+
+## macOS (Intel vs Apple Silicon)
+
+Playwright downloads different browser binaries depending on your architecture.
+
+```bash
+uname -m
+python -c "import platform; print(platform.machine())"
+# Expect: arm64 (Apple Silicon) or x86_64 (Intel)
+```
+
+If you are on Apple Silicon but see Playwright looking for `mac-x64` binaries, you are likely running an x86_64
+Python/terminal (Rosetta). Fix by using an arm64 Python/terminal and reinstalling browsers:
+
+```bash
+pdm run playwright uninstall --all
+rm -rf ~/Library/Caches/ms-playwright  # optional hard reset
+pdm run playwright install
+```
+
+## Debugging
+
+Useful environment variables:
+
+- `PWDEBUG=1` (or `PWDEBUG=console`) opens Playwright Inspector and disables timeouts.
+- `DEBUG=pw:browser` helps debug browser launch failures.
+- `DEBUG=pw:api` enables verbose Playwright API logs.
+- `PLAYWRIGHT_NODEJS_PATH=/absolute/path/to/node` uses a pre-installed Node.js for the driver.
+- `PLAYWRIGHT_SKIP_BROWSER_GC=1` disables automatic stale-browser cleanup.
+
+If you see errors like:
+
+- `Executable doesn't exist at ...` (usually stale/partial browser install), or
+- `Abort trap: 6` / `TargetClosedError` during `webkit.launch(...)`
+
+Reset the local browser install:
+
+```bash
+pdm run playwright install --list
+pdm run playwright uninstall --all
+pdm run playwright install --force
+```
+
+## Script Pattern (sync)
+
+Prefer reading config from `.env` / env vars and using explicit waits:
 
 ```python
-from playwright.sync_api import sync_playwright
+import os
+from pathlib import Path
+
+from playwright.sync_api import expect, sync_playwright
+
+base_url = os.environ.get("BASE_URL", "http://127.0.0.1:8000")
+email = os.environ["BOOTSTRAP_SUPERUSER_EMAIL"]
+password = os.environ["BOOTSTRAP_SUPERUSER_PASSWORD"]
+
+artifacts_dir = Path(".artifacts/my-script")
+artifacts_dir.mkdir(parents=True, exist_ok=True)
 
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
     page = browser.new_page()
-    page.goto('http://127.0.0.1:8000/login')
-    page.fill('input[name="email"]', 'superuser@local.dev')
-    page.fill('input[name="password"]', 'superuser-password')
-    page.click('button[type="submit"]')
-    page.wait_for_url('**/dashboard**')
-    page.screenshot(path='screenshot.png')
+
+    page.goto(f"{base_url}/login", wait_until="domcontentloaded")
+    page.get_by_label("E-post").fill(email)
+    page.get_by_label("Lösenord").fill(password)
+    page.get_by_role("button", name="Logga in").click()
+    expect(page.get_by_text("Inloggad som")).to_be_visible()
+
+    page.screenshot(path=str(artifacts_dir / "home.png"), full_page=True)
     browser.close()
 ```
 
-## Selenium
+## HTMX Caveat
 
-```python
-from selenium import webdriver
-from selenium.webdriver.common.by import By
+HTMX updates do not always trigger navigation events. Avoid relying on navigation waits (e.g. `waitForNavigation()`).
+Prefer `page.wait_for_url(...)`, locator waits, or `expect(...)`.
 
-options = webdriver.ChromeOptions()
-options.add_argument('--headless')
-driver = webdriver.Chrome(options=options)
-driver.get('http://127.0.0.1:8000/login')
-driver.find_element(By.NAME, 'email').send_keys('superuser@local.dev')
-driver.find_element(By.NAME, 'password').send_keys('superuser-password')
-driver.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
-driver.save_screenshot('screenshot.png')
-driver.quit()
-```
+## Context7 (Docs Refresh)
 
-## Puppeteer (Node.js)
+When updating these rules, pull current Playwright docs via Context7:
 
-```javascript
-await page.goto('http://127.0.0.1:8000/login', { waitUntil: 'networkidle0' });
-await page.type('input[name="email"]', 'superuser@local.dev');
-await page.type('input[name="password"]', 'superuser-password');
-await page.evaluate(() => document.querySelector('form').submit());
-await new Promise(r => setTimeout(r, 1500));
-```
-
-## Project-Specific Notes
-
-### HTMX Forms
-
-HTMX forms don't trigger standard navigation events. Avoid:
-```javascript
-// BAD - times out
-await page.click('button[type="submit"]');
-await page.waitForNavigation();
-```
-
-Use explicit waits instead:
-```python
-# Playwright
-page.wait_for_url('**/dashboard**')
-
-# Selenium
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-WebDriverWait(driver, 10).until(EC.url_contains('/dashboard'))
-```
-
-### Test Credentials
-
-From `.env`:
-- Email: `superuser@local.dev`
-- Password: `superuser-password`
+- `/websites/playwright_dev_python` (installation, browsers, cache paths, env vars)
+- `/microsoft/playwright-python` (Python API reference)

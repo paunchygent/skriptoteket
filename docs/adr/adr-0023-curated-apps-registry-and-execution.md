@@ -2,10 +2,11 @@
 type: adr
 id: ADR-0023
 title: "Curated apps registry and execution (owner-authored apps)"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-19
+updated: 2025-12-21
 links: ["PRD-script-hub-v0.2", "ADR-0022", "ADR-0024", "EPIC-10"]
 ---
 

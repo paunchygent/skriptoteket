@@ -2,7 +2,7 @@
 type: epic
 id: EPIC-10
 title: "Interactive tool UI contract and curated apps"
-status: active
+status: done
 owners: "agents"
 created: 2025-12-19
 outcome: "End users can run multi-turn tools with typed outputs/actions/state, and curated owner apps can be served in Katalog without exposing the tool editor workflow."

@@ -2,7 +2,7 @@
 type: story
 id: ST-10-10
 title: "Runtime SPA island MVP (end-user interactive tool UI)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-19
 epic: "EPIC-10"
