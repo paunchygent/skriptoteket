@@ -10,10 +10,12 @@ topic: "implementation-roadmap"
 links:
   - "PRD-script-hub-v0.2"
   - "EPIC-10"
+  - "EPIC-12"
   - "ADR-0022"
   - "ADR-0023"
   - "ADR-0024"
   - "ADR-0027"
+  - "ADR-0031"
   - "SPR-2025-12-22"
   - "SPR-2026-01-06"
   - "SPR-2026-01-20"
@@ -200,6 +202,37 @@ Session rule reminder:
 - Checkpoints (success criteria):
   - Live functional check: run → action → new run renders; reload preserves state.
   - `.agent/handoff.md` records verification.
+
+---
+
+## EPIC-12: Advanced Input & Output Handling (Future)
+
+This section covers v0.2 features from PRD-script-hub-v0.2 that are not yet scheduled into sprints.
+
+### Session L — Multi-file input contract (ST-12-01)
+
+- Target:
+  - Enable scripts to receive multiple input files with metadata discovery.
+- Concrete steps:
+  1. Update upload forms to support `multiple` file selection.
+  2. Update command layer to accept `list[tuple[str, bytes]]`.
+  3. Update Docker runner to place all files in `/work/input/` and generate `SKRIPTOTEKET_INPUT_MANIFEST`.
+  4. Preserve `SKRIPTOTEKET_INPUT_PATH` for backward compatibility with single-file scripts.
+  5. Update knowledge base with multi-file script patterns.
+- Checkpoints (success criteria):
+  - ST-12-01 acceptance criteria pass.
+  - Single-file scripts continue to work unchanged.
+  - Integration test with multi-file upload.
+- Dependencies:
+  - ADR-0031 (Multi-file input contract)
+
+### Future sessions (not yet planned)
+
+- **ST-12-02**: Native PDF output helper (WeasyPrint wrapper)
+- **ST-12-03**: Personalized tool settings (settings schema + user memory)
+- **ST-12-04**: Interactive text/dropdown inputs (form inputs without file upload)
+
+---
 
 ## Release checkpoint (v0.2)
 
