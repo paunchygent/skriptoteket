@@ -208,3 +208,6 @@ ssh hemma "docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m
 ### Runbooks
 
 See `docs/runbooks/runbook-home-server.md` for detailed operations.
+
+**Note**: Runbooks (`docs/runbooks/`) and rules (`.agent/rules/`) are gitignored because they may contain sensitive
+information (credentials, internal IPs, etc.). These files are local-only and should not be committed.
