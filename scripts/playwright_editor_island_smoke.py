@@ -51,6 +51,19 @@ def main() -> None:
         # Ensure SPA island mounts (CodeMirror 6)
         expect(page.locator("#spa-editor-main-target .cm-editor")).to_be_visible()
 
+        # Regression check: navigate away and back without a full reload (hx-boost).
+        # The editor island must mount again even though the Vite module won't re-execute.
+        page.get_by_role("link", name="Testyta").click()
+        page.wait_for_url("**/admin/tools", wait_until="domcontentloaded")
+        expect(page.get_by_role("heading", name="Testyta")).to_be_visible()
+
+        edit_link = page.get_by_role("link", name="Redigera").first
+        if edit_link.count() == 0:
+            raise RuntimeError("No tools found in /admin/tools; cannot re-open the editor page.")
+
+        edit_link.click()
+        expect(page.locator("#spa-editor-main-target .cm-editor")).to_be_visible()
+
         # Replace editor contents and save (create draft OR save snapshot)
         page.locator("#spa-editor-main-target .cm-content").click()
         page.keyboard.press("Meta+A")
