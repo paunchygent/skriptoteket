@@ -14,10 +14,11 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-21
-- Branch / commit: `main` @ `66905ee`
+- Branch / commit: `main` @ `80969eb`
 - Current sprint: `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md`
 - Backend now: ST-10-06 done
 - Frontend now: ST-10-10 done
+- Production: deployed + verified (runner + SPA islands working)
 
 ## 2025-12-21
 
@@ -31,6 +32,8 @@ Keep this file updated so the next session can pick up work quickly.
 ## What changed
 
 - This handoff is intentionally compressed to current sprint-critical work only (see `.agent/readme-first.md` for history).
+- Docker: multi-stage Dockerfile builds frontend SPA assets (Node.js stage → pnpm workspace → Vite build → copy to production image): `Dockerfile`.
+- Docker: compose project names added to avoid orphan warnings: `compose.prod.yaml` (`skriptoteket`), `compose.observability.yaml` (`skriptoteket-observability`).
 - Runner: contract v2 result.json only (no v1): `runner/_runner.py`.
 - App: strict v2 parsing + contract violations raise `DomainError(INTERNAL_ERROR)`: `src/skriptoteket/infrastructure/runner/result_contract.py`, `src/skriptoteket/infrastructure/runner/docker_runner.py`.
 - App: normalize + persist `tool_runs.ui_payload` (only via `DeterministicUiPayloadNormalizer`): `src/skriptoteket/application/scripting/handlers/execute_tool_version.py`, `src/skriptoteket/domain/scripting/models.py`, `src/skriptoteket/infrastructure/repositories/tool_run_repository.py`.
@@ -64,7 +67,8 @@ Keep this file updated so the next session can pick up work quickly.
 - Migration idempotency: `pdm run pytest -m docker --override-ini addopts='' tests/integration/test_migration_0008_tool_runs_ui_payload_idempotent.py tests/integration/test_migration_0009_tool_sessions_idempotent.py`.
 - Live check (2025-12-20): `pdm run db-upgrade`; login via curl cookie jar; `/browse/gemensamt/ovrigt` shows curated app → open `/apps/demo.counter` → Starta → Öka (step=2) → Spara som fil (action_id=`export`) → file stored at `ARTIFACTS_ROOT/<run_id>/output/counter.txt` and downloadable via `/my-runs/<run_id>/artifacts/output_counter_txt` (200).
 - Live check (2025-12-21): `docker compose up -d db`, `pdm run db-upgrade`, `npm_config_cache=.tmp/npm-cache pdm run fe-build`, then `pdm run ui-editor-smoke` (verifies CodeMirror 6 mounts on `/admin/tools/<tool_id>` and Save creates/saves a version and redirects).
-- Live check (2025-12-21): `pdm run ui-runtime-smoke` (verifies runtime island mounts on `/apps/demo.counter` + `/my-runs/<run_id>` + `/tools/<slug>/run`, action updates UI, and concurrency “Uppdatera” refresh path works).
+- Live check (2025-12-21): `pdm run ui-runtime-smoke` (verifies runtime island mounts on `/apps/demo.counter` + `/my-runs/<run_id>` + `/tools/<slug>/run`, action updates UI, and concurrency "Uppdatera" refresh path works).
+- Production deploy (2025-12-21): `ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"` + `docker compose -f compose.observability.yaml up -d` (verified runner executes, SPA islands render).
 - Verified (2025-12-20): `pdm run lint`, `pdm run typecheck`, `pdm run pytest tests/unit/application/scripting/handlers/test_interactive_tool_api.py tests/unit/infrastructure/runner/test_artifact_manager.py`, `pdm run docs-validate`.
 
 ## Known issues / risks
