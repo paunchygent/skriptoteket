@@ -2,7 +2,7 @@
 type: sprint
 id: SPR-2026-01-20
 title: "Sprint 2026-01-20: SSR typed UI rendering"
-status: planned
+status: done
 owners: "agents"
 created: 2025-12-19
 starts: 2026-01-20

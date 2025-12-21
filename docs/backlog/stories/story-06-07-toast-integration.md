@@ -2,7 +2,7 @@
 type: story
 id: ST-06-07
 title: "Integrate toast notifications into admin workflows"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-16
 epic: "EPIC-06"

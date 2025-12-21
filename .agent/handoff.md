@@ -15,7 +15,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 - Date: 2025-12-21
 - Branch / commit: `main` @ `80969eb`
-- Current sprint: `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md`
+- Current sprint: none (EPIC-10 sprint plans are done)
 - Backend now: ST-10-06 done
 - Frontend now: ST-10-10 done
 - Production: deployed + verified (runner + SPA islands working)
@@ -23,6 +23,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## 2025-12-21
 
 - ST-09-02 (CSP): CSP is enforced at nginx reverse proxy (`~/infrastructure/nginx/conf.d/skriptoteket.conf` on hemma) with `script-src 'self'` + `script-src-attr 'none'` + `style-src 'unsafe-inline'` (CodeMirror) + Google Fonts + `frame-src 'self' about:` (for `srcdoc` iframes). Removed inline `onclick=` from admin versions list (Option A) by making link + rollback form siblings and using `hx-confirm`: `src/skriptoteket/web/templates/admin/partials/version_list.html`, `src/skriptoteket/web/static/css/app/editor.css`. Verified on prod (2025-12-21): no CSP console violations (Playwright probe).
+- ST-06-07 (toasts): admin actions now show success/error toasts without full reloads by using HTMX `HX-Location` redirects + toast cookies; added error toasts and rollback success toast; suggestions decision now uses toast + removes the inline “saved” banner: `src/skriptoteket/web/pages/admin_scripting_support.py`, `src/skriptoteket/web/pages/admin_scripting.py`, `src/skriptoteket/web/pages/suggestions.py`, `src/skriptoteket/web/templates/suggestions_review_detail.html`, `src/skriptoteket/web/htmx.py`.
 - ST-10-08 (SPA islands toolchain): pnpm workspace + Vite/Vue/Tailwind build to `/static` + Jinja manifest integration: `frontend/package.json`, `frontend/pnpm-workspace.yaml`, `frontend/islands/`, `src/skriptoteket/web/vite.py`, `src/skriptoteket/web/templating.py`.
 - PDM↔pnpm integration: `pdm run fe-install|fe-dev|fe-build|fe-build-watch|fe-preview|fe-type-check|fe-lint|fe-lint-fix` delegates to pnpm in the `frontend/` workspace: `pyproject.toml`. (ESLint 9 flat config: `frontend/islands/eslint.config.js`.)
 - Demo SPA page (`hx-boost="false"` around mount): `/spa/demo` → `src/skriptoteket/web/pages/spa_islands.py`, `src/skriptoteket/web/templates/spa/demo.html`.
@@ -71,6 +72,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Live check (2025-12-21): `pdm run ui-smoke`, `pdm run ui-editor-smoke`, `pdm run ui-runtime-smoke` (artifacts under `.artifacts/`).
 - Live check (2025-12-21): `docker compose up -d db`, `pdm run db-upgrade`, `npm_config_cache=.tmp/npm-cache pdm run fe-build`, then `pdm run ui-editor-smoke` (verifies CodeMirror 6 mounts on `/admin/tools/<tool_id>` and Save creates/saves a version and redirects).
 - Live check (2025-12-21): `pdm run ui-runtime-smoke` (verifies runtime island mounts on `/apps/demo.counter` + `/my-runs/<run_id>` + `/tools/<slug>/run`, action updates UI, and concurrency "Uppdatera" refresh path works).
+- Live check (2025-12-21): with local dev server running on `http://127.0.0.1:8000`, used Playwright (via `pdm run python`) to exercise editor submit-review → publish → metadata save and suggestions submit → deny; verified toasts appear ("Skickat för granskning.", "Version publicerad.", "Metadata sparad.", "Förslag avslaget.").
 - Production deploy (2025-12-21): `ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"` + `docker compose -f compose.observability.yaml up -d` (verified runner executes, SPA islands render).
 - Verified (2025-12-20): `pdm run lint`, `pdm run typecheck`, `pdm run pytest tests/unit/application/scripting/handlers/test_interactive_tool_api.py tests/unit/infrastructure/runner/test_artifact_manager.py`, `pdm run docs-validate`.
 
@@ -82,5 +84,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Next steps (recommended order)
 
+- Admin UX: ST-06-08 (editor UI fixes) should be re-audited against the SPA island editor; close or rescope.
+- Governance: ST-02-02 (admin nomination + superuser approval) to complete the auditable promotion gate.
 - Backend: if multi-context sessions are needed, decide how to correlate `tool_sessions.context` ↔ tool runs (currently latest_run_id is computed from `tool_runs` per tool+user).
 - Backend: confirm vega-lite approach (implement restrictions vs keep blocked); current implementation blocks `vega_lite` outputs with a system notice.

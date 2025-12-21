@@ -2,7 +2,7 @@
 type: epic
 id: EPIC-07
 title: "Observability and operations integration"
-status: active
+status: done
 owners: "agents"
 created: 2025-12-16
 outcome: "Skriptoteket is operable in production with HuleEdu-compatible logs, correlation, and a clear path to metrics + traces."

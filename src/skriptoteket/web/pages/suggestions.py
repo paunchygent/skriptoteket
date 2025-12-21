@@ -31,7 +31,10 @@ from skriptoteket.web.auth.dependencies import (
     require_admin,
     require_contributor,
 )
+from skriptoteket.web.htmx import is_hx_request
 from skriptoteket.web.templating import templates
+from skriptoteket.web.toasts import set_toast_cookie
+from skriptoteket.web.ui_text import ui_error_message as _ui_error_message
 
 router = APIRouter()
 
@@ -264,6 +267,8 @@ async def decide_suggestion(
             ),
         )
     except DomainError as exc:
+        request.state.toast_message = _ui_error_message(exc)
+        request.state.toast_type = "error"
         status_code = 400 if exc.code is ErrorCode.VALIDATION_ERROR else 403
         if exc.code is ErrorCode.NOT_FOUND:
             status_code = 404
@@ -290,7 +295,7 @@ async def decide_suggestion(
                 "user": user,
                 "csrf_token": csrf_token,
                 "saved": None,
-                "error": exc.message,
+                "error": _ui_error_message(exc),
                 "suggestion": suggestion,
                 "decisions": decisions,
                 "professions": professions,
@@ -310,4 +315,16 @@ async def decide_suggestion(
             status_code=status_code,
         )
 
-    return RedirectResponse(url=f"/admin/suggestions/{suggestion_id}?saved=1", status_code=303)
+    redirect_url = f"/admin/suggestions/{suggestion_id}"
+    response = RedirectResponse(url=redirect_url, status_code=303)
+    if is_hx_request(request):
+        response.headers["HX-Location"] = redirect_url
+
+    message = "Beslut sparat."
+    if parsed_decision is SuggestionDecisionType.ACCEPT:
+        message = "Förslag godkänt."
+    elif parsed_decision is SuggestionDecisionType.DENY:
+        message = "Förslag avslaget."
+
+    set_toast_cookie(response=response, message=message, toast_type="success")
+    return response

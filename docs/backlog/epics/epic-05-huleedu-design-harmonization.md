@@ -2,7 +2,7 @@
 type: epic
 id: EPIC-05
 title: "HuleEdu design system harmonization"
-status: active
+status: done
 owners: "agents"
 created: 2025-12-15
 outcome: "Skriptoteket frontend uses HuleEdu design tokens and Brutalist styling, ensuring visual consistency for future HuleEdu integration."

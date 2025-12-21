@@ -2,7 +2,7 @@
 type: epic
 id: EPIC-04
 title: "Dynamic tool scripts (admin-authored Python without redeploy)"
-status: proposed
+status: done
 owners: "agents"
 created: 2025-12-14
 outcome: "Admins can implement, test, and publish Python tool scripts via the web UI without repository changes or redeployment."

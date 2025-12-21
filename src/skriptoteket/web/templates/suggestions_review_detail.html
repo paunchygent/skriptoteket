@@ -1,15 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
-  <div class="huleedu-card huleedu-panel">
-    <h2>Granska förslag</h2>
+    <div class="huleedu-card huleedu-panel">
+      <h2>Granska förslag</h2>
 
-    {% if saved %}
-      <p>Beslut sparat.</p>
-    {% endif %}
-
-    {% if error %}
-      <p class="huleedu-error">{{ error }}</p>
-    {% endif %}
+      {% if error %}
+        <p class="huleedu-error">{{ error }}</p>
+      {% endif %}
 
     {% if suggestion %}
       <h3 class="huleedu-mt-4">{{ suggestion.title }}</h3>

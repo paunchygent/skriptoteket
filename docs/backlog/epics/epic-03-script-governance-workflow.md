@@ -2,7 +2,7 @@
 type: epic
 id: EPIC-03
 title: "Tool governance workflow (suggest → review → publish/depublish)"
-status: active
+status: done
 owners: "agents"
 created: 2025-12-13
 outcome: "Contributors can suggest tools and admins can review decisions and manage tool publish/depublish without ad-hoc processes."

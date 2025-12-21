@@ -2,7 +2,7 @@
 type: sprint
 id: SPR-2026-02-03
 title: "Sprint 2026-02-03: SPA toolchain + editor island MVP"
-status: planned
+status: done
 owners: "agents"
 created: 2025-12-19
 starts: 2026-02-03

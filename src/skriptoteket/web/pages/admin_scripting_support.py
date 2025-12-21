@@ -16,6 +16,7 @@ from skriptoteket.domain.scripting.policies import (
 )
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol, ToolRepositoryProtocol
 from skriptoteket.protocols.scripting import ToolVersionRepositoryProtocol
+from skriptoteket.web.htmx import is_hx_request
 from skriptoteket.web.templating import templates
 
 
@@ -32,15 +33,11 @@ def status_code_for_error(exc: DomainError) -> int:
         return 503
     return 500
 
-
-def is_hx_request(request: Request) -> bool:
-    return request.headers.get("HX-Request") == "true"
-
-
 def redirect_with_hx(*, request: Request, url: str) -> RedirectResponse:
     response = RedirectResponse(url=url, status_code=303)
     if is_hx_request(request):
-        response.headers["HX-Redirect"] = url
+        # Avoid a full page reload in HTMX flows; let HTMX load the target URL instead.
+        response.headers["HX-Location"] = url
     return response
 
 

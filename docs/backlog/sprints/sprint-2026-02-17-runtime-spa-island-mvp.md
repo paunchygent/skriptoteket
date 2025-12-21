@@ -2,7 +2,7 @@
 type: sprint
 id: SPR-2026-02-17
 title: "Sprint 2026-02-17: Runtime SPA island MVP"
-status: planned
+status: done
 owners: "agents"
 created: 2025-12-19
 starts: 2026-02-17

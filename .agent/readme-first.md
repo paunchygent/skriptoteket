@@ -24,9 +24,11 @@ Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future H
 
 ## Current sprint dashboard (keep current only)
 
-- Sprint: `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md` (SPR-2025-12-22)
+- Sprint: none (EPIC-10 sprint plans are done)
 - Backend now: ST-10-06 (curated app execution + persisted runs) is done
 - Frontend now: ST-10-10 (runtime SPA island MVP) is done; production deployed + verified
+- Active polish: EPIC-06 (ST-06-07 done; ST-06-08 ready)
+- Security: EPIC-09 ST-09-02 is in progress (separate track)
 
 ## Current EPIC-04 decisions (dynamic scripts)
 

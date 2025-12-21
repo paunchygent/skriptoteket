@@ -2,7 +2,7 @@
 type: epic
 id: EPIC-02
 title: "Identity and access control (RBAC)"
-status: proposed
+status: active
 owners: "agents"
 created: 2025-12-13
 outcome: "Users can authenticate and role checks reliably gate contributor/admin/superuser capabilities."

@@ -140,6 +140,8 @@ async def update_tool_metadata(
             ),
         )
     except DomainError as exc:
+        request.state.toast_message = _ui_error_message(exc)
+        request.state.toast_type = "error"
         tool = await tools.get_by_id(tool_id=tool_id)
         if tool is None:
             raise
@@ -408,6 +410,8 @@ async def submit_review(
             command=SubmitForReviewCommand(version_id=version_id, review_note=review_note),
         )
     except DomainError as exc:
+        request.state.toast_message = _ui_error_message(exc)
+        request.state.toast_type = "error"
         return await support.render_editor_for_version_id(
             request=request,
             user=user,
@@ -449,6 +453,8 @@ async def publish_version(
             command=PublishVersionCommand(version_id=version_id, change_summary=change_summary),
         )
     except DomainError as exc:
+        request.state.toast_message = _ui_error_message(exc)
+        request.state.toast_type = "error"
         return await support.render_editor_for_version_id(
             request=request,
             user=user,
@@ -466,7 +472,7 @@ async def publish_version(
 
     redirect_url = f"/admin/tool-versions/{result.new_active_version.id}"
     response = support.redirect_with_hx(request=request, url=redirect_url)
-    set_toast_cookie(response=response, message="Publicerad.", toast_type="success")
+    set_toast_cookie(response=response, message="Version publicerad.", toast_type="success")
     return response
 
 
@@ -490,6 +496,8 @@ async def request_changes(
             command=RequestChangesCommand(version_id=version_id, message=message),
         )
     except DomainError as exc:
+        request.state.toast_message = _ui_error_message(exc)
+        request.state.toast_type = "error"
         return await support.render_editor_for_version_id(
             request=request,
             user=user,
@@ -647,6 +655,8 @@ async def rollback_version(
             command=RollbackVersionCommand(version_id=version_id),
         )
     except DomainError as exc:
+        request.state.toast_message = _ui_error_message(exc)
+        request.state.toast_type = "error"
         return await support.render_editor_for_version_id(
             request=request,
             user=user,
@@ -663,7 +673,13 @@ async def rollback_version(
         )
 
     redirect_url = f"/admin/tool-versions/{result.new_active_version.id}"
-    return support.redirect_with_hx(request=request, url=redirect_url)
+    response = support.redirect_with_hx(request=request, url=redirect_url)
+    set_toast_cookie(
+        response=response,
+        message=f"Återställd till v{result.new_active_version.version_number}.",
+        toast_type="success",
+    )
+    return response
 
 
 router.include_router(runs_router)

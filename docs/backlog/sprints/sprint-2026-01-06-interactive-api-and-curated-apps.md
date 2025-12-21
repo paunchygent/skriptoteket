@@ -2,7 +2,7 @@
 type: sprint
 id: SPR-2026-01-06
 title: "Sprint 2026-01-06: Interactive API + curated apps MVP"
-status: planned
+status: done
 owners: "agents"
 created: 2025-12-19
 starts: 2026-01-06

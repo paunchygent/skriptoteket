@@ -2,7 +2,7 @@
 type: sprint
 id: SPR-2025-12-22
 title: "Sprint 2025-12-22: Tool UI contract v2 foundations"
-status: planned
+status: done
 owners: "agents"
 created: 2025-12-19
 starts: 2025-12-22
