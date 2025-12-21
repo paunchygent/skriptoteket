@@ -13,11 +13,16 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2025-12-20
-- Branch / commit: `main` @ `9308cd6` (dirty working tree)
+- Date: 2025-12-21
+- Branch / commit: `main` (dirty - fonts + test fixes uncommitted)
 - Current sprint: `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md`
-- Backend now: ST-10-06 (Curated app execution + persisted runs) is done; next: ST-10-08
+- Backend now: ST-10-06 done; fonts added to Dockerfiles for PDF generation
 - Frontend now: N/A (completed work moved to `.agent/readme-first.md`)
+
+## 2025-12-21
+
+- Test fixes: removed future annotations from route modules; updated ist_vh_mejl_bcc to Contract v2; added `json.dumps()` to migration test JSONB
+- Docker fonts: `fontconfig`, `fonts-liberation2`, `fonts-dejavu-core`, `fonts-freefont-ttf`, `fonts-noto-core` in both Dockerfiles
 
 ## 2025-12-19 ST-07-02 Health & Metrics (DONE)
 

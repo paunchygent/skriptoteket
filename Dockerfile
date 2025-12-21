@@ -11,6 +11,7 @@ WORKDIR /app
 # System deps:
 # - WeasyPrint: pango/cairo/gdk-pixbuf + shared-mime-info
 # - Pandoc: used by pypandoc at runtime
+# - Fonts: for PDF generation fidelity
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     pandoc \
@@ -20,6 +21,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpangocairo-1.0-0 \
     libpangoft2-1.0-0 \
     shared-mime-info \
+    fontconfig \
+    fonts-liberation2 \
+    fonts-dejavu-core \
+    fonts-freefont-ttf \
+    fonts-noto-core \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir pdm==2.26.2
@@ -45,6 +51,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpangocairo-1.0-0 \
     libpangoft2-1.0-0 \
     shared-mime-info \
+    fontconfig \
+    fonts-liberation2 \
+    fonts-dejavu-core \
+    fonts-freefont-ttf \
+    fonts-noto-core \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir pdm==2.26.2

@@ -9,6 +9,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 # Mirror the main app runtime deps (parity): tool scripts may import the same curated libs.
+# Fonts included for PDF generation fidelity.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     pandoc \
@@ -18,6 +19,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpangocairo-1.0-0 \
     libpangoft2-1.0-0 \
     shared-mime-info \
+    fontconfig \
+    fonts-liberation2 \
+    fonts-dejavu-core \
+    fonts-freefont-ttf \
+    fonts-noto-core \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir pdm==2.26.2
@@ -44,6 +50,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpangocairo-1.0-0 \
     libpangoft2-1.0-0 \
     shared-mime-info \
+    fontconfig \
+    fonts-liberation2 \
+    fonts-dejavu-core \
+    fonts-freefont-ttf \
+    fonts-noto-core \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/.venv /app/.venv
