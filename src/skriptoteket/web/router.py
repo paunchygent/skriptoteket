@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from skriptoteket.web.api.v1 import auth as api_v1_auth
+from skriptoteket.web.api.v1 import catalog as api_v1_catalog
 from skriptoteket.web.auth.dependencies import require_user
 from skriptoteket.web.pages import admin_scripting as admin_scripting_pages
 from skriptoteket.web.pages import admin_tools as admin_tools_pages
@@ -15,11 +16,13 @@ from skriptoteket.web.pages import suggestions as suggestions_pages
 from skriptoteket.web.pages import tools as tools_pages
 from skriptoteket.web.routes import editor as editor_routes
 from skriptoteket.web.routes import interactive_tools as interactive_tools_routes
+from skriptoteket.web.routes import spa_fallback
 
 router = APIRouter()
 router.include_router(auth_pages.router)
 
 router.include_router(api_v1_auth.router)
+router.include_router(api_v1_catalog.router)
 router.include_router(editor_routes.router)
 router.include_router(interactive_tools_routes.router)
 
@@ -35,3 +38,6 @@ protected.include_router(spa_islands_pages.router)
 protected.include_router(admin_tools_pages.router)
 protected.include_router(admin_scripting_pages.router)
 router.include_router(protected)
+
+# SPA history fallback - MUST be last to avoid intercepting API routes
+router.include_router(spa_fallback.router)
