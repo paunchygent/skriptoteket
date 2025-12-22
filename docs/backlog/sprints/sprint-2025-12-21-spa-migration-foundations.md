@@ -7,11 +7,11 @@ owners: "agents"
 created: 2025-12-21
 starts: 2025-12-21
 ends: 2026-01-04
-objective: "Establish the full-SPA foundation: frontend workspace + SPA scaffold, pure-CSS UI library skeleton, FastAPI hosting plan, OpenAPI→TypeScript workflow, and an initial auth+routing shell."
+objective: "Establish the full-SPA foundation: frontend workspace + SPA scaffold, Tailwind 4 + design tokens, FastAPI hosting plan, OpenAPI→TypeScript workflow, and an initial auth+routing shell."
 prd: "PRD-spa-frontend-v0.1"
 epics: ["EPIC-11"]
 stories: ["ST-11-01", "ST-11-02", "ST-11-03", "ST-11-04", "ST-11-05"]
-adrs: ["ADR-0027", "ADR-0028", "ADR-0029", "ADR-0030"]
+adrs: ["ADR-0027", "ADR-0028", "ADR-0030", "ADR-0032"]
 ---
 
 ## Objective
@@ -36,8 +36,8 @@ Establish the minimum viable “full SPA” foundation so further route-parity w
 
 - ADR-0027: Full SPA as the frontend (accepted)
 - ADR-0028: SPA hosting + routing integration (accepted)
-- ADR-0029: Styling = pure CSS + design tokens (accepted)
 - ADR-0030: OpenAPI as source + `openapi-typescript` (accepted)
+- ADR-0032: Styling = Tailwind 4 with @theme design tokens (accepted; supersedes ADR-0029)
 
 ## Risks / edge cases
 
@@ -57,7 +57,7 @@ Establish the minimum viable “full SPA” foundation so further route-parity w
 
 - `pnpm dev` shows the SPA shell and can navigate between placeholder routes.
 - Auth guard blocks a protected route and navigates to `/login`.
-- UI primitives render with token-driven styling (no Tailwind).
+- UI primitives render with Tailwind utilities using HuleEdu design tokens (via @theme).
 
 ## Verification checklist
 

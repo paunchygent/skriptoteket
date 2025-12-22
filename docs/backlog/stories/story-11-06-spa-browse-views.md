@@ -47,7 +47,7 @@ All routes have `meta: { requiresAuth: true }`.
 - `BrowseCategoriesView.vue` - Lists categories for selected profession with breadcrumb navigation
 - `BrowseToolsView.vue` - Lists tools and curated apps with action buttons ("Koer" for tools, "Oeppna" for apps)
 
-**Styling**: Pure CSS with HuleEdu design tokens (ADR-0029), scoped styles, responsive mobile layout.
+**Styling**: Pure CSS with HuleEdu design tokens (ADR-0029, now superseded by ADR-0032 Tailwind 4), scoped styles, responsive mobile layout. Note: These views use the pre-Tailwind pattern; future views should use Tailwind utilities.
 
 **Decisions made**:
 

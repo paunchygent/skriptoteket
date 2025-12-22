@@ -7,7 +7,7 @@ owners: "agents"
 created: 2025-12-21
 product: "script-hub"
 version: "0.1"
-links: ["ADR-0027", "ADR-0028", "ADR-0029", "ADR-0030", "REF-vue-spa-migration-roadmap"]
+links: ["ADR-0027", "ADR-0028", "ADR-0030", "ADR-0032", "REF-vue-spa-migration-roadmap"]
 ---
 
 ## Summary
@@ -43,7 +43,7 @@ removed.
 
 - Frontend: `frontend/` becomes a pnpm workspace with:
   - `apps/skriptoteket` (the SPA)
-  - `packages/huleedu-ui` (Vue component library, pure CSS + design tokens)
+  - `packages/huleedu-ui` (Vue component library, Tailwind 4 + design tokens via @theme)
 - Backend: `/api/v1/*` added/expanded to back the SPA and documented via OpenAPI.
 - Hosting: SPA is served by the FastAPI app (same-origin) to avoid CORS complexity.
 
@@ -51,5 +51,5 @@ removed.
 
 - ADR-0027 (full SPA adoption)
 - ADR-0028 (SPA hosting + routing integration)
-- ADR-0029 (pure CSS design system approach)
 - ADR-0030 (OpenAPI + generated TypeScript)
+- ADR-0032 (Tailwind 4 with @theme design tokens; supersedes ADR-0029)

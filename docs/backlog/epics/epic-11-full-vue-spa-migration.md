@@ -13,7 +13,7 @@ outcome: "Skriptoteket runs as a single Vue/Vite SPA for all routes (user + admi
 - Replace the server-rendered Jinja2/HTMX UI with a single Vue 3 / Vite SPA (ADR-0027).
 - Frontend workspace:
   - `frontend/apps/skriptoteket` (SPA)
-  - `frontend/packages/huleedu-ui` (component library + design tokens, pure CSS; ADR-0029)
+  - `frontend/packages/huleedu-ui` (component library + design tokens; Tailwind 4 with @theme; ADR-0032)
 - Backend API:
   - `/api/v1/*` endpoints for SPA consumption
   - OpenAPI schema as source of truth + generated TS types (`openapi-typescript`; ADR-0030)
@@ -24,7 +24,6 @@ outcome: "Skriptoteket runs as a single Vue/Vite SPA for all routes (user + admi
 ## Out of scope
 
 - Long-term coexistence of SSR and SPA (cutover is a clean replacement).
-- TailwindCSS-based styling (pure CSS + tokens is the decision).
 - Allowing tool-provided UI JavaScript (typed UI contract remains the boundary).
 
 ## Stories
@@ -55,5 +54,5 @@ outcome: "Skriptoteket runs as a single Vue/Vite SPA for all routes (user + admi
 - PRD-spa-frontend-v0.1
 - ADR-0027 (full SPA)
 - ADR-0028 (hosting + routing)
-- ADR-0029 (pure CSS)
+- ADR-0032 (Tailwind 4 with @theme design tokens; supersedes ADR-0029)
 - ADR-0030 (OpenAPI + generated TS)
