@@ -14,11 +14,18 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-22
-- Branch / commit: `main` @ `40013e9`
+- Branch / commit: `main` (uncommitted ST-11-06 changes)
 - Current sprint: `SPR-2025-12-21` (EPIC-11 full SPA migration foundations)
-- Backend now: ST-11-04/05 done; next = ST-11-03 (hosting/history fallback) + ST-11-06+ (route parity slices)
-- Frontend now: ST-11-01/02 foundations landed (workspace + `@skriptoteket/spa` scaffold + `@huleedu/ui` stub)
+- Backend now: ST-11-03/04/05/06 done (catalog API + SPA browse views complete)
+- Frontend now: ST-11-01/02/03/06 done; browse views implemented; next vertical slice is tool run views
 - Production today: still SSR + SPA islands (legacy) until EPIC-11 cutover
+
+## 2025-12-22
+
+- ST-11-06 Phase 1 (catalog API): Created three catalog endpoints for SPA browse views. Files: `src/skriptoteket/web/api/v1/catalog.py` (new: `GET /api/v1/catalog/professions`, `GET .../professions/{slug}/categories`, `GET .../categories/{slug}/tools`), `src/skriptoteket/web/router.py` (registered catalog routes). Response models: `ProfessionItem`, `CategoryItem`, `ToolItem`, `CuratedAppItem`, `ListProfessionsResponse`, `ListCategoriesResponse`, `ListToolsResponse`. Reuses existing handlers. TypeScript types regenerated: `pdm run fe-gen-api-types`. Verified: `pdm run lint`, `pdm run typecheck`, `pnpm -C frontend --filter @skriptoteket/spa typecheck`.
+- ST-11-06 Phase 2 (frontend views): Created three Vue browse views consuming the catalog API. Routes: `/browse` (BrowseProfessionsView), `/browse/:profession` (BrowseCategoriesView), `/browse/:profession/:category` (BrowseToolsView). All routes `requiresAuth: true`. Files: `frontend/apps/skriptoteket/src/router/routes.ts`, `frontend/apps/skriptoteket/src/views/BrowseProfessionsView.vue`, `BrowseCategoriesView.vue`, `BrowseToolsView.vue`. Removed old `BrowseView.vue` placeholder. Styling: pure CSS with HuleEdu design tokens (ADR-0029), scoped styles, responsive mobile layout. Also fixed: router now uses `createWebHistory(import.meta.env.BASE_URL)` for correct base path handling; Vite proxy excludes `/static/spa` so SPA is served by Vite dev server. Verified: `pdm run lint`, `pdm run typecheck`, `pnpm -C frontend --filter @skriptoteket/spa typecheck`. Live Playwright test: auth redirect, login, profession list (5), category list (4), tools/curated apps view all working.
+- ST-11-06 decisions: (1) API structure = three RESTful endpoints (Option A); (2) Vue routes = child routes under `/browse` (Option A); (3) State management = local component state, no Pinia store initially (Option A, YAGNI).
+- ST-11-03 (SPA hosting + history fallback): FastAPI now serves SPA with history mode routing; deep links (e.g., `/browse/foo`) serve SPA index.html; API routes (`/api/*`) not intercepted; Dockerfile builds `@skriptoteket/spa` (replaces `@skriptoteket/islands`). Files: `frontend/apps/skriptoteket/vite.config.ts` (added `base: "/static/spa/"` + `outDir`), `src/skriptoteket/web/routes/spa_fallback.py` (new catch-all route), `src/skriptoteket/web/router.py` (registered fallback LAST), `Dockerfile` (SPA build stage), `tests/unit/web/test_spa_fallback.py`. Verified: `pdm run fe-build` + `curl http://127.0.0.1:8000/browse` returns SPA HTML + `curl http://127.0.0.1:8000/api/v1/auth/me` returns JSON; `pdm run lint`, `pdm run typecheck`, `pdm run pytest tests/unit/web/test_spa_fallback.py -v` (10 passed).
 
 ## 2025-12-21
 
@@ -43,7 +50,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 - This handoff is intentionally compressed to current sprint-critical work only (see `.agent/readme-first.md` for history).
 - UI paradigm decision changed: full SPA is now the target (ADR-0027); SSR/HTMX and SPA islands are superseded and will be deleted at cutover.
-- Docker: multi-stage Dockerfile builds frontend SPA assets (Node.js stage → pnpm workspace → Vite build → copy to production image): `Dockerfile`.
+- Docker: multi-stage Dockerfile builds full SPA (`@skriptoteket/spa`) instead of legacy islands (Node.js stage → pnpm workspace → Vite build → copy to production image): `Dockerfile`.
 - Docker: compose project names added to avoid orphan warnings: `compose.prod.yaml` (`skriptoteket`), `compose.observability.yaml` (`skriptoteket-observability`).
 - Runner: contract v2 result.json only (no v1): `runner/_runner.py`.
 - App: strict v2 parsing + contract violations raise `DomainError(INTERNAL_ERROR)`: `src/skriptoteket/infrastructure/runner/result_contract.py`, `src/skriptoteket/infrastructure/runner/docker_runner.py`.
@@ -101,10 +108,8 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Next steps (recommended order)
 
-- EPIC-11: implement ST-11-03 (FastAPI history fallback + manifest/asset integration for the full SPA).
-- EPIC-11: start ST-11-06+ vertical slices for route parity (browse/tools/runs/apps + admin/editor).
+- **ST-11-06 complete**: Browse views implemented and live-tested via Playwright. Screenshots in `.artifacts/st-11-06-*.png`.
+- EPIC-11: continue vertical slices for route parity: ST-11-07 (tool run views), ST-11-08 (my-runs views), ST-11-09 (apps views), ST-11-10+ (admin/editor).
 - EPIC-12: keep ST-12-02/03/04 blocked until EPIC-11 cutover (ST-11-13); implement UX only in the SPA.
 - Admin UX: ST-06-08 (editor UI fixes) should be re-audited against the SPA island editor; close or rescope.
 - Governance: ST-02-02 (admin nomination + superuser approval) to complete the auditable promotion gate.
-- Backend: if multi-context sessions are needed, decide how to correlate `tool_sessions.context` ↔ tool runs (currently latest_run_id is computed from `tool_runs` per tool+user).
-- Backend: confirm vega-lite approach (implement restrictions vs keep blocked); current implementation blocks `vega_lite` outputs with a system notice.
