@@ -17,3 +17,47 @@ dependencies: ["ADR-0022", "ADR-0024", "ADR-0031", "ST-11-04", "ST-11-05", "ST-1
 
 Tool execution and results are the highest-value user flow and must work reliably with multipart uploads and artifact
 downloads.
+
+## Implementation (SPA)
+
+### Backend API (v1)
+
+- Tool metadata: `GET /api/v1/tools/{slug}`
+  - Response: `ToolMetadataResponse` (id, slug, title, summary) + `upload_constraints` from `Settings`
+  - File: `src/skriptoteket/web/api/v1/tools.py`
+- Tool execution (multipart): `POST /api/v1/tools/{slug}/run`
+  - Accepts `files[]` (multipart, multiple)
+  - Executes via `RunActiveToolCommand` and returns `StartToolRunResponse { run_id }`
+  - File: `src/skriptoteket/web/api/v1/tools.py`
+- Run details extended for UI: `GET /api/v1/runs/{run_id}` now includes `error_summary` in `RunDetails`
+  - Files: `src/skriptoteket/application/scripting/interactive_tools.py`,
+    `src/skriptoteket/application/scripting/handlers/get_tool_run.py`
+
+After API changes, regenerate TypeScript OpenAPI types:
+
+- `pdm run fe-gen-api-types` (writes `frontend/apps/skriptoteket/src/api/openapi.d.ts`)
+
+### Frontend (Vue/Vite SPA)
+
+- Output renderers (typed outputs, reusable): `frontend/apps/skriptoteket/src/components/ui-outputs/`
+  - `UiOutputRenderer.vue` dispatches by `output.kind` (no template switch)
+  - Per-kind components: `notice`, `markdown`, `table`, `json`, `html_sandboxed` (+ placeholder `vega_lite`)
+- Action rendering (typed next_actions, reusable): `frontend/apps/skriptoteket/src/components/ui-actions/`
+  - `UiActionForm.vue` (no API calls; emits `{ actionId, input }`)
+  - `UiActionFieldRenderer.vue` dispatches by `field.kind` (no template switch)
+  - Per-kind field components: `string`, `text`, `integer`, `number`, `boolean`, `enum`, `multi_enum`
+- New views:
+  - `frontend/apps/skriptoteket/src/views/ToolRunFormView.vue` (`/tools/:slug/run`)
+  - `frontend/apps/skriptoteket/src/views/ToolRunResultView.vue` (`/tools/:slug/runs/:runId`)
+- Routes:
+  - `frontend/apps/skriptoteket/src/router/routes.ts`
+  - `frontend/apps/skriptoteket/src/views/BrowseToolsView.vue` links to tool-run via `RouterLink`
+
+### Verification
+
+- `pdm run lint`
+- `pdm run typecheck`
+- `pdm run docs-validate`
+- `pnpm -C frontend --filter @skriptoteket/spa typecheck`
+- `pnpm -C frontend --filter @skriptoteket/spa lint`
+- `pnpm -C frontend --filter @skriptoteket/spa build`

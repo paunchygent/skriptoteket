@@ -35,6 +35,18 @@ export const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/tools/:slug/run",
+    name: "tool-run",
+    component: () => import("../views/ToolRunFormView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/tools/:slug/runs/:runId",
+    name: "tool-result",
+    component: () => import("../views/ToolRunResultView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/my-tools",
     name: "my-tools",
     component: () => import("../views/MyToolsView.vue"),

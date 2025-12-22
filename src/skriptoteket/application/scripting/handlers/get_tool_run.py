@@ -60,6 +60,7 @@ class GetRunHandler(GetRunHandlerProtocol):
             run=RunDetails(
                 run_id=run.id,
                 status=run.status,
+                error_summary=run.error_summary,
                 ui_payload=run.ui_payload,
                 artifacts=_artifacts_for_run(
                     run_id=run.id, artifacts_manifest=run.artifacts_manifest

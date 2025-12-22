@@ -225,6 +225,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tools/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Tool By Slug */
+        get: operations["get_tool_by_slug_api_v1_tools__slug__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tools/{slug}/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start Tool Run */
+        post: operations["start_tool_run_api_v1_tools__slug__run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tools/{tool_id}/sessions/{context}": {
         parameters: {
             query?: never;
@@ -332,6 +366,11 @@ export interface components {
             expected_parent_version_id: string;
             /** Source Code */
             source_code: string;
+        };
+        /** Body_start_tool_run_api_v1_tools__slug__run_post */
+        Body_start_tool_run_api_v1_tools__slug__run_post: {
+            /** Files */
+            files: string[];
         };
         /** Body_submit_review_admin_tool_versions__version_id__submit_review_post */
         Body_submit_review_admin_tool_versions__version_id__submit_review_post: {
@@ -532,6 +571,8 @@ export interface components {
         RunDetails: {
             /** Artifacts */
             artifacts?: components["schemas"]["RunArtifact"][];
+            /** Error Summary */
+            error_summary?: string | null;
             /**
              * Run Id
              * Format: uuid
@@ -603,6 +644,14 @@ export interface components {
             /** State Rev */
             state_rev: number;
         };
+        /** StartToolRunResponse */
+        StartToolRunResponse: {
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+        };
         /**
          * ToolItem
          * @description Tool for API responses.
@@ -619,6 +668,21 @@ export interface components {
             summary: string | null;
             /** Title */
             title: string;
+        };
+        /** ToolMetadataResponse */
+        ToolMetadataResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Slug */
+            slug: string;
+            /** Summary */
+            summary: string | null;
+            /** Title */
+            title: string;
+            upload_constraints: components["schemas"]["UploadConstraints"];
         };
         /** UiBooleanField */
         UiBooleanField: {
@@ -824,6 +888,15 @@ export interface components {
              */
             kind: "vega_lite";
             spec: components["schemas"]["JsonValue"];
+        };
+        /** UploadConstraints */
+        UploadConstraints: {
+            /** Max File Bytes */
+            max_file_bytes: number;
+            /** Max Files */
+            max_files: number;
+            /** Max Total Bytes */
+            max_total_bytes: number;
         };
         /**
          * User
@@ -1253,6 +1326,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StartActionResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_tool_by_slug_api_v1_tools__slug__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ToolMetadataResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_tool_run_api_v1_tools__slug__run_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_start_tool_run_api_v1_tools__slug__run_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StartToolRunResponse"];
                 };
             };
             /** @description Validation Error */

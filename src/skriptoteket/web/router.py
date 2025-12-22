@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 
 from skriptoteket.web.api.v1 import auth as api_v1_auth
 from skriptoteket.web.api.v1 import catalog as api_v1_catalog
+from skriptoteket.web.api.v1 import tools as api_v1_tools
 from skriptoteket.web.auth.dependencies import require_user
 from skriptoteket.web.pages import admin_scripting as admin_scripting_pages
 from skriptoteket.web.pages import admin_tools as admin_tools_pages
@@ -23,6 +24,7 @@ router.include_router(auth_pages.router)
 
 router.include_router(api_v1_auth.router)
 router.include_router(api_v1_catalog.router)
+router.include_router(api_v1_tools.router)
 router.include_router(editor_routes.router)
 router.include_router(interactive_tools_routes.router)
 

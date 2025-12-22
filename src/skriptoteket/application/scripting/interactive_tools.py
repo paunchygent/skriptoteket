@@ -74,6 +74,7 @@ class RunDetails(BaseModel):
 
     run_id: UUID
     status: RunStatus
+    error_summary: str | None = None
     ui_payload: UiPayloadV2 | None = None
     artifacts: list[RunArtifact] = Field(default_factory=list)
 

@@ -71,50 +71,56 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
 </script>
 
 <template>
-  <div class="browse-tools">
-    <nav class="browse-tools__breadcrumb">
-      <RouterLink to="/browse">Yrkesgrupper</RouterLink>
-      <span class="browse-tools__separator">/</span>
+  <div class="max-w-2xl">
+    <nav class="flex items-center flex-wrap gap-2 mb-4 text-xs uppercase tracking-wide text-navy/60">
+      <RouterLink
+        to="/browse"
+        class="text-navy/70 border-b border-navy/40 pb-0.5 hover:text-burgundy hover:border-burgundy transition-colors"
+      >
+        Yrkesgrupper
+      </RouterLink>
+      <span class="text-navy/30">/</span>
       <RouterLink
         v-if="profession"
         :to="`/browse/${professionSlug}`"
+        class="text-navy/70 border-b border-navy/40 pb-0.5 hover:text-burgundy hover:border-burgundy transition-colors"
       >
         {{ profession.label }}
       </RouterLink>
       <span v-else>...</span>
-      <span class="browse-tools__separator">/</span>
+      <span class="text-navy/30">/</span>
       <span v-if="category">{{ category.label }}</span>
       <span v-else>...</span>
     </nav>
 
-    <h2 class="browse-tools__title">
+    <h2 class="text-2xl font-semibold text-navy mb-2">
       {{ category?.label ?? "Laddar..." }}
     </h2>
     <p
       v-if="profession"
-      class="browse-tools__subtitle"
+      class="text-sm text-navy/60 mb-6"
     >
       Verktyg foer {{ profession.label.toLowerCase() }}
     </p>
 
     <div
       v-if="isLoading"
-      class="browse-tools__loading"
+      class="flex items-center gap-3 p-4 text-navy/60"
     >
-      <span class="browse-tools__spinner" />
+      <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
       <span>Laddar...</span>
     </div>
 
     <div
       v-else-if="errorMessage"
-      class="browse-tools__error"
+      class="p-3 border border-burgundy text-burgundy bg-canvas"
     >
       {{ errorMessage }}
     </div>
 
     <div
       v-else-if="!hasContent"
-      class="browse-tools__empty"
+      class="p-4 text-navy/60 italic"
     >
       Inga verktyg finns i denna kategori.
     </div>
@@ -123,27 +129,29 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
       <!-- Dynamic Tools -->
       <section
         v-if="tools.length > 0"
-        class="browse-tools__section"
+        class="mb-8 last:mb-0"
       >
-        <h3 class="browse-tools__section-title">Verktyg</h3>
-        <ul class="browse-tools__list">
+        <h3 class="text-xs font-semibold uppercase tracking-wide text-navy/60 mb-3">Verktyg</h3>
+        <ul class="list-none m-0 p-0 border border-navy bg-white">
           <li
             v-for="tool in tools"
             :key="tool.id"
-            class="browse-tools__item"
+            class="border-b border-navy/20 last:border-b-0"
           >
-            <div class="browse-tools__item-content">
-              <div class="browse-tools__item-info">
-                <span class="browse-tools__item-title">{{ tool.title }}</span>
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4 p-4">
+              <div class="flex flex-col gap-1 min-w-0">
+                <span class="font-medium text-navy">{{ tool.title }}</span>
                 <span
                   v-if="tool.summary"
-                  class="browse-tools__item-summary"
+                  class="text-sm text-navy/60 break-words"
                 >{{ tool.summary }}</span>
               </div>
-              <a
-                :href="`/tools/${tool.slug}/run`"
-                class="browse-tools__item-action"
-              >Koer</a>
+              <RouterLink
+                :to="{ name: 'tool-run', params: { slug: tool.slug } }"
+                class="shrink-0 w-full sm:w-auto text-center px-4 py-2 text-sm font-semibold uppercase tracking-wide text-canvas bg-burgundy rounded-sm hover:bg-navy transition-colors"
+              >
+                Koer
+              </RouterLink>
             </div>
           </li>
         </ul>
@@ -152,27 +160,29 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
       <!-- Curated Apps -->
       <section
         v-if="curatedApps.length > 0"
-        class="browse-tools__section"
+        class="mb-8 last:mb-0"
       >
-        <h3 class="browse-tools__section-title">Kurerade appar</h3>
-        <ul class="browse-tools__list">
+        <h3 class="text-xs font-semibold uppercase tracking-wide text-navy/60 mb-3">Kurerade appar</h3>
+        <ul class="list-none m-0 p-0 border border-navy bg-white">
           <li
             v-for="app in curatedApps"
             :key="app.app_id"
-            class="browse-tools__item"
+            class="border-b border-navy/20 last:border-b-0"
           >
-            <div class="browse-tools__item-content">
-              <div class="browse-tools__item-info">
-                <span class="browse-tools__item-title">{{ app.title }}</span>
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4 p-4">
+              <div class="flex flex-col gap-1 min-w-0">
+                <span class="font-medium text-navy">{{ app.title }}</span>
                 <span
                   v-if="app.summary"
-                  class="browse-tools__item-summary"
+                  class="text-sm text-navy/60 break-words"
                 >{{ app.summary }}</span>
               </div>
               <a
                 :href="`/apps/${app.app_id}`"
-                class="browse-tools__item-action"
-              >Oeppna</a>
+                class="shrink-0 w-full sm:w-auto text-center px-4 py-2 text-sm font-semibold uppercase tracking-wide text-canvas bg-burgundy rounded-sm hover:bg-navy transition-colors"
+              >
+                Oeppna
+              </a>
             </div>
           </li>
         </ul>
@@ -180,181 +190,3 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
     </template>
   </div>
 </template>
-
-<style scoped>
-.browse-tools {
-  max-width: 700px;
-}
-
-.browse-tools__breadcrumb {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(28, 46, 74, 0.6);
-}
-
-.browse-tools__breadcrumb a {
-  color: rgba(28, 46, 74, 0.7);
-  text-decoration: none;
-  border-bottom: 1px solid rgba(28, 46, 74, 0.4);
-  padding-bottom: 2px;
-  transition:
-    color 0.15s ease,
-    border-color 0.15s ease;
-}
-
-.browse-tools__breadcrumb a:hover {
-  color: var(--huleedu-burgundy, #6B1C2E);
-  border-color: var(--huleedu-burgundy, #6B1C2E);
-}
-
-.browse-tools__separator {
-  color: rgba(28, 46, 74, 0.3);
-}
-
-.browse-tools__title {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--huleedu-navy, #1C2E4A);
-}
-
-.browse-tools__subtitle {
-  margin: 0 0 1.5rem 0;
-  font-size: 0.875rem;
-  color: rgba(28, 46, 74, 0.6);
-}
-
-.browse-tools__loading {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  color: rgba(28, 46, 74, 0.6);
-}
-
-.browse-tools__spinner {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(28, 46, 74, 0.2);
-  border-top-color: var(--huleedu-navy, #1C2E4A);
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.browse-tools__error {
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--huleedu-burgundy, #6B1C2E);
-  color: var(--huleedu-burgundy, #6B1C2E);
-  background-color: var(--huleedu-canvas, #F9F8F2);
-}
-
-.browse-tools__empty {
-  padding: 1rem;
-  color: rgba(28, 46, 74, 0.6);
-  font-style: italic;
-}
-
-.browse-tools__section {
-  margin-bottom: 2rem;
-}
-
-.browse-tools__section:last-child {
-  margin-bottom: 0;
-}
-
-.browse-tools__section-title {
-  margin: 0 0 0.75rem 0;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(28, 46, 74, 0.6);
-}
-
-.browse-tools__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  border: 1px solid var(--huleedu-navy, #1C2E4A);
-  background-color: #fff;
-}
-
-.browse-tools__item {
-  border-bottom: 1px solid rgba(28, 46, 74, 0.2);
-}
-
-.browse-tools__item:last-child {
-  border-bottom: none;
-}
-
-.browse-tools__item-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1rem;
-}
-
-.browse-tools__item-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  min-width: 0;
-}
-
-.browse-tools__item-title {
-  font-weight: 500;
-  color: var(--huleedu-navy, #1C2E4A);
-}
-
-.browse-tools__item-summary {
-  font-size: 0.875rem;
-  color: rgba(28, 46, 74, 0.6);
-  overflow-wrap: anywhere;
-}
-
-.browse-tools__item-action {
-  display: inline-block;
-  flex-shrink: 0;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  text-decoration: none;
-  color: var(--huleedu-canvas, #F9F8F2);
-  background-color: var(--huleedu-burgundy, #6B1C2E);
-  border-radius: 2px;
-  transition: background-color 0.15s ease;
-}
-
-.browse-tools__item-action:hover {
-  background-color: var(--huleedu-navy, #1C2E4A);
-}
-
-@media (max-width: 640px) {
-  .browse-tools__item-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
-  .browse-tools__item-action {
-    width: 100%;
-    text-align: center;
-  }
-}
-</style>
