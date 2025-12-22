@@ -43,7 +43,9 @@ def main() -> None:
     base_url = config.base_url
     email = config.email
     password = config.password
-    is_local_base_url = base_url.startswith("http://127.0.0.1") or base_url.startswith("http://localhost")
+    is_local_base_url = base_url.startswith("http://127.0.0.1") or base_url.startswith(
+        "http://localhost"
+    )
 
     artifacts_dir = Path(".artifacts/ui-smoke")
     artifacts_dir.mkdir(parents=True, exist_ok=True)

@@ -106,9 +106,7 @@ def _truncate_utf8_str(*, value: str, max_bytes: int) -> str:
     return encoded[:max_bytes].decode("utf-8", errors="ignore")
 
 
-def _build_workdir_archive(
-    *, version: ToolVersion, input_files: list[tuple[str, bytes]]
-) -> bytes:
+def _build_workdir_archive(*, version: ToolVersion, input_files: list[tuple[str, bytes]]) -> bytes:
     normalized_input_files, _ = normalize_input_files(input_files=input_files)
 
     tar_buffer = io.BytesIO()

@@ -247,9 +247,7 @@ def test_migration_0011_tool_runs_input_manifest_is_idempotent(
                 seeded_run_input_bytes=seeded_run_bytes,
             )
         )
-        asyncio.run(
-            _cleanup_seeded_run_from_url(database_url=database_url, run_id=seeded_run_id)
-        )
+        asyncio.run(_cleanup_seeded_run_from_url(database_url=database_url, run_id=seeded_run_id))
 
         command.downgrade(alembic_cfg, "base")
         command.upgrade(alembic_cfg, "head")
