@@ -2,12 +2,12 @@ from fastapi import APIRouter, Depends
 
 from skriptoteket.web.api.v1 import auth as api_v1_auth
 from skriptoteket.web.api.v1 import catalog as api_v1_catalog
+from skriptoteket.web.api.v1 import my_runs as api_v1_my_runs
 from skriptoteket.web.api.v1 import tools as api_v1_tools
 from skriptoteket.web.auth.dependencies import require_user
 from skriptoteket.web.pages import admin_scripting as admin_scripting_pages
 from skriptoteket.web.pages import admin_tools as admin_tools_pages
 from skriptoteket.web.pages import auth as auth_pages
-from skriptoteket.web.pages import browse as browse_pages
 from skriptoteket.web.pages import curated_apps as curated_apps_pages
 from skriptoteket.web.pages import home as home_pages
 from skriptoteket.web.pages import my_runs as my_runs_pages
@@ -24,13 +24,13 @@ router.include_router(auth_pages.router)
 
 router.include_router(api_v1_auth.router)
 router.include_router(api_v1_catalog.router)
+router.include_router(api_v1_my_runs.router)
 router.include_router(api_v1_tools.router)
 router.include_router(editor_routes.router)
 router.include_router(interactive_tools_routes.router)
 
 protected = APIRouter(dependencies=[Depends(require_user)])
 protected.include_router(home_pages.router)
-protected.include_router(browse_pages.router)
 protected.include_router(curated_apps_pages.router)
 protected.include_router(tools_pages.router)
 protected.include_router(my_runs_pages.router)

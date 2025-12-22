@@ -72,6 +72,9 @@ class RunArtifact(BaseModel):
 class RunDetails(BaseModel):
     model_config = ConfigDict(frozen=True)
 
+    tool_id: UUID
+    tool_slug: str | None = None
+    tool_title: str
     run_id: UUID
     status: RunStatus
     error_summary: str | None = None

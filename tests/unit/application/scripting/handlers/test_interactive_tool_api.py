@@ -557,10 +557,22 @@ async def test_get_run_returns_artifact_download_urls(now: datetime) -> None:
     runs = AsyncMock(spec=ToolRunRepositoryProtocol)
     runs.get_by_id.return_value = run
 
-    handler = GetRunHandler(uow=uow, runs=runs)
+    tools = AsyncMock(spec=ToolRepositoryProtocol)
+    tools.get_by_id.return_value = make_tool(
+        now=now,
+        is_published=True,
+        tool_id=tool_id,
+    )
+    curated_apps = Mock(spec=CuratedAppRegistryProtocol)
+    curated_apps.get_by_tool_id.return_value = None
+
+    handler = GetRunHandler(uow=uow, runs=runs, tools=tools, curated_apps=curated_apps)
 
     result = await handler.handle(actor=actor, query=GetRunQuery(run_id=run_id))
 
+    assert result.run.tool_id == tool_id
+    assert result.run.tool_slug == "demo-tool"
+    assert result.run.tool_title == "Demo tool"
     assert result.run.run_id == run_id
     assert result.run.status is RunStatus.SUCCEEDED
     expected_url = f"/api/v1/runs/{run_id}/artifacts/output_report_pdf"

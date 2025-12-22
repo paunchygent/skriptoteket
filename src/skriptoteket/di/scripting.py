@@ -135,8 +135,15 @@ class ScriptingProvider(Provider):
         self,
         uow: UnitOfWorkProtocol,
         runs: ToolRunRepositoryProtocol,
+        tools: ToolRepositoryProtocol,
+        curated_apps: CuratedAppRegistryProtocol,
     ) -> GetRunHandlerProtocol:
-        return GetInteractiveRunHandler(uow=uow, runs=runs)
+        return GetInteractiveRunHandler(
+            uow=uow,
+            runs=runs,
+            tools=tools,
+            curated_apps=curated_apps,
+        )
 
     @provide(scope=Scope.REQUEST)
     def list_interactive_artifacts_handler(

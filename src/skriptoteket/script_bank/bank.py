@@ -14,4 +14,15 @@ SCRIPT_BANK: list[ScriptBankEntry] = [
         category_slugs=["administration"],
         source_filename="ist_vh_mejl_bcc.py",
     ),
+    ScriptBankEntry(
+        slug="demo-next-actions",
+        title="Demo: Interaktiv körning (next_actions)",
+        summary=(
+            "Demoverktyg för att testa SPA-flödet: upload → outputs/artifacts → "
+            "next_actions → ny körning."
+        ),
+        profession_slugs=["gemensamt"],
+        category_slugs=["ovrigt"],
+        source_filename="demo_next_actions.py",
+    ),
 ]

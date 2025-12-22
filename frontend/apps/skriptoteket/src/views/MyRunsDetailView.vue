@@ -6,7 +6,6 @@ import { apiGet, apiPost, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
 import { RunResultPanel } from "../components/run-results";
 
-type ToolMetadataResponse = components["schemas"]["ToolMetadataResponse"];
 type GetRunResult = components["schemas"]["GetRunResult"];
 type StartActionResult = components["schemas"]["StartActionResult"];
 type GetSessionStateResult = components["schemas"]["GetSessionStateResult"];
@@ -14,17 +13,11 @@ type GetSessionStateResult = components["schemas"]["GetSessionStateResult"];
 const route = useRoute();
 const router = useRouter();
 
-const slug = computed(() => {
-  const param = route.params.slug;
-  return typeof param === "string" ? param : "";
-});
-
 const runId = computed(() => {
   const param = route.params.runId;
   return typeof param === "string" ? param : "";
 });
 
-const tool = ref<ToolMetadataResponse | null>(null);
 const run = ref<GetRunResult["run"] | null>(null);
 const stateRev = ref<number | null>(null);
 
@@ -33,15 +26,10 @@ const isSubmittingAction = ref(false);
 const errorMessage = ref<string | null>(null);
 const actionErrorMessage = ref<string | null>(null);
 
-let pollIntervalId: number | null = null;
-
 const hasNextActions = computed(() => (run.value?.ui_payload?.next_actions ?? []).length > 0);
 const canSubmitActions = computed(() => stateRev.value !== null);
 
-async function fetchTool(): Promise<void> {
-  if (!slug.value) return;
-  tool.value = await apiGet<ToolMetadataResponse>(`/api/v1/tools/${encodeURIComponent(slug.value)}`);
-}
+let pollIntervalId: number | null = null;
 
 async function fetchRun(): Promise<void> {
   if (!runId.value) return;
@@ -57,7 +45,7 @@ async function fetchSessionState(toolId: string): Promise<void> {
 }
 
 async function load(): Promise<void> {
-  if (!slug.value || !runId.value) {
+  if (!runId.value) {
     errorMessage.value = "Missing route params";
     return;
   }
@@ -82,12 +70,6 @@ async function load(): Promise<void> {
 
     isLoading.value = false;
     return;
-  }
-
-  try {
-    await fetchTool();
-  } catch {
-    tool.value = null;
   }
 
   if (hasNextActions.value && run.value) {
@@ -142,8 +124,8 @@ async function submitAction(payload: { actionId: string; input: Record<string, c
 
     stateRev.value = response.state_rev;
     await router.replace({
-      name: "tool-result",
-      params: { slug: slug.value, runId: response.run_id },
+      name: "my-runs-detail",
+      params: { runId: response.run_id },
     });
   } catch (error: unknown) {
     if (isApiError(error)) {
@@ -162,7 +144,7 @@ onMounted(() => {
   void load();
 });
 
-watch([slug, runId], () => {
+watch(runId, () => {
   void load();
 });
 
@@ -186,22 +168,34 @@ onUnmounted(() => {
 <template>
   <div class="max-w-3xl space-y-6">
     <RouterLink
-      to="/browse"
+      to="/my-runs"
       class="text-sm text-navy/70 underline hover:text-burgundy"
     >
-      ← Tillbaka till katalog
+      ← Tillbaka
     </RouterLink>
 
     <div class="space-y-2">
       <h1 class="text-2xl font-semibold text-navy">
-        {{ tool?.title ?? run?.tool_title ?? (isLoading ? "Laddar..." : "Körning") }}
+        {{ run?.tool_title ?? (isLoading ? "Laddar..." : "Körning") }}
       </h1>
-      <p
-        v-if="tool?.summary"
-        class="text-navy/60"
+
+      <div
+        v-if="run?.tool_slug"
+        class="flex flex-wrap items-center gap-3 text-sm"
       >
-        {{ tool.summary }}
-      </p>
+        <RouterLink
+          :to="{ name: 'tool-run', params: { slug: run.tool_slug } }"
+          class="underline text-burgundy hover:text-navy"
+        >
+          Kör igen →
+        </RouterLink>
+        <RouterLink
+          :to="{ name: 'tool-result', params: { slug: run.tool_slug, runId: run.run_id } }"
+          class="underline text-navy/70 hover:text-burgundy"
+        >
+          Visa i verktyget →
+        </RouterLink>
+      </div>
     </div>
 
     <div
@@ -221,7 +215,7 @@ onUnmounted(() => {
     <template v-else-if="run">
       <RunResultPanel
         :run="run"
-        :id-base="`tool-${slug}-run-${run.run_id}`"
+        :id-base="`my-runs-run-${run.run_id}`"
         :is-submitting-action="isSubmittingAction"
         :can-submit-actions="canSubmitActions"
         :action-error-message="actionErrorMessage"
@@ -230,3 +224,4 @@ onUnmounted(() => {
     </template>
   </div>
 </template>
+

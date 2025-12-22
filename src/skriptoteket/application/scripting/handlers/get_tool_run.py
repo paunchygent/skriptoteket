@@ -13,6 +13,8 @@ from skriptoteket.application.scripting.interactive_tools import (
 from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
+from skriptoteket.protocols.catalog import ToolRepositoryProtocol
+from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.interactive_tools import GetRunHandlerProtocol
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
@@ -39,25 +41,55 @@ def _artifacts_for_run(
     ]
 
 
+async def _resolve_tool_metadata(
+    *,
+    tool_id: UUID,
+    tools: ToolRepositoryProtocol,
+    curated_apps: CuratedAppRegistryProtocol,
+) -> tuple[str | None, str]:
+    app = curated_apps.get_by_tool_id(tool_id=tool_id)
+    if app is not None:
+        return None, app.title
+
+    tool = await tools.get_by_id(tool_id=tool_id)
+    if tool is None:
+        return None, "Okänt verktyg"
+
+    return tool.slug, tool.title
+
+
 class GetRunHandler(GetRunHandlerProtocol):
     def __init__(
         self,
         *,
         uow: UnitOfWorkProtocol,
         runs: ToolRunRepositoryProtocol,
+        tools: ToolRepositoryProtocol,
+        curated_apps: CuratedAppRegistryProtocol,
     ) -> None:
         self._uow = uow
         self._runs = runs
+        self._tools = tools
+        self._curated_apps = curated_apps
 
     async def handle(self, *, actor: User, query: GetRunQuery) -> GetRunResult:
         async with self._uow:
             run = await self._runs.get_by_id(run_id=query.run_id)
 
-        if run is None or run.requested_by_user_id != actor.id:
-            raise not_found("ToolRun", str(query.run_id))
+            if run is None or run.requested_by_user_id != actor.id:
+                raise not_found("ToolRun", str(query.run_id))
+
+            tool_slug, tool_title = await _resolve_tool_metadata(
+                tool_id=run.tool_id,
+                tools=self._tools,
+                curated_apps=self._curated_apps,
+            )
 
         return GetRunResult(
             run=RunDetails(
+                tool_id=run.tool_id,
+                tool_slug=tool_slug,
+                tool_title=tool_title,
                 run_id=run.id,
                 status=run.status,
                 error_summary=run.error_summary,

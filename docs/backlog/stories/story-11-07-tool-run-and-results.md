@@ -53,6 +53,11 @@ After API changes, regenerate TypeScript OpenAPI types:
   - `frontend/apps/skriptoteket/src/router/routes.ts`
   - `frontend/apps/skriptoteket/src/views/BrowseToolsView.vue` links to tool-run via `RouterLink`
 
+### Route cutover (SSR → SPA)
+
+- `/login`, `/browse`, and `/tools/:slug/run` are now served by the SPA (SSR handlers removed / unregistered).
+- Legacy SSR `POST /tools/interactive/start_action` remains for now (used by SSR my-runs/apps views).
+
 ### Verification
 
 - `pdm run lint`
@@ -61,3 +66,5 @@ After API changes, regenerate TypeScript OpenAPI types:
 - `pnpm -C frontend --filter @skriptoteket/spa typecheck`
 - `pnpm -C frontend --filter @skriptoteket/spa lint`
 - `pnpm -C frontend --filter @skriptoteket/spa build`
+- Live check: `curl -s http://127.0.0.1:8000/login | head`, `curl -s http://127.0.0.1:8000/browse | head`, `curl -s http://127.0.0.1:8000/tools/does-not-matter/run | head`
+- Live flow (2025-12-22): seeded + ran tool `demo-next-actions` end-to-end (upload → results → artifact download → `next_actions` loop via `Nollställ` then `Nästa steg` until no actions).

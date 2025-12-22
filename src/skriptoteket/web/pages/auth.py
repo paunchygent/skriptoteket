@@ -2,62 +2,14 @@ from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from fastapi.responses import RedirectResponse
 
-from skriptoteket.application.identity.commands import LoginCommand, LogoutCommand
+from skriptoteket.application.identity.commands import LogoutCommand
 from skriptoteket.config import Settings
-from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.protocols.identity import LoginHandlerProtocol, LogoutHandlerProtocol
+from skriptoteket.protocols.identity import LogoutHandlerProtocol
 from skriptoteket.web.auth.dependencies import get_session_id
-from skriptoteket.web.templating import templates
 
 router = APIRouter()
-
-
-@router.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request, error: str | None = None) -> HTMLResponse:
-    return templates.TemplateResponse(
-        request=request,
-        name="login.html",
-        context={"error": error, "user": None, "csrf_token": ""},
-    )
-
-
-@router.post("/login")
-@inject
-async def login(
-    request: Request,
-    settings: FromDishka[Settings],
-    handler: FromDishka[LoginHandlerProtocol],
-    email: str = Form(...),
-    password: str = Form(...),
-) -> Response:
-    try:
-        result = await handler.handle(LoginCommand(email=email, password=password))
-    except DomainError as exc:
-        if exc.code in {ErrorCode.INVALID_CREDENTIALS, ErrorCode.UNAUTHORIZED}:
-            return templates.TemplateResponse(
-                request=request,
-                name="login.html",
-                context={
-                    "error": "Fel e-post eller lösenord.",
-                    "user": None,
-                    "csrf_token": "",
-                },
-            )
-        raise
-
-    response = RedirectResponse(url="/", status_code=303)
-    response.set_cookie(
-        key=settings.SESSION_COOKIE_NAME,
-        value=str(result.session_id),
-        max_age=settings.SESSION_TTL_SECONDS,
-        httponly=True,
-        secure=settings.COOKIE_SECURE,
-        samesite=settings.COOKIE_SAMESITE,
-        path="/",
-    )
-    return response
 
 
 @router.post("/logout")

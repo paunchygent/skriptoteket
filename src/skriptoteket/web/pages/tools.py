@@ -1,34 +1,23 @@
-"""User-facing tool execution routes.
+"""Legacy SSR routes for tool results.
 
-Routes for authenticated users to run published tools and view results.
+Tool execution (/tools/:slug/run) is now handled by the SPA. This module keeps
+the HTMX HTML endpoint for executing stored next_actions from legacy SSR views
+until those views are migrated.
 """
 
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Depends, File, Request, UploadFile
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, Response
 
-from skriptoteket.application.scripting.commands import RunActiveToolCommand
-from skriptoteket.application.scripting.interactive_tools import (
-    GetSessionStateQuery,
-    StartActionCommand,
-)
-from skriptoteket.config import Settings
+from skriptoteket.application.scripting.interactive_tools import StartActionCommand
 from skriptoteket.domain.errors import DomainError, not_found, validation_error
 from skriptoteket.domain.identity.models import Session, User
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolRun
-from skriptoteket.protocols.catalog import ToolRepositoryProtocol
-from skriptoteket.protocols.interactive_tools import (
-    GetSessionStateHandlerProtocol,
-    StartActionHandlerProtocol,
-)
-from skriptoteket.protocols.scripting import (
-    RunActiveToolHandlerProtocol,
-    ToolRunRepositoryProtocol,
-    ToolVersionRepositoryProtocol,
-)
+from skriptoteket.protocols.interactive_tools import StartActionHandlerProtocol
+from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
 from skriptoteket.web.auth.dependencies import get_current_session, require_user
 from skriptoteket.web.interactive_action_forms import parse_action_input
 from skriptoteket.web.pages.admin_scripting_support import (
@@ -38,7 +27,6 @@ from skriptoteket.web.pages.admin_scripting_support import (
 )
 from skriptoteket.web.templating import templates
 from skriptoteket.web.ui_text import ui_error_message
-from skriptoteket.web.uploads import read_upload_files
 
 router = APIRouter(prefix="/tools")
 
@@ -74,168 +62,6 @@ async def _load_production_run_for_user(
     if run.context is not RunContext.PRODUCTION:
         raise not_found("ToolRun", str(run_id))
     return run
-
-
-async def _load_runnable_tool(
-    *,
-    tools: ToolRepositoryProtocol,
-    slug: str,
-) -> tuple[object, UUID]:
-    """Load a tool that is published and has an active version.
-
-    Returns (tool, active_version_id) or raises not_found.
-    """
-    tool = await tools.get_by_slug(slug=slug)
-    if tool is None:
-        raise not_found("Tool", slug)
-    if not tool.is_published:
-        raise not_found("Tool", slug)
-    if tool.active_version_id is None:
-        raise not_found("Tool", slug)
-    return tool, tool.active_version_id
-
-
-@router.get("/{slug}/run", response_class=HTMLResponse)
-@inject
-async def show_run_form(
-    request: Request,
-    slug: str,
-    tools: FromDishka[ToolRepositoryProtocol],
-    versions: FromDishka[ToolVersionRepositoryProtocol],
-    user: User = Depends(require_user),
-    session: Session | None = Depends(get_current_session),
-) -> HTMLResponse:
-    """Show the run form for a published tool."""
-    csrf_token = session.csrf_token if session else ""
-
-    tool, active_version_id = await _load_runnable_tool(tools=tools, slug=slug)
-
-    version = await versions.get_by_id(version_id=active_version_id)
-    if version is None:
-        raise not_found("Tool", slug)
-
-    return templates.TemplateResponse(
-        request=request,
-        name="tools/run.html",
-        context={
-            "request": request,
-            "user": user,
-            "csrf_token": csrf_token,
-            "tool": tool,
-            "version": version,
-        },
-    )
-
-
-@router.post("/{slug}/run", response_class=HTMLResponse)
-@inject
-async def execute_tool(
-    request: Request,
-    slug: str,
-    handler: FromDishka[RunActiveToolHandlerProtocol],
-    tools: FromDishka[ToolRepositoryProtocol],
-    sessions: FromDishka[GetSessionStateHandlerProtocol],
-    settings: FromDishka[Settings],
-    user: User = Depends(require_user),
-    session: Session | None = Depends(get_current_session),
-    files: list[UploadFile] = File(...),
-) -> Response:
-    """Execute a published tool and return results."""
-    csrf_token = session.csrf_token if session else ""
-    hx_request = is_hx_request(request)
-
-    try:
-        input_files = await read_upload_files(
-            files=files,
-            max_files=settings.UPLOAD_MAX_FILES,
-            max_file_bytes=settings.UPLOAD_MAX_FILE_BYTES,
-            max_total_bytes=settings.UPLOAD_MAX_TOTAL_BYTES,
-        )
-        result = await handler.handle(
-            actor=user,
-            command=RunActiveToolCommand(
-                tool_slug=slug,
-                input_files=input_files,
-            ),
-        )
-        run = result.run
-    except DomainError as exc:
-        if hx_request:
-            error = ui_error_message(exc)
-            return templates.TemplateResponse(
-                request=request,
-                name="tools/partials/run_error_with_toast.html",
-                context={
-                    "request": request,
-                    "error": error,
-                    "message": "Körning misslyckades.",
-                    "type": "error",
-                },
-                status_code=status_code_for_error(exc),
-            )
-        # Re-render form with error
-        try:
-            tool, _ = await _load_runnable_tool(tools=tools, slug=slug)
-        except DomainError:
-            raise exc from None
-        return templates.TemplateResponse(
-            request=request,
-            name="tools/run.html",
-            context={
-                "request": request,
-                "user": user,
-                "csrf_token": csrf_token,
-                "tool": tool,
-                "version": None,
-                "error": ui_error_message(exc),
-            },
-            status_code=status_code_for_error(exc),
-        )
-
-    # Success - render result
-    interactive_context = "default"
-    interactive_state_rev: int | None = None
-    if run.ui_payload is not None and run.ui_payload.next_actions:
-        try:
-            session_state = (
-                await sessions.handle(
-                    actor=user,
-                    query=GetSessionStateQuery(tool_id=run.tool_id, context=interactive_context),
-                )
-            ).session_state
-            interactive_state_rev = session_state.state_rev
-        except DomainError:
-            interactive_state_rev = None
-
-    if hx_request:
-        succeeded = _run_succeeded(run.status)
-        return templates.TemplateResponse(
-            request=request,
-            name="tools/partials/run_result_with_toast.html",
-            context={
-                "request": request,
-                "run": run,
-                "artifacts": _user_artifacts_for_run(run),
-                "interactive_context": interactive_context,
-                "interactive_state_rev": interactive_state_rev,
-                "message": "Körning lyckades." if succeeded else "Körning misslyckades.",
-                "type": "success" if succeeded else "error",
-            },
-        )
-
-    return templates.TemplateResponse(
-        request=request,
-        name="tools/result.html",
-        context={
-            "request": request,
-            "user": user,
-            "csrf_token": csrf_token,
-            "run": run,
-            "artifacts": _user_artifacts_for_run(run),
-            "interactive_context": interactive_context,
-            "interactive_state_rev": interactive_state_rev,
-        },
-    )
 
 
 @router.post("/interactive/start_action", response_class=HTMLResponse)

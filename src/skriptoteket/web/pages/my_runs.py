@@ -1,6 +1,7 @@
-"""User run history routes.
+"""User run history routes (legacy).
 
-Routes for users to view their past production runs and download artifacts.
+ST-11-08 replaces the run history pages with SPA views, but legacy SSR pages still
+link to `/my-runs/{run_id}/artifacts/{artifact_id}` for downloads.
 """
 
 from pathlib import Path
@@ -9,37 +10,20 @@ from uuid import UUID
 import structlog
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import FileResponse, HTMLResponse, Response
+from fastapi.responses import FileResponse, Response
 
-from skriptoteket.application.scripting.interactive_tools import GetSessionStateQuery
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
-from skriptoteket.domain.identity.models import Session, User
+from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.models import RunContext, ToolRun
 from skriptoteket.infrastructure.runner.path_safety import validate_output_path
-from skriptoteket.protocols.interactive_tools import GetSessionStateHandlerProtocol
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
-from skriptoteket.web.auth.dependencies import get_current_session, require_user
-from skriptoteket.web.templating import templates
+from skriptoteket.web.auth.dependencies import require_user
 
 logger = structlog.get_logger(__name__)
 
 router = APIRouter(prefix="/my-runs")
-
-
-def _user_artifacts_for_run(run: ToolRun) -> list[dict[str, object]]:
-    """Generate artifact list with user-facing download URLs."""
-    manifest = ArtifactsManifest.model_validate(run.artifacts_manifest)
-    return [
-        {
-            "artifact_id": artifact.artifact_id,
-            "path": artifact.path,
-            "bytes": artifact.bytes,
-            "download_url": f"/my-runs/{run.id}/artifacts/{artifact.artifact_id}",
-        }
-        for artifact in manifest.artifacts
-    ]
 
 
 async def _load_production_run_for_user(
@@ -104,49 +88,6 @@ def _resolve_artifact_path(
         )
 
     return candidate_path, relative_path
-
-
-@router.get("/{run_id}", response_class=HTMLResponse)
-@inject
-async def view_run(
-    request: Request,
-    run_id: UUID,
-    runs: FromDishka[ToolRunRepositoryProtocol],
-    sessions: FromDishka[GetSessionStateHandlerProtocol],
-    user: User = Depends(require_user),
-    session: Session | None = Depends(get_current_session),
-) -> HTMLResponse:
-    """View a past production run result."""
-    csrf_token = session.csrf_token if session else ""
-    run = await _load_production_run_for_user(runs=runs, run_id=run_id, user=user)
-
-    interactive_context = "default"
-    interactive_state_rev: int | None = None
-    if run.ui_payload is not None and run.ui_payload.next_actions:
-        try:
-            session_state = (
-                await sessions.handle(
-                    actor=user,
-                    query=GetSessionStateQuery(tool_id=run.tool_id, context=interactive_context),
-                )
-            ).session_state
-            interactive_state_rev = session_state.state_rev
-        except DomainError:
-            interactive_state_rev = None
-
-    return templates.TemplateResponse(
-        request=request,
-        name="my_runs/detail.html",
-        context={
-            "request": request,
-            "user": user,
-            "csrf_token": csrf_token,
-            "run": run,
-            "artifacts": _user_artifacts_for_run(run),
-            "interactive_context": interactive_context,
-            "interactive_state_rev": interactive_state_rev,
-        },
-    )
 
 
 @router.get("/{run_id}/artifacts/{artifact_id}")

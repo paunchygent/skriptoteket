@@ -157,6 +157,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/my-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List My Runs */
+        get: operations["list_my_runs_api_v1_my_runs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/runs/{run_id}": {
         parameters: {
             query?: never;
@@ -318,18 +335,6 @@ export interface components {
             rationale: string;
             /** Title */
             title?: string | null;
-        };
-        /** Body_execute_tool_tools__slug__run_post */
-        Body_execute_tool_tools__slug__run_post: {
-            /** Files */
-            files: string[];
-        };
-        /** Body_login_login_post */
-        Body_login_login_post: {
-            /** Email */
-            email: string;
-            /** Password */
-            password: string;
         };
         /** Body_logout_logout_post */
         Body_logout_logout_post: {
@@ -497,6 +502,11 @@ export interface components {
             categories: components["schemas"]["CategoryItem"][];
             profession: components["schemas"]["ProfessionItem"];
         };
+        /** ListMyRunsResponse */
+        ListMyRunsResponse: {
+            /** Runs */
+            runs: components["schemas"]["MyRunItem"][];
+        };
         /**
          * ListProfessionsResponse
          * @description Response for listing all professions.
@@ -533,6 +543,31 @@ export interface components {
         /** MeResponse */
         MeResponse: {
             user: components["schemas"]["User"];
+        };
+        /** MyRunItem */
+        MyRunItem: {
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            status: components["schemas"]["RunStatus"];
+            /**
+             * Tool Id
+             * Format: uuid
+             */
+            tool_id: string;
+            /** Tool Slug */
+            tool_slug: string | null;
+            /** Tool Title */
+            tool_title: string;
         };
         /**
          * ProfessionItem
@@ -579,6 +614,15 @@ export interface components {
              */
             run_id: string;
             status: components["schemas"]["RunStatus"];
+            /**
+             * Tool Id
+             * Format: uuid
+             */
+            tool_id: string;
+            /** Tool Slug */
+            tool_slug?: string | null;
+            /** Tool Title */
+            tool_title: string;
             ui_payload?: components["schemas"]["UiPayloadV2"] | null;
         };
         /**
@@ -1206,6 +1250,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_my_runs_api_v1_my_runs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListMyRunsResponse"];
                 };
             };
         };
