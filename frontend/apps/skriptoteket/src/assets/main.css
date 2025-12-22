@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+@import "../styles/tailwind-theme.css";
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-navy);
+}
