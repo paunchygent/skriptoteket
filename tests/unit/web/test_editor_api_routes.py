@@ -1,30 +1,43 @@
 from __future__ import annotations
 
 import json
-import uuid
-from unittest.mock import AsyncMock
+from urllib.parse import unquote
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from starlette.responses import JSONResponse
 
 from skriptoteket.application.scripting.commands import (
     CreateDraftVersionResult,
     SaveDraftVersionResult,
 )
-from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.application.catalog.queries import ListToolTaxonomyResult
+from skriptoteket.application.catalog.commands import UpdateToolTaxonomyResult
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.models import VersionState
+from skriptoteket.protocols.catalog import (
+    ListToolTaxonomyHandlerProtocol,
+    UpdateToolTaxonomyHandlerProtocol,
+)
 from skriptoteket.protocols.scripting import (
     CreateDraftVersionHandlerProtocol,
     SaveDraftVersionHandlerProtocol,
 )
-from skriptoteket.web.routes import editor
-from tests.unit.web.admin_scripting_test_support import _original, _tool, _user, _version
+from skriptoteket.web.api.v1 import editor
+from tests.unit.web.admin_scripting_test_support import _tool, _user, _version
+
+
+def _unwrap_dishka(fn):
+    """Extract original function from Dishka-wrapped handlers."""
+    return getattr(fn, "__dishka_orig_func__", fn)
+
+
+def _decode_toast_payload(value: str) -> dict[str, str]:
+    return json.loads(unquote(value))
 
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_draft_version_success_sets_toast_cookie_and_returns_redirect() -> None:
+async def test_create_draft_version_success_returns_save_result() -> None:
     handler = AsyncMock(spec=CreateDraftVersionHandlerProtocol)
     tool = _tool()
     user = _user(role=Role.ADMIN)
@@ -36,7 +49,10 @@ async def test_create_draft_version_success_sets_toast_cookie_and_returns_redire
     )
     handler.handle.return_value = CreateDraftVersionResult(version=created)
 
-    response = await _original(editor.create_draft_version)(
+    mock_response = MagicMock()
+    mock_response.set_cookie = MagicMock()
+
+    result = await _unwrap_dishka(editor.create_draft_version)(
         tool_id=tool.id,
         payload=editor.CreateDraftVersionRequest(
             entrypoint="run_tool",
@@ -44,17 +60,22 @@ async def test_create_draft_version_success_sets_toast_cookie_and_returns_redire
             change_summary="summary",
             derived_from_version_id=None,
         ),
+        response=mock_response,
         handler=handler,
         user=user,
     )
 
-    assert isinstance(response, JSONResponse)
-    assert response.status_code == 200
-    assert "skriptoteket_toast=" in response.headers.get("set-cookie", "")
+    assert isinstance(result, editor.SaveResult)
+    assert result.version_id == created.id
+    assert result.redirect_url == f"/admin/tool-versions/{created.id}"
 
-    data = json.loads(response.body)
-    assert data["version_id"] == str(created.id)
-    assert data["redirect_url"] == f"/admin/tool-versions/{created.id}"
+    # Verify toast cookie was set
+    mock_response.set_cookie.assert_called_once()
+    call_kwargs = mock_response.set_cookie.call_args.kwargs
+    assert call_kwargs["key"] == "skriptoteket_toast"
+    payload = _decode_toast_payload(call_kwargs["value"])
+    assert payload["m"] == "Utkast skapat."
+    assert payload["t"] == "success"
 
     handler.handle.assert_awaited_once()
     command = handler.handle.call_args.kwargs["command"]
@@ -67,34 +88,7 @@ async def test_create_draft_version_success_sets_toast_cookie_and_returns_redire
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_draft_version_domain_error_returns_ui_message() -> None:
-    handler = AsyncMock(spec=CreateDraftVersionHandlerProtocol)
-    user = _user(role=Role.ADMIN)
-    tool_id = uuid.uuid4()
-    handler.handle.side_effect = DomainError(
-        code=ErrorCode.FORBIDDEN,
-        message="Insufficient permissions",
-        details={"tool_id": str(tool_id)},
-    )
-
-    response = await _original(editor.create_draft_version)(
-        tool_id=tool_id,
-        payload=editor.CreateDraftVersionRequest(entrypoint="run_tool", source_code="x"),
-        handler=handler,
-        user=user,
-    )
-
-    assert isinstance(response, JSONResponse)
-    assert response.status_code == 403
-
-    data = json.loads(response.body)
-    assert data["error"]["code"] == ErrorCode.FORBIDDEN.value
-    assert data["error"]["message"] == "Du saknar behörighet för detta."
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_save_draft_version_success_sets_toast_cookie_and_returns_redirect() -> None:
+async def test_save_draft_version_success_returns_save_result() -> None:
     handler = AsyncMock(spec=SaveDraftVersionHandlerProtocol)
     tool = _tool()
     user = _user(role=Role.ADMIN)
@@ -112,7 +106,10 @@ async def test_save_draft_version_success_sets_toast_cookie_and_returns_redirect
     )
     handler.handle.return_value = SaveDraftVersionResult(version=saved)
 
-    response = await _original(editor.save_draft_version)(
+    mock_response = MagicMock()
+    mock_response.set_cookie = MagicMock()
+
+    result = await _unwrap_dishka(editor.save_draft_version)(
         version_id=previous.id,
         payload=editor.SaveDraftVersionRequest(
             entrypoint="run_tool",
@@ -120,17 +117,22 @@ async def test_save_draft_version_success_sets_toast_cookie_and_returns_redirect
             change_summary=None,
             expected_parent_version_id=previous.id,
         ),
+        response=mock_response,
         handler=handler,
         user=user,
     )
 
-    assert isinstance(response, JSONResponse)
-    assert response.status_code == 200
-    assert "skriptoteket_toast=" in response.headers.get("set-cookie", "")
+    assert isinstance(result, editor.SaveResult)
+    assert result.version_id == saved.id
+    assert result.redirect_url == f"/admin/tool-versions/{saved.id}"
 
-    data = json.loads(response.body)
-    assert data["version_id"] == str(saved.id)
-    assert data["redirect_url"] == f"/admin/tool-versions/{saved.id}"
+    # Verify toast cookie was set
+    mock_response.set_cookie.assert_called_once()
+    call_kwargs = mock_response.set_cookie.call_args.kwargs
+    assert call_kwargs["key"] == "skriptoteket_toast"
+    payload = _decode_toast_payload(call_kwargs["value"])
+    assert payload["m"] == "Sparat."
+    assert payload["t"] == "success"
 
     handler.handle.assert_awaited_once()
     command = handler.handle.call_args.kwargs["command"]
@@ -138,3 +140,69 @@ async def test_save_draft_version_success_sets_toast_cookie_and_returns_redirect
     assert command.expected_parent_version_id == previous.id
     assert command.entrypoint == "run_tool"
     assert command.source_code == "print('new')"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_tool_taxonomy_returns_response() -> None:
+    handler = AsyncMock(spec=ListToolTaxonomyHandlerProtocol)
+    tool = _tool()
+    user = _user(role=Role.ADMIN)
+    profession_ids = [tool.id]
+    category_ids = [tool.id]
+    handler.handle.return_value = ListToolTaxonomyResult(
+        tool_id=tool.id,
+        profession_ids=profession_ids,
+        category_ids=category_ids,
+    )
+
+    result = await _unwrap_dishka(editor.get_tool_taxonomy)(
+        tool_id=tool.id,
+        handler=handler,
+        user=user,
+    )
+
+    assert isinstance(result, editor.ToolTaxonomyResponse)
+    assert result.tool_id == tool.id
+    assert result.profession_ids == profession_ids
+    assert result.category_ids == category_ids
+
+    handler.handle.assert_awaited_once()
+    query = handler.handle.call_args.kwargs["query"]
+    assert query.tool_id == tool.id
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_update_tool_taxonomy_calls_handler() -> None:
+    handler = AsyncMock(spec=UpdateToolTaxonomyHandlerProtocol)
+    tool = _tool()
+    user = _user(role=Role.ADMIN)
+    profession_ids = [tool.id]
+    category_ids = [tool.id]
+    handler.handle.return_value = UpdateToolTaxonomyResult(
+        tool_id=tool.id,
+        profession_ids=profession_ids,
+        category_ids=category_ids,
+    )
+
+    result = await _unwrap_dishka(editor.update_tool_taxonomy)(
+        tool_id=tool.id,
+        payload=editor.ToolTaxonomyRequest(
+            profession_ids=profession_ids,
+            category_ids=category_ids,
+        ),
+        handler=handler,
+        user=user,
+    )
+
+    assert isinstance(result, editor.ToolTaxonomyResponse)
+    assert result.tool_id == tool.id
+    assert result.profession_ids == profession_ids
+    assert result.category_ids == category_ids
+
+    handler.handle.assert_awaited_once()
+    command = handler.handle.call_args.kwargs["command"]
+    assert command.tool_id == tool.id
+    assert command.profession_ids == profession_ids
+    assert command.category_ids == category_ids

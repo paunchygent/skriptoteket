@@ -36,8 +36,8 @@ from skriptoteket.protocols.scripting import (
     SaveDraftVersionHandlerProtocol,
 )
 from skriptoteket.web.api.v1 import auth as api_v1_auth
+from skriptoteket.web.api.v1 import editor as editor_routes
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
-from skriptoteket.web.routes import editor as editor_routes
 from skriptoteket.web.routes import interactive_tools as interactive_tools_routes
 from tests.fixtures.identity_fixtures import make_session, make_user
 

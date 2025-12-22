@@ -104,7 +104,7 @@ def _tool(*, title: str = "Tool") -> Tool:
 async def test_list_tools_renders_admin_tools_template_with_csrf_and_tools() -> None:
     handler = AsyncMock(spec=ListToolsForAdminHandlerProtocol)
     tool = _tool(title="Example")
-    handler.handle.return_value = ListToolsForAdminResult(tools=[tool])
+    handler.handle.return_value = ListToolsForAdminResult(tools=[tool], version_stats={})
 
     user = _user(role=Role.ADMIN)
     session = _session(user_id=user.id)
@@ -177,7 +177,7 @@ async def test_publish_tool_domain_error_renders_template_with_status_and_error(
 
     exc = DomainError(code=ErrorCode.CONFLICT, message="Already published")
     publish_handler.handle.side_effect = exc
-    list_handler.handle.return_value = ListToolsForAdminResult(tools=[tool])
+    list_handler.handle.return_value = ListToolsForAdminResult(tools=[tool], version_stats={})
 
     user = _user(role=Role.ADMIN)
     session = _session(user_id=user.id)
@@ -235,7 +235,7 @@ async def test_depublish_tool_domain_error_renders_template_with_status_and_erro
 
     exc = DomainError(code=ErrorCode.FORBIDDEN, message="Not allowed")
     depublish_handler.handle.side_effect = exc
-    list_handler.handle.return_value = ListToolsForAdminResult(tools=[tool])
+    list_handler.handle.return_value = ListToolsForAdminResult(tools=[tool], version_stats={})
 
     user = _user(role=Role.ADMIN)
     session = _session(user_id=user.id)

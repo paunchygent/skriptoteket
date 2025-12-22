@@ -57,6 +57,9 @@ async def test_profession_repository(db_session: AsyncSession) -> None:
     assert fetched is not None
     assert fetched.label == "Engineer"
 
+    by_ids = await repo.list_by_ids(profession_ids=[prof_id])
+    assert [p.id for p in by_ids] == [prof_id]
+
 
 @pytest.mark.integration
 async def test_category_repository(db_session: AsyncSession) -> None:
@@ -77,6 +80,9 @@ async def test_category_repository(db_session: AsyncSession) -> None:
     all_cats = await repo.list_all()
     assert len(all_cats) >= 1
     assert any(c.id == cat_id for c in all_cats)
+
+    by_ids = await repo.list_by_ids(category_ids=[cat_id])
+    assert [c.id for c in by_ids] == [cat_id]
 
 
 @pytest.mark.integration
@@ -287,3 +293,89 @@ async def test_tool_repository_list_by_tags_and_updates(db_session: AsyncSession
         now=now,
     )
     assert with_active.active_version_id == version_id
+
+
+@pytest.mark.integration
+async def test_tool_repository_list_tag_ids_and_replace_tags(db_session: AsyncSession) -> None:
+    tool_repo = PostgreSQLToolRepository(db_session)
+    now = datetime.now(timezone.utc)
+
+    original_prof_id = uuid.uuid4()
+    original_cat_id = uuid.uuid4()
+    new_prof_id = uuid.uuid4()
+    new_cat_id = uuid.uuid4()
+
+    db_session.add(
+        ProfessionModel(
+            id=original_prof_id,
+            slug="p-old",
+            label="Old",
+            sort_order=1,
+            created_at=now,
+            updated_at=now,
+        )
+    )
+    db_session.add(
+        CategoryModel(
+            id=original_cat_id,
+            slug="c-old",
+            label="Old",
+            created_at=now,
+            updated_at=now,
+        )
+    )
+    db_session.add(
+        ProfessionModel(
+            id=new_prof_id,
+            slug="p-new",
+            label="New",
+            sort_order=2,
+            created_at=now,
+            updated_at=now,
+        )
+    )
+    db_session.add(
+        CategoryModel(
+            id=new_cat_id,
+            slug="c-new",
+            label="New",
+            created_at=now,
+            updated_at=now,
+        )
+    )
+    await db_session.flush()
+
+    tool_id = uuid.uuid4()
+    tool = Tool(
+        id=tool_id,
+        slug="tag-tool",
+        title="Tag Tool",
+        summary=None,
+        is_published=False,
+        active_version_id=None,
+        created_at=now,
+        updated_at=now,
+    )
+    await tool_repo.create_draft(
+        tool=tool, profession_ids=[original_prof_id], category_ids=[original_cat_id]
+    )
+
+    profession_ids, category_ids = await tool_repo.list_tag_ids(tool_id=tool_id)
+    assert set(profession_ids) == {original_prof_id}
+    assert set(category_ids) == {original_cat_id}
+
+    later = datetime.now(timezone.utc)
+    await tool_repo.replace_tags(
+        tool_id=tool_id,
+        profession_ids=[new_prof_id],
+        category_ids=[new_cat_id],
+        now=later,
+    )
+
+    updated_prof_ids, updated_cat_ids = await tool_repo.list_tag_ids(tool_id=tool_id)
+    assert set(updated_prof_ids) == {new_prof_id}
+    assert set(updated_cat_ids) == {new_cat_id}
+
+    refreshed = await tool_repo.get_by_id(tool_id=tool_id)
+    assert refreshed is not None
+    assert refreshed.updated_at >= later

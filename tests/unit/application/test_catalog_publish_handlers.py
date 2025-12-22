@@ -64,7 +64,8 @@ def make_tool_version(*, tool_id: UUID, now: datetime, state: VersionState) -> T
 async def test_list_tools_for_admin_requires_admin(now: datetime) -> None:
     del now
     tools_repo = AsyncMock(spec=ToolRepositoryProtocol)
-    handler = ListToolsForAdminHandler(tools=tools_repo)
+    versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
+    handler = ListToolsForAdminHandler(tools=tools_repo, versions=versions_repo)
 
     actor = make_user(role=Role.CONTRIBUTOR)
     with pytest.raises(DomainError) as exc_info:
@@ -78,14 +79,19 @@ async def test_list_tools_for_admin_requires_admin(now: datetime) -> None:
 @pytest.mark.asyncio
 async def test_list_tools_for_admin_returns_tools(now: datetime) -> None:
     actor = make_user(role=Role.ADMIN)
+    tool = make_tool(now=now)
     tools_repo = AsyncMock(spec=ToolRepositoryProtocol)
-    tools_repo.list_all.return_value = [make_tool(now=now)]
-    handler = ListToolsForAdminHandler(tools=tools_repo)
+    tools_repo.list_all.return_value = [tool]
+    versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
+    versions_repo.get_version_stats_for_tools.return_value = {}
+    handler = ListToolsForAdminHandler(tools=tools_repo, versions=versions_repo)
 
     result = await handler.handle(actor=actor, query=ListToolsForAdminQuery())
 
     assert len(result.tools) == 1
+    assert result.version_stats == {}
     tools_repo.list_all.assert_awaited_once()
+    versions_repo.get_version_stats_for_tools.assert_awaited_once_with(tool_ids=[tool.id])
 
 
 @pytest.mark.unit
