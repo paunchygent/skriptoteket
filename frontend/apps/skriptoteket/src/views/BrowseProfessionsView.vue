@@ -40,8 +40,8 @@ onMounted(() => {
 
 <template>
   <div class="browse-professions">
-    <h2 class="browse-professions__title">Blaeddra verktyg</h2>
-    <p class="browse-professions__subtitle">Vaelj en yrkesgrupp foer att se kategorier och verktyg.</p>
+    <h2 class="browse-professions__title">Bläddra verktyg</h2>
+    <p class="browse-professions__subtitle">Välj en yrkesgrupp för att se kategorier och verktyg.</p>
 
     <div
       v-if="isLoading"

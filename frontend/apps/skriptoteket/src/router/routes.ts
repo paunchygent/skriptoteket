@@ -35,6 +35,12 @@ export const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/apps/:appId",
+    name: "app-detail",
+    component: () => import("../views/AppDetailView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/tools/:slug/run",
     name: "tool-run",
     component: () => import("../views/ToolRunFormView.vue"),
@@ -68,6 +74,36 @@ export const routes: RouteRecordRaw[] = [
     path: "/admin/tools",
     name: "admin-tools",
     component: () => import("../views/admin/AdminToolsView.vue"),
+    meta: { requiresAuth: true, minRole: "admin" },
+  },
+  {
+    path: "/admin/tools/:toolId",
+    name: "admin-tool-editor",
+    component: () => import("../views/admin/ScriptEditorView.vue"),
+    meta: { requiresAuth: true, minRole: "contributor" },
+  },
+  {
+    path: "/admin/tool-versions/:versionId",
+    name: "admin-tool-version-editor",
+    component: () => import("../views/admin/ScriptEditorView.vue"),
+    meta: { requiresAuth: true, minRole: "contributor" },
+  },
+  {
+    path: "/suggestions/new",
+    name: "suggestion-new",
+    component: () => import("../views/SuggestionNewView.vue"),
+    meta: { requiresAuth: true, minRole: "contributor" },
+  },
+  {
+    path: "/admin/suggestions",
+    name: "admin-suggestions",
+    component: () => import("../views/admin/AdminSuggestionsListView.vue"),
+    meta: { requiresAuth: true, minRole: "admin" },
+  },
+  {
+    path: "/admin/suggestions/:id",
+    name: "admin-suggestion-detail",
+    component: () => import("../views/admin/AdminSuggestionDetailView.vue"),
     meta: { requiresAuth: true, minRole: "admin" },
   },
 ];

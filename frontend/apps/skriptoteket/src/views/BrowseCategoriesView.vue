@@ -69,7 +69,7 @@ watch(professionSlug, () => {
     <h2 class="browse-categories__title">
       {{ profession?.label ?? "Laddar..." }}
     </h2>
-    <p class="browse-categories__subtitle">Vaelj en kategori foer att se verktyg.</p>
+    <p class="browse-categories__subtitle">Välj en kategori för att se verktyg.</p>
 
     <div
       v-if="isLoading"
@@ -90,7 +90,7 @@ watch(professionSlug, () => {
       v-else-if="categories.length === 0"
       class="browse-categories__empty"
     >
-      Inga kategorier finns foer denna yrkesgrupp.
+      Inga kategorier finns för denna yrkesgrupp.
     </div>
 
     <ul

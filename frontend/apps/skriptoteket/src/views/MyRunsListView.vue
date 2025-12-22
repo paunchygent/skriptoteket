@@ -125,4 +125,3 @@ onMounted(() => {
     </ul>
   </div>
 </template>
-

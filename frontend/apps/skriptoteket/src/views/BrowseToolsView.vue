@@ -52,7 +52,7 @@ async function fetchTools(): Promise<void> {
     } else if (error instanceof Error) {
       errorMessage.value = error.message;
     } else {
-      errorMessage.value = "Failed to load tools";
+      errorMessage.value = "Det gick inte att ladda verktygen.";
     }
   } finally {
     isLoading.value = false;
@@ -100,7 +100,7 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
       v-if="profession"
       class="text-sm text-navy/60 mb-6"
     >
-      Verktyg foer {{ profession.label.toLowerCase() }}
+      Verktyg för {{ profession.label.toLowerCase() }}
     </p>
 
     <div
@@ -148,9 +148,9 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
               </div>
               <RouterLink
                 :to="{ name: 'tool-run', params: { slug: tool.slug } }"
-                class="shrink-0 w-full sm:w-auto text-center px-4 py-2 text-sm font-semibold uppercase tracking-wide text-canvas bg-burgundy rounded-sm hover:bg-navy transition-colors"
+                class="shrink-0 w-full sm:w-auto sm:min-w-20 text-center px-4 py-2 text-sm font-semibold uppercase tracking-wide text-canvas bg-burgundy rounded-sm btn-primary-hover transition-shadow"
               >
-                Koer
+                Kör
               </RouterLink>
             </div>
           </li>
@@ -177,12 +177,12 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
                   class="text-sm text-navy/60 break-words"
                 >{{ app.summary }}</span>
               </div>
-              <a
-                :href="`/apps/${app.app_id}`"
-                class="shrink-0 w-full sm:w-auto text-center px-4 py-2 text-sm font-semibold uppercase tracking-wide text-canvas bg-burgundy rounded-sm hover:bg-navy transition-colors"
+              <RouterLink
+                :to="{ name: 'app-detail', params: { appId: app.app_id } }"
+                class="shrink-0 w-full sm:w-auto sm:min-w-20 text-center px-4 py-2 text-sm font-semibold uppercase tracking-wide text-canvas bg-burgundy rounded-sm btn-primary-hover transition-shadow"
               >
-                Oeppna
-              </a>
+                Öppna
+              </RouterLink>
             </div>
           </li>
         </ul>
