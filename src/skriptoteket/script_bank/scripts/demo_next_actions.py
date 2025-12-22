@@ -93,12 +93,7 @@ def _handle_action(*, input_path: Path, output_dir: Path) -> dict:
     artifact_name = _write_artifact(
         output_dir=output_dir,
         name=f"step_{step}_{timestamp}.txt",
-        content=(
-            f"Demo next_actions\n"
-            f"action_id={action_id}\n"
-            f"step={step}\n"
-            f"note={note}\n"
-        ),
+        content=(f"Demo next_actions\naction_id={action_id}\nstep={step}\nnote={note}\n"),
     )
 
     outputs = [
@@ -160,11 +155,7 @@ def run_tool(input_path: str, output_dir: str) -> dict:
     artifact_name = _write_artifact(
         output_dir=out,
         name=f"upload_{timestamp}.txt",
-        content=(
-            f"Uploaded file: {path.name}\n"
-            f"bytes: {file_bytes}\n"
-            f"snippet:\n{snippet}\n"
-        ),
+        content=(f"Uploaded file: {path.name}\nbytes: {file_bytes}\nsnippet:\n{snippet}\n"),
     )
 
     outputs: list[dict] = [

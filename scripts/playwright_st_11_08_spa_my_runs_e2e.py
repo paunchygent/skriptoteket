@@ -75,11 +75,15 @@ def main() -> None:
         page.get_by_label("E-post").fill(email)
         page.get_by_label("Lösenord").fill(password)
         page.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
-        expect(page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))).to_be_visible()
+        expect(
+            page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))
+        ).to_be_visible()
 
         # Create a run (via tool run flow) so /my-runs has something to list.
         page.goto(f"{base_url}/browse/gemensamt/ovrigt", wait_until="domcontentloaded")
-        expect(page.get_by_role("heading", name=re.compile(r"Övrigt", re.IGNORECASE))).to_be_visible()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Övrigt", re.IGNORECASE))
+        ).to_be_visible()
 
         tool_row = page.locator("li").filter(has_text="Demo: Interaktiv")
         expect(tool_row).to_have_count(1)
@@ -96,7 +100,9 @@ def main() -> None:
 
         # My runs list -> open that run
         page.goto(f"{base_url}/my-runs", wait_until="domcontentloaded")
-        expect(page.get_by_role("heading", name=re.compile(r"Mina körningar", re.IGNORECASE))).to_be_visible()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Mina körningar", re.IGNORECASE))
+        ).to_be_visible()
 
         run_row = page.locator("li").filter(has_text=created_run_id)
         expect(run_row).to_have_count(1)

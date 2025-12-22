@@ -68,11 +68,15 @@ def main() -> None:
         page.get_by_label("E-post").fill(email)
         page.get_by_label("Lösenord").fill(password)
         page.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
-        expect(page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))).to_be_visible()
+        expect(
+            page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))
+        ).to_be_visible()
 
         # Browse -> pick the demo tool
         page.goto(f"{base_url}/browse/gemensamt/ovrigt", wait_until="domcontentloaded")
-        expect(page.get_by_role("heading", name=re.compile(r"Övrigt", re.IGNORECASE))).to_be_visible()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Övrigt", re.IGNORECASE))
+        ).to_be_visible()
 
         tool_row = page.locator("li").filter(has_text="Demo: Interaktiv")
         expect(tool_row).to_have_count(1)
@@ -80,7 +84,9 @@ def main() -> None:
         page.wait_for_url("**/tools/demo-next-actions/run", wait_until="domcontentloaded")
 
         # Upload + run
-        expect(page.get_by_role("heading", name=re.compile(r"Demo: Interaktiv", re.IGNORECASE))).to_be_visible()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Demo: Interaktiv", re.IGNORECASE))
+        ).to_be_visible()
         page.locator("input[type='file']").set_input_files(str(sample_file))
         page.get_by_role("button", name=re.compile(r"^Kör", re.IGNORECASE)).click()
 
@@ -112,7 +118,9 @@ def main() -> None:
 
         # Run next_actions loop until actions disappear (max 5 turns as safety)
         for step in range(1, 6):
-            next_step_button = page.get_by_role("button", name=re.compile(r"Nästa steg", re.IGNORECASE))
+            next_step_button = page.get_by_role(
+                "button", name=re.compile(r"Nästa steg", re.IGNORECASE)
+            )
             if next_step_button.count() == 0:
                 break
 
@@ -134,7 +142,9 @@ def main() -> None:
                 download_step = download_info_step.value
                 download_step.save_as(str(artifacts_dir / "artifact-1.bin"))
 
-        expect(page.get_by_role("button", name=re.compile(r"Nästa steg", re.IGNORECASE))).to_have_count(0)
+        expect(
+            page.get_by_role("button", name=re.compile(r"Nästa steg", re.IGNORECASE))
+        ).to_have_count(0)
 
         context.close()
         browser.close()
