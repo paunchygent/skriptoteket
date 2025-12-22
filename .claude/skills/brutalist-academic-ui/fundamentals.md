@@ -4,6 +4,14 @@
 
 ---
 
+## 0. Skriptoteket Constraints (must follow)
+
+- **No Tailwind** (Skriptoteket is pure CSS + tokens): `docs/adr/adr-0029-frontend-styling-pure-css-design-tokens.md`.
+- **Tokens + classes are canonical**: `.agent/rules/045-huleedu-design-system.md` and `src/skriptoteket/web/static/css/huleedu-design-tokens.css`.
+- Prefer existing primitives before inventing new ones: `.huleedu-btn`, `.huleedu-card`, `.huleedu-link`, `.huleedu-table`, `.huleedu-row`.
+
+---
+
 ## 1. The Grid Is Sacred
 
 The grid is the skeleton. Not a suggestion.
@@ -18,10 +26,10 @@ The grid is the skeleton. Not a suggestion.
 .layout {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: 32px;
+  gap: var(--huleedu-space-8);
   max-width: 1440px;
   margin: 0 auto;
-  padding: 0 48px;
+  padding: 0 var(--huleedu-space-12);
 }
 ```
 
@@ -35,9 +43,9 @@ Type does 80% of the work. The interface is a reading environment.
 
 | Purpose | Fonts | Never |
 |---------|-------|-------|
-| Body | Georgia, Charter, Source Serif, IBM Plex Sans | Roboto, Open Sans, Lato, Inter |
-| Headings | Same as body, or contrasting sans | Decorative display fonts |
-| Monospace | JetBrains Mono, Berkeley Mono, IBM Plex Mono | System defaults |
+| Body | `var(--huleedu-font-serif)` / `var(--huleedu-font-sans)` | Roboto, Open Sans, Lato, Inter |
+| Headings | Same family, heavier weight | Decorative display fonts |
+| Monospace | `var(--huleedu-font-mono)` | System defaults |
 
 ### Measure (Line Length)
 
@@ -69,8 +77,8 @@ Brutalist = hard edges. Academic = clear delineation.
 
 ```css
 /* Yes */
-.card { border: 1px solid var(--color-gray-200); }
-.card { border: 2px solid var(--color-ink); }
+.card { border: var(--huleedu-border-width) solid var(--huleedu-border-color-subtle); }
+.card { border: var(--huleedu-border-width-2) solid var(--huleedu-border-color); }
 
 /* Acceptable for elevation */
 .card-elevated { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
@@ -87,8 +95,8 @@ Brutalist = hard edges. Academic = clear delineation.
 
 - 0px: valid, often correct
 - 2-4px: subtle softening
-- 8px max: cards/containers
-- Never: 16px, 24px, 9999px pill shapes
+- Use HuleEdu tokens: `--huleedu-radius-none|sm|md|lg` (≤ 8px)
+- Avoid pills for buttons; reserve `--huleedu-radius-full` for tiny dots/spinners only
 
 ---
 

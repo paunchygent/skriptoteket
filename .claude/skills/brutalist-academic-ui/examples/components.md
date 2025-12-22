@@ -6,114 +6,53 @@
 
 ## 1. Hard Shadow Button
 
-Brutalist signature: offset shadow with translate-on-press.
+Skriptoteket already ships brutalist buttons. Prefer these instead of inventing new button styles.
 
-```css
-.btn-brutal {
-  background: var(--color-ink);
-  color: white;
-  padding: var(--space-3) var(--space-6);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border: none;
-  cursor: pointer;
-  box-shadow: 4px 4px 0 0 var(--color-ink);
-  transition: transform 0.075s ease, box-shadow 0.075s ease;
-}
+```html
+<!-- Primary CTA (burgundy) -->
+<button class="huleedu-btn">Publicera</button>
 
-.btn-brutal:hover {
-  background: var(--color-gray-800);
-}
+<!-- Functional action (navy) -->
+<button class="huleedu-btn huleedu-btn-navy">Logga in</button>
 
-.btn-brutal:active {
-  transform: translate(4px, 4px);
-  box-shadow: none;
-}
-
-/* Accent variant */
-.btn-brutal-accent {
-  background: var(--color-accent);
-  box-shadow: 4px 4px 0 0 var(--color-ink);
-}
+<!-- Secondary/cancel (outline) -->
+<button class="huleedu-btn huleedu-btn-secondary">Avbryt</button>
 ```
 
 ---
 
 ## 2. Cards
 
-```css
-/* Primary: hard border, hard shadow */
-.card-brutal {
-  background: white;
-  border: 2px solid var(--color-ink);
-  box-shadow: 8px 8px 0 0 var(--color-ink);
-}
+```html
+<section class="huleedu-card">
+  <header class="huleedu-card-header">
+    <h2>Card title</h2>
+  </header>
+  <p>Content…</p>
+</section>
 
-/* Secondary: softer shadow */
-.card-brutal-soft {
-  background: white;
-  border: 1px solid var(--color-ink);
-  box-shadow: 4px 4px 0 0 rgba(26, 31, 44, 0.15);
-}
-
-/* Minimal: border only */
-.card-minimal {
-  background: white;
-  border: 1px solid var(--color-gray-200);
-}
+<!-- Nested/flat context -->
+<section class="huleedu-card-flat">
+  <p>Flat card…</p>
+</section>
 ```
 
 ---
 
 ## 3. Links
 
-```css
-a {
-  color: var(--color-ink);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-thickness: 1px;
-  transition: color 0.15s ease;
-}
-
-a:hover {
-  color: var(--color-accent);
-}
-
-/* Navigation link (no underline until hover) */
-.nav-link {
-  text-decoration: none;
-}
-
-.nav-link:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
+```html
+<a class="huleedu-link" href="/docs">Läs mer</a>
 ```
 
 ---
 
 ## 4. Tags/Labels
 
-```css
-/* Monospace, uppercase, minimal */
-.tag {
-  display: inline-block;
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--color-ink);
-}
-
-/* State variant */
-.tag-muted {
-  color: var(--color-gray-500);
-  border-color: var(--color-gray-300);
-}
+```html
+<span class="huleedu-badge">DRAFT</span>
+<span class="huleedu-badge huleedu-badge-burgundy">ATGÄRD</span>
+<span class="huleedu-badge huleedu-badge-navy">PUBLISHED</span>
 ```
 
 ---
@@ -123,13 +62,13 @@ a:hover {
 ```css
 hr {
   border: none;
-  border-top: 1px solid var(--color-gray-200);
-  margin: var(--space-8) 0;
+  border-top: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+  margin: var(--huleedu-space-8) 0;
 }
 
 /* Heavy divider */
 hr.heavy {
-  border-top: 2px solid var(--color-ink);
+  border-top: var(--huleedu-border-width-2) solid var(--huleedu-border-color);
 }
 ```
 
@@ -141,16 +80,16 @@ Only when semantically necessary.
 
 ```css
 .badge {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: 500;
+  font-family: var(--huleedu-font-mono);
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-medium);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--huleedu-tracking-label);
 }
 
-.badge-error { color: var(--color-error); }
-.badge-success { color: var(--color-success); }
-.badge-warning { color: var(--color-warning); }
+.badge-error { color: var(--huleedu-error); }
+.badge-warning { color: var(--huleedu-warning); }
+.badge-ok { color: var(--huleedu-navy); } /* Skriptoteket convention: success = navy */
 ```
 
 No backgrounds. No pills. Text color only.
@@ -159,29 +98,7 @@ No backgrounds. No pills. Text color only.
 
 ## 7. Loading States
 
-```css
-/* Pulse for active processing */
-.loading-pulse {
-  width: 8px;
-  height: 8px;
-  background: var(--color-accent);
-  animation: pulse 1s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-/* Bar for determinate progress */
-.loading-bar {
-  height: 4px;
-  background: var(--color-gray-200);
-}
-
-.loading-bar-fill {
-  height: 100%;
-  background: var(--color-ink);
-  transition: width 0.2s ease;
-}
+```html
+<span class="huleedu-spinner" aria-label="Loading"></span>
+<span class="huleedu-spinner huleedu-spinner-sm" aria-label="Loading"></span>
 ```

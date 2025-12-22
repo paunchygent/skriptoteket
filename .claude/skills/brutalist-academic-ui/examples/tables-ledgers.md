@@ -9,30 +9,30 @@
 ```css
 .ledger {
   width: 100%;
-  border: 2px solid var(--color-ink);
-  background: white;
+  border: var(--huleedu-border-width-2) solid var(--huleedu-border-color);
+  background: #fff;
 }
 
 .ledger-header {
   display: grid;
-  border-bottom: 2px solid var(--color-ink);
-  background: var(--color-gray-100);
-  font-size: var(--text-xs);
+  border-bottom: var(--huleedu-border-width-2) solid var(--huleedu-border-color);
+  background: var(--huleedu-navy-02);
+  font-size: var(--huleedu-text-xs);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--huleedu-tracking-label);
 }
 
 .ledger-row {
   display: grid;
-  border-bottom: 1px solid var(--color-ink);
-  background: white;
+  border-bottom: var(--huleedu-border-width) solid var(--huleedu-border-color);
+  background: #fff;
   cursor: pointer;
 }
 
 .ledger-cell {
-  padding: var(--space-4);
-  border-right: 1px solid var(--color-ink);
+  padding: var(--huleedu-space-4);
+  border-right: var(--huleedu-border-width) solid var(--huleedu-border-color);
 }
 
 .ledger-cell:last-child {
@@ -49,12 +49,12 @@ State is communicated through structural changes, not decorative badges.
 ### Processing State
 
 ```html
-<div class="ledger-row border-l-4 border-l-accent" data-state="processing">
+<div class="ledger-row ledger-row-processing" data-state="processing">
   <div class="ledger-cell">
-    <span class="font-mono text-xs uppercase tracking-wide text-accent">Processing</span>
+    <span class="huleedu-badge huleedu-badge-burgundy">Processing</span>
   </div>
   <div class="ledger-cell">
-    <div class="h-2 w-2 bg-accent rounded-full animate-pulse"></div>
+    <span class="huleedu-spinner huleedu-spinner-sm" aria-label="Processing"></span>
   </div>
 </div>
 ```
@@ -62,9 +62,9 @@ State is communicated through structural changes, not decorative badges.
 ### Attention Required
 
 ```html
-<div class="ledger-row border-b-2 border-accent bg-accent/[0.03]" data-state="attention">
+<div class="ledger-row ledger-row-attention" data-state="attention">
   <div class="ledger-cell">
-    <span class="font-mono text-xs uppercase tracking-wide text-accent font-bold">Action</span>
+    <span class="huleedu-badge huleedu-badge-burgundy">Action</span>
   </div>
 </div>
 ```
@@ -74,9 +74,20 @@ State is communicated through structural changes, not decorative badges.
 ```html
 <div class="ledger-row" data-state="complete">
   <div class="ledger-cell">
-    <span class="font-mono text-xs uppercase tracking-wide text-ink/40">Done</span>
+    <span class="huleedu-badge">Done</span>
   </div>
 </div>
+```
+
+```css
+.ledger-row-processing {
+  border-left: 4px solid var(--huleedu-burgundy);
+}
+
+.ledger-row-attention {
+  border-bottom: var(--huleedu-border-width-2) solid var(--huleedu-burgundy);
+  background: var(--huleedu-burgundy-05);
+}
 ```
 
 ---
@@ -86,8 +97,8 @@ State is communicated through structural changes, not decorative badges.
 ```css
 /* Hard outline, background shift */
 .ledger-row:hover {
-  background: var(--color-gray-100);
-  outline: 2px solid var(--color-ink);
+  background: var(--huleedu-navy-02);
+  outline: var(--huleedu-border-width-2) solid var(--huleedu-border-color);
   outline-offset: -2px;
   position: relative;
   z-index: 1;
@@ -116,7 +127,7 @@ Brief flash on state change. Not bounce, not slide.
 ```css
 @keyframes state-change {
   0%, 100% { background-color: transparent; }
-  50% { background-color: rgba(37, 99, 235, 0.08); }
+  50% { background-color: var(--huleedu-burgundy-10); }
 }
 
 .ledger-row[data-state-changed] {
@@ -139,18 +150,18 @@ row.addEventListener('animationend', () => {
 .progress-track {
   width: 100%;
   height: 6px;
-  background: var(--color-gray-200);
+  background: var(--huleedu-navy-20);
   /* No border-radius. A bar is a bar. */
 }
 
 .progress-fill {
   height: 100%;
-  background: var(--color-ink);
+  background: var(--huleedu-navy);
   transition: width 0.3s ease;
 }
 
 .progress-fill[data-active] {
-  background: var(--color-accent);
+  background: var(--huleedu-burgundy);
 }
 ```
 
@@ -158,7 +169,7 @@ row.addEventListener('animationend', () => {
 
 ## 6. Anti-Patterns
 
-- **Status badges/pills**: `bg-yellow-100 text-yellow-800 rounded-full` = decorating, not communicating
+- **Status pills with big border-radius** = decorating, not communicating
 - **Multiple competing colors**: One accent for attention. Everything else is ink or muted.
 - **Icons for every state**: Checkmark next to "Complete" is redundant
 - **Animated progress for complete items**: If done, it's done.
