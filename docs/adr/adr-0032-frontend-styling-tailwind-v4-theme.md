@@ -47,4 +47,3 @@ Adopt **Tailwind CSS v4** in the SPA as a utility layer, backed by **HuleEdu des
 
 - Requires discipline to keep the theme bridge minimal and avoid ad-hoc utilities that bypass tokens.
 - The design system contract must be kept stable (token renames are breaking changes).
-

@@ -16,3 +16,10 @@ dependencies: ["ADR-0023", "ADR-0024", "ST-11-04", "ST-11-05"]
 ## Context
 
 Curated apps are part of the product surface and must remain functional under the same SPA and API v1 conventions.
+
+## Verification (2025-12-22)
+
+- App tested: `demo.counter`
+- Flow: open `/apps/demo.counter` (SPA), Starta → Öka (stege 2) → Nollställ → Spara som fil
+- Replay: reload `/apps/demo.counter` shows latest run and artifacts; actions still available
+- Artifacts: `counter.txt` downloaded via SPA (Playwright)

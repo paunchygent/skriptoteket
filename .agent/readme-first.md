@@ -9,6 +9,8 @@ Use this file as the starting point when you begin a new session.
 - **No secrets**: never include API keys/tokens, passwords, or personal data in `.agent/` or `docs/`.
 - **Use the prompt template for new agents/devs**: if the user asks for a “message to a new developer/agent”, generate it by filling `.agent/next-session-instruction-prompt-template.md` (address the recipient as “you”).
 - **Pre-commit required**: run `pdm run precommit-install` once, then `pdm run precommit-run` before pushing.
+- **Admin editor features**: extract logic into `frontend/apps/skriptoteket/src/composables/editor/`
+  (views stay UI-only).
 - **Agent-doc size budgets**: keep `.agent/readme-first.md` ≤ 300 lines and `.agent/handoff.md` ≤ 200 lines (enforced by pre-commit).
 
 ## Pre-commit & quality gates (required)

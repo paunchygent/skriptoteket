@@ -2,7 +2,7 @@
 type: story
 id: ST-11-10
 title: "Suggestions flows (contributor + admin review)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-21
 epic: "EPIC-11"
