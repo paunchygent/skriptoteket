@@ -70,4 +70,3 @@ def normalize_input_files(
         )
 
     return normalized_files, InputManifest(files=manifest_entries)
-

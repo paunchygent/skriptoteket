@@ -6,4 +6,3 @@
     <p>Placeholder view (admin+). Wiring comes later.</p>
   </div>
 </template>
-

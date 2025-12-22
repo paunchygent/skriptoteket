@@ -6,4 +6,3 @@
     <p>Placeholder view (contributor+). Wiring comes later.</p>
   </div>
 </template>
-

@@ -23,4 +23,3 @@ without requiring the user to re-enter them on every run.
 
 This story is **blocked until EPIC-11 is complete (ST-11-13 cutover)** so settings UX is implemented once in the SPA
 (not duplicated in SSR/HTMX).
-

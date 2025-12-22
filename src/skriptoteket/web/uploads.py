@@ -51,4 +51,3 @@ async def read_upload_files(
         input_files.append((filename, content))
 
     return input_files
-

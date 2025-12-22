@@ -15,4 +15,3 @@
   },
   "include": ["src/**/*.ts", "src/**/*.vue", "src/env.d.ts"]
 }
-

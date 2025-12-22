@@ -39,4 +39,3 @@ async def require_csrf_token(
 ) -> None:
     if not csrf_token or csrf_token != session.csrf_token:
         raise DomainError(code=ErrorCode.FORBIDDEN, message="CSRF validation failed")
-

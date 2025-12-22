@@ -9,7 +9,7 @@ outcome: "Scripts can accept multiple input files, generate native PDFs, and acc
 dependencies: ["EPIC-11"]
 ---
 
-> Status note: **EPIC-12 is blocked until EPIC-11 (full SPA migration) is complete**.  
+> Status note: **EPIC-12 is blocked until EPIC-11 (full SPA migration) is complete**.
 > ST-12-01 is delivered as a backend/runtime contract + minimal SSR wiring; all remaining EPIC-12 work should be
 > implemented directly in the SPA to avoid building UI twice.
 

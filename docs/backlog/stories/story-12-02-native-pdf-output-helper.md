@@ -23,4 +23,3 @@ browser’s print-to-PDF workflow.
 
 This story is **blocked until EPIC-11 is complete (ST-11-13 cutover)** so PDF output UX is implemented once in the SPA
 (not duplicated in SSR/HTMX).
-

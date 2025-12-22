@@ -23,4 +23,3 @@ usability and reduces “upload a dummy file” workarounds.
 
 This story is **blocked until EPIC-11 is complete (ST-11-13 cutover)** so form UI is implemented once in the SPA (not
 duplicated in SSR/HTMX).
-

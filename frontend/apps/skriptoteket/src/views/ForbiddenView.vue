@@ -26,4 +26,3 @@ const fromPath = computed(() => {
     <p v-if="fromPath">Attempted path: {{ fromPath }}</p>
   </div>
 </template>
-

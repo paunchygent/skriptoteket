@@ -93,4 +93,3 @@ async def me(user: User = Depends(require_user_api)) -> MeResponse:
 @router.get("/csrf", response_model=CsrfResponse)
 async def csrf(session: Session = Depends(require_session_api)) -> CsrfResponse:
     return CsrfResponse(csrf_token=session.csrf_token)
-
