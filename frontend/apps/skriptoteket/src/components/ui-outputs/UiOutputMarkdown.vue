@@ -11,4 +11,3 @@ defineProps<{ output: UiMarkdownOutput }>();
     <pre class="whitespace-pre-wrap font-mono text-sm text-navy">{{ output.markdown }}</pre>
   </div>
 </template>
-

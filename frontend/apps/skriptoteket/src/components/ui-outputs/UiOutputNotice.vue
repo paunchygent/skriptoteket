@@ -28,4 +28,3 @@ const variantClasses = computed(() => {
     </p>
   </div>
 </template>
-

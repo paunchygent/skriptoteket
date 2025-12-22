@@ -32,4 +32,3 @@ function onInput(event: Event): void {
     >
   </div>
 </template>
-

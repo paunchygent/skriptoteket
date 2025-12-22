@@ -13,4 +13,3 @@ defineProps<{ output: UiVegaLiteOutput }>();
     </p>
   </div>
 </template>
-

@@ -15,4 +15,3 @@ defineProps<{ output: UiHtmlSandboxedOutput }>();
     />
   </div>
 </template>
-

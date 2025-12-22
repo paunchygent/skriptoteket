@@ -6,3 +6,21 @@ body {
   background: var(--color-canvas);
   color: var(--color-navy);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BUTTON UTILITIES - HuleEdu Pattern
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/*
+ * Primary button hover: subtle amber outline (not color fill)
+ * Matches SSR pattern from buttons.css
+ */
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary-hover:not(:disabled):not(:active):hover {
+    box-shadow: 0 0 0 2px var(--huleedu-warning);
+  }
+
+  .btn-secondary-hover:not(:disabled):not(:active):hover {
+    border-color: var(--huleedu-warning);
+  }
+}

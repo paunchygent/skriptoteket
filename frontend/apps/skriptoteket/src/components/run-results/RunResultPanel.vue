@@ -5,10 +5,26 @@ import type { components } from "../../api/openapi";
 import { UiActionForm } from "../ui-actions";
 import { UiOutputRenderer } from "../ui-outputs";
 
-type RunDetails = components["schemas"]["RunDetails"];
 type RunStatus = components["schemas"]["RunStatus"];
 type UiOutput = NonNullable<components["schemas"]["UiPayloadV2"]["outputs"]>[number];
 type UiFormAction = components["schemas"]["UiFormAction"];
+type ArtifactEntry = components["schemas"]["ArtifactEntry"];
+type RunArtifact = components["schemas"]["RunArtifact"];
+
+/**
+ * Minimal run details required by this component.
+ * Accepts both RunDetails (from interactive tools) and EditorRunDetails (from editor).
+ */
+type RunDetailsBase = {
+  run_id: string;
+  status: RunStatus;
+  error_summary?: string | null;
+  ui_payload?: {
+    outputs?: UiOutput[];
+    next_actions?: UiFormAction[];
+  } | null;
+  artifacts?: (ArtifactEntry | RunArtifact)[];
+};
 
 type SubmitPayload = {
   actionId: string;
@@ -16,7 +32,7 @@ type SubmitPayload = {
 };
 
 const props = defineProps<{
-  run: RunDetails;
+  run: RunDetailsBase;
   idBase: string;
   isSubmittingAction: boolean;
   canSubmitActions: boolean;
@@ -139,4 +155,3 @@ function onSubmitAction(payload: SubmitPayload): void {
     </div>
   </div>
 </template>
-

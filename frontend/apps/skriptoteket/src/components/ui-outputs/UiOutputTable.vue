@@ -47,4 +47,3 @@ defineProps<{ output: UiTableOutput }>();
     </div>
   </div>
 </template>
-

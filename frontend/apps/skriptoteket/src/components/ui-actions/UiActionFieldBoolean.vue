@@ -30,4 +30,3 @@ function onChange(event: Event): void {
     </label>
   </div>
 </template>
-

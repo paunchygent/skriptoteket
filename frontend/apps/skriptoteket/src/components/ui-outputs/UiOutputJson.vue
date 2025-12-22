@@ -27,4 +27,3 @@ const pretty = computed(() => {
     <pre class="p-4 whitespace-pre-wrap font-mono text-sm text-navy">{{ pretty }}</pre>
   </div>
 </template>
-

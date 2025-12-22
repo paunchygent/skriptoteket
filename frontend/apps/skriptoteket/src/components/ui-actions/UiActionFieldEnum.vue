@@ -44,4 +44,3 @@ function onChange(event: Event): void {
     </div>
   </fieldset>
 </template>
-
