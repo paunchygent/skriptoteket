@@ -42,6 +42,16 @@ class Tool(BaseModel):
     updated_at: datetime
 
 
+class ToolVersionStats(BaseModel):
+    """Version statistics for admin tool list enrichment (ADR-0033)."""
+
+    model_config = ConfigDict(frozen=True)
+
+    version_count: int
+    latest_version_state: str | None  # "draft", "in_review", or None
+    has_pending_review: bool
+
+
 def set_tool_published_state(*, tool: Tool, is_published: bool, now: datetime) -> Tool:
     if tool.is_published == is_published:
         return tool

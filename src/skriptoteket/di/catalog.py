@@ -17,8 +17,14 @@ from skriptoteket.application.catalog.handlers.list_tools_for_admin import ListT
 from skriptoteket.application.catalog.handlers.list_tools_for_contributor import (
     ListToolsForContributorHandler,
 )
+from skriptoteket.application.catalog.handlers.list_tool_taxonomy import (
+    ListToolTaxonomyHandler,
+)
 from skriptoteket.application.catalog.handlers.publish_tool import PublishToolHandler
 from skriptoteket.application.catalog.handlers.remove_maintainer import RemoveMaintainerHandler
+from skriptoteket.application.catalog.handlers.update_tool_taxonomy import (
+    UpdateToolTaxonomyHandler,
+)
 from skriptoteket.application.catalog.handlers.update_tool_metadata import UpdateToolMetadataHandler
 from skriptoteket.protocols.catalog import (
     AssignMaintainerHandlerProtocol,
@@ -31,12 +37,14 @@ from skriptoteket.protocols.catalog import (
     ListToolsByTagsHandlerProtocol,
     ListToolsForAdminHandlerProtocol,
     ListToolsForContributorHandlerProtocol,
+    ListToolTaxonomyHandlerProtocol,
     ProfessionRepositoryProtocol,
     PublishToolHandlerProtocol,
     RemoveMaintainerHandlerProtocol,
     ToolMaintainerAuditRepositoryProtocol,
     ToolMaintainerRepositoryProtocol,
     ToolRepositoryProtocol,
+    UpdateToolTaxonomyHandlerProtocol,
     UpdateToolMetadataHandlerProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
@@ -89,8 +97,9 @@ class CatalogProvider(Provider):
     def list_tools_for_admin_handler(
         self,
         tools: ToolRepositoryProtocol,
+        versions: ToolVersionRepositoryProtocol,
     ) -> ListToolsForAdminHandlerProtocol:
-        return ListToolsForAdminHandler(tools=tools)
+        return ListToolsForAdminHandler(tools=tools, versions=versions)
 
     @provide(scope=Scope.REQUEST)
     def publish_tool_handler(
@@ -119,6 +128,23 @@ class CatalogProvider(Provider):
         clock: ClockProtocol,
     ) -> UpdateToolMetadataHandlerProtocol:
         return UpdateToolMetadataHandler(uow=uow, tools=tools, clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def update_tool_taxonomy_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        professions: ProfessionRepositoryProtocol,
+        categories: CategoryRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> UpdateToolTaxonomyHandlerProtocol:
+        return UpdateToolTaxonomyHandler(
+            uow=uow,
+            tools=tools,
+            professions=professions,
+            categories=categories,
+            clock=clock,
+        )
 
     # Maintainer management handlers
 
@@ -180,3 +206,10 @@ class CatalogProvider(Provider):
         maintainers: ToolMaintainerRepositoryProtocol,
     ) -> ListToolsForContributorHandlerProtocol:
         return ListToolsForContributorHandler(tools=tools, maintainers=maintainers)
+
+    @provide(scope=Scope.REQUEST)
+    def list_tool_taxonomy_handler(
+        self,
+        tools: ToolRepositoryProtocol,
+    ) -> ListToolTaxonomyHandlerProtocol:
+        return ListToolTaxonomyHandler(tools=tools)

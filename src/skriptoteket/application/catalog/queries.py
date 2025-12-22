@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from skriptoteket.domain.catalog.models import Category, Profession, Tool
+from skriptoteket.domain.catalog.models import Category, Profession, Tool, ToolVersionStats
 from skriptoteket.domain.curated_apps.models import CuratedAppDefinition
 from skriptoteket.domain.identity.models import User
 
@@ -63,9 +63,12 @@ class ListToolsForAdminQuery(BaseModel):
 
 
 class ListToolsForAdminResult(BaseModel):
+    """Result with tools and version statistics for admin listing (ADR-0033)."""
+
     model_config = ConfigDict(frozen=True)
 
     tools: list[Tool]
+    version_stats: dict[UUID, ToolVersionStats]
 
 
 class ListMaintainersQuery(BaseModel):
@@ -89,3 +92,17 @@ class ListToolsForContributorResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     tools: list[Tool]
+
+
+class ListToolTaxonomyQuery(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+
+
+class ListToolTaxonomyResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    profession_ids: list[UUID]
+    category_ids: list[UUID]

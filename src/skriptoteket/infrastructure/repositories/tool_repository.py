@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.catalog.models import Tool
@@ -135,3 +135,61 @@ class PostgreSQLToolRepository(ToolRepositoryProtocol):
         await self._session.flush()
         await self._session.refresh(model)
         return Tool.model_validate(model)
+
+    async def list_tag_ids(
+        self,
+        *,
+        tool_id: UUID,
+    ) -> tuple[list[UUID], list[UUID]]:
+        professions_stmt = (
+            select(ToolProfessionModel.profession_id)
+            .where(ToolProfessionModel.tool_id == tool_id)
+            .order_by(ToolProfessionModel.profession_id.asc())
+        )
+        categories_stmt = (
+            select(ToolCategoryModel.category_id)
+            .where(ToolCategoryModel.tool_id == tool_id)
+            .order_by(ToolCategoryModel.category_id.asc())
+        )
+
+        professions_result = await self._session.execute(professions_stmt)
+        categories_result = await self._session.execute(categories_stmt)
+
+        profession_ids = list(professions_result.scalars().all())
+        category_ids = list(categories_result.scalars().all())
+        return profession_ids, category_ids
+
+    async def replace_tags(
+        self,
+        *,
+        tool_id: UUID,
+        profession_ids: list[UUID],
+        category_ids: list[UUID],
+        now: datetime,
+    ) -> None:
+        await self._session.execute(
+            delete(ToolProfessionModel).where(ToolProfessionModel.tool_id == tool_id)
+        )
+        await self._session.execute(
+            delete(ToolCategoryModel).where(ToolCategoryModel.tool_id == tool_id)
+        )
+
+        if profession_ids:
+            self._session.add_all(
+                [
+                    ToolProfessionModel(tool_id=tool_id, profession_id=profession_id)
+                    for profession_id in profession_ids
+                ]
+            )
+        if category_ids:
+            self._session.add_all(
+                [
+                    ToolCategoryModel(tool_id=tool_id, category_id=category_id)
+                    for category_id in category_ids
+                ]
+            )
+
+        await self._session.execute(
+            update(ToolModel).where(ToolModel.id == tool_id).values(updated_at=now)
+        )
+        await self._session.flush()

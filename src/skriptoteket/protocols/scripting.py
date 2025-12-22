@@ -1,7 +1,10 @@
 from __future__ import annotations
 
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 from uuid import UUID
+
+if TYPE_CHECKING:
+    from skriptoteket.domain.catalog.models import ToolVersionStats
 
 from skriptoteket.application.scripting.commands import (
     CreateDraftVersionCommand,
@@ -48,6 +51,12 @@ class ToolVersionRepositoryProtocol(Protocol):
     ) -> list[ToolVersion]: ...
 
     async def get_next_version_number(self, *, tool_id: UUID) -> int: ...
+
+    async def get_version_stats_for_tools(
+        self, *, tool_ids: list[UUID]
+    ) -> dict[UUID, ToolVersionStats]:
+        """Get version statistics for multiple tools in one batch query (ADR-0033)."""
+        ...
 
     async def create(self, *, version: ToolVersion) -> ToolVersion: ...
 

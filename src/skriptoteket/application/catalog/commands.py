@@ -73,3 +73,19 @@ class RemoveMaintainerResult(BaseModel):
 
     tool_id: UUID
     user_id: UUID
+
+
+class UpdateToolTaxonomyCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    profession_ids: list[UUID]
+    category_ids: list[UUID]
+
+
+class UpdateToolTaxonomyResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    profession_ids: list[UUID]
+    category_ids: list[UUID]

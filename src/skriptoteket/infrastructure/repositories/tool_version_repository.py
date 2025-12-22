@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from skriptoteket.domain.catalog.models import ToolVersionStats
 from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.scripting.models import ToolVersion, VersionState
 from skriptoteket.infrastructure.db.models.tool_version import ToolVersionModel
@@ -70,6 +71,79 @@ class PostgreSQLToolVersionRepository(ToolVersionRepositoryProtocol):
         result = await self._session.execute(stmt)
         max_version = result.scalar_one()
         return int(max_version) + 1 if max_version is not None else 1
+
+    async def get_version_stats_for_tools(
+        self, *, tool_ids: list[UUID]
+    ) -> dict[UUID, ToolVersionStats]:
+        """Get version statistics for multiple tools in one batch query (ADR-0033).
+
+        Uses indexed columns (tool_id, state) for efficient aggregation.
+        """
+        if not tool_ids:
+            return {}
+
+        # Query 1: Aggregate counts and IN_REVIEW status per tool
+        agg_stmt = (
+            select(
+                ToolVersionModel.tool_id,
+                func.count(ToolVersionModel.id).label("version_count"),
+                func.max(
+                    case(
+                        (ToolVersionModel.state == VersionState.IN_REVIEW, 1),
+                        else_=0,
+                    )
+                ).label("has_in_review"),
+            )
+            .where(ToolVersionModel.tool_id.in_(tool_ids))
+            .group_by(ToolVersionModel.tool_id)
+        )
+        agg_result = await self._session.execute(agg_stmt)
+        agg_rows = {row.tool_id: row for row in agg_result.all()}
+
+        # Query 2: Get latest version state per tool (highest version_number)
+        # Using a subquery to get max version_number per tool
+        max_version_subq = (
+            select(
+                ToolVersionModel.tool_id,
+                func.max(ToolVersionModel.version_number).label("max_version"),
+            )
+            .where(ToolVersionModel.tool_id.in_(tool_ids))
+            .group_by(ToolVersionModel.tool_id)
+            .subquery()
+        )
+
+        latest_stmt = select(
+            ToolVersionModel.tool_id,
+            ToolVersionModel.state,
+        ).join(
+            max_version_subq,
+            (ToolVersionModel.tool_id == max_version_subq.c.tool_id)
+            & (ToolVersionModel.version_number == max_version_subq.c.max_version),
+        )
+        latest_result = await self._session.execute(latest_stmt)
+        latest_by_tool = {row.tool_id: row.state for row in latest_result.all()}
+
+        # Build result dict
+        stats: dict[UUID, ToolVersionStats] = {}
+        for tool_id in tool_ids:
+            agg_row = agg_rows.get(tool_id)
+            if agg_row:
+                latest_state = latest_by_tool.get(tool_id)
+                # latest_state is already a string from the raw query, not VersionState enum
+                stats[tool_id] = ToolVersionStats(
+                    version_count=agg_row.version_count,
+                    latest_version_state=latest_state if latest_state else None,
+                    has_pending_review=agg_row.has_in_review == 1,
+                )
+            else:
+                # No versions for this tool
+                stats[tool_id] = ToolVersionStats(
+                    version_count=0,
+                    latest_version_state=None,
+                    has_pending_review=False,
+                )
+
+        return stats
 
     async def create(self, *, version: ToolVersion) -> ToolVersion:
         model = ToolVersionModel(

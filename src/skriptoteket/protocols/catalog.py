@@ -13,6 +13,8 @@ from skriptoteket.application.catalog.commands import (
     PublishToolResult,
     RemoveMaintainerCommand,
     RemoveMaintainerResult,
+    UpdateToolTaxonomyCommand,
+    UpdateToolTaxonomyResult,
     UpdateToolMetadataCommand,
     UpdateToolMetadataResult,
 )
@@ -31,6 +33,8 @@ from skriptoteket.application.catalog.queries import (
     ListToolsForAdminResult,
     ListToolsForContributorQuery,
     ListToolsForContributorResult,
+    ListToolTaxonomyQuery,
+    ListToolTaxonomyResult,
 )
 from skriptoteket.domain.catalog.models import Category, Profession, Tool
 from skriptoteket.domain.identity.models import User
@@ -39,6 +43,7 @@ from skriptoteket.domain.identity.models import User
 class ProfessionRepositoryProtocol(Protocol):
     async def list_all(self) -> list[Profession]: ...
     async def get_by_slug(self, slug: str) -> Profession | None: ...
+    async def list_by_ids(self, *, profession_ids: list[UUID]) -> list[Profession]: ...
 
 
 class CategoryRepositoryProtocol(Protocol):
@@ -48,6 +53,7 @@ class CategoryRepositoryProtocol(Protocol):
     async def get_for_profession_by_slug(
         self, *, profession_id: UUID, category_slug: str
     ) -> Category | None: ...
+    async def list_by_ids(self, *, category_ids: list[UUID]) -> list[Category]: ...
 
 
 class ToolRepositoryProtocol(Protocol):
@@ -90,6 +96,21 @@ class ToolRepositoryProtocol(Protocol):
         profession_ids: list[UUID],
         category_ids: list[UUID],
     ) -> Tool: ...
+
+    async def list_tag_ids(
+        self,
+        *,
+        tool_id: UUID,
+    ) -> tuple[list[UUID], list[UUID]]: ...
+
+    async def replace_tags(
+        self,
+        *,
+        tool_id: UUID,
+        profession_ids: list[UUID],
+        category_ids: list[UUID],
+        now: datetime,
+    ) -> None: ...
 
 
 class ToolMaintainerRepositoryProtocol(Protocol):
@@ -177,6 +198,15 @@ class UpdateToolMetadataHandlerProtocol(Protocol):
     ) -> UpdateToolMetadataResult: ...
 
 
+class UpdateToolTaxonomyHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: UpdateToolTaxonomyCommand,
+    ) -> UpdateToolTaxonomyResult: ...
+
+
 class ListMaintainersHandlerProtocol(Protocol):
     async def handle(
         self,
@@ -211,3 +241,12 @@ class ListToolsForContributorHandlerProtocol(Protocol):
         actor: User,
         query: ListToolsForContributorQuery,
     ) -> ListToolsForContributorResult: ...
+
+
+class ListToolTaxonomyHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        query: ListToolTaxonomyQuery,
+    ) -> ListToolTaxonomyResult: ...

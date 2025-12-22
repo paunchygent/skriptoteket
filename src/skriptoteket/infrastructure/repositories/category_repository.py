@@ -55,3 +55,10 @@ class PostgreSQLCategoryRepository(CategoryRepositoryProtocol):
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         return Category.model_validate(model) if model else None
+
+    async def list_by_ids(self, *, category_ids: list[UUID]) -> list[Category]:
+        if not category_ids:
+            return []
+        stmt = select(CategoryModel).where(CategoryModel.id.in_(category_ids))
+        result = await self._session.execute(stmt)
+        return [Category.model_validate(model) for model in result.scalars().all()]
