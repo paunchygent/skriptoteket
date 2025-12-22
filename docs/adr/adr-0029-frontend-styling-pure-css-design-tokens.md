@@ -2,7 +2,8 @@
 type: adr
 id: ADR-0029
 title: "Frontend styling: pure CSS design tokens (no Tailwind)"
-status: accepted
+status: superseded
+superseded_by: ["ADR-0032"]
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-21

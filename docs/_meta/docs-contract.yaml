@@ -54,7 +54,7 @@ types:
     id_regex: "^ADR-\\d{4}$"
     status_allowed: ["proposed", "accepted", "superseded", "deprecated"]
     required: ["deciders"]
-    optional: ["context", "decision", "consequences"]
+    optional: ["context", "decision", "consequences", "supersedes", "superseded_by"]
 
   prd:
     folder: docs/prd
