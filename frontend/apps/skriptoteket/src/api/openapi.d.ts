@@ -72,6 +72,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/catalog/professions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Professions */
+        get: operations["list_professions_api_v1_catalog_professions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/professions/{profession_slug}/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Categories */
+        get: operations["list_categories_api_v1_catalog_professions__profession_slug__categories_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/professions/{profession_slug}/categories/{category_slug}/tools": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tools */
+        get: operations["list_tools_api_v1_catalog_professions__profession_slug__categories__category_slug__tools_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/editor/tool-versions/{version_id}/save": {
         parameters: {
             query?: never;
@@ -236,11 +287,8 @@ export interface components {
         };
         /** Body_execute_tool_tools__slug__run_post */
         Body_execute_tool_tools__slug__run_post: {
-            /**
-             * File
-             * Format: binary
-             */
-            file: string;
+            /** Files */
+            files: string[];
         };
         /** Body_login_login_post */
         Body_login_login_post: {
@@ -266,11 +314,8 @@ export interface components {
         };
         /** Body_run_sandbox_admin_tool_versions__version_id__run_sandbox_post */
         Body_run_sandbox_admin_tool_versions__version_id__run_sandbox_post: {
-            /**
-             * File
-             * Format: binary
-             */
-            file: string;
+            /** Files */
+            files: string[];
             /** Tool Id */
             tool_id: string;
         };
@@ -311,6 +356,21 @@ export interface components {
             /** Title */
             title: string;
         };
+        /**
+         * CategoryItem
+         * @description Category for API responses.
+         */
+        CategoryItem: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Label */
+            label: string;
+            /** Slug */
+            slug: string;
+        };
         /** CreateDraftVersionRequest */
         CreateDraftVersionRequest: {
             /** Change Summary */
@@ -329,6 +389,23 @@ export interface components {
         CsrfResponse: {
             /** Csrf Token */
             csrf_token: string;
+        };
+        /**
+         * CuratedAppItem
+         * @description Curated app for API responses.
+         */
+        CuratedAppItem: {
+            /** App Id */
+            app_id: string;
+            /** Summary */
+            summary: string | null;
+            /** Title */
+            title: string;
+            /**
+             * Tool Id
+             * Format: uuid
+             */
+            tool_id: string;
         };
         /** GetRunResult */
         GetRunResult: {
@@ -372,6 +449,35 @@ export interface components {
              */
             run_id: string;
         };
+        /**
+         * ListCategoriesResponse
+         * @description Response for listing categories within a profession.
+         */
+        ListCategoriesResponse: {
+            /** Categories */
+            categories: components["schemas"]["CategoryItem"][];
+            profession: components["schemas"]["ProfessionItem"];
+        };
+        /**
+         * ListProfessionsResponse
+         * @description Response for listing all professions.
+         */
+        ListProfessionsResponse: {
+            /** Professions */
+            professions: components["schemas"]["ProfessionItem"][];
+        };
+        /**
+         * ListToolsResponse
+         * @description Response for listing tools within a profession/category.
+         */
+        ListToolsResponse: {
+            category: components["schemas"]["CategoryItem"];
+            /** Curated Apps */
+            curated_apps: components["schemas"]["CuratedAppItem"][];
+            profession: components["schemas"]["ProfessionItem"];
+            /** Tools */
+            tools: components["schemas"]["ToolItem"][];
+        };
         /** LoginRequest */
         LoginRequest: {
             /** Email */
@@ -388,6 +494,23 @@ export interface components {
         /** MeResponse */
         MeResponse: {
             user: components["schemas"]["User"];
+        };
+        /**
+         * ProfessionItem
+         * @description Profession for API responses.
+         */
+        ProfessionItem: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Label */
+            label: string;
+            /** Slug */
+            slug: string;
+            /** Sort Order */
+            sort_order: number;
         };
         /**
          * Role
@@ -479,6 +602,23 @@ export interface components {
             run_id: string;
             /** State Rev */
             state_rev: number;
+        };
+        /**
+         * ToolItem
+         * @description Tool for API responses.
+         */
+        ToolItem: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Slug */
+            slug: string;
+            /** Summary */
+            summary: string | null;
+            /** Title */
+            title: string;
         };
         /** UiBooleanField */
         UiBooleanField: {
@@ -836,6 +976,89 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeResponse"];
+                };
+            };
+        };
+    };
+    list_professions_api_v1_catalog_professions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListProfessionsResponse"];
+                };
+            };
+        };
+    };
+    list_categories_api_v1_catalog_professions__profession_slug__categories_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                profession_slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListCategoriesResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_tools_api_v1_catalog_professions__profession_slug__categories__category_slug__tools_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                profession_slug: string;
+                category_slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListToolsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
