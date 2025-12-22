@@ -44,6 +44,11 @@ from skriptoteket.web.auth.dependencies import (
     require_contributor,
     require_superuser,
 )
+from skriptoteket.web.editor_support import (
+    DEFAULT_ENTRYPOINT,
+    STARTER_TEMPLATE,
+    is_allowed_to_view_version,
+)
 from skriptoteket.web.pages import admin_scripting_support as support
 from skriptoteket.web.pages.admin_scripting_runs import router as runs_router
 from skriptoteket.web.templating import templates
@@ -51,13 +56,6 @@ from skriptoteket.web.toasts import set_toast_cookie
 from skriptoteket.web.ui_text import ui_error_message as _ui_error_message
 
 router = APIRouter()
-
-_STARTER_TEMPLATE = """def run_tool(input_path: str, output_dir: str) -> str:
-    import os
-
-    size = os.path.getsize(input_path)
-    return f"<p>Received file of {size} bytes.</p>"
-"""
 
 
 @router.get("/admin/tools/{tool_id}", response_class=HTMLResponse)
@@ -91,8 +89,8 @@ async def script_editor_for_tool(
     )
 
     if selected_version is None:
-        entrypoint = "run_tool"
-        source_code = _STARTER_TEMPLATE
+        entrypoint = DEFAULT_ENTRYPOINT
+        source_code = STARTER_TEMPLATE
     else:
         entrypoint = selected_version.entrypoint
         source_code = selected_version.source_code
@@ -153,8 +151,8 @@ async def update_tool_metadata(
         )
 
         if selected_version is None:
-            editor_entrypoint = "run_tool"
-            editor_source_code = _STARTER_TEMPLATE
+            editor_entrypoint = DEFAULT_ENTRYPOINT
+            editor_source_code = STARTER_TEMPLATE
         else:
             editor_entrypoint = selected_version.entrypoint
             editor_source_code = selected_version.source_code
@@ -245,7 +243,7 @@ async def script_editor_for_version(
         maintainers=maintainers,
     )
 
-    if not support.is_allowed_to_view_version(
+    if not is_allowed_to_view_version(
         actor=user,
         version=version,
         is_tool_maintainer=is_tool_maintainer,
@@ -291,7 +289,7 @@ async def create_draft(
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
     user: User = Depends(require_contributor),
     session: Session | None = Depends(get_current_session),
-    entrypoint: str = Form("run_tool"),
+    entrypoint: str = Form(DEFAULT_ENTRYPOINT),
     source_code: str = Form(...),
     change_summary: str | None = Form(None),
     derived_from_version_id: str | None = Form(None),
@@ -346,7 +344,7 @@ async def save_draft(
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
     user: User = Depends(require_contributor),
     session: Session | None = Depends(get_current_session),
-    entrypoint: str = Form("run_tool"),
+    entrypoint: str = Form(DEFAULT_ENTRYPOINT),
     source_code: str = Form(...),
     change_summary: str | None = Form(None),
     expected_parent_version_id: str = Form(...),

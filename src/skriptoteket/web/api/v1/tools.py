@@ -112,4 +112,3 @@ async def start_tool_run(
         command=RunActiveToolCommand(tool_slug=slug, input_files=input_files),
     )
     return StartToolRunResponse(run_id=result.run.id)
-

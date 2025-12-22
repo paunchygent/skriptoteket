@@ -7,16 +7,19 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict
 
 from skriptoteket.application.catalog.queries import (
+    ListAllCategoriesQuery,
     ListCategoriesForProfessionQuery,
     ListProfessionsQuery,
     ListToolsByTagsQuery,
 )
-from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.protocols.catalog import (
+    ListAllCategoriesHandlerProtocol,
     ListCategoriesForProfessionHandlerProtocol,
     ListProfessionsHandlerProtocol,
     ListToolsByTagsHandlerProtocol,
 )
+from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.web.auth.api_dependencies import require_user_api
 
 router = APIRouter(prefix="/api/v1/catalog", tags=["catalog"])
@@ -33,14 +36,6 @@ class ProfessionItem(BaseModel):
     sort_order: int
 
 
-class ListProfessionsResponse(BaseModel):
-    """Response for listing all professions."""
-
-    model_config = ConfigDict(frozen=True)
-
-    professions: list[ProfessionItem]
-
-
 class CategoryItem(BaseModel):
     """Category for API responses."""
 
@@ -49,6 +44,22 @@ class CategoryItem(BaseModel):
     id: UUID
     slug: str
     label: str
+
+
+class ListProfessionsResponse(BaseModel):
+    """Response for listing all professions."""
+
+    model_config = ConfigDict(frozen=True)
+
+    professions: list[ProfessionItem]
+
+
+class ListAllCategoriesResponse(BaseModel):
+    """Response for listing all categories (unfiltered)."""
+
+    model_config = ConfigDict(frozen=True)
+
+    categories: list[CategoryItem]
 
 
 class ListCategoriesResponse(BaseModel):
@@ -80,6 +91,7 @@ class CuratedAppItem(BaseModel):
     tool_id: UUID
     title: str
     summary: str | None
+    min_role: Role
 
 
 class ListToolsResponse(BaseModel):
@@ -113,6 +125,25 @@ async def list_professions(
     )
 
 
+@router.get("/categories", response_model=ListAllCategoriesResponse)
+@inject
+async def list_all_categories(
+    handler: FromDishka[ListAllCategoriesHandlerProtocol],
+    _user: User = Depends(require_user_api),
+) -> ListAllCategoriesResponse:
+    result = await handler.handle(ListAllCategoriesQuery())
+    return ListAllCategoriesResponse(
+        categories=[
+            CategoryItem(
+                id=c.id,
+                slug=c.slug,
+                label=c.label,
+            )
+            for c in result.categories
+        ]
+    )
+
+
 @router.get(
     "/professions/{profession_slug}/categories",
     response_model=ListCategoriesResponse,
@@ -123,9 +154,7 @@ async def list_categories(
     handler: FromDishka[ListCategoriesForProfessionHandlerProtocol],
     _user: User = Depends(require_user_api),
 ) -> ListCategoriesResponse:
-    result = await handler.handle(
-        ListCategoriesForProfessionQuery(profession_slug=profession_slug)
-    )
+    result = await handler.handle(ListCategoriesForProfessionQuery(profession_slug=profession_slug))
     return ListCategoriesResponse(
         profession=ProfessionItem(
             id=result.profession.id,
@@ -153,6 +182,7 @@ async def list_tools(
     profession_slug: str,
     category_slug: str,
     handler: FromDishka[ListToolsByTagsHandlerProtocol],
+    curated_apps: FromDishka[CuratedAppRegistryProtocol],
     user: User = Depends(require_user_api),
 ) -> ListToolsResponse:
     result = await handler.handle(
@@ -162,6 +192,14 @@ async def list_tools(
             category_slug=category_slug,
         ),
     )
+    curated = [
+        app
+        for app in curated_apps.list_all()
+        if app.matches_placement(
+            profession_slug=profession_slug,
+            category_slug=category_slug,
+        )
+    ]
     return ListToolsResponse(
         profession=ProfessionItem(
             id=result.profession.id,
@@ -189,7 +227,8 @@ async def list_tools(
                 tool_id=app.tool_id,
                 title=app.title,
                 summary=app.summary,
+                min_role=app.min_role,
             )
-            for app in result.curated_apps
+            for app in curated
         ],
     )
