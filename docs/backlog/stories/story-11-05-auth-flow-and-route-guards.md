@@ -37,3 +37,11 @@ The SPA must implement the session + CSRF flow and enforce role guards consisten
 - `pdm run fe-type-check-islands`
 - `pdm run pytest tests/unit/web/test_api_v1_auth_and_csrf_routes.py`
 - Live check (SPA auth): ran Vite dev server and validated redirects + login/logout + role-gated nav with Playwright.
+
+## Verified (2025-12-22)
+
+- All static checks passed (lint, typecheck, docs-validate, SPA typecheck, islands typecheck)
+- Unit tests: 9 passed (`test_api_v1_auth_and_csrf_routes.py`)
+- Backend auth API: login/me/csrf/logout+CSRF verified via curl
+- SPA manual tests: unauthenticated→/login?next=, post-login lands on next, logout→/, 401-clear-to-login
+- Role-gating with `user` account (`test-user@local.dev`): nav links hidden, /admin/tools→/forbidden?required=admin, /my-tools→/forbidden?required=contributor

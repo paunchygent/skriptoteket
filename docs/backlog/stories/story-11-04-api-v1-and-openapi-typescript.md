@@ -38,3 +38,9 @@ We want the backend OpenAPI schema to be the source of truth for all SPA DTOs, v
 - `pdm run fe-gen-api-types`
 - `pnpm -C frontend --filter @skriptoteket/spa typecheck`
 - `pdm run pytest tests/unit/web/test_api_v1_auth_and_csrf_routes.py`
+
+## Verified (2025-12-22)
+
+- All static checks passed (lint, typecheck, docs-validate, SPA typecheck)
+- Unit tests: 9 passed (`test_api_v1_auth_and_csrf_routes.py`)
+- API v1 auth endpoints verified via curl (login/me/csrf/logout with CSRF)

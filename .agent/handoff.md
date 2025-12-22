@@ -13,8 +13,8 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2025-12-21
-- Branch / commit: `main` @ `15c0b52` (working tree dirty)
+- Date: 2025-12-22
+- Branch / commit: `main` @ `40013e9`
 - Current sprint: `SPR-2025-12-21` (EPIC-11 full SPA migration foundations)
 - Backend now: ST-11-04/05 done; next = ST-11-03 (hosting/history fallback) + ST-11-06+ (route parity slices)
 - Frontend now: ST-11-01/02 foundations landed (workspace + `@skriptoteket/spa` scaffold + `@huleedu/ui` stub)
@@ -90,6 +90,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Production deploy (2025-12-21): `ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"` + `docker compose -f compose.observability.yaml up -d` (verified runner executes, SPA islands render).
 - Verified (2025-12-20): `pdm run lint`, `pdm run typecheck`, `pdm run pytest tests/unit/application/scripting/handlers/test_interactive_tool_api.py tests/unit/infrastructure/runner/test_artifact_manager.py`, `pdm run docs-validate`.
 - Verified (2025-12-21): `pdm run test`, `pdm run docs-validate`, `pdm run pytest -m docker --override-ini addopts='' tests/integration/test_migration_0011_tool_runs_input_manifest_idempotent.py`.
+- Verified (2025-12-22, ST-11-04/05 review): `pdm run lint` (All checks passed), `pdm run typecheck` (no issues in 296 files), `pdm run docs-validate`, `pnpm -C frontend --filter @skriptoteket/spa typecheck`, `pdm run fe-type-check-islands`, `pdm run pytest tests/unit/web/test_api_v1_auth_and_csrf_routes.py -v` (9 passed); backend auth API verified via curl (login/me/csrf/logout+CSRF all work correctly); SPA manual tests passed (unauthenticated→/login?next=, post-login lands on next target, role-gating→/forbidden?required=&from=, logout→/, 401-clear-to-login); role-gating verified with `user` role account (`test-user@local.dev`): nav links hidden for role-gated routes, direct URL to /admin/tools→/forbidden?required=admin&from=/admin/tools, /my-tools→/forbidden?required=contributor&from=/my-tools.
 
 ## Known issues / risks
 
