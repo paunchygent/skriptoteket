@@ -425,6 +425,7 @@ async def test_list_tool_maintainers_returns_response() -> None:
     maintainer = _user(role=Role.CONTRIBUTOR)
     handler.handle.return_value = ListMaintainersResult(
         tool_id=tool.id,
+        owner_user_id=tool.owner_user_id,
         maintainers=[maintainer],
     )
 
@@ -436,6 +437,7 @@ async def test_list_tool_maintainers_returns_response() -> None:
 
     assert isinstance(result, editor.MaintainerListResponse)
     assert result.tool_id == tool.id
+    assert result.owner_user_id == tool.owner_user_id
     assert len(result.maintainers) == 1
     assert result.maintainers[0].id == maintainer.id
     assert result.maintainers[0].email == maintainer.email
@@ -458,6 +460,7 @@ async def test_assign_tool_maintainer_uses_email_lookup_and_returns_list() -> No
     users_repo.get_auth_by_email.return_value = UserAuth(user=maintainer, password_hash=None)
     list_handler.handle.return_value = ListMaintainersResult(
         tool_id=tool.id,
+        owner_user_id=tool.owner_user_id,
         maintainers=[maintainer],
     )
 
@@ -472,6 +475,7 @@ async def test_assign_tool_maintainer_uses_email_lookup_and_returns_list() -> No
 
     assert isinstance(result, editor.MaintainerListResponse)
     assert result.tool_id == tool.id
+    assert result.owner_user_id == tool.owner_user_id
     assert result.maintainers[0].email == maintainer.email
 
     users_repo.get_auth_by_email.assert_awaited_once_with(email=maintainer.email)
@@ -517,6 +521,7 @@ async def test_remove_tool_maintainer_returns_list() -> None:
     maintainer = _user(role=Role.CONTRIBUTOR)
     list_handler.handle.return_value = ListMaintainersResult(
         tool_id=tool.id,
+        owner_user_id=tool.owner_user_id,
         maintainers=[maintainer],
     )
 
@@ -530,6 +535,7 @@ async def test_remove_tool_maintainer_returns_list() -> None:
 
     assert isinstance(result, editor.MaintainerListResponse)
     assert result.tool_id == tool.id
+    assert result.owner_user_id == tool.owner_user_id
     assert result.maintainers[0].id == maintainer.id
 
     handler.handle.assert_awaited_once()

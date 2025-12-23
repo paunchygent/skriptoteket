@@ -81,6 +81,7 @@ class ListMaintainersResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     tool_id: UUID
+    owner_user_id: UUID
     maintainers: list[User]
 
 

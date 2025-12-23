@@ -766,82 +766,15 @@ export interface components {
          * @enum {string}
          */
         AuthProvider: "local" | "huleedu";
-        /** Body_assign_maintainer_admin_tools__tool_id__maintainers_post */
-        Body_assign_maintainer_admin_tools__tool_id__maintainers_post: {
-            /** User Email */
-            user_email: string;
-        };
-        /** Body_create_draft_admin_tools__tool_id__versions_post */
-        Body_create_draft_admin_tools__tool_id__versions_post: {
-            /** Change Summary */
-            change_summary?: string | null;
-            /** Derived From Version Id */
-            derived_from_version_id?: string | null;
-            /**
-             * Entrypoint
-             * @default run_tool
-             */
-            entrypoint: string;
-            /** Source Code */
-            source_code: string;
-        };
-        /** Body_logout_logout_post */
-        Body_logout_logout_post: {
-            /** Csrf Token */
-            csrf_token: string;
-        };
-        /** Body_publish_version_admin_tool_versions__version_id__publish_post */
-        Body_publish_version_admin_tool_versions__version_id__publish_post: {
-            /** Change Summary */
-            change_summary?: string | null;
-        };
-        /** Body_request_changes_admin_tool_versions__version_id__request_changes_post */
-        Body_request_changes_admin_tool_versions__version_id__request_changes_post: {
-            /** Message */
-            message?: string | null;
-        };
-        /** Body_run_sandbox_admin_tool_versions__version_id__run_sandbox_post */
-        Body_run_sandbox_admin_tool_versions__version_id__run_sandbox_post: {
-            /** Files */
-            files: string[];
-            /** Tool Id */
-            tool_id: string;
-        };
         /** Body_run_sandbox_api_v1_editor_tool_versions__version_id__run_sandbox_post */
         Body_run_sandbox_api_v1_editor_tool_versions__version_id__run_sandbox_post: {
             /** Files */
             files: string[];
         };
-        /** Body_save_draft_admin_tool_versions__version_id__save_post */
-        Body_save_draft_admin_tool_versions__version_id__save_post: {
-            /** Change Summary */
-            change_summary?: string | null;
-            /**
-             * Entrypoint
-             * @default run_tool
-             */
-            entrypoint: string;
-            /** Expected Parent Version Id */
-            expected_parent_version_id: string;
-            /** Source Code */
-            source_code: string;
-        };
         /** Body_start_tool_run_api_v1_tools__slug__run_post */
         Body_start_tool_run_api_v1_tools__slug__run_post: {
             /** Files */
             files: string[];
-        };
-        /** Body_submit_review_admin_tool_versions__version_id__submit_review_post */
-        Body_submit_review_admin_tool_versions__version_id__submit_review_post: {
-            /** Review Note */
-            review_note?: string | null;
-        };
-        /** Body_update_tool_metadata_admin_tools__tool_id__metadata_post */
-        Body_update_tool_metadata_admin_tools__tool_id__metadata_post: {
-            /** Summary */
-            summary?: string | null;
-            /** Title */
-            title: string;
         };
         /**
          * CategoryItem
@@ -1146,6 +1079,11 @@ export interface components {
         MaintainerListResponse: {
             /** Maintainers */
             maintainers: components["schemas"]["MaintainerSummary"][];
+            /**
+             * Owner User Id
+             * Format: uuid
+             */
+            owner_user_id: string;
             /**
              * Tool Id
              * Format: uuid

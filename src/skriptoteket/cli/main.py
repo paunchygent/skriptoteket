@@ -443,6 +443,7 @@ async def _seed_one_entry(
 
         draft_tool = Tool(
             id=UUID4Generator().new_uuid(),
+            owner_user_id=actor.id,
             slug=entry.slug,
             title=entry.title,
             summary=entry.summary,

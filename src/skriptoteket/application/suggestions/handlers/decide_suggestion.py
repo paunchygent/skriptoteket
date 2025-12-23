@@ -107,6 +107,7 @@ class DecideSuggestionHandler(DecideSuggestionHandlerProtocol):
 
                 tool = Tool(
                     id=decision_record.created_tool_id,
+                    owner_user_id=suggestion.submitted_by_user_id,
                     slug=f"draft-{suggestion.id}",
                     title=decision_record.title,
                     summary=decision_record.description,

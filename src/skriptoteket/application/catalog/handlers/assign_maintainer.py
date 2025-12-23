@@ -62,6 +62,9 @@ class AssignMaintainerHandler(AssignMaintainerHandlerProtocol):
                     details={"user_id": str(command.user_id), "role": target_user.role.value},
                 )
 
+            if target_user.role is Role.SUPERUSER:
+                require_at_least_role(user=actor, role=Role.SUPERUSER)
+
             is_already_maintainer = await self._maintainers.is_maintainer(
                 tool_id=command.tool_id, user_id=command.user_id
             )

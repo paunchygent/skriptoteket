@@ -20,6 +20,10 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Current Session (2025-12-23)
 
+### EPIC-02 Phase 2: Self-Registration & User Profiles (documentation complete)
+
+- Docs ready: `docs/adr/adr-0034-self-registration-and-user-profiles.md` (proposed) + ST-02-03/04/05 (ready); epic: `docs/backlog/epics/epic-02-identity-and-access-control.md`.
+
 ### Mobile Sidebar Right-Side Positioning
 
 - Moved mobile sidebar drawer to slide from right (matches hamburger button position)
@@ -29,37 +33,15 @@ Keep this file updated so the next session can pick up work quickly.
 
 ### HuleEdu Design Alignment (layout + dashboard)
 
-**Completed**:
-- Grid background pattern added to SPA (`frontend/apps/skriptoteket/src/assets/main.css`)
-- SSR frame made transparent for grid visibility (`src/skriptoteket/web/static/css/app/layout.css`)
-- Conditional layout in `App.vue`: Landing (logo only) vs Authenticated (sidebar + top bar)
-- Role-guarded dashboard in `HomeView.vue` with live API data (runs, tools, admin stats)
-- CSS refactored to use HuleEdu design tokens (`--huleedu-*` variables)
-- Layout structure aligned with HuleEdu: landing logo-only, desktop sidebar + top bar, mobile header + drawer; top bar uses canvas background + navy text.
+- SPA layout + dashboard aligned with HuleEdu tokens (grid bg, transparent frame, landing/auth layouts, role-guarded dashboard); key files: `frontend/apps/skriptoteket/src/assets/main.css`, `src/skriptoteket/web/static/css/app/layout.css`, `frontend/apps/skriptoteket/src/App.vue`, `frontend/apps/skriptoteket/src/views/HomeView.vue`.
 
 ### App.vue Refactor (694 → 119 LoC)
 
-- Extracted layout components to enforce <500 LoC rule:
-  - `components/auth/LoginModal.vue` - Login form + modal
-  - `components/layout/AuthLayout.vue` - Mobile header + sidebar + topbar + slot
-  - `components/layout/AuthSidebar.vue` - Brand + nav + mobile footer
-  - `components/layout/AuthTopBar.vue` - Desktop user info + logout
-  - `components/layout/LandingLayout.vue` - Landing header + slot
-- `App.vue` now 119 lines: layout orchestration, auth state, route guards only
-- Verified: `pnpm -C frontend --filter @skriptoteket/spa typecheck && lint` pass
+- Extracted layout components (login modal + landing/auth layouts + sidebar/topbar) to keep `App.vue` small; verified via frontend typecheck + lint.
 
 ### ST-11-16 (editor workflow actions)
 
-- API workflow endpoints added in `src/skriptoteket/web/api/v1/editor.py` (submit review, publish, request changes, rollback) + new DTOs.
-- SPA header action strip + modal workflow actions in `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
-- Composable logic in `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkflowActions.ts`.
-- Tests added in `tests/unit/web/test_editor_api_routes.py` (workflow responses + toast cookies).
-- Playwright E2E script: `scripts/playwright_st_11_16_editor_workflow_actions_e2e.py`.
-- Playwright config reads `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE` from dotenv in `scripts/_playwright_config.py`.
-- Mini-IDE refactor in `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`: action bar (Spara + ändringssammanfattning + Åtgärder), editor toolbar (Startfunktion dropdown + Öppna sparade/Redigera metadata), status line cleanup.
-- New components: `frontend/apps/skriptoteket/src/components/editor/EntrypointDropdown.vue`, `WorkflowActionsDropdown.vue`, `VersionHistoryDrawer.vue`, `MetadataDrawer.vue`.
-- Copy updates: “Begär publicering” confirm text; save button label now “Spara”.
-- Playwright ST-11-16: added debug screenshot on open-editor failure (`open-editor-failure.png`).
+- Workflow actions (submit review/publish/request changes/rollback): API in `src/skriptoteket/web/api/v1/editor.py`, SPA in `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`, tests + Playwright.
 
 ### ST-11-18 (maintainers + editor UX)
 
@@ -67,6 +49,7 @@ Keep this file updated so the next session can pick up work quickly.
 - SPA: drawer-based maintainer management (`MaintainersDrawer.vue`, `useToolMaintainers.ts`) with button “Redigeringsbehörigheter” and title “Ändra redigeringsbehörigheter”.
 - History drawer: rollback button for archived versions (superuser) + soft-load version switch via `?version=` (no refresh).
 - Script bank seeding now dedupes on normalized title+summary and reuses existing tool (`src/skriptoteket/cli/main.py`).
+- Follow-up ST-11-23: persisted `owner_user_id` on tools + stricter permissions (admins can’t remove owner; only superuser can add/remove superuser maintainers); maintainer API exposes `owner_user_id` and UI disables invalid removals.
 
 ### ST-11-06 (catalog browse views)
 
@@ -97,9 +80,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ### ST-11-12 (editor migration foundation)
 
-- Editor API in `src/skriptoteket/web/api/v1/editor.py`; shared helpers in `src/skriptoteket/web/editor_support.py`.
-- SPA: `ScriptEditorView.vue` + `components/editor/CodeMirrorEditor.vue` for `/admin/tools/:toolId` + `/admin/tool-versions/:versionId`.
-- Verification pending for editor routes (needs backend + Vite).
+- Editor foundation: `src/skriptoteket/web/api/v1/editor.py`, `src/skriptoteket/web/editor_support.py`, `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
 
 ### ST-11-14 (admin tools status enrichment)
 
@@ -107,18 +88,11 @@ Keep this file updated so the next session can pick up work quickly.
 
 ### ST-11-15 (my-tools contributor dashboard)
 
-- API: `GET /api/v1/my-tools` in `src/skriptoteket/web/api/v1/my_tools.py` (contributor+, id/title/summary/is_published)
-- Router: registered `api_v1_my_tools.router` in `src/skriptoteket/web/router.py`
-- SPA view: `frontend/apps/skriptoteket/src/views/MyToolsView.vue` (list rows + empty state + edit link)
-- Shared row: `frontend/apps/skriptoteket/src/components/tools/ToolListRow.vue` (slots for main/status/actions)
-- Admin refactor: `frontend/apps/skriptoteket/src/views/admin/AdminToolsView.vue` now uses `ToolListRow`
+- My tools view: `src/skriptoteket/web/api/v1/my_tools.py`, `frontend/apps/skriptoteket/src/views/MyToolsView.vue`, shared `frontend/apps/skriptoteket/src/components/tools/ToolListRow.vue`.
 
 ### ST-11-21 (unified landing page + modal-first login)
 
-- Home landing page: `frontend/apps/skriptoteket/src/views/HomeView.vue` (auth-adaptive hero + quick nav).
-- Modal-first login: header login opens modal; auth guards already open modal (`frontend/apps/skriptoteket/src/App.vue`, `frontend/apps/skriptoteket/src/router/index.ts`).
-- Modal ARIA: `role="dialog"`, `aria-modal`, `aria-labelledby`, `aria-describedby` in `frontend/apps/skriptoteket/src/App.vue`.
-- Story docs aligned: `docs/backlog/stories/story-11-21-unified-landing-page.md`; ST-11-22 implemented (remove `/login` route; modal-only login).
+- Unified landing + modal login: `frontend/apps/skriptoteket/src/views/HomeView.vue`, `frontend/apps/skriptoteket/src/App.vue`, `frontend/apps/skriptoteket/src/router/index.ts` (ST-11-22 removes `/login` route).
 
 ### Phase 4 story review (ST-11-15..19)
 
@@ -127,20 +101,12 @@ Keep this file updated so the next session can pick up work quickly.
 
 ### ST-11-20 (taxonomy editor wiring)
 
-- Taxonomy API + repo wiring in `src/skriptoteket/web/api/v1/editor.py` + catalog handlers/repos.
-- SPA taxonomy editor in `MetadataDrawer.vue` / `useToolTaxonomy.ts`; types regenerated via `pdm run fe-gen-api-types`.
+- Taxonomy editor: API in `src/skriptoteket/web/api/v1/editor.py`, SPA in `frontend/apps/skriptoteket/src/components/editor/MetadataDrawer.vue` + `frontend/apps/skriptoteket/src/composables/editor/useToolTaxonomy.ts`.
 
 ### Verification
 
-- Tests: `pdm run pytest tests/unit/application/catalog/handlers/test_list_tool_taxonomy.py tests/unit/application/catalog/handlers/test_update_tool_taxonomy.py tests/unit/web/test_editor_api_routes.py tests/integration/infrastructure/repositories/test_catalog_repository.py`
-- Live check (2025-12-23): `pdm run python -m scripts.playwright_spa_editor_metadata_check --base-url http://127.0.0.1:5173` (edit title/summary, title required, reload persists, restore original)
-- Live check (2025-12-23): `pdm run dev` + `pdm run fe-dev`; `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_11_19_help_mobile_menu_check` (mobile hamburger help; screenshot `.artifacts/st-11-19-help-mobile-menu/help-in-mobile-menu.png`).
-- Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_21_login_modal_e2e --base-url http://127.0.0.1:5173` (verifies `/login` redirects to `/` and opens modal; artifacts in `.artifacts/st-11-21-login-modal-e2e/`)
-- Frontend: `pnpm -C frontend --filter @skriptoteket/spa typecheck`, `pnpm -C frontend --filter @skriptoteket/spa lint`
-- UI check: `/admin/tools` + taxonomy GET/PATCH on `/api/v1/editor/tools/{tool_id}/taxonomy` confirmed via Vite.
-- Live check (2025-12-22): `pdm run python -m scripts.playwright_st_11_15_spa_my_tools_e2e --base-url http://127.0.0.1:5173`
-- Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_16_editor_workflow_actions_e2e --base-url http://127.0.0.1:5173` (escalated) succeeded; artifacts in `.artifacts/st-11-16-editor-workflow-actions/`.
-- Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_18_editor_maintainers_e2e --base-url http://127.0.0.1:5173` (soft version switch via `?version=` + add/remove maintainer; screenshots in `.artifacts/st-11-18-editor-maintainers/`).
+- Quality: `pdm run precommit-run` (pass), `pdm run fe-gen-api-types`, `pdm run db-upgrade` (0012).
+- Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_18_editor_maintainers_e2e --base-url http://127.0.0.1:5173` (artifacts: `.artifacts/st-11-18-editor-maintainers/`).
 
 ## Key Architecture
 
@@ -160,10 +126,7 @@ pdm run dev                 # Backend 127.0.0.1:8000
 pdm run fe-dev              # SPA 127.0.0.1:5173
 
 # Quality gates
-pdm run lint && pdm run typecheck && pdm run docs-validate
-pnpm -C frontend --filter @skriptoteket/spa typecheck
-pnpm -C frontend --filter @skriptoteket/spa lint
-pnpm -C frontend --filter @skriptoteket/spa build
+pdm run precommit-run
 
 # Playwright e2e
 pdm run python -m scripts.playwright_st_11_09_curated_app_e2e --base-url http://127.0.0.1:5173
@@ -187,10 +150,4 @@ pdm run python -m scripts.playwright_st_11_09_curated_app_e2e --base-url http://
 
 Completed in prior sessions (see `.agent/readme-first.md` for details):
 
-- ST-08-01/02/03: Help framework + login help + home index
-- ST-09-02: CSP enforcement at nginx
-- ST-06-07: Admin toast notifications
-- ST-10-08/09/10: SPA islands toolchain, editor island, runtime island
-- ST-11-01/02: Frontend workspace + UI library scaffold
-- ST-11-04: API v1 + OpenAPI→TypeScript
-- ST-11-05: SPA auth + route guards
+- SPA migration stories and older work: see `.agent/readme-first.md` + story docs under `docs/backlog/stories/`.

@@ -33,6 +33,7 @@ class Tool(BaseModel):
     model_config = ConfigDict(frozen=True, from_attributes=True)
 
     id: UUID
+    owner_user_id: UUID
     slug: str
     title: str
     summary: str | None = None

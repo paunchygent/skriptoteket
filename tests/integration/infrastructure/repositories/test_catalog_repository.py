@@ -130,6 +130,19 @@ async def test_tool_repository(db_session: AsyncSession) -> None:
     tool_repo = PostgreSQLToolRepository(db_session)
     now = datetime.now(timezone.utc)
 
+    owner_user_id = uuid.uuid4()
+    db_session.add(
+        UserModel(
+            id=owner_user_id,
+            email="tool-owner@example.com",
+            password_hash="hash",
+            role=Role.USER,
+            auth_provider=AuthProvider.LOCAL,
+            created_at=now,
+            updated_at=now,
+        )
+    )
+
     # Setup dependencies
     prof_id = uuid.uuid4()
     cat_id = uuid.uuid4()
@@ -146,6 +159,7 @@ async def test_tool_repository(db_session: AsyncSession) -> None:
     tool_id = uuid.uuid4()
     tool = Tool(
         id=tool_id,
+        owner_user_id=owner_user_id,
         slug="my-tool",
         title="My Tool",
         summary="A summary",
@@ -213,6 +227,7 @@ async def test_tool_repository_list_by_tags_and_updates(db_session: AsyncSession
 
     tool_a = Tool(
         id=tool_a_id,
+        owner_user_id=user_id,
         slug="a-tool",
         title="Alpha",
         summary=None,
@@ -223,6 +238,7 @@ async def test_tool_repository_list_by_tags_and_updates(db_session: AsyncSession
     )
     tool_b = Tool(
         id=tool_b_id,
+        owner_user_id=user_id,
         slug="b-tool",
         title="Beta",
         summary=None,
@@ -233,6 +249,7 @@ async def test_tool_repository_list_by_tags_and_updates(db_session: AsyncSession
     )
     tool_c = Tool(
         id=tool_c_id,
+        owner_user_id=user_id,
         slug="c-tool",
         title="Beta",
         summary=None,
@@ -300,6 +317,19 @@ async def test_tool_repository_list_tag_ids_and_replace_tags(db_session: AsyncSe
     tool_repo = PostgreSQLToolRepository(db_session)
     now = datetime.now(timezone.utc)
 
+    owner_user_id = uuid.uuid4()
+    db_session.add(
+        UserModel(
+            id=owner_user_id,
+            email="tool-owner-tags@example.com",
+            password_hash="hash",
+            role=Role.USER,
+            auth_provider=AuthProvider.LOCAL,
+            created_at=now,
+            updated_at=now,
+        )
+    )
+
     original_prof_id = uuid.uuid4()
     original_cat_id = uuid.uuid4()
     new_prof_id = uuid.uuid4()
@@ -348,6 +378,7 @@ async def test_tool_repository_list_tag_ids_and_replace_tags(db_session: AsyncSe
     tool_id = uuid.uuid4()
     tool = Tool(
         id=tool_id,
+        owner_user_id=owner_user_id,
         slug="tag-tool",
         title="Tag Tool",
         summary=None,

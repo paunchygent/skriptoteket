@@ -21,8 +21,26 @@ def now():
 @pytest.fixture
 async def tool(db_session: AsyncSession, now: datetime) -> Tool:
     tool_id = uuid4()
+    owner_user_id = uuid4()
+
+    from skriptoteket.domain.identity.models import AuthProvider, Role
+    from skriptoteket.infrastructure.db.models.user import UserModel
+
+    db_session.add(
+        UserModel(
+            id=owner_user_id,
+            email=f"tool-owner-{owner_user_id.hex[:8]}@example.com",
+            password_hash="hash",
+            role=Role.USER,
+            auth_provider=AuthProvider.LOCAL,
+            created_at=now,
+            updated_at=now,
+        )
+    )
+    await db_session.flush()
     tool = Tool(
         id=tool_id,
+        owner_user_id=owner_user_id,
         slug="test-tool",
         title="Test Tool",
         summary="Summary",
@@ -34,6 +52,7 @@ async def tool(db_session: AsyncSession, now: datetime) -> Tool:
 
     model = ToolModel(
         id=tool_id,
+        owner_user_id=owner_user_id,
         slug="test-tool",
         title="Test Tool",
         summary="Summary",

@@ -72,6 +72,7 @@ def _tool(*, title: str = "Tool") -> Tool:
     now = _now()
     return Tool(
         id=uuid.uuid4(),
+        owner_user_id=uuid.uuid4(),
         slug="tool",
         title=title,
         summary="Summary",

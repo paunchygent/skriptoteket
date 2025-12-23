@@ -41,5 +41,6 @@ class ListMaintainersHandler(ListMaintainersHandlerProtocol):
 
         return ListMaintainersResult(
             tool_id=query.tool_id,
+            owner_user_id=tool.owner_user_id,
             maintainers=maintainer_users,
         )

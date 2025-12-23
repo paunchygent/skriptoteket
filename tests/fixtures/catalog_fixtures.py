@@ -46,11 +46,13 @@ def make_tool(
     title: str = "Demo tool",
     summary: str | None = None,
     is_published: bool = False,
+    owner_user_id: UUID | None = None,
     now: datetime,
     tool_id: UUID | None = None,
 ) -> Tool:
     return Tool(
         id=tool_id or uuid4(),
+        owner_user_id=owner_user_id or uuid4(),
         slug=slug,
         title=title,
         summary=summary,

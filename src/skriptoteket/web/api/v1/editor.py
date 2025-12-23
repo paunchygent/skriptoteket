@@ -231,6 +231,7 @@ class MaintainerListResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     tool_id: UUID
+    owner_user_id: UUID
     maintainers: list[MaintainerSummary]
 
 
@@ -547,6 +548,7 @@ async def list_tool_maintainers(
     )
     return MaintainerListResponse(
         tool_id=result.tool_id,
+        owner_user_id=result.owner_user_id,
         maintainers=[_to_maintainer_summary(maintainer) for maintainer in result.maintainers],
     )
 
@@ -586,6 +588,7 @@ async def assign_tool_maintainer(
     )
     return MaintainerListResponse(
         tool_id=result.tool_id,
+        owner_user_id=result.owner_user_id,
         maintainers=[_to_maintainer_summary(maintainer) for maintainer in result.maintainers],
     )
 
@@ -613,6 +616,7 @@ async def remove_tool_maintainer(
     )
     return MaintainerListResponse(
         tool_id=result.tool_id,
+        owner_user_id=result.owner_user_id,
         maintainers=[_to_maintainer_summary(maintainer) for maintainer in result.maintainers],
     )
 

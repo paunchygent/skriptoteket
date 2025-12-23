@@ -111,6 +111,7 @@ class PostgreSQLToolRepository(ToolRepositoryProtocol):
     ) -> Tool:
         model = ToolModel(
             id=tool.id,
+            owner_user_id=tool.owner_user_id,
             slug=tool.slug,
             title=tool.title,
             summary=tool.summary,

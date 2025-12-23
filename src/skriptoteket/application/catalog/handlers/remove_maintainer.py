@@ -65,6 +65,12 @@ class RemoveMaintainerHandler(RemoveMaintainerHandlerProtocol):
                     details={"tool_id": str(command.tool_id), "user_id": str(command.user_id)},
                 )
 
+            if target_user.role is Role.SUPERUSER:
+                require_at_least_role(user=actor, role=Role.SUPERUSER)
+
+            if command.user_id == tool.owner_user_id:
+                require_at_least_role(user=actor, role=Role.SUPERUSER)
+
             await self._maintainers.remove_maintainer(
                 tool_id=command.tool_id,
                 user_id=command.user_id,

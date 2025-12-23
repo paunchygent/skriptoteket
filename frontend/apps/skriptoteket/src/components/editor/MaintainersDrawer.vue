@@ -8,13 +8,15 @@ type ApiRole = components["schemas"]["Role"];
 type MaintainersDrawerProps = {
   isOpen: boolean;
   maintainers: MaintainerSummary[];
+  ownerUserId: string | null;
+  isSuperuser: boolean;
   isLoading: boolean;
   isSaving: boolean;
   error: string | null;
   success: string | null;
 };
 
-defineProps<MaintainersDrawerProps>();
+const props = defineProps<MaintainersDrawerProps>();
 
 const emit = defineEmits<{
   (event: "close"): void;
@@ -30,6 +32,29 @@ function handleSubmit(): void {
 
 function roleLabel(role: ApiRole): string {
   return role.toUpperCase();
+}
+
+function isRemovalBlocked(maintainer: MaintainerSummary): boolean {
+  if (props.isSuperuser) {
+    return false;
+  }
+  if (props.ownerUserId && maintainer.id === props.ownerUserId) {
+    return true;
+  }
+  return maintainer.role === "superuser";
+}
+
+function removalBlockedReason(maintainer: MaintainerSummary): string | null {
+  if (props.isSuperuser) {
+    return null;
+  }
+  if (props.ownerUserId && maintainer.id === props.ownerUserId) {
+    return "Endast superuser kan ändra ägarens redigeringsbehörigheter.";
+  }
+  if (maintainer.role === "superuser") {
+    return "Endast superuser kan ändra superuser-behörigheter.";
+  }
+  return null;
 }
 </script>
 
@@ -126,7 +151,8 @@ function roleLabel(role: ApiRole): string {
               <button
                 type="button"
                 class="px-4 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
-                :disabled="isSaving"
+                :disabled="isSaving || isRemovalBlocked(maintainer)"
+                :title="removalBlockedReason(maintainer) ?? undefined"
                 @click="emit('remove', maintainer.id)"
               >
                 Ta bort

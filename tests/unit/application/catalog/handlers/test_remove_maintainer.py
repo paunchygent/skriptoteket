@@ -186,6 +186,94 @@ async def test_remove_maintainer_rejects_non_maintainer(now: datetime) -> None:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+async def test_remove_maintainer_requires_superuser_for_superuser_target(now: datetime) -> None:
+    actor = make_user(role=Role.ADMIN)
+    tool = make_tool(now=now)
+    target = make_user(role=Role.SUPERUSER)
+
+    uow = FakeUow()
+    tools = AsyncMock(spec=ToolRepositoryProtocol)
+    tools.get_by_id.return_value = tool
+
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
+    maintainers.is_maintainer.return_value = True
+
+    users = AsyncMock(spec=UserRepositoryProtocol)
+    users.get_by_id.return_value = target
+
+    audit = AsyncMock(spec=ToolMaintainerAuditRepositoryProtocol)
+    clock = Mock(spec=ClockProtocol, now=Mock(return_value=now))
+    id_generator = Mock(spec=IdGeneratorProtocol, new_uuid=Mock(return_value=uuid4()))
+
+    handler = RemoveMaintainerHandler(
+        uow=uow,
+        tools=tools,
+        maintainers=maintainers,
+        users=users,
+        audit=audit,
+        clock=clock,
+        id_generator=id_generator,
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(
+            actor=actor,
+            command=RemoveMaintainerCommand(tool_id=tool.id, user_id=target.id),
+        )
+
+    assert exc_info.value.code is ErrorCode.FORBIDDEN
+    assert uow.entered is True
+    assert uow.exited is True
+    maintainers.remove_maintainer.assert_not_called()
+    audit.log_action.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_remove_maintainer_requires_superuser_for_tool_owner(now: datetime) -> None:
+    actor = make_user(role=Role.ADMIN)
+    target = make_user(role=Role.CONTRIBUTOR, user_id=uuid4())
+    tool = make_tool(now=now, owner_user_id=target.id)
+
+    uow = FakeUow()
+    tools = AsyncMock(spec=ToolRepositoryProtocol)
+    tools.get_by_id.return_value = tool
+
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
+    maintainers.is_maintainer.return_value = True
+
+    users = AsyncMock(spec=UserRepositoryProtocol)
+    users.get_by_id.return_value = target
+
+    audit = AsyncMock(spec=ToolMaintainerAuditRepositoryProtocol)
+    clock = Mock(spec=ClockProtocol, now=Mock(return_value=now))
+    id_generator = Mock(spec=IdGeneratorProtocol, new_uuid=Mock(return_value=uuid4()))
+
+    handler = RemoveMaintainerHandler(
+        uow=uow,
+        tools=tools,
+        maintainers=maintainers,
+        users=users,
+        audit=audit,
+        clock=clock,
+        id_generator=id_generator,
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(
+            actor=actor,
+            command=RemoveMaintainerCommand(tool_id=tool.id, user_id=target.id),
+        )
+
+    assert exc_info.value.code is ErrorCode.FORBIDDEN
+    assert uow.entered is True
+    assert uow.exited is True
+    maintainers.remove_maintainer.assert_not_called()
+    audit.log_action.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
 async def test_remove_maintainer_removes_and_logs_audit(now: datetime) -> None:
     actor = make_user(role=Role.ADMIN, user_id=uuid4())
     tool = make_tool(now=now)

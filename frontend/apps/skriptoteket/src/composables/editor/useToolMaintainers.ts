@@ -13,6 +13,7 @@ type UseToolMaintainersOptions = {
 
 export function useToolMaintainers({ toolId, canEdit }: UseToolMaintainersOptions) {
   const maintainers = ref<MaintainerSummary[]>([]);
+  const ownerUserId = ref<string | null>(null);
   const isLoading = ref(false);
   const isSaving = ref(false);
   const error = ref<string | null>(null);
@@ -30,6 +31,7 @@ export function useToolMaintainers({ toolId, canEdit }: UseToolMaintainersOption
     try {
       const path = `/api/v1/editor/tools/${encodeURIComponent(toolIdValue)}/maintainers`;
       const response = await apiGet<MaintainerListResponse>(path);
+      ownerUserId.value = response.owner_user_id;
       maintainers.value = response.maintainers;
     } catch (err: unknown) {
       if (isApiError(err)) {
@@ -66,6 +68,7 @@ export function useToolMaintainers({ toolId, canEdit }: UseToolMaintainersOption
         method: "POST",
         body: { email: normalizedEmail },
       });
+      ownerUserId.value = response.owner_user_id;
       maintainers.value = response.maintainers;
       success.value = "Redigeringsbehörigheter uppdaterade.";
     } catch (err: unknown) {
@@ -98,6 +101,7 @@ export function useToolMaintainers({ toolId, canEdit }: UseToolMaintainersOption
       const response = await apiFetch<MaintainerListResponse>(path, {
         method: "DELETE",
       });
+      ownerUserId.value = response.owner_user_id;
       maintainers.value = response.maintainers;
       success.value = "Redigeringsbehörigheter uppdaterade.";
     } catch (err: unknown) {
@@ -118,6 +122,7 @@ export function useToolMaintainers({ toolId, canEdit }: UseToolMaintainersOption
     ([toolIdValue, isAllowed]) => {
       if (!toolIdValue || !isAllowed) {
         maintainers.value = [];
+        ownerUserId.value = null;
         return;
       }
       void loadMaintainers(toolIdValue);
@@ -127,6 +132,7 @@ export function useToolMaintainers({ toolId, canEdit }: UseToolMaintainersOption
 
   return {
     maintainers,
+    ownerUserId,
     isLoading,
     isSaving,
     error,

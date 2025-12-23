@@ -184,6 +184,50 @@ async def test_assign_maintainer_rejects_user_role_below_contributor(now: dateti
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+async def test_assign_maintainer_requires_superuser_for_superuser_target(now: datetime) -> None:
+    actor = make_user(role=Role.ADMIN)
+    tool = make_tool(now=now)
+    target = make_user(role=Role.SUPERUSER)
+
+    uow = FakeUow()
+    tools = AsyncMock(spec=ToolRepositoryProtocol)
+    tools.get_by_id.return_value = tool
+
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
+    maintainers.is_maintainer.return_value = False
+
+    users = AsyncMock(spec=UserRepositoryProtocol)
+    users.get_by_id.return_value = target
+
+    audit = AsyncMock(spec=ToolMaintainerAuditRepositoryProtocol)
+    clock = Mock(spec=ClockProtocol, now=Mock(return_value=now))
+    id_generator = Mock(spec=IdGeneratorProtocol, new_uuid=Mock(return_value=uuid4()))
+
+    handler = AssignMaintainerHandler(
+        uow=uow,
+        tools=tools,
+        maintainers=maintainers,
+        users=users,
+        audit=audit,
+        clock=clock,
+        id_generator=id_generator,
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(
+            actor=actor,
+            command=AssignMaintainerCommand(tool_id=tool.id, user_id=target.id),
+        )
+
+    assert exc_info.value.code is ErrorCode.FORBIDDEN
+    assert uow.entered is True
+    assert uow.exited is True
+    maintainers.add_maintainer.assert_not_called()
+    audit.log_action.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
 async def test_assign_maintainer_is_idempotent_for_existing_maintainer(now: datetime) -> None:
     actor = make_user(role=Role.ADMIN)
     tool = make_tool(now=now)

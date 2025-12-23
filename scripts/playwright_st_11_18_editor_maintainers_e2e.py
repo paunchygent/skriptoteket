@@ -59,9 +59,11 @@ def main() -> None:
 
         # Login (SPA)
         page.goto(f"{base_url}/login", wait_until="domcontentloaded")
-        page.get_by_label("E-post").fill(email)
-        page.get_by_label("Lösenord").fill(password)
-        page.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
+        dialog = page.locator("div[role='dialog']")
+        expect(dialog).to_be_visible()
+        dialog.get_by_label("E-post").fill(email)
+        dialog.get_by_label("Lösenord").fill(password)
+        dialog.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
         expect(
             page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))
         ).to_be_visible()

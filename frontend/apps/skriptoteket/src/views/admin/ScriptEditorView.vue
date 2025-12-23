@@ -95,6 +95,7 @@ const {
 });
 const {
   maintainers,
+  ownerUserId,
   isLoading: isMaintainersLoading,
   isSaving: isMaintainersSaving,
   error: maintainersError,
@@ -483,6 +484,8 @@ watch(
             v-if="isMaintainersDrawerOpen"
             :is-open="isMaintainersDrawerOpen"
             :maintainers="maintainers"
+            :owner-user-id="ownerUserId"
+            :is-superuser="canRollbackVersions"
             :is-loading="isMaintainersLoading"
             :is-saving="isMaintainersSaving"
             :error="maintainersError"

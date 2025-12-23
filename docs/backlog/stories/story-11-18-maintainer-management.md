@@ -66,3 +66,7 @@ type MaintainerListResponse = {
 - Bulk maintainer operations
 - Maintainer invitations (user must already exist)
 - Self-removal prevention
+
+## Follow-up
+
+- ST-11-23: Persisted `owner_user_id` + stricter maintainer permissions (admins can’t remove owner; only superuser can manage superuser permissions).

@@ -34,11 +34,17 @@ async def _create_user(*, db_session: AsyncSession, now: datetime) -> uuid.UUID:
     return user_id
 
 
-async def _create_tool(*, db_session: AsyncSession, now: datetime) -> uuid.UUID:
+async def _create_tool(
+    *,
+    db_session: AsyncSession,
+    now: datetime,
+    owner_user_id: uuid.UUID,
+) -> uuid.UUID:
     tool_id = uuid.uuid4()
     db_session.add(
         ToolModel(
             id=tool_id,
+            owner_user_id=owner_user_id,
             slug=f"tool-{tool_id.hex[:8]}",
             title="Test tool",
             summary=None,
@@ -90,7 +96,7 @@ async def _create_tool_version(
 async def test_tool_run_create_get_and_update(db_session: AsyncSession) -> None:
     now = datetime.now(timezone.utc)
     user_id = await _create_user(db_session=db_session, now=now)
-    tool_id = await _create_tool(db_session=db_session, now=now)
+    tool_id = await _create_tool(db_session=db_session, now=now, owner_user_id=user_id)
     version_id = await _create_tool_version(
         db_session=db_session, tool_id=tool_id, created_by_user_id=user_id, now=now
     )
@@ -159,7 +165,7 @@ async def test_tool_run_update_missing_raises_not_found(db_session: AsyncSession
 
     now = datetime.now(timezone.utc)
     user_id = await _create_user(db_session=db_session, now=now)
-    tool_id = await _create_tool(db_session=db_session, now=now)
+    tool_id = await _create_tool(db_session=db_session, now=now, owner_user_id=user_id)
     version_id = await _create_tool_version(
         db_session=db_session, tool_id=tool_id, created_by_user_id=user_id, now=now
     )

@@ -75,6 +75,7 @@ async def test_list_maintainers_returns_empty_list_when_no_maintainers(now: date
     result = await handler.handle(actor=actor, query=ListMaintainersQuery(tool_id=tool.id))
 
     assert result.tool_id == tool.id
+    assert result.owner_user_id == tool.owner_user_id
     assert result.maintainers == []
     maintainers.list_maintainers.assert_awaited_once_with(tool_id=tool.id)
 
@@ -103,6 +104,7 @@ async def test_list_maintainers_returns_user_objects_for_maintainers(now: dateti
     result = await handler.handle(actor=actor, query=ListMaintainersQuery(tool_id=tool.id))
 
     assert result.tool_id == tool.id
+    assert result.owner_user_id == tool.owner_user_id
     assert len(result.maintainers) == 2
     assert maintainer1 in result.maintainers
     assert maintainer2 in result.maintainers
