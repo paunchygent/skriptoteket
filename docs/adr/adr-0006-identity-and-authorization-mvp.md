@@ -17,6 +17,7 @@ We need authentication and role-based authorization that is easy to implement fo
 - Implement a minimal internal identity model with roles: `user`, `contributor`, `admin`, `superuser`.
 - Keep authentication and “current user” behind protocols (DI), so application logic never depends on FastAPI/session/JWT implementations.
 - Enforce authorization at the interface layer (web/api) with clear role guards; application handlers receive an actor/role abstraction when needed.
+- Model tool-scoped editor permissions separately from global roles (maintainers + persisted tool owner). See ADR-0005.
 - Defer SSO/IdP integrations to future scope; the design must allow swapping the identity provider implementation without changing business logic.
 - When external identity is introduced (HuleEdu), roles remain local to Skriptoteket (identity ≠ authorization). See ADR-0011.
 
@@ -24,3 +25,4 @@ We need authentication and role-based authorization that is easy to implement fo
 
 - Early clarity on role boundaries prevents ad-hoc permission checks.
 - Identity becomes a first-class domain with tests and protocols, not a framework detail.
+- Authorization remains testable because both role guards and tool-scoped permissions are expressed as domain/application rules behind protocols.
