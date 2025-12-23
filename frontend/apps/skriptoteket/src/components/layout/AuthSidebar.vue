@@ -66,12 +66,28 @@ function onLogout(): void {
           Mina verktyg
         </RouterLink>
         <RouterLink
+          v-if="canSeeContributor"
+          to="/suggestions/new"
+          class="sidebar-nav-item"
+          @click="onClose"
+        >
+          Föreslå verktyg
+        </RouterLink>
+        <RouterLink
           v-if="canSeeAdmin"
           to="/admin/tools"
           class="sidebar-nav-item"
           @click="onClose"
         >
           Admin
+        </RouterLink>
+        <RouterLink
+          v-if="canSeeAdmin"
+          to="/admin/suggestions"
+          class="sidebar-nav-item"
+          @click="onClose"
+        >
+          Granska förslag
         </RouterLink>
       </nav>
 

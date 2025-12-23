@@ -353,6 +353,42 @@ async def _seed_script_bank_async(
         await engine.dispose()
 
 
+def _normalize_seed_text(value: str | None) -> str:
+    if not value:
+        return ""
+    return " ".join(value.split()).casefold()
+
+
+async def _find_tool_by_title_summary(
+    *,
+    tools: PostgreSQLToolRepository,
+    title: str,
+    summary: str | None,
+) -> Tool | None:
+    normalized_title = _normalize_seed_text(title)
+    normalized_summary = _normalize_seed_text(summary)
+
+    if not normalized_title:
+        return None
+
+    candidates = await tools.list_all()
+    matches = [
+        candidate
+        for candidate in candidates
+        if _normalize_seed_text(candidate.title) == normalized_title
+        and _normalize_seed_text(candidate.summary) == normalized_summary
+    ]
+
+    if len(matches) > 1:
+        slugs = ", ".join(sorted({candidate.slug for candidate in matches}))
+        raise SystemExit(
+            "Duplicate tools found with matching title+summary. "
+            f"Resolve duplicates before seeding. Slugs: {slugs}"
+        )
+
+    return matches[0] if matches else None
+
+
 async def _seed_one_entry(
     *,
     actor,
@@ -375,6 +411,23 @@ async def _seed_one_entry(
     now = UTCClock().now()
     tool = await tools.get_by_slug(slug=entry.slug)
     created = False
+    deduped_from_slug: str | None = None
+
+    if tool is None:
+        dedupe_match = await _find_tool_by_title_summary(
+            tools=tools,
+            title=entry.title,
+            summary=entry.summary,
+        )
+        if dedupe_match is not None:
+            tool = dedupe_match
+            deduped_from_slug = entry.slug
+            typer.echo(
+                "Seed dedupe: "
+                f"using existing tool '{tool.slug}' for entry '{entry.slug}'."
+            )
+        else:
+            tool = None
 
     if tool is None:
         profession_ids = []
@@ -506,11 +559,15 @@ async def _seed_one_entry(
 
     if publish and not tool.is_published:
         if dry_run:
-            typer.echo(f"[dry-run] Publish tool: {entry.slug}")
+            typer.echo(f"[dry-run] Publish tool: {tool.slug}")
         else:
             await publish_tool.handle(actor=actor, command=PublishToolCommand(tool_id=tool.id))
 
     if created and not dry_run:
         typer.echo(f"Seeded tool: {entry.slug} (created)")
+    elif deduped_from_slug and not dry_run:
+        typer.echo(
+            f"Seeded tool: {tool.slug} (deduped from {deduped_from_slug})"
+        )
     elif not dry_run:
         typer.echo(f"Seeded tool: {entry.slug} (updated)")

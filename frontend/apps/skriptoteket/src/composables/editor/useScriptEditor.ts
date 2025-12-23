@@ -67,32 +67,33 @@ export function useScriptEditor({
     return null;
   }
 
-  async function loadEditor(): Promise<void> {
-    const path = resolveEditorPath();
+  function applyEditorResponse(response: EditorBootResponse): void {
+    editor.value = response;
+    entrypoint.value = response.entrypoint;
+    sourceCode.value = response.source_code;
+    changeSummary.value = "";
+    metadataTitle.value = response.tool.title;
+    metadataSummary.value = response.tool.summary ?? "";
+    initialSnapshot.value = {
+      entrypoint: response.entrypoint,
+      sourceCode: response.source_code,
+    };
+  }
 
-    if (!path) {
-      errorMessage.value = "Ingen editor hittades.";
-      isLoading.value = false;
-      editor.value = null;
-      return;
+  async function loadEditorFromPath(
+    path: string,
+    options: { soft?: boolean } = {},
+  ): Promise<void> {
+    const soft = options.soft ?? false;
+    if (!soft) {
+      isLoading.value = true;
     }
-
-    isLoading.value = true;
     errorMessage.value = null;
     successMessage.value = null;
 
     try {
       const response = await apiGet<EditorBootResponse>(path);
-      editor.value = response;
-      entrypoint.value = response.entrypoint;
-      sourceCode.value = response.source_code;
-      changeSummary.value = "";
-      metadataTitle.value = response.tool.title;
-      metadataSummary.value = response.tool.summary ?? "";
-      initialSnapshot.value = {
-        entrypoint: response.entrypoint,
-        sourceCode: response.source_code,
-      };
+      applyEditorResponse(response);
     } catch (error: unknown) {
       editor.value = null;
       if (isApiError(error)) {
@@ -103,8 +104,31 @@ export function useScriptEditor({
         errorMessage.value = "Det gick inte att ladda editorn.";
       }
     } finally {
-      isLoading.value = false;
+      if (!soft) {
+        isLoading.value = false;
+      }
     }
+  }
+
+  async function loadEditor(): Promise<void> {
+    const path = resolveEditorPath();
+
+    if (!path) {
+      errorMessage.value = "Ingen editor hittades.";
+      isLoading.value = false;
+      editor.value = null;
+      return;
+    }
+
+    await loadEditorFromPath(path);
+  }
+
+  async function loadEditorForVersion(versionIdValue: string): Promise<void> {
+    if (!versionIdValue) {
+      return;
+    }
+    const path = `/api/v1/editor/tool-versions/${encodeURIComponent(versionIdValue)}`;
+    await loadEditorFromPath(path, { soft: true });
   }
 
   async function navigateAfterSave(path: string): Promise<void> {
@@ -259,6 +283,7 @@ export function useScriptEditor({
     saveButtonLabel,
     hasDirtyChanges,
     loadEditor,
+    loadEditorForVersion,
     save,
     metadataTitle,
     metadataSummary,

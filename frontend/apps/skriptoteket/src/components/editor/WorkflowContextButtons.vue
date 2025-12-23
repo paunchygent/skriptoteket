@@ -17,9 +17,7 @@ const emit = defineEmits<{
   (e: "action", action: WorkflowAction): void;
 }>();
 
-const hasAuthorContext = computed(() => props.canSubmitReview);
 const hasAdminContext = computed(() => props.canPublish || props.canRequestChanges);
-const showSeparator = computed(() => hasAuthorContext.value || hasAdminContext.value);
 
 function handleDropdownSelect(actionId: string): void {
   emit("action", actionId as WorkflowAction);
@@ -27,7 +25,7 @@ function handleDropdownSelect(actionId: string): void {
 </script>
 
 <template>
-  <div class="flex flex-wrap items-center gap-3">
+  <div class="flex flex-wrap items-center gap-3 w-full">
     <!-- Author Context -->
     <div class="flex items-center gap-2">
       <span class="text-xs font-semibold uppercase tracking-wide text-navy/50">
@@ -50,15 +48,8 @@ function handleDropdownSelect(actionId: string): void {
       </span>
     </div>
 
-    <!-- Separator -->
-    <div
-      v-if="showSeparator"
-      class="h-8 w-px bg-navy/20"
-      aria-hidden="true"
-    />
-
     <!-- Admin/Reviewer Context -->
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 md:ml-auto">
       <span class="text-xs font-semibold uppercase tracking-wide text-navy/50">
         Granskare
       </span>

@@ -59,6 +59,13 @@ Keep this file updated so the next session can pick up work quickly.
 - Copy updates: “Begär publicering” confirm text; save button label now “Spara”.
 - Playwright ST-11-16: added debug screenshot on open-editor failure (`open-editor-failure.png`).
 
+### ST-11-18 (maintainers + editor UX)
+
+- Editor API: maintainer list/add/remove endpoints in `src/skriptoteket/web/api/v1/editor.py`; tests in `tests/unit/web/test_editor_api_routes.py`.
+- SPA: drawer-based maintainer management (`MaintainersDrawer.vue`, `useToolMaintainers.ts`) with button “Redigeringsbehörigheter” and title “Ändra redigeringsbehörigheter”.
+- History drawer: rollback button for archived versions (superuser) + soft-load version switch (no navigation).
+- Script bank seeding now dedupes on normalized title+summary and reuses existing tool (`src/skriptoteket/cli/main.py`).
+
 ### ST-11-06 (catalog browse views)
 
 - SPA browse views + API in `src/skriptoteket/web/api/v1/catalog.py` (`/browse`, `/browse/:profession`, `/browse/:category`)
@@ -127,16 +134,12 @@ Keep this file updated so the next session can pick up work quickly.
 - Live check (2025-12-23): `pdm run python -m scripts.playwright_spa_editor_metadata_check --base-url http://127.0.0.1:5173` (edit title/summary, title required, reload persists, restore original)
 - UI check: dev servers already running; `pdm run dev` (8000) + `pdm run fe-dev` (5173) failed due to ports in use.
 - Frontend: `pnpm -C frontend --filter @skriptoteket/spa typecheck`, `pnpm -C frontend --filter @skriptoteket/spa lint`
-- UI check: logged in via `/api/v1/auth/login`, loaded `/api/v1/admin/tools` to pick a tool,
-  GET/PATCH taxonomy at `/api/v1/editor/tools/{tool_id}/taxonomy`, and confirmed
-  `/admin/tools/{tool_id}` returned 200 from Vite.
+- UI check: `/admin/tools` + taxonomy GET/PATCH on `/api/v1/editor/tools/{tool_id}/taxonomy` confirmed via Vite.
 - Live check (2025-12-22): `pdm run python -m scripts.playwright_st_11_15_spa_my_tools_e2e --base-url http://127.0.0.1:5173`
-- Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_21_login_modal_e2e --base-url http://127.0.0.1:5173`
-- Live check (2025-12-23): `pdm run python -m scripts.playwright_spa_brand_alignment_check --base-url http://127.0.0.1:5173` (landing brand aligns + navy CTA hover = amber border)
-- Live check (2025-12-23): `pdm run python -m scripts.playwright_spa_admin_pending_review_badges_check --base-url http://127.0.0.1:5173` (admin/tools: left-anchored grid + equal-width CTAs + outline hover = canvas fill + amber border + “Klara med ändringar”)
 - Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_16_editor_workflow_actions_e2e` failed (Chromium crashpad permission error after headless/headful fallback).
 - Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_16_editor_workflow_actions_e2e` (escalated) failed: could not find heading “Verktyg” on `/admin/tools` (assertion timeout); screenshot saved to `.artifacts/st-11-16-editor-workflow-actions/open-editor-failure.png`.
 - Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_16_editor_workflow_actions_e2e --base-url http://127.0.0.1:5173` (escalated) succeeded; artifacts in `.artifacts/st-11-16-editor-workflow-actions/`.
+- Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_18_editor_maintainers_e2e --base-url http://127.0.0.1:5173` (soft version switch + add/remove maintainer; screenshots in `.artifacts/st-11-18-editor-maintainers/`).
 
 ## Key Architecture
 
@@ -175,10 +178,8 @@ pdm run python -m scripts.playwright_st_11_09_curated_app_e2e --base-url http://
 ## Next Steps
 
 ### Phase 4: Remaining features (ready)
-1. **ST-11-16** (editor workflows): Submit review, publish, request changes, rollback
-2. **ST-11-17** (metadata): Tool title, summary, tags editing
-3. **ST-11-18** (maintainers): Add/remove contributor access
-4. **ST-11-19** (help): Contextual help panel for all views
+1. **ST-11-17** (metadata): Tool title, summary, tags editing
+2. **ST-11-19** (help): Contextual help panel for all views
 
 ### Phase 5: Cutover
 6. **ST-11-13** (cutover): Delete SSR/HTMX, Playwright E2E suite

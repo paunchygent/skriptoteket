@@ -14,19 +14,24 @@ from skriptoteket.application.scripting.commands import (
     SaveDraftVersionResult,
     SubmitForReviewResult,
 )
-from skriptoteket.application.catalog.queries import ListToolTaxonomyResult
+from skriptoteket.application.catalog.queries import ListMaintainersResult, ListToolTaxonomyResult
 from skriptoteket.application.catalog.commands import (
     UpdateToolMetadataResult,
     UpdateToolTaxonomyResult,
 )
-from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.errors import DomainError
+from skriptoteket.domain.identity.models import Role, UserAuth
 from skriptoteket.domain.scripting.models import VersionState
 from skriptoteket.protocols.catalog import (
+    AssignMaintainerHandlerProtocol,
+    ListMaintainersHandlerProtocol,
     ListToolTaxonomyHandlerProtocol,
+    RemoveMaintainerHandlerProtocol,
     ToolRepositoryProtocol,
     UpdateToolMetadataHandlerProtocol,
     UpdateToolTaxonomyHandlerProtocol,
 )
+from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.protocols.scripting import (
     CreateDraftVersionHandlerProtocol,
     PublishVersionHandlerProtocol,
@@ -483,3 +488,127 @@ async def test_update_tool_metadata_without_summary_keeps_existing() -> None:
     assert command.tool_id == existing.id
     assert command.title == "Updated title"
     assert command.summary == existing.summary
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_list_tool_maintainers_returns_response() -> None:
+    handler = AsyncMock(spec=ListMaintainersHandlerProtocol)
+    tool = _tool()
+    user = _user(role=Role.ADMIN)
+    maintainer = _user(role=Role.CONTRIBUTOR)
+    handler.handle.return_value = ListMaintainersResult(
+        tool_id=tool.id,
+        maintainers=[maintainer],
+    )
+
+    result = await _unwrap_dishka(editor.list_tool_maintainers)(
+        tool_id=tool.id,
+        handler=handler,
+        user=user,
+    )
+
+    assert isinstance(result, editor.MaintainerListResponse)
+    assert result.tool_id == tool.id
+    assert len(result.maintainers) == 1
+    assert result.maintainers[0].id == maintainer.id
+    assert result.maintainers[0].email == maintainer.email
+    assert result.maintainers[0].role == maintainer.role
+
+    handler.handle.assert_awaited_once()
+    query = handler.handle.call_args.kwargs["query"]
+    assert query.tool_id == tool.id
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_assign_tool_maintainer_uses_email_lookup_and_returns_list() -> None:
+    handler = AsyncMock(spec=AssignMaintainerHandlerProtocol)
+    list_handler = AsyncMock(spec=ListMaintainersHandlerProtocol)
+    users_repo = AsyncMock(spec=UserRepositoryProtocol)
+    tool = _tool()
+    user = _user(role=Role.ADMIN)
+    maintainer = _user(role=Role.CONTRIBUTOR)
+    users_repo.get_auth_by_email.return_value = UserAuth(user=maintainer, password_hash=None)
+    list_handler.handle.return_value = ListMaintainersResult(
+        tool_id=tool.id,
+        maintainers=[maintainer],
+    )
+
+    result = await _unwrap_dishka(editor.assign_tool_maintainer)(
+        tool_id=tool.id,
+        payload=editor.AssignMaintainerRequest(email=f" {maintainer.email} "),
+        handler=handler,
+        list_handler=list_handler,
+        users=users_repo,
+        user=user,
+    )
+
+    assert isinstance(result, editor.MaintainerListResponse)
+    assert result.tool_id == tool.id
+    assert result.maintainers[0].email == maintainer.email
+
+    users_repo.get_auth_by_email.assert_awaited_once_with(email=maintainer.email)
+
+    handler.handle.assert_awaited_once()
+    command = handler.handle.call_args.kwargs["command"]
+    assert command.tool_id == tool.id
+    assert command.user_id == maintainer.id
+
+    list_handler.handle.assert_awaited_once()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_assign_tool_maintainer_requires_email() -> None:
+    handler = AsyncMock(spec=AssignMaintainerHandlerProtocol)
+    list_handler = AsyncMock(spec=ListMaintainersHandlerProtocol)
+    users_repo = AsyncMock(spec=UserRepositoryProtocol)
+    tool = _tool()
+    user = _user(role=Role.ADMIN)
+
+    with pytest.raises(DomainError):
+        await _unwrap_dishka(editor.assign_tool_maintainer)(
+            tool_id=tool.id,
+            payload=editor.AssignMaintainerRequest(email=" "),
+            handler=handler,
+            list_handler=list_handler,
+            users=users_repo,
+            user=user,
+        )
+
+    handler.handle.assert_not_awaited()
+    list_handler.handle.assert_not_awaited()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_remove_tool_maintainer_returns_list() -> None:
+    handler = AsyncMock(spec=RemoveMaintainerHandlerProtocol)
+    list_handler = AsyncMock(spec=ListMaintainersHandlerProtocol)
+    tool = _tool()
+    user = _user(role=Role.ADMIN)
+    maintainer = _user(role=Role.CONTRIBUTOR)
+    list_handler.handle.return_value = ListMaintainersResult(
+        tool_id=tool.id,
+        maintainers=[maintainer],
+    )
+
+    result = await _unwrap_dishka(editor.remove_tool_maintainer)(
+        tool_id=tool.id,
+        user_id=maintainer.id,
+        handler=handler,
+        list_handler=list_handler,
+        user=user,
+    )
+
+    assert isinstance(result, editor.MaintainerListResponse)
+    assert result.tool_id == tool.id
+    assert result.maintainers[0].id == maintainer.id
+
+    handler.handle.assert_awaited_once()
+    command = handler.handle.call_args.kwargs["command"]
+    assert command.tool_id == tool.id
+    assert command.user_id == maintainer.id
+
+    list_handler.handle.assert_awaited_once()

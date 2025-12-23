@@ -5,12 +5,15 @@ import type { components } from "../../api/openapi";
 import CodeMirrorEditor from "../../components/editor/CodeMirrorEditor.vue";
 import EntrypointDropdown from "../../components/editor/EntrypointDropdown.vue";
 import InlineEditableText from "../../components/editor/InlineEditableText.vue";
+import MaintainersDrawer from "../../components/editor/MaintainersDrawer.vue";
 import MetadataDrawer from "../../components/editor/MetadataDrawer.vue";
 import SandboxRunner from "../../components/editor/SandboxRunner.vue";
 import VersionHistoryDrawer from "../../components/editor/VersionHistoryDrawer.vue";
+import WorkflowActionModal from "../../components/editor/WorkflowActionModal.vue";
 import WorkflowContextButtons from "../../components/editor/WorkflowContextButtons.vue";
 import { useEditorWorkflowActions } from "../../composables/editor/useEditorWorkflowActions";
 import { useScriptEditor } from "../../composables/editor/useScriptEditor";
+import { useToolMaintainers } from "../../composables/editor/useToolMaintainers";
 import { useToolTaxonomy } from "../../composables/editor/useToolTaxonomy";
 import { useAuthStore } from "../../stores/auth";
 type VersionState = components["schemas"]["VersionState"];
@@ -27,6 +30,8 @@ const versionId = computed(() => {
   return typeof param === "string" ? param : "";
 });
 const canEditTaxonomy = computed(() => auth.hasAtLeastRole("admin"));
+const canEditMaintainers = computed(() => auth.hasAtLeastRole("admin"));
+const canRollbackVersions = computed(() => auth.hasAtLeastRole("superuser"));
 const {
   editor,
   entrypoint,
@@ -45,6 +50,7 @@ const {
   save,
   saveToolMetadata,
   loadEditor,
+  loadEditorForVersion,
 } = useScriptEditor({
   toolId,
   versionId,
@@ -64,6 +70,7 @@ const {
   canPublish,
   canRequestChanges,
   canRollback,
+  openRollbackForVersion,
   openAction: openWorkflowAction,
   closeAction: closeWorkflowModal,
   submitAction: submitWorkflowAction,
@@ -87,8 +94,21 @@ const {
   toolId: editorToolId,
   canEdit: canEditTaxonomy,
 });
+const {
+  maintainers,
+  isLoading: isMaintainersLoading,
+  isSaving: isMaintainersSaving,
+  error: maintainersError,
+  success: maintainersSuccess,
+  loadMaintainers,
+  addMaintainer,
+  removeMaintainer,
+} = useToolMaintainers({
+  toolId: editorToolId,
+  canEdit: canEditMaintainers,
+});
 const entrypointOptions = ["run_tool", "main", "run", "execute"];
-const activeDrawer = ref<"history" | "metadata" | null>(null);
+const activeDrawer = ref<"history" | "metadata" | "maintainers" | null>(null);
 
 const isSavingAllMetadata = computed(() => isMetadataSaving.value || isTaxonomySaving.value);
 
@@ -100,6 +120,7 @@ async function saveAllMetadata(): Promise<void> {
 }
 const isHistoryDrawerOpen = computed(() => activeDrawer.value === "history");
 const isMetadataDrawerOpen = computed(() => activeDrawer.value === "metadata");
+const isMaintainersDrawerOpen = computed(() => activeDrawer.value === "maintainers");
 const isDrawerOpen = computed(() => activeDrawer.value !== null);
 
 function openHistoryDrawer(): void {
@@ -111,12 +132,27 @@ function openMetadataDrawer(): void {
   activeDrawer.value = activeDrawer.value === "metadata" ? null : "metadata";
 }
 
+function openMaintainersDrawer(): void {
+  if (!canEditMaintainers.value) return;
+  const next = activeDrawer.value === "maintainers" ? null : "maintainers";
+  activeDrawer.value = next;
+  if (next === "maintainers" && editorToolId.value) {
+    void loadMaintainers(editorToolId.value);
+  }
+}
+
 function closeDrawer(): void {
   activeDrawer.value = null;
 }
 
-function handleHistorySelect(): void {
-  closeDrawer();
+function handleHistorySelect(versionIdValue: string): void {
+  if (hasDirtyChanges.value && !isSaving.value) {
+    const confirmed = window.confirm("Du har osparade ändringar. Vill du byta version?");
+    if (!confirmed) {
+      return;
+    }
+  }
+  void loadEditorForVersion(versionIdValue);
 }
 
 function updateProfessionIds(value: string[]): void {
@@ -199,7 +235,9 @@ onBeforeUnmount(() => {
 watch(
   () => route.fullPath,
   () => {
-    closeDrawer();
+    if (activeDrawer.value && activeDrawer.value !== "history") {
+      closeDrawer();
+    }
   },
 );
 </script>
@@ -328,7 +366,6 @@ watch(
               </div>
             </div>
 
-            <!-- Drawer buttons -->
             <div class="flex flex-wrap items-center gap-2">
               <button
                 type="button"
@@ -345,11 +382,18 @@ watch(
               >
                 Metadata
               </button>
+              <button
+                v-if="canEditMaintainers"
+                type="button"
+                class="px-3 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+                @click="openMaintainersDrawer"
+              >
+                Redigeringsbehörigheter
+              </button>
             </div>
           </div>
         </div>
 
-        <!-- Code editor section -->
         <div
           :class="[
             'grid',
@@ -403,8 +447,11 @@ watch(
             :is-open="isHistoryDrawerOpen"
             :versions="editor.versions"
             :active-version-id="selectedVersion?.id"
+            :can-rollback="canRollbackVersions"
+            :is-submitting="isWorkflowSubmitting"
             @close="closeDrawer"
             @select="handleHistorySelect"
+            @rollback="openRollbackForVersion"
           />
 
           <MetadataDrawer
@@ -427,100 +474,34 @@ watch(
             @update:selected-profession-ids="updateProfessionIds"
             @update:selected-category-ids="updateCategoryIds"
           />
+
+          <MaintainersDrawer
+            v-if="isMaintainersDrawerOpen"
+            :is-open="isMaintainersDrawerOpen"
+            :maintainers="maintainers"
+            :is-loading="isMaintainersLoading"
+            :is-saving="isMaintainersSaving"
+            :error="maintainersError"
+            :success="maintainersSuccess"
+            @close="closeDrawer"
+            @add="addMaintainer"
+            @remove="removeMaintainer"
+          />
         </div>
       </div>
     </template>
   </div>
 
-  <Teleport to="body">
-    <Transition name="fade">
-      <div
-        v-if="isWorkflowModalOpen && workflowActionMeta"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-navy/40"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="workflow-modal-title"
-        @click.self="closeWorkflowModal"
-      >
-        <div class="relative w-full max-w-lg mx-4 p-6 bg-canvas border border-navy shadow-brutal">
-          <button
-            type="button"
-            class="absolute top-3 right-3 text-navy/60 hover:text-navy text-xl leading-none"
-            @click="closeWorkflowModal"
-          >
-            &times;
-          </button>
-
-          <h2
-            id="workflow-modal-title"
-            class="text-xl font-semibold text-navy"
-          >
-            {{ workflowActionMeta.title }}
-          </h2>
-
-          <p
-            v-if="workflowActionMeta.description"
-            class="mt-2 text-sm text-navy/70"
-          >
-            {{ workflowActionMeta.description }}
-          </p>
-
-          <div
-            v-if="workflowError"
-            class="mt-4 p-3 border border-burgundy bg-white text-burgundy text-sm"
-          >
-            {{ workflowError }}
-          </div>
-
-          <form
-            class="mt-5 space-y-4"
-            @submit.prevent="submitWorkflowAction"
-          >
-            <div v-if="showWorkflowNoteField">
-              <label class="block text-sm font-semibold text-navy mb-1">
-                {{ workflowActionMeta.noteLabel }}
-              </label>
-              <textarea
-                v-model="workflowNote"
-                rows="4"
-                class="w-full px-3 py-2 border border-navy bg-white text-navy"
-                :placeholder="workflowActionMeta.notePlaceholder"
-                :disabled="isWorkflowSubmitting"
-              />
-            </div>
-
-            <div class="flex flex-wrap gap-3">
-              <button
-                type="button"
-                class="px-4 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
-                :disabled="isWorkflowSubmitting"
-                @click="closeWorkflowModal"
-              >
-                Avbryt
-              </button>
-              <button
-                type="submit"
-                class="px-4 py-2 text-xs font-semibold uppercase tracking-wide border shadow-brutal-sm transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
-                :class="confirmButtonClass"
-                :disabled="isWorkflowSubmitting"
-              >
-                {{ isWorkflowSubmitting ? "Arbetar..." : workflowActionMeta.confirmLabel }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
+  <WorkflowActionModal
+    :is-open="isWorkflowModalOpen"
+    :action-meta="workflowActionMeta"
+    :note="workflowNote"
+    :show-note-field="showWorkflowNoteField"
+    :error="workflowError"
+    :is-submitting="isWorkflowSubmitting"
+    :confirm-button-class="confirmButtonClass"
+    @close="closeWorkflowModal"
+    @submit="submitWorkflowAction"
+    @update:note="workflowNote = $event"
+  />
 </template>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity var(--huleedu-duration-default) var(--huleedu-ease-default);
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>

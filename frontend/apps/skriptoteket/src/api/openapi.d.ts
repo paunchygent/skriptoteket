@@ -446,6 +446,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/editor/tools/{tool_id}/maintainers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tool Maintainers */
+        get: operations["list_tool_maintainers_api_v1_editor_tools__tool_id__maintainers_get"];
+        put?: never;
+        /** Assign Tool Maintainer */
+        post: operations["assign_tool_maintainer_api_v1_editor_tools__tool_id__maintainers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/editor/tools/{tool_id}/maintainers/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Tool Maintainer */
+        delete: operations["remove_tool_maintainer_api_v1_editor_tools__tool_id__maintainers__user_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/editor/tools/{tool_id}/metadata": {
         parameters: {
             query?: never;
@@ -720,6 +755,11 @@ export interface components {
             download_url: string;
             /** Path */
             path: string;
+        };
+        /** AssignMaintainerRequest */
+        AssignMaintainerRequest: {
+            /** Email */
+            email: string;
         };
         /**
          * AuthProvider
@@ -1101,6 +1141,27 @@ export interface components {
             /** Csrf Token */
             csrf_token: string;
             user: components["schemas"]["User"];
+        };
+        /** MaintainerListResponse */
+        MaintainerListResponse: {
+            /** Maintainers */
+            maintainers: components["schemas"]["MaintainerSummary"][];
+            /**
+             * Tool Id
+             * Format: uuid
+             */
+            tool_id: string;
+        };
+        /** MaintainerSummary */
+        MaintainerSummary: {
+            /** Email */
+            email: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            role: components["schemas"]["Role"];
         };
         /** MeResponse */
         MeResponse: {
@@ -2566,6 +2627,108 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaveResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_tool_maintainers_api_v1_editor_tools__tool_id__maintainers_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tool_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaintainerListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assign_tool_maintainer_api_v1_editor_tools__tool_id__maintainers_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                tool_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignMaintainerRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaintainerListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_tool_maintainer_api_v1_editor_tools__tool_id__maintainers__user_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                tool_id: string;
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaintainerListResponse"];
                 };
             };
             /** @description Validation Error */

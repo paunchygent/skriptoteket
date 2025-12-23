@@ -18,24 +18,33 @@ from skriptoteket.application.scripting.commands import (
     SubmitForReviewCommand,
 )
 from skriptoteket.application.catalog.commands import (
+    AssignMaintainerCommand,
+    RemoveMaintainerCommand,
     UpdateToolMetadataCommand,
     UpdateToolTaxonomyCommand,
 )
-from skriptoteket.application.catalog.queries import ListToolTaxonomyQuery
+from skriptoteket.application.catalog.queries import (
+    ListMaintainersQuery,
+    ListToolTaxonomyQuery,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.catalog.models import Tool
-from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
+from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.models import RunStatus, ToolRun, ToolVersion, VersionState
 from skriptoteket.infrastructure.runner.path_safety import validate_output_path
 from skriptoteket.protocols.catalog import (
+    AssignMaintainerHandlerProtocol,
+    ListMaintainersHandlerProtocol,
     ListToolTaxonomyHandlerProtocol,
+    RemoveMaintainerHandlerProtocol,
     ToolMaintainerRepositoryProtocol,
     ToolRepositoryProtocol,
     UpdateToolMetadataHandlerProtocol,
     UpdateToolTaxonomyHandlerProtocol,
 )
+from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.protocols.scripting import (
     CreateDraftVersionHandlerProtocol,
     PublishVersionHandlerProtocol,
@@ -211,6 +220,27 @@ class EditorToolMetadataRequest(BaseModel):
     summary: str | None = None
 
 
+class MaintainerSummary(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    email: str
+    role: Role
+
+
+class MaintainerListResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    maintainers: list[MaintainerSummary]
+
+
+class AssignMaintainerRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    email: str
+
+
 def _to_tool_summary(tool: Tool) -> EditorToolSummary:
     return EditorToolSummary(
         id=tool.id,
@@ -339,6 +369,14 @@ def _build_run_details(run: ToolRun) -> EditorRunDetails:
         error_summary=run.error_summary,
         ui_payload=ui_payload,
         artifacts=artifacts,
+    )
+
+
+def _to_maintainer_summary(user: User) -> MaintainerSummary:
+    return MaintainerSummary(
+        id=user.id,
+        email=user.email,
+        role=user.role,
     )
 
 
@@ -494,6 +532,89 @@ async def update_tool_metadata(
         slug=tool.slug,
         title=tool.title,
         summary=tool.summary,
+    )
+
+
+@router.get("/tools/{tool_id}/maintainers", response_model=MaintainerListResponse)
+@inject
+async def list_tool_maintainers(
+    tool_id: UUID,
+    handler: FromDishka[ListMaintainersHandlerProtocol],
+    user: User = Depends(require_admin_api),
+) -> MaintainerListResponse:
+    result = await handler.handle(
+        actor=user,
+        query=ListMaintainersQuery(tool_id=tool_id),
+    )
+    return MaintainerListResponse(
+        tool_id=result.tool_id,
+        maintainers=[_to_maintainer_summary(maintainer) for maintainer in result.maintainers],
+    )
+
+
+@router.post("/tools/{tool_id}/maintainers", response_model=MaintainerListResponse)
+@inject
+async def assign_tool_maintainer(
+    tool_id: UUID,
+    payload: AssignMaintainerRequest,
+    handler: FromDishka[AssignMaintainerHandlerProtocol],
+    list_handler: FromDishka[ListMaintainersHandlerProtocol],
+    users: FromDishka[UserRepositoryProtocol],
+    user: User = Depends(require_admin_api),
+    _: None = Depends(require_csrf_token),
+) -> MaintainerListResponse:
+    email = payload.email.strip()
+    if not email:
+        raise validation_error("E-post krävs.", details={"email": payload.email})
+
+    user_auth = await users.get_auth_by_email(email=email)
+    if user_auth is None:
+        raise validation_error(
+            f"Ingen användare med e-post: {email}",
+            details={"email": email},
+        )
+
+    await handler.handle(
+        actor=user,
+        command=AssignMaintainerCommand(
+            tool_id=tool_id,
+            user_id=user_auth.user.id,
+        ),
+    )
+    result = await list_handler.handle(
+        actor=user,
+        query=ListMaintainersQuery(tool_id=tool_id),
+    )
+    return MaintainerListResponse(
+        tool_id=result.tool_id,
+        maintainers=[_to_maintainer_summary(maintainer) for maintainer in result.maintainers],
+    )
+
+
+@router.delete("/tools/{tool_id}/maintainers/{user_id}", response_model=MaintainerListResponse)
+@inject
+async def remove_tool_maintainer(
+    tool_id: UUID,
+    user_id: UUID,
+    handler: FromDishka[RemoveMaintainerHandlerProtocol],
+    list_handler: FromDishka[ListMaintainersHandlerProtocol],
+    user: User = Depends(require_admin_api),
+    _: None = Depends(require_csrf_token),
+) -> MaintainerListResponse:
+    await handler.handle(
+        actor=user,
+        command=RemoveMaintainerCommand(
+            tool_id=tool_id,
+            user_id=user_id,
+        ),
+    )
+    result = await list_handler.handle(
+        actor=user,
+        query=ListMaintainersQuery(tool_id=tool_id),
+    )
+    return MaintainerListResponse(
+        tool_id=result.tool_id,
+        maintainers=[_to_maintainer_summary(maintainer) for maintainer in result.maintainers],
     )
 
 

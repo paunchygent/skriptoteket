@@ -2,23 +2,27 @@
 import type { components } from "../../api/openapi";
 
 type EditorVersionSummary = components["schemas"]["EditorVersionSummary"];
+type VersionState = components["schemas"]["VersionState"];
 
 type VersionHistoryDrawerProps = {
   isOpen: boolean;
   versions: EditorVersionSummary[];
   activeVersionId?: string | null;
+  canRollback?: boolean;
+  isSubmitting?: boolean;
 };
 
 withDefaults(defineProps<VersionHistoryDrawerProps>(), {
   activeVersionId: null,
+  canRollback: false,
+  isSubmitting: false,
 });
 
 const emit = defineEmits<{
   (event: "close"): void;
   (event: "select", versionId: string): void;
+  (event: "rollback", versionId: string): void;
 }>();
-
-type VersionState = components["schemas"]["VersionState"];
 
 function versionLabel(state: VersionState): string {
   const labels: Record<VersionState, string> = {
@@ -40,6 +44,10 @@ function formatDateTime(value: string): string {
 
 function handleSelect(versionId: string): void {
   emit("select", versionId);
+}
+
+function handleRollback(versionId: string): void {
+  emit("rollback", versionId);
 }
 </script>
 
@@ -105,30 +113,41 @@ function handleSelect(versionId: string): void {
               : 'border-navy/30 bg-white hover:bg-canvas hover:border-navy',
           ]"
         >
-          <RouterLink
-            :to="`/admin/tool-versions/${version.id}`"
-            class="flex items-center justify-between gap-3 px-3 py-2 cursor-pointer"
-            @click="handleSelect(version.id)"
-          >
-            <div>
-              <div class="text-sm font-semibold text-navy">
-                v{{ version.version_number }}
-              </div>
-              <div class="text-xs text-navy/60">
-                {{ formatDateTime(version.created_at) }}
-              </div>
-            </div>
-            <span
-              :class="[
-                'px-2 py-0.5 border text-xs font-semibold uppercase tracking-wide',
-                version.id === activeVersionId
-                  ? 'border-burgundy text-burgundy'
-                  : 'border-navy/40 text-navy/70',
-              ]"
+          <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 py-2">
+            <button
+              type="button"
+              class="flex items-center justify-between gap-3 text-left w-full"
+              @click="handleSelect(version.id)"
             >
-              {{ versionLabel(version.state) }}
-            </span>
-          </RouterLink>
+              <div>
+                <div class="text-sm font-semibold text-navy">
+                  v{{ version.version_number }}
+                </div>
+                <div class="text-xs text-navy/60">
+                  {{ formatDateTime(version.created_at) }}
+                </div>
+              </div>
+              <span
+                :class="[
+                  'px-2 py-0.5 border text-xs font-semibold uppercase tracking-wide',
+                  version.id === activeVersionId
+                    ? 'border-burgundy text-burgundy'
+                    : 'border-navy/40 text-navy/70',
+                ]"
+              >
+                {{ versionLabel(version.state) }}
+              </span>
+            </button>
+            <button
+              v-if="canRollback && version.state === 'archived'"
+              type="button"
+              class="px-3 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+              :disabled="isSubmitting"
+              @click="handleRollback(version.id)"
+            >
+              Återställ
+            </button>
+          </div>
         </li>
       </ul>
     </div>

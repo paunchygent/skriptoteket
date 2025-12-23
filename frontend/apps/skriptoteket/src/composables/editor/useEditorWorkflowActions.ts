@@ -76,6 +76,7 @@ export function useEditorWorkflowActions({
   const auth = useAuthStore();
   const isModalOpen = ref(false);
   const activeAction = ref<WorkflowAction | null>(null);
+  const targetVersionId = ref<string | null>(null);
   const note = ref("");
   const workflowError = ref<string | null>(null);
   const workflowSuccess = ref<string | null>(null);
@@ -135,6 +136,18 @@ export function useEditorWorkflowActions({
 
   function openAction(action: WorkflowAction): void {
     activeAction.value = action;
+    targetVersionId.value = null;
+    note.value = "";
+    workflowError.value = null;
+    isModalOpen.value = true;
+  }
+
+  function openRollbackForVersion(versionId: string): void {
+    if (!auth.hasAtLeastRole("superuser")) {
+      return;
+    }
+    activeAction.value = "rollback";
+    targetVersionId.value = versionId;
     note.value = "";
     workflowError.value = null;
     isModalOpen.value = true;
@@ -144,6 +157,7 @@ export function useEditorWorkflowActions({
     isModalOpen.value = false;
     activeAction.value = null;
     note.value = "";
+    targetVersionId.value = null;
   }
 
   async function navigateAfterAction(path: string): Promise<void> {
@@ -156,8 +170,8 @@ export function useEditorWorkflowActions({
 
   async function submitAction(): Promise<void> {
     const action = activeAction.value;
-    const version = selectedVersion.value;
-    if (!action || !version || isSubmitting.value) {
+    const versionId = targetVersionId.value ?? selectedVersion.value?.id ?? null;
+    if (!action || !versionId || isSubmitting.value) {
       return;
     }
 
@@ -175,22 +189,22 @@ export function useEditorWorkflowActions({
 
       switch (action) {
         case "submit_review":
-          endpoint = `/api/v1/editor/tool-versions/${version.id}/submit-review`;
+          endpoint = `/api/v1/editor/tool-versions/${versionId}/submit-review`;
           body = { review_note: noteValue };
           successMessage = "Begär publicering skickad.";
           break;
         case "publish":
-          endpoint = `/api/v1/editor/tool-versions/${version.id}/publish`;
+          endpoint = `/api/v1/editor/tool-versions/${versionId}/publish`;
           body = { change_summary: noteValue };
           successMessage = "Version publicerad.";
           break;
         case "request_changes":
-          endpoint = `/api/v1/editor/tool-versions/${version.id}/request-changes`;
+          endpoint = `/api/v1/editor/tool-versions/${versionId}/request-changes`;
           body = { message: noteValue };
           successMessage = "Versionen avslogs.";
           break;
         case "rollback":
-          endpoint = `/api/v1/editor/tool-versions/${version.id}/rollback`;
+          endpoint = `/api/v1/editor/tool-versions/${versionId}/rollback`;
           successMessage = "Version återställd.";
           break;
         default:
@@ -242,6 +256,7 @@ export function useEditorWorkflowActions({
     canRollback,
     actionItems,
     openAction,
+    openRollbackForVersion,
     closeAction,
     submitAction,
   };
