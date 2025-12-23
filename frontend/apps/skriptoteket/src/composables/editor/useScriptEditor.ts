@@ -57,14 +57,29 @@ export function useScriptEditor({
     return trimmed ? trimmed : null;
   }
 
-  function resolveEditorPath(): string | null {
+  function resolveEditorPath(): { path: string | null; soft: boolean } {
+    const queryVersion =
+      typeof route.query.version === "string" ? route.query.version.trim() : "";
+    if (queryVersion) {
+      return {
+        path: `/api/v1/editor/tool-versions/${encodeURIComponent(queryVersion)}`,
+        soft: Boolean(editor.value),
+      };
+    }
+
     if (toolId.value !== "") {
-      return `/api/v1/editor/tools/${encodeURIComponent(toolId.value)}`;
+      return {
+        path: `/api/v1/editor/tools/${encodeURIComponent(toolId.value)}`,
+        soft: false,
+      };
     }
     if (versionId.value !== "") {
-      return `/api/v1/editor/tool-versions/${encodeURIComponent(versionId.value)}`;
+      return {
+        path: `/api/v1/editor/tool-versions/${encodeURIComponent(versionId.value)}`,
+        soft: false,
+      };
     }
-    return null;
+    return { path: null, soft: false };
   }
 
   function applyEditorResponse(response: EditorBootResponse): void {
@@ -111,7 +126,7 @@ export function useScriptEditor({
   }
 
   async function loadEditor(): Promise<void> {
-    const path = resolveEditorPath();
+    const { path, soft } = resolveEditorPath();
 
     if (!path) {
       errorMessage.value = "Ingen editor hittades.";
@@ -120,7 +135,7 @@ export function useScriptEditor({
       return;
     }
 
-    await loadEditorFromPath(path);
+    await loadEditorFromPath(path, { soft });
   }
 
   async function loadEditorForVersion(versionIdValue: string): Promise<void> {

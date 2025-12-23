@@ -2,7 +2,7 @@
 type: story
 id: ST-11-17
 title: "Tool metadata editor (title + summary)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-22
 epic: "EPIC-11"

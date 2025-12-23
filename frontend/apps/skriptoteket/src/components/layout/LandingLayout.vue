@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// No props or emits - simple layout wrapper
+import HelpButton from "../help/HelpButton.vue";
 </script>
 
 <template>
@@ -12,6 +12,7 @@
       >
         Skriptoteket
       </RouterLink>
+      <HelpButton />
     </div>
   </header>
 

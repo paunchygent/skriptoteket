@@ -12,20 +12,20 @@ from skriptoteket.application.catalog.handlers.list_categories_for_profession im
 )
 from skriptoteket.application.catalog.handlers.list_maintainers import ListMaintainersHandler
 from skriptoteket.application.catalog.handlers.list_professions import ListProfessionsHandler
+from skriptoteket.application.catalog.handlers.list_tool_taxonomy import (
+    ListToolTaxonomyHandler,
+)
 from skriptoteket.application.catalog.handlers.list_tools_by_tags import ListToolsByTagsHandler
 from skriptoteket.application.catalog.handlers.list_tools_for_admin import ListToolsForAdminHandler
 from skriptoteket.application.catalog.handlers.list_tools_for_contributor import (
     ListToolsForContributorHandler,
 )
-from skriptoteket.application.catalog.handlers.list_tool_taxonomy import (
-    ListToolTaxonomyHandler,
-)
 from skriptoteket.application.catalog.handlers.publish_tool import PublishToolHandler
 from skriptoteket.application.catalog.handlers.remove_maintainer import RemoveMaintainerHandler
+from skriptoteket.application.catalog.handlers.update_tool_metadata import UpdateToolMetadataHandler
 from skriptoteket.application.catalog.handlers.update_tool_taxonomy import (
     UpdateToolTaxonomyHandler,
 )
-from skriptoteket.application.catalog.handlers.update_tool_metadata import UpdateToolMetadataHandler
 from skriptoteket.protocols.catalog import (
     AssignMaintainerHandlerProtocol,
     CategoryRepositoryProtocol,
@@ -44,8 +44,8 @@ from skriptoteket.protocols.catalog import (
     ToolMaintainerAuditRepositoryProtocol,
     ToolMaintainerRepositoryProtocol,
     ToolRepositoryProtocol,
-    UpdateToolTaxonomyHandlerProtocol,
     UpdateToolMetadataHandlerProtocol,
+    UpdateToolTaxonomyHandlerProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol

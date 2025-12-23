@@ -50,7 +50,6 @@ const {
   save,
   saveToolMetadata,
   loadEditor,
-  loadEditorForVersion,
 } = useScriptEditor({
   toolId,
   versionId,
@@ -152,7 +151,12 @@ function handleHistorySelect(versionIdValue: string): void {
       return;
     }
   }
-  void loadEditorForVersion(versionIdValue);
+  void router.replace({
+    query: {
+      ...route.query,
+      version: versionIdValue,
+    },
+  });
 }
 
 function updateProfessionIds(value: string[]): void {

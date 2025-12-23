@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 import json
-from urllib.parse import unquote
 from unittest.mock import AsyncMock, MagicMock
+from urllib.parse import unquote
 
 import pytest
 
+from skriptoteket.application.catalog.commands import (
+    UpdateToolMetadataResult,
+    UpdateToolTaxonomyResult,
+)
+from skriptoteket.application.catalog.queries import ListMaintainersResult, ListToolTaxonomyResult
 from skriptoteket.application.scripting.commands import (
     CreateDraftVersionResult,
     PublishVersionResult,
@@ -13,11 +18,6 @@ from skriptoteket.application.scripting.commands import (
     RollbackVersionResult,
     SaveDraftVersionResult,
     SubmitForReviewResult,
-)
-from skriptoteket.application.catalog.queries import ListMaintainersResult, ListToolTaxonomyResult
-from skriptoteket.application.catalog.commands import (
-    UpdateToolMetadataResult,
-    UpdateToolTaxonomyResult,
 )
 from skriptoteket.domain.errors import DomainError
 from skriptoteket.domain.identity.models import Role, UserAuth
@@ -50,7 +50,8 @@ def _unwrap_dishka(fn):
 
 
 def _decode_toast_payload(value: str) -> dict[str, str]:
-    return json.loads(unquote(value))
+    result: dict[str, str] = json.loads(unquote(value))
+    return result
 
 
 @pytest.mark.unit

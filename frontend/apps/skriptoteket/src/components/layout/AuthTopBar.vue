@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import HelpButton from "../help/HelpButton.vue";
+
 defineProps<{
   user: { email: string; role: string } | null;
   logoutInProgress: boolean;
@@ -19,6 +21,7 @@ function onLogout(): void {
       <!-- Future: breadcrumb or page title -->
     </div>
     <div class="top-user-bar-right">
+      <HelpButton />
       <span class="user-info">
         {{ user?.email }}
         <span class="user-role">({{ user?.role }})</span>

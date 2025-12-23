@@ -13,10 +13,10 @@ from skriptoteket.application.catalog.commands import (
     PublishToolResult,
     RemoveMaintainerCommand,
     RemoveMaintainerResult,
-    UpdateToolTaxonomyCommand,
-    UpdateToolTaxonomyResult,
     UpdateToolMetadataCommand,
     UpdateToolMetadataResult,
+    UpdateToolTaxonomyCommand,
+    UpdateToolTaxonomyResult,
 )
 from skriptoteket.application.catalog.queries import (
     ListAllCategoriesQuery,

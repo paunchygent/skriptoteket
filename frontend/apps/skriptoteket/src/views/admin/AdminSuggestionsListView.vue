@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import { RouterLink } from "vue-router";
+
 import { apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
+import ToolListRow from "../../components/tools/ToolListRow.vue";
 
 type ListSuggestionsResponse = components["schemas"]["ListSuggestionsResponse"];
 type SuggestionSummary = components["schemas"]["SuggestionSummary"];
@@ -13,11 +16,35 @@ const errorMessage = ref<string | null>(null);
 
 function statusLabel(status: SuggestionStatus): string {
   const labels: Record<SuggestionStatus, string> = {
-    pending_review: "Väntar på granskning",
+    pending_review: "Väntar",
     accepted: "Godkänd",
     denied: "Avslagen",
   };
   return labels[status];
+}
+
+function statusClass(status: SuggestionStatus): string {
+  if (status === "pending_review") {
+    return "inline-block px-2 py-1 text-xs font-medium bg-burgundy/10 text-burgundy border border-burgundy/40";
+  }
+  if (status === "accepted") {
+    return "inline-block px-2 py-1 text-xs font-medium text-success";
+  }
+  return "inline-block px-2 py-1 text-xs font-medium text-navy/50";
+}
+
+function actionClass(status: SuggestionStatus): string {
+  const base =
+    "flex items-center justify-center px-4 py-2 text-xs font-bold uppercase tracking-widest border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none w-full";
+
+  if (status === "pending_review") {
+    return `${base} bg-burgundy text-canvas`;
+  }
+  return `${base} bg-white text-navy hover:bg-canvas`;
+}
+
+function actionLabel(status: SuggestionStatus): string {
+  return status === "pending_review" ? "Granska" : "Visa";
 }
 
 function formatDateTime(value: string): string {
@@ -85,34 +112,37 @@ onMounted(() => {
       v-else
       class="border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15"
     >
-      <li
+      <ToolListRow
         v-for="suggestion in suggestions"
         :key="suggestion.id"
-        class="p-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+        grid-class="sm:grid-cols-[minmax(0,1fr)_8rem_7rem]"
+        status-class="justify-self-start"
+        actions-class="justify-self-start sm:justify-self-stretch"
       >
-        <div class="space-y-1 min-w-0">
-          <div class="text-base font-semibold text-navy truncate">{{ suggestion.title }}</div>
+        <template #main>
+          <div class="text-base font-semibold text-navy truncate">
+            {{ suggestion.title }}
+          </div>
           <div class="text-xs text-navy/60">
-            Inskickat {{ formatDateTime(suggestion.created_at) }} ·
-            <span class="font-mono">{{ suggestion.submitted_by_user_id }}</span>
+            Inskickat {{ formatDateTime(suggestion.created_at) }}
           </div>
-          <div class="text-xs text-navy/70">
-            Yrken: {{ suggestion.profession_slugs.join(", ") }} · Kategorier: {{ suggestion.category_slugs.join(", ") }}
-          </div>
-        </div>
+        </template>
 
-        <div class="flex items-center gap-3">
-          <span class="px-2 py-1 border border-navy bg-canvas shadow-brutal-sm text-xs font-semibold uppercase tracking-wide text-navy/70">
+        <template #status>
+          <span :class="statusClass(suggestion.status)">
             {{ statusLabel(suggestion.status) }}
           </span>
+        </template>
+
+        <template #actions>
           <RouterLink
             :to="{ name: 'admin-suggestion-detail', params: { id: suggestion.id } }"
-            class="text-sm underline text-burgundy hover:text-navy"
+            :class="actionClass(suggestion.status)"
           >
-            Öppna →
+            {{ actionLabel(suggestion.status) }}
           </RouterLink>
-        </div>
-      </li>
+        </template>
+      </ToolListRow>
     </ul>
   </div>
 </template>

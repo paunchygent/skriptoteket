@@ -8,7 +8,6 @@ from playwright.sync_api import expect, sync_playwright
 
 from scripts._playwright_config import get_config
 
-
 HULEEDU_WARNING_BORDER = "rgb(217, 119, 6)"
 
 

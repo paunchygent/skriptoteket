@@ -2,7 +2,7 @@
 type: story
 id: ST-11-19
 title: "Help framework (contextual help panel)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-22
 epic: "EPIC-11"

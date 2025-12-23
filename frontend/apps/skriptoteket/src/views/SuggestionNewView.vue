@@ -177,21 +177,23 @@ onMounted(() => {
             <label class="text-sm font-semibold text-navy">Yrken</label>
             <span class="text-xs text-navy/60">Välj minst ett</span>
           </div>
-          <div class="grid gap-2 sm:grid-cols-2">
-            <label
-              v-for="profession in professions"
-              :key="profession.slug"
-              class="flex items-center gap-2 border border-navy/30 bg-white px-3 py-2 shadow-brutal-sm text-sm text-navy"
-            >
-              <input
-                :value="profession.slug"
-                type="checkbox"
-                class="border-navy"
-                :checked="selectedProfessions.includes(profession.slug)"
-                @change="selectedProfessions = toggleSelection(selectedProfessions, profession.slug)"
+          <div class="p-4 border border-navy bg-white shadow-brutal-sm">
+            <div class="grid gap-3 sm:grid-cols-2">
+              <label
+                v-for="profession in professions"
+                :key="profession.slug"
+                class="flex items-center gap-2 text-sm text-navy cursor-pointer"
               >
-              <span>{{ profession.label }}</span>
-            </label>
+                <input
+                  :value="profession.slug"
+                  type="checkbox"
+                  class="h-4 w-4 accent-burgundy"
+                  :checked="selectedProfessions.includes(profession.slug)"
+                  @change="selectedProfessions = toggleSelection(selectedProfessions, profession.slug)"
+                >
+                <span>{{ profession.label }}</span>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -200,21 +202,23 @@ onMounted(() => {
             <label class="text-sm font-semibold text-navy">Kategorier</label>
             <span class="text-xs text-navy/60">Välj minst en</span>
           </div>
-          <div class="grid gap-2 sm:grid-cols-2">
-            <label
-              v-for="category in categories"
-              :key="category.slug"
-              class="flex items-center gap-2 border border-navy/30 bg-white px-3 py-2 shadow-brutal-sm text-sm text-navy"
-            >
-              <input
-                :value="category.slug"
-                type="checkbox"
-                class="border-navy"
-                :checked="selectedCategories.includes(category.slug)"
-                @change="selectedCategories = toggleSelection(selectedCategories, category.slug)"
+          <div class="p-4 border border-navy bg-white shadow-brutal-sm">
+            <div class="grid gap-3 sm:grid-cols-2">
+              <label
+                v-for="category in categories"
+                :key="category.slug"
+                class="flex items-center gap-2 text-sm text-navy cursor-pointer"
               >
-              <span>{{ category.label }}</span>
-            </label>
+                <input
+                  :value="category.slug"
+                  type="checkbox"
+                  class="h-4 w-4 accent-burgundy"
+                  :checked="selectedCategories.includes(category.slug)"
+                  @change="selectedCategories = toggleSelection(selectedCategories, category.slug)"
+                >
+                <span>{{ category.label }}</span>
+              </label>
+            </div>
           </div>
         </div>
 

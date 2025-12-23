@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import LoginModal from "./components/auth/LoginModal.vue";
+import HelpPanel from "./components/help/HelpPanel.vue";
 import AuthLayout from "./components/layout/AuthLayout.vue";
 import LandingLayout from "./components/layout/LandingLayout.vue";
 import { useLoginModal } from "./composables/useLoginModal";
@@ -102,6 +103,8 @@ async function onLogout(): Promise<void> {
     >
       <RouterView />
     </AuthLayout>
+
+    <HelpPanel />
 
     <!-- Global Login Modal -->
     <LoginModal

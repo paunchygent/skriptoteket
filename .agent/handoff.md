@@ -15,7 +15,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Date: 2025-12-23
 - Branch / commit: `main` (uncommitted EPIC-11 changes)
 - Current sprint: `SPR-2025-12-21` (EPIC-11 full SPA migration)
-- Stories done: ST-11-01/02/03/04/05/06/07/08/09/10/11/12/14/15/21
+- Stories done: ST-11-01/02/03/04/05/06/07/08/09/10/11/12/14/15/16/17/18/19/21
 - Production: still SSR + SPA islands (legacy) until EPIC-11 cutover
 
 ## Current Session (2025-12-23)
@@ -28,12 +28,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Conditional layout in `App.vue`: Landing (logo only) vs Authenticated (sidebar + top bar)
 - Role-guarded dashboard in `HomeView.vue` with live API data (runs, tools, admin stats)
 - CSS refactored to use HuleEdu design tokens (`--huleedu-*` variables)
-- **Layout structure aligned with HuleEdu**:
-  - **Landing**: "Skriptoteket" logo only, left-aligned (matches authenticated sidebar offset)
-  - **Desktop auth**: Sidebar (brand+nav, 240px) + Top bar (canvas bg, navy text, user info+logout)
-  - **Mobile auth**: Hamburger only (right-aligned) → Sidebar drawer (brand+nav+user info+logout)
-  - Mobile header hidden on desktop via CSS media query (`@media min-width: 768px`)
-  - Top bar: canvas background, navy text (NOT navy background)
+- Layout structure aligned with HuleEdu: landing logo-only, desktop sidebar + top bar, mobile header + drawer; top bar uses canvas background + navy text.
 
 ### App.vue Refactor (694 → 119 LoC)
 
@@ -63,7 +58,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 - Editor API: maintainer list/add/remove endpoints in `src/skriptoteket/web/api/v1/editor.py`; tests in `tests/unit/web/test_editor_api_routes.py`.
 - SPA: drawer-based maintainer management (`MaintainersDrawer.vue`, `useToolMaintainers.ts`) with button “Redigeringsbehörigheter” and title “Ändra redigeringsbehörigheter”.
-- History drawer: rollback button for archived versions (superuser) + soft-load version switch (no navigation).
+- History drawer: rollback button for archived versions (superuser) + soft-load version switch via `?version=` (no refresh).
 - Script bank seeding now dedupes on normalized title+summary and reuses existing tool (`src/skriptoteket/cli/main.py`).
 
 ### ST-11-06 (catalog browse views)
@@ -120,7 +115,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ### Phase 4 story review (ST-11-15..19)
 
-- Story docs aligned for ST-11-15..19 + ST-11-20; follow-up ST-11-22 added and linked from EPIC-11.
+- ST-11-17/19 done + help panel wired in SPA (`frontend/apps/skriptoteket/src/components/help/HelpPanel.vue`, `frontend/apps/skriptoteket/src/components/help/HelpButton.vue`, `frontend/apps/skriptoteket/src/components/help/useHelp.ts`, `frontend/apps/skriptoteket/src/App.vue`, `frontend/apps/skriptoteket/src/components/layout/AuthTopBar.vue`, `frontend/apps/skriptoteket/src/components/layout/AuthLayout.vue`, `frontend/apps/skriptoteket/src/components/layout/LandingLayout.vue`); story docs updated (`docs/backlog/stories/story-11-17-tool-metadata-editor.md`, `docs/backlog/stories/story-11-19-help-framework.md`).
 - Docs contract check: `pdm run docs-validate` (pass).
 
 ### ST-11-20 (taxonomy editor wiring)
@@ -132,14 +127,14 @@ Keep this file updated so the next session can pick up work quickly.
 
 - Tests: `pdm run pytest tests/unit/application/catalog/handlers/test_list_tool_taxonomy.py tests/unit/application/catalog/handlers/test_update_tool_taxonomy.py tests/unit/web/test_editor_api_routes.py tests/integration/infrastructure/repositories/test_catalog_repository.py`
 - Live check (2025-12-23): `pdm run python -m scripts.playwright_spa_editor_metadata_check --base-url http://127.0.0.1:5173` (edit title/summary, title required, reload persists, restore original)
-- UI check: dev servers already running; `pdm run dev` (8000) + `pdm run fe-dev` (5173) failed due to ports in use.
+- Live check (2025-12-23): Playwright inline script via `pdm run python -` opened `/` and captured `.artifacts/st-11-19-help-button/help-button-home.png`.
 - Frontend: `pnpm -C frontend --filter @skriptoteket/spa typecheck`, `pnpm -C frontend --filter @skriptoteket/spa lint`
 - UI check: `/admin/tools` + taxonomy GET/PATCH on `/api/v1/editor/tools/{tool_id}/taxonomy` confirmed via Vite.
 - Live check (2025-12-22): `pdm run python -m scripts.playwright_st_11_15_spa_my_tools_e2e --base-url http://127.0.0.1:5173`
 - Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_16_editor_workflow_actions_e2e` failed (Chromium crashpad permission error after headless/headful fallback).
 - Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_16_editor_workflow_actions_e2e` (escalated) failed: could not find heading “Verktyg” on `/admin/tools` (assertion timeout); screenshot saved to `.artifacts/st-11-16-editor-workflow-actions/open-editor-failure.png`.
 - Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_16_editor_workflow_actions_e2e --base-url http://127.0.0.1:5173` (escalated) succeeded; artifacts in `.artifacts/st-11-16-editor-workflow-actions/`.
-- Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_18_editor_maintainers_e2e --base-url http://127.0.0.1:5173` (soft version switch + add/remove maintainer; screenshots in `.artifacts/st-11-18-editor-maintainers/`).
+- Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_18_editor_maintainers_e2e --base-url http://127.0.0.1:5173` (soft version switch via `?version=` + add/remove maintainer; screenshots in `.artifacts/st-11-18-editor-maintainers/`).
 
 ## Key Architecture
 
@@ -178,8 +173,7 @@ pdm run python -m scripts.playwright_st_11_09_curated_app_e2e --base-url http://
 ## Next Steps
 
 ### Phase 4: Remaining features (ready)
-1. **ST-11-17** (metadata): Tool title, summary, tags editing
-2. **ST-11-19** (help): Contextual help panel for all views
+- None (ST-11-17 + ST-11-19 done).
 
 ### Phase 5: Cutover
 6. **ST-11-13** (cutover): Delete SSR/HTMX, Playwright E2E suite

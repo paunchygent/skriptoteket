@@ -197,7 +197,7 @@ def main() -> None:
         _ensure_draft(page)
         page.screenshot(path=str(artifacts_dir / "draft-ready.png"), full_page=True)
 
-        first_review_id = _submit_for_review(page, note="Redo för granskning.")
+        _submit_for_review(page, note="Redo för granskning.")
         page.screenshot(path=str(artifacts_dir / "in-review.png"), full_page=True)
 
         _request_changes(page, message="Behöver justeras.")

@@ -8,15 +8,6 @@ from fastapi import APIRouter, Depends, File, Response, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict
 
-from skriptoteket.application.scripting.commands import (
-    CreateDraftVersionCommand,
-    PublishVersionCommand,
-    RequestChangesCommand,
-    RollbackVersionCommand,
-    RunSandboxCommand,
-    SaveDraftVersionCommand,
-    SubmitForReviewCommand,
-)
 from skriptoteket.application.catalog.commands import (
     AssignMaintainerCommand,
     RemoveMaintainerCommand,
@@ -26,6 +17,15 @@ from skriptoteket.application.catalog.commands import (
 from skriptoteket.application.catalog.queries import (
     ListMaintainersQuery,
     ListToolTaxonomyQuery,
+)
+from skriptoteket.application.scripting.commands import (
+    CreateDraftVersionCommand,
+    PublishVersionCommand,
+    RequestChangesCommand,
+    RollbackVersionCommand,
+    RunSandboxCommand,
+    SaveDraftVersionCommand,
+    SubmitForReviewCommand,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.catalog.models import Tool

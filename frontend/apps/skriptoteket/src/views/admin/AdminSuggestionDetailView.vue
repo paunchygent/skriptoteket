@@ -326,20 +326,22 @@ const showDecisionFields = computed(() => decision.value === "accept");
           <span class="text-xs text-navy/60">Obligatoriskt: motivering</span>
         </div>
 
-        <div class="flex flex-wrap gap-3">
-          <label class="inline-flex items-center gap-2 text-sm text-navy">
+        <div class="flex flex-wrap gap-4">
+          <label class="inline-flex items-center gap-2 text-sm text-navy cursor-pointer">
             <input
               v-model="decision"
               type="radio"
               value="accept"
+              class="h-4 w-4 accent-burgundy"
             >
             <span>Acceptera</span>
           </label>
-          <label class="inline-flex items-center gap-2 text-sm text-navy">
+          <label class="inline-flex items-center gap-2 text-sm text-navy cursor-pointer">
             <input
               v-model="decision"
               type="radio"
               value="deny"
+              class="h-4 w-4 accent-burgundy"
             >
             <span>Avslå</span>
           </label>

@@ -5,8 +5,8 @@ from skriptoteket.web.api.v1 import apps as api_v1_apps
 from skriptoteket.web.api.v1 import auth as api_v1_auth
 from skriptoteket.web.api.v1 import catalog as api_v1_catalog
 from skriptoteket.web.api.v1 import editor as api_v1_editor
-from skriptoteket.web.api.v1 import my_tools as api_v1_my_tools
 from skriptoteket.web.api.v1 import my_runs as api_v1_my_runs
+from skriptoteket.web.api.v1 import my_tools as api_v1_my_tools
 from skriptoteket.web.api.v1 import suggestions as api_v1_suggestions
 from skriptoteket.web.api.v1 import tools as api_v1_tools
 from skriptoteket.web.auth.dependencies import require_user

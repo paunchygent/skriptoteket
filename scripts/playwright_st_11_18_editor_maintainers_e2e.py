@@ -89,7 +89,15 @@ def main() -> None:
         if history_drawer.locator("li").count() > 0:
             first_row = history_drawer.locator("li").first
             first_row.get_by_role("button").first.click()
-            expect(page).to_have_url(current_url)
+            page.wait_for_function("() => window.location.search.includes('version=')")
+            parsed_current = page.evaluate(
+                "url => new URL(url).pathname",
+                current_url,
+            )
+            parsed_after = page.evaluate(
+                "() => window.location.pathname",
+            )
+            assert parsed_after == parsed_current
 
         page.get_by_role(
             "button",
