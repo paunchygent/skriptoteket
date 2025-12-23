@@ -20,6 +20,13 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Current Session (2025-12-23)
 
+### Mobile Sidebar Right-Side Positioning
+
+- Moved mobile sidebar drawer to slide from right (matches hamburger button position)
+- File: `frontend/apps/skriptoteket/src/components/layout/AuthSidebar.vue`
+- Changes: `right: 0` + `translateX(100%)` for mobile; desktop unchanged (left sidebar)
+- Verified: typecheck + lint pass
+
 ### HuleEdu Design Alignment (layout + dashboard)
 
 **Completed**:

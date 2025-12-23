@@ -126,18 +126,19 @@ function onHelp(): void {
 </template>
 
 <style scoped>
+/* Mobile: sidebar slides from right */
 .sidebar {
   display: none;
   flex-direction: column;
-  border-right: var(--huleedu-border-width) solid var(--huleedu-navy);
+  border-left: var(--huleedu-border-width) solid var(--huleedu-navy);
   background-color: var(--huleedu-canvas);
   position: fixed;
   top: 0;
-  left: 0;
+  right: 0;
   bottom: 0;
   width: var(--huleedu-sidebar-width);
   z-index: var(--huleedu-z-popover);
-  transform: translateX(-100%);
+  transform: translateX(100%);
   transition: transform var(--huleedu-duration-slow) var(--huleedu-ease-out);
 }
 
@@ -146,10 +147,15 @@ function onHelp(): void {
   transform: translateX(0);
 }
 
+/* Desktop: sidebar fixed on left */
 @media (min-width: 768px) {
   .sidebar {
     display: flex;
     position: fixed;
+    left: 0;
+    right: auto;
+    border-left: none;
+    border-right: var(--huleedu-border-width) solid var(--huleedu-navy);
     transform: none;
     z-index: var(--huleedu-z-overlay);
   }
