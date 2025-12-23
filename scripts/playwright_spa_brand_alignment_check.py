@@ -9,6 +9,9 @@ from playwright.sync_api import expect, sync_playwright
 from scripts._playwright_config import get_config
 
 
+HULEEDU_WARNING_BORDER = "rgb(217, 119, 6)"
+
+
 def _find_chromium_headless_shell() -> str | None:
     root = Path.home() / "Library" / "Caches" / "ms-playwright"
     if not root.exists():
@@ -49,51 +52,56 @@ def main() -> None:
     email = config.email
     password = config.password
 
-    artifacts_dir = Path(".artifacts/st-11-15-spa-my-tools-e2e")
+    artifacts_dir = Path(".artifacts/spa-brand-alignment-check")
     artifacts_dir.mkdir(parents=True, exist_ok=True)
 
     with sync_playwright() as playwright:
         browser = _launch_chromium(playwright)
-        context = browser.new_context(viewport={"width": 1280, "height": 800})
+        context = browser.new_context(viewport={"width": 1440, "height": 900})
         page = context.new_page()
+
+        # Logged out: capture landing header brand x
+        page.goto(f"{base_url}/", wait_until="domcontentloaded")
+        landing_brand = page.locator("header .landing-brand")
+        expect(landing_brand).to_be_visible()
+        landing_box = landing_brand.bounding_box()
+        assert landing_box is not None, "Expected landing brand to have a bounding box"
+
+        # Hover state: navy CTA should highlight amber (same as outline buttons).
+        login_cta = page.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE))
+        if login_cta.count() > 0:
+            login_cta.first.hover()
+            expect(login_cta.first).to_have_css("border-top-color", HULEEDU_WARNING_BORDER)
+
+        page.screenshot(path=str(artifacts_dir / "landing-logged-out.png"), full_page=True)
 
         # Login (SPA)
         page.goto(f"{base_url}/login", wait_until="domcontentloaded")
         page.get_by_label("E-post").fill(email)
         page.get_by_label("Lösenord").fill(password)
         page.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
+
         expect(
             page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))
         ).to_be_visible()
+        sidebar_brand = page.locator(".sidebar-brand")
+        expect(sidebar_brand).to_be_visible()
+        sidebar_box = sidebar_brand.bounding_box()
+        assert sidebar_box is not None, "Expected sidebar brand to have a bounding box"
+        page.screenshot(path=str(artifacts_dir / "dashboard-logged-in.png"), full_page=True)
 
-        # My tools view
-        page.goto(f"{base_url}/my-tools", wait_until="domcontentloaded")
-        expect(
-            page.get_by_role("heading", name=re.compile(r"Mina verktyg", re.IGNORECASE))
-        ).to_be_visible()
+        landing_x = round(landing_box["x"], 1)
+        sidebar_x = round(sidebar_box["x"], 1)
+        diff = abs(landing_x - sidebar_x)
 
-        empty_state = page.get_by_text("Du har inga verktyg att underhålla ännu.")
-        if empty_state.count() > 0 and empty_state.is_visible():
-            page.screenshot(path=str(artifacts_dir / "my-tools-empty.png"), full_page=True)
-        else:
-            tool_list = page.locator("main ul.border-navy").first
-            expect(tool_list).to_be_visible()
-            rows = tool_list.locator("li")
-            expect(rows.first).to_be_visible()
+        (artifacts_dir / "positions.txt").write_text(
+            f"landing_x={landing_x}\nsidebar_x={sidebar_x}\ndiff={diff}\n", encoding="utf-8"
+        )
 
-            first_row = rows.first
-            status_label = first_row.get_by_text(
-                re.compile(r"Publicerad|Ej publicerad", re.IGNORECASE)
-            )
-            expect(status_label).to_be_visible()
-
-            edit_link = page.get_by_role("link", name=re.compile(r"Redigera", re.IGNORECASE)).first
-            if edit_link.count() > 0:
-                edit_link.click()
-                page.wait_for_url("**/admin/tools/**", wait_until="domcontentloaded")
-                page.screenshot(path=str(artifacts_dir / "my-tools-editor.png"), full_page=True)
-            else:
-                page.screenshot(path=str(artifacts_dir / "my-tools-list.png"), full_page=True)
+        assert diff <= 1.0, (
+            "Expected landing header brand and authenticated sidebar brand to align closely. "
+            f"Got diff={diff} (landing_x={landing_x}, sidebar_x={sidebar_x})."
+        )
 
         context.close()
         browser.close()

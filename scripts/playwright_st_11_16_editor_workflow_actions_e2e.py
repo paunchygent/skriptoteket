@@ -57,11 +57,16 @@ def _login(page: object, *, base_url: str, email: str, password: str) -> None:
     expect(page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))).to_be_visible()
 
 
-def _open_editor(page: object, *, base_url: str) -> None:
+def _open_editor(page: object, *, base_url: str, artifacts_dir: Path | None = None) -> None:
     page.goto(f"{base_url}/admin/tools", wait_until="domcontentloaded")
-    expect(
-        page.get_by_role("heading", name=re.compile(r"Verktyg", re.IGNORECASE))
-    ).to_be_visible()
+    try:
+        expect(
+            page.get_by_role("heading", name=re.compile(r"(Verktyg|Testyta)", re.IGNORECASE))
+        ).to_be_visible()
+    except AssertionError:
+        if artifacts_dir:
+            page.screenshot(path=str(artifacts_dir / "open-editor-failure.png"), full_page=True)
+        raise
 
     empty_state = page.get_by_text("Inga verktyg finns.")
     if empty_state.count() > 0 and empty_state.is_visible():
@@ -71,66 +76,105 @@ def _open_editor(page: object, *, base_url: str) -> None:
     expect(edit_link).to_be_visible()
     edit_link.click()
     page.wait_for_url("**/admin/**", wait_until="domcontentloaded")
-    expect(
-        page.get_by_role("heading", name=re.compile(r"Testa i sandbox", re.IGNORECASE))
-    ).to_be_visible()
+    try:
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Testa i sandbox", re.IGNORECASE))
+        ).to_be_visible()
+    except AssertionError:
+        if artifacts_dir:
+            page.screenshot(
+                path=str(artifacts_dir / "open-editor-after-click-failure.png"),
+                full_page=True,
+            )
+        raise
+
+
+def _open_actions_menu(page: object) -> None:
+    actions_button = page.get_by_role("button", name=re.compile(r"Åtgärder", re.IGNORECASE))
+    expect(actions_button).to_be_visible()
+    actions_button.click()
+    expect(page.get_by_role("menu")).to_be_visible()
+
+
+def _action_available(page: object, label: str) -> bool:
+    actions_button = page.get_by_role("button", name=re.compile(r"Åtgärder", re.IGNORECASE))
+    if actions_button.is_disabled():
+        return False
+
+    actions_button.click()
+    menu_item = page.get_by_role("menuitem", name=re.compile(label, re.IGNORECASE))
+    is_visible = menu_item.count() > 0 and menu_item.is_visible()
+    page.keyboard.press("Escape")
+    return is_visible
+
+
+def _select_action(page: object, label: str) -> None:
+    _open_actions_menu(page)
+    menu_item = page.get_by_role("menuitem", name=re.compile(label, re.IGNORECASE))
+    expect(menu_item).to_be_visible()
+    menu_item.click()
 
 
 def _ensure_draft(page: object) -> None:
-    submit_button = page.get_by_role("button", name=re.compile(r"Skicka för granskning", re.IGNORECASE))
-    if submit_button.count() > 0 and submit_button.is_visible():
+    if _action_available(page, "Begär publicering"):
         return
 
-    create_button = page.get_by_role("button", name=re.compile(r"Skapa utkast", re.IGNORECASE))
+    create_button = page.get_by_role("button", name=re.compile(r"Spara", re.IGNORECASE))
     if create_button.count() == 0 or not create_button.is_visible():
-        raise RuntimeError("Unable to create draft: no 'Skapa utkast' button found.")
+        raise RuntimeError("Unable to create draft: no 'Spara' button found.")
 
     create_button.click()
     page.wait_for_url("**/admin/tool-versions/**", wait_until="domcontentloaded")
-    expect(submit_button).to_be_visible()
+    if not _action_available(page, "Begär publicering"):
+        raise RuntimeError("Draft created but workflow action 'Begär publicering' not available.")
 
 
 def _submit_for_review(page: object, note: str | None) -> str:
-    page.get_by_role("button", name=re.compile(r"Skicka för granskning", re.IGNORECASE)).click()
+    _select_action(page, "Begär publicering")
     dialog = page.get_by_role("dialog")
     expect(dialog).to_be_visible()
     if note:
         dialog.get_by_placeholder("Skriv en kort notis…").fill(note)
-    dialog.get_by_role("button", name=re.compile(r"Skicka för granskning", re.IGNORECASE)).click()
-    expect(page.get_by_role("button", name=re.compile(r"Publicera", re.IGNORECASE))).to_be_visible()
+    dialog.get_by_role("button", name=re.compile(r"Begär publicering", re.IGNORECASE)).click()
+    expect(dialog).not_to_be_visible()
+    if not _action_available(page, "Publicera version"):
+        raise RuntimeError("Expected publish action after requesting review.")
     return page.url.split("/admin/tool-versions/")[-1].split("?")[0]
 
 
 def _request_changes(page: object, message: str | None) -> None:
-    page.get_by_role("button", name=re.compile(r"Begär ändringar", re.IGNORECASE)).click()
+    _select_action(page, "Begär ändringar")
     dialog = page.get_by_role("dialog")
     expect(dialog).to_be_visible()
     if message:
         dialog.get_by_placeholder("Beskriv vad som behöver ändras…").fill(message)
     dialog.get_by_role("button", name=re.compile(r"Begär ändringar", re.IGNORECASE)).click()
-    expect(
-        page.get_by_role("button", name=re.compile(r"Skicka för granskning", re.IGNORECASE))
-    ).to_be_visible()
+    expect(dialog).not_to_be_visible()
+    if not _action_available(page, "Begär publicering"):
+        raise RuntimeError("Expected 'Begär publicering' after requesting changes.")
 
 
 def _publish(page: object, summary: str | None) -> None:
-    page.get_by_role("button", name=re.compile(r"Publicera", re.IGNORECASE)).click()
+    _select_action(page, "Publicera version")
     dialog = page.get_by_role("dialog")
     expect(dialog).to_be_visible()
     if summary:
         dialog.get_by_placeholder("T.ex. uppdaterade regler…").fill(summary)
     dialog.get_by_role("button", name=re.compile(r"Publicera", re.IGNORECASE)).click()
-    expect(page.get_by_role("button", name=re.compile(r"Publicera", re.IGNORECASE))).not_to_be_visible()
+    expect(dialog).not_to_be_visible()
+    if _action_available(page, "Publicera version"):
+        raise RuntimeError("Publish action still available after publishing.")
 
 
 def _rollback(page: object, *, base_url: str, archived_version_id: str) -> None:
-    page.goto(f"{base_url}/admin/tool-versions/{archived_version_id}", wait_until="domcontentloaded")
-    rollback_button = page.get_by_role("button", name=re.compile(r"Återställ", re.IGNORECASE))
-    expect(rollback_button).to_be_visible()
-    rollback_button.click()
+    page.goto(
+        f"{base_url}/admin/tool-versions/{archived_version_id}", wait_until="domcontentloaded"
+    )
+    _select_action(page, "Återställ version")
     dialog = page.get_by_role("dialog")
     expect(dialog).to_be_visible()
     dialog.get_by_role("button", name=re.compile(r"Återställ", re.IGNORECASE)).click()
+    expect(dialog).not_to_be_visible()
     page.wait_for_url("**/admin/tool-versions/**", wait_until="domcontentloaded")
 
 
@@ -149,7 +193,7 @@ def main() -> None:
         page = context.new_page()
 
         _login(page, base_url=base_url, email=email, password=password)
-        _open_editor(page, base_url=base_url)
+        _open_editor(page, base_url=base_url, artifacts_dir=artifacts_dir)
         _ensure_draft(page)
         page.screenshot(path=str(artifacts_dir / "draft-ready.png"), full_page=True)
 
