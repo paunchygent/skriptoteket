@@ -72,14 +72,16 @@ def main() -> None:
         page.mouse.click(10, 10)
         expect(dialog).to_have_count(0)
 
-        # Verify /login route shows direct login form (not modal)
+        # Verify /login redirects to home and opens the modal (no dedicated login route)
         page.goto(f"{base_url}/login", wait_until="domcontentloaded")
-        login_form = page.locator("form")
-        expect(login_form).to_be_visible()
-        expect(page.get_by_label("E-post")).to_be_visible()
-        expect(page.get_by_label("Lösenord")).to_be_visible()
-        expect(page.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE))).to_be_visible()
-        page.screenshot(path=str(artifacts_dir / "direct-login-form.png"), full_page=True)
+        expect(page).to_have_url(re.compile(rf"^{re.escape(base_url)}/?$"))
+        expect(dialog).to_be_visible()
+        expect(dialog.get_by_label("E-post")).to_be_visible()
+        expect(dialog.get_by_label("Lösenord")).to_be_visible()
+        expect(
+            dialog.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE))
+        ).to_be_visible()
+        page.screenshot(path=str(artifacts_dir / "login-route-opens-modal.png"), full_page=True)
 
         context.close()
         browser.close()

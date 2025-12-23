@@ -2,7 +2,7 @@
 type: epic
 id: EPIC-11
 title: "Full Vue/Vite SPA migration"
-status: active
+status: done
 owners: "agents"
 created: 2025-12-21
 outcome: "Skriptoteket runs as a single Vue/Vite SPA for all routes (user + admin), backed by /api/v1 with generated TypeScript types, with legacy Jinja2/HTMX removed."
@@ -46,20 +46,20 @@ outcome: "Skriptoteket runs as a single Vue/Vite SPA for all routes (user + admi
 - [ST-11-11: Admin tools list + publish/depublish](../stories/story-11-11-admin-tools-management.md)
 - [ST-11-12: Script editor migration (CodeMirror 6)](../stories/story-11-12-script-editor-migration.md)
 
-### Phase 4: Remaining features (ready)
+### Phase 4: Remaining features (done)
 - [ST-11-15: My Tools view (contributor dashboard)](../stories/story-11-15-my-tools-view.md)
 - [ST-11-16: Editor workflow actions (review, publish, reject)](../stories/story-11-16-editor-workflow-actions.md)
 - [ST-11-17: Tool metadata editor (title, summary, tags)](../stories/story-11-17-tool-metadata-editor.md)
 - [ST-11-18: Maintainer management (add/remove contributors)](../stories/story-11-18-maintainer-management.md)
 - [ST-11-19: Help framework (contextual help panel)](../stories/story-11-19-help-framework.md)
 
-### Phase 5: Cutover
-- [ST-11-13: Cutover + deletion + E2E](../stories/story-11-13-cutover-and-e2e.md)
+### Phase 5: Cutover (done)
+- [ST-11-13: Cutover + deletion + E2E](../stories/story-11-13-cutover-and-e2e.md) (done)
 
 ### Post-cutover follow-ups
-- [ST-11-20: Tool taxonomy editor (professions + categories)](../stories/story-11-20-tool-taxonomy-editor.md)
-- [ST-11-21: Unified landing page (auth-adaptive home view)](../stories/story-11-21-unified-landing-page.md)
-- [ST-11-22: Remove /login route (modal-only login)](../stories/story-11-22-remove-login-route.md)
+- [ST-11-20: Tool taxonomy editor (professions + categories)](../stories/story-11-20-tool-taxonomy-editor.md) (done)
+- [ST-11-21: Unified landing page (auth-adaptive home view)](../stories/story-11-21-unified-landing-page.md) (done)
+- [ST-11-22: Remove /login route (modal-only login)](../stories/story-11-22-remove-login-route.md) (done)
 
 ## Risks
 

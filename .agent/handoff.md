@@ -15,7 +15,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Date: 2025-12-23
 - Branch / commit: `main` (EPIC-11 complete)
 - Current sprint: `SPR-2025-12-21` (EPIC-11 full SPA migration)
-- Stories done: ST-11-01/02/03/04/05/06/07/08/09/10/11/12/13/14/15/16/17/18/19/21
+- Stories done: ST-11-01/02/03/04/05/06/07/08/09/10/11/12/13/14/15/16/17/18/19/20/21/22
 - Production: Full Vue SPA (SSR/HTMX removed in ST-11-13)
 
 ## Current Session (2025-12-23)
@@ -118,7 +118,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Home landing page: `frontend/apps/skriptoteket/src/views/HomeView.vue` (auth-adaptive hero + quick nav).
 - Modal-first login: header login opens modal; auth guards already open modal (`frontend/apps/skriptoteket/src/App.vue`, `frontend/apps/skriptoteket/src/router/index.ts`).
 - Modal ARIA: `role="dialog"`, `aria-modal`, `aria-labelledby`, `aria-describedby` in `frontend/apps/skriptoteket/src/App.vue`.
-- Story docs aligned: `docs/backlog/stories/story-11-21-unified-landing-page.md`; follow-up story added `docs/backlog/stories/story-11-22-remove-login-route.md` + linked from EPIC-11.
+- Story docs aligned: `docs/backlog/stories/story-11-21-unified-landing-page.md`; ST-11-22 implemented (remove `/login` route; modal-only login).
 
 ### Phase 4 story review (ST-11-15..19)
 
@@ -128,18 +128,17 @@ Keep this file updated so the next session can pick up work quickly.
 ### ST-11-20 (taxonomy editor wiring)
 
 - Taxonomy API + repo wiring in `src/skriptoteket/web/api/v1/editor.py` + catalog handlers/repos.
-- SPA taxonomy panel started in `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`; types regenerated via `pdm run fe-gen-api-types`.
+- SPA taxonomy editor in `MetadataDrawer.vue` / `useToolTaxonomy.ts`; types regenerated via `pdm run fe-gen-api-types`.
 
 ### Verification
 
 - Tests: `pdm run pytest tests/unit/application/catalog/handlers/test_list_tool_taxonomy.py tests/unit/application/catalog/handlers/test_update_tool_taxonomy.py tests/unit/web/test_editor_api_routes.py tests/integration/infrastructure/repositories/test_catalog_repository.py`
 - Live check (2025-12-23): `pdm run python -m scripts.playwright_spa_editor_metadata_check --base-url http://127.0.0.1:5173` (edit title/summary, title required, reload persists, restore original)
 - Live check (2025-12-23): `pdm run dev` + `pdm run fe-dev`; `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_11_19_help_mobile_menu_check` (mobile hamburger help; screenshot `.artifacts/st-11-19-help-mobile-menu/help-in-mobile-menu.png`).
+- Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_21_login_modal_e2e --base-url http://127.0.0.1:5173` (verifies `/login` redirects to `/` and opens modal; artifacts in `.artifacts/st-11-21-login-modal-e2e/`)
 - Frontend: `pnpm -C frontend --filter @skriptoteket/spa typecheck`, `pnpm -C frontend --filter @skriptoteket/spa lint`
 - UI check: `/admin/tools` + taxonomy GET/PATCH on `/api/v1/editor/tools/{tool_id}/taxonomy` confirmed via Vite.
 - Live check (2025-12-22): `pdm run python -m scripts.playwright_st_11_15_spa_my_tools_e2e --base-url http://127.0.0.1:5173`
-- Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_16_editor_workflow_actions_e2e` failed (Chromium crashpad permission error after headless/headful fallback).
-- Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_16_editor_workflow_actions_e2e` (escalated) failed: could not find heading “Verktyg” on `/admin/tools` (assertion timeout); screenshot saved to `.artifacts/st-11-16-editor-workflow-actions/open-editor-failure.png`.
 - Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_16_editor_workflow_actions_e2e --base-url http://127.0.0.1:5173` (escalated) succeeded; artifacts in `.artifacts/st-11-16-editor-workflow-actions/`.
 - Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_18_editor_maintainers_e2e --base-url http://127.0.0.1:5173` (soft version switch via `?version=` + add/remove maintainer; screenshots in `.artifacts/st-11-18-editor-maintainers/`).
 
@@ -182,8 +181,7 @@ pdm run python -m scripts.playwright_st_11_09_curated_app_e2e --base-url http://
 - All SSR/HTMX code deleted, SPA serving all routes
 
 ### Later
-- Governance: ST-02-02 (admin nomination + superuser approval)
-- ST-11-22: Remove dedicated /login route (modal-first complete)
+- EPIC-12: Start SPA-only UX stories (ST-12-02/03/04) now that ST-11-13 is deployed
 
 ## Historical (2025-12-21)
 

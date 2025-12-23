@@ -9,9 +9,9 @@ outcome: "Scripts can accept multiple input files, generate native PDFs, and acc
 dependencies: ["EPIC-11"]
 ---
 
-> Status note: **EPIC-12 is blocked until EPIC-11 (full SPA migration) is complete**.
-> ST-12-01 is delivered as a backend/runtime contract + minimal SSR wiring; all remaining EPIC-12 work should be
-> implemented directly in the SPA to avoid building UI twice.
+> Status note: EPIC-12 was blocked until EPIC-11 (full SPA migration) was complete.
+> EPIC-11 cutover (ST-11-13) is complete as of **2025-12-23**. ST-12-01 is delivered as a backend/runtime contract;
+> all remaining EPIC-12 work should be implemented directly in the SPA (no SSR duplication).
 
 ## Scope
 
@@ -31,9 +31,9 @@ dependencies: ["EPIC-11"]
 ## Stories
 
 - [ST-12-01: Multi-file upload support](../stories/story-12-01-multi-file-upload.md)
-- [ST-12-02: Native PDF output helper](../stories/story-12-02-native-pdf-output-helper.md) (blocked)
-- [ST-12-03: Personalized tool settings](../stories/story-12-03-personalized-tool-settings.md) (blocked)
-- [ST-12-04: Interactive text/dropdown inputs](../stories/story-12-04-interactive-text-dropdown-inputs.md) (blocked)
+- [ST-12-02: Native PDF output helper](../stories/story-12-02-native-pdf-output-helper.md) (ready)
+- [ST-12-03: Personalized tool settings](../stories/story-12-03-personalized-tool-settings.md) (ready)
+- [ST-12-04: Interactive text/dropdown inputs](../stories/story-12-04-interactive-text-dropdown-inputs.md) (ready)
 
 ## Risks
 

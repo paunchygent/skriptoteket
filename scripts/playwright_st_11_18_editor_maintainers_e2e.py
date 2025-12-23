@@ -62,14 +62,20 @@ def main() -> None:
         page.get_by_label("E-post").fill(email)
         page.get_by_label("Lösenord").fill(password)
         page.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
-        expect(page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))).to_be_visible()
+        expect(
+            page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))
+        ).to_be_visible()
 
         # Open admin tools list
         page.goto(f"{base_url}/admin/tools", wait_until="domcontentloaded")
-        expect(page.get_by_role("heading", name=re.compile(r"Verktyg", re.IGNORECASE))).to_be_visible()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Verktyg", re.IGNORECASE))
+        ).to_be_visible()
 
         tool_list = page.locator("section").locator("ul").first
-        action_links = tool_list.get_by_role("link", name=re.compile(r"Redigera|Granska", re.IGNORECASE))
+        action_links = tool_list.get_by_role(
+            "link", name=re.compile(r"Redigera|Granska", re.IGNORECASE)
+        )
         if action_links.count() == 0:
             raise RuntimeError("No admin tools available to open in editor.")
 

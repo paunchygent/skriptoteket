@@ -2,7 +2,7 @@
 type: story
 id: ST-11-22
 title: "Remove /login route (modal-only login)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-23
 epic: "EPIC-11"
@@ -30,3 +30,9 @@ and should be removed so all login flows are modal-first.
 3. Remove /login route entirely (modal-only)
    - Pros: no legacy login page.
    - Cons: bigger change, higher risk.
+
+## Implemented (2025-12-23)
+
+- Removed `LoginView.vue` and the `/login` route record (`frontend/apps/skriptoteket/src/router/routes.ts`).
+- Router guard treats `/login` as a special-case path: redirects to `/` and opens the login modal.
+- Auth-expiry handling is modal-first (no `/login` navigation) in `frontend/apps/skriptoteket/src/App.vue`.

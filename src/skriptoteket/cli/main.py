@@ -422,10 +422,7 @@ async def _seed_one_entry(
         if dedupe_match is not None:
             tool = dedupe_match
             deduped_from_slug = entry.slug
-            typer.echo(
-                "Seed dedupe: "
-                f"using existing tool '{tool.slug}' for entry '{entry.slug}'."
-            )
+            typer.echo(f"Seed dedupe: using existing tool '{tool.slug}' for entry '{entry.slug}'.")
         else:
             tool = None
 
@@ -566,8 +563,6 @@ async def _seed_one_entry(
     if created and not dry_run:
         typer.echo(f"Seeded tool: {entry.slug} (created)")
     elif deduped_from_slug and not dry_run:
-        typer.echo(
-            f"Seeded tool: {tool.slug} (deduped from {deduped_from_slug})"
-        )
+        typer.echo(f"Seeded tool: {tool.slug} (deduped from {deduped_from_slug})")
     elif not dry_run:
         typer.echo(f"Seeded tool: {entry.slug} (updated)")

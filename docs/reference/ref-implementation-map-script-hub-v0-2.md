@@ -207,8 +207,8 @@ Session rule reminder:
 
 ## EPIC-12: Advanced Input & Output Handling
 
-Status: **ST-12-01 is done**. Remaining EPIC-12 stories are **blocked until EPIC-11 is complete** (ST-11-13 cutover),
-so we implement user-facing UX once in the SPA.
+Status: **ST-12-01 is done**. Remaining EPIC-12 stories were blocked until EPIC-11 cutover; EPIC-11 is complete as of
+**2025-12-23** (ST-11-13), so implement user-facing UX directly in the SPA.
 
 This section covers v0.2 features from PRD-script-hub-v0.2 that are not yet scheduled into sprints.
 
@@ -232,7 +232,7 @@ This section covers v0.2 features from PRD-script-hub-v0.2 that are not yet sche
 - Dependencies:
   - ADR-0031 (Multi-file input contract)
 
-### Future sessions (blocked until EPIC-11 cutover)
+### Future sessions (ready after EPIC-11 cutover)
 
 - [ST-12-02: Native PDF output helper](../backlog/stories/story-12-02-native-pdf-output-helper.md)
 - [ST-12-03: Personalized tool settings](../backlog/stories/story-12-03-personalized-tool-settings.md)

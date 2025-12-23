@@ -74,9 +74,7 @@ def _run_curated_app(page: object, *, base_url: str, artifacts_dir: Path) -> Non
 
 def _run_demo_tool(page: object, *, base_url: str, artifacts_dir: Path) -> None:
     page.goto(f"{base_url}/browse/gemensamt/ovrigt", wait_until="domcontentloaded")
-    expect(
-        page.get_by_role("heading", name=re.compile(r"Övrigt", re.IGNORECASE))
-    ).to_be_visible()
+    expect(page.get_by_role("heading", name=re.compile(r"Övrigt", re.IGNORECASE))).to_be_visible()
 
     tool_row = page.locator("li").filter(has_text="Demo: Interaktiv")
     expect(tool_row).to_have_count(1)
@@ -116,7 +114,9 @@ def main() -> None:
 
     with sync_playwright() as playwright:
         browser = _launch_chromium(playwright)
-        context = browser.new_context(viewport={"width": 1280, "height": 800}, accept_downloads=True)
+        context = browser.new_context(
+            viewport={"width": 1280, "height": 800}, accept_downloads=True
+        )
         page = context.new_page()
 
         _login(page, base_url=base_url, email=email, password=password)

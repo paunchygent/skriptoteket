@@ -58,14 +58,8 @@ watch(
     if (!isProtectedRoute.value) {
       return;
     }
-    if (route.name === "login") {
-      return;
-    }
 
-    await router.replace({
-      name: "login",
-      query: { next: route.fullPath },
-    });
+    loginModal.open(route.fullPath);
   },
 );
 

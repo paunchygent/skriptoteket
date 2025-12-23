@@ -64,11 +64,11 @@ async def test_domain_error_returns_json_when_accepts_json(client: httpx.AsyncCl
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_domain_error_returns_html_for_browser_requests(client: httpx.AsyncClient) -> None:
+async def test_domain_error_returns_json_for_browser_requests(client: httpx.AsyncClient) -> None:
     response = await client.get("/boom-domain")
     assert response.status_code == 404
-    assert "Fel" in response.text
-    assert ErrorCode.NOT_FOUND.value in response.text
+    payload = response.json()
+    assert payload["error"]["code"] == ErrorCode.NOT_FOUND.value
 
 
 @pytest.mark.unit
@@ -82,7 +82,10 @@ async def test_unhandled_exception_returns_safe_500_json(client: httpx.AsyncClie
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_unhandled_exception_returns_safe_500_html(client: httpx.AsyncClient) -> None:
+async def test_unhandled_exception_returns_safe_500_json_for_browser_requests(
+    client: httpx.AsyncClient,
+) -> None:
     response = await client.get("/boom")
     assert response.status_code == 500
-    assert "Internt serverfel" in response.text
+    payload = response.json()
+    assert payload["error"]["code"] == ErrorCode.INTERNAL_ERROR.value

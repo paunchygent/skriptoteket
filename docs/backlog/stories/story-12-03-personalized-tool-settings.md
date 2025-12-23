@@ -2,7 +2,7 @@
 type: story
 id: ST-12-03
 title: "Personalized tool settings"
-status: blocked
+status: ready
 owners: "agents"
 created: 2025-12-21
 epic: "EPIC-12"
@@ -19,7 +19,7 @@ dependencies: ["ST-11-13"]
 Many tools benefit from stable per-user defaults (e.g., preferred output format, organization name, recurring values)
 without requiring the user to re-enter them on every run.
 
-## Blocker
+## Status
 
-This story is **blocked until EPIC-11 is complete (ST-11-13 cutover)** so settings UX is implemented once in the SPA
-(not duplicated in SSR/HTMX).
+This story was blocked until EPIC-11 cutover (ST-11-13). EPIC-11 is complete as of **2025-12-23**; implement settings UX
+directly in the SPA (no SSR duplication).

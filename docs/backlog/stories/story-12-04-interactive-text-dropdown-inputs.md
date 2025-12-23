@@ -2,7 +2,7 @@
 type: story
 id: ST-12-04
 title: "Interactive text/dropdown inputs"
-status: blocked
+status: ready
 owners: "agents"
 created: 2025-12-21
 epic: "EPIC-12"
@@ -19,7 +19,7 @@ dependencies: ["ST-11-13"]
 Many tools need only a few parameters (text, dropdowns) rather than a file upload. Supporting this expands tool
 usability and reduces “upload a dummy file” workarounds.
 
-## Blocker
+## Status
 
-This story is **blocked until EPIC-11 is complete (ST-11-13 cutover)** so form UI is implemented once in the SPA (not
-duplicated in SSR/HTMX).
+This story was blocked until EPIC-11 cutover (ST-11-13). EPIC-11 is complete as of **2025-12-23**; implement form UI
+directly in the SPA (no SSR duplication).

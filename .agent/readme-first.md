@@ -26,12 +26,10 @@ Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future H
 
 ## Current sprint dashboard (keep current only)
 
-- Sprint: `SPR-2025-12-21` (EPIC-11 full SPA migration foundations) is active
-- Decision: full Vue/Vite SPA (ADR-0027) is accepted; ADR-0001/ADR-0025 are superseded
-- Landed: ST-11-04/05 (API v1 + OpenAPI→TypeScript + SPA auth + route guards)
-- Next: ST-11-03 (FastAPI SPA hosting: manifest + history fallback), then start ST-11-06+ route-parity vertical slices
-- Production today: still SSR + SPA islands (legacy) until EPIC-11 cutover
-- EPIC-12 status: ST-12-01 is done (multi-file input contract + caps + input_manifest); remaining EPIC-12 stories are blocked until EPIC-11 (ST-11-13)
+- Sprint: `SPR-2025-12-21` (EPIC-11 full SPA migration) — cutover deployed 2025-12-23 (ST-11-13)
+- Production: Full Vue SPA (SSR/HTMX removed)
+- Done: Route parity + admin/editor flows (ST-11-01..22)
+- Next: EPIC-12 is unblocked; pick next SPA UX story (ST-12-02/03/04)
 
 ## Current EPIC-04 decisions (dynamic scripts)
 

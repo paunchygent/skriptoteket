@@ -62,7 +62,9 @@ def main() -> None:
         page.get_by_label("E-post").fill(email)
         page.get_by_label("Lösenord").fill(password)
         page.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
-        expect(page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))).to_be_visible()
+        expect(
+            page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))
+        ).to_be_visible()
 
         # Pick any tool from the admin list
         tools_response = context.request.get(f"{base_url}/api/v1/admin/tools")
@@ -75,8 +77,12 @@ def main() -> None:
         assert tool_id, "Expected tool id in admin tools payload."
 
         page.goto(f"{base_url}/admin/tools/{tool_id}", wait_until="domcontentloaded")
-        expect(page.get_by_role("heading", name=re.compile(r"Källkod", re.IGNORECASE))).to_be_visible()
-        expect(page.get_by_role("heading", name=re.compile(r"Metadata", re.IGNORECASE))).to_be_visible()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Källkod", re.IGNORECASE))
+        ).to_be_visible()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Metadata", re.IGNORECASE))
+        ).to_be_visible()
 
         title_input = page.locator("input[placeholder='Titel']")
         summary_input = page.locator("textarea[placeholder='Valfri sammanfattning']")
@@ -107,10 +113,14 @@ def main() -> None:
         save_button.click()
         expect(page.get_by_text("Metadata sparad.")).to_be_visible()
 
-        expect(page.get_by_role("heading", name=re.compile(re.escape(updated_title)))).to_be_visible()
+        expect(
+            page.get_by_role("heading", name=re.compile(re.escape(updated_title)))
+        ).to_be_visible()
 
         page.reload(wait_until="domcontentloaded")
-        expect(page.get_by_role("heading", name=re.compile(r"Metadata", re.IGNORECASE))).to_be_visible()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Metadata", re.IGNORECASE))
+        ).to_be_visible()
         expect(title_input).to_have_value(updated_title)
         expect(summary_input).to_have_value(updated_summary)
 

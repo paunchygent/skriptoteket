@@ -12,11 +12,6 @@ export const routes: RouteRecordRaw[] = [
     component: () => import("../views/ForbiddenView.vue"),
   },
   {
-    path: "/login",
-    name: "login",
-    component: () => import("../views/LoginView.vue"),
-  },
-  {
     path: "/browse",
     name: "browse",
     component: () => import("../views/BrowseProfessionsView.vue"),

@@ -35,14 +35,22 @@ router.beforeEach(async (to) => {
   const requiresAuth = Boolean(to.meta.requiresAuth);
   const rawMinRole = typeof to.meta.minRole === "string" ? to.meta.minRole : null;
   const minRole = rawMinRole && isRole(rawMinRole) ? rawMinRole : null;
+  const isLoginPath = to.path.startsWith("/login");
 
-  if (requiresAuth || minRole || to.name === "login") {
+  if (requiresAuth || minRole || isLoginPath) {
     await auth.bootstrap();
   }
 
-  if (to.name === "login" && auth.isAuthenticated) {
+  if (isLoginPath) {
     const nextParam = getNextParam(to.query.next);
-    return nextParam ? { path: nextParam } : { path: "/" };
+
+    if (auth.isAuthenticated) {
+      return nextParam ? { path: nextParam } : { path: "/" };
+    }
+
+    const loginModal = useLoginModal();
+    loginModal.open(nextParam ?? undefined);
+    return { path: "/" };
   }
 
   if ((requiresAuth || minRole) && !auth.isAuthenticated) {

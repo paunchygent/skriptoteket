@@ -2,7 +2,7 @@
 type: story
 id: ST-11-20
 title: "Tool taxonomy editor (professions + categories)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-22
 epic: "EPIC-11"
@@ -52,3 +52,9 @@ as a distinct feature from metadata editing (ST-11-17).
 - Creating or editing professions/categories
 - Suggestion decision workflows
 - Bulk taxonomy updates across tools
+
+## Implemented (2025-12-23)
+
+- Backend: `GET/PATCH /api/v1/editor/tools/{tool_id}/taxonomy` in `src/skriptoteket/web/api/v1/editor.py` (admin + CSRF).
+- Application/infra: handlers `ListToolTaxonomyHandler`, `UpdateToolTaxonomyHandler`; repo `list_tag_ids`/`replace_tags` in `src/skriptoteket/infrastructure/repositories/tool_repository.py`.
+- SPA: taxonomy checkboxes in `frontend/apps/skriptoteket/src/components/editor/MetadataDrawer.vue` wired via `frontend/apps/skriptoteket/src/composables/editor/useToolTaxonomy.ts`.

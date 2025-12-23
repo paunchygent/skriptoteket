@@ -64,7 +64,9 @@ def main() -> None:
         page.get_by_label("E-post").fill(email)
         page.get_by_label("Lösenord").fill(password)
         page.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
-        expect(page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))).to_be_visible()
+        expect(
+            page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))
+        ).to_be_visible()
 
         # Fetch pending review count from the API (same data source as the dashboard card).
         response = context.request.get(f"{base_url}/api/v1/admin/tools")
@@ -75,12 +77,18 @@ def main() -> None:
 
         # Admin tools: count "Granskas" badges across both sections
         page.goto(f"{base_url}/admin/tools", wait_until="domcontentloaded")
-        expect(page.get_by_role("heading", name=re.compile(r"Verktyg", re.IGNORECASE))).to_be_visible()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Verktyg", re.IGNORECASE))
+        ).to_be_visible()
 
-        badges_count = page.locator("main span").filter(
-            has_text=re.compile(r"granskas", re.IGNORECASE)
-        ).count()
-        review_ctas = page.locator("main").get_by_role("link", name=re.compile(r"Granska", re.IGNORECASE))
+        badges_count = (
+            page.locator("main span")
+            .filter(has_text=re.compile(r"granskas", re.IGNORECASE))
+            .count()
+        )
+        review_ctas = page.locator("main").get_by_role(
+            "link", name=re.compile(r"Granska", re.IGNORECASE)
+        )
         action_ctas = page.locator("main").get_by_role(
             "link",
             name=re.compile(r"^(Redigera|Granska)$", re.IGNORECASE),

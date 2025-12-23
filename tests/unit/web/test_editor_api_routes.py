@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import json
-from unittest.mock import AsyncMock, MagicMock
-from urllib.parse import unquote
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -49,11 +47,6 @@ def _unwrap_dishka(fn):
     return getattr(fn, "__dishka_orig_func__", fn)
 
 
-def _decode_toast_payload(value: str) -> dict[str, str]:
-    result: dict[str, str] = json.loads(unquote(value))
-    return result
-
-
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_create_draft_version_success_returns_save_result() -> None:
@@ -68,9 +61,6 @@ async def test_create_draft_version_success_returns_save_result() -> None:
     )
     handler.handle.return_value = CreateDraftVersionResult(version=created)
 
-    mock_response = MagicMock()
-    mock_response.set_cookie = MagicMock()
-
     result = await _unwrap_dishka(editor.create_draft_version)(
         tool_id=tool.id,
         payload=editor.CreateDraftVersionRequest(
@@ -79,7 +69,6 @@ async def test_create_draft_version_success_returns_save_result() -> None:
             change_summary="summary",
             derived_from_version_id=None,
         ),
-        response=mock_response,
         handler=handler,
         user=user,
     )
@@ -87,14 +76,6 @@ async def test_create_draft_version_success_returns_save_result() -> None:
     assert isinstance(result, editor.SaveResult)
     assert result.version_id == created.id
     assert result.redirect_url == f"/admin/tool-versions/{created.id}"
-
-    # Verify toast cookie was set
-    mock_response.set_cookie.assert_called_once()
-    call_kwargs = mock_response.set_cookie.call_args.kwargs
-    assert call_kwargs["key"] == "skriptoteket_toast"
-    payload = _decode_toast_payload(call_kwargs["value"])
-    assert payload["m"] == "Utkast skapat."
-    assert payload["t"] == "success"
 
     handler.handle.assert_awaited_once()
     command = handler.handle.call_args.kwargs["command"]
@@ -125,9 +106,6 @@ async def test_save_draft_version_success_returns_save_result() -> None:
     )
     handler.handle.return_value = SaveDraftVersionResult(version=saved)
 
-    mock_response = MagicMock()
-    mock_response.set_cookie = MagicMock()
-
     result = await _unwrap_dishka(editor.save_draft_version)(
         version_id=previous.id,
         payload=editor.SaveDraftVersionRequest(
@@ -136,7 +114,6 @@ async def test_save_draft_version_success_returns_save_result() -> None:
             change_summary=None,
             expected_parent_version_id=previous.id,
         ),
-        response=mock_response,
         handler=handler,
         user=user,
     )
@@ -144,14 +121,6 @@ async def test_save_draft_version_success_returns_save_result() -> None:
     assert isinstance(result, editor.SaveResult)
     assert result.version_id == saved.id
     assert result.redirect_url == f"/admin/tool-versions/{saved.id}"
-
-    # Verify toast cookie was set
-    mock_response.set_cookie.assert_called_once()
-    call_kwargs = mock_response.set_cookie.call_args.kwargs
-    assert call_kwargs["key"] == "skriptoteket_toast"
-    payload = _decode_toast_payload(call_kwargs["value"])
-    assert payload["m"] == "Sparat."
-    assert payload["t"] == "success"
 
     handler.handle.assert_awaited_once()
     command = handler.handle.call_args.kwargs["command"]
@@ -175,13 +144,9 @@ async def test_submit_review_returns_workflow_action_response() -> None:
     )
     handler.handle.return_value = SubmitForReviewResult(version=version)
 
-    mock_response = MagicMock()
-    mock_response.set_cookie = MagicMock()
-
     result = await _unwrap_dishka(editor.submit_review)(
         version_id=version.id,
         payload=editor.SubmitReviewRequest(review_note="Review note"),
-        response=mock_response,
         handler=handler,
         user=user,
     )
@@ -189,13 +154,6 @@ async def test_submit_review_returns_workflow_action_response() -> None:
     assert isinstance(result, editor.WorkflowActionResponse)
     assert result.version_id == version.id
     assert result.redirect_url == f"/admin/tool-versions/{version.id}"
-
-    mock_response.set_cookie.assert_called_once()
-    call_kwargs = mock_response.set_cookie.call_args.kwargs
-    assert call_kwargs["key"] == "skriptoteket_toast"
-    payload = _decode_toast_payload(call_kwargs["value"])
-    assert payload["m"] == "Skickat för granskning."
-    assert payload["t"] == "success"
 
     handler.handle.assert_awaited_once()
     command = handler.handle.call_args.kwargs["command"]
@@ -227,13 +185,9 @@ async def test_publish_version_returns_workflow_action_response() -> None:
         archived_previous_active_version=None,
     )
 
-    mock_response = MagicMock()
-    mock_response.set_cookie = MagicMock()
-
     result = await _unwrap_dishka(editor.publish_version)(
         version_id=reviewed.id,
         payload=editor.PublishVersionRequest(change_summary="Summary"),
-        response=mock_response,
         handler=handler,
         user=user,
     )
@@ -241,13 +195,6 @@ async def test_publish_version_returns_workflow_action_response() -> None:
     assert isinstance(result, editor.WorkflowActionResponse)
     assert result.version_id == new_active.id
     assert result.redirect_url == f"/admin/tool-versions/{new_active.id}"
-
-    mock_response.set_cookie.assert_called_once()
-    call_kwargs = mock_response.set_cookie.call_args.kwargs
-    assert call_kwargs["key"] == "skriptoteket_toast"
-    payload = _decode_toast_payload(call_kwargs["value"])
-    assert payload["m"] == "Version publicerad."
-    assert payload["t"] == "success"
 
     handler.handle.assert_awaited_once()
     command = handler.handle.call_args.kwargs["command"]
@@ -278,13 +225,9 @@ async def test_request_changes_returns_workflow_action_response() -> None:
         archived_in_review_version=reviewed,
     )
 
-    mock_response = MagicMock()
-    mock_response.set_cookie = MagicMock()
-
     result = await _unwrap_dishka(editor.request_changes)(
         version_id=reviewed.id,
         payload=editor.RequestChangesRequest(message="Please adjust"),
-        response=mock_response,
         handler=handler,
         user=user,
     )
@@ -292,13 +235,6 @@ async def test_request_changes_returns_workflow_action_response() -> None:
     assert isinstance(result, editor.WorkflowActionResponse)
     assert result.version_id == new_draft.id
     assert result.redirect_url == f"/admin/tool-versions/{new_draft.id}"
-
-    mock_response.set_cookie.assert_called_once()
-    call_kwargs = mock_response.set_cookie.call_args.kwargs
-    assert call_kwargs["key"] == "skriptoteket_toast"
-    payload = _decode_toast_payload(call_kwargs["value"])
-    assert payload["m"] == "Ändringar begärda."
-    assert payload["t"] == "success"
 
     handler.handle.assert_awaited_once()
     command = handler.handle.call_args.kwargs["command"]
@@ -329,12 +265,8 @@ async def test_rollback_version_returns_workflow_action_response() -> None:
         archived_previous_active_version=None,
     )
 
-    mock_response = MagicMock()
-    mock_response.set_cookie = MagicMock()
-
     result = await _unwrap_dishka(editor.rollback_version)(
         version_id=archived.id,
-        response=mock_response,
         handler=handler,
         user=user,
     )
@@ -342,13 +274,6 @@ async def test_rollback_version_returns_workflow_action_response() -> None:
     assert isinstance(result, editor.WorkflowActionResponse)
     assert result.version_id == new_active.id
     assert result.redirect_url == f"/admin/tool-versions/{new_active.id}"
-
-    mock_response.set_cookie.assert_called_once()
-    call_kwargs = mock_response.set_cookie.call_args.kwargs
-    assert call_kwargs["key"] == "skriptoteket_toast"
-    payload = _decode_toast_payload(call_kwargs["value"])
-    assert payload["m"] == f"Återställd till v{new_active.version_number}."
-    assert payload["t"] == "success"
 
     handler.handle.assert_awaited_once()
     command = handler.handle.call_args.kwargs["command"]
