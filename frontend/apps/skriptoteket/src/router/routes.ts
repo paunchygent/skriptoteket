@@ -43,13 +43,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: "/tools/:slug/run",
     name: "tool-run",
-    component: () => import("../views/ToolRunFormView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/tools/:slug/runs/:runId",
-    name: "tool-result",
-    component: () => import("../views/ToolRunResultView.vue"),
+    component: () => import("../views/ToolRunView.vue"),
     meta: { requiresAuth: true },
   },
   {
