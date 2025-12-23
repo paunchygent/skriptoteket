@@ -20,6 +20,29 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Current Session (2025-12-23)
 
+### HuleEdu Design Alignment (layout + dashboard)
+
+**Completed**:
+- Grid background pattern added to SPA (`frontend/apps/skriptoteket/src/assets/main.css`)
+- SSR frame made transparent for grid visibility (`src/skriptoteket/web/static/css/app/layout.css`)
+- Conditional layout in `App.vue`: Landing (logo only) vs Authenticated (sidebar + top bar)
+- Role-guarded dashboard in `HomeView.vue` with live API data (runs, tools, admin stats)
+- CSS refactored to use HuleEdu design tokens consistently (`--huleedu-*` variables)
+- **Layout structure aligned with HuleEdu**:
+  - Desktop: Sidebar (brand+nav) + Top user bar (user info+logout)
+  - Mobile: Hamburger only (right-aligned) → Sidebar drawer (brand+nav+user info+logout)
+  - No duplicated brand in mobile header (brand only in sidebar)
+
+### ST-11-16 (editor workflow actions)
+
+- API workflow endpoints added in `src/skriptoteket/web/api/v1/editor.py` (submit review, publish, request changes, rollback) + new DTOs.
+- SPA header action strip + modal workflow actions in `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
+- Composable logic in `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkflowActions.ts`.
+- Tests added in `tests/unit/web/test_editor_api_routes.py` (workflow responses + toast cookies).
+- Playwright E2E script: `scripts/playwright_st_11_16_editor_workflow_actions_e2e.py`.
+- Playwright config reads `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE` from dotenv in `scripts/_playwright_config.py`.
+- Pending UI refactor: minimize right sidebar; move history + taxonomy into drawers/modals to reduce clutter.
+
 ### ST-11-06 (catalog browse views)
 
 - SPA browse views + API in `src/skriptoteket/web/api/v1/catalog.py` (`/browse`, `/browse/:profession`, `/browse/:category`)
@@ -85,6 +108,7 @@ Keep this file updated so the next session can pick up work quickly.
 ### Verification
 
 - Tests: `pdm run pytest tests/unit/application/catalog/handlers/test_list_tool_taxonomy.py tests/unit/application/catalog/handlers/test_update_tool_taxonomy.py tests/unit/web/test_editor_api_routes.py tests/integration/infrastructure/repositories/test_catalog_repository.py`
+- Tests: `pdm run pytest tests/unit/web/test_editor_api_routes.py`
 - UI check: Vite dev server already running on 5173; verified SPA responded (`curl http://127.0.0.1:5173/admin/tools/00000000-0000-0000-0000-000000000000` returned HTML + Vite client). Backend/Vite start attempts failed due to ports in use.
 - Frontend: `pnpm -C frontend --filter @skriptoteket/spa typecheck`, `pnpm -C frontend --filter @skriptoteket/spa lint`
 - UI check: logged in via `/api/v1/auth/login`, loaded `/api/v1/admin/tools` to pick a tool,
@@ -92,6 +116,7 @@ Keep this file updated so the next session can pick up work quickly.
   `/admin/tools/{tool_id}` returned 200 from Vite.
 - Live check (2025-12-22): `pdm run python -m scripts.playwright_st_11_15_spa_my_tools_e2e --base-url http://127.0.0.1:5173`
 - Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_21_login_modal_e2e --base-url http://127.0.0.1:5173`
+- Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_16_editor_workflow_actions_e2e --base-url http://127.0.0.1:5173`
 
 ## Key Architecture
 

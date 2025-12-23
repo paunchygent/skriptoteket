@@ -83,6 +83,11 @@ def get_config() -> PlaywrightConfig:
     )
     pre_args, _ = pre_parser.parse_known_args()
     dotenv = _read_dotenv(Path(pre_args.dotenv))
+    host_platform_override = _get_config_value(
+        key="PLAYWRIGHT_HOST_PLATFORM_OVERRIDE", dotenv=dotenv
+    )
+    if host_platform_override:
+        os.environ.setdefault("PLAYWRIGHT_HOST_PLATFORM_OVERRIDE", host_platform_override)
 
     default_email, default_password = _get_credentials(dotenv=dotenv)
 

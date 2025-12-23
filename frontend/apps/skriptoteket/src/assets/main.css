@@ -7,6 +7,23 @@ body {
   color: var(--color-navy);
 }
 
+/* Grid background pattern - 24px baseline grid matching HuleEdu */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(var(--huleedu-navy) 1px, transparent 1px),
+    linear-gradient(90deg, var(--huleedu-navy) 1px, transparent 1px);
+  background-size: var(--huleedu-grid-size) var(--huleedu-grid-size);
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: -1;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    BUTTON UTILITIES - HuleEdu Pattern
    ═══════════════════════════════════════════════════════════════════════════ */

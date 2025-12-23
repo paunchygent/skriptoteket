@@ -11,6 +11,7 @@ acceptance_criteria:
   - "Given an admin on an in_review version, when they publish, then the new active version becomes current and the editor reloads it."
   - "Given an admin on an in_review version, when they request changes (optional message), then a new draft is created and the editor reloads it."
   - "Given a superuser viewing an archived version in history, when they rollback, then that version becomes active and the editor reloads it."
+  - "Editor UI: the right panel is minimal by default, with history and taxonomy moved into drawers/modals so the code editor and results have more space."
 ui_impact: "Adds workflow action buttons to the script editor for version lifecycle management."
 dependencies: ["ST-11-04", "ST-11-05", "ST-11-12"]
 ---
@@ -51,7 +52,8 @@ type WorkflowActionResponse = {
 
 ### Frontend
 
-- Update `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue` to add a “Process” panel.
+- Update `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue` to add a header action strip + modal for workflow actions.
+- Refactor the right panel so only core edit controls are persistent; move history and taxonomy into drawers/modals.
 - Show actions based on state + role (matching SSR behavior and domain rules):
   - Draft + contributor maintainer: “Skicka för granskning” (optional note input).
   - In review + admin/superuser: “Publicera” and “Begär ändringar” (optional message input).

@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .huleedu-frame {
-  background-color: var(--huleedu-canvas);
+  /* No background - allows grid pattern on body::before to show through */
   display: flex;
   flex-direction: column;
   min-height: 100vh;
