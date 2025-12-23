@@ -18,6 +18,8 @@ RUN pnpm install --frozen-lockfile
 
 # Copy source and build
 COPY frontend/apps/skriptoteket/ ./apps/skriptoteket/
+# Copy design tokens from backend (needed for CSS import resolution)
+COPY src/skriptoteket/web/static/css/huleedu-design-tokens.css /app/src/skriptoteket/web/static/css/huleedu-design-tokens.css
 RUN pnpm --filter @skriptoteket/spa build
 
 
