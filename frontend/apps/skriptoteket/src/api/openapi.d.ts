@@ -413,6 +413,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/my-tools": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List My Tools */
+        get: operations["list_my_tools_api_v1_my_tools_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/runs/{run_id}": {
         parameters: {
             query?: never;
@@ -936,6 +953,11 @@ export interface components {
             /** Runs */
             runs: components["schemas"]["MyRunItem"][];
         };
+        /** ListMyToolsResponse */
+        ListMyToolsResponse: {
+            /** Tools */
+            tools: components["schemas"]["MyToolItem"][];
+        };
         /**
          * ListProfessionsResponse
          * @description Response for listing all professions.
@@ -1002,6 +1024,20 @@ export interface components {
             tool_slug: string | null;
             /** Tool Title */
             tool_title: string;
+        };
+        /** MyToolItem */
+        MyToolItem: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Published */
+            is_published: boolean;
+            /** Summary */
+            summary: string | null;
+            /** Title */
+            title: string;
         };
         /**
          * ProfessionItem
@@ -2352,6 +2388,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ListMyRunsResponse"];
+                };
+            };
+        };
+    };
+    list_my_tools_api_v1_my_tools_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListMyToolsResponse"];
                 };
             };
         };

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 
+import { useLoginModal } from "../composables/useLoginModal";
 import { useAuthStore } from "../stores/auth";
 import { routes } from "./routes";
 
@@ -45,10 +46,9 @@ router.beforeEach(async (to) => {
   }
 
   if ((requiresAuth || minRole) && !auth.isAuthenticated) {
-    return {
-      name: "login",
-      query: { next: to.fullPath },
-    };
+    const loginModal = useLoginModal();
+    loginModal.open(to.fullPath);
+    return false;
   }
 
   if (minRole && !auth.hasAtLeastRole(minRole)) {

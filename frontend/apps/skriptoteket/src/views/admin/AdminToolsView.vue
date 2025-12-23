@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from "vue";
 import { RouterLink } from "vue-router";
 import { apiGet, apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
+import ToolListRow from "../../components/tools/ToolListRow.vue";
 import ToggleSwitch from "../../components/ui/ToggleSwitch.vue";
 
 type ListAdminToolsResponse = components["schemas"]["ListAdminToolsResponse"];
@@ -203,12 +204,12 @@ onMounted(() => {
           <p class="text-sm text-navy/60">Verktyg under utveckling</p>
         </div>
         <ul class="border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15">
-          <li
+          <ToolListRow
             v-for="tool in inProgressTools"
             :key="tool.id"
-            class="p-4 grid gap-2 sm:grid-cols-[1fr_5rem_auto] sm:gap-4 items-center"
+            grid-class="sm:grid-cols-[1fr_5rem_auto]"
           >
-            <div class="space-y-1 min-w-0">
+            <template #main>
               <div class="text-base font-semibold text-navy truncate">{{ tool.title }}</div>
               <div class="text-xs text-navy/60">
                 <span class="font-mono">{{ tool.slug }}</span>
@@ -216,9 +217,9 @@ onMounted(() => {
               <div class="text-xs text-navy/70">
                 {{ truncate(tool.summary, 80) }}
               </div>
-            </div>
+            </template>
 
-            <div class="justify-self-start sm:justify-self-center">
+            <template #status>
               <span
                 v-if="getDevStatus(tool)"
                 class="inline-block px-2 py-1 text-xs font-medium"
@@ -226,17 +227,17 @@ onMounted(() => {
               >
                 {{ getDevStatus(tool) }}
               </span>
-            </div>
+            </template>
 
-            <div class="justify-self-start sm:justify-self-end">
+            <template #actions>
               <RouterLink
                 :to="`/admin/tools/${tool.id}`"
                 class="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white text-navy border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
               >
                 Redigera
               </RouterLink>
-            </div>
-          </li>
+            </template>
+          </ToolListRow>
         </ul>
       </section>
 
@@ -250,12 +251,13 @@ onMounted(() => {
           <p class="text-sm text-navy/60">Verktyg med godkänt skript</p>
         </div>
         <ul class="border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15">
-          <li
+          <ToolListRow
             v-for="tool in readyTools"
             :key="tool.id"
-            class="p-4 grid gap-2 sm:grid-cols-[1fr_9rem_auto] sm:gap-4 items-center"
+            grid-class="sm:grid-cols-[1fr_9rem_auto]"
+            status-class="justify-self-start"
           >
-            <div class="space-y-1 min-w-0">
+            <template #main>
               <div class="text-base font-semibold text-navy truncate">{{ tool.title }}</div>
               <div class="text-xs text-navy/60">
                 <span class="font-mono">{{ tool.slug }}</span> · Uppdaterad
@@ -264,9 +266,9 @@ onMounted(() => {
               <div class="text-xs text-navy/70">
                 {{ truncate(tool.summary, 80) }}
               </div>
-            </div>
+            </template>
 
-            <div class="justify-self-start">
+            <template #status>
               <div class="flex items-center gap-2">
                 <ToggleSwitch
                   :model-value="tool.is_published"
@@ -280,20 +282,19 @@ onMounted(() => {
                   {{ tool.is_published ? "Publicerad" : "Ej publicerad" }}
                 </span>
               </div>
-            </div>
+            </template>
 
-            <div class="justify-self-start sm:justify-self-end">
+            <template #actions>
               <RouterLink
                 :to="`/admin/tools/${tool.id}`"
                 class="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white text-navy border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
               >
                 Redigera
               </RouterLink>
-            </div>
-          </li>
+            </template>
+          </ToolListRow>
         </ul>
       </section>
     </template>
   </div>
 </template>
-

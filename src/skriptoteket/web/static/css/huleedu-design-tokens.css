@@ -19,7 +19,7 @@
   /* ─────────────────────────────────────────────────────────────────────────
      COLORS - Core Brand Palette
      ───────────────────────────────────────────────────────────────────────── */
-  --huleedu-canvas: #F9F8F2;        /* Warm off-white background */
+  --huleedu-canvas: #FAFAF6;        /* Warm off-white background */
   --huleedu-navy: #1C2E4A;          /* Primary dark blue */
   --huleedu-burgundy: #6B1C2E;      /* Accent/CTA color */
 
@@ -41,10 +41,10 @@
   --huleedu-burgundy-30: rgba(107, 28, 46, 0.3);
   --huleedu-burgundy-40: rgba(107, 28, 46, 0.4);
 
-  --huleedu-canvas-15: rgba(249, 248, 242, 0.15);
-  --huleedu-canvas-30: rgba(249, 248, 242, 0.3);
-  --huleedu-canvas-50: rgba(249, 248, 242, 0.5);
-  --huleedu-canvas-80: rgba(249, 248, 242, 0.8);
+  --huleedu-canvas-15: rgba(250, 250, 246, 0.15);
+  --huleedu-canvas-30: rgba(250, 250, 246, 0.3);
+  --huleedu-canvas-50: rgba(250, 250, 246, 0.5);
+  --huleedu-canvas-80: rgba(250, 250, 246, 0.8);
 
   /* Semantic colors */
   --huleedu-success: #059669;       /* emerald-600 */
