@@ -47,14 +47,22 @@ def _launch_chromium(playwright: object) -> object:
         return playwright.chromium.launch(headless=True, executable_path=executable_path)
 
 
-def _login(page: object, *, base_url: str, email: str, password: str) -> None:
+def _login(
+    page: object, *, base_url: str, email: str, password: str, artifacts_dir: Path | None = None
+) -> None:
     page.goto(f"{base_url}/login", wait_until="domcontentloaded")
     page.get_by_label("E-post").fill(email)
     page.get_by_label("Lösenord").fill(password)
-    page.get_by_role("main").get_by_role(
-        "button", name=re.compile(r"Logga in", re.IGNORECASE)
-    ).click()
-    expect(page.get_by_role("heading", name=re.compile(r"Välkommen", re.IGNORECASE))).to_be_visible()
+    page.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
+    # Wait for auth redirect and authenticated layout to render
+    try:
+        expect(
+            page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))
+        ).to_be_visible(timeout=10_000)
+    except AssertionError:
+        if artifacts_dir:
+            page.screenshot(path=str(artifacts_dir / "login-failure.png"), full_page=True)
+        raise
 
 
 def _open_editor(page: object, *, base_url: str, artifacts_dir: Path | None = None) -> None:
@@ -105,7 +113,7 @@ def main() -> None:
         context = browser.new_context(viewport={"width": 1280, "height": 800})
         page = context.new_page()
 
-        _login(page, base_url=base_url, email=email, password=password)
+        _login(page, base_url=base_url, email=email, password=password, artifacts_dir=artifacts_dir)
         _open_editor(page, base_url=base_url, artifacts_dir=artifacts_dir)
 
         editor = page.locator(".cm-editor").first
