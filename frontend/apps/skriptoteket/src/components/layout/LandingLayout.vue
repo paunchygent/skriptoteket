@@ -31,9 +31,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: var(--huleedu-max-width-6xl);
-  margin: 0 auto;
-  padding: var(--huleedu-space-4) var(--huleedu-space-6);
+  padding: var(--huleedu-space-4) var(--huleedu-space-4);
   gap: var(--huleedu-space-4);
 }
 

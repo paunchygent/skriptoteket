@@ -446,6 +446,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/editor/tools/{tool_id}/metadata": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Tool Metadata */
+        patch: operations["update_tool_metadata_api_v1_editor_tools__tool_id__metadata_patch"];
+        trace?: never;
+    };
     "/api/v1/editor/tools/{tool_id}/taxonomy": {
         parameters: {
             query?: never;
@@ -917,6 +934,27 @@ export interface components {
             } | null;
             /** Version Id */
             version_id: string | null;
+        };
+        /** EditorToolMetadataRequest */
+        EditorToolMetadataRequest: {
+            /** Summary */
+            summary?: string | null;
+            /** Title */
+            title: string;
+        };
+        /** EditorToolMetadataResponse */
+        EditorToolMetadataResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Slug */
+            slug: string;
+            /** Summary */
+            summary: string | null;
+            /** Title */
+            title: string;
         };
         /** EditorToolSummary */
         EditorToolSummary: {
@@ -2528,6 +2566,43 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaveResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_tool_metadata_api_v1_editor_tools__tool_id__metadata_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                tool_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditorToolMetadataRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorToolMetadataResponse"];
                 };
             };
             /** @description Validation Error */

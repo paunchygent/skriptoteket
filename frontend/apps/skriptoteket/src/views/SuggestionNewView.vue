@@ -221,7 +221,7 @@ onMounted(() => {
         <div class="flex items-center gap-3">
           <button
             type="submit"
-            class="px-4 py-2 border border-navy bg-burgundy text-canvas shadow-brutal font-semibold uppercase tracking-wide disabled:opacity-50"
+            class="px-4 py-2 border border-navy bg-burgundy text-canvas shadow-brutal font-semibold uppercase tracking-wide btn-secondary-hover transition-colors disabled:opacity-50"
             :disabled="isSubmitting"
           >
             {{ isSubmitting ? "Skickar..." : "Skicka förslag" }}
@@ -229,7 +229,7 @@ onMounted(() => {
 
           <button
             type="button"
-            class="px-4 py-2 border border-navy bg-white text-navy shadow-brutal-sm font-semibold disabled:opacity-50"
+            class="px-4 py-2 border border-navy bg-white text-navy shadow-brutal-sm font-semibold hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="isSubmitting"
             @click="resetForm"
           >

@@ -179,23 +179,13 @@ onUnmounted(() => {
         {{ run?.tool_title ?? (isLoading ? "Laddar..." : "Körning") }}
       </h1>
 
-      <div
+      <RouterLink
         v-if="run?.tool_slug"
-        class="flex flex-wrap items-center gap-3 text-sm"
+        :to="{ name: 'tool-run', params: { slug: run.tool_slug } }"
+        class="inline-block text-sm underline text-burgundy hover:text-navy"
       >
-        <RouterLink
-          :to="{ name: 'tool-run', params: { slug: run.tool_slug } }"
-          class="underline text-burgundy hover:text-navy"
-        >
-          Kör igen →
-        </RouterLink>
-        <RouterLink
-          :to="{ name: 'tool-result', params: { slug: run.tool_slug, runId: run.run_id } }"
-          class="underline text-navy/70 hover:text-burgundy"
-        >
-          Visa i verktyget →
-        </RouterLink>
-      </div>
+        Kör igen
+      </RouterLink>
     </div>
 
     <div

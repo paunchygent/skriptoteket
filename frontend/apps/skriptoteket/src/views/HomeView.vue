@@ -116,7 +116,7 @@ onMounted(async () => {
         <p class="mt-10">
           <button
             type="button"
-            class="px-8 py-4 bg-navy text-canvas border border-navy shadow-brutal font-semibold uppercase tracking-wide hover:bg-burgundy transition-colors"
+            class="px-8 py-4 bg-navy text-canvas border border-navy shadow-brutal font-semibold uppercase tracking-wide btn-secondary-hover transition-colors"
             @click="loginModal.open()"
           >
             Logga in

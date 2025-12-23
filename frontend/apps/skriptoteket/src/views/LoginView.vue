@@ -94,7 +94,7 @@ async function onSubmit(): Promise<void> {
 
       <button
         type="submit"
-        class="w-full px-4 py-2 border border-navy bg-burgundy text-canvas shadow-brutal font-semibold uppercase tracking-wide disabled:opacity-50"
+        class="w-full px-4 py-2 border border-navy bg-burgundy text-canvas shadow-brutal font-semibold uppercase tracking-wide btn-secondary-hover transition-colors disabled:opacity-50"
         :disabled="isSubmitting"
       >
         {{ isSubmitting ? "Loggar in…" : "Logga in" }}

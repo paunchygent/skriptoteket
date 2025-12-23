@@ -165,7 +165,7 @@ watch(fields, () => {
 
     <button
       type="submit"
-      class="px-4 py-2 border border-navy bg-burgundy text-canvas shadow-brutal font-semibold uppercase tracking-wide disabled:opacity-50"
+      class="px-4 py-2 border border-navy bg-burgundy text-canvas shadow-brutal font-semibold uppercase tracking-wide btn-secondary-hover transition-colors disabled:opacity-50"
       :disabled="disabled"
     >
       {{ action.label }}

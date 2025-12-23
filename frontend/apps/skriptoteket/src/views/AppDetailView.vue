@@ -4,13 +4,18 @@ import { useRoute } from "vue-router";
 
 import { apiGet, apiPost, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
-import { RunResultPanel } from "../components/run-results";
+import ToolRunActions from "../components/tool-run/ToolRunActions.vue";
+import ToolRunArtifacts from "../components/tool-run/ToolRunArtifacts.vue";
+import ToolRunOutputs from "../components/tool-run/ToolRunOutputs.vue";
 
 type AppDetailResponse = components["schemas"]["AppDetailResponse"];
 type GetSessionStateResult = components["schemas"]["GetSessionStateResult"];
 type GetRunResult = components["schemas"]["GetRunResult"];
 type StartActionResult = components["schemas"]["StartActionResult"];
 type InteractiveSessionState = components["schemas"]["InteractiveSessionState"];
+type RunStatus = components["schemas"]["RunStatus"];
+type UiOutput = NonNullable<components["schemas"]["UiPayloadV2"]["outputs"]>[number];
+type UiFormAction = components["schemas"]["UiFormAction"];
 
 const route = useRoute();
 
@@ -32,6 +37,20 @@ const actionErrorMessage = ref<string | null>(null);
 
 const hasRun = computed(() => run.value !== null);
 const canSubmitActions = computed(() => stateRev.value !== null);
+
+const outputs = computed<UiOutput[]>(() => run.value?.ui_payload?.outputs ?? []);
+const nextActions = computed<UiFormAction[]>(() => run.value?.ui_payload?.next_actions ?? []);
+const artifacts = computed(() => run.value?.artifacts ?? []);
+
+function statusLabel(status: RunStatus): string {
+  const labels: Record<RunStatus, string> = {
+    running: "Pågår",
+    succeeded: "Lyckades",
+    failed: "Misslyckades",
+    timed_out: "Tidsgräns",
+  };
+  return labels[status];
+}
 
 let pollIntervalId: number | null = null;
 
@@ -251,11 +270,15 @@ onUnmounted(() => {
         </p>
         <button
           type="button"
-          class="px-4 py-2 text-sm font-semibold uppercase tracking-wide text-canvas bg-burgundy rounded-sm btn-primary-hover transition-shadow disabled:opacity-60 disabled:cursor-not-allowed"
+          class="min-w-[100px] px-4 py-2 text-xs font-bold uppercase tracking-widest text-canvas bg-burgundy border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
           :disabled="isSubmittingAction || !canSubmitActions"
           @click="startApp"
         >
-          {{ isSubmittingAction ? "Startar..." : "Starta" }}
+          <span
+            v-if="isSubmittingAction"
+            class="inline-block w-3 h-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
+          />
+          <span v-else>Starta</span>
         </button>
         <p
           v-if="actionErrorMessage"
@@ -265,21 +288,57 @@ onUnmounted(() => {
         </p>
       </div>
 
-      <RunResultPanel
+      <!-- Unified result card -->
+      <div
         v-else-if="run"
-        :run="run"
-        :id-base="`curated-app-${appId}`"
-        :is-submitting-action="isSubmittingAction"
-        :can-submit-actions="canSubmitActions"
-        :action-error-message="actionErrorMessage"
-        @submit-action="submitAction"
-      />
+        class="border border-navy bg-white shadow-brutal-sm"
+      >
+        <div class="p-4 space-y-4">
+          <!-- Status row -->
+          <div class="flex items-center gap-2 text-sm">
+            <span class="px-2 py-1 border border-navy font-semibold uppercase tracking-wide text-xs">
+              {{ statusLabel(run.status) }}
+            </span>
+            <span class="font-mono text-xs text-navy/50">
+              {{ run.run_id.slice(0, 8) }}
+            </span>
+          </div>
+
+          <!-- Error summary -->
+          <div
+            v-if="run.error_summary"
+            class="text-sm text-error"
+          >
+            <p class="font-semibold">Ett fel uppstod</p>
+            <pre class="mt-1 whitespace-pre-wrap font-mono text-xs">{{ run.error_summary }}</pre>
+          </div>
+
+          <!-- Running state -->
+          <div
+            v-if="run.status === 'running'"
+            class="flex items-center gap-2 text-navy/70 text-sm"
+          >
+            <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+            <span>Kör...</span>
+          </div>
+
+          <!-- Outputs -->
+          <ToolRunOutputs :outputs="outputs" />
+
+          <!-- Actions -->
+          <ToolRunActions
+            v-if="nextActions.length > 0"
+            :actions="nextActions"
+            :id-base="`curated-app-${appId}`"
+            :disabled="isSubmittingAction || !canSubmitActions"
+            :error-message="actionErrorMessage"
+            @submit="submitAction"
+          />
+
+          <!-- Artifacts -->
+          <ToolRunArtifacts :artifacts="artifacts" />
+        </div>
+      </div>
     </template>
   </div>
 </template>
-
-<style scoped>
-.shadow-brutal-sm {
-  box-shadow: 4px 4px 0 0 var(--huleedu-navy, #1C2E4A);
-}
-</style>

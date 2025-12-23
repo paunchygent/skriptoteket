@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, nextTick, onMounted, ref } from "vue";
 import { RouterLink } from "vue-router";
 import { apiGet, apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
@@ -17,6 +17,20 @@ const errorMessage = ref<string | null>(null);
 const successMessage = ref<string | null>(null);
 const actionInProgress = ref<string | null>(null);
 
+const actionColumnWidth = ref("8.5rem");
+const measureEditActionRef = ref<HTMLDivElement | null>(null);
+const measureReviewActionRef = ref<HTMLDivElement | null>(null);
+
+function updateActionColumnWidth(): void {
+  const editWidth = measureEditActionRef.value?.getBoundingClientRect().width ?? 0;
+  const reviewWidth = measureReviewActionRef.value?.getBoundingClientRect().width ?? 0;
+  const next = Math.ceil(Math.max(editWidth, reviewWidth));
+
+  if (next > 0) {
+    actionColumnWidth.value = `${next}px`;
+  }
+}
+
 // Split tools into two sections (ADR-0033)
 const inProgressTools = computed(() =>
   tools.value.filter((t) => t.active_version_id === null),
@@ -25,6 +39,28 @@ const inProgressTools = computed(() =>
 const readyTools = computed(() =>
   tools.value.filter((t) => t.active_version_id !== null),
 );
+
+const readyToolsWithPendingReview = computed(() =>
+  readyTools.value.filter((t) => t.has_pending_review),
+);
+
+const readyToolsWithoutPendingReview = computed(() =>
+  readyTools.value.filter((t) => !t.has_pending_review),
+);
+
+const editActionClass =
+  "flex items-center justify-center px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white text-navy border border-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none text-center";
+
+const reviewActionClass =
+  "flex items-center justify-center px-4 py-2 text-xs font-bold uppercase tracking-widest bg-burgundy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none text-center";
+
+function actionLabel(tool: AdminToolItem): string {
+  return tool.has_pending_review ? "Granska" : "Redigera";
+}
+
+function actionClass(tool: AdminToolItem): string {
+  return tool.has_pending_review ? reviewActionClass : editActionClass;
+}
 
 // Status label for tools in development
 function getDevStatus(tool: AdminToolItem): string {
@@ -37,7 +73,7 @@ function getDevStatus(tool: AdminToolItem): string {
 // Status styling for tools in development
 function getDevStatusClass(tool: AdminToolItem): string {
   if (tool.has_pending_review)
-    return "bg-warning/20 text-warning border border-warning";
+    return "bg-burgundy/10 text-burgundy border border-burgundy/40";
   if (tool.version_count === 0) return "bg-navy/10 text-navy/60";
   return "bg-canvas text-navy/70 border border-navy/30";
 }
@@ -154,11 +190,33 @@ async function togglePublishState(tool: AdminToolItem, newValue: boolean): Promi
 
 onMounted(() => {
   void load();
+  void nextTick().then(updateActionColumnWidth);
 });
 </script>
 
 <template>
-  <div class="space-y-8">
+  <div
+    class="space-y-8"
+    :style="{ '--admin-tools-action-col': actionColumnWidth }"
+  >
+    <div
+      class="fixed -left-[9999px] top-0 opacity-0 pointer-events-none"
+      aria-hidden="true"
+    >
+      <div
+        ref="measureEditActionRef"
+        :class="editActionClass"
+      >
+        Redigera
+      </div>
+      <div
+        ref="measureReviewActionRef"
+        :class="reviewActionClass"
+      >
+        Granska
+      </div>
+    </div>
+
     <div class="space-y-2">
       <h1 class="text-2xl font-semibold text-navy">Verktyg (admin)</h1>
       <p class="text-sm text-navy/70">Hantera publicering av verktyg.</p>
@@ -207,7 +265,9 @@ onMounted(() => {
           <ToolListRow
             v-for="tool in inProgressTools"
             :key="tool.id"
-            grid-class="sm:grid-cols-[1fr_5rem_auto]"
+            grid-class="sm:grid-cols-[minmax(0,1fr)_12rem_var(--admin-tools-action-col)] lg:grid-cols-[minmax(0,40rem)_12rem_var(--admin-tools-action-col)]"
+            status-class="justify-self-start"
+            actions-class="justify-self-start sm:justify-self-stretch"
           >
             <template #main>
               <div class="text-base font-semibold text-navy truncate">{{ tool.title }}</div>
@@ -222,7 +282,7 @@ onMounted(() => {
             <template #status>
               <span
                 v-if="getDevStatus(tool)"
-                class="inline-block px-2 py-1 text-xs font-medium"
+                class="inline-block px-2 py-1 text-xs font-medium whitespace-nowrap"
                 :class="getDevStatusClass(tool)"
               >
                 {{ getDevStatus(tool) }}
@@ -232,9 +292,74 @@ onMounted(() => {
             <template #actions>
               <RouterLink
                 :to="`/admin/tools/${tool.id}`"
-                class="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white text-navy border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+                :class="[actionClass(tool), 'w-full']"
               >
-                Redigera
+                {{ actionLabel(tool) }}
+              </RouterLink>
+            </template>
+          </ToolListRow>
+        </ul>
+      </section>
+
+      <!-- Section 2: Klara med ändringar (publishable tools with in-review updates) -->
+      <section
+        v-if="readyToolsWithPendingReview.length > 0"
+        class="space-y-3"
+      >
+        <div>
+          <h2 class="text-lg font-semibold text-navy">Klara med ändringar</h2>
+          <p class="text-sm text-navy/60">Publicerade verktyg med ny version under granskning</p>
+        </div>
+        <ul class="border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15">
+          <ToolListRow
+            v-for="tool in readyToolsWithPendingReview"
+            :key="tool.id"
+            grid-class="sm:grid-cols-[minmax(0,1fr)_12rem_var(--admin-tools-action-col)] lg:grid-cols-[minmax(0,40rem)_12rem_var(--admin-tools-action-col)]"
+            status-class="justify-self-start"
+            actions-class="justify-self-start sm:justify-self-stretch"
+          >
+            <template #main>
+              <div class="flex flex-col gap-1 min-w-0 sm:flex-row sm:items-center sm:gap-2">
+                <div class="text-base font-semibold text-navy truncate min-w-0">
+                  {{ tool.title }}
+                </div>
+                <span
+                  class="inline-block px-2 py-1 text-xs font-medium bg-burgundy/10 text-burgundy border border-burgundy/40 whitespace-nowrap self-start sm:self-auto shrink-0"
+                >
+                  Ny version granskas
+                </span>
+              </div>
+              <div class="text-xs text-navy/60">
+                <span class="font-mono">{{ tool.slug }}</span> · Uppdaterad
+                {{ formatDateTime(tool.updated_at) }}
+              </div>
+              <div class="text-xs text-navy/70">
+                {{ truncate(tool.summary, 80) }}
+              </div>
+            </template>
+
+            <template #status>
+              <div class="flex items-center gap-2">
+                <ToggleSwitch
+                  :model-value="tool.is_published"
+                  :disabled="actionInProgress === tool.id"
+                  @update:model-value="togglePublishState(tool, $event)"
+                />
+                <span
+                  class="text-xs whitespace-nowrap"
+                  :class="tool.is_published ? 'text-success font-medium' : 'text-navy/50'"
+                >
+                  {{ tool.is_published ? "Publicerad" : "Ej publicerad" }}
+                </span>
+              </div>
+            </template>
+
+            <template #actions>
+              <RouterLink
+                :to="`/admin/tools/${tool.id}`"
+                :class="[actionClass(tool), 'w-full']"
+              >
+                {{ actionLabel(tool) }}
               </RouterLink>
             </template>
           </ToolListRow>
@@ -243,7 +368,7 @@ onMounted(() => {
 
       <!-- Section 2: Klara (publishable tools) -->
       <section
-        v-if="readyTools.length > 0"
+        v-if="readyToolsWithoutPendingReview.length > 0"
         class="space-y-3"
       >
         <div>
@@ -252,10 +377,11 @@ onMounted(() => {
         </div>
         <ul class="border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15">
           <ToolListRow
-            v-for="tool in readyTools"
+            v-for="tool in readyToolsWithoutPendingReview"
             :key="tool.id"
-            grid-class="sm:grid-cols-[1fr_9rem_auto]"
+            grid-class="sm:grid-cols-[minmax(0,1fr)_12rem_var(--admin-tools-action-col)] lg:grid-cols-[minmax(0,40rem)_12rem_var(--admin-tools-action-col)]"
             status-class="justify-self-start"
+            actions-class="justify-self-start sm:justify-self-stretch"
           >
             <template #main>
               <div class="text-base font-semibold text-navy truncate">{{ tool.title }}</div>
@@ -287,9 +413,9 @@ onMounted(() => {
             <template #actions>
               <RouterLink
                 :to="`/admin/tools/${tool.id}`"
-                class="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white text-navy border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+                :class="[actionClass(tool), 'w-full']"
               >
-                Redigera
+                {{ actionLabel(tool) }}
               </RouterLink>
             </template>
           </ToolListRow>
