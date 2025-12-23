@@ -27,11 +27,24 @@ Keep this file updated so the next session can pick up work quickly.
 - SSR frame made transparent for grid visibility (`src/skriptoteket/web/static/css/app/layout.css`)
 - Conditional layout in `App.vue`: Landing (logo only) vs Authenticated (sidebar + top bar)
 - Role-guarded dashboard in `HomeView.vue` with live API data (runs, tools, admin stats)
-- CSS refactored to use HuleEdu design tokens consistently (`--huleedu-*` variables)
+- CSS refactored to use HuleEdu design tokens (`--huleedu-*` variables)
 - **Layout structure aligned with HuleEdu**:
-  - Desktop: Sidebar (brand+nav) + Top user bar (user info+logout)
-  - Mobile: Hamburger only (right-aligned) → Sidebar drawer (brand+nav+user info+logout)
-  - No duplicated brand in mobile header (brand only in sidebar)
+  - **Landing**: "Skriptoteket" logo only (top-left), no nav links
+  - **Desktop auth**: Sidebar (brand+nav, 240px) + Top bar (canvas bg, navy text, user info+logout)
+  - **Mobile auth**: Hamburger only (right-aligned) → Sidebar drawer (brand+nav+user info+logout)
+  - Mobile header hidden on desktop via CSS media query (`@media min-width: 768px`)
+  - Top bar: canvas background, navy text (NOT navy background)
+
+### App.vue Refactor (694 → 119 LoC)
+
+- Extracted layout components to enforce <500 LoC rule:
+  - `components/auth/LoginModal.vue` - Login form + modal
+  - `components/layout/AuthLayout.vue` - Mobile header + sidebar + topbar + slot
+  - `components/layout/AuthSidebar.vue` - Brand + nav + mobile footer
+  - `components/layout/AuthTopBar.vue` - Desktop user info + logout
+  - `components/layout/LandingLayout.vue` - Landing header + slot
+- `App.vue` now 119 lines: layout orchestration, auth state, route guards only
+- Verified: `pnpm -C frontend --filter @skriptoteket/spa typecheck && lint` pass
 
 ### ST-11-16 (editor workflow actions)
 
@@ -150,6 +163,7 @@ pdm run python -m scripts.playwright_st_11_09_curated_app_e2e --base-url http://
 - `vega_lite` restrictions not implemented; do not render until restrictions exist (ADR-0024)
 - Frontend scripts split: `pdm run fe-*` = SPA, `pdm run fe-*-islands` = legacy islands
 - SSR action forms minimal: no required/default/placeholder yet
+- **Rule**: All Vue files must be <500 LoC. Use composables for logic, components for UI.
 
 ## Next Steps
 

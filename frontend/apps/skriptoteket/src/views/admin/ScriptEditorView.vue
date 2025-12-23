@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 
 import type { components } from "../../api/openapi";
@@ -88,6 +88,25 @@ const {
   toolId: editorToolId,
   canEdit: canEditTaxonomy,
 });
+
+const isHistoryDrawerOpen = ref(false);
+const isTaxonomyModalOpen = ref(false);
+
+function openHistoryDrawer(): void {
+  isHistoryDrawerOpen.value = true;
+}
+
+function closeHistoryDrawer(): void {
+  isHistoryDrawerOpen.value = false;
+}
+
+function openTaxonomyModal(): void {
+  isTaxonomyModalOpen.value = true;
+}
+
+function closeTaxonomyModal(): void {
+  isTaxonomyModalOpen.value = false;
+}
 
 function formatDateTime(value: string): string {
   const date = new Date(value);
@@ -200,6 +219,27 @@ onBeforeUnmount(() => {
                 Nytt utkast
               </template>
             </span>
+          </div>
+
+          <div
+            v-if="editor"
+            class="flex flex-wrap items-center gap-2"
+          >
+            <button
+              type="button"
+              class="px-2 py-1 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+              @click="openHistoryDrawer"
+            >
+              Historik
+            </button>
+            <button
+              v-if="canEditTaxonomy"
+              type="button"
+              class="px-2 py-1 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+              @click="openTaxonomyModal"
+            >
+              Taxonomi
+            </button>
           </div>
 
           <div
@@ -370,61 +410,119 @@ onBeforeUnmount(() => {
             Du har osparade ändringar.
           </p>
         </div>
+      </aside>
+    </div>
+  </div>
 
-        <div class="border border-navy bg-white shadow-brutal-sm p-4 space-y-3">
-          <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
-            Historik
-          </h2>
-
-          <p
-            v-if="editor.versions.length === 0"
-            class="text-sm text-navy/60"
+  <Teleport to="body">
+    <Transition name="drawer-backdrop">
+      <div
+        v-if="isHistoryDrawerOpen"
+        class="fixed inset-0 z-40 bg-navy/40"
+        @click.self="closeHistoryDrawer"
+      >
+        <Transition name="drawer-slide">
+          <div
+            v-if="isHistoryDrawerOpen"
+            class="absolute inset-y-0 right-0 w-full max-w-md bg-canvas border-l border-navy shadow-brutal p-6 flex flex-col"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="history-drawer-title"
           >
-            Inga versioner ännu.
-          </p>
-
-          <ul
-            v-else
-            class="space-y-2"
-          >
-            <li
-              v-for="version in editor.versions"
-              :key="version.id"
-              class="border border-navy/30 bg-canvas shadow-brutal-sm"
-            >
-              <RouterLink
-                :to="`/admin/tool-versions/${version.id}`"
-                class="flex items-center justify-between gap-3 px-3 py-2"
-              >
-                <div>
-                  <div class="text-sm font-semibold text-navy">
-                    v{{ version.version_number }}
-                  </div>
-                  <div class="text-xs text-navy/60">
-                    {{ formatDateTime(version.created_at) }}
-                  </div>
-                </div>
-                <span
-                  :class="[
-                    'px-2 py-0.5 border text-xs font-semibold uppercase tracking-wide',
-                    version.state === 'active'
-                      ? 'border-burgundy text-burgundy'
-                      : 'border-navy/40 text-navy/70',
-                  ]"
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h2
+                  id="history-drawer-title"
+                  class="text-lg font-semibold text-navy"
                 >
-                  {{ versionLabel(version.state) }}
-                </span>
-              </RouterLink>
-            </li>
-          </ul>
-        </div>
+                  Historik
+                </h2>
+                <p class="text-sm text-navy/70">
+                  Tidigare versioner av verktyget.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="text-navy/60 hover:text-navy text-2xl leading-none"
+                @click="closeHistoryDrawer"
+              >
+                &times;
+              </button>
+            </div>
 
-        <div
-          v-if="canEditTaxonomy"
-          class="border border-navy bg-white shadow-brutal-sm p-4 space-y-3"
-        >
+            <div class="mt-5 flex-1 overflow-y-auto space-y-3">
+              <p
+                v-if="!editor || editor.versions.length === 0"
+                class="text-sm text-navy/60"
+              >
+                Inga versioner ännu.
+              </p>
+
+              <ul
+                v-else
+                class="space-y-2"
+              >
+                <li
+                  v-for="version in editor.versions"
+                  :key="version.id"
+                  class="border border-navy/30 bg-white shadow-brutal-sm"
+                >
+                  <RouterLink
+                    :to="`/admin/tool-versions/${version.id}`"
+                    class="flex items-center justify-between gap-3 px-3 py-2"
+                  >
+                    <div>
+                      <div class="text-sm font-semibold text-navy">
+                        v{{ version.version_number }}
+                      </div>
+                      <div class="text-xs text-navy/60">
+                        {{ formatDateTime(version.created_at) }}
+                      </div>
+                    </div>
+                    <span
+                      :class="[
+                        'px-2 py-0.5 border text-xs font-semibold uppercase tracking-wide',
+                        version.state === 'active'
+                          ? 'border-burgundy text-burgundy'
+                          : 'border-navy/40 text-navy/70',
+                      ]"
+                    >
+                      {{ versionLabel(version.state) }}
+                    </span>
+                  </RouterLink>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </Transition>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <Teleport to="body">
+    <Transition name="fade">
+      <div
+        v-if="isTaxonomyModalOpen"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-navy/40"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="taxonomy-modal-title"
+        @click.self="closeTaxonomyModal"
+      >
+        <div class="relative w-full max-w-2xl mx-4 p-6 bg-canvas border border-navy shadow-brutal max-h-[85vh] overflow-y-auto">
+          <button
+            type="button"
+            class="absolute top-3 right-3 text-navy/60 hover:text-navy text-xl leading-none"
+            @click="closeTaxonomyModal"
+          >
+            &times;
+          </button>
+
           <div class="flex items-center justify-between">
-            <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
+            <h2
+              id="taxonomy-modal-title"
+              class="text-xl font-semibold text-navy"
+            >
               Taxonomi
             </h2>
             <span
@@ -437,20 +535,20 @@ onBeforeUnmount(() => {
 
           <p
             v-if="taxonomyError"
-            class="text-sm text-burgundy"
+            class="mt-3 text-sm text-burgundy"
           >
             {{ taxonomyError }}
           </p>
           <p
             v-else-if="taxonomySuccess"
-            class="text-sm text-navy"
+            class="mt-3 text-sm text-navy"
           >
             {{ taxonomySuccess }}
           </p>
 
           <div
             v-if="!isTaxonomyLoading"
-            class="space-y-4"
+            class="mt-5 space-y-4"
           >
             <div class="space-y-2">
               <div class="flex items-center justify-between">
@@ -508,9 +606,9 @@ onBeforeUnmount(() => {
             </button>
           </div>
         </div>
-      </aside>
-    </div>
-  </div>
+      </div>
+    </Transition>
+  </Teleport>
 
   <Teleport to="body">
     <div
@@ -591,3 +689,34 @@ onBeforeUnmount(() => {
     </div>
   </Teleport>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.drawer-backdrop-enter-active,
+.drawer-backdrop-leave-active {
+  transition: opacity var(--huleedu-duration-slow) var(--huleedu-ease-default);
+}
+.drawer-backdrop-enter-from,
+.drawer-backdrop-leave-to {
+  opacity: 0;
+}
+
+.drawer-slide-enter-active,
+.drawer-slide-leave-active {
+  transition: transform var(--huleedu-duration-slow) var(--huleedu-ease-default),
+    opacity var(--huleedu-duration-slow) var(--huleedu-ease-default);
+}
+.drawer-slide-enter-from,
+.drawer-slide-leave-to {
+  transform: translateX(8%);
+  opacity: 0;
+}
+</style>
