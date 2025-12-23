@@ -4,10 +4,11 @@ import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import type { components } from "../../api/openapi";
 import CodeMirrorEditor from "../../components/editor/CodeMirrorEditor.vue";
 import EntrypointDropdown from "../../components/editor/EntrypointDropdown.vue";
+import InlineEditableText from "../../components/editor/InlineEditableText.vue";
 import MetadataDrawer from "../../components/editor/MetadataDrawer.vue";
 import SandboxRunner from "../../components/editor/SandboxRunner.vue";
 import VersionHistoryDrawer from "../../components/editor/VersionHistoryDrawer.vue";
-import WorkflowActionsDropdown from "../../components/editor/WorkflowActionsDropdown.vue";
+import WorkflowContextButtons from "../../components/editor/WorkflowContextButtons.vue";
 import { useEditorWorkflowActions } from "../../composables/editor/useEditorWorkflowActions";
 import { useScriptEditor } from "../../composables/editor/useScriptEditor";
 import { useToolTaxonomy } from "../../composables/editor/useToolTaxonomy";
@@ -89,6 +90,15 @@ const {
 });
 const entrypointOptions = ["run_tool", "main", "run", "execute"];
 const activeDrawer = ref<"history" | "metadata" | null>(null);
+
+const isSavingAllMetadata = computed(() => isMetadataSaving.value || isTaxonomySaving.value);
+
+async function saveAllMetadata(): Promise<void> {
+  await saveToolMetadata();
+  if (canEditTaxonomy.value) {
+    await saveTaxonomy();
+  }
+}
 const isHistoryDrawerOpen = computed(() => activeDrawer.value === "history");
 const isMetadataDrawerOpen = computed(() => activeDrawer.value === "metadata");
 const isDrawerOpen = computed(() => activeDrawer.value !== null);
@@ -204,119 +214,30 @@ watch(
       ← Tillbaka till verktyg
     </RouterLink>
 
-    <div class="border border-navy bg-white shadow-brutal-sm p-5 space-y-3">
-      <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div class="space-y-2">
-          <h1 class="text-2xl font-semibold text-navy">
-            {{ editor?.tool.title ?? (isLoading ? "Laddar..." : "Skripteditorn") }}
-          </h1>
-          <p class="text-sm text-navy/70">
-            <span
-              v-if="editor"
-              class="font-mono"
-            >{{ editor.tool.slug }}</span>
-            <span v-else>Förbered editor</span>
-          </p>
-          <p
-            v-if="editor?.tool.summary"
-            class="text-sm text-navy/70"
-          >
-            {{ editor.tool.summary }}
-          </p>
-        </div>
-
-        <div class="text-sm font-medium text-navy/70">
-          <span v-if="editor">{{ statusLine }}</span>
-          <span v-else>Status</span>
-        </div>
-      </div>
-    </div>
-
+    <!-- Success/Error messages -->
     <div
-      v-if="successMessage"
+      v-if="successMessage || workflowSuccess"
       class="p-4 border border-success bg-success/10 shadow-brutal-sm text-sm text-success"
     >
-      {{ successMessage }}
+      {{ successMessage || workflowSuccess }}
     </div>
     <div
-      v-if="workflowSuccess"
-      class="p-4 border border-success bg-success/10 shadow-brutal-sm text-sm text-success"
-    >
-      {{ workflowSuccess }}
-    </div>
-
-    <div
-      v-if="errorMessage"
+      v-if="errorMessage || workflowError"
       class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
     >
-      {{ errorMessage }}
-    </div>
-    <div
-      v-if="workflowError"
-      class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
-    >
-      {{ workflowError }}
+      {{ errorMessage || workflowError }}
     </div>
 
-    <div
-      v-if="editor && canEditTaxonomy"
-      class="border border-navy bg-white shadow-brutal-sm p-4 space-y-4"
-    >
-      <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-        <div class="space-y-1">
-          <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
-            Metadata
-          </h2>
-          <p class="text-sm text-navy/70">
-            Uppdatera titel och sammanfattning för verktyget.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          class="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-navy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
-          :disabled="isMetadataSaving"
-          @click="saveToolMetadata"
-        >
-          {{ isMetadataSaving ? "Sparar..." : "Spara metadata" }}
-        </button>
-      </div>
-
-      <div class="grid gap-4">
-        <div class="space-y-1">
-          <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
-            Titel
-          </label>
-          <input
-            v-model="metadataTitle"
-            class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
-            placeholder="Titel"
-            :disabled="isMetadataSaving"
-          >
-        </div>
-
-        <div class="space-y-1">
-          <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
-            Sammanfattning
-          </label>
-          <textarea
-            v-model="metadataSummary"
-            rows="3"
-            class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
-            placeholder="Valfri sammanfattning"
-            :disabled="isMetadataSaving"
-          />
-        </div>
-      </div>
-    </div>
-
+    <!-- Loading state -->
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
+      class="flex items-center gap-3 p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
     >
-      Laddar...
+      <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+      <span>Laddar editorn...</span>
     </div>
 
+    <!-- Error state -->
     <div
       v-else-if="!editor"
       class="p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
@@ -324,170 +245,188 @@ watch(
       Det gick inte att ladda editorn.
     </div>
 
-    <div
-      v-else
-      class="space-y-4"
-    >
-      <div class="border border-navy bg-white shadow-brutal-sm p-4 space-y-3">
-        <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <button
-              type="button"
-              :disabled="isSaving"
-              class="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-navy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
-              @click="save"
-            >
-              {{ saveButtonLabel }}
-            </button>
-            <span
-              v-if="hasDirtyChanges"
-              class="text-xs text-burgundy font-semibold uppercase tracking-wide"
-            >
-              Osparat
-            </span>
-          </div>
-
-          <div class="flex-1 min-w-[220px] space-y-1">
-            <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-              Ändringssammanfattning
-            </label>
-            <input
-              v-model="changeSummary"
-              class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
-              placeholder="T.ex. fixade bugg..."
-            >
-          </div>
-
-          <div class="flex flex-wrap items-center gap-2">
-            <button
-              v-if="canSubmitReview"
-              type="button"
-              class="px-3 py-2 text-xs font-semibold uppercase tracking-wide bg-navy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
-              @click="openWorkflowAction('submit_review')"
-            >
-              Begär publicering
-            </button>
-            <button
-              v-if="canPublish"
-              type="button"
-              class="px-3 py-2 text-xs font-semibold uppercase tracking-wide bg-burgundy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
-              @click="openWorkflowAction('publish')"
-            >
-              Publicera
-            </button>
-            <button
-              v-if="canRequestChanges"
-              type="button"
-              class="px-3 py-2 text-xs font-semibold uppercase tracking-wide bg-white text-navy border border-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
-              @click="openWorkflowAction('request_changes')"
-            >
-              Avslå
-            </button>
-            <WorkflowActionsDropdown
-              v-if="canRollback"
-              :items="[{ id: 'rollback', label: 'Återställ', tone: 'danger' }]"
-              label="⋮"
-              @select="openWorkflowAction"
+    <!-- Main content -->
+    <template v-else>
+      <!-- PANEL 1: Title + Workflow -->
+      <div class="border border-navy bg-white shadow-brutal-sm p-5 space-y-4">
+        <!-- Title and summary section -->
+        <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div class="space-y-2 flex-1">
+            <InlineEditableText
+              v-model="metadataTitle"
+              tag="h1"
+              display-class="text-2xl font-semibold text-navy"
+              input-class="text-2xl font-semibold"
+              placeholder="Verktygets titel"
+            />
+            <p class="text-sm text-navy/70">
+              <span class="font-mono">{{ editor.tool.slug }}</span>
+            </p>
+            <InlineEditableText
+              v-model="metadataSummary"
+              tag="p"
+              display-class="text-sm text-navy/70"
+              input-class="text-sm"
+              placeholder="Lägg till en sammanfattning..."
             />
           </div>
-        </div>
 
-      </div>
-
-      <div class="border border-navy bg-white shadow-brutal-sm p-4">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <EntrypointDropdown
-            v-model="entrypoint"
-            :options="entrypointOptions"
-          />
-
-          <div class="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              class="px-3 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
-              @click="openHistoryDrawer"
-            >
-              Öppna sparade
-            </button>
-            <button
-              v-if="canEditTaxonomy"
-              type="button"
-              class="px-3 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
-              @click="openMetadataDrawer"
-            >
-              Redigera taxonomi
-            </button>
+          <div class="text-sm font-medium text-navy/70 shrink-0">
+            {{ statusLine }}
           </div>
         </div>
+
+        <!-- Workflow context buttons -->
+        <div class="border-t border-navy/20 pt-4">
+          <WorkflowContextButtons
+            :can-submit-review="canSubmitReview"
+            :can-publish="canPublish"
+            :can-request-changes="canRequestChanges"
+            :can-rollback="canRollback"
+            :is-submitting="isWorkflowSubmitting"
+            @action="openWorkflowAction"
+          />
+        </div>
       </div>
 
-      <div
-        :class="[
-          'grid gap-6',
-          isDrawerOpen
-            ? 'md:grid-cols-[minmax(0,1fr)_400px]'
-            : 'md:grid-cols-[minmax(0,1fr)]',
-        ]"
-      >
-        <section class="space-y-4">
-          <div class="border border-navy bg-white shadow-brutal-sm p-4 space-y-3">
-            <div class="flex items-center justify-between">
+      <!-- PANEL 2: Editor + Test -->
+      <div class="border border-navy bg-white shadow-brutal-sm">
+        <!-- Control row -->
+        <div class="p-4 border-b border-navy/20">
+          <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <button
+                type="button"
+                :disabled="isSaving"
+                class="min-w-[80px] px-4 py-2 text-xs font-bold uppercase tracking-widest bg-navy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+                @click="save"
+              >
+                <span
+                  v-if="isSaving"
+                  class="inline-block w-3 h-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
+                />
+                <span v-else>Spara</span>
+              </button>
+              <span
+                v-if="hasDirtyChanges"
+                class="text-xs text-burgundy font-semibold uppercase tracking-wide"
+              >
+                Osparat
+              </span>
+            </div>
+
+            <div class="flex-1 min-w-[180px] max-w-md space-y-1">
+              <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+                Ändringssammanfattning
+              </label>
+              <input
+                v-model="changeSummary"
+                class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+                placeholder="T.ex. fixade bugg..."
+              >
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                class="px-3 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+                @click="openHistoryDrawer"
+              >
+                Öppna sparade
+              </button>
+              <button
+                v-if="canEditTaxonomy"
+                type="button"
+                class="px-3 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+                @click="openMetadataDrawer"
+              >
+                Metadata
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Code editor section -->
+        <div
+          :class="[
+            'grid',
+            isDrawerOpen
+              ? 'md:grid-cols-[minmax(0,1fr)_400px]'
+              : 'md:grid-cols-[minmax(0,1fr)]',
+          ]"
+        >
+          <div class="p-4 space-y-4">
+            <!-- Source code -->
+            <div class="space-y-3">
               <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
                 Källkod
               </h2>
+              <div class="h-[420px] border border-navy bg-canvas shadow-brutal-sm">
+                <CodeMirrorEditor v-model="sourceCode" />
+              </div>
             </div>
 
-            <div class="h-[420px] border border-navy bg-canvas shadow-brutal-sm">
-              <CodeMirrorEditor v-model="sourceCode" />
+            <!-- Test section -->
+            <div class="border-t border-navy/20 pt-4 space-y-3">
+              <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
+                Testkör kod
+              </h2>
+
+              <!-- Entrypoint + file picker + run button -->
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <EntrypointDropdown
+                  v-model="entrypoint"
+                  :options="entrypointOptions"
+                />
+              </div>
+
+              <SandboxRunner
+                v-if="selectedVersion"
+                :version-id="selectedVersion.id"
+                :tool-id="editor.tool.id"
+              />
+              <p
+                v-else
+                class="text-sm text-navy/60"
+              >
+                Spara ett utkast för att kunna testa.
+              </p>
             </div>
           </div>
 
-          <div class="border border-navy bg-white shadow-brutal-sm p-4 space-y-3">
-            <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
-              Testa i sandbox
-            </h2>
+          <!-- Drawers -->
+          <VersionHistoryDrawer
+            v-if="isHistoryDrawerOpen"
+            :is-open="isHistoryDrawerOpen"
+            :versions="editor.versions"
+            :active-version-id="selectedVersion?.id"
+            @close="closeDrawer"
+            @select="handleHistorySelect"
+          />
 
-            <SandboxRunner
-              v-if="selectedVersion"
-              :version-id="selectedVersion.id"
-              :tool-id="editor.tool.id"
-            />
-            <p
-              v-else
-              class="text-sm text-navy/60"
-            >
-              Spara ett utkast för att kunna testa.
-            </p>
-          </div>
-        </section>
-
-        <VersionHistoryDrawer
-          v-if="isHistoryDrawerOpen"
-          :is-open="isHistoryDrawerOpen"
-          :versions="editor.versions"
-          :active-version-id="selectedVersion?.id"
-          @close="closeDrawer"
-          @select="handleHistorySelect"
-        />
-
-        <MetadataDrawer
-          v-if="isMetadataDrawerOpen"
-          :is-open="isMetadataDrawerOpen"
-          :professions="professions"
-          :categories="categories"
-          :selected-profession-ids="selectedProfessionIds"
-          :selected-category-ids="selectedCategoryIds"
-          :taxonomy-error="taxonomyError"
-          :taxonomy-success="taxonomySuccess"
-          :is-loading="isTaxonomyLoading"
-          :is-saving="isTaxonomySaving"
-          @close="closeDrawer"
-          @save="saveTaxonomy"
-          @update:selectedProfessionIds="updateProfessionIds"
-          @update:selectedCategoryIds="updateCategoryIds"
-        />
+          <MetadataDrawer
+            v-if="isMetadataDrawerOpen"
+            :is-open="isMetadataDrawerOpen"
+            :metadata-title="metadataTitle"
+            :metadata-summary="metadataSummary"
+            :professions="professions"
+            :categories="categories"
+            :selected-profession-ids="selectedProfessionIds"
+            :selected-category-ids="selectedCategoryIds"
+            :taxonomy-error="taxonomyError"
+            :taxonomy-success="taxonomySuccess"
+            :is-loading="isTaxonomyLoading"
+            :is-saving="isSavingAllMetadata"
+            @close="closeDrawer"
+            @save="saveAllMetadata"
+            @update:metadata-title="metadataTitle = $event"
+            @update:metadata-summary="metadataSummary = $event"
+            @update:selected-profession-ids="updateProfessionIds"
+            @update:selected-category-ids="updateCategoryIds"
+          />
+        </div>
       </div>
-    </div>
+    </template>
   </div>
 
   <Teleport to="body">
