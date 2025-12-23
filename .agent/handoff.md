@@ -13,10 +13,10 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-23
-- Branch / commit: `main` (EPIC-11 complete)
+- Branch / commit: `main` (`d0e0bd6`)
 - Current sprint: `SPR-2025-12-21` (EPIC-11 full SPA migration)
-- Stories done: ST-11-01/02/03/04/05/06/07/08/09/10/11/12/13/14/15/16/17/18/19/20/21/22
-- Production: Full Vue SPA (SSR/HTMX removed in ST-11-13)
+- Stories done: ST-11-01/02/03/04/05/06/07/08/09/10/11/12/13/14/15/16/17/18/19/20/21/22/23
+- Production: Full Vue SPA; `d0e0bd6` deployed 2025-12-23
 
 ## Current Session (2025-12-23)
 
@@ -107,6 +107,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 - Quality: `pdm run precommit-run` (pass), `pdm run fe-gen-api-types`, `pdm run db-upgrade` (0012).
 - Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_18_editor_maintainers_e2e --base-url http://127.0.0.1:5173` (artifacts: `.artifacts/st-11-18-editor-maintainers/`).
+- Prod deploy (2025-12-23): `ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"` + `ssh hemma "docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run db-upgrade"`.
 
 ## Key Architecture
 
