@@ -41,7 +41,6 @@ const {
   successMessage,
   selectedVersion,
   editorToolId,
-  saveButtonLabel,
   hasDirtyChanges,
   save,
   saveToolMetadata,

@@ -76,7 +76,10 @@ watch(professionSlug, () => {
     </h2>
     <p class="text-sm text-navy/60 mb-6">Välj en kategori för att se verktyg.</p>
 
-    <div v-if="isLoading" class="flex items-center gap-3 p-4 text-navy/60">
+    <div
+      v-if="isLoading"
+      class="flex items-center gap-3 p-4 text-navy/60"
+    >
       <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
       <span>Laddar...</span>
     </div>
@@ -88,11 +91,17 @@ watch(professionSlug, () => {
       {{ errorMessage }}
     </div>
 
-    <div v-else-if="categories.length === 0" class="p-4 text-navy/60 italic">
+    <div
+      v-else-if="categories.length === 0"
+      class="p-4 text-navy/60 italic"
+    >
       Inga kategorier finns för denna yrkesgrupp.
     </div>
 
-    <ul v-else class="list-none m-0 p-0 border border-navy bg-white">
+    <ul
+      v-else
+      class="list-none m-0 p-0 border border-navy bg-white"
+    >
       <li
         v-for="category in categories"
         :key="category.id"

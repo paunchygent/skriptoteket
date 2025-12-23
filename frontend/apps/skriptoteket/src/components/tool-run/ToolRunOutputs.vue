@@ -7,16 +7,6 @@ defineProps<{
   outputs: UiOutput[];
 }>();
 
-function renderMarkdown(output: UiOutput): string {
-  if (output.kind === "markdown") {
-    return output.markdown;
-  }
-  if (output.kind === "notice") {
-    return output.message;
-  }
-  return "";
-}
-
 function noticeClass(output: UiOutput): string {
   if (output.kind !== "notice") return "";
   if (output.level === "error") return "text-error";

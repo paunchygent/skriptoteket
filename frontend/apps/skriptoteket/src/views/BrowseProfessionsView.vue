@@ -43,7 +43,10 @@ onMounted(() => {
     <h2 class="text-2xl font-semibold text-navy mb-2">Bläddra verktyg</h2>
     <p class="text-sm text-navy/60 mb-6">Välj en yrkesgrupp för att se kategorier och verktyg.</p>
 
-    <div v-if="isLoading" class="flex items-center gap-3 p-4 text-navy/60">
+    <div
+      v-if="isLoading"
+      class="flex items-center gap-3 p-4 text-navy/60"
+    >
       <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
       <span>Laddar...</span>
     </div>
@@ -55,7 +58,10 @@ onMounted(() => {
       {{ errorMessage }}
     </div>
 
-    <ul v-else class="list-none m-0 p-0 border border-navy bg-white">
+    <ul
+      v-else
+      class="list-none m-0 p-0 border border-navy bg-white"
+    >
       <li
         v-for="profession in professions"
         :key="profession.id"
