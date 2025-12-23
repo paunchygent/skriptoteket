@@ -69,6 +69,11 @@ def select_default_version(
         is_tool_maintainer=is_tool_maintainer,
     )
 
+    if actor.role in {Role.ADMIN, Role.SUPERUSER}:
+        for version in visible_versions:
+            if version.state is VersionState.IN_REVIEW:
+                return version
+
     # Prefer latest visible draft, then active, then latest visible.
     for version in visible_versions:
         if version.state is VersionState.DRAFT:

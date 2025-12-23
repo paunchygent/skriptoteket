@@ -15,11 +15,16 @@ from skriptoteket.application.scripting.commands import (
     SubmitForReviewResult,
 )
 from skriptoteket.application.catalog.queries import ListToolTaxonomyResult
-from skriptoteket.application.catalog.commands import UpdateToolTaxonomyResult
+from skriptoteket.application.catalog.commands import (
+    UpdateToolMetadataResult,
+    UpdateToolTaxonomyResult,
+)
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.models import VersionState
 from skriptoteket.protocols.catalog import (
     ListToolTaxonomyHandlerProtocol,
+    ToolRepositoryProtocol,
+    UpdateToolMetadataHandlerProtocol,
     UpdateToolTaxonomyHandlerProtocol,
 )
 from skriptoteket.protocols.scripting import (
@@ -408,3 +413,73 @@ async def test_update_tool_taxonomy_calls_handler() -> None:
     assert command.tool_id == tool.id
     assert command.profession_ids == profession_ids
     assert command.category_ids == category_ids
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_update_tool_metadata_calls_handler_and_returns_response() -> None:
+    tools_repo = AsyncMock(spec=ToolRepositoryProtocol)
+    handler = AsyncMock(spec=UpdateToolMetadataHandlerProtocol)
+    updated = _tool(title="Normalized title")
+    updated = updated.model_copy(update={"summary": "Normalized summary"})
+    user = _user(role=Role.ADMIN)
+    handler.handle.return_value = UpdateToolMetadataResult(tool=updated)
+
+    result = await _unwrap_dishka(editor.update_tool_metadata)(
+        tool_id=updated.id,
+        payload=editor.EditorToolMetadataRequest(
+            title=" New title ",
+            summary=" New summary ",
+        ),
+        tools=tools_repo,
+        handler=handler,
+        user=user,
+    )
+
+    assert isinstance(result, editor.EditorToolMetadataResponse)
+    assert result.id == updated.id
+    assert result.slug == updated.slug
+    assert result.title == updated.title
+    assert result.summary == updated.summary
+
+    tools_repo.get_by_id.assert_not_awaited()
+
+    handler.handle.assert_awaited_once()
+    command = handler.handle.call_args.kwargs["command"]
+    assert command.tool_id == updated.id
+    assert command.title == " New title "
+    assert command.summary == " New summary "
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_update_tool_metadata_without_summary_keeps_existing() -> None:
+    tools_repo = AsyncMock(spec=ToolRepositoryProtocol)
+    handler = AsyncMock(spec=UpdateToolMetadataHandlerProtocol)
+    existing = _tool(title="Existing title")
+    existing = existing.model_copy(update={"summary": "Existing summary"})
+    updated = existing.model_copy(update={"title": "Updated title"})
+    user = _user(role=Role.ADMIN)
+    tools_repo.get_by_id.return_value = existing
+    handler.handle.return_value = UpdateToolMetadataResult(tool=updated)
+
+    result = await _unwrap_dishka(editor.update_tool_metadata)(
+        tool_id=existing.id,
+        payload=editor.EditorToolMetadataRequest(title="Updated title"),
+        tools=tools_repo,
+        handler=handler,
+        user=user,
+    )
+
+    assert isinstance(result, editor.EditorToolMetadataResponse)
+    assert result.id == updated.id
+    assert result.title == updated.title
+    assert result.summary == updated.summary
+
+    tools_repo.get_by_id.assert_awaited_once_with(tool_id=existing.id)
+
+    handler.handle.assert_awaited_once()
+    command = handler.handle.call_args.kwargs["command"]
+    assert command.tool_id == existing.id
+    assert command.title == "Updated title"
+    assert command.summary == existing.summary

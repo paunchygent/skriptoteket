@@ -26,9 +26,7 @@ class ListToolTaxonomyHandler(ListToolTaxonomyHandlerProtocol):
         if tool is None:
             raise not_found("Tool", str(query.tool_id))
 
-        profession_ids, category_ids = await self._tools.list_tag_ids(
-            tool_id=query.tool_id
-        )
+        profession_ids, category_ids = await self._tools.list_tag_ids(tool_id=query.tool_id)
         return ListToolTaxonomyResult(
             tool_id=query.tool_id,
             profession_ids=profession_ids,

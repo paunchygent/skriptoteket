@@ -65,9 +65,7 @@ class UpdateToolTaxonomyHandler(UpdateToolTaxonomyHandlerProtocol):
             if tool is None:
                 raise not_found("Tool", str(command.tool_id))
 
-            profession_records = await self._professions.list_by_ids(
-                profession_ids=profession_ids
-            )
+            profession_records = await self._professions.list_by_ids(profession_ids=profession_ids)
             if len(profession_records) != len(set(profession_ids)):
                 found = {p.id for p in profession_records}
                 missing = [str(pid) for pid in profession_ids if pid not in found]

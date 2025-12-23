@@ -17,7 +17,10 @@ from skriptoteket.application.scripting.commands import (
     SaveDraftVersionCommand,
     SubmitForReviewCommand,
 )
-from skriptoteket.application.catalog.commands import UpdateToolTaxonomyCommand
+from skriptoteket.application.catalog.commands import (
+    UpdateToolMetadataCommand,
+    UpdateToolTaxonomyCommand,
+)
 from skriptoteket.application.catalog.queries import ListToolTaxonomyQuery
 from skriptoteket.config import Settings
 from skriptoteket.domain.catalog.models import Tool
@@ -30,6 +33,7 @@ from skriptoteket.protocols.catalog import (
     ListToolTaxonomyHandlerProtocol,
     ToolMaintainerRepositoryProtocol,
     ToolRepositoryProtocol,
+    UpdateToolMetadataHandlerProtocol,
     UpdateToolTaxonomyHandlerProtocol,
 )
 from skriptoteket.protocols.scripting import (
@@ -189,6 +193,22 @@ class ToolTaxonomyRequest(BaseModel):
 
     profession_ids: list[UUID]
     category_ids: list[UUID]
+
+
+class EditorToolMetadataResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    slug: str
+    title: str
+    summary: str | None
+
+
+class EditorToolMetadataRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    title: str
+    summary: str | None = None
 
 
 def _to_tool_summary(tool: Tool) -> EditorToolSummary:
@@ -440,6 +460,40 @@ async def update_tool_taxonomy(
         tool_id=result.tool_id,
         profession_ids=result.profession_ids,
         category_ids=result.category_ids,
+    )
+
+
+@router.patch("/tools/{tool_id}/metadata", response_model=EditorToolMetadataResponse)
+@inject
+async def update_tool_metadata(
+    tool_id: UUID,
+    payload: EditorToolMetadataRequest,
+    tools: FromDishka[ToolRepositoryProtocol],
+    handler: FromDishka[UpdateToolMetadataHandlerProtocol],
+    user: User = Depends(require_admin_api),
+    _: None = Depends(require_csrf_token),
+) -> EditorToolMetadataResponse:
+    summary = payload.summary
+    if "summary" not in payload.model_fields_set:
+        tool = await tools.get_by_id(tool_id=tool_id)
+        if tool is None:
+            raise not_found("Tool", str(tool_id))
+        summary = tool.summary
+
+    result = await handler.handle(
+        actor=user,
+        command=UpdateToolMetadataCommand(
+            tool_id=tool_id,
+            title=payload.title,
+            summary=summary,
+        ),
+    )
+    tool = result.tool
+    return EditorToolMetadataResponse(
+        id=tool.id,
+        slug=tool.slug,
+        title=tool.title,
+        summary=tool.summary,
     )
 
 
