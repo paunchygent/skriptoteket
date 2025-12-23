@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useHelp } from "../help/useHelp";
+
 defineProps<{
   isOpen: boolean;
   user: { email: string } | null;
@@ -19,6 +21,13 @@ function onClose(): void {
 function onLogout(): void {
   emit("logout");
 }
+
+const { open: openHelp } = useHelp();
+
+function onHelp(): void {
+  emit("close");
+  openHelp();
+}
 </script>
 
 <template>
@@ -36,6 +45,13 @@ function onLogout(): void {
       </RouterLink>
 
       <nav class="sidebar-nav">
+        <button
+          type="button"
+          class="sidebar-nav-item sidebar-nav-button sidebar-nav-help"
+          @click="onHelp"
+        >
+          Hjälp
+        </button>
         <RouterLink
           to="/"
           class="sidebar-nav-item"
@@ -181,6 +197,22 @@ function onLogout(): void {
               border-color var(--huleedu-duration-default) var(--huleedu-ease-default);
 }
 
+.sidebar-nav-button {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.sidebar-nav-help {
+  display: block;
+}
+
+.sidebar-nav-help::after {
+  content: none;
+}
+
 .sidebar-nav-item:hover {
   color: var(--huleedu-burgundy);
 }
@@ -188,6 +220,12 @@ function onLogout(): void {
 .sidebar-nav-item.router-link-active {
   color: var(--huleedu-navy);
   border-left-color: var(--huleedu-burgundy);
+}
+
+@media (min-width: 768px) {
+  .sidebar-nav-help {
+    display: none;
+  }
 }
 
 /* Sidebar footer (mobile only) */

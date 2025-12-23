@@ -115,7 +115,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ### Phase 4 story review (ST-11-15..19)
 
-- ST-11-17/19 done + help panel wired in SPA (`frontend/apps/skriptoteket/src/components/help/HelpPanel.vue`, `frontend/apps/skriptoteket/src/components/help/HelpButton.vue`, `frontend/apps/skriptoteket/src/components/help/useHelp.ts`, `frontend/apps/skriptoteket/src/App.vue`, `frontend/apps/skriptoteket/src/components/layout/AuthTopBar.vue`, `frontend/apps/skriptoteket/src/components/layout/AuthLayout.vue`, `frontend/apps/skriptoteket/src/components/layout/LandingLayout.vue`); story docs updated (`docs/backlog/stories/story-11-17-tool-metadata-editor.md`, `docs/backlog/stories/story-11-19-help-framework.md`).
+- ST-11-17/19 done + help panel wired in SPA (help button moved into mobile hamburger; `frontend/apps/skriptoteket/src/components/help/HelpPanel.vue`, `frontend/apps/skriptoteket/src/components/help/HelpButton.vue`, `frontend/apps/skriptoteket/src/components/help/useHelp.ts`, `frontend/apps/skriptoteket/src/App.vue`, `frontend/apps/skriptoteket/src/components/layout/AuthTopBar.vue`, `frontend/apps/skriptoteket/src/components/layout/AuthLayout.vue`, `frontend/apps/skriptoteket/src/components/layout/AuthSidebar.vue`, `frontend/apps/skriptoteket/src/components/layout/LandingLayout.vue`); story docs updated (`docs/backlog/stories/story-11-17-tool-metadata-editor.md`, `docs/backlog/stories/story-11-19-help-framework.md`).
 - Docs contract check: `pdm run docs-validate` (pass).
 
 ### ST-11-20 (taxonomy editor wiring)
@@ -127,7 +127,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 - Tests: `pdm run pytest tests/unit/application/catalog/handlers/test_list_tool_taxonomy.py tests/unit/application/catalog/handlers/test_update_tool_taxonomy.py tests/unit/web/test_editor_api_routes.py tests/integration/infrastructure/repositories/test_catalog_repository.py`
 - Live check (2025-12-23): `pdm run python -m scripts.playwright_spa_editor_metadata_check --base-url http://127.0.0.1:5173` (edit title/summary, title required, reload persists, restore original)
-- Live check (2025-12-23): Playwright inline script via `pdm run python -` opened `/` and captured `.artifacts/st-11-19-help-button/help-button-home.png`.
+- Live check (2025-12-23): `pdm run dev` + `pdm run fe-dev`; `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_11_19_help_mobile_menu_check` (mobile hamburger help; screenshot `.artifacts/st-11-19-help-mobile-menu/help-in-mobile-menu.png`).
 - Frontend: `pnpm -C frontend --filter @skriptoteket/spa typecheck`, `pnpm -C frontend --filter @skriptoteket/spa lint`
 - UI check: `/admin/tools` + taxonomy GET/PATCH on `/api/v1/editor/tools/{tool_id}/taxonomy` confirmed via Vite.
 - Live check (2025-12-22): `pdm run python -m scripts.playwright_st_11_15_spa_my_tools_e2e --base-url http://127.0.0.1:5173`

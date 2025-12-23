@@ -149,11 +149,11 @@ onBeforeUnmount(() => {
 <template>
   <div class="space-y-4">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-      <div class="flex-1 space-y-1">
+      <div class="flex-1 space-y-1 min-w-0">
         <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
           Testfiler
         </label>
-        <div class="flex items-center gap-3 w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm">
+        <div class="flex items-center gap-3 w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm overflow-hidden">
           <label
             class="shrink-0 px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-burgundy text-canvas border border-navy cursor-pointer btn-secondary-hover transition-colors active:translate-x-0.5 active:translate-y-0.5"
           >

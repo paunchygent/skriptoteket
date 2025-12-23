@@ -406,13 +406,13 @@ watch(
               : 'md:grid-cols-[minmax(0,1fr)]',
           ]"
         >
-          <div class="p-4 space-y-4">
+          <div class="p-4 space-y-4 min-w-0">
             <!-- Source code -->
             <div class="space-y-3">
               <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
                 Källkod
               </h2>
-              <div class="h-[420px] border border-navy bg-canvas shadow-brutal-sm">
+              <div class="h-[420px] border border-navy bg-canvas shadow-brutal-sm overflow-hidden">
                 <CodeMirrorEditor v-model="sourceCode" />
               </div>
             </div>

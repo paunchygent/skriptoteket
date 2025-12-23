@@ -3,7 +3,6 @@ import { ref } from "vue";
 
 import AuthSidebar from "./AuthSidebar.vue";
 import AuthTopBar from "./AuthTopBar.vue";
-import HelpButton from "../help/HelpButton.vue";
 
 defineProps<{
   user: { email: string; role: string } | null;
@@ -33,9 +32,8 @@ function onLogout(): void {
 </script>
 
 <template>
-  <!-- Mobile header bar: help + hamburger (right-aligned) -->
+  <!-- Mobile header bar: hamburger only (right-aligned) -->
   <header class="auth-mobile-header md:hidden">
-    <HelpButton />
     <button
       type="button"
       class="hamburger"
@@ -96,7 +94,6 @@ function onLogout(): void {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--huleedu-space-3);
   padding: var(--huleedu-space-3) var(--huleedu-space-4);
   border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy);
   background-color: var(--huleedu-canvas);
