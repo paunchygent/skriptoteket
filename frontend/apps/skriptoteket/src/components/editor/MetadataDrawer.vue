@@ -43,22 +43,24 @@ function toggleCategory(value: string): void {
 </script>
 
 <template>
-  <Transition name="drawer-backdrop">
-    <div
-      v-if="isOpen"
-      class="fixed inset-0 z-40 bg-navy/40 md:hidden"
-      @click="emit('close')"
-    />
-  </Transition>
+  <!-- Mobile backdrop -->
+  <Teleport to="body">
+    <Transition name="drawer-backdrop">
+      <div
+        v-if="isOpen"
+        class="fixed inset-0 z-40 bg-navy/40 md:hidden"
+        @click="emit('close')"
+      />
+    </Transition>
+  </Teleport>
 
-  <Transition name="drawer-slide">
-    <aside
-      v-if="isOpen"
-      class="fixed inset-y-0 right-0 z-50 w-full bg-canvas border-l border-navy shadow-brutal flex flex-col md:static md:z-auto md:w-full"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="metadata-drawer-title"
-    >
+  <!-- Drawer - direct grid participant on desktop -->
+  <aside
+    class="fixed inset-y-0 right-0 z-50 w-full bg-canvas border-l border-navy shadow-brutal flex flex-col md:relative md:inset-auto md:z-auto md:w-full"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="metadata-drawer-title"
+  >
       <div class="p-6 border-b border-navy flex items-start justify-between gap-4">
         <div>
           <h2
@@ -207,7 +209,6 @@ function toggleCategory(value: string): void {
         </button>
       </div>
     </aside>
-  </Transition>
 </template>
 
 <style scoped>

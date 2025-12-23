@@ -293,38 +293,42 @@ watch(
         <!-- Control row -->
         <div class="p-4 border-b border-navy/20">
           <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <button
-                type="button"
-                :disabled="isSaving"
-                class="min-w-[80px] px-4 py-2 text-xs font-bold uppercase tracking-widest bg-navy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
-                @click="save"
-              >
+            <!-- Save group: Spara + Osparat + Ändringssammanfattning -->
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  :disabled="isSaving"
+                  class="min-w-[80px] px-4 py-2 text-xs font-bold uppercase tracking-widest bg-navy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  @click="save"
+                >
+                  <span
+                    v-if="isSaving"
+                    class="inline-block w-3 h-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
+                  />
+                  <span v-else>Spara</span>
+                </button>
                 <span
-                  v-if="isSaving"
-                  class="inline-block w-3 h-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
-                />
-                <span v-else>Spara</span>
-              </button>
-              <span
-                v-if="hasDirtyChanges"
-                class="text-xs text-burgundy font-semibold uppercase tracking-wide"
-              >
-                Osparat
-              </span>
+                  v-if="hasDirtyChanges"
+                  class="text-xs text-burgundy font-semibold uppercase tracking-wide"
+                >
+                  Osparat
+                </span>
+              </div>
+
+              <div class="min-w-[180px] max-w-xs space-y-1">
+                <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+                  Ändringssammanfattning
+                </label>
+                <input
+                  v-model="changeSummary"
+                  class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+                  placeholder="T.ex. fixade bugg..."
+                >
+              </div>
             </div>
 
-            <div class="flex-1 min-w-[180px] max-w-md space-y-1">
-              <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-                Ändringssammanfattning
-              </label>
-              <input
-                v-model="changeSummary"
-                class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
-                placeholder="T.ex. fixade bugg..."
-              >
-            </div>
-
+            <!-- Drawer buttons -->
             <div class="flex flex-wrap items-center gap-2">
               <button
                 type="button"
