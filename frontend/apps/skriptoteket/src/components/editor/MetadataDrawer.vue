@@ -61,154 +61,154 @@ function toggleCategory(value: string): void {
     aria-modal="true"
     aria-labelledby="metadata-drawer-title"
   >
-      <div class="p-6 border-b border-navy flex items-start justify-between gap-4">
-        <div>
-          <h2
-            id="metadata-drawer-title"
-            class="text-lg font-semibold text-navy"
-          >
-            Redigera metadata
-          </h2>
-          <p class="text-sm text-navy/70">
-            Uppdatera titel, sammanfattning och kategorisering.
-          </p>
-        </div>
-        <button
-          type="button"
-          class="text-navy/60 hover:text-navy text-2xl leading-none"
-          @click="emit('close')"
+    <div class="p-6 border-b border-navy flex items-start justify-between gap-4">
+      <div>
+        <h2
+          id="metadata-drawer-title"
+          class="text-lg font-semibold text-navy"
         >
-          &times;
-        </button>
+          Redigera metadata
+        </h2>
+        <p class="text-sm text-navy/70">
+          Uppdatera titel, sammanfattning och kategorisering.
+        </p>
       </div>
+      <button
+        type="button"
+        class="text-navy/60 hover:text-navy text-2xl leading-none"
+        @click="emit('close')"
+      >
+        &times;
+      </button>
+    </div>
 
-      <div class="flex-1 overflow-y-auto p-6 space-y-6">
-        <!-- Title and Summary -->
-        <div class="space-y-4">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">Verktygsinfo</span>
-          </div>
-
-          <div class="space-y-3">
-            <div class="space-y-1">
-              <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
-                Titel
-              </label>
-              <input
-                :value="metadataTitle"
-                type="text"
-                class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
-                placeholder="Verktygets titel"
-                :disabled="isSaving"
-                @input="emit('update:metadataTitle', ($event.target as HTMLInputElement).value)"
-              >
-            </div>
-
-            <div class="space-y-1">
-              <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
-                Sammanfattning
-              </label>
-              <textarea
-                :value="metadataSummary"
-                rows="3"
-                class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
-                placeholder="Kort beskrivning av verktyget"
-                :disabled="isSaving"
-                @input="emit('update:metadataSummary', ($event.target as HTMLTextAreaElement).value)"
-              />
-            </div>
-          </div>
+    <div class="flex-1 overflow-y-auto p-6 space-y-6">
+      <!-- Title and Summary -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">Verktygsinfo</span>
         </div>
 
-        <!-- Taxonomy section -->
-        <div class="border-t border-navy/20 pt-4 space-y-4">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">Taxonomi</span>
-            <span
-              v-if="isLoading"
-              class="text-xs text-navy/60"
+        <div class="space-y-3">
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
+              Titel
+            </label>
+            <input
+              :value="metadataTitle"
+              type="text"
+              class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+              placeholder="Verktygets titel"
+              :disabled="isSaving"
+              @input="emit('update:metadataTitle', ($event.target as HTMLInputElement).value)"
             >
-              Laddar...
-            </span>
           </div>
 
-          <p
-            v-if="taxonomyError"
-            class="text-sm text-burgundy"
-          >
-            {{ taxonomyError }}
-          </p>
-          <p
-            v-else-if="taxonomySuccess"
-            class="text-sm text-navy"
-          >
-            {{ taxonomySuccess }}
-          </p>
-
-          <div
-            v-if="!isLoading"
-            class="space-y-4"
-          >
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">Yrken</span>
-                <span class="text-xs text-navy/60">Välj minst ett</span>
-              </div>
-              <div class="grid gap-2">
-                <label
-                  v-for="profession in professions"
-                  :key="profession.id"
-                  class="flex items-center gap-2 border border-navy/30 bg-white px-3 py-2 shadow-brutal-sm text-xs text-navy"
-                >
-                  <input
-                    :value="profession.id"
-                    type="checkbox"
-                    class="border-navy"
-                    :checked="selectedProfessionIds.includes(profession.id)"
-                    @change="toggleProfession(profession.id)"
-                  >
-                  <span>{{ profession.label }}</span>
-                </label>
-              </div>
-            </div>
-
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">Kategorier</span>
-                <span class="text-xs text-navy/60">Välj minst en</span>
-              </div>
-              <div class="grid gap-2">
-                <label
-                  v-for="category in categories"
-                  :key="category.id"
-                  class="flex items-center gap-2 border border-navy/30 bg-white px-3 py-2 shadow-brutal-sm text-xs text-navy"
-                >
-                  <input
-                    :value="category.id"
-                    type="checkbox"
-                    class="border-navy"
-                    :checked="selectedCategoryIds.includes(category.id)"
-                    @change="toggleCategory(category.id)"
-                  >
-                  <span>{{ category.label }}</span>
-                </label>
-              </div>
-            </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
+              Sammanfattning
+            </label>
+            <textarea
+              :value="metadataSummary"
+              rows="3"
+              class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+              placeholder="Kort beskrivning av verktyget"
+              :disabled="isSaving"
+              @input="emit('update:metadataSummary', ($event.target as HTMLTextAreaElement).value)"
+            />
           </div>
         </div>
       </div>
 
-      <div class="p-6 border-t border-navy">
-        <button
-          type="button"
-          class="w-full px-4 py-2 text-xs font-bold uppercase tracking-widest bg-navy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
-          :disabled="isSaving"
-          @click="emit('save')"
+      <!-- Taxonomy section -->
+      <div class="border-t border-navy/20 pt-4 space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">Taxonomi</span>
+          <span
+            v-if="isLoading"
+            class="text-xs text-navy/60"
+          >
+            Laddar...
+          </span>
+        </div>
+
+        <p
+          v-if="taxonomyError"
+          class="text-sm text-burgundy"
         >
-          {{ isSaving ? "Sparar..." : "Spara metadata" }}
-        </button>
+          {{ taxonomyError }}
+        </p>
+        <p
+          v-else-if="taxonomySuccess"
+          class="text-sm text-navy"
+        >
+          {{ taxonomySuccess }}
+        </p>
+
+        <div
+          v-if="!isLoading"
+          class="space-y-4"
+        >
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">Yrken</span>
+              <span class="text-xs text-navy/60">Välj minst ett</span>
+            </div>
+            <div class="grid gap-2">
+              <label
+                v-for="profession in professions"
+                :key="profession.id"
+                class="flex items-center gap-2 border border-navy/30 bg-white px-3 py-2 shadow-brutal-sm text-xs text-navy"
+              >
+                <input
+                  :value="profession.id"
+                  type="checkbox"
+                  class="border-navy"
+                  :checked="selectedProfessionIds.includes(profession.id)"
+                  @change="toggleProfession(profession.id)"
+                >
+                <span>{{ profession.label }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">Kategorier</span>
+              <span class="text-xs text-navy/60">Välj minst en</span>
+            </div>
+            <div class="grid gap-2">
+              <label
+                v-for="category in categories"
+                :key="category.id"
+                class="flex items-center gap-2 border border-navy/30 bg-white px-3 py-2 shadow-brutal-sm text-xs text-navy"
+              >
+                <input
+                  :value="category.id"
+                  type="checkbox"
+                  class="border-navy"
+                  :checked="selectedCategoryIds.includes(category.id)"
+                  @change="toggleCategory(category.id)"
+                >
+                <span>{{ category.label }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
       </div>
-    </aside>
+    </div>
+
+    <div class="p-6 border-t border-navy">
+      <button
+        type="button"
+        class="w-full px-4 py-2 text-xs font-bold uppercase tracking-widest bg-navy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+        :disabled="isSaving"
+        @click="emit('save')"
+      >
+        {{ isSaving ? "Sparar..." : "Spara metadata" }}
+      </button>
+    </div>
+  </aside>
 </template>
 
 <style scoped>

@@ -62,77 +62,77 @@ function handleSelect(versionId: string): void {
     aria-modal="true"
     aria-labelledby="history-drawer-title"
   >
-      <div class="p-6 border-b border-navy flex items-start justify-between gap-4">
-        <div>
-          <h2
-            id="history-drawer-title"
-            class="text-lg font-semibold text-navy"
-          >
-            Öppna sparade
-          </h2>
-          <p class="text-sm text-navy/70">
-            Välj en tidigare version att öppna.
-          </p>
-        </div>
-        <button
-          type="button"
-          class="text-navy/60 hover:text-navy text-2xl leading-none"
-          @click="emit('close')"
+    <div class="p-6 border-b border-navy flex items-start justify-between gap-4">
+      <div>
+        <h2
+          id="history-drawer-title"
+          class="text-lg font-semibold text-navy"
         >
-          &times;
-        </button>
-      </div>
-
-      <div class="flex-1 overflow-y-auto p-6 space-y-3">
-        <p
-          v-if="versions.length === 0"
-          class="text-sm text-navy/60"
-        >
-          Inga versioner ännu.
+          Öppna sparade
+        </h2>
+        <p class="text-sm text-navy/70">
+          Välj en tidigare version att öppna.
         </p>
-
-        <ul
-          v-else
-          class="space-y-2"
-        >
-          <li
-            v-for="version in versions"
-            :key="version.id"
-            :class="[
-              'border shadow-brutal-sm transition-colors',
-              version.id === activeVersionId
-                ? 'border-burgundy bg-burgundy/5'
-                : 'border-navy/30 bg-white hover:bg-canvas hover:border-navy',
-            ]"
-          >
-            <RouterLink
-              :to="`/admin/tool-versions/${version.id}`"
-              class="flex items-center justify-between gap-3 px-3 py-2 cursor-pointer"
-              @click="handleSelect(version.id)"
-            >
-              <div>
-                <div class="text-sm font-semibold text-navy">
-                  v{{ version.version_number }}
-                </div>
-                <div class="text-xs text-navy/60">
-                  {{ formatDateTime(version.created_at) }}
-                </div>
-              </div>
-              <span
-                :class="[
-                  'px-2 py-0.5 border text-xs font-semibold uppercase tracking-wide',
-                  version.id === activeVersionId
-                    ? 'border-burgundy text-burgundy'
-                    : 'border-navy/40 text-navy/70',
-                ]"
-              >
-                {{ versionLabel(version.state) }}
-              </span>
-            </RouterLink>
-          </li>
-        </ul>
       </div>
-    </aside>
+      <button
+        type="button"
+        class="text-navy/60 hover:text-navy text-2xl leading-none"
+        @click="emit('close')"
+      >
+        &times;
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-6 space-y-3">
+      <p
+        v-if="versions.length === 0"
+        class="text-sm text-navy/60"
+      >
+        Inga versioner ännu.
+      </p>
+
+      <ul
+        v-else
+        class="space-y-2"
+      >
+        <li
+          v-for="version in versions"
+          :key="version.id"
+          :class="[
+            'border shadow-brutal-sm transition-colors',
+            version.id === activeVersionId
+              ? 'border-burgundy bg-burgundy/5'
+              : 'border-navy/30 bg-white hover:bg-canvas hover:border-navy',
+          ]"
+        >
+          <RouterLink
+            :to="`/admin/tool-versions/${version.id}`"
+            class="flex items-center justify-between gap-3 px-3 py-2 cursor-pointer"
+            @click="handleSelect(version.id)"
+          >
+            <div>
+              <div class="text-sm font-semibold text-navy">
+                v{{ version.version_number }}
+              </div>
+              <div class="text-xs text-navy/60">
+                {{ formatDateTime(version.created_at) }}
+              </div>
+            </div>
+            <span
+              :class="[
+                'px-2 py-0.5 border text-xs font-semibold uppercase tracking-wide',
+                version.id === activeVersionId
+                  ? 'border-burgundy text-burgundy'
+                  : 'border-navy/40 text-navy/70',
+              ]"
+            >
+              {{ versionLabel(version.state) }}
+            </span>
+          </RouterLink>
+        </li>
+      </ul>
+    </div>
+  </aside>
 </template>
 
 <style scoped>
