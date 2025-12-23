@@ -2,7 +2,7 @@
 type: story
 id: ST-11-13
 title: "Cutover + deletion + E2E"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2025-12-21
 epic: "EPIC-11"

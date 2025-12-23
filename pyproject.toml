@@ -273,8 +273,8 @@ kill-dev = "pkill -f 'uvicorn.*skriptoteket'"
 dev-docker = "uvicorn --app-dir src skriptoteket.web.app:app --reload --host 0.0.0.0 --port 8000"
 serve = "uvicorn --app-dir src skriptoteket.web.app:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'"
 ui-smoke = "python -m scripts.playwright_ui_smoke"
-ui-editor-smoke = "python -m scripts.playwright_editor_island_smoke"
-ui-runtime-smoke = "python -m scripts.playwright_runtime_island_smoke"
+ui-editor-smoke = "python -m scripts.playwright_ui_editor_smoke"
+ui-runtime-smoke = "python -m scripts.playwright_ui_runtime_smoke"
 openapi-export-v1 = "python -m scripts.export_openapi_v1"
 fe-gen-api-types = { composite = [
     "python -m scripts.export_openapi_v1",

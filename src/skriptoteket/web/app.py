@@ -11,7 +11,6 @@ from skriptoteket.observability.tracing import init_tracing
 from skriptoteket.web.middleware.correlation import CorrelationMiddleware
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from skriptoteket.web.middleware.metrics import metrics_middleware
-from skriptoteket.web.middleware.toasts import toast_middleware
 from skriptoteket.web.middleware.tracing import tracing_middleware
 from skriptoteket.web.router import router as web_router
 from skriptoteket.web.routes.observability import router as observability_router
@@ -36,11 +35,10 @@ def create_app() -> FastAPI:
         docs_url="/docs" if settings.ENABLE_DOCS else None,
     )
 
-    # Middleware order: tracing → metrics → correlation → error_handler → toast
+    # Middleware order: tracing → metrics → correlation → error_handler
     # (registered in reverse order of execution)
     app.add_middleware(CorrelationMiddleware)
     app.middleware("http")(error_handler_middleware)
-    app.middleware("http")(toast_middleware)
     app.middleware("http")(metrics_middleware)
     app.middleware("http")(tracing_middleware)
 

@@ -4,7 +4,7 @@ from typing import Literal
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Depends, File, Response, UploadFile
+from fastapi import APIRouter, Depends, File, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict
 
@@ -69,7 +69,6 @@ from skriptoteket.web.editor_support import (
     select_default_version,
     visible_versions_for_actor,
 )
-from skriptoteket.web.toasts import set_toast_cookie
 from skriptoteket.web.uploads import read_upload_files
 
 router = APIRouter(prefix="/api/v1/editor", tags=["editor"])
@@ -623,7 +622,6 @@ async def remove_tool_maintainer(
 async def create_draft_version(
     tool_id: UUID,
     payload: CreateDraftVersionRequest,
-    response: Response,
     handler: FromDishka[CreateDraftVersionHandlerProtocol],
     user: User = Depends(require_contributor_api),
     _: None = Depends(require_csrf_token),
@@ -638,7 +636,6 @@ async def create_draft_version(
             change_summary=payload.change_summary,
         ),
     )
-    set_toast_cookie(response=response, message="Utkast skapat.", toast_type="success")
     return SaveResult(
         version_id=result.version.id,
         redirect_url=f"/admin/tool-versions/{result.version.id}",
@@ -650,7 +647,6 @@ async def create_draft_version(
 async def save_draft_version(
     version_id: UUID,
     payload: SaveDraftVersionRequest,
-    response: Response,
     handler: FromDishka[SaveDraftVersionHandlerProtocol],
     user: User = Depends(require_contributor_api),
     _: None = Depends(require_csrf_token),
@@ -665,7 +661,6 @@ async def save_draft_version(
             change_summary=payload.change_summary,
         ),
     )
-    set_toast_cookie(response=response, message="Sparat.", toast_type="success")
     return SaveResult(
         version_id=result.version.id,
         redirect_url=f"/admin/tool-versions/{result.version.id}",
@@ -677,7 +672,6 @@ async def save_draft_version(
 async def submit_review(
     version_id: UUID,
     payload: SubmitReviewRequest,
-    response: Response,
     handler: FromDishka[SubmitForReviewHandlerProtocol],
     user: User = Depends(require_contributor_api),
     _: None = Depends(require_csrf_token),
@@ -689,7 +683,6 @@ async def submit_review(
             review_note=payload.review_note,
         ),
     )
-    set_toast_cookie(response=response, message="Skickat för granskning.", toast_type="success")
     return WorkflowActionResponse(
         version_id=result.version.id,
         redirect_url=f"/admin/tool-versions/{result.version.id}",
@@ -701,7 +694,6 @@ async def submit_review(
 async def publish_version(
     version_id: UUID,
     payload: PublishVersionRequest,
-    response: Response,
     handler: FromDishka[PublishVersionHandlerProtocol],
     user: User = Depends(require_admin_api),
     _: None = Depends(require_csrf_token),
@@ -713,7 +705,6 @@ async def publish_version(
             change_summary=payload.change_summary,
         ),
     )
-    set_toast_cookie(response=response, message="Version publicerad.", toast_type="success")
     return WorkflowActionResponse(
         version_id=result.new_active_version.id,
         redirect_url=f"/admin/tool-versions/{result.new_active_version.id}",
@@ -725,7 +716,6 @@ async def publish_version(
 async def request_changes(
     version_id: UUID,
     payload: RequestChangesRequest,
-    response: Response,
     handler: FromDishka[RequestChangesHandlerProtocol],
     user: User = Depends(require_admin_api),
     _: None = Depends(require_csrf_token),
@@ -737,7 +727,6 @@ async def request_changes(
             message=payload.message,
         ),
     )
-    set_toast_cookie(response=response, message="Ändringar begärda.", toast_type="success")
     return WorkflowActionResponse(
         version_id=result.new_draft_version.id,
         redirect_url=f"/admin/tool-versions/{result.new_draft_version.id}",
@@ -748,7 +737,6 @@ async def request_changes(
 @inject
 async def rollback_version(
     version_id: UUID,
-    response: Response,
     handler: FromDishka[RollbackVersionHandlerProtocol],
     user: User = Depends(require_superuser_api),
     _: None = Depends(require_csrf_token),
@@ -758,11 +746,6 @@ async def rollback_version(
         command=RollbackVersionCommand(version_id=version_id),
     )
     new_active = result.new_active_version
-    set_toast_cookie(
-        response=response,
-        message=f"Återställd till v{new_active.version_number}.",
-        toast_type="success",
-    )
     return WorkflowActionResponse(
         version_id=new_active.id,
         redirect_url=f"/admin/tool-versions/{new_active.id}",

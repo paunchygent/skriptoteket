@@ -3,11 +3,10 @@ from __future__ import annotations
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, Request
 
 from skriptoteket.config import Settings
-from skriptoteket.domain.identity.models import Role, Session, User
-from skriptoteket.domain.identity.role_guards import require_any_role, require_at_least_role
+from skriptoteket.domain.identity.models import Session, User
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.identity import CurrentUserProviderProtocol, SessionRepositoryProtocol
 
@@ -49,24 +48,3 @@ async def get_current_user(
     session_id: UUID | None = Depends(get_session_id),
 ) -> User | None:
     return await provider.get_current_user(session_id=session_id)
-
-
-async def require_user(user: User | None = Depends(get_current_user)) -> User:
-    if user is None:
-        raise HTTPException(status_code=303, headers={"Location": "/login"})
-    return user
-
-
-async def require_admin(user: User = Depends(require_user)) -> User:
-    require_any_role(user=user, roles={Role.ADMIN, Role.SUPERUSER})
-    return user
-
-
-async def require_contributor(user: User = Depends(require_user)) -> User:
-    require_at_least_role(user=user, role=Role.CONTRIBUTOR)
-    return user
-
-
-async def require_superuser(user: User = Depends(require_user)) -> User:
-    require_any_role(user=user, roles={Role.SUPERUSER})
-    return user
