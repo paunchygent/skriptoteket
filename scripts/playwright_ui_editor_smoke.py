@@ -78,7 +78,10 @@ def _open_editor(page: object, *, base_url: str, artifacts_dir: Path | None = No
     page.wait_for_url("**/admin/**", wait_until="domcontentloaded")
     try:
         expect(
-            page.get_by_role("heading", name=re.compile(r"Testa i sandbox", re.IGNORECASE))
+            page.get_by_role(
+                "heading",
+                name=re.compile(r"(Testkör|Testkor|Källkod|Kallkod)", re.IGNORECASE),
+            )
         ).to_be_visible()
     except AssertionError:
         if artifacts_dir:
