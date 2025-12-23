@@ -5,6 +5,7 @@ import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import type { components } from "../../api/openapi";
 import CodeMirrorEditor from "../../components/editor/CodeMirrorEditor.vue";
 import SandboxRunner from "../../components/editor/SandboxRunner.vue";
+import { useEditorWorkflowActions } from "../../composables/editor/useEditorWorkflowActions";
 import { useScriptEditor } from "../../composables/editor/useScriptEditor";
 import { useToolTaxonomy } from "../../composables/editor/useToolTaxonomy";
 import { useAuthStore } from "../../stores/auth";
@@ -41,11 +42,35 @@ const {
   saveButtonLabel,
   hasDirtyChanges,
   save,
+  loadEditor,
 } = useScriptEditor({
   toolId,
   versionId,
   route,
   router,
+});
+
+const {
+  isModalOpen: isWorkflowModalOpen,
+  activeAction: activeWorkflowAction,
+  actionMeta: workflowActionMeta,
+  showNoteField: showWorkflowNoteField,
+  note: workflowNote,
+  workflowError,
+  workflowSuccess,
+  isSubmitting: isWorkflowSubmitting,
+  canSubmitReview,
+  canPublish,
+  canRequestChanges,
+  canRollback,
+  openAction: openWorkflowAction,
+  closeAction: closeWorkflowModal,
+  submitAction: submitWorkflowAction,
+} = useEditorWorkflowActions({
+  selectedVersion,
+  route,
+  router,
+  reloadEditor: loadEditor,
 });
 
 const {
@@ -71,6 +96,30 @@ function formatDateTime(value: string): string {
   }
   return date.toLocaleString("sv-SE", { dateStyle: "medium", timeStyle: "short" });
 }
+
+const hasWorkflowActions = computed(() => {
+  return (
+    canSubmitReview.value ||
+    canPublish.value ||
+    canRequestChanges.value ||
+    canRollback.value
+  );
+});
+
+const confirmButtonClass = computed(() => {
+  switch (activeWorkflowAction.value) {
+    case "publish":
+      return "bg-burgundy text-canvas border-navy hover:bg-navy";
+    case "submit_review":
+      return "bg-navy text-canvas border-navy hover:bg-burgundy";
+    case "request_changes":
+      return "bg-white text-navy border-navy hover:bg-canvas";
+    case "rollback":
+      return "bg-white text-burgundy border-burgundy hover:bg-burgundy/10";
+    default:
+      return "bg-navy text-canvas border-navy hover:bg-burgundy";
+  }
+});
 
 function versionLabel(state: VersionState): string {
   const labels: Record<VersionState, string> = {
@@ -134,22 +183,62 @@ onBeforeUnmount(() => {
           </p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2 text-xs">
-          <span
-            class="px-2 py-1 border border-navy bg-canvas text-navy/70 uppercase tracking-wide font-semibold"
+        <div class="flex flex-col items-start gap-2 sm:items-end">
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <span
+              class="px-2 py-1 border border-navy bg-canvas text-navy/70 uppercase tracking-wide font-semibold"
+            >
+              {{ editor ? (editor.tool.is_published ? "Publicerad" : "Ej publicerad") : "Status" }}
+            </span>
+            <span
+              class="px-2 py-1 border border-navy bg-white text-navy uppercase tracking-wide font-semibold"
+            >
+              <template v-if="selectedVersion">
+                v{{ selectedVersion.version_number }} · {{ versionLabel(selectedVersion.state) }}
+              </template>
+              <template v-else>
+                Nytt utkast
+              </template>
+            </span>
+          </div>
+
+          <div
+            v-if="hasWorkflowActions"
+            class="flex flex-wrap items-center gap-2"
           >
-            {{ editor ? (editor.tool.is_published ? "Publicerad" : "Ej publicerad") : "Status" }}
-          </span>
-          <span
-            class="px-2 py-1 border border-navy bg-white text-navy uppercase tracking-wide font-semibold"
-          >
-            <template v-if="selectedVersion">
-              v{{ selectedVersion.version_number }} · {{ versionLabel(selectedVersion.state) }}
-            </template>
-            <template v-else>
-              Nytt utkast
-            </template>
-          </span>
+            <button
+              v-if="canSubmitReview"
+              type="button"
+              class="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide border border-navy bg-navy text-canvas shadow-brutal-sm hover:bg-burgundy transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+              @click="openWorkflowAction('submit_review')"
+            >
+              Skicka för granskning
+            </button>
+            <button
+              v-if="canPublish"
+              type="button"
+              class="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide border border-navy bg-burgundy text-canvas shadow-brutal-sm hover:bg-navy transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+              @click="openWorkflowAction('publish')"
+            >
+              Publicera
+            </button>
+            <button
+              v-if="canRequestChanges"
+              type="button"
+              class="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+              @click="openWorkflowAction('request_changes')"
+            >
+              Begär ändringar
+            </button>
+            <button
+              v-if="canRollback"
+              type="button"
+              class="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide border border-burgundy bg-white text-burgundy shadow-brutal-sm hover:bg-burgundy/10 transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+              @click="openWorkflowAction('rollback')"
+            >
+              Återställ
+            </button>
+          </div>
         </div>
       </div>
 
@@ -167,12 +256,24 @@ onBeforeUnmount(() => {
     >
       {{ successMessage }}
     </div>
+    <div
+      v-if="workflowSuccess"
+      class="p-4 border border-success bg-success/10 shadow-brutal-sm text-sm text-success"
+    >
+      {{ workflowSuccess }}
+    </div>
 
     <div
       v-if="errorMessage"
       class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
     >
       {{ errorMessage }}
+    </div>
+    <div
+      v-if="workflowError"
+      class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
+    >
+      {{ workflowError }}
     </div>
 
     <div
@@ -410,4 +511,83 @@ onBeforeUnmount(() => {
       </aside>
     </div>
   </div>
+
+  <Teleport to="body">
+    <div
+      v-if="isWorkflowModalOpen && workflowActionMeta"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-navy/40"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="workflow-modal-title"
+      @click.self="closeWorkflowModal"
+    >
+      <div class="relative w-full max-w-lg mx-4 p-6 bg-canvas border border-navy shadow-brutal">
+        <button
+          type="button"
+          class="absolute top-3 right-3 text-navy/60 hover:text-navy text-xl leading-none"
+          @click="closeWorkflowModal"
+        >
+          &times;
+        </button>
+
+        <h2
+          id="workflow-modal-title"
+          class="text-xl font-semibold text-navy"
+        >
+          {{ workflowActionMeta.title }}
+        </h2>
+
+        <p
+          v-if="workflowActionMeta.description"
+          class="mt-2 text-sm text-navy/70"
+        >
+          {{ workflowActionMeta.description }}
+        </p>
+
+        <div
+          v-if="workflowError"
+          class="mt-4 p-3 border border-burgundy bg-white text-burgundy text-sm"
+        >
+          {{ workflowError }}
+        </div>
+
+        <form
+          class="mt-5 space-y-4"
+          @submit.prevent="submitWorkflowAction"
+        >
+          <div v-if="showWorkflowNoteField">
+            <label class="block text-sm font-semibold text-navy mb-1">
+              {{ workflowActionMeta.noteLabel }}
+            </label>
+            <textarea
+              v-model="workflowNote"
+              rows="4"
+              class="w-full px-3 py-2 border border-navy bg-white text-navy"
+              :placeholder="workflowActionMeta.notePlaceholder"
+              :disabled="isWorkflowSubmitting"
+            />
+          </div>
+
+          <div class="flex flex-wrap gap-3">
+            <button
+              type="button"
+              class="px-4 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+              :disabled="isWorkflowSubmitting"
+              @click="closeWorkflowModal"
+            >
+              Avbryt
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 text-xs font-semibold uppercase tracking-wide border shadow-brutal-sm transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+              :class="confirmButtonClass"
+              :disabled="isWorkflowSubmitting"
+            >
+              {{ isWorkflowSubmitting ? "Arbetar..." : workflowActionMeta.confirmLabel }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </Teleport>
 </template>

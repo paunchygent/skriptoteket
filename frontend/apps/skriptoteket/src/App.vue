@@ -223,9 +223,15 @@ async function onLogout(): Promise<void> {
               {{ submitError }}
             </div>
 
-            <form class="mt-5 space-y-4" @submit.prevent="onLoginSubmit">
+            <form
+              class="mt-5 space-y-4"
+              @submit.prevent="onLoginSubmit"
+            >
               <div>
-                <label class="block text-sm font-semibold text-navy mb-1" for="modal-email">
+                <label
+                  class="block text-sm font-semibold text-navy mb-1"
+                  for="modal-email"
+                >
                   E-post
                 </label>
                 <input
@@ -240,7 +246,10 @@ async function onLogout(): Promise<void> {
               </div>
 
               <div>
-                <label class="block text-sm font-semibold text-navy mb-1" for="modal-password">
+                <label
+                  class="block text-sm font-semibold text-navy mb-1"
+                  for="modal-password"
+                >
                   Lösenord
                 </label>
                 <input

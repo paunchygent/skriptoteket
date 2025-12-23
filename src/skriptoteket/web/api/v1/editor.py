@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from datetime import datetime
 from pathlib import Path
 from typing import Literal
@@ -12,8 +10,12 @@ from pydantic import BaseModel, ConfigDict
 
 from skriptoteket.application.scripting.commands import (
     CreateDraftVersionCommand,
+    PublishVersionCommand,
+    RequestChangesCommand,
+    RollbackVersionCommand,
     RunSandboxCommand,
     SaveDraftVersionCommand,
+    SubmitForReviewCommand,
 )
 from skriptoteket.application.catalog.commands import UpdateToolTaxonomyCommand
 from skriptoteket.application.catalog.queries import ListToolTaxonomyQuery
@@ -32,8 +34,12 @@ from skriptoteket.protocols.catalog import (
 )
 from skriptoteket.protocols.scripting import (
     CreateDraftVersionHandlerProtocol,
+    PublishVersionHandlerProtocol,
+    RequestChangesHandlerProtocol,
+    RollbackVersionHandlerProtocol,
     RunSandboxHandlerProtocol,
     SaveDraftVersionHandlerProtocol,
+    SubmitForReviewHandlerProtocol,
     ToolRunRepositoryProtocol,
     ToolVersionRepositoryProtocol,
 )
@@ -41,6 +47,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_admin_api,
     require_contributor_api,
     require_csrf_token,
+    require_superuser_api,
 )
 from skriptoteket.web.editor_support import (
     DEFAULT_ENTRYPOINT,
@@ -112,6 +119,31 @@ class SaveResult(BaseModel):
 
     version_id: UUID
     redirect_url: str
+
+
+class WorkflowActionResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    version_id: UUID
+    redirect_url: str
+
+
+class SubmitReviewRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    review_note: str | None = None
+
+
+class PublishVersionRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    change_summary: str | None = None
+
+
+class RequestChangesRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    message: str | None = None
 
 
 class SandboxRunResponse(BaseModel):
@@ -462,6 +494,103 @@ async def save_draft_version(
     return SaveResult(
         version_id=result.version.id,
         redirect_url=f"/admin/tool-versions/{result.version.id}",
+    )
+
+
+@router.post("/tool-versions/{version_id}/submit-review", response_model=WorkflowActionResponse)
+@inject
+async def submit_review(
+    version_id: UUID,
+    payload: SubmitReviewRequest,
+    response: Response,
+    handler: FromDishka[SubmitForReviewHandlerProtocol],
+    user: User = Depends(require_contributor_api),
+    _: None = Depends(require_csrf_token),
+) -> WorkflowActionResponse:
+    result = await handler.handle(
+        actor=user,
+        command=SubmitForReviewCommand(
+            version_id=version_id,
+            review_note=payload.review_note,
+        ),
+    )
+    set_toast_cookie(response=response, message="Skickat för granskning.", toast_type="success")
+    return WorkflowActionResponse(
+        version_id=result.version.id,
+        redirect_url=f"/admin/tool-versions/{result.version.id}",
+    )
+
+
+@router.post("/tool-versions/{version_id}/publish", response_model=WorkflowActionResponse)
+@inject
+async def publish_version(
+    version_id: UUID,
+    payload: PublishVersionRequest,
+    response: Response,
+    handler: FromDishka[PublishVersionHandlerProtocol],
+    user: User = Depends(require_admin_api),
+    _: None = Depends(require_csrf_token),
+) -> WorkflowActionResponse:
+    result = await handler.handle(
+        actor=user,
+        command=PublishVersionCommand(
+            version_id=version_id,
+            change_summary=payload.change_summary,
+        ),
+    )
+    set_toast_cookie(response=response, message="Version publicerad.", toast_type="success")
+    return WorkflowActionResponse(
+        version_id=result.new_active_version.id,
+        redirect_url=f"/admin/tool-versions/{result.new_active_version.id}",
+    )
+
+
+@router.post("/tool-versions/{version_id}/request-changes", response_model=WorkflowActionResponse)
+@inject
+async def request_changes(
+    version_id: UUID,
+    payload: RequestChangesRequest,
+    response: Response,
+    handler: FromDishka[RequestChangesHandlerProtocol],
+    user: User = Depends(require_admin_api),
+    _: None = Depends(require_csrf_token),
+) -> WorkflowActionResponse:
+    result = await handler.handle(
+        actor=user,
+        command=RequestChangesCommand(
+            version_id=version_id,
+            message=payload.message,
+        ),
+    )
+    set_toast_cookie(response=response, message="Ändringar begärda.", toast_type="success")
+    return WorkflowActionResponse(
+        version_id=result.new_draft_version.id,
+        redirect_url=f"/admin/tool-versions/{result.new_draft_version.id}",
+    )
+
+
+@router.post("/tool-versions/{version_id}/rollback", response_model=WorkflowActionResponse)
+@inject
+async def rollback_version(
+    version_id: UUID,
+    response: Response,
+    handler: FromDishka[RollbackVersionHandlerProtocol],
+    user: User = Depends(require_superuser_api),
+    _: None = Depends(require_csrf_token),
+) -> WorkflowActionResponse:
+    result = await handler.handle(
+        actor=user,
+        command=RollbackVersionCommand(version_id=version_id),
+    )
+    new_active = result.new_active_version
+    set_toast_cookie(
+        response=response,
+        message=f"Återställd till v{new_active.version_number}.",
+        toast_type="success",
+    )
+    return WorkflowActionResponse(
+        version_id=new_active.id,
+        redirect_url=f"/admin/tool-versions/{new_active.id}",
     )
 
 

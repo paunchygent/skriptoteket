@@ -8,7 +8,11 @@ import pytest
 
 from skriptoteket.application.scripting.commands import (
     CreateDraftVersionResult,
+    PublishVersionResult,
+    RequestChangesResult,
+    RollbackVersionResult,
     SaveDraftVersionResult,
+    SubmitForReviewResult,
 )
 from skriptoteket.application.catalog.queries import ListToolTaxonomyResult
 from skriptoteket.application.catalog.commands import UpdateToolTaxonomyResult
@@ -20,7 +24,11 @@ from skriptoteket.protocols.catalog import (
 )
 from skriptoteket.protocols.scripting import (
     CreateDraftVersionHandlerProtocol,
+    PublishVersionHandlerProtocol,
+    RequestChangesHandlerProtocol,
+    RollbackVersionHandlerProtocol,
     SaveDraftVersionHandlerProtocol,
+    SubmitForReviewHandlerProtocol,
 )
 from skriptoteket.web.api.v1 import editor
 from tests.unit.web.admin_scripting_test_support import _tool, _user, _version
@@ -140,6 +148,200 @@ async def test_save_draft_version_success_returns_save_result() -> None:
     assert command.expected_parent_version_id == previous.id
     assert command.entrypoint == "run_tool"
     assert command.source_code == "print('new')"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_submit_review_returns_workflow_action_response() -> None:
+    handler = AsyncMock(spec=SubmitForReviewHandlerProtocol)
+    tool = _tool()
+    user = _user(role=Role.CONTRIBUTOR)
+    version = _version(
+        tool_id=tool.id,
+        created_by_user_id=user.id,
+        state=VersionState.DRAFT,
+        version_number=1,
+    )
+    handler.handle.return_value = SubmitForReviewResult(version=version)
+
+    mock_response = MagicMock()
+    mock_response.set_cookie = MagicMock()
+
+    result = await _unwrap_dishka(editor.submit_review)(
+        version_id=version.id,
+        payload=editor.SubmitReviewRequest(review_note="Review note"),
+        response=mock_response,
+        handler=handler,
+        user=user,
+    )
+
+    assert isinstance(result, editor.WorkflowActionResponse)
+    assert result.version_id == version.id
+    assert result.redirect_url == f"/admin/tool-versions/{version.id}"
+
+    mock_response.set_cookie.assert_called_once()
+    call_kwargs = mock_response.set_cookie.call_args.kwargs
+    assert call_kwargs["key"] == "skriptoteket_toast"
+    payload = _decode_toast_payload(call_kwargs["value"])
+    assert payload["m"] == "Skickat för granskning."
+    assert payload["t"] == "success"
+
+    handler.handle.assert_awaited_once()
+    command = handler.handle.call_args.kwargs["command"]
+    assert command.version_id == version.id
+    assert command.review_note == "Review note"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_publish_version_returns_workflow_action_response() -> None:
+    handler = AsyncMock(spec=PublishVersionHandlerProtocol)
+    tool = _tool()
+    user = _user(role=Role.ADMIN)
+    reviewed = _version(
+        tool_id=tool.id,
+        created_by_user_id=user.id,
+        state=VersionState.IN_REVIEW,
+        version_number=2,
+    )
+    new_active = _version(
+        tool_id=tool.id,
+        created_by_user_id=user.id,
+        state=VersionState.ACTIVE,
+        version_number=3,
+    )
+    handler.handle.return_value = PublishVersionResult(
+        new_active_version=new_active,
+        archived_reviewed_version=reviewed,
+        archived_previous_active_version=None,
+    )
+
+    mock_response = MagicMock()
+    mock_response.set_cookie = MagicMock()
+
+    result = await _unwrap_dishka(editor.publish_version)(
+        version_id=reviewed.id,
+        payload=editor.PublishVersionRequest(change_summary="Summary"),
+        response=mock_response,
+        handler=handler,
+        user=user,
+    )
+
+    assert isinstance(result, editor.WorkflowActionResponse)
+    assert result.version_id == new_active.id
+    assert result.redirect_url == f"/admin/tool-versions/{new_active.id}"
+
+    mock_response.set_cookie.assert_called_once()
+    call_kwargs = mock_response.set_cookie.call_args.kwargs
+    assert call_kwargs["key"] == "skriptoteket_toast"
+    payload = _decode_toast_payload(call_kwargs["value"])
+    assert payload["m"] == "Version publicerad."
+    assert payload["t"] == "success"
+
+    handler.handle.assert_awaited_once()
+    command = handler.handle.call_args.kwargs["command"]
+    assert command.version_id == reviewed.id
+    assert command.change_summary == "Summary"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_request_changes_returns_workflow_action_response() -> None:
+    handler = AsyncMock(spec=RequestChangesHandlerProtocol)
+    tool = _tool()
+    user = _user(role=Role.ADMIN)
+    reviewed = _version(
+        tool_id=tool.id,
+        created_by_user_id=user.id,
+        state=VersionState.IN_REVIEW,
+        version_number=2,
+    )
+    new_draft = _version(
+        tool_id=tool.id,
+        created_by_user_id=user.id,
+        state=VersionState.DRAFT,
+        version_number=3,
+    )
+    handler.handle.return_value = RequestChangesResult(
+        new_draft_version=new_draft,
+        archived_in_review_version=reviewed,
+    )
+
+    mock_response = MagicMock()
+    mock_response.set_cookie = MagicMock()
+
+    result = await _unwrap_dishka(editor.request_changes)(
+        version_id=reviewed.id,
+        payload=editor.RequestChangesRequest(message="Please adjust"),
+        response=mock_response,
+        handler=handler,
+        user=user,
+    )
+
+    assert isinstance(result, editor.WorkflowActionResponse)
+    assert result.version_id == new_draft.id
+    assert result.redirect_url == f"/admin/tool-versions/{new_draft.id}"
+
+    mock_response.set_cookie.assert_called_once()
+    call_kwargs = mock_response.set_cookie.call_args.kwargs
+    assert call_kwargs["key"] == "skriptoteket_toast"
+    payload = _decode_toast_payload(call_kwargs["value"])
+    assert payload["m"] == "Ändringar begärda."
+    assert payload["t"] == "success"
+
+    handler.handle.assert_awaited_once()
+    command = handler.handle.call_args.kwargs["command"]
+    assert command.version_id == reviewed.id
+    assert command.message == "Please adjust"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_rollback_version_returns_workflow_action_response() -> None:
+    handler = AsyncMock(spec=RollbackVersionHandlerProtocol)
+    tool = _tool()
+    user = _user(role=Role.SUPERUSER)
+    archived = _version(
+        tool_id=tool.id,
+        created_by_user_id=user.id,
+        state=VersionState.ARCHIVED,
+        version_number=1,
+    )
+    new_active = _version(
+        tool_id=tool.id,
+        created_by_user_id=user.id,
+        state=VersionState.ACTIVE,
+        version_number=5,
+    )
+    handler.handle.return_value = RollbackVersionResult(
+        new_active_version=new_active,
+        archived_previous_active_version=None,
+    )
+
+    mock_response = MagicMock()
+    mock_response.set_cookie = MagicMock()
+
+    result = await _unwrap_dishka(editor.rollback_version)(
+        version_id=archived.id,
+        response=mock_response,
+        handler=handler,
+        user=user,
+    )
+
+    assert isinstance(result, editor.WorkflowActionResponse)
+    assert result.version_id == new_active.id
+    assert result.redirect_url == f"/admin/tool-versions/{new_active.id}"
+
+    mock_response.set_cookie.assert_called_once()
+    call_kwargs = mock_response.set_cookie.call_args.kwargs
+    assert call_kwargs["key"] == "skriptoteket_toast"
+    payload = _decode_toast_payload(call_kwargs["value"])
+    assert payload["m"] == f"Återställd till v{new_active.version_number}."
+    assert payload["t"] == "success"
+
+    handler.handle.assert_awaited_once()
+    command = handler.handle.call_args.kwargs["command"]
+    assert command.version_id == archived.id
 
 
 @pytest.mark.unit
