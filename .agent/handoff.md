@@ -29,7 +29,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Role-guarded dashboard in `HomeView.vue` with live API data (runs, tools, admin stats)
 - CSS refactored to use HuleEdu design tokens (`--huleedu-*` variables)
 - **Layout structure aligned with HuleEdu**:
-  - **Landing**: "Skriptoteket" logo only (top-left), no nav links
+  - **Landing**: "Skriptoteket" logo only, left-aligned (matches authenticated sidebar offset)
   - **Desktop auth**: Sidebar (brand+nav, 240px) + Top bar (canvas bg, navy text, user info+logout)
   - **Mobile auth**: Hamburger only (right-aligned) → Sidebar drawer (brand+nav+user info+logout)
   - Mobile header hidden on desktop via CSS media query (`@media min-width: 768px`)
@@ -54,7 +54,10 @@ Keep this file updated so the next session can pick up work quickly.
 - Tests added in `tests/unit/web/test_editor_api_routes.py` (workflow responses + toast cookies).
 - Playwright E2E script: `scripts/playwright_st_11_16_editor_workflow_actions_e2e.py`.
 - Playwright config reads `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE` from dotenv in `scripts/_playwright_config.py`.
-- Pending UI refactor: minimize right sidebar; move history + taxonomy into drawers/modals to reduce clutter.
+- Mini-IDE refactor in `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`: action bar (Spara + ändringssammanfattning + Åtgärder), editor toolbar (Startfunktion dropdown + Öppna sparade/Redigera metadata), status line cleanup.
+- New components: `frontend/apps/skriptoteket/src/components/editor/EntrypointDropdown.vue`, `WorkflowActionsDropdown.vue`, `VersionHistoryDrawer.vue`, `MetadataDrawer.vue`.
+- Copy updates: “Begär publicering” confirm text; save button label now “Spara”.
+- Playwright ST-11-16: added debug screenshot on open-editor failure (`open-editor-failure.png`).
 
 ### ST-11-06 (catalog browse views)
 
@@ -121,15 +124,19 @@ Keep this file updated so the next session can pick up work quickly.
 ### Verification
 
 - Tests: `pdm run pytest tests/unit/application/catalog/handlers/test_list_tool_taxonomy.py tests/unit/application/catalog/handlers/test_update_tool_taxonomy.py tests/unit/web/test_editor_api_routes.py tests/integration/infrastructure/repositories/test_catalog_repository.py`
-- Tests: `pdm run pytest tests/unit/web/test_editor_api_routes.py`
-- UI check: Vite dev server already running on 5173; verified SPA responded (`curl http://127.0.0.1:5173/admin/tools/00000000-0000-0000-0000-000000000000` returned HTML + Vite client). Backend/Vite start attempts failed due to ports in use.
+- Live check (2025-12-23): `pdm run python -m scripts.playwright_spa_editor_metadata_check --base-url http://127.0.0.1:5173` (edit title/summary, title required, reload persists, restore original)
+- UI check: dev servers already running; `pdm run dev` (8000) + `pdm run fe-dev` (5173) failed due to ports in use.
 - Frontend: `pnpm -C frontend --filter @skriptoteket/spa typecheck`, `pnpm -C frontend --filter @skriptoteket/spa lint`
 - UI check: logged in via `/api/v1/auth/login`, loaded `/api/v1/admin/tools` to pick a tool,
   GET/PATCH taxonomy at `/api/v1/editor/tools/{tool_id}/taxonomy`, and confirmed
   `/admin/tools/{tool_id}` returned 200 from Vite.
 - Live check (2025-12-22): `pdm run python -m scripts.playwright_st_11_15_spa_my_tools_e2e --base-url http://127.0.0.1:5173`
 - Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_21_login_modal_e2e --base-url http://127.0.0.1:5173`
-- Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_16_editor_workflow_actions_e2e --base-url http://127.0.0.1:5173`
+- Live check (2025-12-23): `pdm run python -m scripts.playwright_spa_brand_alignment_check --base-url http://127.0.0.1:5173` (landing brand aligns + navy CTA hover = amber border)
+- Live check (2025-12-23): `pdm run python -m scripts.playwright_spa_admin_pending_review_badges_check --base-url http://127.0.0.1:5173` (admin/tools: left-anchored grid + equal-width CTAs + outline hover = canvas fill + amber border + “Klara med ändringar”)
+- Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_16_editor_workflow_actions_e2e` failed (Chromium crashpad permission error after headless/headful fallback).
+- Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_16_editor_workflow_actions_e2e` (escalated) failed: could not find heading “Verktyg” on `/admin/tools` (assertion timeout); screenshot saved to `.artifacts/st-11-16-editor-workflow-actions/open-editor-failure.png`.
+- Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_16_editor_workflow_actions_e2e --base-url http://127.0.0.1:5173` (escalated) succeeded; artifacts in `.artifacts/st-11-16-editor-workflow-actions/`.
 
 ## Key Architecture
 
