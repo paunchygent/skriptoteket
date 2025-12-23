@@ -26,7 +26,7 @@ async function fetchProfessions(): Promise<void> {
     } else if (error instanceof Error) {
       errorMessage.value = error.message;
     } else {
-      errorMessage.value = "Failed to load professions";
+      errorMessage.value = "Det gick inte att ladda yrkesgrupper.";
     }
   } finally {
     isLoading.value = false;
@@ -39,132 +39,36 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="browse-professions">
-    <h2 class="browse-professions__title">Bläddra verktyg</h2>
-    <p class="browse-professions__subtitle">Välj en yrkesgrupp för att se kategorier och verktyg.</p>
+  <div class="max-w-2xl">
+    <h2 class="text-2xl font-semibold text-navy mb-2">Bläddra verktyg</h2>
+    <p class="text-sm text-navy/60 mb-6">Välj en yrkesgrupp för att se kategorier och verktyg.</p>
 
-    <div
-      v-if="isLoading"
-      class="browse-professions__loading"
-    >
-      <span class="browse-professions__spinner" />
+    <div v-if="isLoading" class="flex items-center gap-3 p-4 text-navy/60">
+      <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
       <span>Laddar...</span>
     </div>
 
     <div
       v-else-if="errorMessage"
-      class="browse-professions__error"
+      class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
     >
       {{ errorMessage }}
     </div>
 
-    <ul
-      v-else
-      class="browse-professions__list"
-    >
+    <ul v-else class="list-none m-0 p-0 border border-navy bg-white">
       <li
         v-for="profession in professions"
         :key="profession.id"
-        class="browse-professions__item"
+        class="border-b border-navy/20 last:border-b-0"
       >
-        <RouterLink :to="`/browse/${profession.slug}`">
-          <span class="browse-professions__label">{{ profession.label }}</span>
+        <RouterLink
+          :to="`/browse/${profession.slug}`"
+          class="group flex justify-between items-center p-4 no-underline text-inherit hover:bg-canvas transition-colors"
+        >
+          <span class="font-medium">{{ profession.label }}</span>
+          <span class="text-navy/40 group-hover:text-burgundy transition-colors">→</span>
         </RouterLink>
       </li>
     </ul>
   </div>
 </template>
-
-<style scoped>
-.browse-professions {
-  max-width: 600px;
-}
-
-.browse-professions__title {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--huleedu-navy, #1C2E4A);
-}
-
-.browse-professions__subtitle {
-  margin: 0 0 1.5rem 0;
-  font-size: 0.875rem;
-  color: rgba(28, 46, 74, 0.6);
-}
-
-.browse-professions__loading {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  color: rgba(28, 46, 74, 0.6);
-}
-
-.browse-professions__spinner {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(28, 46, 74, 0.2);
-  border-top-color: var(--huleedu-navy, #1C2E4A);
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.browse-professions__error {
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--huleedu-burgundy, #6B1C2E);
-  color: var(--huleedu-burgundy, #6B1C2E);
-  background-color: var(--huleedu-canvas, #F9F8F2);
-}
-
-.browse-professions__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  border: 1px solid var(--huleedu-navy, #1C2E4A);
-  background-color: #fff;
-}
-
-.browse-professions__item {
-  border-bottom: 1px solid rgba(28, 46, 74, 0.2);
-}
-
-.browse-professions__item:last-child {
-  border-bottom: none;
-}
-
-.browse-professions__item a {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  text-decoration: none;
-  color: inherit;
-  transition: background-color 0.15s ease;
-}
-
-.browse-professions__item a::after {
-  content: "\2192";
-  color: rgba(28, 46, 74, 0.4);
-  transition: color 0.15s ease;
-}
-
-.browse-professions__item a:hover {
-  background-color: rgba(28, 46, 74, 0.02);
-}
-
-.browse-professions__item a:hover::after {
-  color: var(--huleedu-burgundy, #6B1C2E);
-}
-
-.browse-professions__label {
-  font-weight: 500;
-}
-</style>

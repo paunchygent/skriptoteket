@@ -113,7 +113,7 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
 
     <div
       v-else-if="errorMessage"
-      class="p-3 border border-burgundy text-burgundy bg-canvas"
+      class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
     >
       {{ errorMessage }}
     </div>
@@ -131,7 +131,6 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
         v-if="tools.length > 0"
         class="mb-8 last:mb-0"
       >
-        <h3 class="text-xs font-semibold uppercase tracking-wide text-navy/60 mb-3">Verktyg</h3>
         <ul class="list-none m-0 p-0 border border-navy bg-white">
           <li
             v-for="tool in tools"
@@ -148,9 +147,9 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
               </div>
               <RouterLink
                 :to="{ name: 'tool-run', params: { slug: tool.slug } }"
-                class="shrink-0 w-full sm:w-auto sm:min-w-20 text-center px-4 py-2 text-sm font-semibold uppercase tracking-wide text-canvas bg-burgundy rounded-sm btn-primary-hover transition-shadow"
+                class="shrink-0 w-full sm:w-auto sm:min-w-20 text-center px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white text-navy border border-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
               >
-                Kör
+                Välj
               </RouterLink>
             </div>
           </li>
@@ -162,7 +161,6 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
         v-if="curatedApps.length > 0"
         class="mb-8 last:mb-0"
       >
-        <h3 class="text-xs font-semibold uppercase tracking-wide text-navy/60 mb-3">Kurerade appar</h3>
         <ul class="list-none m-0 p-0 border border-navy bg-white">
           <li
             v-for="app in curatedApps"
@@ -179,9 +177,9 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
               </div>
               <RouterLink
                 :to="{ name: 'app-detail', params: { appId: app.app_id } }"
-                class="shrink-0 w-full sm:w-auto sm:min-w-20 text-center px-4 py-2 text-sm font-semibold uppercase tracking-wide text-canvas bg-burgundy rounded-sm btn-primary-hover transition-shadow"
+                class="shrink-0 w-full sm:w-auto sm:min-w-20 text-center px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white text-navy border border-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
               >
-                Öppna
+                Välj
               </RouterLink>
             </div>
           </li>
