@@ -21,9 +21,9 @@ type WorkflowActionMeta = {
 
 const ACTION_META: Record<WorkflowAction, WorkflowActionMeta> = {
   submit_review: {
-    title: "Skicka för granskning",
-    description: "Skicka utkastet till administratörer för granskning.",
-    confirmLabel: "Skicka för granskning",
+    title: "Begär publicering",
+    description: "Är du säker? Detta skickar utkastet till granskning.",
+    confirmLabel: "Begär publicering",
     noteLabel: "Notis till granskare (valfri)",
     notePlaceholder: "Skriv en kort notis…",
     showNote: true,
@@ -32,15 +32,15 @@ const ACTION_META: Record<WorkflowAction, WorkflowActionMeta> = {
     title: "Publicera version",
     description: "Publiceringen skapar en ny aktiv version.",
     confirmLabel: "Publicera",
-    noteLabel: "Ändringssammanfattning (valfri)",
+    noteLabel: "Ändra verktygets beskrivning (valfri, lämna tom för att behålla verktygsförfattarens beskrivning)",
     notePlaceholder: "T.ex. uppdaterade regler…",
     showNote: true,
   },
   request_changes: {
-    title: "Begär ändringar",
-    description: "Begär ändringar och skapa ett nytt utkast.",
-    confirmLabel: "Begär ändringar",
-    noteLabel: "Meddelande (valfritt)",
+    title: "Avslå version",
+    description: "Avslå versionen och meddela författaren.",
+    confirmLabel: "Avslå",
+    noteLabel: "Meddelande till författaren (valfritt)",
     notePlaceholder: "Beskriv vad som behöver ändras…",
     showNote: true,
   },
@@ -59,6 +59,12 @@ type UseEditorWorkflowActionsOptions = {
   route: RouteLocationNormalizedLoaded;
   router: Router;
   reloadEditor: () => Promise<void>;
+};
+
+type ActionItem = {
+  id: WorkflowAction;
+  label: string;
+  tone?: "primary" | "danger";
 };
 
 export function useEditorWorkflowActions({
@@ -97,6 +103,25 @@ export function useEditorWorkflowActions({
   const canRollback = computed(() => {
     const version = selectedVersion.value;
     return Boolean(version) && version?.state === "archived" && auth.hasAtLeastRole("superuser");
+  });
+
+  const actionItems = computed<ActionItem[]>(() => {
+    const items: ActionItem[] = [];
+
+    if (canSubmitReview.value) {
+      items.push({ id: "submit_review", label: ACTION_META.submit_review.title });
+    }
+    if (canPublish.value) {
+      items.push({ id: "publish", label: ACTION_META.publish.title, tone: "primary" });
+    }
+    if (canRequestChanges.value) {
+      items.push({ id: "request_changes", label: ACTION_META.request_changes.title });
+    }
+    if (canRollback.value) {
+      items.push({ id: "rollback", label: ACTION_META.rollback.title, tone: "danger" });
+    }
+
+    return items;
   });
 
   const actionMeta = computed<WorkflowActionMeta | null>(() => {
@@ -152,7 +177,7 @@ export function useEditorWorkflowActions({
         case "submit_review":
           endpoint = `/api/v1/editor/tool-versions/${version.id}/submit-review`;
           body = { review_note: noteValue };
-          successMessage = "Skickat för granskning.";
+          successMessage = "Begär publicering skickad.";
           break;
         case "publish":
           endpoint = `/api/v1/editor/tool-versions/${version.id}/publish`;
@@ -162,7 +187,7 @@ export function useEditorWorkflowActions({
         case "request_changes":
           endpoint = `/api/v1/editor/tool-versions/${version.id}/request-changes`;
           body = { message: noteValue };
-          successMessage = "Ändringar begärda.";
+          successMessage = "Versionen avslogs.";
           break;
         case "rollback":
           endpoint = `/api/v1/editor/tool-versions/${version.id}/rollback`;
@@ -215,6 +240,7 @@ export function useEditorWorkflowActions({
     canPublish,
     canRequestChanges,
     canRollback,
+    actionItems,
     openAction,
     closeAction,
     submitAction,

@@ -1,0 +1,189 @@
+<script setup lang="ts">
+import type { components } from "../../api/openapi";
+
+type ProfessionItem = components["schemas"]["ProfessionItem"];
+type CategoryItem = components["schemas"]["CategoryItem"];
+
+type MetadataDrawerProps = {
+  isOpen: boolean;
+  professions: ProfessionItem[];
+  categories: CategoryItem[];
+  selectedProfessionIds: string[];
+  selectedCategoryIds: string[];
+  taxonomyError: string | null;
+  taxonomySuccess: string | null;
+  isLoading: boolean;
+  isSaving: boolean;
+};
+
+const props = defineProps<MetadataDrawerProps>();
+
+const emit = defineEmits<{
+  (event: "close"): void;
+  (event: "save"): void;
+  (event: "update:selectedProfessionIds", value: string[]): void;
+  (event: "update:selectedCategoryIds", value: string[]): void;
+}>();
+
+function toggleSelection(list: string[], value: string): string[] {
+  return list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
+}
+
+function toggleProfession(value: string): void {
+  emit("update:selectedProfessionIds", toggleSelection(props.selectedProfessionIds, value));
+}
+
+function toggleCategory(value: string): void {
+  emit("update:selectedCategoryIds", toggleSelection(props.selectedCategoryIds, value));
+}
+</script>
+
+<template>
+  <Transition name="drawer-backdrop">
+    <div
+      v-if="isOpen"
+      class="fixed inset-0 z-40 bg-navy/40 md:hidden"
+      @click="emit('close')"
+    />
+  </Transition>
+
+  <Transition name="drawer-slide">
+    <aside
+      v-if="isOpen"
+      class="fixed inset-y-0 right-0 z-50 w-full bg-canvas border-l border-navy shadow-brutal flex flex-col md:static md:z-auto md:w-full"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="metadata-drawer-title"
+    >
+      <div class="p-6 border-b border-navy flex items-start justify-between gap-4">
+        <div>
+          <h2
+            id="metadata-drawer-title"
+            class="text-lg font-semibold text-navy"
+          >
+            Redigera taxonomi
+          </h2>
+          <p class="text-sm text-navy/70">
+            Uppdatera yrken och kategorier för verktyget.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="text-navy/60 hover:text-navy text-2xl leading-none"
+          @click="emit('close')"
+        >
+          &times;
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">Taxonomi</span>
+          <span
+            v-if="isLoading"
+            class="text-xs text-navy/60"
+          >
+            Laddar...
+          </span>
+        </div>
+
+        <p
+          v-if="taxonomyError"
+          class="text-sm text-burgundy"
+        >
+          {{ taxonomyError }}
+        </p>
+        <p
+          v-else-if="taxonomySuccess"
+          class="text-sm text-navy"
+        >
+          {{ taxonomySuccess }}
+        </p>
+
+        <div
+          v-if="!isLoading"
+          class="space-y-4"
+        >
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">Yrken</span>
+              <span class="text-xs text-navy/60">Välj minst ett</span>
+            </div>
+            <div class="grid gap-2">
+              <label
+                v-for="profession in professions"
+                :key="profession.id"
+                class="flex items-center gap-2 border border-navy/30 bg-white px-3 py-2 shadow-brutal-sm text-xs text-navy"
+              >
+                <input
+                  :value="profession.id"
+                  type="checkbox"
+                  class="border-navy"
+                  :checked="selectedProfessionIds.includes(profession.id)"
+                  @change="toggleProfession(profession.id)"
+                >
+                <span>{{ profession.label }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">Kategorier</span>
+              <span class="text-xs text-navy/60">Välj minst en</span>
+            </div>
+            <div class="grid gap-2">
+              <label
+                v-for="category in categories"
+                :key="category.id"
+                class="flex items-center gap-2 border border-navy/30 bg-white px-3 py-2 shadow-brutal-sm text-xs text-navy"
+              >
+                <input
+                  :value="category.id"
+                  type="checkbox"
+                  class="border-navy"
+                  :checked="selectedCategoryIds.includes(category.id)"
+                  @change="toggleCategory(category.id)"
+                >
+                <span>{{ category.label }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6 border-t border-navy">
+        <button
+          type="button"
+          class="w-full px-4 py-2 text-xs font-bold uppercase tracking-widest bg-navy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="isSaving"
+          @click="emit('save')"
+        >
+          {{ isSaving ? "Sparar..." : "Spara taxonomi" }}
+        </button>
+      </div>
+    </aside>
+  </Transition>
+</template>
+
+<style scoped>
+.drawer-backdrop-enter-active,
+.drawer-backdrop-leave-active {
+  transition: opacity var(--huleedu-duration-slow) var(--huleedu-ease-default);
+}
+.drawer-backdrop-enter-from,
+.drawer-backdrop-leave-to {
+  opacity: 0;
+}
+
+.drawer-slide-enter-active,
+.drawer-slide-leave-active {
+  transition: transform var(--huleedu-duration-slow) var(--huleedu-ease-default),
+    opacity var(--huleedu-duration-slow) var(--huleedu-ease-default);
+}
+.drawer-slide-enter-from,
+.drawer-slide-leave-to {
+  transform: translateX(8%);
+  opacity: 0;
+}
+</style>

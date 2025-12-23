@@ -133,18 +133,28 @@ onBeforeUnmount(() => {
         <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
           Testfiler
         </label>
-        <input
-          type="file"
-          multiple
-          class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm file:mr-3 file:border-0 file:bg-burgundy file:px-3 file:py-1 file:text-xs file:font-semibold file:uppercase file:text-canvas"
-          @change="selectFiles"
-        >
+        <div class="flex items-center gap-3 w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm">
+          <label
+            class="shrink-0 px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-burgundy text-canvas border border-navy cursor-pointer btn-secondary-hover transition-colors active:translate-x-0.5 active:translate-y-0.5"
+          >
+            Välj filer
+            <input
+              type="file"
+              multiple
+              class="sr-only"
+              @change="selectFiles"
+            >
+          </label>
+          <span class="text-sm text-navy/60 truncate">
+            {{ hasFiles ? `${selectedFiles.length} fil(er) valda` : 'Inga filer valda' }}
+          </span>
+        </div>
       </div>
 
       <button
         type="button"
         :disabled="!hasFiles || isRunning"
-        class="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-burgundy text-canvas border border-navy shadow-brutal-sm hover:bg-navy transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+        class="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-burgundy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
         @click="runSandbox"
       >
         {{ isRunning ? "Kör..." : "Kör i sandbox" }}
@@ -159,13 +169,6 @@ onBeforeUnmount(() => {
         Rensa
       </button>
     </div>
-
-    <p
-      v-if="hasFiles && !isRunning && !runResult"
-      class="text-xs text-navy/60"
-    >
-      {{ selectedFiles.length }} fil(er) valda
-    </p>
 
     <div
       v-if="errorMessage"

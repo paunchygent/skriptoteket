@@ -1,10 +1,11 @@
 import { computed, onMounted, ref, watch, type Ref } from "vue";
 import type { RouteLocationNormalizedLoaded, Router } from "vue-router";
 
-import { apiGet, apiPost, isApiError } from "../../api/client";
+import { apiFetch, apiGet, apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 
 type EditorBootResponse = components["schemas"]["EditorBootResponse"];
+type EditorToolMetadataResponse = components["schemas"]["EditorToolMetadataResponse"];
 type SaveResult = components["schemas"]["SaveResult"];
 
 type UseScriptEditorOptions = {
@@ -24,9 +25,12 @@ export function useScriptEditor({
   const entrypoint = ref("");
   const sourceCode = ref("");
   const changeSummary = ref("");
+  const metadataTitle = ref("");
+  const metadataSummary = ref("");
 
   const isLoading = ref(true);
   const isSaving = ref(false);
+  const isMetadataSaving = ref(false);
   const errorMessage = ref<string | null>(null);
   const successMessage = ref<string | null>(null);
 
@@ -37,7 +41,7 @@ export function useScriptEditor({
 
   const saveButtonLabel = computed(() => {
     if (isSaving.value) return "Sparar...";
-    return editor.value?.save_mode === "snapshot" ? "Spara" : "Skapa utkast";
+    return "Spara";
   });
 
   const hasDirtyChanges = computed(() => {
@@ -83,6 +87,8 @@ export function useScriptEditor({
       entrypoint.value = response.entrypoint;
       sourceCode.value = response.source_code;
       changeSummary.value = "";
+      metadataTitle.value = response.tool.title;
+      metadataSummary.value = response.tool.summary ?? "";
       initialSnapshot.value = {
         entrypoint: response.entrypoint,
         sourceCode: response.source_code,
@@ -178,6 +184,55 @@ export function useScriptEditor({
     }
   }
 
+  async function saveToolMetadata(): Promise<void> {
+    if (!editor.value || isMetadataSaving.value) return;
+
+    const normalizedTitle = metadataTitle.value.trim();
+    if (!normalizedTitle) {
+      errorMessage.value = "Titel krävs.";
+      return;
+    }
+
+    isMetadataSaving.value = true;
+    errorMessage.value = null;
+    successMessage.value = null;
+
+    try {
+      const response = await apiFetch<EditorToolMetadataResponse>(
+        `/api/v1/editor/tools/${encodeURIComponent(editor.value.tool.id)}/metadata`,
+        {
+          method: "PATCH",
+          body: {
+            title: normalizedTitle,
+            summary: normalizedOptionalString(metadataSummary.value),
+          },
+        },
+      );
+
+      editor.value = {
+        ...editor.value,
+        tool: {
+          ...editor.value.tool,
+          title: response.title,
+          summary: response.summary,
+        },
+      };
+      metadataTitle.value = response.title;
+      metadataSummary.value = response.summary ?? "";
+      successMessage.value = "Metadata sparad.";
+    } catch (error: unknown) {
+      if (isApiError(error)) {
+        errorMessage.value = error.message;
+      } else if (error instanceof Error) {
+        errorMessage.value = error.message;
+      } else {
+        errorMessage.value = "Det gick inte att spara metadata just nu.";
+      }
+    } finally {
+      isMetadataSaving.value = false;
+    }
+  }
+
   onMounted(() => {
     void loadEditor();
   });
@@ -196,6 +251,7 @@ export function useScriptEditor({
     changeSummary,
     isLoading,
     isSaving,
+    isMetadataSaving,
     errorMessage,
     successMessage,
     selectedVersion,
@@ -204,5 +260,8 @@ export function useScriptEditor({
     hasDirtyChanges,
     loadEditor,
     save,
+    metadataTitle,
+    metadataSummary,
+    saveToolMetadata,
   };
 }
