@@ -13,7 +13,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-23
-- Branch / commit: `main` (`d0e0bd6`)
+- Branch / commit: `main` (`c653e80`)
 - Current sprint: `SPR-2025-12-21` (EPIC-11 full SPA migration)
 - Stories done: ST-11-01/02/03/04/05/06/07/08/09/10/11/12/13/14/15/16/17/18/19/20/21/22/23
 - Production: Full Vue SPA; `d0e0bd6` deployed 2025-12-23
@@ -50,6 +50,7 @@ Keep this file updated so the next session can pick up work quickly.
 - History drawer: rollback button for archived versions (superuser) + soft-load version switch via `?version=` (no refresh).
 - Script bank seeding now dedupes on normalized title+summary and reuses existing tool (`src/skriptoteket/cli/main.py`).
 - Follow-up ST-11-23: persisted `owner_user_id` on tools + stricter permissions (admins can’t remove owner; only superuser can add/remove superuser maintainers); maintainer API exposes `owner_user_id` and UI disables invalid removals.
+- Policy documented in ADRs: `docs/adr/adr-0005-user-roles-and-script-governance.md`, `docs/adr/adr-0006-identity-and-authorization-mvp.md`.
 
 ### ST-11-06 (catalog browse views)
 
