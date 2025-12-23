@@ -13,10 +13,10 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-23
-- Branch / commit: `main` (uncommitted EPIC-11 changes)
+- Branch / commit: `main` (EPIC-11 complete)
 - Current sprint: `SPR-2025-12-21` (EPIC-11 full SPA migration)
-- Stories done: ST-11-01/02/03/04/05/06/07/08/09/10/11/12/14/15/16/17/18/19/21
-- Production: still SSR + SPA islands (legacy) until EPIC-11 cutover
+- Stories done: ST-11-01/02/03/04/05/06/07/08/09/10/11/12/13/14/15/16/17/18/19/21
+- Production: Full Vue SPA (SSR/HTMX removed in ST-11-13)
 
 ## Current Session (2025-12-23)
 
@@ -166,20 +166,17 @@ pdm run python -m scripts.playwright_st_11_09_curated_app_e2e --base-url http://
 ## Known Issues / Risks
 
 - `vega_lite` restrictions not implemented; do not render until restrictions exist (ADR-0024)
-- Frontend scripts split: `pdm run fe-*` = SPA, `pdm run fe-*-islands` = legacy islands
-- SSR action forms minimal: no required/default/placeholder yet
 - **Rule**: All Vue files must be <500 LoC. Use composables for logic, components for UI.
 
 ## Next Steps
 
-### Phase 4: Remaining features (ready)
-- None (ST-11-17 + ST-11-19 done).
-
-### Phase 5: Cutover
-6. **ST-11-13** (cutover): Delete SSR/HTMX, Playwright E2E suite
+### EPIC-11 Complete
+- ST-11-13 cutover deployed (2025-12-23)
+- All SSR/HTMX code deleted, SPA serving all routes
 
 ### Later
 - Governance: ST-02-02 (admin nomination + superuser approval)
+- ST-11-22: Remove dedicated /login route (modal-first complete)
 
 ## Historical (2025-12-21)
 
