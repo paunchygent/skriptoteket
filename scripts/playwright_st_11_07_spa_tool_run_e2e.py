@@ -80,7 +80,7 @@ def main() -> None:
 
         tool_row = page.locator("li").filter(has_text="Demo: Interaktiv")
         expect(tool_row).to_have_count(1)
-        tool_row.get_by_role("link", name=re.compile(r"Koer|Kör", re.IGNORECASE)).click()
+        tool_row.get_by_role("link", name=re.compile(r"Välj|Koer|Kör", re.IGNORECASE)).click()
         page.wait_for_url("**/tools/demo-next-actions/run", wait_until="domcontentloaded")
 
         # Upload + run

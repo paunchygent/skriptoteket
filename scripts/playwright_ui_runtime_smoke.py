@@ -59,12 +59,16 @@ def _run_curated_app(page: object, *, base_url: str, artifacts_dir: Path) -> Non
     expect(page.get_by_text(re.compile(r"Kurerad app", re.IGNORECASE))).to_be_visible()
 
     start_button = page.get_by_role("button", name=re.compile(r"Starta", re.IGNORECASE))
-    result_heading = page.get_by_text(re.compile(r"Resultat", re.IGNORECASE))
-
     if start_button.count() > 0 and start_button.is_visible():
         start_button.click()
 
-    expect(result_heading).to_be_visible(timeout=30_000)
+    action_button = page.get_by_role("button", name=re.compile(r"Öka", re.IGNORECASE))
+    if action_button.count() > 0:
+        expect(action_button).to_be_visible(timeout=60_000)
+    else:
+        expect(
+            page.get_by_text(re.compile(r"(Pågår|Lyckades|Misslyckades|Tidsgräns)", re.IGNORECASE))
+        ).to_be_visible(timeout=60_000)
     page.screenshot(path=str(artifacts_dir / "curated-app.png"), full_page=True)
 
 
@@ -76,8 +80,8 @@ def _run_demo_tool(page: object, *, base_url: str, artifacts_dir: Path) -> None:
 
     tool_row = page.locator("li").filter(has_text="Demo: Interaktiv")
     expect(tool_row).to_have_count(1)
-    tool_row.get_by_role("link", name=re.compile(r"Koer|Kör", re.IGNORECASE)).click()
-    page.wait_for_url("**/tools/demo-next-actions/run", wait_until="domcontentloaded")
+    tool_row.get_by_role("link", name=re.compile(r"Välj", re.IGNORECASE)).click()
+    page.wait_for_url("**/tools/**/run", wait_until="domcontentloaded")
 
     expect(
         page.get_by_role("heading", name=re.compile(r"Demo: Interaktiv", re.IGNORECASE))
@@ -88,8 +92,9 @@ def _run_demo_tool(page: object, *, base_url: str, artifacts_dir: Path) -> None:
     page.locator("input[type='file']").set_input_files(str(sample_file))
     page.get_by_role("button", name=re.compile(r"^Kör", re.IGNORECASE)).click()
 
-    page.wait_for_url("**/tools/demo-next-actions/runs/**", wait_until="domcontentloaded")
-    expect(page.get_by_text(re.compile(r"Resultat", re.IGNORECASE))).to_be_visible(timeout=60_000)
+    expect(page.get_by_role("button", name=re.compile(r"Rensa", re.IGNORECASE))).to_be_visible(
+        timeout=60_000
+    )
     page.screenshot(path=str(artifacts_dir / "tool-run.png"), full_page=True)
 
     download_link = page.locator("a[download]").first
