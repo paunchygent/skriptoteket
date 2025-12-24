@@ -227,11 +227,11 @@ Audit FK policy:
 Every script version must define:
 
 ```python
-def run_tool(input_path: str, output_dir: str) -> str:
+def run_tool(input_dir: str, output_dir: str) -> dict:
     """
-    - Read input_path (uploaded file)
+    - Discover uploaded files via SKRIPTOTEKET_INPUT_MANIFEST (paths under /work/input)
     - Write any artifacts into output_dir
-    - Return an HTML fragment to render in result view
+    - Return a UI contract v2 payload (outputs/next_actions/state)
     """
 ```
 

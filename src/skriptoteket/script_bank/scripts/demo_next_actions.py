@@ -6,8 +6,8 @@ Syfte:
 - Hålla logik enkel och robust: första action behandlar state som tomt ({}).
 
 Runner-kontrakt:
-- Entrypoint: run_tool(input_path: str, output_dir: str) -> dict
-- Input: valfri fil (första filen enligt input manifest)
+- Entrypoint: run_tool(input_dir: str, output_dir: str) -> dict
+- Input: filer i /work/input/ (hämta filvägar via input manifest)
 - Action input: action.json (skapad av Skriptoteket start_action)
 """
 
@@ -35,6 +35,27 @@ def _read_input_manifest() -> dict[str, object] | None:
     except json.JSONDecodeError:
         return None
     return payload if isinstance(payload, dict) else None
+
+
+def _read_manifest_files() -> list[dict[str, object]]:
+    manifest = _read_input_manifest()
+    if manifest is None:
+        return []
+
+    raw_files = manifest.get("files")
+    if not isinstance(raw_files, list):
+        return []
+
+    files: list[dict[str, object]] = []
+    for item in raw_files:
+        if not isinstance(item, dict):
+            continue
+        name = item.get("name")
+        path = item.get("path")
+        bytes_ = item.get("bytes")
+        if isinstance(name, str) and isinstance(path, str) and isinstance(bytes_, int):
+            files.append({"name": name, "path": path, "bytes": bytes_})
+    return files
 
 
 def _write_artifact(*, output_dir: Path, name: str, content: str) -> str:
@@ -67,8 +88,8 @@ def _action_with_note(label: str, action_id: str) -> dict:
     }
 
 
-def _handle_action(*, input_path: Path, output_dir: Path) -> dict:
-    payload = json.loads(input_path.read_text(encoding="utf-8"))
+def _handle_action(*, action_path: Path, output_dir: Path) -> dict:
+    payload = json.loads(action_path.read_text(encoding="utf-8"))
     action_id = str(payload.get("action_id") or "").strip()
     input_data = payload.get("input") if isinstance(payload.get("input"), dict) else {}
     state = payload.get("state") if isinstance(payload.get("state"), dict) else {}
@@ -124,27 +145,73 @@ def _handle_action(*, input_path: Path, output_dir: Path) -> dict:
     }
 
 
-def run_tool(input_path: str, output_dir: str) -> dict:
-    path = Path(input_path)
+def run_tool(input_dir: str, output_dir: str) -> dict:
+    input_root = Path(input_dir)
     out = Path(output_dir)
 
-    if path.name == "action.json":
-        return _handle_action(input_path=path, output_dir=out)
+    manifest_files = _read_manifest_files()
+    action_file = next(
+        (item for item in manifest_files if item.get("name") == "action.json"),
+        None,
+    )
+    if action_file is not None:
+        return _handle_action(action_path=Path(str(action_file["path"])), output_dir=out)
+    action_path = input_root / "action.json"
+    if action_path.is_file():
+        return _handle_action(action_path=action_path, output_dir=out)
 
-    manifest = _read_input_manifest()
-    files = []
-    if manifest is not None:
-        raw_files = manifest.get("files")
-        if isinstance(raw_files, list):
-            for item in raw_files:
-                if not isinstance(item, dict):
-                    continue
-                name = item.get("name")
-                bytes_ = item.get("bytes")
-                if isinstance(name, str) and isinstance(bytes_, int):
-                    files.append({"name": name, "bytes": bytes_})
+    primary_file = next(
+        (item for item in manifest_files if item.get("name") != "action.json"),
+        None,
+    )
+    if primary_file is not None:
+        path = Path(str(primary_file["path"]))
+        file_bytes = int(primary_file["bytes"])
+        input_files_count = len(manifest_files)
+    else:
+        primary_path = next(
+            (
+                file
+                for file in sorted(input_root.glob("*"))
+                if file.is_file() and file.name != "action.json"
+            ),
+            None,
+        )
+        if primary_path is None:
+            return {
+                "outputs": [
+                    _notice("error", "Ingen indatafil hittades. Ladda upp minst en fil."),
+                ],
+                "next_actions": [],
+                "state": None,
+            }
 
-    file_bytes = path.stat().st_size if path.is_file() else 0
+        path = primary_path
+        file_bytes = primary_path.stat().st_size
+        input_files_count = len([file for file in input_root.iterdir() if file.is_file()])
+
+    if not manifest_files:
+        manifest_files = [
+            {"name": file.name, "path": str(file), "bytes": file.stat().st_size}
+            for file in sorted(input_root.glob("*"))
+            if file.is_file()
+        ]
+
+    if not manifest_files:
+        return {
+            "outputs": [
+                _notice("error", "Ingen indatafil hittades. Ladda upp minst en fil."),
+            ],
+            "next_actions": [],
+            "state": None,
+        }
+
+    files = [
+        {"name": str(item["name"]), "bytes": int(item["bytes"])}
+        for item in manifest_files
+        if "name" in item and "bytes" in item
+    ]
+
     snippet = ""
     try:
         snippet = path.read_text(encoding="utf-8", errors="replace")[:200]
@@ -165,7 +232,7 @@ def run_tool(input_path: str, output_dir: str) -> dict:
             "markdown": (
                 "Det här är ett **demoverktyg** för att testa `next_actions` i SPA.\n\n"
                 f"- Artifact: `{artifact_name}`\n"
-                f"- Input manifest filer: **{len(files) or 1}**\n"
+                f"- Input manifest filer: **{input_files_count}**\n"
                 "\n"
                 "*Obs: session-state sparas mellan körningar. Använd **Nollställ** "
                 "om du vill börja om.*\n"

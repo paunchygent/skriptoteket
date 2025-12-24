@@ -15,6 +15,17 @@ SCRIPT_BANK: list[ScriptBankEntry] = [
         source_filename="ist_vh_mejl_bcc.py",
     ),
     ScriptBankEntry(
+        slug="html-to-pdf",
+        title="HTML → PDF-konverterare",
+        summary=(
+            "Omvandlar en uppladdad HTML-fil till en PDF. Stöder externa assets (CSS/bilder) "
+            "om de laddas upp tillsammans och refereras med relativa filnamn."
+        ),
+        profession_slugs=["gemensamt"],
+        category_slugs=["ovrigt"],
+        source_filename="html_to_pdf.py",
+    ),
+    ScriptBankEntry(
         slug="demo-next-actions",
         title="Demo: Interaktiv körning (next_actions)",
         summary=(

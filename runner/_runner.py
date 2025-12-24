@@ -150,7 +150,7 @@ def main() -> int:
 
     script_path = Path(os.getenv("SKRIPTOTEKET_SCRIPT_PATH", "/work/script.py"))
     entrypoint = os.getenv("SKRIPTOTEKET_ENTRYPOINT", "run_tool").strip()
-    input_path = Path(os.getenv("SKRIPTOTEKET_INPUT_PATH", "/work/input"))
+    input_dir = Path(os.getenv("SKRIPTOTEKET_INPUT_DIR", "/work/input"))
     output_dir = Path(os.getenv("SKRIPTOTEKET_OUTPUT_DIR", "/work/output"))
     result_path = Path(os.getenv("SKRIPTOTEKET_RESULT_PATH", "/work/result.json"))
 
@@ -169,7 +169,7 @@ def main() -> int:
         if func is None or not callable(func):
             raise RuntimeError(f"Entrypoint not found: {entrypoint}")
 
-        result = func(str(input_path), str(output_dir))
+        result = func(str(input_dir), str(output_dir))
 
         outputs, next_actions, state = _to_contract_v2_ui_fields(result)
         status = "succeeded"

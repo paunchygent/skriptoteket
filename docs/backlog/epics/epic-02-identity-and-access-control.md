@@ -5,7 +5,7 @@ title: "Identity and access control (RBAC)"
 status: active
 owners: "agents"
 created: 2025-12-13
-updated: 2025-12-23
+updated: 2025-12-24
 outcome: "Users can authenticate, self-register, manage their profiles, and role checks reliably gate contributor/admin/superuser capabilities."
 dependencies: ["ADR-0006", "ADR-0011", "ADR-0034"]
 ---
@@ -30,9 +30,9 @@ dependencies: ["ADR-0006", "ADR-0011", "ADR-0034"]
 
 - [ST-02-01: User model and identity service](../stories/story-02-01-user-model-and-identity-service.md) (done)
 - [ST-02-02: Admin nomination and superuser approval](../stories/story-02-02-admin-nomination-and-superuser-approval.md) (ready)
-- [ST-02-03: Self-registration](../stories/story-02-03-self-registration.md) (ready)
-- [ST-02-04: User profile and password change](../stories/story-02-04-user-profile-and-password-change.md) (ready)
-- [ST-02-05: Brute-force lockout](../stories/story-02-05-brute-force-lockout.md) (ready)
+- [ST-02-03: Self-registration](../stories/story-02-03-self-registration.md) (done)
+- [ST-02-04: User profile and password change](../stories/story-02-04-user-profile-and-password-change.md) (done)
+- [ST-02-05: Brute-force lockout](../stories/story-02-05-brute-force-lockout.md) (done)
 
 ## Dependencies
 

@@ -27,4 +27,3 @@ class UpdateToolSettingsHandlerProtocol(Protocol):
         actor: User,
         command: UpdateToolSettingsCommand,
     ) -> UpdateToolSettingsResult: ...
-

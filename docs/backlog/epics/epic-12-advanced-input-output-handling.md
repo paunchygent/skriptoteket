@@ -17,7 +17,6 @@ dependencies: ["EPIC-11"]
 
 - Multi-file upload support (UI + runner contract)
 - Input manifest for file metadata discovery
-- Backward compatibility for single-file scripts
 - Native PDF output helper (future)
 - Personalized tool settings stored in user memory (future)
 - Interactive text/dropdown inputs (future)
@@ -31,13 +30,13 @@ dependencies: ["EPIC-11"]
 ## Stories
 
 - [ST-12-01: Multi-file upload support](../stories/story-12-01-multi-file-upload.md)
-- [ST-12-02: Native PDF output helper](../stories/story-12-02-native-pdf-output-helper.md) (ready)
-- [ST-12-03: Personalized tool settings](../stories/story-12-03-personalized-tool-settings.md) (ready)
+- [ST-12-02: Native PDF output helper](../stories/story-12-02-native-pdf-output-helper.md) (done)
+- [ST-12-03: Personalized tool settings](../stories/story-12-03-personalized-tool-settings.md) (done)
 - [ST-12-04: Interactive text/dropdown inputs](../stories/story-12-04-interactive-text-dropdown-inputs.md) (ready)
 
 ## Risks
 
-- Breaking existing scripts if backward compatibility not properly handled (mitigate: preserve `SKRIPTOTEKET_INPUT_PATH` for single-file uploads)
+- Breaking existing scripts if contract changes are not coordinated (mitigate: migrate scripts and rely on `SKRIPTOTEKET_INPUT_MANIFEST`)
 - Large file uploads may hit timeout/memory limits (mitigate: enforce per-file and total size caps)
 - Complex multi-file UI may confuse users (mitigate: default to simple single-file, show multi-file only when needed)
 

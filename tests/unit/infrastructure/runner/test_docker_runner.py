@@ -183,7 +183,8 @@ async def test_execute_success(
     mock_capacity.release.assert_awaited_once()
 
     env = client_instance.containers.create.call_args.kwargs["environment"]
-    assert env["SKRIPTOTEKET_INPUT_PATH"] == "/work/input/input.txt"
+    assert env["SKRIPTOTEKET_INPUT_DIR"] == "/work/input"
+    assert "SKRIPTOTEKET_INPUT_PATH" not in env
     assert env["SKRIPTOTEKET_MEMORY_PATH"] == "/work/memory.json"
     manifest = json.loads(env["SKRIPTOTEKET_INPUT_MANIFEST"])
     assert manifest == {

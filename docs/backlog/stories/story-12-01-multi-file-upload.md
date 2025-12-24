@@ -10,8 +10,8 @@ acceptance_criteria:
   - "Given user selects multiple files in the upload form, when the form is submitted, then all files are sent to the runner"
   - "Given user uploads multiple files with colliding sanitized filenames, when the form is submitted, then the request is rejected with a validation error instructing the user to rename locally"
   - "Given multiple files are uploaded, when the script runs, then all files are available in /work/input/"
+  - "Given a script runs, when it reads SKRIPTOTEKET_INPUT_DIR, then it points to /work/input/"
   - "Given multiple files are uploaded, when the script reads SKRIPTOTEKET_INPUT_MANIFEST, then JSON contains metadata for all files"
-  - "Given a single file is uploaded, when the script runs, then SKRIPTOTEKET_INPUT_PATH points to that file (backward compatibility)"
   - "Given the platform enforces upload caps, when the user uploads files exceeding per-file or total limits, then the request is rejected with a validation error (no runner execution)"
   - "Given a tool run exists, when inspecting it in the admin UI or DB, then ToolRun stores an input_manifest (names + bytes) for audit/debugging"
   - "Given the knowledge base, when an LLM generates a multi-file script, then the documented patterns work correctly"
@@ -33,8 +33,8 @@ PRD-script-hub-v0.2 defines "Advanced Input Handling (Multi-File & External Sour
 - Validation: Sanitize filenames and reject duplicates after sanitization
 - Limits: Enforce per-file and total upload size caps (settings-driven)
 - Command layer: Accept `list[tuple[str, bytes]]` instead of single file
-- Runner: Place all files in `/work/input/`; generate `SKRIPTOTEKET_INPUT_MANIFEST` with `[{name,path,bytes}]`
-- Backward compat: Preserve `SKRIPTOTEKET_INPUT_PATH` for single-file uploads
+- Runner: Place all files in `/work/input/`; generate `SKRIPTOTEKET_INPUT_MANIFEST` with `{"files":[{name,path,bytes}]}`
+- Runner: Set `SKRIPTOTEKET_INPUT_DIR=/work/input` and remove `SKRIPTOTEKET_INPUT_PATH`
 - Persistence: Store input_manifest (names + bytes) on ToolRun
 - Knowledge base: Add multi-file script patterns
 
@@ -52,7 +52,7 @@ PRD-script-hub-v0.2 defines "Advanced Input Handling (Multi-File & External Sour
 ## Implemented (2025-12-21)
 
 - Runner contract: `SKRIPTOTEKET_INPUT_MANIFEST` (stable minimal shape) + all files placed in `/work/input/`.
-- Backward compatibility preserved: `SKRIPTOTEKET_INPUT_PATH` points to the first file (single-file remains unchanged).
+- Runner contract: `SKRIPTOTEKET_INPUT_DIR=/work/input` (scripts discover inputs via the manifest).
 - Validation: reject filename collisions after sanitization with a clear user error.
 - Safety: settings-driven upload caps enforced while reading uploads (per-file + total).
 - Persistence: `tool_runs.input_manifest` JSONB (names + bytes only) with migration + idempotency contract test.

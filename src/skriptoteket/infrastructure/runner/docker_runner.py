@@ -236,7 +236,6 @@ class DockerToolRunner(ToolRunnerProtocol):
             else self._production_timeout_seconds
         )
         normalized_input_files, _ = normalize_input_files(input_files=input_files)
-        primary_filename = normalized_input_files[0][0]
         input_manifest = {
             "files": [
                 {"name": name, "path": f"/work/input/{name}", "bytes": len(content)}
@@ -264,7 +263,7 @@ class DockerToolRunner(ToolRunnerProtocol):
             "XDG_CACHE_HOME": "/tmp/home/.cache",
             "SKRIPTOTEKET_SCRIPT_PATH": "/work/script.py",
             "SKRIPTOTEKET_ENTRYPOINT": version.entrypoint,
-            "SKRIPTOTEKET_INPUT_PATH": f"/work/input/{primary_filename}",
+            "SKRIPTOTEKET_INPUT_DIR": "/work/input",
             "SKRIPTOTEKET_INPUT_MANIFEST": input_manifest_json,
             "SKRIPTOTEKET_MEMORY_PATH": "/work/memory.json",
             "SKRIPTOTEKET_OUTPUT_DIR": "/work/output",

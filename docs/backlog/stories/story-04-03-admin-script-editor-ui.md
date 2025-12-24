@@ -67,11 +67,19 @@ See REF-scripting-api-contracts for detailed endpoint specifications, request/re
   - Contributor access to the editor is based on assigned tool maintenance (see `tool_maintainers`): maintainers can view ACTIVE/ARCHIVED plus their own drafts/in_review, enabling iteration after publication (create a new draft from the published baseline).
   - This story SHOULD include a minimal discoverability surface for contributors (e.g. “My tools” list) or document
     how contributors obtain a `tool_id` to open the editor.
-- Template pre-fill for new tools:
+  - Template pre-fill for new tools:
 
   ```python
-  def run_tool(input_path: str, output_dir: str) -> str:
+  def run_tool(input_dir: str, output_dir: str) -> str:
+      import json
       import os
-      size = os.path.getsize(input_path)
+      from pathlib import Path
+
+      manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
+      manifest = json.loads(manifest_raw) if manifest_raw else {}
+      files = [Path(f["path"]) for f in manifest.get("files", [])]
+      path = files[0] if files else None
+
+      size = path.stat().st_size if path and path.exists() else 0
       return f"<p>Received file of {size} bytes.</p>"
   ```

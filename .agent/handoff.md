@@ -38,7 +38,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 - Tool version schema: `migrations/versions/0014_tool_versions_settings.py`, `src/skriptoteket/domain/scripting/models.py`, `src/skriptoteket/infrastructure/db/models/tool_version.py`.
 - Settings API (per user/tool/schema version): `src/skriptoteket/web/api/v1/tools.py`, `src/skriptoteket/application/scripting/handlers/get_tool_settings.py`, `src/skriptoteket/application/scripting/handlers/update_tool_settings.py`.
-- Runner injection: `memory.json` + `SKRIPTOTEKET_MEMORY_PATH` via `src/skriptoteket/infrastructure/runner/docker_runner.py` (+ protocol update).
+- Runner injection: `memory.json` + `SKRIPTOTEKET_MEMORY_PATH`; input contract uses `SKRIPTOTEKET_INPUT_DIR` + `SKRIPTOTEKET_INPUT_MANIFEST` (removed `SKRIPTOTEKET_INPUT_PATH`) via `src/skriptoteket/infrastructure/runner/docker_runner.py` (+ protocol update).
 - SPA: Settings panel on tool run (`frontend/apps/skriptoteket/src/views/ToolRunView.vue`, `frontend/apps/skriptoteket/src/composables/tools/useToolSettings.ts`, `frontend/apps/skriptoteket/src/components/tool-run/ToolRunSettingsPanel.vue`).
 - Editor: settings schema JSON textarea (`frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.ts`, `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`).
 - Script author docs: `docs/reference/ref-ai-script-generation-kb.md` (read `memory.json` settings snippet).

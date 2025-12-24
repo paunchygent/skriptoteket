@@ -220,14 +220,13 @@ This section covers v0.2 features from PRD-script-hub-v0.2 that are not yet sche
   1. Update upload forms to support `multiple` file selection.
   2. Update command layer to accept `list[tuple[str, bytes]]`.
   3. Update Docker runner to place all files in `/work/input/` and generate `SKRIPTOTEKET_INPUT_MANIFEST`.
-  4. Preserve `SKRIPTOTEKET_INPUT_PATH` for backward compatibility with single-file scripts.
+  4. Set `SKRIPTOTEKET_INPUT_DIR=/work/input` and remove `SKRIPTOTEKET_INPUT_PATH`.
   5. Reject filename collisions after sanitization with a clear validation error.
   6. Enforce per-file and total upload caps while reading uploads (settings-driven).
   7. Persist an `input_manifest` (names + bytes only) on `ToolRun` for audit/debugging.
   8. Update knowledge base with multi-file script patterns.
 - Checkpoints (success criteria):
   - ST-12-01 acceptance criteria pass.
-  - Single-file scripts continue to work unchanged.
   - Migration contract test passes for `tool_runs.input_manifest`.
 - Dependencies:
   - ADR-0031 (Multi-file input contract)

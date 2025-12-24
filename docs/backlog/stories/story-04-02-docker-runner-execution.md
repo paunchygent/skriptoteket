@@ -120,7 +120,7 @@ Define a stable, versioned contract for how the runner returns results to the ap
 ## Script Contract
 
 ```python
-def run_tool(input_path: str, output_dir: str) -> str:
+def run_tool(input_dir: str, output_dir: str) -> str:
     """
     Standard contract.
     Returns HTML string.

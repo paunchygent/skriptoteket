@@ -90,7 +90,7 @@ Expand the execution model to support **Multiple Inputs**.
     *   **Env Var**: Provide `SKRIPTOTEKET_INPUT_MANIFEST` (JSON) listing available files and their metadata (source, original name).
 4.  **Script Contract**:
     *   Scripts must be able to handle iterating through `/work/input/` or looking for specific filenames.
-    *   (Backward Compatibility): If only one file is uploaded, `SKRIPTOTEKET_INPUT_PATH` still points to it.
+    *   Provide `SKRIPTOTEKET_INPUT_DIR=/work/input` and `SKRIPTOTEKET_INPUT_MANIFEST` for deterministic discovery.
 
 ### User Story
 > "As an Administrator, I want to upload the 'Budget Report' and the 'Staff List' simultaneously so the script can calculate the cost per department without me having to merge the Excel files manually first."

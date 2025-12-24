@@ -28,8 +28,8 @@ Script execution is **isolated** within ephemeral Docker containers, managed by 
 *   **Environment Variables (Container):**
     *   `SKRIPTOTEKET_ENTRYPOINT`: Function to call (default: `run_tool`).
     *   `SKRIPTOTEKET_SCRIPT_PATH`: Path to script (`/work/script.py`).
-    *   `SKRIPTOTEKET_INPUT_PATH`: Path to the first input file (`/work/input/<filename>`).
-    *   `SKRIPTOTEKET_INPUT_MANIFEST`: JSON listing all input files (`[{name,path,bytes}]`).
+    *   `SKRIPTOTEKET_INPUT_DIR`: Directory containing all uploaded files (`/work/input`).
+    *   `SKRIPTOTEKET_INPUT_MANIFEST`: JSON listing all input files (`{"files":[{name,path,bytes}]}`).
     *   `SKRIPTOTEKET_MEMORY_PATH`: Path to per-run memory JSON (`/work/memory.json`, contains `{"settings": {...}}`).
     *   `SKRIPTOTEKET_OUTPUT_DIR`: Directory for artifacts (`/work/output`).
 
@@ -90,7 +90,7 @@ Both execution types converge on the `ToolRunnerProtocol` but start from differe
 
 *   **Docker Availability:** The system *assumes* the host has a Docker daemon reachable via standard socket (`docker.from_env()`).
 *   **Image Presence:** Assumes `RUNNER_IMAGE` is built and available locally or pullable.
-*   **Script Contract:** Assumes user script defines a function matching `def run_tool(input_path: str, output_dir: str) -> str`.
+*   **Script Contract:** Assumes user script defines a function matching `def run_tool(input_dir: str, output_dir: str) -> str`.
 *   **File System:** Assumes `ARTIFACTS_ROOT` is writable and persistent.
 *   **Network:** The runner container has `network_mode="none"`, assuming scripts **do not** need internet access.
 

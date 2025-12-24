@@ -113,7 +113,9 @@ def _submit_for_review(page: object) -> None:
 
 
 def _publish(page: object) -> None:
-    publish_button = page.get_by_role("button", name=re.compile(r"^Publicera$", re.IGNORECASE)).first
+    publish_button = page.get_by_role(
+        "button", name=re.compile(r"^Publicera$", re.IGNORECASE)
+    ).first
     expect(publish_button).to_be_visible(timeout=20_000)
     publish_button.click()
 
@@ -153,7 +155,9 @@ def main() -> None:
 
         # Edit + publish a version with a settings schema
         page.goto(f"{base_url}/admin/tools/{tool_id}", wait_until="domcontentloaded")
-        expect(page.get_by_role("heading", name=re.compile(r"Källkod", re.IGNORECASE))).to_be_visible()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Källkod", re.IGNORECASE))
+        ).to_be_visible()
 
         schema_textarea = page.get_by_label("Schema (JSON)")
         expect(schema_textarea).to_be_visible()
@@ -166,7 +170,7 @@ import os
 from pathlib import Path
 
 
-def {entrypoint}(input_path: str, output_dir: str) -> dict:
+def {entrypoint}(input_dir: str, output_dir: str) -> dict:
     memory_path = os.environ.get("SKRIPTOTEKET_MEMORY_PATH", "/work/memory.json")
     try:
         memory = json.loads(Path(memory_path).read_text(encoding="utf-8"))
@@ -197,7 +201,9 @@ def {entrypoint}(input_path: str, output_dir: str) -> dict:
 
         # Verify runtime settings panel + persistence + runner injection
         page.goto(f"{base_url}/tools/{tool_slug}/run", wait_until="domcontentloaded")
-        expect(page.get_by_role("heading", name=re.compile(r"Demo: Interaktiv", re.IGNORECASE))).to_be_visible()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Demo: Interaktiv", re.IGNORECASE))
+        ).to_be_visible()
 
         settings_toggle = page.get_by_role(
             "button", name=re.compile(r"Inställningar", re.IGNORECASE)

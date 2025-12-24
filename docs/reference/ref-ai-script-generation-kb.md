@@ -18,8 +18,8 @@ Skriptoteket är en plattform för att köra Python-skript som bearbetar uppladd
 
 **Nyckelkoncept:**
 
-- Användaren laddar upp en fil
-- Skriptet bearbetar filen
+- Användaren laddar upp en eller flera filer
+- Skriptet bearbetar en eller flera filer
 - Skriptet returnerar UI-element (tabeller, meddelanden, markdown) och/eller nedladdningsbara artefakter
 - Skriptet körs i en isolerad Docker-container utan nätverksåtkomst
 
@@ -32,10 +32,10 @@ Skriptoteket är en plattform för att köra Python-skript som bearbetar uppladd
 Varje skript MÅSTE definiera en funktion med denna signatur:
 
 ```python
-def run_tool(input_path: str, output_dir: str) -> str | dict:
+def run_tool(input_dir: str, output_dir: str) -> str | dict:
     """
     Parametrar:
-    - input_path: Absolut sökväg till den uppladdade filen
+    - input_dir: Absolut sökväg till katalogen med uppladdade filer (/work/input)
     - output_dir: Katalog där skriptet kan skriva artefakter (filer att ladda ner)
 
     Returnerar:
@@ -50,12 +50,25 @@ def run_tool(input_path: str, output_dir: str) -> str | dict:
 
 ```python
 from pathlib import Path
+import json
+import os
 
-def run_tool(input_path: str, output_dir: str) -> dict:
+def run_tool(input_dir: str, output_dir: str) -> dict:
     """Bearbeta den uppladdade filen och returnera resultat."""
 
-    # Läs input
-    path = Path(input_path)
+    # Hitta filer via input manifest (deterministiskt)
+    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
+    manifest = json.loads(manifest_raw) if manifest_raw else {}
+    files = [Path(f["path"]) for f in manifest.get("files", [])]
+
+    if not files:
+        return {
+            "outputs": [{"kind": "notice", "level": "error", "message": "Ingen fil uppladdad"}],
+            "next_actions": [],
+            "state": None
+        }
+
+    path = files[0]
 
     # Bearbeta...
 
@@ -189,7 +202,7 @@ Skriv filer till `output_dir`:
 from pathlib import Path
 from datetime import datetime, timezone
 
-def run_tool(input_path: str, output_dir: str) -> dict:
+def run_tool(input_dir: str, output_dir: str) -> dict:
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
 
@@ -298,7 +311,7 @@ Följande Python-bibliotek finns förinstallerade i körmiljön:
 
 - `SKRIPTOTEKET_SCRIPT_PATH`: Sökväg till skriptet
 - `SKRIPTOTEKET_ENTRYPOINT`: Funktionsnamnet att anropa
-- `SKRIPTOTEKET_INPUT_PATH`: Sökväg till indata
+- `SKRIPTOTEKET_INPUT_DIR`: Katalog med uppladdade filer (t.ex. `/work/input`)
 - `SKRIPTOTEKET_INPUT_MANIFEST`: JSON med metadata för alla uppladdade filer
 - `SKRIPTOTEKET_MEMORY_PATH`: Sökväg till `memory.json` (t.ex. `memory["settings"]`)
 - `SKRIPTOTEKET_OUTPUT_DIR`: Katalog för artefakter
@@ -312,10 +325,23 @@ Följande Python-bibliotek finns förinstallerade i körmiljön:
 
 ```python
 import csv
+import json
+import os
 from pathlib import Path
 
-def run_tool(input_path: str, output_dir: str) -> dict:
-    path = Path(input_path)
+def run_tool(input_dir: str, output_dir: str) -> dict:
+    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
+    manifest = json.loads(manifest_raw) if manifest_raw else {}
+    files = [Path(f["path"]) for f in manifest.get("files", [])]
+
+    if not files:
+        return {
+            "outputs": [{"kind": "notice", "level": "error", "message": "Ingen fil uppladdad"}],
+            "next_actions": [],
+            "state": None
+        }
+
+    path = files[0]
 
     # Läs med autodetektering av separator
     content = path.read_text(encoding="utf-8-sig")
@@ -343,11 +369,23 @@ def run_tool(input_path: str, output_dir: str) -> dict:
 
 ```python
 from pathlib import Path
+import json
+import os
 import warnings
 from openpyxl import load_workbook
 
-def run_tool(input_path: str, output_dir: str) -> dict:
-    path = Path(input_path)
+def run_tool(input_dir: str, output_dir: str) -> dict:
+    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
+    manifest = json.loads(manifest_raw) if manifest_raw else {}
+    files = [Path(f["path"]) for f in manifest.get("files", [])]
+    path = files[0] if files else None
+
+    if path is None:
+        return {
+            "outputs": [{"kind": "notice", "level": "error", "message": "Ingen fil uppladdad"}],
+            "next_actions": [],
+            "state": None
+        }
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", UserWarning)
@@ -375,14 +413,14 @@ import json
 import os
 from pathlib import Path
 
-def run_tool(input_path: str, output_dir: str) -> dict:
+def run_tool(input_dir: str, output_dir: str) -> dict:
     manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
     manifest = json.loads(manifest_raw) if manifest_raw else {}
     files = [Path(f["path"]) for f in manifest.get("files", [])]
 
     # Alternativ: lista alla filer i input-katalogen
-    input_dir = Path(input_path).parent
-    all_files = list(input_dir.iterdir())
+    input_dir_path = Path(input_dir)
+    all_files = list(input_dir_path.iterdir())
 
     return {
         "outputs": [
@@ -401,7 +439,7 @@ import json
 import os
 from pathlib import Path
 
-def run_tool(input_path: str, output_dir: str) -> dict:
+def run_tool(input_dir: str, output_dir: str) -> dict:
     memory_path = os.environ.get("SKRIPTOTEKET_MEMORY_PATH", "/work/memory.json")
     memory = json.loads(Path(memory_path).read_text(encoding="utf-8"))
 
@@ -424,7 +462,7 @@ def run_tool(input_path: str, output_dir: str) -> dict:
 from pathlib import Path
 from pdf_helper import save_as_pdf
 
-def run_tool(input_path: str, output_dir: str) -> dict:
+def run_tool(input_dir: str, output_dir: str) -> dict:
     html_content = """
     <!DOCTYPE html>
     <html>
@@ -453,9 +491,22 @@ def run_tool(input_path: str, output_dir: str) -> dict:
 ```python
 import pandas as pd
 from pathlib import Path
+import json
+import os
 
-def run_tool(input_path: str, output_dir: str) -> dict:
-    path = Path(input_path)
+def run_tool(input_dir: str, output_dir: str) -> dict:
+    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
+    manifest = json.loads(manifest_raw) if manifest_raw else {}
+    files = [Path(f["path"]) for f in manifest.get("files", [])]
+    path = files[0] if files else None
+
+    if path is None:
+        return {
+            "outputs": [{"kind": "notice", "level": "error", "message": "Ingen fil uppladdad"}],
+            "next_actions": [],
+            "state": None
+        }
+
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
 
@@ -502,8 +553,23 @@ def run_tool(input_path: str, output_dir: str) -> dict:
 Returnera ett felmeddelande via outputs:
 
 ```python
-def run_tool(input_path: str, output_dir: str) -> dict:
-    path = Path(input_path)
+import json
+import os
+from pathlib import Path
+
+def run_tool(input_dir: str, output_dir: str) -> dict:
+    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
+    manifest = json.loads(manifest_raw) if manifest_raw else {}
+    files = [Path(f["path"]) for f in manifest.get("files", [])]
+    path = files[0] if files else None
+
+    if path is None:
+        return {
+            "outputs": [{"kind": "notice", "level": "error", "message": "Ingen fil uppladdad"}],
+            "next_actions": [],
+            "state": None
+        }
+
     suffix = path.suffix.lower()
 
     if suffix not in {".csv", ".xlsx"}:
@@ -531,7 +597,7 @@ Om skriptet kastar ett undantag:
 - Stacktrace skrivs till `stderr` (synlig i admin-vyn)
 
 ```python
-def run_tool(input_path: str, output_dir: str) -> dict:
+def run_tool(input_dir: str, output_dir: str) -> dict:
     try:
         # Riskabel operation
         result = risky_operation()
@@ -560,9 +626,18 @@ För rena felmeddelanden som inte behöver ett `outputs`-svar kan du använda `T
 
 ```python
 from tool_errors import ToolUserError
+import json
+import os
+from pathlib import Path
 
-def run_tool(input_path: str, output_dir: str) -> dict:
-    path = Path(input_path)
+def run_tool(input_dir: str, output_dir: str) -> dict:
+    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
+    manifest = json.loads(manifest_raw) if manifest_raw else {}
+    files = [Path(f["path"]) for f in manifest.get("files", [])]
+    path = files[0] if files else None
+
+    if path is None:
+        raise ToolUserError("Ingen fil uppladdad.")
 
     if path.stat().st_size > 10_000_000:
         raise ToolUserError("Filen är för stor (max 10 MB).")
@@ -596,7 +671,7 @@ def run_tool(input_path: str, output_dir: str) -> dict:
 | `Runner contract violation: path traversal is not allowed` | `..` i sökväg | Ta bort path traversal |
 | `Runner contract violation: artifact paths must be under output/` | Artefakt utanför output/ | Skriv alla filer till output_dir |
 | `Runner at capacity; retry.` | För många samtidiga körningar | Vänta och försök igen |
-| `Entrypoint not found: run_tool` | Funktionen saknas | Definiera `def run_tool(input_path, output_dir)` |
+| `Entrypoint not found: run_tool` | Funktionen saknas | Definiera `def run_tool(input_dir, output_dir)` |
 
 ### 9.2 Felsökning via loggar
 
@@ -606,9 +681,9 @@ def run_tool(input_path: str, output_dir: str) -> dict:
 ```python
 import sys
 
-def run_tool(input_path: str, output_dir: str) -> dict:
+def run_tool(input_dir: str, output_dir: str) -> dict:
     # Debug-utskrift (synlig i admin-vyn)
-    print(f"Input: {input_path}", file=sys.stdout)
+    print(f"Input dir: {input_dir}", file=sys.stdout)
     print(f"Output dir: {output_dir}", file=sys.stderr)
 
     # ...
@@ -618,7 +693,7 @@ def run_tool(input_path: str, output_dir: str) -> dict:
 
 ```bash
 # Från skript-filen direkt
-python script.py /path/to/testfile.csv /tmp/output
+python script.py /path/to/input_dir /tmp/output
 
 # Visa result.json manuellt
 cat /tmp/output/result.json | python -m json.tool
@@ -636,7 +711,8 @@ cat /tmp/output/result.json | python -m json.tool
 
 ### 10.2 Under utveckling
 
-- [ ] Definiera `run_tool(input_path: str, output_dir: str) -> dict`
+- [ ] Definiera `run_tool(input_dir: str, output_dir: str) -> dict`
+- [ ] Hitta filer via `SKRIPTOTEKET_INPUT_MANIFEST` (scripts ska inte anta en “primary file path”)
 - [ ] Hantera filtypsvalidering tidigt
 - [ ] Returnera alltid en giltig dict med `outputs`, `next_actions`, `state`
 - [ ] Skriv artefakter till `Path(output_dir)`
@@ -699,11 +775,13 @@ Användning:
 2. Skriptet returnerar en semikolonseparerad lista
 
 Runner-kontrakt:
-- Entrypoint: run_tool(input_path: str, output_dir: str) -> dict
+- Entrypoint: run_tool(input_dir: str, output_dir: str) -> dict
 - Input: CSV eller XLSX
 - Output: Notice + artefakt med e-postlista
 """
 
+import json
+import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
@@ -756,9 +834,22 @@ def harvest_emails(cells: list[str]) -> list[str]:
     return result
 
 
-def run_tool(input_path: str, output_dir: str) -> dict:
+def run_tool(input_dir: str, output_dir: str) -> dict:
     """Entrypoint: extrahera e-postadresser från uppladdad fil."""
-    path = Path(input_path)
+    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
+    manifest = json.loads(manifest_raw) if manifest_raw else {}
+    files = [Path(f["path"]) for f in manifest.get("files", [])]
+    path = files[0] if files else None
+
+    if path is None:
+        return {
+            "outputs": [
+                {"kind": "notice", "level": "error", "message": "Ingen fil uppladdad."},
+            ],
+            "next_actions": [],
+            "state": None,
+        }
+
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
 
@@ -846,7 +937,7 @@ if __name__ == "__main__":
     import sys
 
     if len(sys.argv) != 3:
-        print(f"Usage: {sys.argv[0]} <input_file> <output_dir>")
+        print(f"Usage: {sys.argv[0]} <input_dir> <output_dir>")
         raise SystemExit(1)
 
     result = run_tool(sys.argv[1], sys.argv[2])

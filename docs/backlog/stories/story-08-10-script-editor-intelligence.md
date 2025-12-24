@@ -52,8 +52,8 @@ for architecture decisions (Lezer-based analysis, extension composition, state s
 
 | Rule ID | Severity | Swedish Message |
 |---------|----------|-----------------|
-| `ST_ENTRYPOINT_MISSING` | warning | Saknar startfunktion: `def run_tool(input_path, output_dir)` |
-| `ST_ENTRYPOINT_SIGNATURE` | warning | Startfunktionen ska ta emot `input_path` och `output_dir`. |
+| `ST_ENTRYPOINT_MISSING` | warning | Saknar startfunktion: `def run_tool(input_dir, output_dir)` |
+| `ST_ENTRYPOINT_SIGNATURE` | warning | Startfunktionen ska ta emot `input_dir` och `output_dir`. |
 
 Note: Entrypoint name is configurable per tool. Linting must use the currently configured entrypoint (default
 `run_tool`).
@@ -78,7 +78,7 @@ Use the Python syntax tree to find function definitions:
 ```typescript
 // Collect all function defs: { name, params }
 // Compare against configured entrypoint (default "run_tool")
-// Validate first two params are "input_path" and "output_dir"
+// Validate first two params are "input_dir" and "output_dir"
 ```
 
 ## Files

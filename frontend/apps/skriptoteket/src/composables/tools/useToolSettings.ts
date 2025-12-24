@@ -230,4 +230,3 @@ export function useToolSettings({ toolId }: UseToolSettingsOptions) {
     saveSettings,
   };
 }
-

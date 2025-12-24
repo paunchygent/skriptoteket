@@ -184,7 +184,7 @@ from pathlib import Path
 from pdf_helper import save_as_pdf
 
 
-def {entrypoint}(input_path: str, output_dir: str) -> dict:
+def {entrypoint}(input_dir: str, output_dir: str) -> dict:
     html_content = \"\"\"<!DOCTYPE html>
 <html>
   <head>
@@ -250,7 +250,7 @@ from pathlib import Path
 from pdf_helper import save_as_pdf
 
 
-def {entrypoint}(input_path: str, output_dir: str) -> dict:
+def {entrypoint}(input_dir: str, output_dir: str) -> dict:
     # Force a write failure by creating a directory at the PDF output path.
     output = Path(output_dir)
     (output / "rapport.pdf").mkdir(parents=True, exist_ok=True)

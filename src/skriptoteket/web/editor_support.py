@@ -16,11 +16,45 @@ from skriptoteket.domain.scripting.policies import (
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 
 DEFAULT_ENTRYPOINT = "run_tool"
-STARTER_TEMPLATE = """def run_tool(input_path: str, output_dir: str) -> str:
-    import os
+STARTER_TEMPLATE = """from __future__ import annotations
 
-    size = os.path.getsize(input_path)
-    return f"<p>Received file of {size} bytes.</p>"
+import json
+import os
+from pathlib import Path
+
+
+def run_tool(input_dir: str, output_dir: str) -> dict:
+    input_root = Path(input_dir)
+    output_root = Path(output_dir)
+    output_root.mkdir(parents=True, exist_ok=True)
+
+    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
+    manifest = json.loads(manifest_raw) if manifest_raw.strip() else {"files": []}
+    files = manifest.get("files", []) if isinstance(manifest, dict) else []
+
+    if not files:
+        return {
+            "outputs": [
+                {"kind": "notice", "level": "error", "message": "Ingen indatafil hittades."}
+            ],
+            "next_actions": [],
+            "state": None,
+        }
+
+    first = Path(str(files[0].get("path", "")))
+    size = first.stat().st_size if first.exists() else 0
+
+    return {
+        "outputs": [
+            {
+                "kind": "notice",
+                "level": "info",
+                "message": f"Uppladdad fil: {first.name} ({size} byte).",
+            }
+        ],
+        "next_actions": [],
+        "state": None,
+    }
 """
 
 
