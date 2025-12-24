@@ -18,6 +18,7 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
   - short, action-focused explanations (Swedish, no technical jargon)
   - examples via placeholder/ghost text that disappears as the user types
 - Keep the implementation **vanilla** (server-rendered templates + HTMX where helpful, plain CSS/JS, no new dependencies).
+- Add **in-editor intelligence** for the script editor (CodeMirror 6 extensions for autocomplete, lint, hover docs).
 - Accessibility baseline: keyboard operable, reasonable ARIA, close-on-escape, does not trap focus.
 
 ## Stories
@@ -31,7 +32,9 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - [ST-08-07: Admin help (Förslag + Verktyg)](../stories/story-08-07-admin-dashboard-help.md)
 - [ST-08-08: Script editor help (overview + versioning)](../stories/story-08-08-editor-help-overview.md)
 - [ST-08-09: Script editor help (test runner + run result)](../stories/story-08-09-editor-help-test-area.md)
-- [ST-08-10: Script editor intelligence (CodeMirror 6 linting and suggestions)](../stories/story-08-10-script-editor-intelligence.md)
+- [ST-08-10: Script editor intelligence Phase 1 - Discoverability MVP](../stories/story-08-10-script-editor-intelligence.md)
+- [ST-08-11: Script editor intelligence Phase 2 - Contract + security](../stories/story-08-11-script-editor-intelligence-phase2.md)
+- [ST-08-12: Script editor intelligence Phase 3 - Best practices](../stories/story-08-12-script-editor-intelligence-phase3.md)
 
 ## Risks
 
@@ -44,3 +47,8 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 
 - EPIC-05 (HuleEdu design system) for consistent styling.
 - ST-05-07 for stabilized layout primitives (panel width + dvh fallback) if needed before polishing the help drawer.
+- ST-11-12 (Script editor migration) for CodeMirror 6 base setup.
+
+## ADRs
+
+- [ADR-0035: Script editor intelligence architecture](../../adr/adr-0035-script-editor-intelligence-architecture.md)

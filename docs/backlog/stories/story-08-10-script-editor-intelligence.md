@@ -1,77 +1,102 @@
 ---
 type: story
 id: ST-08-10
-title: "Script editor intelligence (CodeMirror 6 linting and suggestions)"
+title: "Script editor intelligence Phase 1: Discoverability MVP"
 status: ready
 owners: "agents"
 created: 2025-12-24
 epic: "EPIC-08"
 acceptance_criteria:
   - "Given the editor loads, when typing 'from ', then Skriptoteket helpers appear in autocomplete (pdf_helper, tool_errors)"
-  - "Given a script missing 'def run_tool', when linting runs, then a warning diagnostic appears"
-  - "Given a script uses 'requests' or 'subprocess', when linting runs, then a security warning appears"
-  - "Given a script returns a dict missing 'outputs', when linting runs, then an info diagnostic appears"
-  - "Given the user hovers over 'save_as_pdf' or 'ToolUserError', then inline documentation tooltip appears"
-ui_impact: "Adds in-editor code intelligence to help script authors discover available helpers and catch common errors."
+  - "Given the user types 'from pdf_helper import ', then save_as_pdf appears in autocomplete"
+  - "Given a script missing 'def run_tool', when linting runs, then a warning diagnostic appears in Swedish"
+  - "Given run_tool has wrong signature (missing params), when linting runs, then a warning appears"
+  - "Given the user hovers over 'save_as_pdf' or 'ToolUserError', then inline Swedish documentation tooltip appears"
+ui_impact: "Adds in-editor code intelligence to help script authors discover available helpers."
 data_impact: "None - client-side only."
 dependencies: ["ST-11-12"]
 ---
 
 ## Context
 
-Script authors need to discover Skriptoteket-specific helpers (pdf_helper, tool_errors) and follow the runner contract.
-Currently, this information exists in the KB (ref-ai-script-generation-kb.md) but isn't surfaced in the editor.
+Script authors need to discover Skriptoteket-specific helpers (`pdf_helper`, `tool_errors`) and follow the runner
+contract. Currently, this information exists in the KB (`ref-ai-script-generation-kb.md`) but isn't surfaced in the
+editor.
+
+This is **Phase 1** of 3 phases implementing script editor intelligence. Phase 1 focuses on discoverability and can
+ship independently.
+
+## Technical Decisions
+
+See [ADR-0035: Script editor intelligence architecture](../../adr/adr-0035-script-editor-intelligence-architecture.md)
+for architecture decisions (Lezer-based analysis, extension composition, state sharing).
 
 ## Scope
 
-- Custom autocompletions for Skriptoteket imports and contract v2 keys
-- Lint diagnostics:
-  - Entrypoint rules (missing/wrong signature)
-  - Contract validation (outputs structure, kind values, notice fields)
-  - Security warnings (network APIs, subprocess)
-  - Best practices (encoding, use pdf_helper, mkdir before write)
-- Hover tooltips with inline documentation for helper functions
+### Import Completions
+
+- Autocomplete `pdf_helper`, `tool_errors` on `from ` prefix
+- Autocomplete `save_as_pdf` on `from pdf_helper import `
+- Autocomplete `ToolUserError` on `from tool_errors import `
+- Trigger completion automatically when typing `from ` (using `startCompletion`)
+  - Gate auto-trigger so it does not run inside strings/comments
+
+### Hover Documentation
+
+- `pdf_helper.save_as_pdf(html, output_dir, filename) -> str`
+  - Swedish: "Renderar HTML till PDF och sparar under output_dir så att filen blir en nedladdningsbar artefakt."
+- `tool_errors.ToolUserError(message: str)`
+  - Swedish: "Använd för fel som ska visas för användaren utan stacktrace."
+
+### Entrypoint Lint Rules
+
+| Rule ID | Severity | Swedish Message |
+|---------|----------|-----------------|
+| `ST_ENTRYPOINT_MISSING` | warning | Saknar startfunktion: `def run_tool(input_path, output_dir)` |
+| `ST_ENTRYPOINT_SIGNATURE` | warning | Startfunktionen ska ta emot `input_path` och `output_dir`. |
+
+Note: Entrypoint name is configurable per tool. Linting must use the currently configured entrypoint (default
+`run_tool`).
 
 ## Technical Notes
 
-Uses CodeMirror 6 extension APIs:
+### Extension Injection
 
-- `@codemirror/autocomplete` for completion sources
-- `@codemirror/lint` for diagnostic callbacks
-- `@codemirror/view` (Tooltip) for hover docs
+Add `extensions?: Extension[]` prop to `CodeMirrorEditor.vue`:
 
-## Lint Rules
+```typescript
+defineProps<{ modelValue: string; extensions?: Extension[] }>()
+```
 
-### Entrypoint rules
+Implementation note: `extensions` must be applied via a CodeMirror `Compartment` and reconfigured on prop change (do not
+destroy/recreate the editor).
 
-- Missing `def run_tool` (warning)
-- Wrong signature (missing `input_path` or `output_dir` params) (warning)
+### Detection Using Lezer
 
-### Contract validation
+Use the Python syntax tree to find function definitions:
 
-- Return dict missing `outputs`, `next_actions`, or `state` (info)
-- `outputs` not a list (error)
-- Output dict missing `kind` key (warning)
-- Invalid `kind` value (warning)
-- `notice` missing `level` or `message` (warning)
-- `level` not one of `info`, `warning`, `error` (warning)
-
-### Security warnings
-
-- Using `requests`, `urllib`, `httpx`, `aiohttp` (blocked by `--network none`) (error)
-- Using `subprocess`, `os.system`, `os.popen` (sandboxed) (warning)
-- Writing outside `output_dir` (warning)
-
-### Best practices
-
-- `raise ToolUserError` without import (error)
-- Missing `encoding` param in `open()`, `read_text()`, `write_text()` (info)
-- Using `weasyprint.HTML` directly instead of `pdf_helper.save_as_pdf` (info)
-- Missing `Path(output_dir).mkdir(parents=True, exist_ok=True)` before writing (info)
+```typescript
+// Collect all function defs: { name, params }
+// Compare against configured entrypoint (default "run_tool")
+// Validate first two params are "input_path" and "output_dir"
+```
 
 ## Files
 
+### Create
+
+- `frontend/apps/skriptoteket/src/composables/editor/skriptoteketIntelligence.ts`
 - `frontend/apps/skriptoteket/src/composables/editor/skriptoteketCompletions.ts`
-- `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.ts`
 - `frontend/apps/skriptoteket/src/composables/editor/skriptoteketHover.ts`
+- `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.ts`
+- `frontend/apps/skriptoteket/src/composables/editor/skriptoteketMetadata.ts`
+
+### Modify
+
 - `frontend/apps/skriptoteket/src/components/editor/CodeMirrorEditor.vue`
+- `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`
+
+## Follow-up Stories
+
+- [ST-08-11: Phase 2 - Contract validation + security](story-08-11-script-editor-intelligence-phase2.md)
+- [ST-08-12: Phase 3 - Best practices + polish](story-08-12-script-editor-intelligence-phase3.md)

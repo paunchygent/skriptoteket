@@ -20,6 +20,12 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Current Session (2025-12-23)
 
+### ST-08-10 Script Editor Intelligence review (design-ready)
+
+- Reviewed ADR + stories; confirmed Lezer-first analysis (regex only where structure doesn’t matter) and entered decisions into docs.
+- Key decisions captured in: `docs/adr/adr-0035-script-editor-intelligence-architecture.md`, `docs/backlog/stories/story-08-10-script-editor-intelligence.md`, `docs/backlog/stories/story-08-11-script-editor-intelligence-phase2.md`.
+- Implementation notes: entrypoint-aware linting/completions, reactive `extensions` via CodeMirror `Compartment` + `reconfigure`, gated `startCompletion`, add `lintGutter()` in bundle.
+
 ### ST-12-02 Native PDF output helper (implemented)
 
 - Runner helper module: `runner/pdf_helper.py` + safe exception `runner/tool_errors.py` (API: `save_as_pdf(html, output_dir, filename) -> str`).
