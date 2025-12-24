@@ -15,10 +15,14 @@ async def create_local_user(
     clock: ClockProtocol,
     id_generator: IdGeneratorProtocol,
     command: CreateLocalUserCommand,
+    email_verified: bool = True,
 ) -> CreateLocalUserResult:
     email = command.email.strip().lower()
     if await users.get_auth_by_email(email):
-        raise DomainError(code=ErrorCode.DUPLICATE_ENTRY, message="Email already exists")
+        raise DomainError(
+            code=ErrorCode.DUPLICATE_ENTRY,
+            message="E-postadressen är redan registrerad",
+        )
 
     now = clock.now()
     user = User(
@@ -28,6 +32,11 @@ async def create_local_user(
         auth_provider=AuthProvider.LOCAL,
         external_id=None,
         is_active=True,
+        email_verified=email_verified,
+        failed_login_attempts=0,
+        locked_until=None,
+        last_login_at=None,
+        last_failed_login_at=None,
         created_at=now,
         updated_at=now,
     )

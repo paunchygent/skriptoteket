@@ -1,22 +1,42 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
 from skriptoteket.application.identity.commands import (
+    ChangeEmailCommand,
+    ChangeEmailResult,
+    ChangePasswordCommand,
     CreateLocalUserCommand,
     CreateLocalUserResult,
+    GetProfileCommand,
+    GetProfileResult,
     LoginCommand,
     LoginResult,
     LogoutCommand,
+    RegisterUserCommand,
+    RegisterUserResult,
+    UpdateProfileCommand,
+    UpdateProfileResult,
 )
-from skriptoteket.domain.identity.models import Session, User, UserAuth
+from skriptoteket.domain.identity.models import Session, User, UserAuth, UserProfile
 
 
 class UserRepositoryProtocol(Protocol):
     async def get_by_id(self, user_id: UUID) -> User | None: ...
     async def get_auth_by_email(self, email: str) -> UserAuth | None: ...
     async def create(self, *, user: User, password_hash: str | None) -> User: ...
+    async def update(self, *, user: User) -> User: ...
+    async def update_password_hash(
+        self, *, user_id: UUID, password_hash: str, updated_at: datetime
+    ) -> None: ...
+
+
+class ProfileRepositoryProtocol(Protocol):
+    async def get_by_user_id(self, *, user_id: UUID) -> UserProfile | None: ...
+    async def create(self, *, profile: UserProfile) -> UserProfile: ...
+    async def update(self, *, profile: UserProfile) -> UserProfile: ...
 
 
 class SessionRepositoryProtocol(Protocol):
@@ -50,3 +70,23 @@ class ProvisionLocalUserHandlerProtocol(Protocol):
     async def handle(
         self, *, actor: User, command: CreateLocalUserCommand
     ) -> CreateLocalUserResult: ...
+
+
+class RegisterUserHandlerProtocol(Protocol):
+    async def handle(self, command: RegisterUserCommand) -> RegisterUserResult: ...
+
+
+class GetProfileHandlerProtocol(Protocol):
+    async def handle(self, command: GetProfileCommand) -> GetProfileResult: ...
+
+
+class UpdateProfileHandlerProtocol(Protocol):
+    async def handle(self, command: UpdateProfileCommand) -> UpdateProfileResult: ...
+
+
+class ChangePasswordHandlerProtocol(Protocol):
+    async def handle(self, command: ChangePasswordCommand) -> None: ...
+
+
+class ChangeEmailHandlerProtocol(Protocol):
+    async def handle(self, command: ChangeEmailCommand) -> ChangeEmailResult: ...

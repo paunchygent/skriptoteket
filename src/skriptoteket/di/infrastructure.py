@@ -25,6 +25,9 @@ from skriptoteket.infrastructure.repositories.category_repository import (
 from skriptoteket.infrastructure.repositories.profession_repository import (
     PostgreSQLProfessionRepository,
 )
+from skriptoteket.infrastructure.repositories.profile_repository import (
+    PostgreSQLProfileRepository,
+)
 from skriptoteket.infrastructure.repositories.script_suggestion_decision_repository import (
     PostgreSQLScriptSuggestionDecisionRepository,
 )
@@ -69,6 +72,7 @@ from skriptoteket.protocols.curated_apps import (
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
     PasswordHasherProtocol,
+    ProfileRepositoryProtocol,
     SessionRepositoryProtocol,
     UserRepositoryProtocol,
 )
@@ -208,6 +212,10 @@ class InfrastructureProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def session_repo(self, session: AsyncSession) -> SessionRepositoryProtocol:
         return PostgreSQLSessionRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def profile_repo(self, session: AsyncSession) -> ProfileRepositoryProtocol:
+        return PostgreSQLProfileRepository(session)
 
     @provide(scope=Scope.REQUEST)
     def profession_repo(self, session: AsyncSession) -> ProfessionRepositoryProtocol:

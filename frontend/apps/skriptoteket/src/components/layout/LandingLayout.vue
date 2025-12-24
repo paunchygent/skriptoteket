@@ -12,7 +12,15 @@ import HelpButton from "../help/HelpButton.vue";
       >
         Skriptoteket
       </RouterLink>
-      <HelpButton />
+      <div class="landing-header-actions">
+        <RouterLink
+          to="/register"
+          class="landing-register"
+        >
+          Skapa konto
+        </RouterLink>
+        <HelpButton />
+      </div>
     </div>
   </header>
 
@@ -47,6 +55,30 @@ import HelpButton from "../help/HelpButton.vue";
 
 .landing-brand:hover {
   color: var(--huleedu-burgundy);
+}
+
+.landing-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--huleedu-space-3);
+}
+
+.landing-register {
+  padding: var(--huleedu-space-2) var(--huleedu-space-3);
+  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  background-color: var(--huleedu-navy);
+  color: var(--huleedu-canvas);
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-semibold);
+  letter-spacing: var(--huleedu-tracking-label);
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: var(--huleedu-shadow-brutal-xs);
+  transition: background-color var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.landing-register:hover {
+  background-color: var(--huleedu-burgundy);
 }
 
 .landing-main {

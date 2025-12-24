@@ -125,6 +125,17 @@ async function onSubmit(): Promise<void> {
               {{ isSubmitting ? "Loggar in…" : "Logga in" }}
             </button>
           </form>
+
+          <p class="mt-4 text-xs text-navy/70">
+            Inget konto?
+            <RouterLink
+              to="/register"
+              class="text-navy underline hover:text-burgundy"
+              @click="closeModal"
+            >
+              Skapa konto
+            </RouterLink>
+          </p>
         </div>
       </div>
     </Transition>

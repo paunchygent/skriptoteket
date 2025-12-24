@@ -40,6 +40,9 @@ from skriptoteket.infrastructure.repositories.category_repository import (
 from skriptoteket.infrastructure.repositories.profession_repository import (
     PostgreSQLProfessionRepository,
 )
+from skriptoteket.infrastructure.repositories.profile_repository import (
+    PostgreSQLProfileRepository,
+)
 from skriptoteket.infrastructure.repositories.tool_maintainer_repository import (
     PostgreSQLToolMaintainerRepository,
 )
@@ -73,10 +76,12 @@ async def _bootstrap_superuser_async(*, email: str, password: str) -> None:
         async with sessionmaker() as session:
             uow = SQLAlchemyUnitOfWork(session)
             users = PostgreSQLUserRepository(session)
+            profiles = PostgreSQLProfileRepository(session)
             handler = CreateLocalUserHandler(
                 settings=settings,
                 uow=uow,
                 users=users,
+                profiles=profiles,
                 password_hasher=Argon2PasswordHasher(),
                 clock=UTCClock(),
                 id_generator=UUID4Generator(),
@@ -132,6 +137,7 @@ async def _provision_user_async(
         async with sessionmaker() as session:
             uow = SQLAlchemyUnitOfWork(session)
             users = PostgreSQLUserRepository(session)
+            profiles = PostgreSQLProfileRepository(session)
             password_hasher = Argon2PasswordHasher()
 
             try:
@@ -149,6 +155,7 @@ async def _provision_user_async(
             handler = ProvisionLocalUserHandler(
                 uow=uow,
                 users=users,
+                profiles=profiles,
                 password_hasher=password_hasher,
                 clock=UTCClock(),
                 id_generator=UUID4Generator(),

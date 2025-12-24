@@ -60,6 +60,13 @@ function onHelp(): void {
           Hem
         </RouterLink>
         <RouterLink
+          to="/profile"
+          class="sidebar-nav-item"
+          @click="onClose"
+        >
+          Profil
+        </RouterLink>
+        <RouterLink
           to="/browse"
           class="sidebar-nav-item"
           @click="onClose"

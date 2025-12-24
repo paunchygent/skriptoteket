@@ -5,23 +5,34 @@ from __future__ import annotations
 from dishka import Provider, Scope, provide
 
 from skriptoteket.application.identity.current_user_provider import CurrentUserProvider
+from skriptoteket.application.identity.handlers.change_email import ChangeEmailHandler
+from skriptoteket.application.identity.handlers.change_password import ChangePasswordHandler
 from skriptoteket.application.identity.handlers.create_local_user import CreateLocalUserHandler
+from skriptoteket.application.identity.handlers.get_profile import GetProfileHandler
 from skriptoteket.application.identity.handlers.login import LoginHandler
 from skriptoteket.application.identity.handlers.logout import LogoutHandler
 from skriptoteket.application.identity.handlers.provision_local_user import (
     ProvisionLocalUserHandler,
 )
+from skriptoteket.application.identity.handlers.register_user import RegisterUserHandler
+from skriptoteket.application.identity.handlers.update_profile import UpdateProfileHandler
 from skriptoteket.config import Settings
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
+    ChangeEmailHandlerProtocol,
+    ChangePasswordHandlerProtocol,
     CreateLocalUserHandlerProtocol,
     CurrentUserProviderProtocol,
+    GetProfileHandlerProtocol,
     LoginHandlerProtocol,
     LogoutHandlerProtocol,
     PasswordHasherProtocol,
+    ProfileRepositoryProtocol,
     ProvisionLocalUserHandlerProtocol,
+    RegisterUserHandlerProtocol,
     SessionRepositoryProtocol,
+    UpdateProfileHandlerProtocol,
     UserRepositoryProtocol,
 )
 from skriptoteket.protocols.token_generator import TokenGeneratorProtocol
@@ -77,6 +88,7 @@ class IdentityProvider(Provider):
         settings: Settings,
         uow: UnitOfWorkProtocol,
         users: UserRepositoryProtocol,
+        profiles: ProfileRepositoryProtocol,
         password_hasher: PasswordHasherProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -85,6 +97,7 @@ class IdentityProvider(Provider):
             settings=settings,
             uow=uow,
             users=users,
+            profiles=profiles,
             password_hasher=password_hasher,
             clock=clock,
             id_generator=id_generator,
@@ -95,6 +108,7 @@ class IdentityProvider(Provider):
         self,
         uow: UnitOfWorkProtocol,
         users: UserRepositoryProtocol,
+        profiles: ProfileRepositoryProtocol,
         password_hasher: PasswordHasherProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -102,7 +116,76 @@ class IdentityProvider(Provider):
         return ProvisionLocalUserHandler(
             uow=uow,
             users=users,
+            profiles=profiles,
             password_hasher=password_hasher,
             clock=clock,
             id_generator=id_generator,
         )
+
+    @provide(scope=Scope.REQUEST)
+    def register_user_handler(
+        self,
+        settings: Settings,
+        uow: UnitOfWorkProtocol,
+        users: UserRepositoryProtocol,
+        profiles: ProfileRepositoryProtocol,
+        sessions: SessionRepositoryProtocol,
+        password_hasher: PasswordHasherProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+        token_generator: TokenGeneratorProtocol,
+    ) -> RegisterUserHandlerProtocol:
+        return RegisterUserHandler(
+            settings=settings,
+            uow=uow,
+            users=users,
+            profiles=profiles,
+            sessions=sessions,
+            password_hasher=password_hasher,
+            clock=clock,
+            id_generator=id_generator,
+            token_generator=token_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def get_profile_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        users: UserRepositoryProtocol,
+        profiles: ProfileRepositoryProtocol,
+    ) -> GetProfileHandlerProtocol:
+        return GetProfileHandler(uow=uow, users=users, profiles=profiles)
+
+    @provide(scope=Scope.REQUEST)
+    def update_profile_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        users: UserRepositoryProtocol,
+        profiles: ProfileRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> UpdateProfileHandlerProtocol:
+        return UpdateProfileHandler(uow=uow, users=users, profiles=profiles, clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def change_password_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        users: UserRepositoryProtocol,
+        password_hasher: PasswordHasherProtocol,
+        clock: ClockProtocol,
+    ) -> ChangePasswordHandlerProtocol:
+        return ChangePasswordHandler(
+            uow=uow,
+            users=users,
+            password_hasher=password_hasher,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def change_email_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        users: UserRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> ChangeEmailHandlerProtocol:
+        return ChangeEmailHandler(uow=uow, users=users, clock=clock)

@@ -7,6 +7,11 @@ type ApiUser = components["schemas"]["User"];
 type CsrfResponse = components["schemas"]["CsrfResponse"];
 type LoginResponse = components["schemas"]["LoginResponse"];
 type MeResponse = components["schemas"]["MeResponse"];
+type RegisterResponse = {
+  user: ApiUser;
+  profile: unknown;
+  csrf_token: string;
+};
 
 type AuthStatus = "idle" | "loading" | "ready" | "error";
 
@@ -204,6 +209,51 @@ export const useAuthStore = defineStore("auth", {
       } catch (error: unknown) {
         if (!this.error) {
           this.error = error instanceof Error ? error.message : "Login failed";
+        }
+        this.status = "error";
+        throw error;
+      }
+    },
+    async register(params: {
+      email: string;
+      password: string;
+      firstName: string;
+      lastName: string;
+    }): Promise<void> {
+      this.status = "loading";
+      this.error = null;
+
+      try {
+        const response = await fetch("/api/v1/auth/register", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: params.email,
+            password: params.password,
+            first_name: params.firstName,
+            last_name: params.lastName,
+          }),
+        });
+
+        if (!response.ok) {
+          this.status = "error";
+          this.error = await readErrorMessage(response);
+          throw new Error(this.error);
+        }
+
+        const payload = (await response.json()) as RegisterResponse;
+        this.user = payload.user;
+        this.csrfToken = payload.csrf_token;
+        this.bootstrapped = true;
+        this.status = "ready";
+        this.error = null;
+      } catch (error: unknown) {
+        if (!this.error) {
+          this.error = error instanceof Error ? error.message : "Registration failed";
         }
         this.status = "error";
         throw error;

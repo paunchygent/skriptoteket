@@ -9,6 +9,7 @@ class ErrorCode(StrEnum):
     # Authentication (401)
     UNAUTHORIZED = "UNAUTHORIZED"
     INVALID_CREDENTIALS = "INVALID_CREDENTIALS"
+    ACCOUNT_LOCKED = "ACCOUNT_LOCKED"
 
     # Authorization (403)
     FORBIDDEN = "FORBIDDEN"

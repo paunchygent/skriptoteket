@@ -59,7 +59,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY --from=builder /app/.venv /app/.venv
 
-COPY runner/_runner.py /runner/_runner.py
+COPY runner/ /runner/
 
 RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin runner \
     && mkdir -p /work /tmp \

@@ -6,6 +6,7 @@ ERROR_CODE_TO_STATUS: dict[ErrorCode, int] = {
     ErrorCode.VALIDATION_ERROR: 400,
     ErrorCode.UNAUTHORIZED: 401,
     ErrorCode.INVALID_CREDENTIALS: 401,
+    ErrorCode.ACCOUNT_LOCKED: 423,
     ErrorCode.FORBIDDEN: 403,
     ErrorCode.NOT_FOUND: 404,
     ErrorCode.USER_NOT_FOUND: 404,

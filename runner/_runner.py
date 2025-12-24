@@ -8,6 +8,8 @@ from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 from typing import Literal, TypedDict
 
+from tool_errors import ToolUserError
+
 
 class RunnerArtifact(TypedDict):
     path: str
@@ -127,6 +129,8 @@ def _load_module_from_path(*, module_path: Path) -> object:
 
 
 def _safe_error_summary(*, error: BaseException) -> str:
+    if isinstance(error, ToolUserError):
+        return error.safe_message
     return f"Tool execution failed ({type(error).__name__})."
 
 

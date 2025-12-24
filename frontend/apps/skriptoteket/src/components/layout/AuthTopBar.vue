@@ -22,6 +22,12 @@ function onLogout(): void {
     </div>
     <div class="top-user-bar-right">
       <HelpButton />
+      <RouterLink
+        to="/profile"
+        class="top-link"
+      >
+        Profil
+      </RouterLink>
       <span class="user-info">
         {{ user?.email }}
         <span class="user-role">({{ user?.role }})</span>
@@ -64,6 +70,20 @@ function onLogout(): void {
   display: flex;
   align-items: center;
   gap: var(--huleedu-space-3);
+}
+
+.top-link {
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy);
+  text-decoration: none;
+  transition: color var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.top-link:hover {
+  color: var(--huleedu-burgundy);
 }
 
 .user-info {

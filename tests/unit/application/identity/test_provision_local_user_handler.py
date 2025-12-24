@@ -14,7 +14,11 @@ from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
-from skriptoteket.protocols.identity import PasswordHasherProtocol, UserRepositoryProtocol
+from skriptoteket.protocols.identity import (
+    PasswordHasherProtocol,
+    ProfileRepositoryProtocol,
+    UserRepositoryProtocol,
+)
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.identity_fixtures import make_user
 
@@ -29,6 +33,8 @@ async def test_provision_user_creates_local_user_for_admin(now: datetime) -> Non
 
     users = AsyncMock(spec=UserRepositoryProtocol)
     users.get_auth_by_email.return_value = None
+
+    profiles = AsyncMock(spec=ProfileRepositoryProtocol)
 
     new_user_id = uuid4()
     created_user = make_user(
@@ -48,6 +54,7 @@ async def test_provision_user_creates_local_user_for_admin(now: datetime) -> Non
     handler = ProvisionLocalUserHandler(
         uow=uow,
         users=users,
+        profiles=profiles,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -61,6 +68,7 @@ async def test_provision_user_creates_local_user_for_admin(now: datetime) -> Non
     assert result.user == created_user
     users.get_auth_by_email.assert_awaited_once_with("new@example.com")
     users.create.assert_awaited_once()
+    profiles.create.assert_awaited_once()
 
     created = users.create.call_args.kwargs["user"]
     assert created.id == new_user_id
@@ -77,6 +85,7 @@ async def test_provision_user_raises_for_non_admin(now: datetime) -> None:
     uow.__aexit__.return_value = None
 
     users = AsyncMock(spec=UserRepositoryProtocol)
+    profiles = AsyncMock(spec=ProfileRepositoryProtocol)
     password_hasher = Mock(spec=PasswordHasherProtocol)
     clock = Mock(spec=ClockProtocol)
     id_generator = Mock(spec=IdGeneratorProtocol)
@@ -84,6 +93,7 @@ async def test_provision_user_raises_for_non_admin(now: datetime) -> None:
     handler = ProvisionLocalUserHandler(
         uow=uow,
         users=users,
+        profiles=profiles,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -109,6 +119,7 @@ async def test_provision_user_raises_when_admin_attempts_to_create_admin(now: da
     uow.__aexit__.return_value = None
 
     users = AsyncMock(spec=UserRepositoryProtocol)
+    profiles = AsyncMock(spec=ProfileRepositoryProtocol)
     password_hasher = Mock(spec=PasswordHasherProtocol)
     clock = Mock(spec=ClockProtocol)
     id_generator = Mock(spec=IdGeneratorProtocol)
@@ -116,6 +127,7 @@ async def test_provision_user_raises_when_admin_attempts_to_create_admin(now: da
     handler = ProvisionLocalUserHandler(
         uow=uow,
         users=users,
+        profiles=profiles,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,

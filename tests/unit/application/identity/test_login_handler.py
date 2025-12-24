@@ -29,6 +29,14 @@ async def test_login_creates_session_and_returns_user(now: datetime) -> None:
     fixed_now = now
     user = make_user(email="teacher@example.com")
     user_auth = UserAuth(user=user, password_hash="hash")
+    updated_user = user.model_copy(
+        update={
+            "failed_login_attempts": 0,
+            "locked_until": None,
+            "last_login_at": fixed_now,
+            "updated_at": fixed_now,
+        }
+    )
 
     uow = AsyncMock(spec=UnitOfWorkProtocol)
     uow.__aenter__.return_value = uow
@@ -36,6 +44,7 @@ async def test_login_creates_session_and_returns_user(now: datetime) -> None:
 
     users = AsyncMock(spec=UserRepositoryProtocol)
     users.get_auth_by_email.return_value = user_auth
+    users.update.return_value = updated_user
 
     sessions = AsyncMock(spec=SessionRepositoryProtocol)
 
@@ -67,9 +76,10 @@ async def test_login_creates_session_and_returns_user(now: datetime) -> None:
 
     assert result.session_id == session_id
     assert result.csrf_token == "csrf"
-    assert result.user == user
+    assert result.user == updated_user
 
     sessions.create.assert_awaited_once()
+    users.update.assert_awaited_once()
     created_session = sessions.create.call_args.kwargs["session"]
     assert created_session.user_id == user.id
     assert created_session.created_at == fixed_now
@@ -110,6 +120,7 @@ async def test_login_raises_for_invalid_credentials() -> None:
 
     assert exc_info.value.code == ErrorCode.INVALID_CREDENTIALS
     sessions.create.assert_not_awaited()
+    users.update.assert_not_awaited()
 
 
 @pytest.mark.asyncio
@@ -136,6 +147,12 @@ async def test_login_enters_uow_before_reading_user_auth(now: datetime) -> None:
         return user_auth
 
     users.get_auth_by_email.side_effect = get_auth_by_email
+
+    async def update_user(*, user):
+        events.append("users_update")
+        return user
+
+    users.update.side_effect = update_user
 
     sessions = AsyncMock(spec=SessionRepositoryProtocol)
 

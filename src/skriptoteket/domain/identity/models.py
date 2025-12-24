@@ -34,6 +34,25 @@ class User(BaseModel):
     auth_provider: AuthProvider
     external_id: str | None = None
     is_active: bool = True
+    email_verified: bool = False
+    failed_login_attempts: int = 0
+    locked_until: datetime | None = None
+    last_login_at: datetime | None = None
+    last_failed_login_at: datetime | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class UserProfile(BaseModel):
+    """User profile data aligned with HuleEdu identity expectations."""
+
+    model_config = ConfigDict(frozen=True, from_attributes=True)
+
+    user_id: UUID
+    first_name: str | None = None
+    last_name: str | None = None
+    display_name: str | None = None
+    locale: str = "sv-SE"
     created_at: datetime
     updated_at: datetime
 

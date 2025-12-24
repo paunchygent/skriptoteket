@@ -4,11 +4,19 @@ from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Header, Response, status
 from pydantic import BaseModel, ConfigDict
 
-from skriptoteket.application.identity.commands import LoginCommand, LogoutCommand
+from skriptoteket.application.identity.commands import (
+    LoginCommand,
+    LogoutCommand,
+    RegisterUserCommand,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.identity.models import Session, User
-from skriptoteket.protocols.identity import LoginHandlerProtocol, LogoutHandlerProtocol
+from skriptoteket.domain.identity.models import Session, User, UserProfile
+from skriptoteket.protocols.identity import (
+    LoginHandlerProtocol,
+    LogoutHandlerProtocol,
+    RegisterUserHandlerProtocol,
+)
 from skriptoteket.web.auth.api_dependencies import require_session_api, require_user_api
 from skriptoteket.web.auth.dependencies import get_current_session, get_session_id
 
@@ -26,6 +34,23 @@ class LoginResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     user: User
+    csrf_token: str
+
+
+class RegisterRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    email: str
+    password: str
+    first_name: str
+    last_name: str
+
+
+class RegisterResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    user: User
+    profile: UserProfile
     csrf_token: str
 
 
@@ -61,6 +86,39 @@ async def login(
         path="/",
     )
     return LoginResponse(user=result.user, csrf_token=result.csrf_token)
+
+
+@router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
+@inject
+async def register(
+    payload: RegisterRequest,
+    response: Response,
+    settings: FromDishka[Settings],
+    handler: FromDishka[RegisterUserHandlerProtocol],
+) -> RegisterResponse:
+    result = await handler.handle(
+        RegisterUserCommand(
+            email=payload.email,
+            password=payload.password,
+            first_name=payload.first_name,
+            last_name=payload.last_name,
+        )
+    )
+
+    response.set_cookie(
+        key=settings.SESSION_COOKIE_NAME,
+        value=str(result.session_id),
+        max_age=settings.SESSION_TTL_SECONDS,
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+        path="/",
+    )
+    return RegisterResponse(
+        user=result.user,
+        profile=result.profile,
+        csrf_token=result.csrf_token,
+    )
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
