@@ -10,6 +10,7 @@ from skriptoteket.application.identity.commands import LoginCommand
 from skriptoteket.application.identity.handlers.login import LoginHandler
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.domain.identity.lockout import LOCKOUT_DURATION
 from skriptoteket.domain.identity.models import UserAuth
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -188,3 +189,103 @@ async def test_login_enters_uow_before_reading_user_auth(now: datetime) -> None:
     await handler.handle(LoginCommand(email="teacher@example.com", password="pw"))
 
     assert events[0] == "uow_enter"
+
+
+@pytest.mark.asyncio
+async def test_login_locks_account_on_threshold(now: datetime) -> None:
+    settings = Settings()
+    user = make_user(email="teacher@example.com").model_copy(
+        update={
+            "failed_login_attempts": 4,
+            "locked_until": None,
+            "updated_at": now,
+        }
+    )
+    user_auth = UserAuth(user=user, password_hash="hash")
+
+    uow = AsyncMock(spec=UnitOfWorkProtocol)
+    uow.__aenter__.return_value = uow
+    uow.__aexit__.return_value = None
+
+    users = AsyncMock(spec=UserRepositoryProtocol)
+    users.get_auth_by_email.return_value = user_auth
+
+    sessions = AsyncMock(spec=SessionRepositoryProtocol)
+
+    password_hasher = Mock(spec=PasswordHasherProtocol)
+    password_hasher.verify.return_value = False
+
+    clock = Mock(spec=ClockProtocol)
+    clock.now.return_value = now
+
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    token_generator = Mock(spec=TokenGeneratorProtocol)
+
+    handler = LoginHandler(
+        settings=settings,
+        uow=uow,
+        users=users,
+        sessions=sessions,
+        password_hasher=password_hasher,
+        clock=clock,
+        id_generator=id_generator,
+        token_generator=token_generator,
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(LoginCommand(email="teacher@example.com", password="pw"))
+
+    assert exc_info.value.code == ErrorCode.ACCOUNT_LOCKED
+    assert exc_info.value.details["retry_after_seconds"] == int(LOCKOUT_DURATION.total_seconds())
+
+    users.update.assert_awaited_once()
+    updated_user = users.update.call_args.kwargs["user"]
+    assert updated_user.failed_login_attempts == 5
+    assert updated_user.locked_until == now + LOCKOUT_DURATION
+    sessions.create.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_login_rejects_when_already_locked(now: datetime) -> None:
+    settings = Settings()
+    locked_until = now + LOCKOUT_DURATION
+    user = make_user(email="teacher@example.com").model_copy(update={"locked_until": locked_until})
+    user_auth = UserAuth(user=user, password_hash="hash")
+
+    uow = AsyncMock(spec=UnitOfWorkProtocol)
+    uow.__aenter__.return_value = uow
+    uow.__aexit__.return_value = None
+
+    users = AsyncMock(spec=UserRepositoryProtocol)
+    users.get_auth_by_email.return_value = user_auth
+
+    sessions = AsyncMock(spec=SessionRepositoryProtocol)
+
+    password_hasher = Mock(spec=PasswordHasherProtocol)
+    password_hasher.verify.return_value = True
+
+    clock = Mock(spec=ClockProtocol)
+    clock.now.return_value = now
+
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    token_generator = Mock(spec=TokenGeneratorProtocol)
+
+    handler = LoginHandler(
+        settings=settings,
+        uow=uow,
+        users=users,
+        sessions=sessions,
+        password_hasher=password_hasher,
+        clock=clock,
+        id_generator=id_generator,
+        token_generator=token_generator,
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(LoginCommand(email="teacher@example.com", password="pw"))
+
+    assert exc_info.value.code == ErrorCode.ACCOUNT_LOCKED
+    assert exc_info.value.details["retry_after_seconds"] == int(LOCKOUT_DURATION.total_seconds())
+    password_hasher.verify.assert_not_called()
+    users.update.assert_not_awaited()
+    sessions.create.assert_not_awaited()

@@ -80,6 +80,16 @@ class LoginHandler(LoginHandlerProtocol):
             ):
                 updated_user = record_failed_attempt(user=user, now=now)
                 await self._users.update(user=updated_user)
+                if updated_user.locked_until is not None:
+                    retry_after_seconds = max(
+                        0,
+                        int((updated_user.locked_until - now).total_seconds()),
+                    )
+                    raise DomainError(
+                        code=ErrorCode.ACCOUNT_LOCKED,
+                        message="Kontot är låst. Försök igen om 15 minuter.",
+                        details={"retry_after_seconds": retry_after_seconds},
+                    )
                 raise DomainError(code=ErrorCode.INVALID_CREDENTIALS, message="Invalid credentials")
 
             updated_user = reset_failed_attempts(user=user, now=now)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from skriptoteket.application.identity.commands import CreateLocalUserCommand, CreateLocalUserResult
+from skriptoteket.application.identity.email_validation import validate_email
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import AuthProvider, User
 from skriptoteket.protocols.clock import ClockProtocol
@@ -17,7 +18,7 @@ async def create_local_user(
     command: CreateLocalUserCommand,
     email_verified: bool = True,
 ) -> CreateLocalUserResult:
-    email = command.email.strip().lower()
+    email = validate_email(email=command.email)
     if await users.get_auth_by_email(email):
         raise DomainError(
             code=ErrorCode.DUPLICATE_ENTRY,

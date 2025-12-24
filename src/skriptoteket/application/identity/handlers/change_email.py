@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from skriptoteket.application.identity.commands import ChangeEmailCommand, ChangeEmailResult
+from skriptoteket.application.identity.email_validation import validate_email
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.identity import ChangeEmailHandlerProtocol, UserRepositoryProtocol
@@ -20,38 +21,33 @@ class ChangeEmailHandler(ChangeEmailHandlerProtocol):
         self._clock = clock
 
     async def handle(self, command: ChangeEmailCommand) -> ChangeEmailResult:
-        new_email = command.new_email.strip().lower()
-        if not new_email:
-            raise DomainError(
-                code=ErrorCode.VALIDATION_ERROR,
-                message="E-postadress måste anges",
-            )
-        if len(new_email) > 255:
-            raise DomainError(
-                code=ErrorCode.VALIDATION_ERROR,
-                message="E-postadress är för lång",
-            )
+        new_email = validate_email(email=command.new_email)
 
         async with self._uow:
             user = await self._users.get_by_id(command.user_id)
             if user is None:
                 raise not_found("User", str(command.user_id))
 
-            if new_email != user.email:
-                existing = await self._users.get_auth_by_email(new_email)
-                if existing and existing.user.id != user.id:
-                    raise DomainError(
-                        code=ErrorCode.DUPLICATE_ENTRY,
-                        message="E-postadressen är redan registrerad",
-                    )
-
-                updated_user = user.model_copy(
-                    update={
-                        "email": new_email,
-                        "email_verified": False,
-                        "updated_at": self._clock.now(),
-                    }
+            if new_email == user.email:
+                raise DomainError(
+                    code=ErrorCode.DUPLICATE_ENTRY,
+                    message="E-postadressen är redan registrerad",
                 )
-                user = await self._users.update(user=updated_user)
+
+            existing = await self._users.get_auth_by_email(new_email)
+            if existing and existing.user.id != user.id:
+                raise DomainError(
+                    code=ErrorCode.DUPLICATE_ENTRY,
+                    message="E-postadressen är redan registrerad",
+                )
+
+            updated_user = user.model_copy(
+                update={
+                    "email": new_email,
+                    "email_verified": False,
+                    "updated_at": self._clock.now(),
+                }
+            )
+            user = await self._users.update(user=updated_user)
 
         return ChangeEmailResult(user=user)
