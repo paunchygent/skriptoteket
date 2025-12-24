@@ -34,6 +34,16 @@ Keep this file updated so the next session can pick up work quickly.
 - Script author docs updated: `docs/reference/ref-ai-script-generation-kb.md` uses `pdf_helper.save_as_pdf(...)`.
 - SPA verification (Playwright): `pdm run python -m scripts.playwright_st_12_02_native_pdf_output_helper_e2e` (artifacts: `.artifacts/st-12-02-native-pdf-output-helper-e2e/`).
 
+### ST-12-03 Personalized tool settings (implemented)
+
+- Tool version schema: `migrations/versions/0014_tool_versions_settings.py`, `src/skriptoteket/domain/scripting/models.py`, `src/skriptoteket/infrastructure/db/models/tool_version.py`.
+- Settings API (per user/tool/schema version): `src/skriptoteket/web/api/v1/tools.py`, `src/skriptoteket/application/scripting/handlers/get_tool_settings.py`, `src/skriptoteket/application/scripting/handlers/update_tool_settings.py`.
+- Runner injection: `memory.json` + `SKRIPTOTEKET_MEMORY_PATH` via `src/skriptoteket/infrastructure/runner/docker_runner.py` (+ protocol update).
+- SPA: Settings panel on tool run (`frontend/apps/skriptoteket/src/views/ToolRunView.vue`, `frontend/apps/skriptoteket/src/composables/tools/useToolSettings.ts`, `frontend/apps/skriptoteket/src/components/tool-run/ToolRunSettingsPanel.vue`).
+- Editor: settings schema JSON textarea (`frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.ts`, `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`).
+- Script author docs: `docs/reference/ref-ai-script-generation-kb.md` (read `memory.json` settings snippet).
+- SPA verification (Playwright): `pdm run python -m scripts.playwright_st_12_03_personalized_tool_settings_e2e --base-url http://127.0.0.1:5173` (artifacts: `.artifacts/st-12-03-personalized-tool-settings-e2e/`).
+
 ### EPIC-02 Phase 2: Self-Registration & User Profiles (implemented)
 
 - Migration + schema: `migrations/versions/0013_user_profiles_and_security.py`, `src/skriptoteket/infrastructure/db/models/user.py`, new `user_profiles` table/model (`src/skriptoteket/infrastructure/db/models/user_profile.py`).
@@ -41,6 +51,14 @@ Keep this file updated so the next session can pick up work quickly.
 - Infra/DI: profile repo + user repo updates + DI wiring (`src/skriptoteket/infrastructure/repositories/profile_repository.py`, `src/skriptoteket/di/infrastructure.py`, `src/skriptoteket/di/identity.py`); CLI provisioning creates profiles (`src/skriptoteket/cli/main.py`).
 - API: `/api/v1/auth/register` + `/api/v1/profile` (GET/PATCH) + `/api/v1/profile/password` + `/api/v1/profile/email` (`src/skriptoteket/web/api/v1/auth.py`, `src/skriptoteket/web/api/v1/profile.py`, `src/skriptoteket/web/router.py`).
 - SPA: register/profile views + composable + auth store action + routes/links (`frontend/apps/skriptoteket/src/views/RegisterView.vue`, `frontend/apps/skriptoteket/src/views/ProfileView.vue`, `frontend/apps/skriptoteket/src/composables/useProfile.ts`, `frontend/apps/skriptoteket/src/stores/auth.ts`, `frontend/apps/skriptoteket/src/router/routes.ts`, layout/login modal links).
+
+### EPIC-02 Phase 2 review fixes (2025-12-24)
+
+- Email validation helper + same-email rejection; applied to local user creation + change email (`src/skriptoteket/application/identity/email_validation.py`, `src/skriptoteket/application/identity/local_user_creation.py`, `src/skriptoteket/application/identity/handlers/change_email.py`).
+- Lockout now returns ACCOUNT_LOCKED on 5th failed attempt; validation errors mapped to 422 (`src/skriptoteket/application/identity/handlers/login.py`, `src/skriptoteket/web/error_mapping.py`).
+- Added unit coverage for register/change-email/lockout (`tests/unit/application/identity/test_register_user_handler.py`, `tests/unit/application/identity/test_change_email_handler.py`, `tests/unit/application/identity/test_login_handler.py`).
+- Added migration to widen `alembic_version.version_num` + adjust ordering (`migrations/versions/0014_extend_alembic_version_length.py`, `migrations/versions/0014_tool_versions_settings.py`) + idempotency test (`tests/integration/test_migration_0014_extend_alembic_version_length_idempotent.py`).
+- Fixed SPA lint warning in settings schema placeholder quoting (`frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`).
 
 ### Mobile Sidebar Right-Side Positioning
 
@@ -125,6 +143,11 @@ Keep this file updated so the next session can pick up work quickly.
 ### Verification
 
 - EPIC-02: `pdm run pytest -m docker --override-ini addopts=''`, `pdm run test tests/unit/application/identity/`, `pdm run db-upgrade`, `pdm run docs-validate`.
+- EPIC-02 (2025-12-24): `pdm run pytest -m docker --override-ini addopts=''` (pass).
+- EPIC-02 (2025-12-24): `pdm run test tests/unit/application/identity/` (pass).
+- EPIC-02 (2025-12-24): `docker compose up -d db && pdm run db-upgrade` (pass).
+- Frontend (2025-12-24): `pnpm -C frontend --filter @skriptoteket/spa typecheck` (pass).
+- Frontend (2025-12-24): `pnpm -C frontend --filter @skriptoteket/spa lint` (pass).
 - Live check (2025-12-23): `pdm run dev` + `pdm run fe-dev` (left running); `curl http://127.0.0.1:5173/register`, `curl http://127.0.0.1:5173/profile`, `curl http://127.0.0.1:8000/healthz`.
 - Quality: `pdm run precommit-run` (pass), `pdm run fe-gen-api-types`, `pdm run db-upgrade` (0012).
 - Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_18_editor_maintainers_e2e --base-url http://127.0.0.1:5173` (artifacts: `.artifacts/st-11-18-editor-maintainers/`).

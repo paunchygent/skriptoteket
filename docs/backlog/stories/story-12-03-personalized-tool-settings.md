@@ -2,7 +2,7 @@
 type: story
 id: ST-12-03
 title: "Personalized tool settings"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-21
 epic: "EPIC-12"
@@ -23,3 +23,5 @@ without requiring the user to re-enter them on every run.
 
 This story was blocked until EPIC-11 cutover (ST-11-13). EPIC-11 is complete as of **2025-12-23**; implement settings UX
 directly in the SPA (no SSR duplication).
+
+Implemented end-to-end on **2025-12-24**.

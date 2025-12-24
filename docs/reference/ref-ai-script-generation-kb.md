@@ -100,6 +100,7 @@ Skriptet returnerar en dict med tre fält:
 ```
 
 **Begränsningar:**
+
 - `message`: Max 8 KB
 
 #### 3.1.2 Markdown
@@ -112,6 +113,7 @@ Skriptet returnerar en dict med tre fält:
 ```
 
 **Begränsningar:**
+
 - `markdown`: Max 64 KB
 
 #### 3.1.3 Tabell
@@ -132,6 +134,7 @@ Skriptet returnerar en dict med tre fält:
 ```
 
 **Begränsningar:**
+
 - Max 40 kolumner
 - Max 750 rader
 - Varje cell: Max 512 bytes
@@ -147,6 +150,7 @@ Skriptet returnerar en dict med tre fält:
 ```
 
 **Begränsningar:**
+
 - `value`: Max 96 KB
 - Max djup: 10 nivåer
 - Max 1000 nycklar per objekt
@@ -162,6 +166,7 @@ Skriptet returnerar en dict med tre fält:
 ```
 
 **Begränsningar:**
+
 - `html`: Max 96 KB
 - Renderas i iframe utan JavaScript-åtkomst till huvudsidan
 
@@ -275,9 +280,10 @@ Följande Python-bibliotek finns förinstallerade i körmiljön:
 
 ### 6.3 Filsystemlayout i containern
 
-```
+```text
 /work/
 ├── script.py          # Ditt skript
+├── memory.json        # Per-användare “Tool Memory” (t.ex. settings)
 ├── input/
 │   ├── <filnamn>      # Uppladdad fil (kan vara flera)
 │   └── <filnamn-2>
@@ -289,10 +295,12 @@ Följande Python-bibliotek finns förinstallerade i körmiljön:
 ```
 
 **Miljövariabler:**
+
 - `SKRIPTOTEKET_SCRIPT_PATH`: Sökväg till skriptet
 - `SKRIPTOTEKET_ENTRYPOINT`: Funktionsnamnet att anropa
 - `SKRIPTOTEKET_INPUT_PATH`: Sökväg till indata
 - `SKRIPTOTEKET_INPUT_MANIFEST`: JSON med metadata för alla uppladdade filer
+- `SKRIPTOTEKET_MEMORY_PATH`: Sökväg till `memory.json` (t.ex. `memory["settings"]`)
 - `SKRIPTOTEKET_OUTPUT_DIR`: Katalog för artefakter
 - `SKRIPTOTEKET_RESULT_PATH`: Där result.json skrivs
 
@@ -386,7 +394,31 @@ def run_tool(input_path: str, output_dir: str) -> dict:
     }
 ```
 
-### 7.3 Skapa PDF från HTML
+### 7.4 Läsa per-användare-inställningar (memory.json)
+
+```python
+import json
+import os
+from pathlib import Path
+
+def run_tool(input_path: str, output_dir: str) -> dict:
+    memory_path = os.environ.get("SKRIPTOTEKET_MEMORY_PATH", "/work/memory.json")
+    memory = json.loads(Path(memory_path).read_text(encoding="utf-8"))
+
+    settings = memory.get("settings", {})
+    theme_color = settings.get("theme_color", "#000000")
+
+    return {
+        "outputs": [
+            {"kind": "notice", "level": "info", "message": f"theme_color={theme_color}"},
+            {"kind": "json", "title": "settings", "value": settings},
+        ],
+        "next_actions": [],
+        "state": None,
+    }
+```
+
+### 7.5 Skapa PDF från HTML
 
 ```python
 from pathlib import Path
@@ -416,7 +448,7 @@ def run_tool(input_path: str, output_dir: str) -> dict:
     }
 ```
 
-### 7.4 Använda pandas
+### 7.6 Använda pandas
 
 ```python
 import pandas as pd
@@ -493,6 +525,7 @@ def run_tool(input_path: str, output_dir: str) -> dict:
 ### 8.2 Oväntat fel (exception)
 
 Om skriptet kastar ett undantag:
+
 - Körstatus sätts till `"failed"`
 - `error_summary` sätts till `"Tool execution failed ({ExceptionType})."`
 - Stacktrace skrivs till `stderr` (synlig i admin-vyn)
@@ -517,6 +550,7 @@ def run_tool(input_path: str, output_dir: str) -> dict:
 ### 8.3 Timeout
 
 Om skriptet överskrider tidsgränsen:
+
 - Körstatus: `"timed_out"`
 - `error_summary`: `"Execution timed out."`
 

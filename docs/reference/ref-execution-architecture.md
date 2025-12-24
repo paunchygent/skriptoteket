@@ -30,6 +30,7 @@ Script execution is **isolated** within ephemeral Docker containers, managed by 
     *   `SKRIPTOTEKET_SCRIPT_PATH`: Path to script (`/work/script.py`).
     *   `SKRIPTOTEKET_INPUT_PATH`: Path to the first input file (`/work/input/<filename>`).
     *   `SKRIPTOTEKET_INPUT_MANIFEST`: JSON listing all input files (`[{name,path,bytes}]`).
+    *   `SKRIPTOTEKET_MEMORY_PATH`: Path to per-run memory JSON (`/work/memory.json`, contains `{"settings": {...}}`).
     *   `SKRIPTOTEKET_OUTPUT_DIR`: Directory for artifacts (`/work/output`).
 
 ## 2. Input/Output Data Flow
@@ -43,6 +44,13 @@ Data flows from the web request into the container and back via a standardized c
 2.  **Transformation:**
     *   Input files and Script source are packaged into a **tar archive**.
     *   Archive is streamed into the Docker container at `/work`, placing all inputs under `/work/input/`.
+
+### Memory (per-run JSON)
+
+The app injects a `memory.json` file into the runner container and sets `SKRIPTOTEKET_MEMORY_PATH`.
+
+- Path: `/work/memory.json`
+- Current shape: `{"settings": {...}}` (per-user, per-tool, schema-versioned settings; may be `{}`).
 
 ### Output
 1.  **Destinations:**
