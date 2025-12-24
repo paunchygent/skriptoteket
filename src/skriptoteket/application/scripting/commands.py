@@ -34,6 +34,7 @@ class CreateDraftVersionCommand(BaseModel):
     entrypoint: str = "run_tool"
     source_code: str
     settings_schema: ToolSettingsSchema | None = None
+    usage_instructions: str | None = None
     change_summary: str | None = None
 
 
@@ -50,6 +51,7 @@ class SaveDraftVersionCommand(BaseModel):
     entrypoint: str = "run_tool"
     source_code: str
     settings_schema: ToolSettingsSchema | None = None
+    usage_instructions: str | None = None
     change_summary: str | None = None
     expected_parent_version_id: UUID
 

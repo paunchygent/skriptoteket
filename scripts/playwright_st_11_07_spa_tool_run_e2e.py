@@ -63,23 +63,46 @@ def main() -> None:
         )
         page = context.new_page()
 
-        # Login (SPA)
-        page.goto(f"{base_url}/login", wait_until="domcontentloaded")
-        page.get_by_label("E-post").fill(email)
-        page.get_by_label("Lösenord").fill(password)
-        page.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
-        expect(
-            page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))
-        ).to_be_visible()
+        page.on("pageerror", lambda error: print(f"[pageerror] {error}"))
+        page.on(
+            "console",
+            lambda message: print(
+                f"[console:{message.type}] {message.text}"
+                if message.type in {"warning", "error"}
+                else f"[console] {message.text}"
+            ),
+        )
 
-        # Navigate directly to the demo tool run page (SPA stays on same URL)
+        # Navigate directly to a protected route; SPA opens login modal and redirects back after login.
         page.goto(f"{base_url}/tools/demo-next-actions/run", wait_until="domcontentloaded")
-        expect(
-            page.get_by_role("heading", name=re.compile(r"Demo: Interaktiv", re.IGNORECASE))
-        ).to_be_visible()
+
+        login_modal = page.get_by_role("dialog")
+        logout_button = page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))
+
+        try:
+            expect(logout_button).to_be_visible(timeout=2_000)
+        except AssertionError:
+            expect(login_modal).to_be_visible(timeout=30_000)
+            login_modal.get_by_label("E-post").fill(email)
+            login_modal.get_by_label("Lösenord").fill(password)
+            login_modal.locator(
+                "button[type='submit']",
+                has_text=re.compile(r"Logga in", re.IGNORECASE),
+            ).click()
+            expect(logout_button).to_be_visible(timeout=30_000)
+
+        print(f"Logged in. Current URL: {page.url}")
+
+        # Ensure the protected route is mounted after login.
+        page.goto(f"{base_url}/tools/demo-next-actions/run", wait_until="domcontentloaded")
+
+        page.screenshot(path=str(artifacts_dir / "tool-run-before-upload.png"), full_page=True)
+
+        file_input = page.locator("input[type='file']")
+        expect(file_input).to_have_count(1, timeout=30_000)
 
         # Upload file and run
-        page.locator("input[type='file']").set_input_files(str(sample_file))
+        file_input.set_input_files(str(sample_file))
         page.get_by_role("button", name=re.compile(r"^Kör", re.IGNORECASE)).click()
 
         # Wait for results to appear (SPA shows results inline, no URL change)
@@ -87,6 +110,16 @@ def main() -> None:
             timeout=60_000
         )
         page.screenshot(path=str(artifacts_dir / "run-0.png"), full_page=True)
+
+        # Regression: table outputs must be rendered using output.columns order (not row dict iteration).
+        # The demo tool includes an input manifest table where each row has more keys than the columns list.
+        manifest_table_title = page.get_by_text("Filer (input manifest)")
+        if manifest_table_title.count() > 0:
+            expect(manifest_table_title.first).to_be_visible()
+            table_card = manifest_table_title.first.locator("xpath=..")
+            table = table_card.locator("table")
+            expect(table.locator("thead th")).to_have_count(2)
+            expect(table.locator("tbody tr").first.locator("td")).to_have_count(2)
 
         # Check for artifacts and download first one
         download_links = page.locator("a[download]")

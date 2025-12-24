@@ -35,6 +35,7 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - [ST-08-10: Script editor intelligence Phase 1 - Discoverability MVP](../stories/story-08-10-script-editor-intelligence.md)
 - [ST-08-11: Script editor intelligence Phase 2 - Contract + security](../stories/story-08-11-script-editor-intelligence-phase2.md)
 - [ST-08-12: Script editor intelligence Phase 3 - Best practices](../stories/story-08-12-script-editor-intelligence-phase3.md)
+- [ST-08-13: Tool usage instructions](../stories/story-08-13-tool-usage-instructions.md)
 
 ## Risks
 
@@ -52,3 +53,4 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 ## ADRs
 
 - [ADR-0035: Script editor intelligence architecture](../../adr/adr-0035-script-editor-intelligence-architecture.md)
+- [ADR-0036: Tool usage instructions architecture](../../adr/adr-0036-tool-usage-instructions.md)

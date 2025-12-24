@@ -4,9 +4,9 @@ import { useRoute } from "vue-router";
 
 import { apiGet, apiPost, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
+import { UiOutputRenderer } from "../components/ui-outputs";
 import ToolRunActions from "../components/tool-run/ToolRunActions.vue";
 import ToolRunArtifacts from "../components/tool-run/ToolRunArtifacts.vue";
-import ToolRunOutputs from "../components/tool-run/ToolRunOutputs.vue";
 
 type AppDetailResponse = components["schemas"]["AppDetailResponse"];
 type GetSessionStateResult = components["schemas"]["GetSessionStateResult"];
@@ -323,7 +323,16 @@ onUnmounted(() => {
           </div>
 
           <!-- Outputs -->
-          <ToolRunOutputs :outputs="outputs" />
+          <div
+            v-if="outputs.length > 0"
+            class="space-y-3"
+          >
+            <UiOutputRenderer
+              v-for="(output, index) in outputs"
+              :key="index"
+              :output="output"
+            />
+          </div>
 
           <!-- Actions -->
           <ToolRunActions

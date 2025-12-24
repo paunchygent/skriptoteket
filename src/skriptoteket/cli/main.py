@@ -210,16 +210,22 @@ def prune_artifacts(
 def seed_script_bank(
     actor_email: str = typer.Option(
         ...,
-        envvar="SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL",
+        envvar=["SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL", "BOOTSTRAP_SUPERUSER_EMAIL"],
         prompt=True,
-        help="Admin/superuser email used for audit fields (created_by/published_by).",
+        help=(
+            "Admin/superuser email for audit fields. "
+            "Use BOOTSTRAP_SUPERUSER_EMAIL from the SERVER's .env (e.g. admin@hule.education)."
+        ),
     ),
     actor_password: str = typer.Option(
         ...,
-        envvar="SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD",
+        envvar=["SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD", "BOOTSTRAP_SUPERUSER_PASSWORD"],
         prompt=True,
         hide_input=True,
-        help="Password for the admin/superuser account.",
+        help=(
+            "Password for the admin/superuser account. "
+            "Use BOOTSTRAP_SUPERUSER_PASSWORD from the SERVER's .env."
+        ),
     ),
     slug: list[str] = typer.Option(
         [],
@@ -246,7 +252,18 @@ def seed_script_bank(
         help="Print planned actions without writing to the database.",
     ),
 ) -> None:
-    """Seed curated repo scripts into the database (idempotent by tool slug)."""
+    """Seed curated repo scripts into the database (idempotent by tool slug).
+
+    This command must be run ON THE SERVER or inside the Docker container where
+    the database is accessible. The superuser credentials are stored in the server's
+    .env file (BOOTSTRAP_SUPERUSER_EMAIL and BOOTSTRAP_SUPERUSER_PASSWORD).
+
+    Example (SSH into server):
+        ssh hemma
+        cd ~/apps/skriptoteket
+        docker exec -e PYTHONPATH=/app/src skriptoteket-web \\
+            pdm run python -m skriptoteket.cli seed-script-bank --dry-run
+    """
     asyncio.run(
         _seed_script_bank_async(
             actor_email=actor_email,
@@ -510,6 +527,7 @@ async def _seed_one_entry(
                     tool_id=tool.id,
                     entrypoint=entry.entrypoint,
                     source_code=source_code,
+                    usage_instructions=entry.usage_instructions,
                     change_summary="Seed: initial version från repo",
                 ),
             )
@@ -528,7 +546,9 @@ async def _seed_one_entry(
                 ),
             )
     elif sync_code and (
-        active_version.entrypoint != entry.entrypoint or active_version.source_code != source_code
+        active_version.entrypoint != entry.entrypoint
+        or active_version.source_code != source_code
+        or active_version.usage_instructions != entry.usage_instructions
     ):
         if dry_run:
             typer.echo(f"[dry-run] Create + publish updated version: {entry.slug}")
@@ -540,6 +560,7 @@ async def _seed_one_entry(
                     derived_from_version_id=active_version.id,
                     entrypoint=entry.entrypoint,
                     source_code=source_code,
+                    usage_instructions=entry.usage_instructions,
                     change_summary="Seed: uppdaterad version från repo",
                 ),
             )

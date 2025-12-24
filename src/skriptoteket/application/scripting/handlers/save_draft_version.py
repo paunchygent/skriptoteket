@@ -113,6 +113,11 @@ class SaveDraftVersionHandler(SaveDraftVersionHandlerProtocol):
                 if "settings_schema" in command.model_fields_set
                 else previous.settings_schema
             )
+            effective_usage_instructions = (
+                command.usage_instructions
+                if "usage_instructions" in command.model_fields_set
+                else previous.usage_instructions
+            )
             saved = save_draft_snapshot(
                 previous_version=previous,
                 new_version_id=self._id_generator.new_uuid(),
@@ -120,6 +125,7 @@ class SaveDraftVersionHandler(SaveDraftVersionHandlerProtocol):
                 source_code=command.source_code,
                 entrypoint=command.entrypoint,
                 settings_schema=effective_settings_schema,
+                usage_instructions=effective_usage_instructions,
                 saved_by_user_id=actor.id,
                 change_summary=command.change_summary,
                 now=now,

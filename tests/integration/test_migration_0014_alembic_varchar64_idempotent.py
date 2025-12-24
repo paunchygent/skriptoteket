@@ -54,7 +54,7 @@ async def _smoke_schema_from_url(*, database_url: str) -> None:
 
 
 @pytest.mark.docker
-def test_migration_0014_extend_alembic_version_length_is_idempotent(
+def test_migration_0014_alembic_varchar64_is_idempotent(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     with PostgresContainer("postgres:16") as postgres:

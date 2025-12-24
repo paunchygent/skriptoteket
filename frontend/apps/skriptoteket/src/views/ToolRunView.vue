@@ -3,10 +3,10 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import type { components } from "../api/openapi";
+import { UiOutputRenderer } from "../components/ui-outputs";
 import ToolRunActions from "../components/tool-run/ToolRunActions.vue";
 import ToolRunArtifacts from "../components/tool-run/ToolRunArtifacts.vue";
 import ToolRunControlBar from "../components/tool-run/ToolRunControlBar.vue";
-import ToolRunOutputs from "../components/tool-run/ToolRunOutputs.vue";
 import ToolRunSettingsPanel from "../components/tool-run/ToolRunSettingsPanel.vue";
 import ToolRunStepIndicator from "../components/tool-run/ToolRunStepIndicator.vue";
 import { useToolRun, type StepResult } from "../composables/tools/useToolRun";
@@ -292,7 +292,16 @@ watch(hasSettingsSchema, (hasSchema) => {
           </div>
 
           <!-- Outputs -->
-          <ToolRunOutputs :outputs="outputs" />
+          <div
+            v-if="outputs.length > 0"
+            class="space-y-3"
+          >
+            <UiOutputRenderer
+              v-for="(output, index) in outputs"
+              :key="index"
+              :output="output"
+            />
+          </div>
 
           <!-- Actions -->
           <ToolRunActions

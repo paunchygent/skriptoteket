@@ -12,6 +12,7 @@ system: "skriptoteket-identity"
 ## When to use this runbook
 
 Use this runbook when you need to:
+
 - Bootstrap a new deployment with the first Superuser.
 - Create new user accounts manually (since self-signup is disabled).
 - Change a user's password.

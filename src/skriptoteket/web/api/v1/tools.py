@@ -13,7 +13,7 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.catalog.models import Tool
 from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.scripting.models import VersionState
+from skriptoteket.domain.scripting.models import ToolVersion, VersionState
 from skriptoteket.domain.scripting.ui.contract_v2 import UiActionField
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.scripting import (
@@ -45,6 +45,7 @@ class ToolMetadataResponse(BaseModel):
     slug: str
     title: str
     summary: str | None
+    usage_instructions: str | None
     upload_constraints: UploadConstraints
 
 
@@ -76,7 +77,7 @@ async def _load_runnable_tool(
     tools: ToolRepositoryProtocol,
     versions: ToolVersionRepositoryProtocol,
     slug: str,
-) -> Tool:
+) -> tuple[Tool, ToolVersion]:
     tool = await tools.get_by_slug(slug=slug)
     if tool is None:
         raise not_found("Tool", slug)
@@ -91,7 +92,7 @@ async def _load_runnable_tool(
     if version.state is not VersionState.ACTIVE:
         raise not_found("Tool", slug)
 
-    return tool
+    return tool, version
 
 
 @router.get("/{slug}", response_model=ToolMetadataResponse)
@@ -103,12 +104,13 @@ async def get_tool_by_slug(
     settings: FromDishka[Settings],
     _user: User = Depends(require_user_api),
 ) -> ToolMetadataResponse:
-    tool = await _load_runnable_tool(tools=tools, versions=versions, slug=slug)
+    tool, version = await _load_runnable_tool(tools=tools, versions=versions, slug=slug)
     return ToolMetadataResponse(
         id=tool.id,
         slug=tool.slug,
         title=tool.title,
         summary=tool.summary,
+        usage_instructions=version.usage_instructions,
         upload_constraints=UploadConstraints(
             max_files=settings.UPLOAD_MAX_FILES,
             max_file_bytes=settings.UPLOAD_MAX_FILE_BYTES,

@@ -3,8 +3,8 @@ import { computed, onBeforeUnmount, ref } from "vue";
 
 import { apiFetch, apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
+import { UiOutputRenderer } from "../ui-outputs";
 import ToolRunArtifacts from "../tool-run/ToolRunArtifacts.vue";
-import ToolRunOutputs from "../tool-run/ToolRunOutputs.vue";
 
 type SandboxRunResponse = components["schemas"]["SandboxRunResponse"];
 type EditorRunDetails = components["schemas"]["EditorRunDetails"];
@@ -240,7 +240,16 @@ onBeforeUnmount(() => {
       </div>
 
       <!-- Outputs -->
-      <ToolRunOutputs :outputs="outputs" />
+      <div
+        v-if="outputs.length > 0"
+        class="space-y-3"
+      >
+        <UiOutputRenderer
+          v-for="(output, index) in outputs"
+          :key="index"
+          :output="output"
+        />
+      </div>
 
       <!-- Artifacts -->
       <ToolRunArtifacts :artifacts="artifacts" />

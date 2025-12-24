@@ -30,6 +30,7 @@ class ToolVersionModel(Base):
     content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
 
     settings_schema: Mapped[list[dict[str, object]] | None] = mapped_column(JSONB, nullable=True)
+    usage_instructions: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     derived_from_version_id: Mapped[UUID | None] = mapped_column(
         PGUUID(as_uuid=True),

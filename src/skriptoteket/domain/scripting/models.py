@@ -52,6 +52,7 @@ class ToolVersion(BaseModel):
     entrypoint: str
     content_hash: str
     settings_schema: list[UiActionField] | None = None
+    usage_instructions: str | None = None
     derived_from_version_id: UUID | None = None
 
     created_by_user_id: UUID
@@ -179,6 +180,7 @@ def create_draft_version(
     source_code: str,
     entrypoint: str,
     settings_schema: ToolSettingsSchema | None = None,
+    usage_instructions: str | None = None,
     created_by_user_id: UUID,
     derived_from_version_id: UUID | None,
     change_summary: str | None,
@@ -200,6 +202,7 @@ def create_draft_version(
             source_code=normalized_source_code,
         ),
         settings_schema=normalize_tool_settings_schema(settings_schema=settings_schema),
+        usage_instructions=_normalize_optional_text(usage_instructions),
         derived_from_version_id=derived_from_version_id,
         created_by_user_id=created_by_user_id,
         created_at=now,
@@ -215,6 +218,7 @@ def save_draft_snapshot(
     source_code: str,
     entrypoint: str,
     settings_schema: ToolSettingsSchema | None = None,
+    usage_instructions: str | None = None,
     saved_by_user_id: UUID,
     change_summary: str | None,
     now: datetime,
@@ -250,6 +254,7 @@ def save_draft_snapshot(
             source_code=normalized_source_code,
         ),
         settings_schema=normalize_tool_settings_schema(settings_schema=settings_schema),
+        usage_instructions=_normalize_optional_text(usage_instructions),
         derived_from_version_id=previous_version.id,
         created_by_user_id=saved_by_user_id,
         created_at=now,
@@ -343,6 +348,7 @@ def publish_version(
         entrypoint=reviewed_version.entrypoint,
         content_hash=reviewed_version.content_hash,
         settings_schema=reviewed_version.settings_schema,
+        usage_instructions=reviewed_version.usage_instructions,
         derived_from_version_id=reviewed_version.id,
         created_by_user_id=published_by_user_id,
         created_at=now,
@@ -405,6 +411,7 @@ def rollback_to_version(
         entrypoint=archived_version.entrypoint,
         content_hash=archived_version.content_hash,
         settings_schema=archived_version.settings_schema,
+        usage_instructions=archived_version.usage_instructions,
         derived_from_version_id=archived_version.id,
         created_by_user_id=published_by_user_id,
         created_at=now,
