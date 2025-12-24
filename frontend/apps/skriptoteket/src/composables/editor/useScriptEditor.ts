@@ -7,6 +7,7 @@ import type { components } from "../../api/openapi";
 type EditorBootResponse = components["schemas"]["EditorBootResponse"];
 type EditorToolMetadataResponse = components["schemas"]["EditorToolMetadataResponse"];
 type SaveResult = components["schemas"]["SaveResult"];
+type SettingsSchema = NonNullable<EditorBootResponse["settings_schema"]>;
 
 type UseScriptEditorOptions = {
   toolId: Readonly<Ref<string>>;
@@ -24,6 +25,7 @@ export function useScriptEditor({
   const editor = ref<EditorBootResponse | null>(null);
   const entrypoint = ref("");
   const sourceCode = ref("");
+  const settingsSchemaText = ref("");
   const changeSummary = ref("");
   const metadataTitle = ref("");
   const metadataSummary = ref("");
@@ -34,7 +36,9 @@ export function useScriptEditor({
   const errorMessage = ref<string | null>(null);
   const successMessage = ref<string | null>(null);
 
-  const initialSnapshot = ref<{ entrypoint: string; sourceCode: string } | null>(null);
+  const initialSnapshot = ref<
+    { entrypoint: string; sourceCode: string; settingsSchemaText: string } | null
+  >(null);
 
   const selectedVersion = computed(() => editor.value?.selected_version ?? null);
   const editorToolId = computed(() => editor.value?.tool.id ?? "");
@@ -48,7 +52,8 @@ export function useScriptEditor({
     if (!initialSnapshot.value) return false;
     return (
       initialSnapshot.value.entrypoint !== entrypoint.value ||
-      initialSnapshot.value.sourceCode !== sourceCode.value
+      initialSnapshot.value.sourceCode !== sourceCode.value ||
+      initialSnapshot.value.settingsSchemaText !== settingsSchemaText.value
     );
   });
 
@@ -86,13 +91,36 @@ export function useScriptEditor({
     editor.value = response;
     entrypoint.value = response.entrypoint;
     sourceCode.value = response.source_code;
+
+    const schema = response.settings_schema;
+    settingsSchemaText.value = schema ? JSON.stringify(schema, null, 2) : "";
+
     changeSummary.value = "";
     metadataTitle.value = response.tool.title;
     metadataSummary.value = response.tool.summary ?? "";
     initialSnapshot.value = {
       entrypoint: response.entrypoint,
       sourceCode: response.source_code,
+      settingsSchemaText: settingsSchemaText.value,
     };
+  }
+
+  function parseSettingsSchema(): SettingsSchema | null {
+    const raw = settingsSchemaText.value.trim();
+    if (!raw) return null;
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      throw new Error("Settings schema måste vara giltig JSON.");
+    }
+
+    if (!Array.isArray(parsed)) {
+      throw new Error("Settings schema måste vara en JSON-lista (array).");
+    }
+
+    return parsed as SettingsSchema;
   }
 
   async function loadEditorFromPath(
@@ -175,6 +203,17 @@ export function useScriptEditor({
 
     try {
       const summaryValue = normalizedOptionalString(changeSummary.value);
+      let settingsSchema: SettingsSchema | null = null;
+      try {
+        settingsSchema = parseSettingsSchema();
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          errorMessage.value = error.message;
+        } else {
+          errorMessage.value = "Settings schema är ogiltig.";
+        }
+        return;
+      }
 
       if (editor.value.save_mode === "snapshot") {
         const version = selectedVersion.value;
@@ -188,6 +227,7 @@ export function useScriptEditor({
           {
             entrypoint: entrypointValue,
             source_code: sourceCode.value,
+            settings_schema: settingsSchema,
             change_summary: summaryValue,
             expected_parent_version_id: version.id,
           },
@@ -203,6 +243,7 @@ export function useScriptEditor({
         {
           entrypoint: entrypointValue,
           source_code: sourceCode.value,
+          settings_schema: settingsSchema,
           change_summary: summaryValue,
           derived_from_version_id: editor.value.derived_from_version_id,
         },
@@ -287,6 +328,7 @@ export function useScriptEditor({
     editor,
     entrypoint,
     sourceCode,
+    settingsSchemaText,
     changeSummary,
     isLoading,
     isSaving,

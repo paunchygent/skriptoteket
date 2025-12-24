@@ -191,6 +191,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register */
+        post: operations["register_api_v1_auth_register_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/catalog/categories": {
         parameters: {
             query?: never;
@@ -550,6 +567,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Profile */
+        get: operations["get_profile_api_v1_profile_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Profile */
+        patch: operations["update_profile_api_v1_profile_patch"];
+        trace?: never;
+    };
+    "/api/v1/profile/email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change Email */
+        patch: operations["change_email_api_v1_profile_email_patch"];
+        trace?: never;
+    };
+    "/api/v1/profile/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change Password */
+        post: operations["change_password_api_v1_profile_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/runs/{run_id}": {
         parameters: {
             query?: never;
@@ -686,6 +755,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tools/{tool_id}/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Tool Settings */
+        get: operations["get_tool_settings_api_v1_tools__tool_id__settings_get"];
+        /** Update Tool Settings */
+        put: operations["update_tool_settings_api_v1_tools__tool_id__settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -791,6 +878,22 @@ export interface components {
             /** Slug */
             slug: string;
         };
+        /** ChangeEmailRequest */
+        ChangeEmailRequest: {
+            /** Email */
+            email: string;
+        };
+        /** ChangeEmailResponse */
+        ChangeEmailResponse: {
+            user: components["schemas"]["User"];
+        };
+        /** ChangePasswordRequest */
+        ChangePasswordRequest: {
+            /** Current Password */
+            current_password: string;
+            /** New Password */
+            new_password: string;
+        };
         /** CreateDraftVersionRequest */
         CreateDraftVersionRequest: {
             /** Change Summary */
@@ -802,6 +905,8 @@ export interface components {
              * @default run_tool
              */
             entrypoint: string;
+            /** Settings Schema */
+            settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
             /** Source Code */
             source_code: string;
         };
@@ -876,6 +981,8 @@ export interface components {
              */
             save_mode: "snapshot" | "create_draft";
             selected_version: components["schemas"]["EditorVersionSummary"] | null;
+            /** Settings Schema */
+            settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
             /** Source Code */
             source_code: string;
             tool: components["schemas"]["EditorToolSummary"];
@@ -1161,6 +1268,11 @@ export interface components {
             /** Sort Order */
             sort_order: number;
         };
+        /** ProfileResponse */
+        ProfileResponse: {
+            profile: components["schemas"]["UserProfile"];
+            user: components["schemas"]["User"];
+        };
         /** PublishToolResponse */
         PublishToolResponse: {
             tool: components["schemas"]["AdminToolItem"];
@@ -1169,6 +1281,24 @@ export interface components {
         PublishVersionRequest: {
             /** Change Summary */
             change_summary?: string | null;
+        };
+        /** RegisterRequest */
+        RegisterRequest: {
+            /** Email */
+            email: string;
+            /** First Name */
+            first_name: string;
+            /** Last Name */
+            last_name: string;
+            /** Password */
+            password: string;
+        };
+        /** RegisterResponse */
+        RegisterResponse: {
+            /** Csrf Token */
+            csrf_token: string;
+            profile: components["schemas"]["UserProfile"];
+            user: components["schemas"]["User"];
         };
         /** RequestChangesRequest */
         RequestChangesRequest: {
@@ -1247,6 +1377,8 @@ export interface components {
              * Format: uuid
              */
             expected_parent_version_id: string;
+            /** Settings Schema */
+            settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
             /** Source Code */
             source_code: string;
         };
@@ -1487,6 +1619,24 @@ export interface components {
             title: string;
             upload_constraints: components["schemas"]["UploadConstraints"];
         };
+        /** ToolSettingsResponse */
+        ToolSettingsResponse: {
+            /** Schema Version */
+            schema_version: string | null;
+            /** Settings Schema */
+            settings_schema: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
+            /** State Rev */
+            state_rev: number;
+            /**
+             * Tool Id
+             * Format: uuid
+             */
+            tool_id: string;
+            /** Values */
+            values: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+        };
         /** ToolTaxonomyRequest */
         ToolTaxonomyRequest: {
             /** Category Ids */
@@ -1711,6 +1861,26 @@ export interface components {
             kind: "vega_lite";
             spec: components["schemas"]["JsonValue"];
         };
+        /** UpdateProfileRequest */
+        UpdateProfileRequest: {
+            /** Display Name */
+            display_name?: string | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Locale */
+            locale?: string | null;
+        };
+        /** UpdateToolSettingsRequest */
+        UpdateToolSettingsRequest: {
+            /** Expected State Rev */
+            expected_state_rev: number;
+            /** Values */
+            values: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+        };
         /** UploadConstraints */
         UploadConstraints: {
             /** Max File Bytes */
@@ -1736,8 +1906,18 @@ export interface components {
             created_at: string;
             /** Email */
             email: string;
+            /**
+             * Email Verified
+             * @default false
+             */
+            email_verified: boolean;
             /** External Id */
             external_id?: string | null;
+            /**
+             * Failed Login Attempts
+             * @default 0
+             */
+            failed_login_attempts: number;
             /**
              * Id
              * Format: uuid
@@ -1748,12 +1928,50 @@ export interface components {
              * @default true
              */
             is_active: boolean;
+            /** Last Failed Login At */
+            last_failed_login_at?: string | null;
+            /** Last Login At */
+            last_login_at?: string | null;
+            /** Locked Until */
+            locked_until?: string | null;
             role: components["schemas"]["Role"];
             /**
              * Updated At
              * Format: date-time
              */
             updated_at: string;
+        };
+        /**
+         * UserProfile
+         * @description User profile data aligned with HuleEdu identity expectations.
+         */
+        UserProfile: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Display Name */
+            display_name?: string | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /**
+             * Locale
+             * @default sv-SE
+             */
+            locale: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -2091,6 +2309,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeResponse"];
+                };
+            };
+        };
+    };
+    register_api_v1_auth_register_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -2825,6 +3076,129 @@ export interface operations {
             };
         };
     };
+    get_profile_api_v1_profile_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileResponse"];
+                };
+            };
+        };
+    };
+    update_profile_api_v1_profile_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProfileRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_email_api_v1_profile_email_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeEmailRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChangeEmailResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_password_api_v1_profile_password_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_run_api_v1_runs__run_id__get: {
         parameters: {
             query?: never;
@@ -3076,6 +3450,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GetSessionStateResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_tool_settings_api_v1_tools__tool_id__settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tool_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ToolSettingsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_tool_settings_api_v1_tools__tool_id__settings_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                tool_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateToolSettingsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ToolSettingsResponse"];
                 };
             };
             /** @description Validation Error */

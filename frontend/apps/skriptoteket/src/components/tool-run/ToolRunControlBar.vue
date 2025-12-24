@@ -5,12 +5,15 @@ const props = defineProps<{
   selectedFiles: File[];
   isRunning: boolean;
   hasResults: boolean;
+  hasSettings: boolean;
+  isSettingsOpen: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: "files-selected", files: File[]): void;
   (e: "run"): void;
   (e: "clear"): void;
+  (e: "toggle-settings"): void;
 }>();
 
 const hasFiles = computed(() => props.selectedFiles.length > 0);
@@ -62,6 +65,20 @@ function onFilesSelected(event: Event): void {
         class="inline-block w-3 h-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
       />
       <span v-else>Kör</span>
+    </button>
+
+    <button
+      v-if="hasSettings"
+      type="button"
+      class="px-4 py-2 text-xs font-bold uppercase tracking-widest border border-navy shadow-brutal-sm transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+      :class="[
+        isSettingsOpen
+          ? 'bg-navy text-canvas hover:bg-navy/90'
+          : 'bg-white text-navy hover:bg-canvas btn-secondary-hover',
+      ]"
+      @click="emit('toggle-settings')"
+    >
+      ⚙ Inställningar
     </button>
 
     <button

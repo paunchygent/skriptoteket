@@ -7,8 +7,10 @@ import ToolRunActions from "../components/tool-run/ToolRunActions.vue";
 import ToolRunArtifacts from "../components/tool-run/ToolRunArtifacts.vue";
 import ToolRunControlBar from "../components/tool-run/ToolRunControlBar.vue";
 import ToolRunOutputs from "../components/tool-run/ToolRunOutputs.vue";
+import ToolRunSettingsPanel from "../components/tool-run/ToolRunSettingsPanel.vue";
 import ToolRunStepIndicator from "../components/tool-run/ToolRunStepIndicator.vue";
 import { useToolRun, type StepResult } from "../composables/tools/useToolRun";
+import { useToolSettings } from "../composables/tools/useToolSettings";
 
 type UiOutput = NonNullable<components["schemas"]["UiPayloadV2"]["outputs"]>[number];
 type UiFormAction = components["schemas"]["UiFormAction"];
@@ -40,6 +42,20 @@ const {
   selectFiles,
 } = useToolRun({ slug });
 
+const toolId = computed(() => tool.value?.id ?? "");
+const {
+  settingsSchema,
+  values: settingsValues,
+  hasSchema: hasSettingsSchema,
+  isLoading: isLoadingSettings,
+  isSaving: isSavingSettings,
+  errorMessage: settingsErrorMessage,
+  successMessage: settingsSuccessMessage,
+  saveSettings,
+} = useToolSettings({ toolId });
+
+const isSettingsOpen = ref(false);
+
 const selectedStepRun = ref<StepResult | null>(null);
 const displayedRun = computed(() => selectedStepRun.value?.run ?? currentRun.value);
 
@@ -68,6 +84,14 @@ const idBase = computed(() => `tool-${slug.value}-run-${displayedRun.value?.run_
 const outputs = computed<UiOutput[]>(() => displayedRun.value?.ui_payload?.outputs ?? []);
 const nextActions = computed<UiFormAction[]>(() => displayedRun.value?.ui_payload?.next_actions ?? []);
 const artifacts = computed(() => displayedRun.value?.artifacts ?? []);
+
+function onToggleSettings(): void {
+  isSettingsOpen.value = !isSettingsOpen.value;
+}
+
+function onSettingsValuesUpdate(next: Record<string, string | boolean | string[]>): void {
+  settingsValues.value = next;
+}
 
 function statusLabel(status: string): string {
   const labels: Record<string, string> = {
@@ -117,6 +141,16 @@ watch(slug, () => {
   clearRun();
   void loadTool();
 });
+
+watch(toolId, () => {
+  isSettingsOpen.value = false;
+});
+
+watch(hasSettingsSchema, (hasSchema) => {
+  if (!hasSchema) {
+    isSettingsOpen.value = false;
+  }
+});
 </script>
 
 <template>
@@ -165,9 +199,29 @@ watch(slug, () => {
           :selected-files="selectedFiles"
           :is-running="isSubmitting || isRunning"
           :has-results="hasResults"
+          :has-settings="hasSettingsSchema"
+          :is-settings-open="isSettingsOpen"
           @files-selected="onFilesSelected"
           @run="onRun"
           @clear="onClear"
+          @toggle-settings="onToggleSettings"
+        />
+      </div>
+
+      <div
+        v-if="isSettingsOpen && hasSettingsSchema && settingsSchema"
+        class="px-4 py-4 border-b border-navy/20 bg-canvas/30"
+      >
+        <ToolRunSettingsPanel
+          :id-base="idBase"
+          :schema="settingsSchema"
+          :model-value="settingsValues"
+          :is-loading="isLoadingSettings"
+          :is-saving="isSavingSettings"
+          :error-message="settingsErrorMessage"
+          :success-message="settingsSuccessMessage"
+          @update:model-value="onSettingsValuesUpdate"
+          @save="saveSettings"
         />
       </div>
 

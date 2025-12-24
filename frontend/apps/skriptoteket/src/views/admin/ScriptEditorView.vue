@@ -36,6 +36,7 @@ const {
   editor,
   entrypoint,
   sourceCode,
+  settingsSchemaText,
   changeSummary,
   metadataTitle,
   metadataSummary,
@@ -416,6 +417,32 @@ watch(
               <div class="h-[420px] border border-navy bg-canvas shadow-brutal-sm overflow-hidden">
                 <CodeMirrorEditor v-model="sourceCode" />
               </div>
+            </div>
+
+            <div class="border-t border-navy/20 pt-4 space-y-3">
+              <div class="space-y-1">
+                <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
+                  Inställningar (schema)
+                </h2>
+                <p class="text-sm text-navy/60">
+                  Valfritt. Ange en JSON-array av fält (samma typer som UI Actions: string, text,
+                  integer, number, boolean, enum, multi_enum).
+                </p>
+              </div>
+
+              <label
+                for="tool-settings-schema"
+                class="text-xs font-semibold uppercase tracking-wide text-navy/70"
+              >
+                Schema (JSON)
+              </label>
+              <textarea
+                id="tool-settings-schema"
+                v-model="settingsSchemaText"
+                rows="10"
+                class="w-full border border-navy bg-white px-3 py-2 text-sm font-mono text-navy shadow-brutal-sm"
+                placeholder="[{&quot;name&quot;:&quot;theme_color&quot;,&quot;label&quot;:&quot;Färgtema&quot;,&quot;kind&quot;:&quot;string&quot;}]"
+              />
             </div>
 
             <!-- Test section -->
