@@ -34,6 +34,7 @@ from skriptoteket.protocols.scripting_ui import (
     BackendActionProviderProtocol,
     UiPolicyProviderProtocol,
 )
+from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.identity_fixtures import make_user
 
@@ -92,6 +93,7 @@ async def test_execute_tool_version_commits_before_runner_execute(now: datetime)
     versions_repo.get_by_id.return_value = version
 
     runs_repo = AsyncMock(spec=ToolRunRepositoryProtocol)
+    sessions_repo = AsyncMock(spec=ToolSessionRepositoryProtocol)
 
     id_generator = Mock(spec=IdGeneratorProtocol)
     id_generator.new_uuid.return_value = run_id
@@ -135,8 +137,9 @@ async def test_execute_tool_version_commits_before_runner_execute(now: datetime)
         version: ToolVersion,
         context: RunContext,
         input_files: list[tuple[str, bytes]],
+        memory_json: bytes,
     ) -> ToolExecutionResult:
-        del run_id, version, context, input_files
+        del run_id, version, context, input_files, memory_json
         assert uow.active is False
         return execution_result
 
@@ -146,6 +149,7 @@ async def test_execute_tool_version_commits_before_runner_execute(now: datetime)
         uow=uow,
         versions=versions_repo,
         runs=runs_repo,
+        sessions=sessions_repo,
         runner=runner,
         ui_policy_provider=ui_policy_provider,
         backend_actions=backend_actions,
@@ -186,6 +190,7 @@ async def test_execute_tool_version_marks_failed_on_capacity_error(now: datetime
     versions_repo.get_by_id.return_value = version
 
     runs_repo = AsyncMock(spec=ToolRunRepositoryProtocol)
+    sessions_repo = AsyncMock(spec=ToolSessionRepositoryProtocol)
 
     id_generator = Mock(spec=IdGeneratorProtocol)
     id_generator.new_uuid.return_value = uuid4()
@@ -211,6 +216,7 @@ async def test_execute_tool_version_marks_failed_on_capacity_error(now: datetime
         uow=uow,
         versions=versions_repo,
         runs=runs_repo,
+        sessions=sessions_repo,
         runner=runner,
         ui_policy_provider=ui_policy_provider,
         backend_actions=backend_actions,
@@ -258,6 +264,7 @@ async def test_execute_tool_version_marks_failed_on_syntax_error_and_skips_runne
     versions_repo.get_by_id.return_value = version
 
     runs_repo = AsyncMock(spec=ToolRunRepositoryProtocol)
+    sessions_repo = AsyncMock(spec=ToolSessionRepositoryProtocol)
 
     id_generator = Mock(spec=IdGeneratorProtocol)
     id_generator.new_uuid.return_value = run_id
@@ -279,6 +286,7 @@ async def test_execute_tool_version_marks_failed_on_syntax_error_and_skips_runne
         uow=uow,
         versions=versions_repo,
         runs=runs_repo,
+        sessions=sessions_repo,
         runner=runner,
         ui_policy_provider=ui_policy_provider,
         backend_actions=backend_actions,

@@ -108,12 +108,18 @@ class SaveDraftVersionHandler(SaveDraftVersionHandlerProtocol):
             new_version_number = await self._versions.get_next_version_number(
                 tool_id=previous.tool_id
             )
+            effective_settings_schema = (
+                command.settings_schema
+                if "settings_schema" in command.model_fields_set
+                else previous.settings_schema
+            )
             saved = save_draft_snapshot(
                 previous_version=previous,
                 new_version_id=self._id_generator.new_uuid(),
                 new_version_number=new_version_number,
                 source_code=command.source_code,
                 entrypoint=command.entrypoint,
+                settings_schema=effective_settings_schema,
                 saved_by_user_id=actor.id,
                 change_summary=command.change_summary,
                 now=now,

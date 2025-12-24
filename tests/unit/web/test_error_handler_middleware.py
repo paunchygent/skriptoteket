@@ -47,7 +47,7 @@ async def client(app: FastAPI) -> AsyncIterator[httpx.AsyncClient]:
 @pytest.mark.asyncio
 async def test_domain_error_returns_json_for_api_routes(client: httpx.AsyncClient) -> None:
     response = await client.get("/api/boom-domain")
-    assert response.status_code == 400
+    assert response.status_code == 422
     payload = response.json()
     assert payload["error"]["code"] == ErrorCode.VALIDATION_ERROR.value
     assert payload["error"]["details"]["field"] == "x"

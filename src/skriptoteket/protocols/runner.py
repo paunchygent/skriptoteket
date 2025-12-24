@@ -27,4 +27,5 @@ class ToolRunnerProtocol(Protocol):
         version: ToolVersion,
         context: RunContext,
         input_files: list[tuple[str, bytes]],
+        memory_json: bytes,
     ) -> ToolExecutionResult: ...

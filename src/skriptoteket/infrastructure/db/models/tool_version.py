@@ -4,6 +4,7 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -27,6 +28,8 @@ class ToolVersionModel(Base):
     source_code: Mapped[str] = mapped_column(Text, nullable=False)
     entrypoint: Mapped[str] = mapped_column(String(128), nullable=False)
     content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+
+    settings_schema: Mapped[list[dict[str, object]] | None] = mapped_column(JSONB, nullable=True)
 
     derived_from_version_id: Mapped[UUID | None] = mapped_column(
         PGUUID(as_uuid=True),

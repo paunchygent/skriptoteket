@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import json
 import time
 from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID
 
 import structlog
+from pydantic import JsonValue
 
 from skriptoteket.application.scripting.commands import (
     ExecuteToolVersionCommand,
@@ -21,6 +23,10 @@ from skriptoteket.domain.scripting.models import (
     ToolVersion,
     finish_run,
     start_tool_version_run,
+)
+from skriptoteket.domain.scripting.tool_settings import (
+    compute_settings_session_context,
+    normalize_tool_settings_values,
 )
 from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result, UiFormAction
 from skriptoteket.domain.scripting.ui.normalization import UiNormalizationResult
@@ -39,6 +45,7 @@ from skriptoteket.protocols.scripting_ui import (
     UiPayloadNormalizerProtocol,
     UiPolicyProviderProtocol,
 )
+from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 if TYPE_CHECKING:
@@ -75,6 +82,7 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         uow: UnitOfWorkProtocol,
         versions: ToolVersionRepositoryProtocol,
         runs: ToolRunRepositoryProtocol,
+        sessions: ToolSessionRepositoryProtocol,
         runner: ToolRunnerProtocol,
         ui_policy_provider: UiPolicyProviderProtocol,
         backend_actions: BackendActionProviderProtocol,
@@ -85,6 +93,7 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         self._uow = uow
         self._versions = versions
         self._runs = runs
+        self._sessions = sessions
         self._runner = runner
         self._ui_policy_provider = ui_policy_provider
         self._backend_actions = backend_actions
@@ -201,8 +210,44 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         span.set_attribute("run.input_files_count", len(normalized_input_files))
         span.set_attribute("run.input_total_size_bytes", total_size_bytes)
 
+        settings_values: dict[str, JsonValue] = {}
+        memory_json = json.dumps(
+            {"settings": settings_values},
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode("utf-8")
+
         async with self._uow:
             await self._runs.create(run=run)
+            if version.settings_schema is not None:
+                context = compute_settings_session_context(settings_schema=version.settings_schema)
+                session = await self._sessions.get_or_create(
+                    session_id=self._id_generator.new_uuid(),
+                    tool_id=command.tool_id,
+                    user_id=actor.id,
+                    context=context,
+                )
+
+                try:
+                    settings_values = normalize_tool_settings_values(
+                        settings_schema=version.settings_schema,
+                        values=session.state,
+                    )
+                except DomainError:
+                    logger.warning(
+                        "Invalid persisted tool settings; ignoring",
+                        run_id=str(run_id),
+                        tool_id=str(command.tool_id),
+                        tool_version_id=str(command.version_id),
+                        actor_id=str(actor.id),
+                    )
+                    settings_values = {}
+
+                memory_json = json.dumps(
+                    {"settings": settings_values},
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                ).encode("utf-8")
 
         execution_result: ToolExecutionResult | None = None
         domain_error_to_raise: DomainError | None = None
@@ -215,6 +260,7 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
                 version=version,
                 context=command.context,
                 input_files=normalized_input_files,
+                memory_json=memory_json,
             )
         except SyntaxError as exc:
             logger.warning(

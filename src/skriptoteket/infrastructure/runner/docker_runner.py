@@ -106,7 +106,12 @@ def _truncate_utf8_str(*, value: str, max_bytes: int) -> str:
     return encoded[:max_bytes].decode("utf-8", errors="ignore")
 
 
-def _build_workdir_archive(*, version: ToolVersion, input_files: list[tuple[str, bytes]]) -> bytes:
+def _build_workdir_archive(
+    *,
+    version: ToolVersion,
+    input_files: list[tuple[str, bytes]],
+    memory_json: bytes,
+) -> bytes:
     normalized_input_files, _ = normalize_input_files(input_files=input_files)
 
     tar_buffer = io.BytesIO()
@@ -117,6 +122,11 @@ def _build_workdir_archive(*, version: ToolVersion, input_files: list[tuple[str,
         script_info.size = len(script_bytes)
         script_info.mode = 0o644
         tar.addfile(script_info, io.BytesIO(script_bytes))
+
+        memory_info = tarfile.TarInfo(name="memory.json")
+        memory_info.size = len(memory_json)
+        memory_info.mode = 0o644
+        tar.addfile(memory_info, io.BytesIO(memory_json))
 
         input_dir_info = tarfile.TarInfo(name="input")
         input_dir_info.type = tarfile.DIRTYPE
@@ -178,6 +188,7 @@ class DockerToolRunner(ToolRunnerProtocol):
         version: ToolVersion,
         context: RunContext,
         input_files: list[tuple[str, bytes]],
+        memory_json: bytes,
     ) -> ToolExecutionResult:
         if not await self._capacity.try_acquire():
             logger.warning(
@@ -199,6 +210,7 @@ class DockerToolRunner(ToolRunnerProtocol):
                 version=version,
                 context=context,
                 input_files=input_files,
+                memory_json=memory_json,
             )
         finally:
             await self._capacity.release()
@@ -210,6 +222,7 @@ class DockerToolRunner(ToolRunnerProtocol):
         version: ToolVersion,
         context: RunContext,
         input_files: list[tuple[str, bytes]],
+        memory_json: bytes,
     ) -> ToolExecutionResult:
         import docker
         from docker.errors import DockerException, NotFound
@@ -253,6 +266,7 @@ class DockerToolRunner(ToolRunnerProtocol):
             "SKRIPTOTEKET_ENTRYPOINT": version.entrypoint,
             "SKRIPTOTEKET_INPUT_PATH": f"/work/input/{primary_filename}",
             "SKRIPTOTEKET_INPUT_MANIFEST": input_manifest_json,
+            "SKRIPTOTEKET_MEMORY_PATH": "/work/memory.json",
             "SKRIPTOTEKET_OUTPUT_DIR": "/work/output",
             "SKRIPTOTEKET_RESULT_PATH": "/work/result.json",
         }
@@ -284,6 +298,7 @@ class DockerToolRunner(ToolRunnerProtocol):
                 workdir_tar = _build_workdir_archive(
                     version=version,
                     input_files=normalized_input_files,
+                    memory_json=memory_json,
                 )
 
                 container = client.containers.create(

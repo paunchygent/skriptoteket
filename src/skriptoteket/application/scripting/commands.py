@@ -5,6 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
 from skriptoteket.domain.scripting.models import RunContext, ToolRun, ToolVersion
+from skriptoteket.domain.scripting.tool_settings import ToolSettingsSchema
 
 type InputFile = tuple[str, bytes]
 
@@ -32,6 +33,7 @@ class CreateDraftVersionCommand(BaseModel):
     derived_from_version_id: UUID | None = None
     entrypoint: str = "run_tool"
     source_code: str
+    settings_schema: ToolSettingsSchema | None = None
     change_summary: str | None = None
 
 
@@ -47,6 +49,7 @@ class SaveDraftVersionCommand(BaseModel):
     version_id: UUID
     entrypoint: str = "run_tool"
     source_code: str
+    settings_schema: ToolSettingsSchema | None = None
     change_summary: str | None = None
     expected_parent_version_id: UUID
 

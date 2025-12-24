@@ -70,6 +70,7 @@ class RequestChangesHandler(RequestChangesHandlerProtocol):
                 version_number=new_version_number,
                 source_code=reviewed_version.source_code,
                 entrypoint=reviewed_version.entrypoint,
+                settings_schema=reviewed_version.settings_schema,
                 created_by_user_id=reviewed_version.created_by_user_id,
                 derived_from_version_id=reviewed_version.id,
                 change_summary=command.message,

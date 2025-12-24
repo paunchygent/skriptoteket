@@ -146,6 +146,11 @@ class PostgreSQLToolVersionRepository(ToolVersionRepositoryProtocol):
         return stats
 
     async def create(self, *, version: ToolVersion) -> ToolVersion:
+        settings_schema = (
+            None
+            if version.settings_schema is None
+            else [field.model_dump(mode="json") for field in version.settings_schema]
+        )
         model = ToolVersionModel(
             id=version.id,
             tool_id=version.tool_id,
@@ -154,6 +159,7 @@ class PostgreSQLToolVersionRepository(ToolVersionRepositoryProtocol):
             source_code=version.source_code,
             entrypoint=version.entrypoint,
             content_hash=version.content_hash,
+            settings_schema=settings_schema,
             derived_from_version_id=version.derived_from_version_id,
             created_by_user_id=version.created_by_user_id,
             created_at=version.created_at,

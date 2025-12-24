@@ -33,6 +33,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, valida
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.models import RunStatus, ToolRun, ToolVersion, VersionState
+from skriptoteket.domain.scripting.ui.contract_v2 import UiActionField
 from skriptoteket.infrastructure.runner.path_safety import validate_output_path
 from skriptoteket.protocols.catalog import (
     AssignMaintainerHandlerProtocol,
@@ -106,6 +107,7 @@ class EditorBootResponse(BaseModel):
     derived_from_version_id: UUID | None
     entrypoint: str
     source_code: str
+    settings_schema: list[UiActionField] | None = None
 
 
 class CreateDraftVersionRequest(BaseModel):
@@ -113,6 +115,7 @@ class CreateDraftVersionRequest(BaseModel):
 
     entrypoint: str = DEFAULT_ENTRYPOINT
     source_code: str
+    settings_schema: list[UiActionField] | None = None
     change_summary: str | None = None
     derived_from_version_id: UUID | None = None
 
@@ -122,6 +125,7 @@ class SaveDraftVersionRequest(BaseModel):
 
     entrypoint: str = DEFAULT_ENTRYPOINT
     source_code: str
+    settings_schema: list[UiActionField] | None = None
     change_summary: str | None = None
     expected_parent_version_id: UUID
 
@@ -263,9 +267,9 @@ def _to_version_summary(version: ToolVersion) -> EditorVersionSummary:
 
 def _resolve_editor_state(
     selected_version: ToolVersion | None,
-) -> tuple[str, str, EditorSaveMode, UUID | None]:
+) -> tuple[str, str, list[UiActionField] | None, EditorSaveMode, UUID | None]:
     if selected_version is None:
-        return DEFAULT_ENTRYPOINT, STARTER_TEMPLATE, "create_draft", None
+        return DEFAULT_ENTRYPOINT, STARTER_TEMPLATE, None, "create_draft", None
 
     is_draft = selected_version.state is VersionState.DRAFT
     save_mode: EditorSaveMode = "snapshot" if is_draft else "create_draft"
@@ -273,6 +277,7 @@ def _resolve_editor_state(
     return (
         selected_version.entrypoint,
         selected_version.source_code,
+        selected_version.settings_schema,
         save_mode,
         derived_from_version_id,
     )
@@ -284,8 +289,8 @@ def _build_editor_response(
     visible_versions: list[ToolVersion],
     selected_version: ToolVersion | None,
 ) -> EditorBootResponse:
-    entrypoint, source_code, save_mode, derived_from_version_id = _resolve_editor_state(
-        selected_version
+    entrypoint, source_code, settings_schema, save_mode, derived_from_version_id = (
+        _resolve_editor_state(selected_version)
     )
 
     return EditorBootResponse(
@@ -296,6 +301,7 @@ def _build_editor_response(
         derived_from_version_id=derived_from_version_id,
         entrypoint=entrypoint,
         source_code=source_code,
+        settings_schema=settings_schema,
     )
 
 
@@ -630,15 +636,18 @@ async def create_draft_version(
     user: User = Depends(require_contributor_api),
     _: None = Depends(require_csrf_token),
 ) -> SaveResult:
+    command_payload: dict[str, object] = {
+        "tool_id": tool_id,
+        "derived_from_version_id": payload.derived_from_version_id,
+        "entrypoint": payload.entrypoint,
+        "source_code": payload.source_code,
+        "change_summary": payload.change_summary,
+    }
+    if "settings_schema" in payload.model_fields_set:
+        command_payload["settings_schema"] = payload.settings_schema
     result = await handler.handle(
         actor=user,
-        command=CreateDraftVersionCommand(
-            tool_id=tool_id,
-            derived_from_version_id=payload.derived_from_version_id,
-            entrypoint=payload.entrypoint,
-            source_code=payload.source_code,
-            change_summary=payload.change_summary,
-        ),
+        command=CreateDraftVersionCommand.model_validate(command_payload),
     )
     return SaveResult(
         version_id=result.version.id,
@@ -655,15 +664,18 @@ async def save_draft_version(
     user: User = Depends(require_contributor_api),
     _: None = Depends(require_csrf_token),
 ) -> SaveResult:
+    command_payload: dict[str, object] = {
+        "version_id": version_id,
+        "expected_parent_version_id": payload.expected_parent_version_id,
+        "entrypoint": payload.entrypoint,
+        "source_code": payload.source_code,
+        "change_summary": payload.change_summary,
+    }
+    if "settings_schema" in payload.model_fields_set:
+        command_payload["settings_schema"] = payload.settings_schema
     result = await handler.handle(
         actor=user,
-        command=SaveDraftVersionCommand(
-            version_id=version_id,
-            expected_parent_version_id=payload.expected_parent_version_id,
-            entrypoint=payload.entrypoint,
-            source_code=payload.source_code,
-            change_summary=payload.change_summary,
-        ),
+        command=SaveDraftVersionCommand.model_validate(command_payload),
     )
     return SaveResult(
         version_id=result.version.id,

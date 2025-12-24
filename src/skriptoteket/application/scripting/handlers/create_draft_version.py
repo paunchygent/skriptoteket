@@ -87,14 +87,22 @@ class CreateDraftVersionHandler(CreateDraftVersionHandlerProtocol):
                         version=derived_from,
                         is_tool_maintainer=is_tool_maintainer,
                     )
+            else:
+                derived_from = None
 
             version_number = await self._versions.get_next_version_number(tool_id=tool.id)
+            effective_settings_schema = (
+                command.settings_schema
+                if "settings_schema" in command.model_fields_set
+                else (derived_from.settings_schema if derived_from is not None else None)
+            )
             draft = create_draft_version(
                 version_id=self._id_generator.new_uuid(),
                 tool_id=tool.id,
                 version_number=version_number,
                 source_code=command.source_code,
                 entrypoint=command.entrypoint,
+                settings_schema=effective_settings_schema,
                 created_by_user_id=actor.id,
                 derived_from_version_id=command.derived_from_version_id,
                 change_summary=command.change_summary,

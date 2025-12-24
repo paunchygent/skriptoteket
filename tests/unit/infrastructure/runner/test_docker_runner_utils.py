@@ -180,11 +180,13 @@ def test_build_workdir_archive_contains_script_and_input() -> None:
     archive_bytes = _build_workdir_archive(
         version=version,
         input_files=[("data.csv", b"col1,col2\n1,2")],
+        memory_json=b'{"settings":{}}',
     )
 
     with tarfile.open(fileobj=io.BytesIO(archive_bytes), mode="r") as tar:
         names = tar.getnames()
         assert "script.py" in names
+        assert "memory.json" in names
         assert "input" in names
         assert "input/data.csv" in names
 
@@ -196,6 +198,7 @@ def test_build_workdir_archive_script_has_correct_content() -> None:
     archive_bytes = _build_workdir_archive(
         version=version,
         input_files=[("file.txt", b"content")],
+        memory_json=b'{"settings":{}}',
     )
 
     with tarfile.open(fileobj=io.BytesIO(archive_bytes), mode="r") as tar:
@@ -212,6 +215,7 @@ def test_build_workdir_archive_input_has_correct_content() -> None:
     archive_bytes = _build_workdir_archive(
         version=version,
         input_files=[("input.txt", input_data)],
+        memory_json=b'{"settings":{}}',
     )
 
     with tarfile.open(fileobj=io.BytesIO(archive_bytes), mode="r") as tar:

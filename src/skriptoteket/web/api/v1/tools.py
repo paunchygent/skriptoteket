@@ -2,18 +2,27 @@ from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, File, UploadFile
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, JsonValue
 
 from skriptoteket.application.scripting.commands import RunActiveToolCommand
+from skriptoteket.application.scripting.tool_settings import (
+    GetToolSettingsQuery,
+    UpdateToolSettingsCommand,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.catalog.models import Tool
 from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.models import VersionState
+from skriptoteket.domain.scripting.ui.contract_v2 import UiActionField
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.scripting import (
     RunActiveToolHandlerProtocol,
     ToolVersionRepositoryProtocol,
+)
+from skriptoteket.protocols.tool_settings import (
+    GetToolSettingsHandlerProtocol,
+    UpdateToolSettingsHandlerProtocol,
 )
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
 from skriptoteket.web.uploads import read_upload_files
@@ -43,6 +52,23 @@ class StartToolRunResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     run_id: UUID
+
+
+class ToolSettingsResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    schema_version: str | None
+    settings_schema: list[UiActionField] | None
+    values: dict[str, JsonValue]
+    state_rev: int
+
+
+class UpdateToolSettingsRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    expected_state_rev: int
+    values: dict[str, JsonValue]
 
 
 async def _load_runnable_tool(
@@ -112,3 +138,48 @@ async def start_tool_run(
         command=RunActiveToolCommand(tool_slug=slug, input_files=input_files),
     )
     return StartToolRunResponse(run_id=result.run.id)
+
+
+@router.get("/{tool_id}/settings", response_model=ToolSettingsResponse)
+@inject
+async def get_tool_settings(
+    tool_id: UUID,
+    handler: FromDishka[GetToolSettingsHandlerProtocol],
+    user: User = Depends(require_user_api),
+) -> ToolSettingsResponse:
+    result = await handler.handle(actor=user, query=GetToolSettingsQuery(tool_id=tool_id))
+    settings_state = result.settings
+    return ToolSettingsResponse(
+        tool_id=settings_state.tool_id,
+        schema_version=settings_state.schema_version,
+        settings_schema=settings_state.settings_schema,
+        values=settings_state.values,
+        state_rev=settings_state.state_rev,
+    )
+
+
+@router.put("/{tool_id}/settings", response_model=ToolSettingsResponse)
+@inject
+async def update_tool_settings(
+    tool_id: UUID,
+    payload: UpdateToolSettingsRequest,
+    handler: FromDishka[UpdateToolSettingsHandlerProtocol],
+    user: User = Depends(require_user_api),
+    _: None = Depends(require_csrf_token),
+) -> ToolSettingsResponse:
+    result = await handler.handle(
+        actor=user,
+        command=UpdateToolSettingsCommand(
+            tool_id=tool_id,
+            expected_state_rev=payload.expected_state_rev,
+            values=payload.values,
+        ),
+    )
+    settings_state = result.settings
+    return ToolSettingsResponse(
+        tool_id=settings_state.tool_id,
+        schema_version=settings_state.schema_version,
+        settings_schema=settings_state.settings_schema,
+        values=settings_state.values,
+        state_rev=settings_state.state_rev,
+    )

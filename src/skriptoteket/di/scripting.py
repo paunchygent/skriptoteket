@@ -22,6 +22,7 @@ from skriptoteket.application.scripting.handlers.get_tool_run import (
 from skriptoteket.application.scripting.handlers.get_tool_session_state import (
     GetToolSessionStateHandler,
 )
+from skriptoteket.application.scripting.handlers.get_tool_settings import GetToolSettingsHandler
 from skriptoteket.application.scripting.handlers.list_run_artifacts import (
     ListArtifactsHandler as ListInteractiveArtifactsHandler,
 )
@@ -35,6 +36,9 @@ from skriptoteket.application.scripting.handlers.start_action import StartAction
 from skriptoteket.application.scripting.handlers.submit_for_review import SubmitForReviewHandler
 from skriptoteket.application.scripting.handlers.update_tool_session_state import (
     UpdateToolSessionStateHandler,
+)
+from skriptoteket.application.scripting.handlers.update_tool_settings import (
+    UpdateToolSettingsHandler,
 )
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol, ToolRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
@@ -73,6 +77,10 @@ from skriptoteket.protocols.tool_sessions import (
     GetToolSessionStateHandlerProtocol,
     ToolSessionRepositoryProtocol,
     UpdateToolSessionStateHandlerProtocol,
+)
+from skriptoteket.protocols.tool_settings import (
+    GetToolSettingsHandlerProtocol,
+    UpdateToolSettingsHandlerProtocol,
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
@@ -167,6 +175,40 @@ class ScriptingProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
+    def get_tool_settings_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        sessions: ToolSessionRepositoryProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> GetToolSettingsHandlerProtocol:
+        return GetToolSettingsHandler(
+            uow=uow,
+            tools=tools,
+            versions=versions,
+            sessions=sessions,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def update_tool_settings_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        sessions: ToolSessionRepositoryProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> UpdateToolSettingsHandlerProtocol:
+        return UpdateToolSettingsHandler(
+            uow=uow,
+            tools=tools,
+            versions=versions,
+            sessions=sessions,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
     def update_tool_session_state_handler(
         self,
         uow: UnitOfWorkProtocol,
@@ -198,6 +240,7 @@ class ScriptingProvider(Provider):
         uow: UnitOfWorkProtocol,
         versions: ToolVersionRepositoryProtocol,
         runs: ToolRunRepositoryProtocol,
+        sessions: ToolSessionRepositoryProtocol,
         runner: ToolRunnerProtocol,
         ui_policy_provider: UiPolicyProviderProtocol,
         backend_actions: BackendActionProviderProtocol,
@@ -209,6 +252,7 @@ class ScriptingProvider(Provider):
             uow=uow,
             versions=versions,
             runs=runs,
+            sessions=sessions,
             runner=runner,
             ui_policy_provider=ui_policy_provider,
             backend_actions=backend_actions,

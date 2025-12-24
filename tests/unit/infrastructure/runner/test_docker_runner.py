@@ -170,6 +170,7 @@ async def test_execute_success(
         version=tool_version,
         context=RunContext.SANDBOX,
         input_files=[("input.txt", b"input")],
+        memory_json=b'{"settings":{}}',
     )
 
     assert result.status is RunStatus.SUCCEEDED
@@ -183,6 +184,7 @@ async def test_execute_success(
 
     env = client_instance.containers.create.call_args.kwargs["environment"]
     assert env["SKRIPTOTEKET_INPUT_PATH"] == "/work/input/input.txt"
+    assert env["SKRIPTOTEKET_MEMORY_PATH"] == "/work/memory.json"
     manifest = json.loads(env["SKRIPTOTEKET_INPUT_MANIFEST"])
     assert manifest == {
         "files": [{"name": "input.txt", "path": "/work/input/input.txt", "bytes": 5}]
@@ -214,6 +216,7 @@ async def test_execute_missing_result_json_returns_failed(
             version=tool_version,
             context=RunContext.SANDBOX,
             input_files=[("input.txt", b"input")],
+            memory_json=b'{"settings":{}}',
         )
 
     assert exc_info.value.code is ErrorCode.INTERNAL_ERROR
@@ -244,6 +247,7 @@ async def test_execute_timeout_returns_timed_out(
         version=tool_version,
         context=RunContext.SANDBOX,
         input_files=[("input.txt", b"input")],
+        memory_json=b'{"settings":{}}',
     )
 
     assert result.status is RunStatus.TIMED_OUT
@@ -294,6 +298,7 @@ async def test_execute_artifact_extraction_violation_returns_failed(
             version=tool_version,
             context=RunContext.SANDBOX,
             input_files=[("input.txt", b"input")],
+            memory_json=b'{"settings":{}}',
         )
 
     assert exc_info.value.code is ErrorCode.INTERNAL_ERROR

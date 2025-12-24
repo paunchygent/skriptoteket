@@ -9,7 +9,11 @@ from pydantic import BaseModel, ConfigDict, model_validator
 
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.scripting.input_files import InputManifest
-from skriptoteket.domain.scripting.ui.contract_v2 import UiPayloadV2
+from skriptoteket.domain.scripting.tool_settings import (
+    ToolSettingsSchema,
+    normalize_tool_settings_schema,
+)
+from skriptoteket.domain.scripting.ui.contract_v2 import UiActionField, UiPayloadV2
 
 
 class VersionState(StrEnum):
@@ -47,6 +51,7 @@ class ToolVersion(BaseModel):
     source_code: str
     entrypoint: str
     content_hash: str
+    settings_schema: list[UiActionField] | None = None
     derived_from_version_id: UUID | None = None
 
     created_by_user_id: UUID
@@ -173,6 +178,7 @@ def create_draft_version(
     version_number: int,
     source_code: str,
     entrypoint: str,
+    settings_schema: ToolSettingsSchema | None = None,
     created_by_user_id: UUID,
     derived_from_version_id: UUID | None,
     change_summary: str | None,
@@ -193,6 +199,7 @@ def create_draft_version(
             entrypoint=normalized_entrypoint,
             source_code=normalized_source_code,
         ),
+        settings_schema=normalize_tool_settings_schema(settings_schema=settings_schema),
         derived_from_version_id=derived_from_version_id,
         created_by_user_id=created_by_user_id,
         created_at=now,
@@ -207,6 +214,7 @@ def save_draft_snapshot(
     new_version_number: int,
     source_code: str,
     entrypoint: str,
+    settings_schema: ToolSettingsSchema | None = None,
     saved_by_user_id: UUID,
     change_summary: str | None,
     now: datetime,
@@ -241,6 +249,7 @@ def save_draft_snapshot(
             entrypoint=normalized_entrypoint,
             source_code=normalized_source_code,
         ),
+        settings_schema=normalize_tool_settings_schema(settings_schema=settings_schema),
         derived_from_version_id=previous_version.id,
         created_by_user_id=saved_by_user_id,
         created_at=now,
@@ -333,6 +342,7 @@ def publish_version(
         source_code=reviewed_version.source_code,
         entrypoint=reviewed_version.entrypoint,
         content_hash=reviewed_version.content_hash,
+        settings_schema=reviewed_version.settings_schema,
         derived_from_version_id=reviewed_version.id,
         created_by_user_id=published_by_user_id,
         created_at=now,
@@ -394,6 +404,7 @@ def rollback_to_version(
         source_code=archived_version.source_code,
         entrypoint=archived_version.entrypoint,
         content_hash=archived_version.content_hash,
+        settings_schema=archived_version.settings_schema,
         derived_from_version_id=archived_version.id,
         created_by_user_id=published_by_user_id,
         created_at=now,
