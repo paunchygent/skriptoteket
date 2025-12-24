@@ -89,9 +89,10 @@ class TestGetTracer:
 
     def test_get_tracer_returns_object_that_creates_spans(self) -> None:
         tracer = get_tracer("test_service")
-        span = tracer.start_as_current_span("test_span")
-        assert hasattr(span, "set_attribute")
-        assert hasattr(span, "add_event")
+        # start_as_current_span returns a context manager; span is the target
+        with tracer.start_as_current_span("test_span") as span:
+            assert hasattr(span, "set_attribute")
+            assert hasattr(span, "add_event")
 
 
 @pytest.mark.unit

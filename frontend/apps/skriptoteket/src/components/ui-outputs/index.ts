@@ -4,4 +4,5 @@ export { default as UiOutputMarkdown } from "./UiOutputMarkdown.vue";
 export { default as UiOutputNotice } from "./UiOutputNotice.vue";
 export { default as UiOutputRenderer } from "./UiOutputRenderer.vue";
 export { default as UiOutputTable } from "./UiOutputTable.vue";
+export { default as UiOutputUnknown } from "./UiOutputUnknown.vue";
 export { default as UiOutputVegaLite } from "./UiOutputVegaLite.vue";

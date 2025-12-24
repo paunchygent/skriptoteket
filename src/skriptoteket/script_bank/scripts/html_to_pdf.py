@@ -234,10 +234,7 @@ def run_tool(input_dir: str, output_dir: str) -> dict[str, object]:
     outputs: list[dict[str, object]] = [
         _notice(
             level,
-            (
-                f"{ok_count} PDF skapades"
-                + (f" ({error_count} fel)." if error_count else ".")
-            ),
+            (f"{ok_count} PDF skapades" + (f" ({error_count} fel)." if error_count else ".")),
         ),
         _markdown(
             f"Genererat {timestamp}.\n\n"

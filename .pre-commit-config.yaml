@@ -51,3 +51,10 @@ repos:
         language: system
         files: ^\.agent/(readme-first\.md|handoff\.md)$
         pass_filenames: false
+
+      - id: eslint
+        name: ESLint (frontend)
+        entry: pnpm --filter @skriptoteket/spa lint
+        language: system
+        files: ^frontend/apps/skriptoteket/src/.*\.(vue|ts|js)$
+        pass_filenames: false
