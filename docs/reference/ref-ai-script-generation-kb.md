@@ -390,12 +390,9 @@ def run_tool(input_path: str, output_dir: str) -> dict:
 
 ```python
 from pathlib import Path
-from weasyprint import HTML
+from pdf_helper import save_as_pdf
 
 def run_tool(input_path: str, output_dir: str) -> dict:
-    output = Path(output_dir)
-    output.mkdir(parents=True, exist_ok=True)
-
     html_content = """
     <!DOCTYPE html>
     <html>
@@ -407,13 +404,12 @@ def run_tool(input_path: str, output_dir: str) -> dict:
     </html>
     """
 
-    pdf_path = output / "rapport.pdf"
-    HTML(string=html_content).write_pdf(pdf_path)
+    pdf_path = save_as_pdf(html_content, output_dir, "rapport.pdf")
 
     return {
         "outputs": [
             {"kind": "notice", "level": "info", "message": "PDF skapad!"},
-            {"kind": "markdown", "markdown": f"Ladda ner **{pdf_path.name}** ovan."}
+            {"kind": "markdown", "markdown": f"Ladda ner **{Path(pdf_path).name}** ovan."}
         ],
         "next_actions": [],
         "state": None
@@ -523,6 +519,35 @@ def run_tool(input_path: str, output_dir: str) -> dict:
 Om skriptet överskrider tidsgränsen:
 - Körstatus: `"timed_out"`
 - `error_summary`: `"Execution timed out."`
+
+### 8.4 ToolUserError (dedikerat undantag)
+
+För rena felmeddelanden som inte behöver ett `outputs`-svar kan du använda `ToolUserError`:
+
+```python
+from tool_errors import ToolUserError
+
+def run_tool(input_path: str, output_dir: str) -> dict:
+    path = Path(input_path)
+
+    if path.stat().st_size > 10_000_000:
+        raise ToolUserError("Filen är för stor (max 10 MB).")
+
+    # Fortsätt bearbetning...
+```
+
+**Skillnad mot notice-error:**
+
+| Metod | Status | Användning |
+|-------|--------|------------|
+| `raise ToolUserError(msg)` | `failed` | Avbryt körningen helt |
+| Return med notice `level: error` | `succeeded` | Rapportera fel men fortsätt (t.ex. validera fler rader) |
+
+**Regler:**
+
+- Meddelandet visas som `error_summary` i resultatet
+- Inga stacktraces, sökvägar eller hemligheter i meddelandet
+- Använd svenska, tydliga meddelanden
 
 ---
 

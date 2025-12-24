@@ -2,7 +2,7 @@
 type: story
 id: ST-12-02
 title: "Native PDF output helper"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-21
 epic: "EPIC-12"

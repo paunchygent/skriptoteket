@@ -2,7 +2,7 @@
 type: adr
 id: ADR-0034
 title: "Self-registration and HuleEdu-aligned user profiles"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-23

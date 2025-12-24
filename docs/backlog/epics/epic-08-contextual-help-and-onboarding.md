@@ -31,6 +31,7 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - [ST-08-07: Admin help (Förslag + Verktyg)](../stories/story-08-07-admin-dashboard-help.md)
 - [ST-08-08: Script editor help (overview + versioning)](../stories/story-08-08-editor-help-overview.md)
 - [ST-08-09: Script editor help (test runner + run result)](../stories/story-08-09-editor-help-test-area.md)
+- [ST-08-10: Script editor intelligence (CodeMirror 6 linting and suggestions)](../stories/story-08-10-script-editor-intelligence.md)
 
 ## Risks
 

@@ -13,16 +13,28 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-23
-- Branch / commit: `main` (`c653e80`)
+- Branch / commit: `main` (`813da05`)
 - Current sprint: `SPR-2025-12-21` (EPIC-11 full SPA migration)
-- Stories done: ST-11-01/02/03/04/05/06/07/08/09/10/11/12/13/14/15/16/17/18/19/20/21/22/23
+- Stories done: ST-11-01/02/03/04/05/06/07/08/09/10/11/12/13/14/15/16/17/18/19/20/21/22/23, ST-12-02
 - Production: Full Vue SPA; `d0e0bd6` deployed 2025-12-23
 
 ## Current Session (2025-12-23)
 
-### EPIC-02 Phase 2: Self-Registration & User Profiles (documentation complete)
+### ST-12-02 Native PDF output helper (implemented)
 
-- Docs ready: `docs/adr/adr-0034-self-registration-and-user-profiles.md` (proposed) + ST-02-03/04/05 (ready); epic: `docs/backlog/epics/epic-02-identity-and-access-control.md`.
+- Runner helper module: `runner/pdf_helper.py` + safe exception `runner/tool_errors.py` (API: `save_as_pdf(html, output_dir, filename) -> str`).
+- Runner error summary: `runner/_runner.py` returns safe message for `ToolUserError` (no traceback in `error_summary`).
+- Runner image ships helper: `Dockerfile.runner` now copies `runner/` to `/runner/` so scripts can `import pdf_helper`.
+- Script author docs updated: `docs/reference/ref-ai-script-generation-kb.md` uses `pdf_helper.save_as_pdf(...)`.
+- SPA verification (Playwright): `pdm run python -m scripts.playwright_st_12_02_native_pdf_output_helper_e2e` (artifacts: `.artifacts/st-12-02-native-pdf-output-helper-e2e/`).
+
+### EPIC-02 Phase 2: Self-Registration & User Profiles (implemented)
+
+- Migration + schema: `migrations/versions/0013_user_profiles_and_security.py`, `src/skriptoteket/infrastructure/db/models/user.py`, new `user_profiles` table/model (`src/skriptoteket/infrastructure/db/models/user_profile.py`).
+- Domain/app: `UserProfile` + lockout helpers (`src/skriptoteket/domain/identity/models.py`, `src/skriptoteket/domain/identity/lockout.py`); new handlers for register/profile/password/email; login lockout updates (`src/skriptoteket/application/identity/handlers/*`).
+- Infra/DI: profile repo + user repo updates + DI wiring (`src/skriptoteket/infrastructure/repositories/profile_repository.py`, `src/skriptoteket/di/infrastructure.py`, `src/skriptoteket/di/identity.py`); CLI provisioning creates profiles (`src/skriptoteket/cli/main.py`).
+- API: `/api/v1/auth/register` + `/api/v1/profile` (GET/PATCH) + `/api/v1/profile/password` + `/api/v1/profile/email` (`src/skriptoteket/web/api/v1/auth.py`, `src/skriptoteket/web/api/v1/profile.py`, `src/skriptoteket/web/router.py`).
+- SPA: register/profile views + composable + auth store action + routes/links (`frontend/apps/skriptoteket/src/views/RegisterView.vue`, `frontend/apps/skriptoteket/src/views/ProfileView.vue`, `frontend/apps/skriptoteket/src/composables/useProfile.ts`, `frontend/apps/skriptoteket/src/stores/auth.ts`, `frontend/apps/skriptoteket/src/router/routes.ts`, layout/login modal links).
 
 ### Mobile Sidebar Right-Side Positioning
 
@@ -106,8 +118,11 @@ Keep this file updated so the next session can pick up work quickly.
 
 ### Verification
 
+- EPIC-02: `pdm run pytest -m docker --override-ini addopts=''`, `pdm run test tests/unit/application/identity/`, `pdm run db-upgrade`, `pdm run docs-validate`.
+- Live check (2025-12-23): `pdm run dev` + `pdm run fe-dev` (left running); `curl http://127.0.0.1:5173/register`, `curl http://127.0.0.1:5173/profile`, `curl http://127.0.0.1:8000/healthz`.
 - Quality: `pdm run precommit-run` (pass), `pdm run fe-gen-api-types`, `pdm run db-upgrade` (0012).
 - Live check (2025-12-23): `pdm run python -m scripts.playwright_st_11_18_editor_maintainers_e2e --base-url http://127.0.0.1:5173` (artifacts: `.artifacts/st-11-18-editor-maintainers/`).
+- Live check (2025-12-23): `docker build -f Dockerfile.runner -t skriptoteket-runner:latest .`, `pdm run db-upgrade` (0013), `pdm run python -m scripts.playwright_st_12_02_native_pdf_output_helper_e2e`.
 - Prod deploy (2025-12-23): `ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"` + `ssh hemma "docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run db-upgrade"`.
 
 ## Key Architecture

@@ -2,7 +2,7 @@
 type: story
 id: ST-02-04
 title: "User profile and password change"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-23
 epic: "EPIC-02"
