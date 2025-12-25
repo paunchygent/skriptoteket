@@ -6,7 +6,7 @@ from uuid import UUID
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, File, UploadFile
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
 from skriptoteket.application.catalog.commands import (
     AssignMaintainerCommand,
@@ -55,10 +55,12 @@ from skriptoteket.protocols.scripting import (
     RollbackVersionHandlerProtocol,
     RunSandboxHandlerProtocol,
     SaveDraftVersionHandlerProtocol,
+    StartSandboxActionHandlerProtocol,
     SubmitForReviewHandlerProtocol,
     ToolRunRepositoryProtocol,
     ToolVersionRepositoryProtocol,
 )
+from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.web.auth.api_dependencies import (
     require_admin_api,
     require_contributor_api,
@@ -173,6 +175,7 @@ class SandboxRunResponse(BaseModel):
     run_id: UUID
     status: RunStatus
     started_at: datetime
+    state_rev: int | None = None  # Populated when run has next_actions (ADR-0038)
 
 
 class ArtifactEntry(BaseModel):
@@ -254,6 +257,37 @@ class AssignMaintainerRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     email: str
+
+
+# ADR-0038: Sandbox session and action models
+
+
+class SandboxSessionResponse(BaseModel):
+    """Response for GET /api/v1/editor/tool-versions/{version_id}/session."""
+
+    model_config = ConfigDict(frozen=True)
+
+    state_rev: int
+    state: dict[str, JsonValue] | None = None
+
+
+class StartSandboxActionRequest(BaseModel):
+    """Request for POST /api/v1/editor/tool-versions/{version_id}/start-action."""
+
+    model_config = ConfigDict(frozen=True)
+
+    action_id: str
+    input: dict[str, JsonValue] = Field(default_factory=dict)
+    expected_state_rev: int
+
+
+class StartSandboxActionResponse(BaseModel):
+    """Response for POST /api/v1/editor/tool-versions/{version_id}/start-action."""
+
+    model_config = ConfigDict(frozen=True)
+
+    run_id: UUID
+    state_rev: int
 
 
 def _to_tool_summary(tool: Tool) -> EditorToolSummary:
@@ -849,6 +883,7 @@ async def run_sandbox(
         run_id=run.id,
         status=run.status,
         started_at=run.started_at,
+        state_rev=result.state_rev,
     )
 
 
@@ -891,4 +926,78 @@ async def download_artifact(
         candidate_path,
         filename=relative_path.name,
         media_type="application/octet-stream",
+    )
+
+
+# ADR-0038: Sandbox session and action endpoints
+
+
+def _sandbox_context(version_id: UUID) -> str:
+    """Build sandbox session context per ADR-0038."""
+    return f"sandbox:{version_id}"
+
+
+@router.get("/tool-versions/{version_id}/session", response_model=SandboxSessionResponse)
+@inject
+async def get_sandbox_session(
+    version_id: UUID,
+    versions_repo: FromDishka[ToolVersionRepositoryProtocol],
+    sessions: FromDishka[ToolSessionRepositoryProtocol],
+    user: User = Depends(require_contributor_api),
+) -> SandboxSessionResponse:
+    """Get sandbox session state for a tool version (ADR-0038)."""
+    version = await versions_repo.get_by_id(version_id=version_id)
+    if version is None:
+        raise not_found("ToolVersion", str(version_id))
+
+    context = _sandbox_context(version_id)
+    session = await sessions.get(
+        tool_id=version.tool_id,
+        user_id=user.id,
+        context=context,
+    )
+    if session is None:
+        raise not_found("SandboxSession", str(version_id))
+
+    return SandboxSessionResponse(
+        state_rev=session.state_rev,
+        state=session.state,
+    )
+
+
+@router.post(
+    "/tool-versions/{version_id}/start-action",
+    response_model=StartSandboxActionResponse,
+)
+@inject
+async def start_sandbox_action(
+    version_id: UUID,
+    payload: StartSandboxActionRequest,
+    versions_repo: FromDishka[ToolVersionRepositoryProtocol],
+    handler: FromDishka[StartSandboxActionHandlerProtocol],
+    user: User = Depends(require_contributor_api),
+    _: None = Depends(require_csrf_token),
+) -> StartSandboxActionResponse:
+    """Start a sandbox action for a tool version (ADR-0038)."""
+    version = await versions_repo.get_by_id(version_id=version_id)
+    if version is None:
+        raise not_found("ToolVersion", str(version_id))
+
+    from skriptoteket.application.scripting.interactive_sandbox import (
+        StartSandboxActionCommand,
+    )
+
+    result = await handler.handle(
+        actor=user,
+        command=StartSandboxActionCommand(
+            tool_id=version.tool_id,
+            version_id=version_id,
+            action_id=payload.action_id,
+            input=payload.input,
+            expected_state_rev=payload.expected_state_rev,
+        ),
+    )
+    return StartSandboxActionResponse(
+        run_id=result.run_id,
+        state_rev=result.state_rev,
     )

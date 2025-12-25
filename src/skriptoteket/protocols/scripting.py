@@ -26,6 +26,10 @@ from skriptoteket.application.scripting.commands import (
     SubmitForReviewCommand,
     SubmitForReviewResult,
 )
+from skriptoteket.application.scripting.interactive_sandbox import (
+    StartSandboxActionCommand,
+    StartSandboxActionResult,
+)
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.models import (
     RunContext,
@@ -168,3 +172,14 @@ class RunActiveToolHandlerProtocol(Protocol):
         actor: User,
         command: RunActiveToolCommand,
     ) -> RunActiveToolResult: ...
+
+
+class StartSandboxActionHandlerProtocol(Protocol):
+    """Protocol for starting sandbox actions (ADR-0038)."""
+
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: StartSandboxActionCommand,
+    ) -> StartSandboxActionResult: ...

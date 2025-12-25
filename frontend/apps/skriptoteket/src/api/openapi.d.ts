@@ -413,6 +413,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/editor/tool-versions/{version_id}/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Sandbox Session
+         * @description Get sandbox session state for a tool version (ADR-0038).
+         */
+        get: operations["get_sandbox_session_api_v1_editor_tool_versions__version_id__session_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/editor/tool-versions/{version_id}/start-action": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Sandbox Action
+         * @description Start a sandbox action for a tool version (ADR-0038).
+         */
+        post: operations["start_sandbox_action_api_v1_editor_tool_versions__version_id__start_action_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/editor/tool-versions/{version_id}/submit-review": {
         parameters: {
             query?: never;
@@ -1428,7 +1468,21 @@ export interface components {
              * Format: date-time
              */
             started_at: string;
+            /** State Rev */
+            state_rev?: number | null;
             status: components["schemas"]["RunStatus"];
+        };
+        /**
+         * SandboxSessionResponse
+         * @description Response for GET /api/v1/editor/tool-versions/{version_id}/session.
+         */
+        SandboxSessionResponse: {
+            /** State */
+            state?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /** State Rev */
+            state_rev: number;
         };
         /** SaveDraftVersionRequest */
         SaveDraftVersionRequest: {
@@ -1484,6 +1538,33 @@ export interface components {
         };
         /** StartActionResult */
         StartActionResult: {
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+            /** State Rev */
+            state_rev: number;
+        };
+        /**
+         * StartSandboxActionRequest
+         * @description Request for POST /api/v1/editor/tool-versions/{version_id}/start-action.
+         */
+        StartSandboxActionRequest: {
+            /** Action Id */
+            action_id: string;
+            /** Expected State Rev */
+            expected_state_rev: number;
+            /** Input */
+            input?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+        };
+        /**
+         * StartSandboxActionResponse
+         * @description Response for POST /api/v1/editor/tool-versions/{version_id}/start-action.
+         */
+        StartSandboxActionResponse: {
             /**
              * Run Id
              * Format: uuid
@@ -2819,6 +2900,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaveResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_sandbox_session_api_v1_editor_tool_versions__version_id__session_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SandboxSessionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_sandbox_action_api_v1_editor_tool_versions__version_id__start_action_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartSandboxActionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StartSandboxActionResponse"];
                 };
             };
             /** @description Validation Error */

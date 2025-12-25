@@ -33,6 +33,9 @@ from skriptoteket.application.scripting.handlers.run_active_tool import RunActiv
 from skriptoteket.application.scripting.handlers.run_sandbox import RunSandboxHandler
 from skriptoteket.application.scripting.handlers.save_draft_version import SaveDraftVersionHandler
 from skriptoteket.application.scripting.handlers.start_action import StartActionHandler
+from skriptoteket.application.scripting.handlers.start_sandbox_action import (
+    StartSandboxActionHandler,
+)
 from skriptoteket.application.scripting.handlers.submit_for_review import SubmitForReviewHandler
 from skriptoteket.application.scripting.handlers.update_tool_session_state import (
     UpdateToolSessionStateHandler,
@@ -63,6 +66,7 @@ from skriptoteket.protocols.scripting import (
     RunActiveToolHandlerProtocol,
     RunSandboxHandlerProtocol,
     SaveDraftVersionHandlerProtocol,
+    StartSandboxActionHandlerProtocol,
     SubmitForReviewHandlerProtocol,
     ToolRunRepositoryProtocol,
     ToolVersionRepositoryProtocol,
@@ -367,10 +371,34 @@ class ScriptingProvider(Provider):
         uow: UnitOfWorkProtocol,
         versions: ToolVersionRepositoryProtocol,
         maintainers: ToolMaintainerRepositoryProtocol,
+        sessions: ToolSessionRepositoryProtocol,
+        id_generator: IdGeneratorProtocol,
         execute: ExecuteToolVersionHandlerProtocol,
     ) -> RunSandboxHandlerProtocol:
         return RunSandboxHandler(
-            uow=uow, versions=versions, maintainers=maintainers, execute=execute
+            uow=uow,
+            versions=versions,
+            maintainers=maintainers,
+            sessions=sessions,
+            id_generator=id_generator,
+            execute=execute,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def start_sandbox_action_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
+        sessions: ToolSessionRepositoryProtocol,
+        execute: ExecuteToolVersionHandlerProtocol,
+    ) -> StartSandboxActionHandlerProtocol:
+        return StartSandboxActionHandler(
+            uow=uow,
+            versions=versions,
+            maintainers=maintainers,
+            sessions=sessions,
+            execute=execute,
         )
 
     @provide(scope=Scope.REQUEST)

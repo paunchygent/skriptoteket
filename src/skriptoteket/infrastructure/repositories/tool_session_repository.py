@@ -22,6 +22,25 @@ class PostgreSQLToolSessionRepository(ToolSessionRepositoryProtocol):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
+    async def get(
+        self,
+        *,
+        tool_id: UUID,
+        user_id: UUID,
+        context: str,
+    ) -> ToolSession | None:
+        stmt = (
+            select(ToolSessionModel)
+            .where(ToolSessionModel.tool_id == tool_id)
+            .where(ToolSessionModel.user_id == user_id)
+            .where(ToolSessionModel.context == context)
+        )
+        result = await self._session.execute(stmt)
+        model = result.scalar_one_or_none()
+        if model is None:
+            return None
+        return ToolSession.model_validate(model)
+
     async def get_or_create(
         self,
         *,

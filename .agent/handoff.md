@@ -13,7 +13,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-25
-- Branch / commit: `main` (`8440ec2`)
+- Branch / commit: `main` (`281a959`)
 - Current sprint: `SPR-2025-12-21` (EPIC-12 SPA UX)
 - Production: Full Vue SPA; `d0e0bd6` deployed 2025-12-23
 - Completed: EPIC-11 (SPA migration), EPIC-02 (identity) - see `.agent/readme-first.md`
@@ -130,6 +130,7 @@ Admin quick-create of draft tools + URL-namn lifecycle (ADR-0037).
  - EPIC-14 live: `docker compose up -d db && pdm run db-upgrade`, then `pdm run dev` + `pdm run fe-dev`
   - EPIC-14 functional (API): verified create draft tool, URL-namn edit validation, publish guards (placeholder/taxonomy),
    and URL-namn immutability post-publish via authenticated `httpx` calls against `http://127.0.0.1:8000`
+- Playwright (ST-14): `pdm run python -m scripts.playwright_st_14_admin_tool_authoring_e2e --base-url http://127.0.0.1:5173` (pass; screenshots in `.artifacts/st-14-admin-tool-authoring/`)
 - Playwright note (Codex): if you run Playwright escalated, run `pdm run dev` + `pdm run fe-dev` escalated too (same “world”); otherwise Playwright may get `ERR_CONNECTION_REFUSED` to `http://127.0.0.1:5173`.
 
 ## How to Run

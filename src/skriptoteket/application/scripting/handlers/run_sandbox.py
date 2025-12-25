@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from skriptoteket.application.scripting.commands import (
     ExecuteToolVersionCommand,
     RunSandboxCommand,
@@ -10,12 +12,19 @@ from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.domain.scripting.models import RunContext
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
+from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
     RunSandboxHandlerProtocol,
     ToolVersionRepositoryProtocol,
 )
+from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+
+
+def _sandbox_context(version_id: UUID) -> str:
+    """Build sandbox session context per ADR-0038."""
+    return f"sandbox:{version_id}"
 
 
 class RunSandboxHandler(RunSandboxHandlerProtocol):
@@ -25,11 +34,15 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
         uow: UnitOfWorkProtocol,
         versions: ToolVersionRepositoryProtocol,
         maintainers: ToolMaintainerRepositoryProtocol,
+        sessions: ToolSessionRepositoryProtocol,
+        id_generator: IdGeneratorProtocol,
         execute: ExecuteToolVersionHandlerProtocol,
     ) -> None:
         self._uow = uow
         self._versions = versions
         self._maintainers = maintainers
+        self._sessions = sessions
+        self._id_generator = id_generator
         self._execute = execute
 
     async def handle(
@@ -86,4 +99,27 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
                 input_files=command.input_files,
             ),
         )
-        return RunSandboxResult(run=result.run)
+
+        # Persist sandbox session state if run has next_actions (ADR-0038)
+        state_rev: int | None = None
+        run = result.run
+        if run.ui_payload is not None and run.ui_payload.next_actions:
+            context = _sandbox_context(command.version_id)
+            async with self._uow:
+                session = await self._sessions.get_or_create(
+                    session_id=self._id_generator.new_uuid(),
+                    tool_id=command.tool_id,
+                    user_id=actor.id,
+                    context=context,
+                )
+                # Update state (always increment state_rev on new run)
+                updated_session = await self._sessions.update_state(
+                    tool_id=command.tool_id,
+                    user_id=actor.id,
+                    context=context,
+                    expected_state_rev=session.state_rev,
+                    state=result.normalized_state,
+                )
+                state_rev = updated_session.state_rev
+
+        return RunSandboxResult(run=result.run, state_rev=state_rev)

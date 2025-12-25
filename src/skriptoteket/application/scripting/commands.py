@@ -116,6 +116,7 @@ class RunSandboxResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     run: ToolRun
+    state_rev: int | None = None  # Populated when run has next_actions
 
 
 class RunActiveToolCommand(BaseModel):

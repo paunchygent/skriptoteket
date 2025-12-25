@@ -4,13 +4,18 @@ import { computed, onBeforeUnmount, ref } from "vue";
 import { apiFetch, apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import { UiOutputRenderer } from "../ui-outputs";
+import ToolRunActions from "../tool-run/ToolRunActions.vue";
 import ToolRunArtifacts from "../tool-run/ToolRunArtifacts.vue";
+import SystemMessage from "../ui/SystemMessage.vue";
 
 type SandboxRunResponse = components["schemas"]["SandboxRunResponse"];
+type StartSandboxActionResponse = components["schemas"]["StartSandboxActionResponse"];
 type EditorRunDetails = components["schemas"]["EditorRunDetails"];
 type RunStatus = components["schemas"]["RunStatus"];
 type UiOutput = NonNullable<components["schemas"]["UiPayloadV2"]["outputs"]>[number];
+type UiFormAction = NonNullable<components["schemas"]["UiPayloadV2"]["next_actions"]>[number];
 type UiPayloadV2 = components["schemas"]["UiPayloadV2"];
+type JsonValue = components["schemas"]["JsonValue"];
 
 const props = defineProps<{
   versionId: string;
@@ -23,14 +28,38 @@ const runResult = ref<EditorRunDetails | null>(null);
 const errorMessage = ref<string | null>(null);
 const pollingIntervalId = ref<number | null>(null);
 
+// Multi-step action state (ADR-0038)
+const stateRev = ref<number | null>(null);
+const isSubmitting = ref(false);
+const actionErrorMessage = ref<string | null>(null);
+const completedSteps = ref<EditorRunDetails[]>([]);
+const selectedStepIndex = ref<number | null>(null);
+
 const hasFiles = computed(() => selectedFiles.value.length > 0);
 
+// Displayed run: current or selected past step
+const displayedRun = computed<EditorRunDetails | null>(() => {
+  if (selectedStepIndex.value !== null) {
+    return completedSteps.value[selectedStepIndex.value] ?? null;
+  }
+  return runResult.value;
+});
+
 const outputs = computed<UiOutput[]>(() => {
-  const payload = runResult.value?.ui_payload as UiPayloadV2 | null;
+  const payload = displayedRun.value?.ui_payload as UiPayloadV2 | null;
   return payload?.outputs ?? [];
 });
-const artifacts = computed(() => runResult.value?.artifacts ?? []);
+const artifacts = computed(() => displayedRun.value?.artifacts ?? []);
 const hasResults = computed(() => runResult.value !== null || errorMessage.value !== null);
+
+// Multi-step action computed properties
+const nextActions = computed<UiFormAction[]>(() => {
+  const payload = runResult.value?.ui_payload as UiPayloadV2 | null;
+  return payload?.next_actions ?? [];
+});
+const canSubmitActions = computed(() => {
+  return stateRev.value !== null && !isRunning.value && !isSubmitting.value;
+});
 
 function selectFiles(event: Event): void {
   const target = event.target as HTMLInputElement;
@@ -52,6 +81,11 @@ function statusLabel(status: RunStatus): string {
 function clearResult(): void {
   runResult.value = null;
   errorMessage.value = null;
+  // Clear multi-step state
+  stateRev.value = null;
+  actionErrorMessage.value = null;
+  completedSteps.value = [];
+  selectedStepIndex.value = null;
 }
 
 function stopPolling(): void {
@@ -97,6 +131,12 @@ async function runSandbox(): Promise<void> {
   runResult.value = null;
   stopPolling();
 
+  // Reset multi-step state for fresh run
+  stateRev.value = null;
+  actionErrorMessage.value = null;
+  completedSteps.value = [];
+  selectedStepIndex.value = null;
+
   const formData = new FormData();
   for (const file of selectedFiles.value) {
     formData.append("files", file);
@@ -110,6 +150,11 @@ async function runSandbox(): Promise<void> {
         body: formData,
       },
     );
+
+    // Capture state_rev if present (multi-step tools)
+    if (response.state_rev !== null && response.state_rev !== undefined) {
+      stateRev.value = response.state_rev;
+    }
 
     runResult.value = {
       run_id: response.run_id,
@@ -138,6 +183,69 @@ async function runSandbox(): Promise<void> {
     } else {
       errorMessage.value = "Det gick inte att starta testkörningen.";
     }
+  }
+}
+
+async function onSubmitAction(payload: {
+  actionId: string;
+  input: Record<string, JsonValue>;
+}): Promise<void> {
+  if (!canSubmitActions.value || !runResult.value) return;
+
+  isSubmitting.value = true;
+  actionErrorMessage.value = null;
+  stopPolling();
+
+  // Save current run to history before starting new action
+  completedSteps.value.push(runResult.value);
+  selectedStepIndex.value = null;
+
+  try {
+    const response = await apiFetch<StartSandboxActionResponse>(
+      `/api/v1/editor/tool-versions/${encodeURIComponent(props.versionId)}/start-action`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          action_id: payload.actionId,
+          input: payload.input,
+          expected_state_rev: stateRev.value,
+        }),
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+
+    // Update state_rev from response
+    stateRev.value = response.state_rev;
+
+    // Create placeholder and start polling
+    runResult.value = {
+      run_id: response.run_id,
+      version_id: props.versionId,
+      status: "running",
+      started_at: new Date().toISOString(),
+      finished_at: null,
+      error_summary: null,
+      ui_payload: null,
+      artifacts: [],
+    };
+
+    isRunning.value = true;
+    pollingIntervalId.value = window.setInterval(() => {
+      void pollRunStatus(response.run_id);
+    }, 1500);
+  } catch (error: unknown) {
+    // Revert step history on error
+    completedSteps.value.pop();
+
+    if (isApiError(error) && error.status === 409) {
+      actionErrorMessage.value = "Din session har ändrats. Uppdatera och försök igen.";
+    } else if (error instanceof Error) {
+      actionErrorMessage.value = error.message;
+    } else {
+      actionErrorMessage.value = "Det gick inte att köra åtgärden just nu.";
+    }
+  } finally {
+    isSubmitting.value = false;
   }
 }
 
@@ -194,13 +302,10 @@ onBeforeUnmount(() => {
       </button>
     </div>
 
-    <!-- Error message -->
-    <div
-      v-if="errorMessage"
-      class="p-3 border border-burgundy bg-white text-sm text-burgundy"
-    >
-      {{ errorMessage }}
-    </div>
+    <SystemMessage
+      v-model="errorMessage"
+      variant="error"
+    />
 
     <!-- Running state -->
     <div
@@ -213,30 +318,58 @@ onBeforeUnmount(() => {
 
     <!-- Results -->
     <template v-if="runResult && runResult.status !== 'running'">
-      <!-- Status row -->
-      <div class="flex items-center gap-2 text-sm">
+      <!-- Step history indicator -->
+      <div
+        v-if="completedSteps.length > 0"
+        class="flex flex-wrap gap-2"
+      >
+        <button
+          v-for="(step, index) in completedSteps"
+          :key="step.run_id"
+          type="button"
+          class="btn-ghost btn-sm text-xs"
+          :class="{ 'ring-2 ring-navy': selectedStepIndex === index }"
+          @click="selectedStepIndex = index"
+        >
+          Steg {{ index + 1 }}
+        </button>
+        <button
+          type="button"
+          class="btn-ghost btn-sm text-xs"
+          :class="{ 'ring-2 ring-navy': selectedStepIndex === null }"
+          @click="selectedStepIndex = null"
+        >
+          Aktuellt
+        </button>
+      </div>
+
+      <!-- Status row (uses displayedRun for viewing past steps) -->
+      <div
+        v-if="displayedRun"
+        class="flex items-center gap-2 text-sm"
+      >
         <span
           class="px-2 py-1 border font-semibold uppercase tracking-wide text-xs"
           :class="{
-            'border-success bg-success/10 text-success': runResult.status === 'succeeded',
-            'border-burgundy bg-burgundy/10 text-burgundy': runResult.status === 'failed',
-            'border-warning bg-warning/10 text-warning': runResult.status === 'timed_out',
+            'border-success bg-success/10 text-success': displayedRun.status === 'succeeded',
+            'border-burgundy bg-burgundy/10 text-burgundy': displayedRun.status === 'failed',
+            'border-warning bg-warning/10 text-warning': displayedRun.status === 'timed_out',
           }"
         >
-          {{ statusLabel(runResult.status) }}
+          {{ statusLabel(displayedRun.status) }}
         </span>
         <span class="font-mono text-xs text-navy/50">
-          {{ runResult.run_id.slice(0, 8) }}
+          {{ displayedRun.run_id.slice(0, 8) }}
         </span>
       </div>
 
       <!-- Error summary -->
       <div
-        v-if="runResult.error_summary"
+        v-if="displayedRun?.error_summary"
         class="text-sm text-burgundy"
       >
         <p class="font-semibold">Ett fel uppstod</p>
-        <pre class="mt-1 whitespace-pre-wrap font-mono text-xs">{{ runResult.error_summary }}</pre>
+        <pre class="mt-1 whitespace-pre-wrap font-mono text-xs">{{ displayedRun.error_summary }}</pre>
       </div>
 
       <!-- Outputs -->
@@ -253,6 +386,21 @@ onBeforeUnmount(() => {
 
       <!-- Artifacts -->
       <ToolRunArtifacts :artifacts="artifacts" />
+
+      <!-- Action error message -->
+      <SystemMessage
+        v-model="actionErrorMessage"
+        variant="error"
+      />
+
+      <!-- Next Actions (multi-step tools) - only show for current run -->
+      <ToolRunActions
+        v-if="nextActions.length > 0 && selectedStepIndex === null"
+        :actions="nextActions"
+        :id-base="`sandbox-${versionId}-${runResult?.run_id ?? 'pending'}`"
+        :disabled="!canSubmitActions"
+        @submit="onSubmitAction"
+      />
     </template>
   </div>
 </template>

@@ -18,6 +18,14 @@ from skriptoteket.domain.scripting.tool_sessions import ToolSession
 
 
 class ToolSessionRepositoryProtocol(Protocol):
+    async def get(
+        self,
+        *,
+        tool_id: UUID,
+        user_id: UUID,
+        context: str,
+    ) -> ToolSession | None: ...
+
     async def get_or_create(
         self,
         *,

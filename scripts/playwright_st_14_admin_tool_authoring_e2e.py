@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from uuid import uuid4
 
 from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import expect, sync_playwright
@@ -54,9 +55,11 @@ def _launch_chromium(playwright: object) -> object:
 
 def _login(page: object, *, base_url: str, email: str, password: str, artifacts_dir: Path) -> None:
     page.goto(f"{base_url}/login", wait_until="domcontentloaded")
-    page.get_by_label("E-post").fill(email)
-    page.get_by_label("Lösenord").fill(password)
-    page.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
+    dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
+    expect(dialog).to_be_visible()
+    dialog.get_by_label("E-post").fill(email)
+    dialog.get_by_label("Lösenord").fill(password)
+    dialog.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
     try:
         expect(
             page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))
@@ -74,7 +77,9 @@ def _create_draft_tool(page: object, *, base_url: str, title: str) -> str:
     dialog = page.get_by_role("dialog", name="Skapa nytt verktyg")
     expect(dialog).to_be_visible()
 
-    dialog.get_by_label("Titel").fill(title)
+    title_input = dialog.locator("input[type='text']").first
+    expect(title_input).to_be_visible()
+    title_input.fill(title)
     dialog.get_by_role("button", name="Skapa").click()
 
     page.wait_for_url("**/admin/tools/**", wait_until="domcontentloaded")
@@ -92,7 +97,7 @@ def _open_metadata_drawer(page: object) -> object:
 
 
 def _publish_active_version(page: object, artifacts_dir: Path) -> None:
-    page.get_by_role("button", name="Spara").click()
+    page.get_by_role("button", name="Spara", exact=True).click()
     page.wait_for_url("**/admin/tool-versions/**", wait_until="domcontentloaded")
     page.screenshot(path=str(artifacts_dir / "draft-version-created.png"), full_page=True)
 
@@ -102,7 +107,7 @@ def _publish_active_version(page: object, artifacts_dir: Path) -> None:
     modal.get_by_role("button", name="Begär publicering").click()
     expect(page.get_by_text("Begär publicering skickad.")).to_be_visible(timeout=10_000)
 
-    page.get_by_role("button", name="Publicera version").click()
+    page.get_by_role("button", name="Publicera", exact=True).click()
     modal = page.get_by_role("dialog")
     expect(modal).to_be_visible()
     modal.get_by_role("button", name="Publicera").click()
@@ -110,9 +115,9 @@ def _publish_active_version(page: object, artifacts_dir: Path) -> None:
     page.screenshot(path=str(artifacts_dir / "version-published.png"), full_page=True)
 
 
-def _publish_tool_from_admin_list(page: object, *, base_url: str, title: str) -> None:
+def _publish_tool_from_admin_list(page: object, *, base_url: str, tool_id: str) -> None:
     page.goto(f"{base_url}/admin/tools", wait_until="domcontentloaded")
-    row = page.locator("li", has_text=title).first
+    row = page.locator("li", has=page.locator(f'a[href="/admin/tools/{tool_id}"]')).first
     expect(row).to_be_visible()
     row.get_by_role("switch").click()
 
@@ -124,7 +129,7 @@ def main() -> None:
     artifacts_dir = Path(".artifacts/st-14-admin-tool-authoring")
     artifacts_dir.mkdir(parents=True, exist_ok=True)
 
-    title = "ÅÄÖ matteprov"
+    title = f"ÅÄÖ matteprov {uuid4().hex[:8]}"
 
     with sync_playwright() as playwright:
         browser = _launch_chromium(playwright)
@@ -144,7 +149,8 @@ def main() -> None:
         page.screenshot(path=str(artifacts_dir / "draft-tool-editor.png"), full_page=True)
 
         page.goto(f"{base_url}/admin/tools", wait_until="domcontentloaded")
-        row = page.locator("li", has_text=title).first
+        row = page.locator("li", has=page.locator(f'a[href="/admin/tools/{tool_id}"]')).first
+        expect(row.get_by_text(title)).to_be_visible()
         expect(row.get_by_text("Ingen kod")).to_be_visible()
         expect(row.get_by_text(f"draft-{tool_id}")).to_be_visible()
         page.screenshot(path=str(artifacts_dir / "admin-tools-in-progress.png"), full_page=True)
@@ -154,7 +160,7 @@ def main() -> None:
 
         _publish_active_version(page, artifacts_dir)
 
-        _publish_tool_from_admin_list(page, base_url=base_url, title=title)
+        _publish_tool_from_admin_list(page, base_url=base_url, tool_id=tool_id)
         expect(
             page.get_by_text(
                 "URL-namn måste ändras (får inte börja med 'draft-') innan publicering."
@@ -174,10 +180,10 @@ def main() -> None:
 
         drawer.get_by_role("button", name="Använd nuvarande titel").click()
         drawer.get_by_role("button", name="Spara metadata").click()
-        expect(drawer.get_by_text("URL-namn sparat.")).to_be_visible(timeout=10_000)
+        expect(page.get_by_text("URL-namn sparat.")).to_be_visible(timeout=10_000)
         page.screenshot(path=str(artifacts_dir / "slug-updated.png"), full_page=True)
 
-        _publish_tool_from_admin_list(page, base_url=base_url, title=title)
+        _publish_tool_from_admin_list(page, base_url=base_url, tool_id=tool_id)
         expect(
             page.get_by_text("Välj minst ett yrke och minst en kategori innan publicering.")
         ).to_be_visible(timeout=10_000)
@@ -203,7 +209,7 @@ def main() -> None:
         expect(drawer.get_by_text("Taxonomi sparad.")).to_be_visible(timeout=10_000)
         page.screenshot(path=str(artifacts_dir / "taxonomy-saved.png"), full_page=True)
 
-        _publish_tool_from_admin_list(page, base_url=base_url, title=title)
+        _publish_tool_from_admin_list(page, base_url=base_url, tool_id=tool_id)
         expect(page.get_by_text(re.compile(r"har publicerats", re.IGNORECASE))).to_be_visible(
             timeout=10_000
         )
