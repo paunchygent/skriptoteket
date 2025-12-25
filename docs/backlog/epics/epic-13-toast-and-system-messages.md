@@ -2,7 +2,7 @@
 type: epic
 id: EPIC-13
 title: "SPA feedback: toast + system messages"
-status: active
+status: done
 owners: "agents"
 created: 2025-12-25
 outcome: "All major user/admin actions provide consistent, non-layout-shifting feedback via a shared toast overlay, while blocking/long-lived states use standardized inline system messages."

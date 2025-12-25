@@ -20,6 +20,7 @@ dependencies: ["EPIC-11"]
 - Native PDF output helper (future)
 - Personalized tool settings stored in user memory (future)
 - Interactive text/dropdown inputs (future)
+- Session-scoped file persistence for multi-step tools (ADR-0039)
 
 ## Out of scope
 
@@ -33,6 +34,8 @@ dependencies: ["EPIC-11"]
 - [ST-12-02: Native PDF output helper](../stories/story-12-02-native-pdf-output-helper.md) (done)
 - [ST-12-03: Personalized tool settings](../stories/story-12-03-personalized-tool-settings.md) (done)
 - [ST-12-04: Interactive text/dropdown inputs](../stories/story-12-04-interactive-text-dropdown-inputs.md) (ready)
+- [ST-12-05: Session-scoped file persistence](../stories/story-12-05-session-file-persistence.md) (ready)
+- [ST-12-06: Session file cleanup policies](../stories/story-12-06-session-file-cleanup.md) (ready)
 
 ## Risks
 
@@ -43,5 +46,6 @@ dependencies: ["EPIC-11"]
 ## Dependencies
 
 - ADR-0031 (Multi-file input contract)
+- ADR-0039 (Session-scoped file persistence)
 - EPIC-11 (Full SPA migration; especially ST-11-13 cutover)
 - PRD-script-hub-v0.2 (source requirements)

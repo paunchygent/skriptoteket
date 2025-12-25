@@ -2,7 +2,7 @@
 type: story
 id: ST-13-02
 title: "Replace inline action feedback with toasts"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-25
 epic: "EPIC-13"

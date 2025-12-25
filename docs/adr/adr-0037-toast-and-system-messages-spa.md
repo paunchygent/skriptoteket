@@ -2,7 +2,7 @@
 type: adr
 id: ADR-0037
 title: "SPA feedback: toast + system message patterns"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-25
