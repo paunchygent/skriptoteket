@@ -13,7 +13,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-25
-- Branch / commit: `main` (`813da05`)
+- Branch / commit: `main` (`3bd2639`)
 - Current sprint: `SPR-2025-12-21` (EPIC-12 SPA UX)
 - Production: Full Vue SPA; `d0e0bd6` deployed 2025-12-23
 - Completed: EPIC-11 (SPA migration), EPIC-02 (identity) - see `.agent/readme-first.md`
