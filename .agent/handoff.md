@@ -13,7 +13,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-25
-- Branch / commit: `main` (`3bd2639`)
+- Branch / commit: `main` (`8440ec2`)
 - Current sprint: `SPR-2025-12-21` (EPIC-12 SPA UX)
 - Production: Full Vue SPA; `d0e0bd6` deployed 2025-12-23
 - Completed: EPIC-11 (SPA migration), EPIC-02 (identity) - see `.agent/readme-first.md`
@@ -63,10 +63,35 @@ Consolidated toast feedback system (SPA) + docs-as-code artifacts.
 
 - ADR/Backlog/Ref: `docs/adr/adr-0037-toast-and-system-messages-spa.md`, `docs/backlog/epics/epic-13-toast-and-system-messages.md`,
   `docs/backlog/stories/story-13-01-toast-system-primitives-spa.md`, `docs/reference/ref-toast-system-messages.md`
+- ADR: flipped ADR-0037 to `status: accepted`
 - Store + API: `frontend/apps/skriptoteket/src/stores/toast.ts`, `frontend/apps/skriptoteket/src/composables/useToast.ts`
 - Host: `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue` mounted in `frontend/apps/skriptoteket/src/App.vue`
 - CSS primitives + transitions: `frontend/apps/skriptoteket/src/assets/main.css`
 - UI smoke script updated for login modal: `scripts/playwright_ui_smoke.py`
+
+### ST-13-02 Replace inline action feedback with toasts (done)
+
+Migrated key flows to `useToast()` for transient action feedback (keep blocking/validation errors inline).
+
+- Admin tools publish/depublish: `frontend/apps/skriptoteket/src/views/admin/AdminToolsView.vue`
+- Suggestions submit/decide: `frontend/apps/skriptoteket/src/views/SuggestionNewView.vue`,
+  `frontend/apps/skriptoteket/src/views/admin/AdminSuggestionDetailView.vue`
+- Tool settings save: `frontend/apps/skriptoteket/src/composables/tools/useToolSettings.ts`,
+  `frontend/apps/skriptoteket/src/components/tool-run/ToolRunSettingsPanel.vue`
+- Editor save + workflow success toasts (workflow failures remain inline): `frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.ts`,
+  `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkflowActions.ts`,
+  `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`
+
+### ST-13-03 Standardize inline system messages (done)
+
+Added shared inline “system message” component + CSS primitives and migrated blocking/long-lived messages (Scope A).
+
+- Component: `frontend/apps/skriptoteket/src/components/ui/SystemMessage.vue` (variants + close “×”)
+- Styling primitives: `frontend/apps/skriptoteket/src/assets/main.css` (`.system-message*`)
+- Migrations (examples): `frontend/apps/skriptoteket/src/components/auth/LoginModal.vue`,
+  `frontend/apps/skriptoteket/src/components/editor/WorkflowActionModal.vue`,
+  `frontend/apps/skriptoteket/src/views/ToolRunView.vue`
+- Docs status: set EPIC-13 + ST-13-02 + ST-13-03 to `done` in `docs/backlog/`
 
 ### EPIC-14 Admin tool authoring (ST-14-01 + ST-14-02) (done)
 
@@ -99,14 +124,13 @@ Admin quick-create of draft tools + URL-namn lifecycle (ADR-0037).
 - Docs: `pdm run docs-validate` (pass)
 - Types: `pnpm -C frontend --filter @skriptoteket/spa typecheck` (pass)
 - Lint: `pnpm -C frontend --filter @skriptoteket/spa lint` (pass)
-- UI: `pdm run ui-smoke --base-url http://127.0.0.1:5173` (pass; screenshots in `.artifacts/ui-smoke/`)
+- UI: `docker compose up -d db && pdm run db-upgrade`, then `pdm run dev` + `pdm run fe-dev`, then `pdm run ui-smoke --base-url http://127.0.0.1:5173` (pass; screenshots in `.artifacts/ui-smoke/`)
  - EPIC-14 FE: `pdm run fe-type-check` (pass), `pdm run fe-lint` (pass)
  - EPIC-14 BE: `pdm run pytest -q tests/unit/application/test_scripting_review_handlers.py` (pass)
  - EPIC-14 live: `docker compose up -d db && pdm run db-upgrade`, then `pdm run dev` + `pdm run fe-dev`
- - EPIC-14 functional (API): verified create draft tool, URL-namn edit validation, publish guards (placeholder/taxonomy),
+  - EPIC-14 functional (API): verified create draft tool, URL-namn edit validation, publish guards (placeholder/taxonomy),
    and URL-namn immutability post-publish via authenticated `httpx` calls against `http://127.0.0.1:8000`
- - Playwright: blocked in this environment (Chromium MachPortRendezvousServer Permission denied (1100); Firefox SIGABRT;
-   WebKit Abort trap: 6). Manual browser check still recommended.
+- Playwright note (Codex): if you run Playwright escalated, run `pdm run dev` + `pdm run fe-dev` escalated too (same “world”); otherwise Playwright may get `ERR_CONNECTION_REFUSED` to `http://127.0.0.1:5173`.
 
 ## How to Run
 
