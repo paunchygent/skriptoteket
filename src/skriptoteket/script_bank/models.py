@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict
 
+from skriptoteket.domain.scripting.ui.contract_v2 import UiActionField
+
 
 class ScriptBankEntry(BaseModel):
     model_config = ConfigDict(frozen=True)
@@ -14,3 +16,4 @@ class ScriptBankEntry(BaseModel):
     category_slugs: list[str]
     entrypoint: str = "run_tool"
     source_filename: str
+    settings_schema: list[UiActionField] | None = None

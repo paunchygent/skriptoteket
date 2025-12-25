@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from skriptoteket.domain.scripting.ui.contract_v2 import UiStringField
+
 from .models import ScriptBankEntry
 
 SCRIPT_BANK: list[ScriptBankEntry] = [
@@ -138,5 +140,24 @@ Det här verktyget visar alla Skriptoteket-funktioner:
         profession_slugs=["gemensamt"],
         category_slugs=["ovrigt"],
         source_filename="html_to_pdf_preview.py",
+    ),
+    ScriptBankEntry(
+        slug="demo-regression-table",
+        title="Demo: Table column order test (E2E)",
+        summary="Playwright E2E test tool for table column order regression (ST-11-07).",
+        profession_slugs=["gemensamt"],
+        category_slugs=["ovrigt"],
+        source_filename="demo_regression_table.py",
+    ),
+    ScriptBankEntry(
+        slug="demo-settings-test",
+        title="Demo: Personalized settings test (E2E)",
+        summary="Playwright E2E test tool for personalized tool settings (ST-12-03).",
+        profession_slugs=["gemensamt"],
+        category_slugs=["ovrigt"],
+        source_filename="demo_settings_test.py",
+        settings_schema=[
+            UiStringField(name="theme_color", label="Färgtema"),
+        ],
     ),
 ]

@@ -2,7 +2,7 @@
 type: epic
 id: EPIC-13
 title: "SPA feedback: toast + system messages"
-status: done
+status: active
 owners: "agents"
 created: 2025-12-25
 outcome: "All major user/admin actions provide consistent, non-layout-shifting feedback via a shared toast overlay, while blocking/long-lived states use standardized inline system messages."
@@ -29,6 +29,7 @@ dependencies: ["ADR-0037", "ADR-0032"]
 - [ST-13-01: Toast system primitives (SPA)](../stories/story-13-01-toast-system-primitives-spa.md)
 - [ST-13-02: Replace inline action feedback with toasts](../stories/story-13-02-replace-inline-action-feedback-with-toasts.md)
 - [ST-13-03: Standardize inline system messages](../stories/story-13-03-standardize-inline-system-messages.md)
+- [ST-13-04: Toastify profile actions](../stories/story-13-04-toastify-profile-actions.md)
 
 ## Risks
 

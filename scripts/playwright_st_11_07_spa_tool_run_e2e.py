@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import re
 from pathlib import Path
 
@@ -56,29 +55,6 @@ def main() -> None:
     sample_file = artifacts_dir / "sample.txt"
     sample_file.write_text("Hej!\nDet här är en demo för next_actions.\n", encoding="utf-8")
 
-    regression_script = """\
-from __future__ import annotations
-
-def run_tool(input_dir: str, output_dir: str) -> dict:
-    return {
-        "outputs": [
-            {
-                "kind": "table",
-                "title": "Regression table",
-                "columns": [
-                    {"key": "10", "label": "Ten"},
-                    {"key": "2", "label": "Two"},
-                ],
-                "rows": [
-                    {"10": "TEN", "2": "TWO"},
-                ],
-            }
-        ],
-        "next_actions": [],
-        "state": None,
-    }
-"""
-
     with sync_playwright() as playwright:
         browser = _launch_chromium(playwright)
         context = browser.new_context(
@@ -118,41 +94,17 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
         print(f"Logged in. Current URL: {page.url}")
 
         # Regression: table body must follow output.columns order (not object iteration order).
-        csrf = context.request.get(f"{base_url}/api/v1/auth/csrf")
-        csrf_token = csrf.json()["csrf_token"]
-        tool = context.request.get(f"{base_url}/api/v1/tools/demo-next-actions")
-        tool_id = tool.json()["id"]
-
-        draft = context.request.post(
-            f"{base_url}/api/v1/editor/tools/{tool_id}/draft",
-            headers={
-                "Content-Type": "application/json",
-                "X-CSRF-Token": csrf_token,
-            },
-            data=json.dumps(
-                {
-                    "source_code": regression_script,
-                    "entrypoint": "run_tool",
-                    "change_summary": "playwright regression: output table order",
-                }
-            ),
-        )
-        draft_payload = draft.json()
-        redirect_url = draft_payload["redirect_url"]
-
-        page.goto(f"{base_url}{redirect_url}", wait_until="domcontentloaded")
+        # Uses dedicated demo-regression-table tool to avoid polluting demo-next-actions.
+        page.goto(f"{base_url}/tools/demo-regression-table/run", wait_until="domcontentloaded")
         file_input = page.locator("input[type='file']")
         expect(file_input).to_have_count(1, timeout=30_000)
         file_input.set_input_files(str(sample_file))
-        page.get_by_role("button", name=re.compile(r"^Testkör kod", re.IGNORECASE)).click()
+        page.get_by_role("button", name=re.compile(r"^Kör", re.IGNORECASE)).click()
 
         expect(page.get_by_text(re.compile(r"Lyckades", re.IGNORECASE))).to_be_visible(
             timeout=60_000
         )
-        sandbox_root = page.get_by_text("Testfiler").locator(
-            "xpath=ancestor::div[contains(@class,'space-y-4')][1]"
-        )
-        regression_table_title = sandbox_root.get_by_text("Regression table")
+        regression_table_title = page.get_by_text("Regression table")
         expect(regression_table_title.first).to_be_visible(timeout=30_000)
         table_card = regression_table_title.first.locator("xpath=..")
         table = table_card.locator("table")
@@ -161,7 +113,7 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
         expect(table.locator("tbody tr").first.locator("td").nth(0)).to_have_text("TEN")
         expect(table.locator("tbody tr").first.locator("td").nth(1)).to_have_text("TWO")
 
-        # Ensure the protected route is mounted after login.
+        # Test demo-next-actions tool (multi-step workflow).
         page.goto(f"{base_url}/tools/demo-next-actions/run", wait_until="domcontentloaded")
 
         page.screenshot(path=str(artifacts_dir / "tool-run-before-upload.png"), full_page=True)

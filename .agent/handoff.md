@@ -74,6 +74,7 @@ Consolidated toast feedback system (SPA) + docs-as-code artifacts.
 Migrated key flows to `useToast()` for transient action feedback (keep blocking/validation errors inline).
 
 - Admin tools publish/depublish: `frontend/apps/skriptoteket/src/views/admin/AdminToolsView.vue`
+- Admin create draft tool: `frontend/apps/skriptoteket/src/views/admin/AdminToolsView.vue` (toast “Verktyg skapat.”)
 - Suggestions submit/decide: `frontend/apps/skriptoteket/src/views/SuggestionNewView.vue`,
   `frontend/apps/skriptoteket/src/views/admin/AdminSuggestionDetailView.vue`
 - Tool settings save: `frontend/apps/skriptoteket/src/composables/tools/useToolSettings.ts`,
@@ -81,6 +82,8 @@ Migrated key flows to `useToast()` for transient action feedback (keep blocking/
 - Editor save + workflow success toasts (workflow failures remain inline): `frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.ts`,
   `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkflowActions.ts`,
   `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`
+- Editor taxonomy/maintainers updates: `frontend/apps/skriptoteket/src/composables/editor/useToolTaxonomy.ts`,
+  `frontend/apps/skriptoteket/src/composables/editor/useToolMaintainers.ts`
 
 ### ST-13-03 Standardize inline system messages (done)
 
@@ -157,6 +160,7 @@ pdm run python -m scripts.playwright_st_08_13_tool_usage_instructions_e2e --base
 
 ## Next Steps
 
+- EPIC-13 ST-13-04: Toastify ProfileView actions (remove inline success banners; keep validation errors inline)
 - ST-08-10: Implement script editor intelligence (Lezer integration)
 - EPIC-12: Continue SPA UX stories
 - EPIC-14 (done): Admin tool authoring (quick-create drafts + URL-namn lifecycle) — PRD `docs/prd/prd-tool-authoring-v0.1.md`, ADR `docs/adr/adr-0037-tool-slug-lifecycle.md`, stories `docs/backlog/stories/story-14-01-admin-quick-create-draft-tools.md` + `docs/backlog/stories/story-14-02-draft-slug-edit-and-publish-guards.md`
