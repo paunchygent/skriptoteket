@@ -108,6 +108,7 @@ class EditorBootResponse(BaseModel):
     entrypoint: str
     source_code: str
     settings_schema: list[UiActionField] | None = None
+    usage_instructions: str | None = None
 
 
 class CreateDraftVersionRequest(BaseModel):
@@ -116,6 +117,7 @@ class CreateDraftVersionRequest(BaseModel):
     entrypoint: str = DEFAULT_ENTRYPOINT
     source_code: str
     settings_schema: list[UiActionField] | None = None
+    usage_instructions: str | None = None
     change_summary: str | None = None
     derived_from_version_id: UUID | None = None
 
@@ -126,6 +128,7 @@ class SaveDraftVersionRequest(BaseModel):
     entrypoint: str = DEFAULT_ENTRYPOINT
     source_code: str
     settings_schema: list[UiActionField] | None = None
+    usage_instructions: str | None = None
     change_summary: str | None = None
     expected_parent_version_id: UUID
 
@@ -267,9 +270,9 @@ def _to_version_summary(version: ToolVersion) -> EditorVersionSummary:
 
 def _resolve_editor_state(
     selected_version: ToolVersion | None,
-) -> tuple[str, str, list[UiActionField] | None, EditorSaveMode, UUID | None]:
+) -> tuple[str, str, list[UiActionField] | None, str | None, EditorSaveMode, UUID | None]:
     if selected_version is None:
-        return DEFAULT_ENTRYPOINT, STARTER_TEMPLATE, None, "create_draft", None
+        return DEFAULT_ENTRYPOINT, STARTER_TEMPLATE, None, None, "create_draft", None
 
     is_draft = selected_version.state is VersionState.DRAFT
     save_mode: EditorSaveMode = "snapshot" if is_draft else "create_draft"
@@ -278,6 +281,7 @@ def _resolve_editor_state(
         selected_version.entrypoint,
         selected_version.source_code,
         selected_version.settings_schema,
+        selected_version.usage_instructions,
         save_mode,
         derived_from_version_id,
     )
@@ -289,9 +293,14 @@ def _build_editor_response(
     visible_versions: list[ToolVersion],
     selected_version: ToolVersion | None,
 ) -> EditorBootResponse:
-    entrypoint, source_code, settings_schema, save_mode, derived_from_version_id = (
-        _resolve_editor_state(selected_version)
-    )
+    (
+        entrypoint,
+        source_code,
+        settings_schema,
+        usage_instructions,
+        save_mode,
+        derived_from_version_id,
+    ) = _resolve_editor_state(selected_version)
 
     return EditorBootResponse(
         tool=_to_tool_summary(tool),
@@ -302,6 +311,7 @@ def _build_editor_response(
         entrypoint=entrypoint,
         source_code=source_code,
         settings_schema=settings_schema,
+        usage_instructions=usage_instructions,
     )
 
 
@@ -645,6 +655,8 @@ async def create_draft_version(
     }
     if "settings_schema" in payload.model_fields_set:
         command_payload["settings_schema"] = payload.settings_schema
+    if "usage_instructions" in payload.model_fields_set:
+        command_payload["usage_instructions"] = payload.usage_instructions
     result = await handler.handle(
         actor=user,
         command=CreateDraftVersionCommand.model_validate(command_payload),
@@ -673,6 +685,8 @@ async def save_draft_version(
     }
     if "settings_schema" in payload.model_fields_set:
         command_payload["settings_schema"] = payload.settings_schema
+    if "usage_instructions" in payload.model_fields_set:
+        command_payload["usage_instructions"] = payload.usage_instructions
     result = await handler.handle(
         actor=user,
         command=SaveDraftVersionCommand.model_validate(command_payload),
