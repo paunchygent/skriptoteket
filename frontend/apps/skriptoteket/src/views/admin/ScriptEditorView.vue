@@ -42,16 +42,22 @@ const {
   changeSummary,
   metadataTitle,
   metadataSummary,
+  metadataSlug,
   isLoading,
   isSaving,
   isMetadataSaving,
+  isSlugSaving,
   errorMessage,
   successMessage,
+  slugError,
+  slugSuccess,
   selectedVersion,
   editorToolId,
   hasDirtyChanges,
   save,
   saveToolMetadata,
+  saveToolSlug,
+  applySlugSuggestionFromTitle,
   loadEditor,
 } = useScriptEditor({
   toolId,
@@ -59,6 +65,7 @@ const {
   route,
   router,
 });
+const canEditSlug = computed(() => auth.hasAtLeastRole("admin") && editor.value?.tool.is_published === false);
 const {
   isModalOpen: isWorkflowModalOpen,
   activeAction: activeWorkflowAction,
@@ -113,9 +120,14 @@ const {
 const entrypointOptions = ["run_tool", "main", "run", "execute"];
 const activeDrawer = ref<"history" | "metadata" | "maintainers" | "instructions" | null>(null);
 
-const isSavingAllMetadata = computed(() => isMetadataSaving.value || isTaxonomySaving.value);
+const isSavingAllMetadata = computed(
+  () => isMetadataSaving.value || isTaxonomySaving.value || isSlugSaving.value,
+);
 
 async function saveAllMetadata(): Promise<void> {
+  if (canEditSlug.value) {
+    await saveToolSlug();
+  }
   await saveToolMetadata();
   if (canEditTaxonomy.value) {
     await saveTaxonomy();
@@ -529,7 +541,11 @@ watch(
             v-if="isMetadataDrawerOpen"
             :is-open="isMetadataDrawerOpen"
             :metadata-title="metadataTitle"
+            :metadata-slug="metadataSlug"
             :metadata-summary="metadataSummary"
+            :can-edit-slug="canEditSlug"
+            :slug-error="slugError"
+            :slug-success="slugSuccess"
             :professions="professions"
             :categories="categories"
             :selected-profession-ids="selectedProfessionIds"
@@ -541,7 +557,9 @@ watch(
             @close="closeDrawer"
             @save="saveAllMetadata"
             @update:metadata-title="metadataTitle = $event"
+            @update:metadata-slug="metadataSlug = $event"
             @update:metadata-summary="metadataSummary = $event"
+            @suggest-slug-from-title="applySlugSuggestionFromTitle"
             @update:selected-profession-ids="updateProfessionIds"
             @update:selected-category-ids="updateCategoryIds"
           />

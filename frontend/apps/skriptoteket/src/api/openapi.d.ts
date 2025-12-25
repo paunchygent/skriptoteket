@@ -65,7 +65,8 @@ export interface paths {
         /** List Admin Tools */
         get: operations["list_admin_tools_api_v1_admin_tools_get"];
         put?: never;
-        post?: never;
+        /** Create Draft Tool */
+        post: operations["create_draft_tool_api_v1_admin_tools_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -515,6 +516,23 @@ export interface paths {
         patch: operations["update_tool_metadata_api_v1_editor_tools__tool_id__metadata_patch"];
         trace?: never;
     };
+    "/api/v1/editor/tools/{tool_id}/slug": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Tool Slug */
+        patch: operations["update_tool_slug_api_v1_editor_tools__tool_id__slug_patch"];
+        trace?: never;
+    };
     "/api/v1/editor/tools/{tool_id}/taxonomy": {
         parameters: {
             query?: never;
@@ -911,6 +929,17 @@ export interface components {
             /** New Password */
             new_password: string;
         };
+        /** CreateDraftToolRequest */
+        CreateDraftToolRequest: {
+            /** Summary */
+            summary?: string | null;
+            /** Title */
+            title: string;
+        };
+        /** CreateDraftToolResponse */
+        CreateDraftToolResponse: {
+            tool: components["schemas"]["AdminToolItem"];
+        };
         /** CreateDraftVersionRequest */
         CreateDraftVersionRequest: {
             /** Change Summary */
@@ -1056,6 +1085,11 @@ export interface components {
             summary: string | null;
             /** Title */
             title: string;
+        };
+        /** EditorToolSlugRequest */
+        EditorToolSlugRequest: {
+            /** Slug */
+            slug: string;
         };
         /** EditorToolSummary */
         EditorToolSummary: {
@@ -2153,6 +2187,41 @@ export interface operations {
             };
         };
     };
+    create_draft_tool_api_v1_admin_tools_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateDraftToolRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateDraftToolResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     depublish_tool_api_v1_admin_tools__tool_id__depublish_post: {
         parameters: {
             query?: never;
@@ -2984,6 +3053,43 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["EditorToolMetadataRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorToolMetadataResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_tool_slug_api_v1_editor_tools__tool_id__slug_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                tool_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditorToolSlugRequest"];
             };
         };
         responses: {

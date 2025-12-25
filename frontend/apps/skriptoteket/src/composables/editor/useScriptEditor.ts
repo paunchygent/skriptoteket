@@ -30,6 +30,10 @@ export function useScriptEditor({
   const changeSummary = ref("");
   const metadataTitle = ref("");
   const metadataSummary = ref("");
+  const metadataSlug = ref("");
+  const slugError = ref<string | null>(null);
+  const slugSuccess = ref<string | null>(null);
+  const isSlugSaving = ref(false);
 
   const isLoading = ref(true);
   const isSaving = ref(false);
@@ -105,12 +109,40 @@ export function useScriptEditor({
     changeSummary.value = "";
     metadataTitle.value = response.tool.title;
     metadataSummary.value = response.tool.summary ?? "";
+    metadataSlug.value = response.tool.slug;
     initialSnapshot.value = {
       entrypoint: response.entrypoint,
       sourceCode: response.source_code,
       settingsSchemaText: settingsSchemaText.value,
       usageInstructions: usageInstructions.value,
     };
+  }
+
+  function suggestToolSlugFromTitle(title: string): string {
+    const lowered = title.trim().toLowerCase();
+    const transliterated = lowered
+      .replaceAll("å", "a")
+      .replaceAll("ä", "a")
+      .replaceAll("ö", "o");
+
+    return transliterated
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+/, "")
+      .replace(/-+$/, "");
+  }
+
+  function applySlugSuggestionFromTitle(): void {
+    slugError.value = null;
+    slugSuccess.value = null;
+
+    const suggestion = suggestToolSlugFromTitle(metadataTitle.value);
+    if (!suggestion) {
+      slugError.value = "Kunde inte skapa en slug från titeln.";
+      return;
+    }
+
+    metadataSlug.value = suggestion;
   }
 
   function parseSettingsSchema(): SettingsSchema | null {
@@ -303,10 +335,12 @@ export function useScriptEditor({
         ...editor.value,
         tool: {
           ...editor.value.tool,
+          slug: response.slug,
           title: response.title,
           summary: response.summary,
         },
       };
+      metadataSlug.value = response.slug;
       metadataTitle.value = response.title;
       metadataSummary.value = response.summary ?? "";
       successMessage.value = "Metadata sparad.";
@@ -320,6 +354,52 @@ export function useScriptEditor({
       }
     } finally {
       isMetadataSaving.value = false;
+    }
+  }
+
+  async function saveToolSlug(): Promise<void> {
+    if (!editor.value || isSlugSaving.value) return;
+
+    const normalizedSlug = metadataSlug.value.trim();
+    if (!normalizedSlug) {
+      slugError.value = "Slug krävs.";
+      return;
+    }
+
+    isSlugSaving.value = true;
+    slugError.value = null;
+    slugSuccess.value = null;
+
+    try {
+      const response = await apiFetch<EditorToolMetadataResponse>(
+        `/api/v1/editor/tools/${encodeURIComponent(editor.value.tool.id)}/slug`,
+        {
+          method: "PATCH",
+          body: {
+            slug: normalizedSlug,
+          },
+        },
+      );
+
+      editor.value = {
+        ...editor.value,
+        tool: {
+          ...editor.value.tool,
+          slug: response.slug,
+        },
+      };
+      metadataSlug.value = response.slug;
+      slugSuccess.value = "Slug sparad.";
+    } catch (error: unknown) {
+      if (isApiError(error)) {
+        slugError.value = error.message;
+      } else if (error instanceof Error) {
+        slugError.value = error.message;
+      } else {
+        slugError.value = "Det gick inte att spara slug.";
+      }
+    } finally {
+      isSlugSaving.value = false;
     }
   }
 
@@ -355,6 +435,12 @@ export function useScriptEditor({
     save,
     metadataTitle,
     metadataSummary,
+    metadataSlug,
     saveToolMetadata,
+    saveToolSlug,
+    applySlugSuggestionFromTitle,
+    slugError,
+    slugSuccess,
+    isSlugSaving,
   };
 }

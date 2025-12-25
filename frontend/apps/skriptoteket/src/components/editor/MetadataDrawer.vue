@@ -7,7 +7,11 @@ type CategoryItem = components["schemas"]["CategoryItem"];
 type MetadataDrawerProps = {
   isOpen: boolean;
   metadataTitle: string;
+  metadataSlug: string;
   metadataSummary: string;
+  canEditSlug: boolean;
+  slugError: string | null;
+  slugSuccess: string | null;
   professions: ProfessionItem[];
   categories: CategoryItem[];
   selectedProfessionIds: string[];
@@ -24,7 +28,9 @@ const emit = defineEmits<{
   (event: "close"): void;
   (event: "save"): void;
   (event: "update:metadataTitle", value: string): void;
+  (event: "update:metadataSlug", value: string): void;
   (event: "update:metadataSummary", value: string): void;
+  (event: "suggestSlugFromTitle"): void;
   (event: "update:selectedProfessionIds", value: string[]): void;
   (event: "update:selectedCategoryIds", value: string[]): void;
 }>();
@@ -102,6 +108,49 @@ function toggleCategory(value: string): void {
               :disabled="isSaving"
               @input="emit('update:metadataTitle', ($event.target as HTMLInputElement).value)"
             >
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
+                Slug
+              </label>
+              <button
+                type="button"
+                class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide whitespace-nowrap"
+                :disabled="isSaving || !canEditSlug"
+                @click="emit('suggestSlugFromTitle')"
+              >
+                Använd nuvarande titel
+              </button>
+            </div>
+
+            <input
+              :value="metadataSlug"
+              type="text"
+              class="w-full border border-navy bg-white px-3 py-2 text-sm font-mono text-navy shadow-brutal-sm"
+              placeholder="t.ex. mattest"
+              :disabled="isSaving || !canEditSlug"
+              @input="emit('update:metadataSlug', ($event.target as HTMLInputElement).value)"
+            >
+
+            <p class="text-xs text-navy/60">
+              Används i länken <span class="font-mono">/tools/&lt;slug&gt;/run</span>.
+              <span v-if="!canEditSlug">Slug är låst efter publicering.</span>
+            </p>
+
+            <p
+              v-if="slugError"
+              class="text-sm text-burgundy"
+            >
+              {{ slugError }}
+            </p>
+            <p
+              v-else-if="slugSuccess"
+              class="text-sm text-navy"
+            >
+              {{ slugSuccess }}
+            </p>
           </div>
 
           <div class="space-y-1">

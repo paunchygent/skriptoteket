@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from "vue";
-import { RouterLink } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 import { apiGet, apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import ToolListRow from "../../components/tools/ToolListRow.vue";
@@ -10,6 +10,7 @@ type ListAdminToolsResponse = components["schemas"]["ListAdminToolsResponse"];
 type AdminToolItem = components["schemas"]["AdminToolItem"];
 type PublishToolResponse = components["schemas"]["PublishToolResponse"];
 type DepublishToolResponse = components["schemas"]["DepublishToolResponse"];
+type CreateDraftToolResponse = components["schemas"]["CreateDraftToolResponse"];
 
 const tools = ref<AdminToolItem[]>([]);
 const isLoading = ref(true);
@@ -20,6 +21,14 @@ const actionInProgress = ref<string | null>(null);
 const actionColumnWidth = ref("8.5rem");
 const measureEditActionRef = ref<HTMLDivElement | null>(null);
 const measureReviewActionRef = ref<HTMLDivElement | null>(null);
+const isCreateModalOpen = ref(false);
+const createTitle = ref("");
+const createSummary = ref("");
+const createError = ref<string | null>(null);
+const isCreating = ref(false);
+const createTitleInputRef = ref<HTMLInputElement | null>(null);
+
+const router = useRouter();
 
 function updateActionColumnWidth(): void {
   const editWidth = measureEditActionRef.value?.getBoundingClientRect().width ?? 0;
@@ -88,6 +97,59 @@ function truncate(text: string | null, maxLength: number): string {
   if (!text) return "-";
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength) + "...";
+}
+
+function normalizedOptionalString(value: string): string | null {
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
+function openCreateModal(): void {
+  createTitle.value = "";
+  createSummary.value = "";
+  createError.value = null;
+  isCreateModalOpen.value = true;
+
+  void nextTick().then(() => {
+    createTitleInputRef.value?.focus();
+  });
+}
+
+function closeCreateModal(): void {
+  isCreateModalOpen.value = false;
+}
+
+async function createDraftTool(): Promise<void> {
+  if (isCreating.value) return;
+
+  const title = createTitle.value.trim();
+  if (!title) {
+    createError.value = "Titel krävs.";
+    return;
+  }
+
+  isCreating.value = true;
+  createError.value = null;
+
+  try {
+    const response = await apiPost<CreateDraftToolResponse>("/api/v1/admin/tools", {
+      title,
+      summary: normalizedOptionalString(createSummary.value),
+    });
+
+    closeCreateModal();
+    await router.push(`/admin/tools/${response.tool.id}`);
+  } catch (error: unknown) {
+    if (isApiError(error)) {
+      createError.value = error.message;
+    } else if (error instanceof Error) {
+      createError.value = error.message;
+    } else {
+      createError.value = "Det gick inte att skapa verktyget.";
+    }
+  } finally {
+    isCreating.value = false;
+  }
 }
 
 async function load(): Promise<void> {
@@ -215,9 +277,18 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class="space-y-2">
-      <h1 class="text-2xl font-semibold text-navy">Verktyg (admin)</h1>
-      <p class="text-sm text-navy/70">Hantera publicering av verktyg.</p>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div class="space-y-2">
+        <h1 class="text-2xl font-semibold text-navy">Verktyg (admin)</h1>
+        <p class="text-sm text-navy/70">Hantera publicering av verktyg.</p>
+      </div>
+      <button
+        type="button"
+        class="btn-primary"
+        @click="openCreateModal"
+      >
+        Skapa nytt verktyg
+      </button>
     </div>
 
     <div
@@ -421,4 +492,96 @@ onMounted(() => {
       </section>
     </template>
   </div>
+
+  <Teleport to="body">
+    <div
+      v-if="isCreateModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy/40"
+      @click.self="closeCreateModal"
+    >
+      <div
+        class="w-full max-w-lg border border-navy bg-white shadow-brutal p-6 space-y-5"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-tool-dialog-title"
+      >
+        <div class="flex items-start justify-between gap-4">
+          <div class="space-y-1">
+            <h2
+              id="create-tool-dialog-title"
+              class="text-lg font-semibold text-navy"
+            >
+              Skapa nytt verktyg
+            </h2>
+            <p class="text-sm text-navy/70">
+              Skapa ett utkast. Du kan lägga till kod och publicera senare.
+            </p>
+          </div>
+          <button
+            type="button"
+            class="text-navy/60 hover:text-navy text-2xl leading-none"
+            :disabled="isCreating"
+            @click="closeCreateModal"
+          >
+            &times;
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
+              Titel
+            </label>
+            <input
+              ref="createTitleInputRef"
+              v-model="createTitle"
+              type="text"
+              class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+              placeholder="T.ex. Matteprovsgenerator"
+              :disabled="isCreating"
+            >
+          </div>
+
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
+              Sammanfattning (valfritt)
+            </label>
+            <textarea
+              v-model="createSummary"
+              rows="3"
+              class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+              placeholder="Kort beskrivning..."
+              :disabled="isCreating"
+            />
+          </div>
+
+          <p
+            v-if="createError"
+            class="text-sm text-burgundy"
+          >
+            {{ createError }}
+          </p>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <button
+            type="button"
+            class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
+            :disabled="isCreating"
+            @click="closeCreateModal"
+          >
+            Avbryt
+          </button>
+          <button
+            type="button"
+            class="btn-primary px-4 py-2 text-xs font-semibold tracking-wide"
+            :disabled="isCreating"
+            @click="createDraftTool"
+          >
+            {{ isCreating ? "Skapar..." : "Skapa" }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>

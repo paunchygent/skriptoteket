@@ -12,6 +12,7 @@ from skriptoteket.application.catalog.commands import (
     AssignMaintainerCommand,
     RemoveMaintainerCommand,
     UpdateToolMetadataCommand,
+    UpdateToolSlugCommand,
     UpdateToolTaxonomyCommand,
 )
 from skriptoteket.application.catalog.queries import (
@@ -43,6 +44,7 @@ from skriptoteket.protocols.catalog import (
     ToolMaintainerRepositoryProtocol,
     ToolRepositoryProtocol,
     UpdateToolMetadataHandlerProtocol,
+    UpdateToolSlugHandlerProtocol,
     UpdateToolTaxonomyHandlerProtocol,
 )
 from skriptoteket.protocols.identity import UserRepositoryProtocol
@@ -224,6 +226,12 @@ class EditorToolMetadataRequest(BaseModel):
 
     title: str
     summary: str | None = None
+
+
+class EditorToolSlugRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    slug: str
 
 
 class MaintainerSummary(BaseModel):
@@ -540,6 +548,31 @@ async def update_tool_metadata(
             tool_id=tool_id,
             title=payload.title,
             summary=summary,
+        ),
+    )
+    tool = result.tool
+    return EditorToolMetadataResponse(
+        id=tool.id,
+        slug=tool.slug,
+        title=tool.title,
+        summary=tool.summary,
+    )
+
+
+@router.patch("/tools/{tool_id}/slug", response_model=EditorToolMetadataResponse)
+@inject
+async def update_tool_slug(
+    tool_id: UUID,
+    payload: EditorToolSlugRequest,
+    handler: FromDishka[UpdateToolSlugHandlerProtocol],
+    user: User = Depends(require_admin_api),
+    _: None = Depends(require_csrf_token),
+) -> EditorToolMetadataResponse:
+    result = await handler.handle(
+        actor=user,
+        command=UpdateToolSlugCommand(
+            tool_id=tool_id,
+            slug=payload.slug,
         ),
     )
     tool = result.tool
