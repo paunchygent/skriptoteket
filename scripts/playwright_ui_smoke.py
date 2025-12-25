@@ -45,9 +45,11 @@ def _launch_chromium(playwright: object) -> object:
 
 def _login(page: object, *, base_url: str, email: str, password: str) -> None:
     page.goto(f"{base_url}/login", wait_until="domcontentloaded")
-    page.get_by_label("E-post").fill(email)
-    page.get_by_label("Lösenord").fill(password)
-    page.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
+    dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
+    expect(dialog).to_be_visible()
+    dialog.get_by_label("E-post").fill(email)
+    dialog.get_by_label("Lösenord").fill(password)
+    dialog.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
     expect(
         page.get_by_role("heading", name=re.compile(r"Välkommen", re.IGNORECASE))
     ).to_be_visible()
@@ -81,7 +83,7 @@ def main() -> None:
         page = context.new_page()
 
         # Logged-out help panel (mobile)
-        page.goto(f"{base_url}/login", wait_until="domcontentloaded")
+        page.goto(f"{base_url}/", wait_until="domcontentloaded")
         help_panel = _open_help_panel(page)
         if help_panel:
             page.screenshot(path=str(artifacts_dir / "help-logged-out-mobile.png"), full_page=False)
@@ -89,9 +91,12 @@ def main() -> None:
             expect(help_panel).to_be_hidden()
 
         # Login
-        page.get_by_label("E-post").fill(email)
-        page.get_by_label("Lösenord").fill(password)
-        page.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
+        page.goto(f"{base_url}/login", wait_until="domcontentloaded")
+        dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
+        expect(dialog).to_be_visible()
+        dialog.get_by_label("E-post").fill(email)
+        dialog.get_by_label("Lösenord").fill(password)
+        dialog.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
         expect(
             page.get_by_role("heading", name=re.compile(r"Välkommen", re.IGNORECASE))
         ).to_be_visible()

@@ -3,6 +3,7 @@ import { computed, nextTick, onMounted, ref } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 import { apiGet, apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
+import CreateDraftToolModal from "../../components/admin/CreateDraftToolModal.vue";
 import ToolListRow from "../../components/tools/ToolListRow.vue";
 import ToggleSwitch from "../../components/ui/ToggleSwitch.vue";
 
@@ -17,7 +18,6 @@ const isLoading = ref(true);
 const errorMessage = ref<string | null>(null);
 const successMessage = ref<string | null>(null);
 const actionInProgress = ref<string | null>(null);
-
 const actionColumnWidth = ref("8.5rem");
 const measureEditActionRef = ref<HTMLDivElement | null>(null);
 const measureReviewActionRef = ref<HTMLDivElement | null>(null);
@@ -26,15 +26,11 @@ const createTitle = ref("");
 const createSummary = ref("");
 const createError = ref<string | null>(null);
 const isCreating = ref(false);
-const createTitleInputRef = ref<HTMLInputElement | null>(null);
-
 const router = useRouter();
-
 function updateActionColumnWidth(): void {
   const editWidth = measureEditActionRef.value?.getBoundingClientRect().width ?? 0;
   const reviewWidth = measureReviewActionRef.value?.getBoundingClientRect().width ?? 0;
   const next = Math.ceil(Math.max(editWidth, reviewWidth));
-
   if (next > 0) {
     actionColumnWidth.value = `${next}px`;
   }
@@ -109,10 +105,6 @@ function openCreateModal(): void {
   createSummary.value = "";
   createError.value = null;
   isCreateModalOpen.value = true;
-
-  void nextTick().then(() => {
-    createTitleInputRef.value?.focus();
-  });
 }
 
 function closeCreateModal(): void {
@@ -493,95 +485,15 @@ onMounted(() => {
     </template>
   </div>
 
-  <Teleport to="body">
-    <div
-      v-if="isCreateModalOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy/40"
-      @click.self="closeCreateModal"
-    >
-      <div
-        class="w-full max-w-lg border border-navy bg-white shadow-brutal p-6 space-y-5"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="create-tool-dialog-title"
-      >
-        <div class="flex items-start justify-between gap-4">
-          <div class="space-y-1">
-            <h2
-              id="create-tool-dialog-title"
-              class="text-lg font-semibold text-navy"
-            >
-              Skapa nytt verktyg
-            </h2>
-            <p class="text-sm text-navy/70">
-              Skapa ett utkast. Du kan lägga till kod och publicera senare.
-            </p>
-          </div>
-          <button
-            type="button"
-            class="text-navy/60 hover:text-navy text-2xl leading-none"
-            :disabled="isCreating"
-            @click="closeCreateModal"
-          >
-            &times;
-          </button>
-        </div>
-
-        <div class="space-y-4">
-          <div class="space-y-1">
-            <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
-              Titel
-            </label>
-            <input
-              ref="createTitleInputRef"
-              v-model="createTitle"
-              type="text"
-              class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
-              placeholder="T.ex. Matteprovsgenerator"
-              :disabled="isCreating"
-            >
-          </div>
-
-          <div class="space-y-1">
-            <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
-              Sammanfattning (valfritt)
-            </label>
-            <textarea
-              v-model="createSummary"
-              rows="3"
-              class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
-              placeholder="Kort beskrivning..."
-              :disabled="isCreating"
-            />
-          </div>
-
-          <p
-            v-if="createError"
-            class="text-sm text-burgundy"
-          >
-            {{ createError }}
-          </p>
-        </div>
-
-        <div class="flex justify-end gap-2">
-          <button
-            type="button"
-            class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-            :disabled="isCreating"
-            @click="closeCreateModal"
-          >
-            Avbryt
-          </button>
-          <button
-            type="button"
-            class="btn-primary px-4 py-2 text-xs font-semibold tracking-wide"
-            :disabled="isCreating"
-            @click="createDraftTool"
-          >
-            {{ isCreating ? "Skapar..." : "Skapa" }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </Teleport>
+  <CreateDraftToolModal
+    :is-open="isCreateModalOpen"
+    :title="createTitle"
+    :summary="createSummary"
+    :error="createError"
+    :is-submitting="isCreating"
+    @close="closeCreateModal"
+    @submit="createDraftTool"
+    @update:title="createTitle = $event"
+    @update:summary="createSummary = $event"
+  />
 </template>
