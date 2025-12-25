@@ -26,6 +26,7 @@ export function useScriptEditor({
   const entrypoint = ref("");
   const sourceCode = ref("");
   const settingsSchemaText = ref("");
+  const usageInstructions = ref("");
   const changeSummary = ref("");
   const metadataTitle = ref("");
   const metadataSummary = ref("");
@@ -36,9 +37,12 @@ export function useScriptEditor({
   const errorMessage = ref<string | null>(null);
   const successMessage = ref<string | null>(null);
 
-  const initialSnapshot = ref<
-    { entrypoint: string; sourceCode: string; settingsSchemaText: string } | null
-  >(null);
+  const initialSnapshot = ref<{
+    entrypoint: string;
+    sourceCode: string;
+    settingsSchemaText: string;
+    usageInstructions: string;
+  } | null>(null);
 
   const selectedVersion = computed(() => editor.value?.selected_version ?? null);
   const editorToolId = computed(() => editor.value?.tool.id ?? "");
@@ -53,7 +57,8 @@ export function useScriptEditor({
     return (
       initialSnapshot.value.entrypoint !== entrypoint.value ||
       initialSnapshot.value.sourceCode !== sourceCode.value ||
-      initialSnapshot.value.settingsSchemaText !== settingsSchemaText.value
+      initialSnapshot.value.settingsSchemaText !== settingsSchemaText.value ||
+      initialSnapshot.value.usageInstructions !== usageInstructions.value
     );
   });
 
@@ -95,6 +100,8 @@ export function useScriptEditor({
     const schema = response.settings_schema;
     settingsSchemaText.value = schema ? JSON.stringify(schema, null, 2) : "";
 
+    usageInstructions.value = response.usage_instructions ?? "";
+
     changeSummary.value = "";
     metadataTitle.value = response.tool.title;
     metadataSummary.value = response.tool.summary ?? "";
@@ -102,6 +109,7 @@ export function useScriptEditor({
       entrypoint: response.entrypoint,
       sourceCode: response.source_code,
       settingsSchemaText: settingsSchemaText.value,
+      usageInstructions: usageInstructions.value,
     };
   }
 
@@ -228,6 +236,7 @@ export function useScriptEditor({
             entrypoint: entrypointValue,
             source_code: sourceCode.value,
             settings_schema: settingsSchema,
+            usage_instructions: normalizedOptionalString(usageInstructions.value),
             change_summary: summaryValue,
             expected_parent_version_id: version.id,
           },
@@ -244,6 +253,7 @@ export function useScriptEditor({
           entrypoint: entrypointValue,
           source_code: sourceCode.value,
           settings_schema: settingsSchema,
+          usage_instructions: normalizedOptionalString(usageInstructions.value),
           change_summary: summaryValue,
           derived_from_version_id: editor.value.derived_from_version_id,
         },
@@ -329,6 +339,7 @@ export function useScriptEditor({
     entrypoint,
     sourceCode,
     settingsSchemaText,
+    usageInstructions,
     changeSummary,
     isLoading,
     isSaving,

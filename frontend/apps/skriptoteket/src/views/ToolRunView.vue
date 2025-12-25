@@ -7,6 +7,7 @@ import { UiOutputRenderer } from "../components/ui-outputs";
 import ToolRunActions from "../components/tool-run/ToolRunActions.vue";
 import ToolRunArtifacts from "../components/tool-run/ToolRunArtifacts.vue";
 import ToolRunControlBar from "../components/tool-run/ToolRunControlBar.vue";
+import UsageInstructions from "../components/tool-run/UsageInstructions.vue";
 import ToolRunSettingsPanel from "../components/tool-run/ToolRunSettingsPanel.vue";
 import ToolRunStepIndicator from "../components/tool-run/ToolRunStepIndicator.vue";
 import { useToolRun, type StepResult } from "../composables/tools/useToolRun";
@@ -193,6 +194,13 @@ watch(hasSettingsSchema, (hasSchema) => {
       v-else-if="tool"
       class="border border-navy bg-white shadow-brutal-sm"
     >
+      <UsageInstructions
+        v-if="tool.usage_instructions?.trim()"
+        :tool-id="tool.id"
+        :instructions="tool.usage_instructions"
+        :is-seen="tool.usage_instructions_seen"
+      />
+
       <!-- Control bar section -->
       <div class="p-4 border-b border-navy/20">
         <ToolRunControlBar

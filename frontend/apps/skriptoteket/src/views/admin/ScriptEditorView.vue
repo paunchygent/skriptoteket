@@ -5,6 +5,7 @@ import type { components } from "../../api/openapi";
 import CodeMirrorEditor from "../../components/editor/CodeMirrorEditor.vue";
 import EntrypointDropdown from "../../components/editor/EntrypointDropdown.vue";
 import InlineEditableText from "../../components/editor/InlineEditableText.vue";
+import InstructionsDrawer from "../../components/editor/InstructionsDrawer.vue";
 import MaintainersDrawer from "../../components/editor/MaintainersDrawer.vue";
 import MetadataDrawer from "../../components/editor/MetadataDrawer.vue";
 import SandboxRunner from "../../components/editor/SandboxRunner.vue";
@@ -37,6 +38,7 @@ const {
   entrypoint,
   sourceCode,
   settingsSchemaText,
+  usageInstructions,
   changeSummary,
   metadataTitle,
   metadataSummary,
@@ -109,7 +111,7 @@ const {
   canEdit: canEditMaintainers,
 });
 const entrypointOptions = ["run_tool", "main", "run", "execute"];
-const activeDrawer = ref<"history" | "metadata" | "maintainers" | null>(null);
+const activeDrawer = ref<"history" | "metadata" | "maintainers" | "instructions" | null>(null);
 
 const isSavingAllMetadata = computed(() => isMetadataSaving.value || isTaxonomySaving.value);
 
@@ -119,9 +121,31 @@ async function saveAllMetadata(): Promise<void> {
     await saveTaxonomy();
   }
 }
+
+const isTitleSaving = ref(false);
+const isSummarySaving = ref(false);
+
+async function saveTitle(): Promise<void> {
+  isTitleSaving.value = true;
+  try {
+    await saveToolMetadata();
+  } finally {
+    isTitleSaving.value = false;
+  }
+}
+
+async function saveSummary(): Promise<void> {
+  isSummarySaving.value = true;
+  try {
+    await saveToolMetadata();
+  } finally {
+    isSummarySaving.value = false;
+  }
+}
 const isHistoryDrawerOpen = computed(() => activeDrawer.value === "history");
 const isMetadataDrawerOpen = computed(() => activeDrawer.value === "metadata");
 const isMaintainersDrawerOpen = computed(() => activeDrawer.value === "maintainers");
+const isInstructionsDrawerOpen = computed(() => activeDrawer.value === "instructions");
 const isDrawerOpen = computed(() => activeDrawer.value !== null);
 
 function openHistoryDrawer(): void {
@@ -140,6 +164,10 @@ function openMaintainersDrawer(): void {
   if (next === "maintainers" && editorToolId.value) {
     void loadMaintainers(editorToolId.value);
   }
+}
+
+function openInstructionsDrawer(): void {
+  activeDrawer.value = activeDrawer.value === "instructions" ? null : "instructions";
 }
 
 function closeDrawer(): void {
@@ -172,15 +200,15 @@ function updateCategoryIds(value: string[]): void {
 const confirmButtonClass = computed(() => {
   switch (activeWorkflowAction.value) {
     case "publish":
-      return "bg-burgundy text-canvas border-navy btn-secondary-hover";
+      return "btn-cta";
     case "submit_review":
-      return "bg-navy text-canvas border-navy btn-secondary-hover";
+      return "btn-primary";
     case "request_changes":
-      return "bg-white text-navy border-navy hover:bg-canvas btn-secondary-hover";
+      return "btn-ghost";
     case "rollback":
-      return "bg-white text-burgundy border-burgundy hover:bg-burgundy/10";
+      return "btn-cta";
     default:
-      return "bg-navy text-canvas border-navy btn-secondary-hover";
+      return "btn-primary";
   }
 });
 
@@ -301,6 +329,8 @@ watch(
               display-class="text-2xl font-semibold text-navy"
               input-class="text-2xl font-semibold"
               placeholder="Verktygets titel"
+              :saving="isTitleSaving"
+              @commit="saveTitle"
             />
             <p class="text-sm text-navy/70">
               <span class="font-mono">{{ editor.tool.slug }}</span>
@@ -311,6 +341,8 @@ watch(
               display-class="text-sm text-navy/70"
               input-class="text-sm"
               placeholder="Lägg till en sammanfattning..."
+              :saving="isSummarySaving"
+              @commit="saveSummary"
             />
           </div>
 
@@ -343,7 +375,7 @@ watch(
                 <button
                   type="button"
                   :disabled="isSaving"
-                  class="min-w-[80px] px-4 py-2 text-xs font-bold uppercase tracking-widest bg-navy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="btn-primary min-w-[80px]"
                   @click="save"
                 >
                   <span
@@ -375,7 +407,7 @@ watch(
             <div class="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                class="px-3 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+                class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
                 @click="openHistoryDrawer"
               >
                 Öppna sparade
@@ -383,7 +415,7 @@ watch(
               <button
                 v-if="canEditTaxonomy"
                 type="button"
-                class="px-3 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+                class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
                 @click="openMetadataDrawer"
               >
                 Metadata
@@ -391,10 +423,17 @@ watch(
               <button
                 v-if="canEditMaintainers"
                 type="button"
-                class="px-3 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+                class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
                 @click="openMaintainersDrawer"
               >
                 Redigeringsbehörigheter
+              </button>
+              <button
+                type="button"
+                class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
+                @click="openInstructionsDrawer"
+              >
+                Instruktioner
               </button>
             </div>
           </div>
@@ -520,6 +559,16 @@ watch(
             @close="closeDrawer"
             @add="addMaintainer"
             @remove="removeMaintainer"
+          />
+
+          <InstructionsDrawer
+            v-if="isInstructionsDrawerOpen"
+            :is-open="isInstructionsDrawerOpen"
+            :usage-instructions="usageInstructions"
+            :is-saving="isSaving"
+            @close="closeDrawer"
+            @save="save"
+            @update:usage-instructions="usageInstructions = $event"
           />
         </div>
       </div>

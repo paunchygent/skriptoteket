@@ -2,9 +2,10 @@
 type: story
 id: ST-08-13
 title: "Tool usage instructions"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-24
+updated: 2025-12-25
 epic: "EPIC-08"
 acceptance_criteria:
   - "Given a tool page, when the tool has usage_instructions, then a collapsible section 'Så här gör du' is displayed"
@@ -78,3 +79,15 @@ Ladda upp din exporterade fil (.xlsx eller .csv).
 - `frontend/apps/skriptoteket/src/components/ui-outputs/UiOutputMarkdown.vue` - fix rendering
 - `frontend/apps/skriptoteket/src/components/tool-run/UsageInstructions.vue` - new component
 - `frontend/apps/skriptoteket/src/views/ToolRunView.vue` - integrate component
+
+## Implementation (2025-12-25)
+
+### Display (user-facing)
+- SPA: Added animated "Så här gör du" drawer in ToolRunView; extracted reusable markdown renderer (`frontend/apps/skriptoteket/src/components/ui/UiMarkdown.vue`).
+- API: Added per-user seen state + mark-seen endpoint to persist across devices (`src/skriptoteket/web/api/v1/tools.py`).
+- Verified: `pdm run python -m scripts.playwright_st_08_13_tool_usage_instructions_e2e --base-url http://127.0.0.1:5173` (artifacts: `.artifacts/st-08-13-tool-usage-instructions/`).
+
+### Editor (contributor/admin)
+- SPA: InstructionsDrawer with markdown edit + live preview toggle (`frontend/apps/skriptoteket/src/components/editor/InstructionsDrawer.vue`).
+- Composable: `useScriptEditor.ts` tracks `usageInstructions` state, includes in save payloads.
+- API: `usage_instructions` field added to `EditorBootResponse`, `CreateDraftVersionRequest`, `SaveDraftVersionRequest` (`src/skriptoteket/web/api/v1/editor.py`).
