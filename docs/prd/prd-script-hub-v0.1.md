@@ -90,3 +90,9 @@ Scripts may belong to **multiple** professions and categories.
 - Time-to-first-result for common scripts: < 5 seconds (local / normal load, non-LLM).
 - Successful runs on valid inputs: > 95%.
 - New script to runnable (author workflow): < 30 minutes.
+
+## Links
+
+- Tool authoring (admin quick-create + slug lifecycle): `docs/prd/prd-tool-authoring-v0.1.md`
+- ADR: tool slug lifecycle: `docs/adr/adr-0037-tool-slug-lifecycle.md`
+- Epic: admin tool authoring: `docs/backlog/epics/epic-14-admin-tool-authoring.md`

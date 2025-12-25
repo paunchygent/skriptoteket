@@ -5,6 +5,7 @@ title: "Vue/Vite SPA Migration Roadmap"
 status: active
 owners: "agents"
 created: 2025-12-21
+updated: 2025-12-25
 topic: "frontend-migration"
 links:
   - PRD-spa-frontend-v0.1
@@ -12,6 +13,7 @@ links:
   - ADR-0027
   - ADR-0028
   - ADR-0029
+  - ADR-0032
   - ADR-0030
   - REF-vue-spa-migration-assessment
   - ADR-0017
@@ -24,7 +26,7 @@ This roadmap details the migration from Jinja2/HTMX server-rendered frontend to 
 | Decision | Choice |
 |----------|--------|
 | **Strategy** | Full SPA replacement (clean break cutover) |
-| **Design System** | Custom Vue component library (`@huleedu/ui`) + design tokens (**pure CSS**, no Tailwind) |
+| **Design System** | Tailwind CSS v4 (`@theme`) + HuleEdu design tokens (`--huleedu-*`) (ADR-0032; supersedes ADR-0029) |
 | **API** | `/api/v1/*` + OpenAPI as source of truth + generated TypeScript (`openapi-typescript`) |
 | **Build** | pnpm monorepo with Vite 6 |
 
@@ -32,7 +34,24 @@ This plan follows ADR-0027 and supersedes the prior SSR/HTMX and â€œSPA islandsâ
 
 ---
 
-## Current State Inventory
+## Current State (post-cutover)
+
+**Status (2025-12-23): cutover complete.** Skriptoteket now serves a full Vue/Vite SPA for all non-API routes via
+history fallback (`src/skriptoteket/web/routes/spa_fallback.py`). Legacy Jinja/HTMX page routes are removed.
+`frontend/islands/` remains as legacy and should be deleted when safe.
+
+| Component | Location | Technology |
+|-----------|----------|------------|
+| SPA source | `frontend/apps/skriptoteket/` | Vue 3.5 + Vite 6 + Tailwind v4 (`@theme`) |
+| Built SPA assets | `src/skriptoteket/web/static/spa/` | Vite build output served by FastAPI |
+| SPA fallback | `src/skriptoteket/web/routes/spa_fallback.py` | FastAPI history fallback (`index.html`) |
+| Design tokens | `src/skriptoteket/web/static/css/huleedu-design-tokens.css` | Canonical `--huleedu-*` tokens |
+| Tailwind bridge | `frontend/apps/skriptoteket/src/styles/tailwind-theme.css` | `@theme inline` token mapping |
+| JSON API | `src/skriptoteket/web/api/v1/` | `/api/v1/*` (OpenAPI source of truth) |
+
+---
+
+## Pre-cutover Inventory (historical)
 
 ### Frontend Stack
 
@@ -41,7 +60,7 @@ This plan follows ADR-0027 and supersedes the prior SSR/HTMX and â€œSPA islandsâ
 | Templates | `src/skriptoteket/web/templates/` | Jinja2 + HTMX |
 | Static CSS | `src/skriptoteket/web/static/css/` | HuleEdu design system (custom) |
 | Static JS | `src/skriptoteket/web/static/js/app.js` | Vanilla JS (HTMX helpers) |
-| Vue Islands | `frontend/islands/` | Vue 3.5 + Vite 6 (+ Tailwind 4.1 today; removed per ADR-0029) |
+| Vue Islands | `frontend/islands/` | Vue 3.5 + Vite 6 (+ Tailwind v4 tokens via `@theme`; ADR-0032) |
 
 ### Existing Vue Islands
 
@@ -67,7 +86,7 @@ frontend/islands/src/
 
 - `vue@^3.5.0`
 - `@codemirror/*@^6.x` (CodeMirror 6 modules)
-- `tailwindcss@^4.1.0` (dev dependency today; removed per ADR-0029)
+- `tailwindcss@^4.1.0` (Tailwind v4 with tokens via `@theme`; ADR-0032)
 - `vite@^6.0.0`
 
 **Missing today:** No Pinia, no Vue Router, no centralized state management.
@@ -550,7 +569,7 @@ Vue Router guards must match FastAPI dependencies:
 
 Current: Cookies + middleware (`set_toast_cookie`, `request.state.toast_message`)
 
-New: Pinia store with `useToast()` composable:
+New: Pinia store with `useToast()` composable (ADR-0037, REF-toast-system-messages):
 
 ```typescript
 const toast = useToast()
@@ -564,7 +583,8 @@ Existing `CodeMirrorEditor.vue` uses CM6. Ensure same version in component libra
 
 ### Tailwind Decision
 
-Decision: use **pure CSS** with design tokens and remove Tailwind from the toolchain (ADR-0029).
+Decision: adopt **Tailwind CSS v4** as a utility layer backed by **HuleEdu design tokens** via `@theme inline`
+(ADR-0032; supersedes ADR-0029).
 
 ---
 
@@ -572,7 +592,7 @@ Decision: use **pure CSS** with design tokens and remove Tailwind from the toolc
 
 | Question | Decision | Rationale |
 |----------|----------|-----------|
-| Tailwind vs CSS | **Pure CSS** with design tokens | HuleEdu design is distinctive (brutalist); component library owns its styles |
+| Tailwind vs CSS | **Tailwind v4 + design tokens (`@theme`)** | Utility productivity without losing token authority (no Tailwind defaults leak through) |
 | OpenAPI generation | **Yes**, `openapi-typescript` | Single source of truth; prevents frontend/backend drift |
 | Single vs separate admin | **Single SPA** with route guards | Shared auth context, shared components, simpler deployment |
 | Cutover strategy | **Clean break** (no redirects) | SPA replaces all routes; old templates deleted |
@@ -612,7 +632,8 @@ Decision: use **pure CSS** with design tokens and remove Tailwind from the toolc
 - `PRD-spa-frontend-v0.1` - product goals and scope for the SPA migration
 - `ADR-0027` - full SPA decision (supersedes ADR-0001 and ADR-0025)
 - `ADR-0028` - SPA hosting + history fallback
-- `ADR-0029` - pure CSS + design tokens (no Tailwind)
+- `ADR-0029` - pure CSS + design tokens (superseded by ADR-0032)
+- `ADR-0032` - Tailwind CSS 4 with `@theme` design tokens (supersedes ADR-0029)
 - `ADR-0030` - OpenAPI â†’ TypeScript generation (`openapi-typescript`)
 - `EPIC-11` - backlog breakdown for the migration
 - `REF-vue-spa-migration-assessment` - initial assessment (deprecated)

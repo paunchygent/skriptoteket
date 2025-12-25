@@ -13,6 +13,12 @@ version: "0.2"
 
 This document outlines key features planned for the post-MVP (v0.2) release of the Script Hub. The primary focus is enabling **stateful, multi-turn tools** with a **safe, typed UI contract** (outputs + actions + persisted state) and paving the way for curated “owner apps” without exposing arbitrary UI/JS to end users.
 
+## Related v0.1 enabling work
+
+- Tool authoring (admin quick-create + slug lifecycle): `docs/prd/prd-tool-authoring-v0.1.md`
+- ADR: tool slug lifecycle: `docs/adr/adr-0037-tool-slug-lifecycle.md`
+- Epic: admin tool authoring: `docs/backlog/epics/epic-14-admin-tool-authoring.md`
+
 ## Feature: Tool Sessions (User-Specific State)
 
 ### Context & Problem

@@ -6,6 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-22
+updated: 2025-12-25
 supersedes: ["ADR-0029"]
 links: ["ADR-0017", "ADR-0027", "ADR-0029"]
 ---
@@ -33,6 +34,8 @@ source.
 - Bridge existing HuleEdu design tokens via `@theme inline` to generate Tailwind utilities.
 - **Prefer Tailwind utility classes** over `<style scoped>` blocks in Vue components.
 - Fall back to scoped CSS only for complex animations, pseudo-elements, or patterns not expressible in utilities.
+- Keep the design language **token-driven**: avoid Tailwind default palette/spacing for product UI; use only mapped
+  token utilities (e.g. `bg-canvas`, `text-navy`, `shadow-brutal-sm`) or CSS variables.
 
 ### Token mapping (tailwind-theme.css)
 
@@ -47,6 +50,29 @@ source.
 ```
 
 This generates utilities like `bg-canvas`, `text-navy`, `text-burgundy`, `shadow-brutal`, etc.
+
+### Implementation (Skriptoteket)
+
+We keep tokens as the source of truth and use a small bridge to expose them to Tailwind:
+
+```
+src/skriptoteket/web/static/css/huleedu-design-tokens.css  ← canonical `--huleedu-*`
+frontend/apps/skriptoteket/src/styles/tokens.css           ← import wrapper
+frontend/apps/skriptoteket/src/styles/tailwind-theme.css   ← `@theme inline` bridge
+frontend/apps/skriptoteket/src/assets/main.css             ← single Tailwind + tokens entry
+```
+
+`frontend/apps/skriptoteket/src/assets/main.css` should import Tailwind once, then tokens + theme bridge:
+
+```css
+@import "tailwindcss";
+@import "../styles/tokens.css";
+@import "../styles/tailwind-theme.css";
+```
+
+Tailwind v4 note: Vue SFC `<style>` blocks / CSS modules may not see theme/custom utility definitions from other files.
+Prefer utilities in templates and CSS variables in custom CSS; if you must use `@apply` or custom utilities there, use
+`@reference` per Tailwind v4 docs.
 
 ## Consequences
 

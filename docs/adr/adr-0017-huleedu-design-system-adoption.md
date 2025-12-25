@@ -45,8 +45,11 @@ Adopt the HuleEdu design system for all Skriptoteket frontend styling:
 
 ### Toast Notifications
 
-- Success: Navy background
-- Error: Burgundy background
+- Info: Navy background
+- Success: Pine green background (`--huleedu-success`)
+- Warning: Amber background (`--huleedu-warning`)
+- Failure: Burgundy background
+- Validation + blocking states: inline near the cause (not toast)
 
 ### Implementation
 
