@@ -26,10 +26,11 @@ Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future H
 
 ## Current sprint dashboard (keep current only)
 
-- Sprint: `SPR-2025-12-21` (EPIC-11 full SPA migration) — cutover deployed 2025-12-23 (ST-11-13)
+- Sprint: `SPR-2025-12-21` (EPIC-12 SPA UX) — cutover deployed 2025-12-23 (ST-11-13)
 - Production: Full Vue SPA (SSR/HTMX removed)
 - Done: Route parity + admin/editor flows (ST-11-01..22)
 - Next: EPIC-12 is unblocked; pick next SPA UX story (ST-12-02/03/04)
+- Active planning: EPIC-14 admin tool authoring (quick-create drafts + slug lifecycle) — `docs/backlog/epics/epic-14-admin-tool-authoring.md`
 
 ## Current EPIC-04 decisions (dynamic scripts)
 
@@ -61,14 +62,44 @@ Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future H
 - DB (dev): `docker compose up -d db` then `pdm run db-upgrade`
 - Bootstrap first superuser: `pdm run bootstrap-superuser`
 
+## Dev Idioms (must follow)
+
+### SPA Button Primitives
+Use `btn-primary`/`btn-cta`/`btn-ghost` from `frontend/apps/skriptoteket/src/assets/main.css`. Never inline ad-hoc button styles.
+
+### Editor Composables Pattern
+Extract all editor logic to `frontend/apps/skriptoteket/src/composables/editor/`. Views stay UI-only:
+- `useScriptEditor.ts` - main editor state (source, settings, usageInstructions, save)
+- `useToolTaxonomy.ts` - profession/category editing
+- `useToolMaintainers.ts` - maintainer management
+- `useEditorWorkflowActions.ts` - submit/publish/rollback
+
+### Runner Input Contract
+Scripts receive inputs via environment variables (not CLI args):
+- `SKRIPTOTEKET_INPUT_DIR` - directory containing uploaded files
+- `SKRIPTOTEKET_INPUT_MANIFEST` - JSON manifest of input files
+- `SKRIPTOTEKET_MEMORY_PATH` - path to `memory.json` (personalized settings)
+- `SKRIPTOTEKET_OUTPUT_DIR` - write outputs here
+
+### Key Architecture Patterns
+- Sessions + optimistic concurrency (ADR-0024): `expected_state_rev` on actions
+- Contract v2 (ADR-0022): outputs `notice|markdown|table|json|html_sandboxed`
+- UI: Vue 3 + Vite + Tailwind 4 with `@theme` design tokens (ADR-0032)
+
 ## Session handoff
 
 Before ending a session, update `.agent/handoff.md` with what changed, decisions, and next steps.
 
-Completed/older stories belong in story docs + link index here (not in `.agent/handoff.md`):
+Completed stories belong in story docs + link index here (not in `.agent/handoff.md`):
 
+### EPIC-11 (SPA Migration) - Complete
+All stories ST-11-01..23 done. Cutover deployed 2025-12-23. See `docs/backlog/epics/epic-11-full-vue-spa-migration.md`.
+
+### EPIC-02 (Identity) - Complete
+Self-registration, profiles, lockout. See story docs under `docs/backlog/stories/story-02-*.md`.
+
+### Older Stories
 - ST-07-02: `docs/backlog/stories/story-07-02-healthz-and-metrics-endpoints.md`
 - ST-07-04: `docs/backlog/stories/story-07-04-logging-redaction-and-policy.md`
 - ST-05-12: `docs/backlog/stories/story-05-12-mobile-editor-ux.md`
-- ST-05-11: `docs/backlog/stories/story-05-11-hamburger-htmx-bug.md`
 - ST-04-04: `docs/backlog/stories/story-04-04-governance-audit-rollback.md`

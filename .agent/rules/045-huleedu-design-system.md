@@ -2,7 +2,7 @@
 id: "045-huleedu-design-system"
 type: "implementation"
 created: 2025-12-15
-updated: 2025-12-23
+updated: 2025-12-25
 scope: "frontend"
 references:
   - ADR-0027
@@ -14,7 +14,25 @@ references:
 
 Skriptoteket adopts the HuleEdu Brutalist design system. This document covers the **Vue 3 SPA implementation** using Tailwind CSS v4 with `@theme` design tokens.
 
-> **Legacy SSR/HTMX**: For Jinja templates (until EPIC-11 cutover), see `huleedu-design-tokens.css` utility classes directly.
+> **Legacy SSR/HTMX**: Cutover is complete (EPIC-11). SSR/HTMX is deleted; do not re-introduce it.
+
+---
+
+## 0. Styling Rules (Alignment)
+
+These rules keep our docs, skills, and implementation aligned (ADR-0032):
+
+- **Tokens-first**: do not hardcode hex colors/spacing/shadows in Vue markup or CSS. Prefer mapped utilities
+  (`bg-canvas`, `text-navy`, `shadow-brutal-sm`, etc.) or CSS variables (`var(--color-*)`, `var(--huleedu-*)`).
+- **No Tailwind defaults leakage**: avoid Tailwind’s default palette/spacing in product UI; the design language must come
+  from HuleEdu tokens via the theme bridge.
+- **Single CSS entry point**: `frontend/apps/skriptoteket/src/assets/main.css` is the SPA styling entry. Import Tailwind,
+  tokens, and the theme bridge there; do not sprinkle extra Tailwind imports elsewhere.
+- **Keep the bridge minimal**: `tailwind-theme.css` should map `--huleedu-*` → Tailwind theme vars via `@theme inline`,
+  not introduce new bespoke design constants.
+- **Vue `<style>` blocks**: prefer Tailwind utilities in templates. If custom CSS is unavoidable, prefer CSS variables.
+  Tailwind v4 note: separately bundled CSS (Vue SFC `<style>`, CSS modules) may not see theme/custom utilities; avoid
+  `@apply` unless necessary, and use `@reference` when you must apply shared utilities.
 
 ---
 
@@ -87,47 +105,39 @@ The `@theme inline` block in `tailwind-theme.css` maps HuleEdu tokens to Tailwin
 
 ## 4. Button Patterns (Brutalist)
 
-All buttons follow the brutalist pattern with offset shadow and click animation.
+Use the shared SPA button primitives (defined in `frontend/apps/skriptoteket/src/assets/main.css`).
+These standardize hover + press depth and reduce drift:
 
-### Primary CTA (Burgundy)
+| Variant | Class | Default | Hover | Press |
+|---------|-------|---------|-------|-------|
+| Standard button | `btn-primary` | Navy | Burgundy fill | 4px |
+| Critical CTA | `btn-cta` | Burgundy | Burgundy highlight (no navy fill) | 4px |
+| No-fill table/action | `btn-ghost` | White/no-fill | Canvas fill + amber highlight | 4px |
+
+Notes:
+
+- Hover styles are gated behind `@media (hover: hover) and (pointer: fine)` to avoid sticky hover on touch devices.
+- Do **not** use amber highlight on `btn-primary` / `btn-cta`.
+
+### Examples
+
 ```vue
-<button class="px-4 py-2 text-xs font-bold uppercase tracking-widest
-               bg-burgundy text-canvas border border-navy shadow-brutal-sm
-               hover:bg-navy transition-colors
-               active:translate-x-1 active:translate-y-1 active:shadow-none
-               disabled:opacity-50 disabled:cursor-not-allowed">
-  Publicera
-</button>
+<button class="btn-primary">Spara</button>
+<button class="btn-cta">Publicera</button>
+<button class="btn-ghost">Redigera</button>
 ```
 
-### Functional Action (Navy)
+### Async (spinner) button
+
 ```vue
-<button class="px-4 py-2 text-xs font-bold uppercase tracking-widest
-               bg-navy text-canvas border border-navy shadow-brutal-sm
-               hover:bg-burgundy transition-colors
-               active:translate-x-1 active:translate-y-1 active:shadow-none">
-  Spara
+<button class="btn-cta" :disabled="isRunning">
+  <span
+    v-if="isRunning"
+    class="inline-block w-3 h-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
+  />
+  <span v-else>Kör</span>
 </button>
 ```
-
-### Secondary/Cancel (White)
-```vue
-<button class="px-4 py-2 text-xs font-semibold uppercase tracking-wide
-               bg-white text-navy border border-navy shadow-brutal-sm
-               hover:bg-canvas transition-colors
-               active:translate-x-1 active:translate-y-1 active:shadow-none">
-  Avbryt
-</button>
-```
-
-### Button Hierarchy Summary
-
-| Type | Background | Text | Hover | Use Case |
-|------|------------|------|-------|----------|
-| Primary CTA | `bg-burgundy` | `text-canvas` | `hover:bg-navy` | Publicera, main actions |
-| Functional | `bg-navy` | `text-canvas` | `hover:bg-burgundy` | Spara, Logga in, Skicka |
-| Secondary | `bg-white` | `text-navy` | `hover:bg-canvas` | Avbryt, Avslå, secondary |
-| Tertiary | `bg-canvas` | `text-navy` | `hover:bg-white` | Rensa, less prominent |
 
 ---
 
@@ -414,7 +424,7 @@ All Vue files must be **<500 LoC**. Extract logic to composables, UI to child co
 | Inline `style` attributes | Tailwind classes or CSS variables |
 | English error messages | Swedish: "Det gick inte att..." |
 | `rounded-sm` on buttons | Remove radius or use brutalist aesthetic |
-| Green for success | Navy for success toasts (burgundy for errors) |
+| Ad-hoc feedback colors | Toasts: `info=navy`, `success=--huleedu-success`, `warning=--huleedu-warning`, `failure=burgundy` (90% opacity); validation/blocking errors stay inline |
 | Custom `@keyframes` in `<style>` | Use `animate-spin`, `animate-pulse` utilities |
 
 ---

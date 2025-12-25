@@ -1,25 +1,25 @@
 ---
 name: skriptoteket-frontend-specialist
-description: Skriptoteket frontend development inside the Skriptoteket monolith (FastAPI + Jinja templates + static assets) using the HuleEdu-aligned stack (Vue 3.5.x + Vite + TypeScript, Pinia, Vue Router, Tailwind CSS v4 tokens/@theme, HuleEdu design tokens, pnpm). Use for working in the `frontend/` pnpm workspace, wiring Vite builds/manifest into the backend, implementing SPA features (auth, routing, state, API clients), and keeping the UI/auth model compatible with future HuleEdu teacher login integration (same entry point, no separate login).
+description: Skriptoteket frontend development (FastAPI backend + full Vue/Vite SPA) using the HuleEdu-aligned stack (Vue 3.5.x + Vite + TypeScript, Pinia, Vue Router, Tailwind CSS v4 tokens/@theme, HuleEdu design tokens, pnpm). Use for working in the `frontend/` pnpm workspace, SPA hosting/history fallback, implementing SPA features (auth, routing, state, API clients), and keeping the UI/auth model compatible with future HuleEdu teacher login integration (same entry point, no separate login).
 ---
 
 # Skriptoteket Frontend Specialist
 
 ## Defaults
 
-- Prefer a single SPA paradigm for product pages; avoid re-introducing template/HTMX UI unless maintaining legacy surfaces.
+- SPA-only: do not re-introduce template/HTMX UI (ADR-0027 clean-break cutover).
 - Use Vue 3.5 Composition API with `<script setup lang="ts">`.
 - Keep the frontend HuleEdu-aligned so it can be integrated into HuleEdu later (shared design tokens and compatible auth model).
 - Keep integration costs low: avoid hardcoded base paths, isolate auth transport (cookie vs bearer), and prefer token-driven styling over bespoke CSS.
 - Lock styling down with a tokens-first setup: `tokens.css` (canonical `--huleedu-*`) + `tailwind-theme.css` (Tailwind bridge via `@theme inline`).
+- Use the SPA button primitives (`btn-primary`, `btn-cta`, `btn-ghost`) from `frontend/apps/skriptoteket/src/assets/main.css` to avoid drift.
 - Admin editor features: extract logic into `frontend/apps/skriptoteket/src/composables/editor/` and keep views UI-only.
 
 ## Repo map (Skriptoteket monolith)
 
-- Backend (FastAPI + templates + static): `src/skriptoteket/web/`
-  - Templates: `src/skriptoteket/web/templates/`
-  - Static assets: `src/skriptoteket/web/static/`
-  - Vite manifest + built SPA assets: `src/skriptoteket/web/static/spa/`
+- Backend (FastAPI + SPA hosting + APIs): `src/skriptoteket/web/`
+  - Static assets: `src/skriptoteket/web/static/` (`/static/*`)
+  - Built SPA assets: `src/skriptoteket/web/static/spa/` (served via history fallback)
 - Frontend workspace (pnpm): `frontend/`
   - SPA app: `frontend/apps/skriptoteket/`
   - (Legacy) islands: `frontend/islands/`
@@ -30,13 +30,12 @@ description: Skriptoteket frontend development inside the Skriptoteket monolith 
    - Backend dev: `pdm run dev`
    - Frontend install: `pdm run fe-install`
    - SPA dev server: `pdm run fe-dev`
-2. If backend templates must load assets from Vite dev server, set `VITE_DEV_SERVER_URL` (see `references/vite-hosting.md`).
-3. Implement in this order:
-   - OpenAPI models (backend) -> regenerate TypeScript types (see `references/data-api.md`)
+2. Implement in this order:
+   - OpenAPI models (backend) -> regenerate TypeScript types (`pdm run fe-gen-api-types`)
    - API client calls in SPA
    - Pinia stores for shared state, views/components for UI
-4. Keep styling token-driven and HuleEdu-compatible (see `references/styling-tokens.md`).
-5. Keep auth integration "pluggable" so HuleEdu SSO can be added without rewriting the SPA (see `references/auth-integration.md`).
+3. Keep styling token-driven and HuleEdu-compatible (ADR-0032 + `@theme inline` bridge).
+4. Keep auth integration "pluggable" so HuleEdu SSO can be added without rewriting the SPA (ADR-0006/ADR-0011 + current cookie/CSRF transport).
 
 ## Patterns
 
@@ -82,9 +81,8 @@ Use Context7 when you need exact API details or version-specific behavior:
 
 ## References
 
-- Stack + commands: `references/stack.md`
-- Vite hosting + manifest: `references/vite-hosting.md`
-- Styling + tokens: `references/styling-tokens.md`
-- Data/API + OpenAPI types: `references/data-api.md`
-- Auth + HuleEdu integration readiness: `references/auth-integration.md`
-- Testing: `references/testing.md`
+- SPA adoption: `docs/adr/adr-0027-full-vue-vite-spa.md`
+- SPA hosting + history fallback: `docs/adr/adr-0028-spa-hosting-and-history-fallback.md`
+- OpenAPI + TS generation: `docs/adr/adr-0030-openapi-and-frontend-types.md`
+- Tailwind v4 tokens bridge: `docs/adr/adr-0032-tailwind-4-theme-tokens.md`
+- SPA design system rules: `.agent/rules/045-huleedu-design-system.md`

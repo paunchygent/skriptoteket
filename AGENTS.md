@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 This repository hosts **Skriptoteket**, a teacher-first Script Hub with a FastAPI backend and PostgreSQL.
-UI is migrating to a **Vue/Vite SPA** (see `docs/adr/adr-0027-full-vue-vite-spa.md`); legacy SSR/Jinja/HTMX remains until cutover.
+UI is a **Vue/Vite SPA** (see `docs/adr/adr-0027-full-vue-vite-spa.md`); legacy SSR/Jinja/HTMX has been removed after cutover.
 Target Python is **3.13–3.14**.
 
 ## Product Overview
@@ -29,7 +29,7 @@ Target Python is **3.13–3.14**.
 - `migrations/`, `alembic.ini`: DB migrations (Alembic)
 - `docs/`: PRD/ADRs/backlog (start at `docs/index.md`); contract-enforced via `docs/_meta/docs-contract.yaml`
 - **Docs workflow (REQUIRED)**: follow `docs/reference/ref-sprint-planning-workflow.md` for PRD → ADR → epic → story → sprint planning.
-- `frontend/`: pnpm workspace (Vue/Vite) — `apps/skriptoteket` (SPA), `packages/huleedu-ui` (component library), `islands/` (legacy; to be deleted at cutover)
+- `frontend/`: pnpm workspace (Vue/Vite) — `apps/skriptoteket` (SPA), `packages/huleedu-ui` (component library), `islands/` (legacy; to be deleted post-cutover)
 - `.agent/`: agent workflow helpers (`.agent/readme-first.md`, `.agent/handoff.md`, prompt template) + coding rules (`.agent/rules/`)
 - `.claude/skills/`: repo-local agent skills (workflow playbooks + helpers)
 - `scripts/`: repo tooling (e.g., `scripts/validate_docs.py`)
@@ -80,7 +80,6 @@ Playwright (recommended), Selenium, Puppeteer available. Run via `pdm run python
 - **Prod smoke tests (recommended)**: keep `BOOTSTRAP_SUPERUSER_*` for provisioning/local dev; store prod UI smoke
   credentials in a gitignored `.env.prod-smoke` (`BASE_URL`, `PLAYWRIGHT_EMAIL`, `PLAYWRIGHT_PASSWORD`) and run
   `pdm run ui-smoke --dotenv .env.prod-smoke` (same for `ui-editor-smoke` / `ui-runtime-smoke`).
-- **Legacy SSR/HTMX caveat**: Avoid `waitForNavigation()` - use explicit URL waits
 
 ## Git Workflow
 
