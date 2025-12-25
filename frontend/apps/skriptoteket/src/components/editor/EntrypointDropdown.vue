@@ -2,6 +2,7 @@
 import { computed, ref, watch } from "vue";
 
 type EntrypointDropdownProps = {
+  id?: string;
   modelValue: string;
   options: string[];
   label?: string;
@@ -12,6 +13,7 @@ type EntrypointDropdownProps = {
 const CUSTOM_OPTION = "__custom__";
 
 const props = withDefaults(defineProps<EntrypointDropdownProps>(), {
+  id: "tool-entrypoint",
   label: "Startfunktion",
   placeholder: "run_tool",
   disabled: false,
@@ -20,6 +22,9 @@ const props = withDefaults(defineProps<EntrypointDropdownProps>(), {
 const emit = defineEmits<{ (event: "update:modelValue", value: string): void }>();
 
 const customValue = ref("");
+
+const selectId = computed(() => props.id);
+const helpId = computed(() => `${selectId.value}-help`);
 
 const selectedOption = computed(() => {
   return props.options.includes(props.modelValue) ? props.modelValue : CUSTOM_OPTION;
@@ -62,14 +67,25 @@ watch(
 
 <template>
   <div class="space-y-2">
-    <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+    <label
+      class="text-xs font-semibold uppercase tracking-wide text-navy/70"
+      :for="selectId"
+    >
       {{ label }}
     </label>
+    <p
+      :id="helpId"
+      class="text-xs text-navy/60"
+    >
+      Måste vara en funktion i skriptet som tar <span class="font-mono">(input_dir, output_dir)</span>.
+    </p>
     <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
       <select
+        :id="selectId"
         :value="selectedOption"
         class="w-full sm:w-44 border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
         :disabled="disabled"
+        :aria-describedby="helpId"
         @change="handleSelectChange"
       >
         <option

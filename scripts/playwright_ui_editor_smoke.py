@@ -31,15 +31,11 @@ def _launch_chromium(playwright: object) -> object:
     try:
         return playwright.chromium.launch(headless=True)
     except PlaywrightError as exc:
-        message = str(exc)
-        if "MachPortRendezvousServer" in message or "Permission denied (1100)" in message:
-            print("Headless Chromium failed with macOS permission error; retrying headful.")
-            return playwright.chromium.launch(headless=False)
-
         executable_path = _find_chromium_headless_shell()
         if not executable_path:
             raise
 
+        message = str(exc)
         if "chromium_headless_shell" not in message and "Executable doesn't exist" not in message:
             raise
 
@@ -51,14 +47,17 @@ def _login(
     page: object, *, base_url: str, email: str, password: str, artifacts_dir: Path | None = None
 ) -> None:
     page.goto(f"{base_url}/login", wait_until="domcontentloaded")
-    page.get_by_label("E-post").fill(email)
-    page.get_by_label("Lösenord").fill(password)
-    page.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
-    # Wait for auth redirect and authenticated layout to render
+
+    dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
+    expect(dialog).to_be_visible()
+    dialog.get_by_label("E-post").fill(email)
+    dialog.get_by_label("Lösenord").fill(password)
+    dialog.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
+
     try:
         expect(
-            page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))
-        ).to_be_visible(timeout=10_000)
+            page.get_by_role("heading", name=re.compile(r"Välkommen", re.IGNORECASE))
+        ).to_be_visible()
     except AssertionError:
         if artifacts_dir:
             page.screenshot(path=str(artifacts_dir / "login-failure.png"), full_page=True)
@@ -99,6 +98,12 @@ def _open_editor(page: object, *, base_url: str, artifacts_dir: Path | None = No
         raise
 
 
+def _get_sandbox_section(page: object) -> object:
+    return page.get_by_text("Testfiler").locator(
+        "xpath=ancestor::div[contains(@class,'space-y-4')][1]"
+    )
+
+
 def main() -> None:
     config = get_config()
     base_url = config.base_url.rstrip("/")
@@ -117,7 +122,62 @@ def main() -> None:
         _open_editor(page, base_url=base_url, artifacts_dir=artifacts_dir)
 
         editor = page.locator(".cm-editor").first
-        expect(editor).to_be_visible()
+        expect(editor).to_be_visible(timeout=30_000)
+
+        entrypoint_select = page.get_by_label(re.compile(r"Startfunktion", re.IGNORECASE))
+        expect(entrypoint_select).to_be_visible()
+        expect(
+            entrypoint_select.locator("option", has_text=re.compile(r"^run_tool$", re.IGNORECASE))
+        ).to_have_count(1)
+        expect(
+            entrypoint_select.locator("option", has_text=re.compile(r"^Eget", re.IGNORECASE))
+        ).to_have_count(1)
+        expect(
+            entrypoint_select.locator("option", has_text=re.compile(r"^main$", re.IGNORECASE))
+        ).to_have_count(0)
+        expect(
+            entrypoint_select.locator("option", has_text=re.compile(r"^run$", re.IGNORECASE))
+        ).to_have_count(0)
+        expect(
+            entrypoint_select.locator("option", has_text=re.compile(r"^execute$", re.IGNORECASE))
+        ).to_have_count(0)
+
+        help_text = page.get_by_text(
+            re.compile(r"funktion i skriptet som tar", re.IGNORECASE)
+        ).first
+        expect(help_text).to_be_visible()
+
+        sandbox_section_label = page.get_by_text("Testfiler")
+        if sandbox_section_label.count() == 0:
+            save_button = page.get_by_role("button", name=re.compile(r"^Spara$", re.IGNORECASE))
+            if save_button.count() == 0:
+                raise RuntimeError("Sandbox runner missing and no 'Spara' button found.")
+            save_button.first.click()
+            page.wait_for_url("**/admin/tool-versions/**", wait_until="domcontentloaded")
+
+        sandbox = _get_sandbox_section(page)
+        file_input = sandbox.locator("input[type='file']")
+        expect(file_input).to_have_count(1, timeout=30_000)
+        inputs_summary_locator = sandbox.locator(
+            "summary", has_text=re.compile(r"Indata\\s*\\(JSON\\)", re.IGNORECASE)
+        )
+        if inputs_summary_locator.count() == 0:
+            page.screenshot(path=str(artifacts_dir / "missing-inputs-summary.png"), full_page=True)
+            global_summary_count = page.locator("summary").count()
+            global_indata_count = page.locator(
+                "summary", has_text=re.compile(r"Indata\\s*\\(JSON\\)", re.IGNORECASE)
+            ).count()
+            raise RuntimeError(
+                "Could not find the 'Indata (JSON)' <summary> in the sandbox runner.\n"
+                f"Global <summary> count: {global_summary_count}\n"
+                f"Global 'Indata (JSON)' summary count: {global_indata_count}\n"
+                "Screenshot written to missing-inputs-summary.png"
+            )
+
+        inputs_summary = inputs_summary_locator.first
+        expect(inputs_summary).to_be_visible(timeout=30_000)
+        inputs_summary.click()
+        expect(sandbox.get_by_text("SKRIPTOTEKET_INPUTS")).to_be_visible(timeout=30_000)
         page.screenshot(path=str(artifacts_dir / "editor-loaded.png"), full_page=True)
 
         action_button = page.get_by_role(

@@ -35,7 +35,11 @@ const actionErrorMessage = ref<string | null>(null);
 const completedSteps = ref<EditorRunDetails[]>([]);
 const selectedStepIndex = ref<number | null>(null);
 
+const inputValues = ref<Record<string, JsonValue>>({});
+const lastSentInputsJson = ref<string>("{}");
+
 const hasFiles = computed(() => selectedFiles.value.length > 0);
+const inputsPreview = computed(() => lastSentInputsJson.value);
 
 // Displayed run: current or selected past step
 const displayedRun = computed<EditorRunDetails | null>(() => {
@@ -141,6 +145,8 @@ async function runSandbox(): Promise<void> {
   for (const file of selectedFiles.value) {
     formData.append("files", file);
   }
+  formData.append("inputs", JSON.stringify(inputValues.value));
+  lastSentInputsJson.value = JSON.stringify(inputValues.value, null, 2);
 
   try {
     const response = await apiFetch<SandboxRunResponse>(
@@ -301,6 +307,18 @@ onBeforeUnmount(() => {
         Rensa
       </button>
     </div>
+
+    <details class="border border-navy bg-white shadow-brutal-sm">
+      <summary class="px-3 py-2 cursor-pointer text-xs font-semibold uppercase tracking-wide text-navy/70">
+        Indata (JSON)
+      </summary>
+      <div class="px-3 py-2 border-t border-navy/20 bg-canvas/30 space-y-2">
+        <p class="text-xs text-navy/60">
+          Skickas som <span class="font-mono">SKRIPTOTEKET_INPUTS</span>.
+        </p>
+        <pre class="whitespace-pre-wrap font-mono text-xs text-navy">{{ inputsPreview }}</pre>
+      </div>
+    </details>
 
     <SystemMessage
       v-model="errorMessage"

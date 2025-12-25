@@ -121,7 +121,7 @@ const {
   canEdit: canEditMaintainers,
   notify,
 });
-const entrypointOptions = ["run_tool", "main", "run", "execute"];
+const entrypointOptions = ["run_tool"];
 const activeDrawer = ref<"history" | "metadata" | "maintainers" | "instructions" | null>(null);
 
 const isSavingAllMetadata = computed(
