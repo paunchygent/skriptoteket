@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 
 import { apiGet, apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
+import { useToast } from "../../composables/useToast";
 
 type SuggestionDetailResponse = components["schemas"]["SuggestionDetailResponse"];
 type SuggestionDetail = components["schemas"]["SuggestionDetail"];
@@ -35,8 +36,10 @@ const selectedCategories = ref<string[]>([]);
 
 const isLoading = ref(true);
 const isSubmitting = ref(false);
-const errorMessage = ref<string | null>(null);
-const successMessage = ref<string | null>(null);
+const loadErrorMessage = ref<string | null>(null);
+const decisionErrorMessage = ref<string | null>(null);
+
+const toast = useToast();
 
 const canDecide = computed(() => suggestion.value?.status === "pending_review");
 
@@ -71,13 +74,12 @@ async function loadTaxonomy(): Promise<void> {
 
 async function load(): Promise<void> {
   if (!suggestionId.value) {
-    errorMessage.value = "Saknar ID i länken.";
+    loadErrorMessage.value = "Saknar ID i länken.";
     return;
   }
 
   isLoading.value = true;
-  errorMessage.value = null;
-  successMessage.value = null;
+  loadErrorMessage.value = null;
 
   try {
     await loadTaxonomy();
@@ -95,11 +97,11 @@ async function load(): Promise<void> {
     suggestion.value = null;
     decisions.value = [];
     if (isApiError(error)) {
-      errorMessage.value = error.message;
+      loadErrorMessage.value = error.message;
     } else if (error instanceof Error) {
-      errorMessage.value = error.message;
+      loadErrorMessage.value = error.message;
     } else {
-      errorMessage.value = "Det gick inte att ladda förslaget.";
+      loadErrorMessage.value = "Det gick inte att ladda förslaget.";
     }
   } finally {
     isLoading.value = false;
@@ -110,11 +112,10 @@ async function submitDecision(): Promise<void> {
   if (!suggestion.value || !canDecide.value) return;
   if (isSubmitting.value) return;
 
-  errorMessage.value = null;
-  successMessage.value = null;
+  decisionErrorMessage.value = null;
 
   if (!rationale.value.trim()) {
-    errorMessage.value = "Motivering krävs.";
+    decisionErrorMessage.value = "Motivering krävs.";
     return;
   }
 
@@ -138,15 +139,15 @@ async function submitDecision(): Promise<void> {
       payload,
     );
 
-    successMessage.value = decision.value === "accept" ? "Förslag godkänt." : "Förslag avslaget.";
+    toast.success(decision.value === "accept" ? "Förslag godkänt." : "Förslag avslaget.");
     await load();
   } catch (error: unknown) {
     if (isApiError(error)) {
-      errorMessage.value = error.message;
+      toast.failure(error.message);
     } else if (error instanceof Error) {
-      errorMessage.value = error.message;
+      toast.failure(error.message);
     } else {
-      errorMessage.value = "Kunde inte spara beslut.";
+      toast.failure("Kunde inte spara beslut.");
     }
   } finally {
     isSubmitting.value = false;
@@ -205,10 +206,10 @@ const showDecisionFields = computed(() => decision.value === "accept");
     </div>
 
     <div
-      v-else-if="errorMessage"
+      v-else-if="loadErrorMessage"
       class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
     >
-      {{ errorMessage }}
+      {{ loadErrorMessage }}
     </div>
 
     <div
@@ -459,16 +460,10 @@ const showDecisionFields = computed(() => decision.value === "accept");
         </div>
 
         <div
-          v-if="successMessage"
-          class="p-3 border border-navy bg-white shadow-brutal-sm text-sm text-navy"
-        >
-          {{ successMessage }}
-        </div>
-        <div
-          v-if="errorMessage"
+          v-if="decisionErrorMessage"
           class="p-3 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
         >
-          {{ errorMessage }}
+          {{ decisionErrorMessage }}
         </div>
       </div>
 

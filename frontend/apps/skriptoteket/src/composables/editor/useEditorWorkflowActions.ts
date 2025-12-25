@@ -4,6 +4,7 @@ import type { RouteLocationNormalizedLoaded, Router } from "vue-router";
 import { apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import { useAuthStore } from "../../stores/auth";
+import type { UiNotifier } from "../notify";
 
 type EditorVersionSummary = components["schemas"]["EditorVersionSummary"];
 type WorkflowActionResponse = components["schemas"]["WorkflowActionResponse"];
@@ -59,6 +60,7 @@ type UseEditorWorkflowActionsOptions = {
   route: RouteLocationNormalizedLoaded;
   router: Router;
   reloadEditor: () => Promise<void>;
+  notify: UiNotifier;
 };
 
 type ActionItem = {
@@ -72,6 +74,7 @@ export function useEditorWorkflowActions({
   route,
   router,
   reloadEditor,
+  notify,
 }: UseEditorWorkflowActionsOptions) {
   const auth = useAuthStore();
   const isModalOpen = ref(false);
@@ -79,7 +82,6 @@ export function useEditorWorkflowActions({
   const targetVersionId = ref<string | null>(null);
   const note = ref("");
   const workflowError = ref<string | null>(null);
-  const workflowSuccess = ref<string | null>(null);
   const isSubmitting = ref(false);
 
   const canSubmitReview = computed(() => {
@@ -177,7 +179,6 @@ export function useEditorWorkflowActions({
 
     isSubmitting.value = true;
     workflowError.value = null;
-    workflowSuccess.value = null;
 
     const trimmedNote = note.value.trim();
     const noteValue = trimmedNote ? trimmedNote : null;
@@ -212,7 +213,7 @@ export function useEditorWorkflowActions({
       }
 
       const response = await apiPost<WorkflowActionResponse>(endpoint, body);
-      workflowSuccess.value = successMessage;
+      notify.success(successMessage);
       closeAction();
       await navigateAfterAction(response.redirect_url);
     } catch (error: unknown) {
@@ -232,7 +233,6 @@ export function useEditorWorkflowActions({
     () => route.fullPath,
     () => {
       workflowError.value = null;
-      workflowSuccess.value = null;
       closeAction();
     },
   );
@@ -248,7 +248,6 @@ export function useEditorWorkflowActions({
     showNoteField,
     note,
     workflowError,
-    workflowSuccess,
     isSubmitting,
     canSubmitReview,
     canPublish,

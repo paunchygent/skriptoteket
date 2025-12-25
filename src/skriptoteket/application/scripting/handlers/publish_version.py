@@ -91,12 +91,6 @@ class PublishVersionHandler(PublishVersionHandlerProtocol):
                 active_version_id=new_active.id,
                 now=now,
             )
-            if not tool.is_published:
-                await self._tools.set_published(
-                    tool_id=tool.id,
-                    is_published=True,
-                    now=now,
-                )
 
         return PublishVersionResult(
             new_active_version=new_active,

@@ -51,7 +51,6 @@ const {
   isLoading: isLoadingSettings,
   isSaving: isSavingSettings,
   errorMessage: settingsErrorMessage,
-  successMessage: settingsSuccessMessage,
   saveSettings,
 } = useToolSettings({ toolId });
 
@@ -227,7 +226,6 @@ watch(hasSettingsSchema, (hasSchema) => {
           :is-loading="isLoadingSettings"
           :is-saving="isSavingSettings"
           :error-message="settingsErrorMessage"
-          :success-message="settingsSuccessMessage"
           @update:model-value="onSettingsValuesUpdate"
           @save="saveSettings"
         />

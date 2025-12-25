@@ -35,14 +35,14 @@ class UpdateToolSlugHandler(UpdateToolSlugHandlerProtocol):
 
             if tool.is_published:
                 raise validation_error(
-                    "Slug kan inte ändras efter publicering.",
+                    "URL-namn kan inte ändras efter publicering.",
                     details={"tool_id": str(tool.id)},
                 )
 
             existing = await self._tools.get_by_slug(slug=normalized_slug)
             if existing is not None and existing.id != tool.id:
                 raise validation_error(
-                    f'Slug "{normalized_slug}" används redan. Välj en annan.',
+                    f'URL-namnet "{normalized_slug}" används redan. Välj ett annat.',
                     details={"slug": normalized_slug},
                 )
 

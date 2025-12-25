@@ -3,6 +3,7 @@ import type { RouteLocationNormalizedLoaded, Router } from "vue-router";
 
 import { apiFetch, apiGet, apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
+import type { UiNotifier } from "../notify";
 
 type EditorBootResponse = components["schemas"]["EditorBootResponse"];
 type EditorToolMetadataResponse = components["schemas"]["EditorToolMetadataResponse"];
@@ -14,6 +15,7 @@ type UseScriptEditorOptions = {
   versionId: Readonly<Ref<string>>;
   route: RouteLocationNormalizedLoaded;
   router: Router;
+  notify: UiNotifier;
 };
 
 export function useScriptEditor({
@@ -21,6 +23,7 @@ export function useScriptEditor({
   versionId,
   route,
   router,
+  notify,
 }: UseScriptEditorOptions) {
   const editor = ref<EditorBootResponse | null>(null);
   const entrypoint = ref("");
@@ -32,14 +35,12 @@ export function useScriptEditor({
   const metadataSummary = ref("");
   const metadataSlug = ref("");
   const slugError = ref<string | null>(null);
-  const slugSuccess = ref<string | null>(null);
   const isSlugSaving = ref(false);
 
   const isLoading = ref(true);
   const isSaving = ref(false);
   const isMetadataSaving = ref(false);
   const errorMessage = ref<string | null>(null);
-  const successMessage = ref<string | null>(null);
 
   const initialSnapshot = ref<{
     entrypoint: string;
@@ -134,11 +135,10 @@ export function useScriptEditor({
 
   function applySlugSuggestionFromTitle(): void {
     slugError.value = null;
-    slugSuccess.value = null;
 
     const suggestion = suggestToolSlugFromTitle(metadataTitle.value);
     if (!suggestion) {
-      slugError.value = "Kunde inte skapa en slug från titeln.";
+      slugError.value = "Kunde inte skapa ett URL-namn från titeln.";
       return;
     }
 
@@ -172,7 +172,6 @@ export function useScriptEditor({
       isLoading.value = true;
     }
     errorMessage.value = null;
-    successMessage.value = null;
 
     try {
       const response = await apiGet<EditorBootResponse>(path);
@@ -239,7 +238,6 @@ export function useScriptEditor({
 
     isSaving.value = true;
     errorMessage.value = null;
-    successMessage.value = null;
 
     try {
       const summaryValue = normalizedOptionalString(changeSummary.value);
@@ -274,7 +272,7 @@ export function useScriptEditor({
           },
         );
 
-        successMessage.value = "Sparat.";
+        notify.success("Sparat.");
         await navigateAfterSave(response.redirect_url);
         return;
       }
@@ -291,15 +289,19 @@ export function useScriptEditor({
         },
       );
 
-      successMessage.value = "Utkast skapat.";
+      notify.success("Utkast skapat.");
       await navigateAfterSave(response.redirect_url);
     } catch (error: unknown) {
       if (isApiError(error)) {
-        errorMessage.value = error.message;
+        if (error.status === 409) {
+          notify.warning(error.message);
+        } else {
+          notify.failure(error.message);
+        }
       } else if (error instanceof Error) {
-        errorMessage.value = error.message;
+        notify.failure(error.message);
       } else {
-        errorMessage.value = "Det gick inte att spara just nu.";
+        notify.failure("Det gick inte att spara just nu.");
       }
     } finally {
       isSaving.value = false;
@@ -317,7 +319,6 @@ export function useScriptEditor({
 
     isMetadataSaving.value = true;
     errorMessage.value = null;
-    successMessage.value = null;
 
     try {
       const response = await apiFetch<EditorToolMetadataResponse>(
@@ -343,14 +344,18 @@ export function useScriptEditor({
       metadataSlug.value = response.slug;
       metadataTitle.value = response.title;
       metadataSummary.value = response.summary ?? "";
-      successMessage.value = "Metadata sparad.";
+      notify.success("Metadata sparad.");
     } catch (error: unknown) {
       if (isApiError(error)) {
-        errorMessage.value = error.message;
+        if (error.status === 409) {
+          notify.warning(error.message);
+        } else {
+          notify.failure(error.message);
+        }
       } else if (error instanceof Error) {
-        errorMessage.value = error.message;
+        notify.failure(error.message);
       } else {
-        errorMessage.value = "Det gick inte att spara metadata just nu.";
+        notify.failure("Det gick inte att spara metadata just nu.");
       }
     } finally {
       isMetadataSaving.value = false;
@@ -362,13 +367,12 @@ export function useScriptEditor({
 
     const normalizedSlug = metadataSlug.value.trim();
     if (!normalizedSlug) {
-      slugError.value = "Slug krävs.";
+      slugError.value = "URL-namn krävs.";
       return;
     }
 
     isSlugSaving.value = true;
     slugError.value = null;
-    slugSuccess.value = null;
 
     try {
       const response = await apiFetch<EditorToolMetadataResponse>(
@@ -389,14 +393,14 @@ export function useScriptEditor({
         },
       };
       metadataSlug.value = response.slug;
-      slugSuccess.value = "Slug sparad.";
+      notify.success("URL-namn sparat.");
     } catch (error: unknown) {
       if (isApiError(error)) {
         slugError.value = error.message;
       } else if (error instanceof Error) {
         slugError.value = error.message;
       } else {
-        slugError.value = "Det gick inte att spara slug.";
+        slugError.value = "Det gick inte att spara URL-namn.";
       }
     } finally {
       isSlugSaving.value = false;
@@ -425,7 +429,6 @@ export function useScriptEditor({
     isSaving,
     isMetadataSaving,
     errorMessage,
-    successMessage,
     selectedVersion,
     editorToolId,
     saveButtonLabel,
@@ -440,7 +443,6 @@ export function useScriptEditor({
     saveToolSlug,
     applySlugSuggestionFromTitle,
     slugError,
-    slugSuccess,
     isSlugSaving,
   };
 }

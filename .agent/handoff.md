@@ -68,12 +68,45 @@ Consolidated toast feedback system (SPA) + docs-as-code artifacts.
 - CSS primitives + transitions: `frontend/apps/skriptoteket/src/assets/main.css`
 - UI smoke script updated for login modal: `scripts/playwright_ui_smoke.py`
 
+### EPIC-14 Admin tool authoring (ST-14-01 + ST-14-02) (done)
+
+Admin quick-create of draft tools + URL-namn lifecycle (ADR-0037).
+
+- **Backend**
+  - Create draft tool: `POST /api/v1/admin/tools` (admin+CSRF) in `src/skriptoteket/web/api/v1/admin_tools.py`
+    → creates `Tool(id, slug=draft-<tool_id>, title, summary, owner=admin, maintainer=admin)` via
+    `src/skriptoteket/application/catalog/handlers/create_draft_tool.py`
+  - URL-namn edit (unpublished only): `PATCH /api/v1/editor/tools/{tool_id}/slug` (admin+CSRF) in
+    `src/skriptoteket/web/api/v1/editor.py` + handler `src/skriptoteket/application/catalog/handlers/update_tool_slug.py`
+  - Publish guards: `src/skriptoteket/application/catalog/handlers/publish_tool.py`
+    (requires active version + URL-namn not `draft-*` + valid + taxonomy present via `tools.list_tag_ids`)
+  - IMPORTANT: `PublishVersionHandler` no longer auto-publishes the tool; tool publish is gated via admin publish
+    (`src/skriptoteket/application/scripting/handlers/publish_version.py`)
+  - Suggestion accept placeholder unified: `draft-<tool_id>` in `src/skriptoteket/application/suggestions/handlers/decide_suggestion.py`
+- **SPA**
+  - Admin tools list create flow: `frontend/apps/skriptoteket/src/views/admin/AdminToolsView.vue` +
+    modal `frontend/apps/skriptoteket/src/components/admin/CreateDraftToolModal.vue`
+  - Editor metadata drawer: “URL-namn” field + “Använd nuvarande titel” helper in
+    `frontend/apps/skriptoteket/src/components/editor/MetadataDrawer.vue` + logic in
+    `frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.ts`
+  - Refactor: keep Vue files <500 LOC by extracting panel 2 into
+    `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`
+- **Copy**
+  - UI says “URL-namn” (not “slug”) everywhere in admin/editor flows.
+
 ## Verification
 
 - Docs: `pdm run docs-validate` (pass)
 - Types: `pnpm -C frontend --filter @skriptoteket/spa typecheck` (pass)
 - Lint: `pnpm -C frontend --filter @skriptoteket/spa lint` (pass)
 - UI: `pdm run ui-smoke --base-url http://127.0.0.1:5173` (pass; screenshots in `.artifacts/ui-smoke/`)
+ - EPIC-14 FE: `pdm run fe-type-check` (pass), `pdm run fe-lint` (pass)
+ - EPIC-14 BE: `pdm run pytest -q tests/unit/application/test_scripting_review_handlers.py` (pass)
+ - EPIC-14 live: `docker compose up -d db && pdm run db-upgrade`, then `pdm run dev` + `pdm run fe-dev`
+ - EPIC-14 functional (API): verified create draft tool, URL-namn edit validation, publish guards (placeholder/taxonomy),
+   and URL-namn immutability post-publish via authenticated `httpx` calls against `http://127.0.0.1:8000`
+ - Playwright: blocked in this environment (Chromium MachPortRendezvousServer Permission denied (1100); Firefox SIGABRT;
+   WebKit Abort trap: 6). Manual browser check still recommended.
 
 ## How to Run
 
@@ -101,4 +134,4 @@ pdm run python -m scripts.playwright_st_08_13_tool_usage_instructions_e2e --base
 
 - ST-08-10: Implement script editor intelligence (Lezer integration)
 - EPIC-12: Continue SPA UX stories
-- EPIC-14 (active): Admin tool authoring (quick-create drafts + slug lifecycle) — PRD `docs/prd/prd-tool-authoring-v0.1.md`, ADR `docs/adr/adr-0037-tool-slug-lifecycle.md`, stories `docs/backlog/stories/story-14-01-admin-quick-create-draft-tools.md` + `docs/backlog/stories/story-14-02-draft-slug-edit-and-publish-guards.md`
+- EPIC-14 (done): Admin tool authoring (quick-create drafts + URL-namn lifecycle) — PRD `docs/prd/prd-tool-authoring-v0.1.md`, ADR `docs/adr/adr-0037-tool-slug-lifecycle.md`, stories `docs/backlog/stories/story-14-01-admin-quick-create-draft-tools.md` + `docs/backlog/stories/story-14-02-draft-slug-edit-and-publish-guards.md`

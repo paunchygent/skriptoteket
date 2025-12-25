@@ -18,7 +18,6 @@ const props = defineProps<{
   isLoading: boolean;
   isSaving: boolean;
   errorMessage: string | null;
-  successMessage: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -98,13 +97,6 @@ function onSave(): void {
         :model-value="valueForField(field)"
         @update:model-value="updateField(field.name, $event)"
       />
-    </div>
-
-    <div
-      v-if="successMessage"
-      class="p-3 border border-success bg-success/10 shadow-brutal-sm text-sm text-success"
-    >
-      {{ successMessage }}
     </div>
 
     <div

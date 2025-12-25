@@ -156,7 +156,9 @@ def main() -> None:
 
         _publish_tool_from_admin_list(page, base_url=base_url, title=title)
         expect(
-            page.get_by_text("Slug måste ändras (får inte börja med 'draft-') innan publicering.")
+            page.get_by_text(
+                "URL-namn måste ändras (får inte börja med 'draft-') innan publicering."
+            )
         ).to_be_visible(timeout=10_000)
         page.screenshot(
             path=str(artifacts_dir / "publish-blocked-placeholder-slug.png"), full_page=True
@@ -166,11 +168,13 @@ def main() -> None:
         drawer = _open_metadata_drawer(page)
         drawer.get_by_placeholder("t.ex. mattest").fill("ogiltig slug!!")
         drawer.get_by_role("button", name="Spara metadata").click()
-        expect(drawer.get_by_text("Ogiltig slug.")).to_be_visible(timeout=10_000)
+        expect(drawer.get_by_text(re.compile(r"Ogiltigt URL-namn", re.IGNORECASE))).to_be_visible(
+            timeout=10_000
+        )
 
         drawer.get_by_role("button", name="Använd nuvarande titel").click()
         drawer.get_by_role("button", name="Spara metadata").click()
-        expect(drawer.get_by_text("Slug sparad.")).to_be_visible(timeout=10_000)
+        expect(drawer.get_by_text("URL-namn sparat.")).to_be_visible(timeout=10_000)
         page.screenshot(path=str(artifacts_dir / "slug-updated.png"), full_page=True)
 
         _publish_tool_from_admin_list(page, base_url=base_url, title=title)

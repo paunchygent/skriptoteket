@@ -258,11 +258,7 @@ async def test_publish_version_archives_reviewed_and_previous_active_and_updates
         active_version_id=new_active_version_id,
         now=now,
     )
-    tools.set_published.assert_awaited_once_with(
-        tool_id=tool.id,
-        is_published=True,
-        now=now,
-    )
+    tools.set_published.assert_not_called()
     assert uow.entered is True
     assert uow.exited is True
 

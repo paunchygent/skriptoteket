@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 
 import { apiGet, apiPost, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
+import { useToast } from "../composables/useToast";
 
 type ProfessionItem = components["schemas"]["ProfessionItem"];
 type CategoryItem = components["schemas"]["CategoryItem"];
@@ -18,12 +19,15 @@ const selectedCategories = ref<string[]>([]);
 
 const isLoading = ref(true);
 const isSubmitting = ref(false);
-const errorMessage = ref<string | null>(null);
-const successMessage = ref<string | null>(null);
+const loadErrorMessage = ref<string | null>(null);
+const formErrorMessage = ref<string | null>(null);
+
+const toast = useToast();
 
 async function loadTaxonomy(): Promise<void> {
   isLoading.value = true;
-  errorMessage.value = null;
+  loadErrorMessage.value = null;
+  formErrorMessage.value = null;
 
   try {
     const [profResp, catResp] = await Promise.all([
@@ -35,11 +39,11 @@ async function loadTaxonomy(): Promise<void> {
     categories.value = catResp.categories;
   } catch (error: unknown) {
     if (isApiError(error)) {
-      errorMessage.value = error.message;
+      loadErrorMessage.value = error.message;
     } else if (error instanceof Error) {
-      errorMessage.value = error.message;
+      loadErrorMessage.value = error.message;
     } else {
-      errorMessage.value = "Det gick inte att ladda listor.";
+      loadErrorMessage.value = "Det gick inte att ladda listor.";
     }
   } finally {
     isLoading.value = false;
@@ -56,19 +60,18 @@ function resetForm(): void {
 async function submit(): Promise<void> {
   if (isSubmitting.value) return;
 
-  errorMessage.value = null;
-  successMessage.value = null;
+  formErrorMessage.value = null;
 
   if (!title.value.trim() || !description.value.trim()) {
-    errorMessage.value = "Titel och beskrivning krävs.";
+    formErrorMessage.value = "Titel och beskrivning krävs.";
     return;
   }
   if (selectedProfessions.value.length === 0) {
-    errorMessage.value = "Välj minst ett yrke.";
+    formErrorMessage.value = "Välj minst ett yrke.";
     return;
   }
   if (selectedCategories.value.length === 0) {
-    errorMessage.value = "Välj minst en kategori.";
+    formErrorMessage.value = "Välj minst en kategori.";
     return;
   }
 
@@ -83,14 +86,14 @@ async function submit(): Promise<void> {
     });
 
     resetForm();
-    successMessage.value = "Förslaget skickades och väntar på granskning.";
+    toast.success("Förslaget skickades och väntar på granskning.");
   } catch (error: unknown) {
     if (isApiError(error)) {
-      errorMessage.value = error.message;
+      toast.failure(error.message);
     } else if (error instanceof Error) {
-      errorMessage.value = error.message;
+      toast.failure(error.message);
     } else {
-      errorMessage.value = "Kunde inte skicka förslaget.";
+      toast.failure("Kunde inte skicka förslaget.");
     }
   } finally {
     isSubmitting.value = false;
@@ -127,23 +130,23 @@ onMounted(() => {
       class="space-y-4"
     >
       <div
-        v-if="errorMessage"
+        v-if="loadErrorMessage"
         class="p-3 border border-burgundy bg-white shadow-brutal-sm text-burgundy text-sm"
       >
-        {{ errorMessage }}
-      </div>
-
-      <div
-        v-if="successMessage"
-        class="p-3 border border-navy bg-white shadow-brutal-sm text-navy text-sm"
-      >
-        {{ successMessage }}
+        {{ loadErrorMessage }}
       </div>
 
       <form
         class="space-y-4"
         @submit.prevent="submit"
       >
+        <div
+          v-if="formErrorMessage"
+          class="p-3 border border-burgundy bg-white shadow-brutal-sm text-burgundy text-sm"
+        >
+          {{ formErrorMessage }}
+        </div>
+
         <div class="space-y-2">
           <label
             for="title"

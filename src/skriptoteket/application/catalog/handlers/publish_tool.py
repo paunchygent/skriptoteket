@@ -50,14 +50,14 @@ class PublishToolHandler(PublishToolHandlerProtocol):
 
             if is_placeholder_tool_slug(slug=tool.slug):
                 raise validation_error(
-                    "Slug måste ändras (får inte börja med 'draft-') innan publicering.",
+                    "URL-namn måste ändras (får inte börja med 'draft-') innan publicering.",
                     details={"tool_id": str(tool.id), "slug": tool.slug},
                 )
 
             normalized_slug = validate_tool_slug(slug=tool.slug)
             if normalized_slug != tool.slug:
                 raise validation_error(
-                    "Ogiltig slug. Använd bara a–z, 0–9 och bindestreck (1–128 tecken).",
+                    "Ogiltigt URL-namn. Använd bara a–z, 0–9 och bindestreck (1–128 tecken).",
                     details={"tool_id": str(tool.id), "slug": tool.slug},
                 )
 

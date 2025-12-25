@@ -11,7 +11,6 @@ type MetadataDrawerProps = {
   metadataSummary: string;
   canEditSlug: boolean;
   slugError: string | null;
-  slugSuccess: string | null;
   professions: ProfessionItem[];
   categories: CategoryItem[];
   selectedProfessionIds: string[];
@@ -113,7 +112,7 @@ function toggleCategory(value: string): void {
           <div class="space-y-2">
             <div class="flex items-center justify-between">
               <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
-                Slug
+                URL-namn
               </label>
               <button
                 type="button"
@@ -135,8 +134,8 @@ function toggleCategory(value: string): void {
             >
 
             <p class="text-xs text-navy/60">
-              Används i länken <span class="font-mono">/tools/&lt;slug&gt;/run</span>.
-              <span v-if="!canEditSlug">Slug är låst efter publicering.</span>
+              Används i länken <span class="font-mono">/tools/&lt;url-namn&gt;/run</span>.
+              <span v-if="!canEditSlug">URL-namn är låst efter publicering.</span>
             </p>
 
             <p
@@ -144,12 +143,6 @@ function toggleCategory(value: string): void {
               class="text-sm text-burgundy"
             >
               {{ slugError }}
-            </p>
-            <p
-              v-else-if="slugSuccess"
-              class="text-sm text-navy"
-            >
-              {{ slugSuccess }}
             </p>
           </div>
 

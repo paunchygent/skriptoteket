@@ -2,25 +2,29 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import type { components } from "../../api/openapi";
-import CodeMirrorEditor from "../../components/editor/CodeMirrorEditor.vue";
-import EntrypointDropdown from "../../components/editor/EntrypointDropdown.vue";
+import EditorWorkspacePanel from "../../components/editor/EditorWorkspacePanel.vue";
 import InlineEditableText from "../../components/editor/InlineEditableText.vue";
-import InstructionsDrawer from "../../components/editor/InstructionsDrawer.vue";
-import MaintainersDrawer from "../../components/editor/MaintainersDrawer.vue";
-import MetadataDrawer from "../../components/editor/MetadataDrawer.vue";
-import SandboxRunner from "../../components/editor/SandboxRunner.vue";
-import VersionHistoryDrawer from "../../components/editor/VersionHistoryDrawer.vue";
 import WorkflowActionModal from "../../components/editor/WorkflowActionModal.vue";
 import WorkflowContextButtons from "../../components/editor/WorkflowContextButtons.vue";
 import { useEditorWorkflowActions } from "../../composables/editor/useEditorWorkflowActions";
 import { useScriptEditor } from "../../composables/editor/useScriptEditor";
 import { useToolMaintainers } from "../../composables/editor/useToolMaintainers";
 import { useToolTaxonomy } from "../../composables/editor/useToolTaxonomy";
+import type { UiNotifier } from "../../composables/notify";
+import { useToast } from "../../composables/useToast";
 import { useAuthStore } from "../../stores/auth";
 type VersionState = components["schemas"]["VersionState"];
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
+const toast = useToast();
+
+const notify: UiNotifier = {
+  info: (message: string) => toast.info(message),
+  success: (message: string) => toast.success(message),
+  warning: (message: string) => toast.warning(message),
+  failure: (message: string) => toast.failure(message),
+};
 
 const toolId = computed(() => {
   const param = route.params.toolId;
@@ -48,9 +52,7 @@ const {
   isMetadataSaving,
   isSlugSaving,
   errorMessage,
-  successMessage,
   slugError,
-  slugSuccess,
   selectedVersion,
   editorToolId,
   hasDirtyChanges,
@@ -64,6 +66,7 @@ const {
   versionId,
   route,
   router,
+  notify,
 });
 const canEditSlug = computed(() => auth.hasAtLeastRole("admin") && editor.value?.tool.is_published === false);
 const {
@@ -73,7 +76,6 @@ const {
   showNoteField: showWorkflowNoteField,
   note: workflowNote,
   workflowError,
-  workflowSuccess,
   isSubmitting: isWorkflowSubmitting,
   canSubmitReview,
   canPublish,
@@ -88,6 +90,7 @@ const {
   route,
   router,
   reloadEditor: loadEditor,
+  notify,
 });
 const {
   professions,
@@ -297,18 +300,12 @@ watch(
       ← Tillbaka till verktyg
     </RouterLink>
 
-    <!-- Success/Error messages -->
+    <!-- Inline errors (validation / blocking states) -->
     <div
-      v-if="successMessage || workflowSuccess"
-      class="p-4 border border-success bg-success/10 shadow-brutal-sm text-sm text-success"
-    >
-      {{ successMessage || workflowSuccess }}
-    </div>
-    <div
-      v-if="errorMessage || workflowError"
+      v-if="errorMessage"
       class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
     >
-      {{ errorMessage || workflowError }}
+      {{ errorMessage }}
     </div>
 
     <!-- Loading state -->
@@ -345,7 +342,7 @@ watch(
               @commit="saveTitle"
             />
             <p class="text-sm text-navy/70">
-              <span class="font-mono">{{ editor.tool.slug }}</span>
+              URL-namn: <span class="font-mono">{{ editor.tool.slug }}</span>
             </p>
             <InlineEditableText
               v-model="metadataSummary"
@@ -377,219 +374,69 @@ watch(
       </div>
 
       <!-- PANEL 2: Editor + Test -->
-      <div class="border border-navy bg-white shadow-brutal-sm">
-        <!-- Control row -->
-        <div class="p-4 border-b border-navy/20">
-          <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-            <!-- Save group: Spara + Osparat + Ändringssammanfattning -->
-            <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
-              <div class="flex items-center gap-2">
-                <button
-                  type="button"
-                  :disabled="isSaving"
-                  class="btn-primary min-w-[80px]"
-                  @click="save"
-                >
-                  <span
-                    v-if="isSaving"
-                    class="inline-block w-3 h-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
-                  />
-                  <span v-else>Spara</span>
-                </button>
-                <span
-                  v-if="hasDirtyChanges"
-                  class="text-xs text-burgundy font-semibold uppercase tracking-wide"
-                >
-                  Osparat
-                </span>
-              </div>
-
-              <div class="min-w-[180px] max-w-xs space-y-1">
-                <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-                  Ändringssammanfattning
-                </label>
-                <input
-                  v-model="changeSummary"
-                  class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
-                  placeholder="T.ex. fixade bugg..."
-                >
-              </div>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-                @click="openHistoryDrawer"
-              >
-                Öppna sparade
-              </button>
-              <button
-                v-if="canEditTaxonomy"
-                type="button"
-                class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-                @click="openMetadataDrawer"
-              >
-                Metadata
-              </button>
-              <button
-                v-if="canEditMaintainers"
-                type="button"
-                class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-                @click="openMaintainersDrawer"
-              >
-                Redigeringsbehörigheter
-              </button>
-              <button
-                type="button"
-                class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-                @click="openInstructionsDrawer"
-              >
-                Instruktioner
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div
-          :class="[
-            'grid',
-            isDrawerOpen
-              ? 'md:grid-cols-[minmax(0,1fr)_400px]'
-              : 'md:grid-cols-[minmax(0,1fr)]',
-          ]"
-        >
-          <div class="p-4 space-y-4 min-w-0">
-            <!-- Source code -->
-            <div class="space-y-3">
-              <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
-                Källkod
-              </h2>
-              <div class="h-[420px] border border-navy bg-canvas shadow-brutal-sm overflow-hidden">
-                <CodeMirrorEditor v-model="sourceCode" />
-              </div>
-            </div>
-
-            <div class="border-t border-navy/20 pt-4 space-y-3">
-              <div class="space-y-1">
-                <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
-                  Inställningar (schema)
-                </h2>
-                <p class="text-sm text-navy/60">
-                  Valfritt. Ange en JSON-array av fält (samma typer som UI Actions: string, text,
-                  integer, number, boolean, enum, multi_enum).
-                </p>
-              </div>
-
-              <label
-                for="tool-settings-schema"
-                class="text-xs font-semibold uppercase tracking-wide text-navy/70"
-              >
-                Schema (JSON)
-              </label>
-              <textarea
-                id="tool-settings-schema"
-                v-model="settingsSchemaText"
-                rows="10"
-                class="w-full border border-navy bg-white px-3 py-2 text-sm font-mono text-navy shadow-brutal-sm"
-                placeholder="[{&quot;name&quot;:&quot;theme_color&quot;,&quot;label&quot;:&quot;Färgtema&quot;,&quot;kind&quot;:&quot;string&quot;}]"
-              />
-            </div>
-
-            <!-- Test section -->
-            <div class="border-t border-navy/20 pt-4 space-y-3">
-              <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
-                Testkör kod
-              </h2>
-
-              <!-- Entrypoint + file picker + run button -->
-              <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-                <EntrypointDropdown
-                  v-model="entrypoint"
-                  :options="entrypointOptions"
-                />
-              </div>
-
-              <SandboxRunner
-                v-if="selectedVersion"
-                :version-id="selectedVersion.id"
-                :tool-id="editor.tool.id"
-              />
-              <p
-                v-else
-                class="text-sm text-navy/60"
-              >
-                Spara ett utkast för att kunna testa.
-              </p>
-            </div>
-          </div>
-
-          <!-- Drawers -->
-          <VersionHistoryDrawer
-            v-if="isHistoryDrawerOpen"
-            :is-open="isHistoryDrawerOpen"
-            :versions="editor.versions"
-            :active-version-id="selectedVersion?.id"
-            :can-rollback="canRollbackVersions"
-            :is-submitting="isWorkflowSubmitting"
-            @close="closeDrawer"
-            @select="handleHistorySelect"
-            @rollback="openRollbackForVersion"
-          />
-
-          <MetadataDrawer
-            v-if="isMetadataDrawerOpen"
-            :is-open="isMetadataDrawerOpen"
-            :metadata-title="metadataTitle"
-            :metadata-slug="metadataSlug"
-            :metadata-summary="metadataSummary"
-            :can-edit-slug="canEditSlug"
-            :slug-error="slugError"
-            :slug-success="slugSuccess"
-            :professions="professions"
-            :categories="categories"
-            :selected-profession-ids="selectedProfessionIds"
-            :selected-category-ids="selectedCategoryIds"
-            :taxonomy-error="taxonomyError"
-            :taxonomy-success="taxonomySuccess"
-            :is-loading="isTaxonomyLoading"
-            :is-saving="isSavingAllMetadata"
-            @close="closeDrawer"
-            @save="saveAllMetadata"
-            @update:metadata-title="metadataTitle = $event"
-            @update:metadata-slug="metadataSlug = $event"
-            @update:metadata-summary="metadataSummary = $event"
-            @suggest-slug-from-title="applySlugSuggestionFromTitle"
-            @update:selected-profession-ids="updateProfessionIds"
-            @update:selected-category-ids="updateCategoryIds"
-          />
-
-          <MaintainersDrawer
-            v-if="isMaintainersDrawerOpen"
-            :is-open="isMaintainersDrawerOpen"
-            :maintainers="maintainers"
-            :owner-user-id="ownerUserId"
-            :is-superuser="canRollbackVersions"
-            :is-loading="isMaintainersLoading"
-            :is-saving="isMaintainersSaving"
-            :error="maintainersError"
-            :success="maintainersSuccess"
-            @close="closeDrawer"
-            @add="addMaintainer"
-            @remove="removeMaintainer"
-          />
-
-          <InstructionsDrawer
-            v-if="isInstructionsDrawerOpen"
-            :is-open="isInstructionsDrawerOpen"
-            :usage-instructions="usageInstructions"
-            :is-saving="isSaving"
-            @close="closeDrawer"
-            @save="save"
-            @update:usage-instructions="usageInstructions = $event"
-          />
-        </div>
-      </div>
+      <EditorWorkspacePanel
+        :tool-id="editor.tool.id"
+        :versions="editor.versions"
+        :selected-version="selectedVersion"
+        :entrypoint-options="entrypointOptions"
+        :change-summary="changeSummary"
+        :entrypoint="entrypoint"
+        :source-code="sourceCode"
+        :settings-schema-text="settingsSchemaText"
+        :usage-instructions="usageInstructions"
+        :metadata-title="metadataTitle"
+        :metadata-slug="metadataSlug"
+        :metadata-summary="metadataSummary"
+        :slug-error="slugError"
+        :selected-profession-ids="selectedProfessionIds"
+        :selected-category-ids="selectedCategoryIds"
+        :can-edit-taxonomy="canEditTaxonomy"
+        :can-edit-maintainers="canEditMaintainers"
+        :can-edit-slug="canEditSlug"
+        :can-rollback-versions="canRollbackVersions"
+        :is-workflow-submitting="isWorkflowSubmitting"
+        :is-saving="isSaving"
+        :has-dirty-changes="hasDirtyChanges"
+        :is-drawer-open="isDrawerOpen"
+        :is-history-drawer-open="isHistoryDrawerOpen"
+        :is-metadata-drawer-open="isMetadataDrawerOpen"
+        :is-maintainers-drawer-open="isMaintainersDrawerOpen"
+        :is-instructions-drawer-open="isInstructionsDrawerOpen"
+        :professions="professions"
+        :categories="categories"
+        :taxonomy-error="taxonomyError"
+        :taxonomy-success="taxonomySuccess"
+        :is-taxonomy-loading="isTaxonomyLoading"
+        :is-saving-all-metadata="isSavingAllMetadata"
+        :maintainers="maintainers"
+        :owner-user-id="ownerUserId"
+        :is-maintainers-loading="isMaintainersLoading"
+        :is-maintainers-saving="isMaintainersSaving"
+        :maintainers-error="maintainersError"
+        :maintainers-success="maintainersSuccess"
+        @save="save"
+        @open-history-drawer="openHistoryDrawer"
+        @open-metadata-drawer="openMetadataDrawer"
+        @open-maintainers-drawer="openMaintainersDrawer"
+        @open-instructions-drawer="openInstructionsDrawer"
+        @close-drawer="closeDrawer"
+        @select-history-version="handleHistorySelect"
+        @rollback-version="openRollbackForVersion"
+        @save-all-metadata="saveAllMetadata"
+        @suggest-slug-from-title="applySlugSuggestionFromTitle"
+        @add-maintainer="addMaintainer"
+        @remove-maintainer="removeMaintainer"
+        @update:change-summary="changeSummary = $event"
+        @update:entrypoint="entrypoint = $event"
+        @update:source-code="sourceCode = $event"
+        @update:settings-schema-text="settingsSchemaText = $event"
+        @update:usage-instructions="usageInstructions = $event"
+        @update:metadata-title="metadataTitle = $event"
+        @update:metadata-slug="metadataSlug = $event"
+        @update:metadata-summary="metadataSummary = $event"
+        @update:selected-profession-ids="updateProfessionIds"
+        @update:selected-category-ids="updateCategoryIds"
+      />
     </template>
   </div>
 

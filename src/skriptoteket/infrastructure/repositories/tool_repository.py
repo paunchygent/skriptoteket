@@ -121,7 +121,7 @@ class PostgreSQLToolRepository(ToolRepositoryProtocol):
             await self._session.flush()
         except IntegrityError:
             raise validation_error(
-                f'Slug "{slug}" används redan. Välj en annan.',
+                f'URL-namnet "{slug}" används redan. Välj ett annat.',
                 details={"slug": slug},
             ) from None
         await self._session.refresh(model)

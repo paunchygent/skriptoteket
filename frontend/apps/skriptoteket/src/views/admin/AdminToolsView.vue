@@ -4,6 +4,7 @@ import { RouterLink, useRouter } from "vue-router";
 import { apiGet, apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import CreateDraftToolModal from "../../components/admin/CreateDraftToolModal.vue";
+import { useToast } from "../../composables/useToast";
 import ToolListRow from "../../components/tools/ToolListRow.vue";
 import ToggleSwitch from "../../components/ui/ToggleSwitch.vue";
 
@@ -16,7 +17,6 @@ type CreateDraftToolResponse = components["schemas"]["CreateDraftToolResponse"];
 const tools = ref<AdminToolItem[]>([]);
 const isLoading = ref(true);
 const errorMessage = ref<string | null>(null);
-const successMessage = ref<string | null>(null);
 const actionInProgress = ref<string | null>(null);
 const actionColumnWidth = ref("8.5rem");
 const measureEditActionRef = ref<HTMLDivElement | null>(null);
@@ -27,6 +27,8 @@ const createSummary = ref("");
 const createError = ref<string | null>(null);
 const isCreating = ref(false);
 const router = useRouter();
+const toast = useToast();
+
 function updateActionColumnWidth(): void {
   const editWidth = measureEditActionRef.value?.getBoundingClientRect().width ?? 0;
   const reviewWidth = measureReviewActionRef.value?.getBoundingClientRect().width ?? 0;
@@ -168,8 +170,6 @@ async function publishTool(tool: AdminToolItem): Promise<void> {
   if (actionInProgress.value) return;
 
   actionInProgress.value = tool.id;
-  errorMessage.value = null;
-  successMessage.value = null;
 
   try {
     const response = await apiPost<PublishToolResponse>(
@@ -180,14 +180,14 @@ async function publishTool(tool: AdminToolItem): Promise<void> {
     if (index !== -1) {
       tools.value[index] = response.tool;
     }
-    successMessage.value = `Verktyget "${tool.title}" har publicerats.`;
+    toast.success(`Verktyget "${tool.title}" har publicerats.`);
   } catch (error: unknown) {
     if (isApiError(error)) {
-      errorMessage.value = error.message;
+      toast.failure(error.message);
     } else if (error instanceof Error) {
-      errorMessage.value = error.message;
+      toast.failure(error.message);
     } else {
-      errorMessage.value = "Det gick inte att publicera verktyget.";
+      toast.failure("Det gick inte att publicera verktyget.");
     }
   } finally {
     actionInProgress.value = null;
@@ -198,8 +198,6 @@ async function depublishTool(tool: AdminToolItem): Promise<void> {
   if (actionInProgress.value) return;
 
   actionInProgress.value = tool.id;
-  errorMessage.value = null;
-  successMessage.value = null;
 
   try {
     const response = await apiPost<DepublishToolResponse>(
@@ -210,14 +208,14 @@ async function depublishTool(tool: AdminToolItem): Promise<void> {
     if (index !== -1) {
       tools.value[index] = response.tool;
     }
-    successMessage.value = `Verktyget "${tool.title}" har avpublicerats.`;
+    toast.success(`Verktyget "${tool.title}" har avpublicerats.`);
   } catch (error: unknown) {
     if (isApiError(error)) {
-      errorMessage.value = error.message;
+      toast.failure(error.message);
     } else if (error instanceof Error) {
-      errorMessage.value = error.message;
+      toast.failure(error.message);
     } else {
-      errorMessage.value = "Det gick inte att avpublicera verktyget.";
+      toast.failure("Det gick inte att avpublicera verktyget.");
     }
   } finally {
     actionInProgress.value = null;
@@ -284,13 +282,6 @@ onMounted(() => {
     </div>
 
     <div
-      v-if="successMessage"
-      class="p-4 border border-success bg-success/10 shadow-brutal-sm text-sm text-success"
-    >
-      {{ successMessage }}
-    </div>
-
-    <div
       v-if="errorMessage"
       class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
     >
@@ -333,7 +324,7 @@ onMounted(() => {
             <template #main>
               <div class="text-base font-semibold text-navy truncate">{{ tool.title }}</div>
               <div class="text-xs text-navy/60">
-                <span class="font-mono">{{ tool.slug }}</span>
+                URL-namn: <span class="font-mono">{{ tool.slug }}</span>
               </div>
               <div class="text-xs text-navy/70">
                 {{ truncate(tool.summary, 80) }}
@@ -391,7 +382,7 @@ onMounted(() => {
                 </span>
               </div>
               <div class="text-xs text-navy/60">
-                <span class="font-mono">{{ tool.slug }}</span> · Uppdaterad
+                URL-namn: <span class="font-mono">{{ tool.slug }}</span> · Uppdaterad
                 {{ formatDateTime(tool.updated_at) }}
               </div>
               <div class="text-xs text-navy/70">
@@ -447,7 +438,7 @@ onMounted(() => {
             <template #main>
               <div class="text-base font-semibold text-navy truncate">{{ tool.title }}</div>
               <div class="text-xs text-navy/60">
-                <span class="font-mono">{{ tool.slug }}</span> · Uppdaterad
+                URL-namn: <span class="font-mono">{{ tool.slug }}</span> · Uppdaterad
                 {{ formatDateTime(tool.updated_at) }}
               </div>
               <div class="text-xs text-navy/70">

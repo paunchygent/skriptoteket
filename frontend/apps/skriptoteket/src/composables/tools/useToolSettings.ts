@@ -2,6 +2,7 @@ import { computed, ref, watch, type Ref } from "vue";
 
 import { apiFetch, apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
+import { useToast } from "../useToast";
 
 type ToolSettingsResponse = components["schemas"]["ToolSettingsResponse"];
 type SettingsField = NonNullable<ToolSettingsResponse["settings_schema"]>[number];
@@ -107,10 +108,11 @@ export function useToolSettings({ toolId }: UseToolSettingsOptions) {
   const stateRev = ref<number | null>(null);
   const values = ref<SettingsFormValues>({});
 
+  const toast = useToast();
+
   const isLoading = ref(false);
   const isSaving = ref(false);
   const errorMessage = ref<string | null>(null);
-  const successMessage = ref<string | null>(null);
 
   const hasSchema = computed(() => (settingsSchema.value?.length ?? 0) > 0);
 
@@ -125,7 +127,6 @@ export function useToolSettings({ toolId }: UseToolSettingsOptions) {
 
     isLoading.value = true;
     errorMessage.value = null;
-    successMessage.value = null;
 
     try {
       const response = await apiGet<ToolSettingsResponse>(
@@ -169,10 +170,20 @@ export function useToolSettings({ toolId }: UseToolSettingsOptions) {
 
     isSaving.value = true;
     errorMessage.value = null;
-    successMessage.value = null;
 
     try {
-      const apiValues = buildApiValues(settingsSchema.value, values.value);
+      let apiValues: Record<string, JsonValue>;
+      try {
+        apiValues = buildApiValues(settingsSchema.value, values.value);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          errorMessage.value = error.message;
+        } else {
+          errorMessage.value = "Det gick inte att spara inställningarna.";
+        }
+        return;
+      }
+
       const response = await apiFetch<ToolSettingsResponse>(
         `/api/v1/tools/${encodeURIComponent(toolId.value)}/settings`,
         {
@@ -191,17 +202,23 @@ export function useToolSettings({ toolId }: UseToolSettingsOptions) {
         ? buildFormValues(response.settings_schema, response.values)
         : {};
 
-      successMessage.value = "Inställningar sparade.";
+      toast.success("Inställningar sparade.");
     } catch (error: unknown) {
       if (isApiError(error)) {
-        errorMessage.value =
+        const message =
           error.status === 409
             ? "Inställningarna har ändrats i en annan flik. Ladda om sidan och försök igen."
             : error.message;
+
+        if (error.status === 409) {
+          toast.warning(message);
+        } else {
+          toast.failure(message);
+        }
       } else if (error instanceof Error) {
-        errorMessage.value = error.message;
+        toast.failure(error.message);
       } else {
-        errorMessage.value = "Det gick inte att spara inställningarna.";
+        toast.failure("Det gick inte att spara inställningarna.");
       }
     } finally {
       isSaving.value = false;
@@ -225,7 +242,6 @@ export function useToolSettings({ toolId }: UseToolSettingsOptions) {
     isLoading,
     isSaving,
     errorMessage,
-    successMessage,
     loadSettings,
     saveSettings,
   };

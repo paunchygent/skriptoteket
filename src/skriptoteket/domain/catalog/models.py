@@ -105,17 +105,17 @@ def validate_tool_slug(*, slug: str) -> str:
     normalized = normalize_tool_slug(slug=slug)
     if not normalized:
         raise validation_error(
-            "Ogiltig slug. Använd bara a–z, 0–9 och bindestreck (1–128 tecken).",
+            "Ogiltigt URL-namn. Använd bara a–z, 0–9 och bindestreck (1–128 tecken).",
             details={"slug": slug},
         )
     if len(normalized) > _TOOL_SLUG_MAX_LENGTH:
         raise validation_error(
-            "Ogiltig slug. Använd bara a–z, 0–9 och bindestreck (1–128 tecken).",
+            "Ogiltigt URL-namn. Använd bara a–z, 0–9 och bindestreck (1–128 tecken).",
             details={"slug": normalized, "max_length": _TOOL_SLUG_MAX_LENGTH},
         )
     if _TOOL_SLUG_PATTERN.fullmatch(normalized) is None:
         raise validation_error(
-            "Ogiltig slug. Använd bara a–z, 0–9 och bindestreck (1–128 tecken).",
+            "Ogiltigt URL-namn. Använd bara a–z, 0–9 och bindestreck (1–128 tecken).",
             details={"slug": normalized},
         )
     return normalized
