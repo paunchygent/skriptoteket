@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict
 
 from skriptoteket.application.catalog.commands import (
+    CreateDraftToolCommand,
     DepublishToolCommand,
     PublishToolCommand,
 )
@@ -15,6 +16,7 @@ from skriptoteket.application.catalog.queries import ListToolsForAdminQuery
 from skriptoteket.domain.catalog.models import Tool, ToolVersionStats
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.catalog import (
+    CreateDraftToolHandlerProtocol,
     DepublishToolHandlerProtocol,
     ListToolsForAdminHandlerProtocol,
     PublishToolHandlerProtocol,
@@ -60,6 +62,19 @@ class PublishToolResponse(BaseModel):
 
 
 class DepublishToolResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool: AdminToolItem
+
+
+class CreateDraftToolRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    title: str
+    summary: str | None = None
+
+
+class CreateDraftToolResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     tool: AdminToolItem
@@ -115,6 +130,27 @@ async def list_admin_tools(
             for t in result.tools
         ]
     )
+
+
+@router.post(
+    "/admin/tools",
+    response_model=CreateDraftToolResponse,
+)
+@inject
+async def create_draft_tool(
+    payload: CreateDraftToolRequest,
+    handler: FromDishka[CreateDraftToolHandlerProtocol],
+    user: User = Depends(require_admin_api),
+    _: None = Depends(require_csrf_token),
+) -> CreateDraftToolResponse:
+    result = await handler.handle(
+        actor=user,
+        command=CreateDraftToolCommand(
+            title=payload.title,
+            summary=payload.summary,
+        ),
+    )
+    return CreateDraftToolResponse(tool=to_admin_tool_item(result.tool, _DEFAULT_STATS))
 
 
 @router.post(

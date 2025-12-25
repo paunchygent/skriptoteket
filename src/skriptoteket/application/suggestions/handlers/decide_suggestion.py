@@ -4,7 +4,7 @@ from skriptoteket.application.suggestions.commands import (
     DecideSuggestionCommand,
     DecideSuggestionResult,
 )
-from skriptoteket.domain.catalog.models import Tool
+from skriptoteket.domain.catalog.models import Tool, draft_slug_for_tool_id
 from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
@@ -108,7 +108,7 @@ class DecideSuggestionHandler(DecideSuggestionHandlerProtocol):
                 tool = Tool(
                     id=decision_record.created_tool_id,
                     owner_user_id=suggestion.submitted_by_user_id,
-                    slug=f"draft-{suggestion.id}",
+                    slug=draft_slug_for_tool_id(tool_id=decision_record.created_tool_id),
                     title=decision_record.title,
                     summary=decision_record.description,
                     created_at=now,

@@ -189,6 +189,7 @@ async def test_publish_tool_rejects_missing_active_version_record(now: datetime)
     active_version_id = uuid4()
     tool = make_tool(now=now).model_copy(update={"active_version_id": active_version_id})
     tools_repo.get_by_id.return_value = tool
+    tools_repo.list_tag_ids.return_value = ([uuid4()], [uuid4()])
     versions_repo.get_by_id.return_value = None
 
     handler = PublishToolHandler(uow=uow, tools=tools_repo, versions=versions_repo, clock=clock)
@@ -198,6 +199,7 @@ async def test_publish_tool_rejects_missing_active_version_record(now: datetime)
         await handler.handle(actor=actor, command=PublishToolCommand(tool_id=tool.id))
 
     assert exc_info.value.code is ErrorCode.CONFLICT
+    tools_repo.list_tag_ids.assert_awaited_once_with(tool_id=tool.id)
     tools_repo.set_published.assert_not_called()
 
 
@@ -212,6 +214,7 @@ async def test_publish_tool_rejects_active_version_for_other_tool(now: datetime)
     active_version_id = uuid4()
     tool = make_tool(now=now).model_copy(update={"active_version_id": active_version_id})
     tools_repo.get_by_id.return_value = tool
+    tools_repo.list_tag_ids.return_value = ([uuid4()], [uuid4()])
 
     version = make_tool_version(tool_id=uuid4(), now=now, state=VersionState.ACTIVE).model_copy(
         update={"id": active_version_id}
@@ -225,6 +228,7 @@ async def test_publish_tool_rejects_active_version_for_other_tool(now: datetime)
         await handler.handle(actor=actor, command=PublishToolCommand(tool_id=tool.id))
 
     assert exc_info.value.code is ErrorCode.CONFLICT
+    tools_repo.list_tag_ids.assert_awaited_once_with(tool_id=tool.id)
     tools_repo.set_published.assert_not_called()
 
 
@@ -239,6 +243,7 @@ async def test_publish_tool_rejects_non_active_version_state(now: datetime) -> N
     active_version_id = uuid4()
     tool = make_tool(now=now).model_copy(update={"active_version_id": active_version_id})
     tools_repo.get_by_id.return_value = tool
+    tools_repo.list_tag_ids.return_value = ([uuid4()], [uuid4()])
 
     version = make_tool_version(tool_id=tool.id, now=now, state=VersionState.DRAFT).model_copy(
         update={"id": active_version_id}
@@ -252,6 +257,58 @@ async def test_publish_tool_rejects_non_active_version_state(now: datetime) -> N
         await handler.handle(actor=actor, command=PublishToolCommand(tool_id=tool.id))
 
     assert exc_info.value.code is ErrorCode.CONFLICT
+    tools_repo.list_tag_ids.assert_awaited_once_with(tool_id=tool.id)
+    tools_repo.set_published.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_publish_tool_rejects_placeholder_slug(now: datetime) -> None:
+    uow = FakeUow()
+    tools_repo = AsyncMock(spec=ToolRepositoryProtocol)
+    versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
+    clock = Mock(spec=ClockProtocol, now=Mock(return_value=now))
+
+    active_version_id = uuid4()
+    tool = make_tool(now=now).model_copy(
+        update={"slug": f"draft-{uuid4()}", "active_version_id": active_version_id}
+    )
+    tools_repo.get_by_id.return_value = tool
+
+    handler = PublishToolHandler(uow=uow, tools=tools_repo, versions=versions_repo, clock=clock)
+
+    actor = make_user(role=Role.ADMIN)
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(actor=actor, command=PublishToolCommand(tool_id=tool.id))
+
+    assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+    tools_repo.list_tag_ids.assert_not_called()
+    versions_repo.get_by_id.assert_not_called()
+    tools_repo.set_published.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_publish_tool_rejects_missing_taxonomy(now: datetime) -> None:
+    uow = FakeUow()
+    tools_repo = AsyncMock(spec=ToolRepositoryProtocol)
+    versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
+    clock = Mock(spec=ClockProtocol, now=Mock(return_value=now))
+
+    active_version_id = uuid4()
+    tool = make_tool(now=now).model_copy(update={"active_version_id": active_version_id})
+    tools_repo.get_by_id.return_value = tool
+    tools_repo.list_tag_ids.return_value = ([], [uuid4()])
+
+    handler = PublishToolHandler(uow=uow, tools=tools_repo, versions=versions_repo, clock=clock)
+
+    actor = make_user(role=Role.ADMIN)
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(actor=actor, command=PublishToolCommand(tool_id=tool.id))
+
+    assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+    tools_repo.list_tag_ids.assert_awaited_once_with(tool_id=tool.id)
+    versions_repo.get_by_id.assert_not_called()
     tools_repo.set_published.assert_not_called()
 
 
@@ -266,6 +323,7 @@ async def test_publish_tool_persists_state_change(now: datetime) -> None:
     active_version_id = uuid4()
     tool = make_tool(now=now).model_copy(update={"active_version_id": active_version_id})
     tools_repo.get_by_id.return_value = tool
+    tools_repo.list_tag_ids.return_value = ([uuid4()], [uuid4()])
 
     version = make_tool_version(tool_id=tool.id, now=now, state=VersionState.ACTIVE).model_copy(
         update={"id": active_version_id}

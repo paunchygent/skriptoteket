@@ -160,6 +160,7 @@ async def test_handle_accept_creates_draft_tool(
     mock_tools.create_draft.assert_called_once()
     created_tool = mock_tools.create_draft.call_args[1]["tool"]
     assert created_tool.title == "Accepted Tool"
+    assert created_tool.slug == f"draft-{created_tool.id}"
 
     mock_maintainers.add_maintainer.assert_awaited_once_with(
         tool_id=created_tool.id,
