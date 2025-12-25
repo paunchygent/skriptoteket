@@ -7,6 +7,8 @@ from uuid import UUID
 from skriptoteket.application.catalog.commands import (
     AssignMaintainerCommand,
     AssignMaintainerResult,
+    CreateDraftToolCommand,
+    CreateDraftToolResult,
     DepublishToolCommand,
     DepublishToolResult,
     PublishToolCommand,
@@ -15,6 +17,8 @@ from skriptoteket.application.catalog.commands import (
     RemoveMaintainerResult,
     UpdateToolMetadataCommand,
     UpdateToolMetadataResult,
+    UpdateToolSlugCommand,
+    UpdateToolSlugResult,
     UpdateToolTaxonomyCommand,
     UpdateToolTaxonomyResult,
 )
@@ -86,6 +90,14 @@ class ToolRepositoryProtocol(Protocol):
         tool_id: UUID,
         title: str,
         summary: str | None,
+        now: datetime,
+    ) -> Tool: ...
+
+    async def update_slug(
+        self,
+        *,
+        tool_id: UUID,
+        slug: str,
         now: datetime,
     ) -> Tool: ...
 
@@ -171,6 +183,15 @@ class ListToolsForAdminHandlerProtocol(Protocol):
     ) -> ListToolsForAdminResult: ...
 
 
+class CreateDraftToolHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: CreateDraftToolCommand,
+    ) -> CreateDraftToolResult: ...
+
+
 class PublishToolHandlerProtocol(Protocol):
     async def handle(
         self,
@@ -196,6 +217,15 @@ class UpdateToolMetadataHandlerProtocol(Protocol):
         actor: User,
         command: UpdateToolMetadataCommand,
     ) -> UpdateToolMetadataResult: ...
+
+
+class UpdateToolSlugHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: UpdateToolSlugCommand,
+    ) -> UpdateToolSlugResult: ...
 
 
 class UpdateToolTaxonomyHandlerProtocol(Protocol):

@@ -7,6 +7,19 @@ from pydantic import BaseModel, ConfigDict
 from skriptoteket.domain.catalog.models import Tool
 
 
+class CreateDraftToolCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    title: str
+    summary: str | None = None
+
+
+class CreateDraftToolResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool: Tool
+
+
 class PublishToolCommand(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -40,6 +53,19 @@ class UpdateToolMetadataCommand(BaseModel):
 
 
 class UpdateToolMetadataResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool: Tool
+
+
+class UpdateToolSlugCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    slug: str
+
+
+class UpdateToolSlugResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     tool: Tool

@@ -4,9 +4,11 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import delete, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.catalog.models import Tool
+from skriptoteket.domain.errors import validation_error
 from skriptoteket.infrastructure.db.models.tool import ToolModel
 from skriptoteket.infrastructure.db.models.tool_category import ToolCategoryModel
 from skriptoteket.infrastructure.db.models.tool_profession import ToolProfessionModel
@@ -99,6 +101,29 @@ class PostgreSQLToolRepository(ToolRepositoryProtocol):
         model.summary = summary
         model.updated_at = now
         await self._session.flush()
+        await self._session.refresh(model)
+        return Tool.model_validate(model)
+
+    async def update_slug(
+        self,
+        *,
+        tool_id: UUID,
+        slug: str,
+        now: datetime,
+    ) -> Tool:
+        stmt = select(ToolModel).where(ToolModel.id == tool_id)
+        result = await self._session.execute(stmt)
+        model = result.scalar_one()
+
+        model.slug = slug
+        model.updated_at = now
+        try:
+            await self._session.flush()
+        except IntegrityError:
+            raise validation_error(
+                f'Slug "{slug}" används redan. Välj en annan.',
+                details={"slug": slug},
+            ) from None
         await self._session.refresh(model)
         return Tool.model_validate(model)
 

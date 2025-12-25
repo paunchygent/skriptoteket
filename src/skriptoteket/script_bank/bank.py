@@ -96,4 +96,47 @@ Det här är ett **demoverktyg** för att testa hur interaktiva verktyg fungerar
         category_slugs=["ovrigt"],
         source_filename="demo_next_actions.py",
     ),
+    ScriptBankEntry(
+        slug="html-to-pdf-preview",
+        title="HTML → PDF med förhandsgranskning",
+        summary=(
+            "Förhandsgranska din HTML innan konvertering till PDF. "
+            "Demonstrerar alla Skriptoteket-funktioner: preview, diagram, inställningar."
+        ),
+        usage_instructions="""\
+## Tvåstegsprocess
+
+Det här verktyget låter dig **förhandsgranska** din HTML innan du konverterar den till PDF.
+
+### Steg 1: Förhandsgranska
+
+1. Klicka på **Välj filer** och välj din HTML-fil (och eventuella CSS/bilder).
+2. Klicka **Kör**.
+3. Du ser en **live-förhandsgranskning** av hur din HTML ser ut.
+4. Granska resultatet - ser det rätt ut?
+
+### Steg 2: Konvertera
+
+1. Om du är nöjd, klicka **Konvertera till PDF**.
+2. Välj sidstorlek (A4 eller Letter) och orientering (stående/liggande).
+3. Ladda ner den genererade PDF-filen.
+
+### Börja om
+
+Om förhandsgranskningen inte ser rätt ut:
+1. Klicka **Börja om**.
+2. Ladda upp korrigerade filer.
+
+## Demonstrerar
+
+Det här verktyget visar alla Skriptoteket-funktioner:
+- **html_sandboxed**: Live HTML-förhandsgranskning
+- **vega_lite**: Diagram över filstorlekar
+- **next_actions**: Navigering mellan steg
+- **settings**: Spara standardinställningar (sidstorlek, orientering)
+- **state**: Spåra arbetsflödessteg""",
+        profession_slugs=["gemensamt"],
+        category_slugs=["ovrigt"],
+        source_filename="html_to_pdf_preview.py",
+    ),
 ]

@@ -5,6 +5,7 @@ from __future__ import annotations
 from dishka import Provider, Scope, provide
 
 from skriptoteket.application.catalog.handlers.assign_maintainer import AssignMaintainerHandler
+from skriptoteket.application.catalog.handlers.create_draft_tool import CreateDraftToolHandler
 from skriptoteket.application.catalog.handlers.depublish_tool import DepublishToolHandler
 from skriptoteket.application.catalog.handlers.list_all_categories import ListAllCategoriesHandler
 from skriptoteket.application.catalog.handlers.list_categories_for_profession import (
@@ -23,12 +24,14 @@ from skriptoteket.application.catalog.handlers.list_tools_for_contributor import
 from skriptoteket.application.catalog.handlers.publish_tool import PublishToolHandler
 from skriptoteket.application.catalog.handlers.remove_maintainer import RemoveMaintainerHandler
 from skriptoteket.application.catalog.handlers.update_tool_metadata import UpdateToolMetadataHandler
+from skriptoteket.application.catalog.handlers.update_tool_slug import UpdateToolSlugHandler
 from skriptoteket.application.catalog.handlers.update_tool_taxonomy import (
     UpdateToolTaxonomyHandler,
 )
 from skriptoteket.protocols.catalog import (
     AssignMaintainerHandlerProtocol,
     CategoryRepositoryProtocol,
+    CreateDraftToolHandlerProtocol,
     DepublishToolHandlerProtocol,
     ListAllCategoriesHandlerProtocol,
     ListCategoriesForProfessionHandlerProtocol,
@@ -45,6 +48,7 @@ from skriptoteket.protocols.catalog import (
     ToolMaintainerRepositoryProtocol,
     ToolRepositoryProtocol,
     UpdateToolMetadataHandlerProtocol,
+    UpdateToolSlugHandlerProtocol,
     UpdateToolTaxonomyHandlerProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
@@ -102,6 +106,23 @@ class CatalogProvider(Provider):
         return ListToolsForAdminHandler(tools=tools, versions=versions)
 
     @provide(scope=Scope.REQUEST)
+    def create_draft_tool_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> CreateDraftToolHandlerProtocol:
+        return CreateDraftToolHandler(
+            uow=uow,
+            tools=tools,
+            maintainers=maintainers,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
     def publish_tool_handler(
         self,
         uow: UnitOfWorkProtocol,
@@ -128,6 +149,15 @@ class CatalogProvider(Provider):
         clock: ClockProtocol,
     ) -> UpdateToolMetadataHandlerProtocol:
         return UpdateToolMetadataHandler(uow=uow, tools=tools, clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def update_tool_slug_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> UpdateToolSlugHandlerProtocol:
+        return UpdateToolSlugHandler(uow=uow, tools=tools, clock=clock)
 
     @provide(scope=Scope.REQUEST)
     def update_tool_taxonomy_handler(

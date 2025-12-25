@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from uuid import UUID
 
@@ -88,4 +89,64 @@ def update_tool_metadata(*, tool: Tool, title: str, summary: str | None, now: da
             "summary": normalized_summary,
             "updated_at": now,
         }
+    )
+
+
+_TOOL_SLUG_MAX_LENGTH = 128
+_TOOL_SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+_DRAFT_SLUG_PREFIX = "draft-"
+
+
+def normalize_tool_slug(*, slug: str) -> str:
+    return slug.strip().lower()
+
+
+def validate_tool_slug(*, slug: str) -> str:
+    normalized = normalize_tool_slug(slug=slug)
+    if not normalized:
+        raise validation_error(
+            "Ogiltig slug. Använd bara a–z, 0–9 och bindestreck (1–128 tecken).",
+            details={"slug": slug},
+        )
+    if len(normalized) > _TOOL_SLUG_MAX_LENGTH:
+        raise validation_error(
+            "Ogiltig slug. Använd bara a–z, 0–9 och bindestreck (1–128 tecken).",
+            details={"slug": normalized, "max_length": _TOOL_SLUG_MAX_LENGTH},
+        )
+    if _TOOL_SLUG_PATTERN.fullmatch(normalized) is None:
+        raise validation_error(
+            "Ogiltig slug. Använd bara a–z, 0–9 och bindestreck (1–128 tecken).",
+            details={"slug": normalized},
+        )
+    return normalized
+
+
+def is_placeholder_tool_slug(*, slug: str) -> bool:
+    return normalize_tool_slug(slug=slug).startswith(_DRAFT_SLUG_PREFIX)
+
+
+def draft_slug_for_tool_id(*, tool_id: UUID) -> str:
+    return f"{_DRAFT_SLUG_PREFIX}{tool_id}"
+
+
+def create_draft_tool(
+    *,
+    tool_id: UUID,
+    owner_user_id: UUID,
+    title: str,
+    summary: str | None,
+    now: datetime,
+) -> Tool:
+    normalized_title = _validate_tool_title(title=title)
+    normalized_summary = _normalize_optional_summary(summary)
+    return Tool(
+        id=tool_id,
+        owner_user_id=owner_user_id,
+        slug=draft_slug_for_tool_id(tool_id=tool_id),
+        title=normalized_title,
+        summary=normalized_summary,
+        is_published=False,
+        active_version_id=None,
+        created_at=now,
+        updated_at=now,
     )
