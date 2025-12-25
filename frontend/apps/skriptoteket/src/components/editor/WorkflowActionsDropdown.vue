@@ -71,7 +71,7 @@ onBeforeUnmount(() => {
   >
     <button
       type="button"
-      class="px-3 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+      class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
       :class="{ 'opacity-60 cursor-not-allowed': !hasItems }"
       :disabled="!hasItems"
       :aria-expanded="isOpen"

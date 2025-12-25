@@ -38,7 +38,7 @@ function onFilesSelected(event: Event): void {
       </label>
       <div class="flex items-center gap-3 w-full border border-navy bg-canvas px-3 py-2">
         <label
-          class="shrink-0 px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-burgundy text-canvas border border-navy cursor-pointer btn-secondary-hover transition-colors active:translate-x-0.5 active:translate-y-0.5"
+          class="btn-cta shrink-0 px-3 py-1 text-xs font-semibold tracking-wide"
         >
           Välj filer
           <input
@@ -57,7 +57,7 @@ function onFilesSelected(event: Event): void {
     <button
       type="button"
       :disabled="!hasFiles || isRunning"
-      class="min-w-[80px] px-4 py-2 text-xs font-bold uppercase tracking-widest bg-burgundy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+      class="btn-cta min-w-[80px]"
       @click="emit('run')"
     >
       <span
@@ -70,12 +70,7 @@ function onFilesSelected(event: Event): void {
     <button
       v-if="hasSettings"
       type="button"
-      class="px-4 py-2 text-xs font-bold uppercase tracking-widest border border-navy shadow-brutal-sm transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
-      :class="[
-        isSettingsOpen
-          ? 'bg-navy text-canvas hover:bg-navy/90'
-          : 'bg-white text-navy hover:bg-canvas btn-secondary-hover',
-      ]"
+      :class="isSettingsOpen ? 'btn-primary' : 'btn-ghost'"
       @click="emit('toggle-settings')"
     >
       ⚙ Inställningar
@@ -84,7 +79,7 @@ function onFilesSelected(event: Event): void {
     <button
       v-if="hasResults"
       type="button"
-      class="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white text-navy border border-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+      class="btn-ghost"
       @click="emit('clear')"
     >
       Rensa

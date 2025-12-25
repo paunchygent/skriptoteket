@@ -34,7 +34,7 @@ function handleDropdownSelect(actionId: string): void {
       <button
         v-if="canSubmitReview"
         type="button"
-        class="px-3 py-2 text-xs font-semibold uppercase tracking-wide bg-navy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+        class="btn-primary px-3 py-2 text-xs font-semibold tracking-wide"
         :disabled="isSubmitting"
         @click="emit('action', 'submit_review')"
       >
@@ -58,7 +58,7 @@ function handleDropdownSelect(actionId: string): void {
         <button
           v-if="canPublish"
           type="button"
-          class="px-3 py-2 text-xs font-semibold uppercase tracking-wide bg-burgundy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+          class="btn-cta px-3 py-2 text-xs font-semibold tracking-wide"
           :disabled="isSubmitting"
           @click="emit('action', 'publish')"
         >
@@ -67,7 +67,7 @@ function handleDropdownSelect(actionId: string): void {
         <button
           v-if="canRequestChanges"
           type="button"
-          class="px-3 py-2 text-xs font-semibold uppercase tracking-wide bg-white text-navy border border-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+          class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
           :disabled="isSubmitting"
           @click="emit('action', 'request_changes')"
         >

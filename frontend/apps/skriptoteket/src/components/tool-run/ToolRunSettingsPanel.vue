@@ -67,7 +67,7 @@ function onSave(): void {
       <button
         type="button"
         :disabled="isLoading || isSaving"
-        class="px-3 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+        class="btn-ghost px-3 py-2"
         @click="onSave"
       >
         <span

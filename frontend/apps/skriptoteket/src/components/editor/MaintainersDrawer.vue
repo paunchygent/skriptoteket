@@ -150,7 +150,7 @@ function removalBlockedReason(maintainer: MaintainerSummary): string | null {
               </div>
               <button
                 type="button"
-                class="px-4 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+                class="btn-ghost"
                 :disabled="isSaving || isRemovalBlocked(maintainer)"
                 :title="removalBlockedReason(maintainer) ?? undefined"
                 @click="emit('remove', maintainer.id)"
@@ -185,7 +185,7 @@ function removalBlockedReason(maintainer: MaintainerSummary): string | null {
             >
             <button
               type="submit"
-              class="min-w-[80px] px-4 py-2 text-xs font-bold uppercase tracking-widest bg-navy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+              class="btn-primary min-w-[80px]"
               :disabled="isSaving"
             >
               Lägg till

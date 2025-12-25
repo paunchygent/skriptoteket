@@ -163,10 +163,7 @@ watch(allFields, () => ensureDefaults());
         v-for="action in actions"
         :key="action.action_id"
         type="button"
-        class="px-4 py-2 text-xs font-bold uppercase tracking-widest border border-navy shadow-brutal-sm transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
-        :class="action === actions[0]
-          ? 'bg-burgundy text-canvas btn-secondary-hover'
-          : 'bg-canvas text-navy hover:bg-white'"
+        :class="action === actions[0] ? 'btn-cta' : 'btn-ghost'"
         :disabled="disabled"
         @click="onSubmit(action)"
       >

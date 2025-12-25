@@ -8,17 +8,20 @@ const props = withDefaults(
     tag?: "h1" | "p" | "span";
     displayClass?: string;
     inputClass?: string;
+    saving?: boolean;
   }>(),
   {
     placeholder: "",
     tag: "span",
     displayClass: "",
     inputClass: "",
+    saving: false,
   },
 );
 
 const emit = defineEmits<{
   (e: "update:modelValue", value: string): void;
+  (e: "commit"): void;
 }>();
 
 const isEditing = ref(false);
@@ -45,6 +48,7 @@ function commitEdit(): void {
   isEditing.value = false;
   if (localValue.value !== props.modelValue) {
     emit("update:modelValue", localValue.value);
+    emit("commit");
   }
 }
 
@@ -65,17 +69,15 @@ function handleKeydown(event: KeyboardEvent): void {
 </script>
 
 <template>
-  <div class="inline-editable-text">
+  <div class="inline-editable-text inline-flex items-center gap-2">
     <template v-if="isEditing">
       <input
         ref="inputRef"
         v-model="localValue"
         type="text"
         :placeholder="placeholder"
-        :class="[
-          'w-full border border-navy bg-white px-2 py-1 text-navy shadow-brutal-sm focus:outline-none focus:ring-2 focus:ring-burgundy/30',
-          inputClass,
-        ]"
+        class="inline-edit-input w-full px-2 py-1 bg-white shadow-brutal-sm focus:outline-none focus:ring-2 focus:ring-burgundy/30"
+        :class="inputClass"
         @blur="commitEdit"
         @keydown="handleKeydown"
       >
@@ -84,7 +86,7 @@ function handleKeydown(event: KeyboardEvent): void {
       <component
         :is="tag"
         :class="[
-          'cursor-pointer hover:bg-navy/5 transition-colors rounded px-1 -mx-1',
+          'cursor-pointer hover:bg-navy/5 transition-colors px-1 -mx-1',
           displayClass,
         ]"
         :title="'Klicka för att redigera'"
@@ -92,6 +94,17 @@ function handleKeydown(event: KeyboardEvent): void {
       >
         <slot>{{ modelValue || placeholder }}</slot>
       </component>
+      <span
+        v-if="saving"
+        class="inline-block w-3 h-3 border-2 border-navy/30 border-t-navy rounded-full animate-spin shrink-0"
+      />
     </template>
   </div>
 </template>
+
+<style scoped>
+.inline-edit-input {
+  border: 1px solid var(--color-navy);
+  color: var(--color-navy);
+}
+</style>

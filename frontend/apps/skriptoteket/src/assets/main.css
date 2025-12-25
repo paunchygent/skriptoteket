@@ -26,19 +26,58 @@ body::before {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   BUTTON UTILITIES - HuleEdu Pattern
+   BUTTON PRIMITIVES - Skriptoteket SPA
+
+   Tailwind v4 note: Cannot @apply custom classes within @layer components.
+   Define base styles directly in each button class instead.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/*
- * Primary button hover: subtle amber outline (not color fill)
- * Matches SSR pattern from buttons.css
- */
-@media (hover: hover) and (pointer: fine) {
-  .btn-primary-hover:not(:disabled):not(:active):hover {
-    box-shadow: 0 0 0 2px var(--huleedu-warning);
+@layer components {
+  /* Standard action button: Navy base → Burgundy fill on hover, 4px press */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest select-none;
+    @apply border border-navy cursor-pointer transition-colors transition-shadow;
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-navy text-canvas shadow-brutal;
+    @apply active:translate-x-1 active:translate-y-1 active:shadow-none;
   }
 
-  .btn-secondary-hover:not(:disabled):not(:active):hover {
-    border-color: var(--huleedu-warning);
+  /* Critical CTA: Burgundy base, no Navy fill on hover, 4px press */
+  .btn-cta {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest select-none;
+    @apply border border-navy cursor-pointer transition-colors transition-shadow;
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-burgundy text-canvas shadow-brutal;
+    @apply active:translate-x-1 active:translate-y-1 active:shadow-none;
+  }
+
+  /* No-fill table/button: Canvas hover + warning highlight, 4px press */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest select-none;
+    @apply border border-navy cursor-pointer transition-colors transition-shadow;
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-white text-navy shadow-brutal;
+    @apply active:translate-x-1 active:translate-y-1 active:shadow-none;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:not(:disabled):not(:active):hover {
+    @apply bg-burgundy;
+  }
+
+  .btn-cta:not(:disabled):not(:active):hover {
+    @apply ring-2 ring-burgundy/40;
+  }
+
+  .btn-ghost:not(:disabled):not(:active):hover {
+    @apply bg-canvas ring-2 ring-warning;
+  }
+
+  .hover-warning-ring:not(:disabled):not(:active):hover {
+    @apply ring-2 ring-warning;
   }
 }

@@ -287,7 +287,7 @@ onMounted(() => {
 
           <button
             type="submit"
-            class="px-4 py-2 bg-navy text-canvas border border-navy shadow-brutal-sm font-semibold uppercase tracking-wide hover:bg-burgundy transition-colors disabled:opacity-50"
+            class="btn-primary"
             :disabled="isSavingProfile"
           >
             {{ isSavingProfile ? "Sparar…" : "Spara" }}
@@ -336,7 +336,7 @@ onMounted(() => {
 
           <button
             type="submit"
-            class="px-4 py-2 bg-navy text-canvas border border-navy shadow-brutal-sm font-semibold uppercase tracking-wide hover:bg-burgundy transition-colors disabled:opacity-50"
+            class="btn-primary"
             :disabled="isSavingEmail"
           >
             {{ isSavingEmail ? "Sparar…" : "Uppdatera e-post" }}
@@ -418,7 +418,7 @@ onMounted(() => {
 
           <button
             type="submit"
-            class="px-4 py-2 bg-navy text-canvas border border-navy shadow-brutal-sm font-semibold uppercase tracking-wide hover:bg-burgundy transition-colors disabled:opacity-50"
+            class="btn-primary"
             :disabled="isSavingPassword"
           >
             {{ isSavingPassword ? "Sparar…" : "Uppdatera lösenord" }}

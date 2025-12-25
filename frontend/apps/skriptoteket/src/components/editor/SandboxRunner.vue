@@ -155,7 +155,7 @@ onBeforeUnmount(() => {
         </label>
         <div class="flex items-center gap-3 w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm overflow-hidden">
           <label
-            class="shrink-0 px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-burgundy text-canvas border border-navy cursor-pointer btn-secondary-hover transition-colors active:translate-x-0.5 active:translate-y-0.5"
+            class="btn-cta shrink-0 px-3 py-1 text-xs font-semibold tracking-wide"
           >
             Välj filer
             <input
@@ -174,7 +174,7 @@ onBeforeUnmount(() => {
       <button
         type="button"
         :disabled="!hasFiles || isRunning"
-        class="min-w-[120px] px-4 py-2 text-xs font-bold uppercase tracking-widest bg-burgundy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+        class="btn-cta min-w-[120px]"
         @click="runSandbox"
       >
         <span
@@ -187,7 +187,7 @@ onBeforeUnmount(() => {
       <button
         v-if="hasResults"
         type="button"
-        class="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white text-navy border border-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+        class="btn-ghost"
         @click="clearResult"
       >
         Rensa

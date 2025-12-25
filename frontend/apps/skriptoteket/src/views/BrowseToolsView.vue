@@ -147,7 +147,7 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
               </div>
               <RouterLink
                 :to="{ name: 'tool-run', params: { slug: tool.slug } }"
-                class="shrink-0 w-full sm:w-auto sm:min-w-20 text-center px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white text-navy border border-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+                class="btn-ghost shrink-0 w-full sm:w-auto sm:min-w-20 text-center no-underline"
               >
                 Välj
               </RouterLink>
@@ -177,7 +177,7 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
               </div>
               <RouterLink
                 :to="{ name: 'app-detail', params: { appId: app.app_id } }"
-                class="shrink-0 w-full sm:w-auto sm:min-w-20 text-center px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white text-navy border border-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+                class="btn-ghost shrink-0 w-full sm:w-auto sm:min-w-20 text-center no-underline"
               >
                 Välj
               </RouterLink>

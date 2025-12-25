@@ -34,13 +34,10 @@ function statusClass(status: SuggestionStatus): string {
 }
 
 function actionClass(status: SuggestionStatus): string {
-  const base =
-    "flex items-center justify-center px-4 py-2 text-xs font-bold uppercase tracking-widest border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none w-full";
-
   if (status === "pending_review") {
-    return `${base} bg-burgundy text-canvas`;
+    return "btn-cta w-full no-underline";
   }
-  return `${base} bg-white text-navy hover:bg-canvas`;
+  return "btn-ghost w-full no-underline";
 }
 
 function actionLabel(status: SuggestionStatus): string {

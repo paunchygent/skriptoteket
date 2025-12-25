@@ -201,7 +201,7 @@ function toggleCategory(value: string): void {
     <div class="p-6 border-t border-navy">
       <button
         type="button"
-        class="w-full px-4 py-2 text-xs font-bold uppercase tracking-widest bg-navy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+        class="btn-primary w-full"
         :disabled="isSaving"
         @click="emit('save')"
       >

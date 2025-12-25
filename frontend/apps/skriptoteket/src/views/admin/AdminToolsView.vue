@@ -48,11 +48,9 @@ const readyToolsWithoutPendingReview = computed(() =>
   readyTools.value.filter((t) => !t.has_pending_review),
 );
 
-const editActionClass =
-  "flex items-center justify-center px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white text-navy border border-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none text-center";
+const editActionClass = "btn-ghost text-center no-underline";
 
-const reviewActionClass =
-  "flex items-center justify-center px-4 py-2 text-xs font-bold uppercase tracking-widest bg-burgundy text-canvas border border-navy shadow-brutal-sm btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none text-center";
+const reviewActionClass = "btn-cta text-center no-underline";
 
 function actionLabel(tool: AdminToolItem): string {
   return tool.has_pending_review ? "Granska" : "Redigera";

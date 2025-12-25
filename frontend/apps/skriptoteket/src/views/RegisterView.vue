@@ -167,7 +167,7 @@ async function submit(): Promise<void> {
 
       <button
         type="submit"
-        class="w-full px-4 py-2 bg-burgundy text-canvas border border-navy shadow-brutal-sm font-semibold uppercase tracking-wide hover:bg-navy transition-colors disabled:opacity-50"
+        class="btn-cta w-full"
         :disabled="isSubmitting"
       >
         {{ isSubmitting ? "Skapar konto…" : "Skapa konto" }}

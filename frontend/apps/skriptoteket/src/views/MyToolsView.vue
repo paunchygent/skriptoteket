@@ -106,7 +106,7 @@ onMounted(() => {
         <template #actions>
           <RouterLink
             :to="`/admin/tools/${tool.id}`"
-            class="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white text-navy border border-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+            class="btn-ghost no-underline"
           >
             Redigera
           </RouterLink>

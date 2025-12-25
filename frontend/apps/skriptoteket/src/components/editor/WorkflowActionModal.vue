@@ -90,7 +90,7 @@ const emit = defineEmits<{
             <div class="flex flex-wrap gap-3">
               <button
                 type="button"
-                class="px-4 py-2 text-xs font-semibold uppercase tracking-wide border border-navy bg-white text-navy shadow-brutal-sm hover:bg-canvas btn-secondary-hover transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
+                class="btn-ghost"
                 :disabled="isSubmitting"
                 @click="emit('close')"
               >
@@ -98,7 +98,6 @@ const emit = defineEmits<{
               </button>
               <button
                 type="submit"
-                class="px-4 py-2 text-xs font-semibold uppercase tracking-wide border shadow-brutal-sm transition-colors active:translate-x-1 active:translate-y-1 active:shadow-none"
                 :class="confirmButtonClass"
                 :disabled="isSubmitting"
               >
