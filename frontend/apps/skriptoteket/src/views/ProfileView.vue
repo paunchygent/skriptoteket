@@ -3,10 +3,13 @@ import { computed, onMounted, ref } from "vue";
 
 import { isApiError } from "../api/client";
 import { useProfile } from "../composables/useProfile";
+import { useToast } from "../composables/useToast";
 import { useAuthStore } from "../stores/auth";
+import SystemMessage from "../components/ui/SystemMessage.vue";
 
 const auth = useAuthStore();
 const { profile, load, updateProfile, changePassword, changeEmail } = useProfile();
+const toast = useToast();
 
 const isLoading = ref(true);
 const loadError = ref<string | null>(null);
@@ -17,19 +20,16 @@ const displayName = ref("");
 const locale = ref("sv-SE");
 
 const profileError = ref<string | null>(null);
-const profileSuccess = ref<string | null>(null);
 const isSavingProfile = ref(false);
 
 const newEmail = ref("");
 const emailError = ref<string | null>(null);
-const emailSuccess = ref<string | null>(null);
 const isSavingEmail = ref(false);
 
 const currentPassword = ref("");
 const newPassword = ref("");
 const confirmPassword = ref("");
 const passwordError = ref<string | null>(null);
-const passwordSuccess = ref<string | null>(null);
 const isSavingPassword = ref(false);
 
 const currentEmail = computed(() => auth.user?.email ?? "");
@@ -66,7 +66,6 @@ async function saveProfile(): Promise<void> {
   if (isSavingProfile.value) return;
 
   profileError.value = null;
-  profileSuccess.value = null;
 
   if (!firstName.value.trim() || !lastName.value.trim()) {
     profileError.value = "Förnamn och efternamn krävs.";
@@ -82,7 +81,7 @@ async function saveProfile(): Promise<void> {
       display_name: displayName.value,
       locale: locale.value,
     });
-    profileSuccess.value = "Profilen uppdaterades.";
+    toast.success("Profilen uppdaterades.");
   } catch (error: unknown) {
     if (isApiError(error)) {
       profileError.value = error.message;
@@ -100,7 +99,6 @@ async function saveEmail(): Promise<void> {
   if (isSavingEmail.value) return;
 
   emailError.value = null;
-  emailSuccess.value = null;
 
   const trimmed = newEmail.value.trim().toLowerCase();
   if (!trimmed) {
@@ -117,7 +115,7 @@ async function saveEmail(): Promise<void> {
   try {
     await changeEmail({ email: trimmed });
     newEmail.value = "";
-    emailSuccess.value = "E-postadressen uppdaterades.";
+    toast.success("E-postadressen uppdaterades.");
   } catch (error: unknown) {
     if (isApiError(error)) {
       emailError.value = error.message;
@@ -135,7 +133,6 @@ async function savePassword(): Promise<void> {
   if (isSavingPassword.value) return;
 
   passwordError.value = null;
-  passwordSuccess.value = null;
 
   if (newPassword.value.length < 8) {
     passwordError.value = "Lösenordet måste vara minst 8 tecken.";
@@ -156,7 +153,7 @@ async function savePassword(): Promise<void> {
     currentPassword.value = "";
     newPassword.value = "";
     confirmPassword.value = "";
-    passwordSuccess.value = "Lösenordet uppdaterades.";
+    toast.success("Lösenordet uppdaterades.");
   } catch (error: unknown) {
     if (isApiError(error)) {
       passwordError.value = error.message;
@@ -184,12 +181,10 @@ onMounted(() => {
       </p>
     </header>
 
-    <div
-      v-if="loadError"
-      class="p-3 border border-burgundy bg-white shadow-brutal-sm text-burgundy text-sm"
-    >
-      {{ loadError }}
-    </div>
+    <SystemMessage
+      v-model="loadError"
+      variant="error"
+    />
 
     <div
       v-if="isLoading"
@@ -205,19 +200,10 @@ onMounted(() => {
           <p class="text-sm text-navy/60">Uppdatera namn och visningsnamn.</p>
         </div>
 
-        <div
-          v-if="profileError"
-          class="p-3 border border-burgundy bg-white text-burgundy text-sm"
-        >
-          {{ profileError }}
-        </div>
-
-        <div
-          v-if="profileSuccess"
-          class="p-3 border border-success bg-success/10 text-success text-sm"
-        >
-          {{ profileSuccess }}
-        </div>
+        <SystemMessage
+          v-model="profileError"
+          variant="error"
+        />
 
         <form
           class="space-y-4"
@@ -301,19 +287,10 @@ onMounted(() => {
           <p class="text-sm text-navy/60">Nuvarande: {{ currentEmail }}</p>
         </div>
 
-        <div
-          v-if="emailError"
-          class="p-3 border border-burgundy bg-white text-burgundy text-sm"
-        >
-          {{ emailError }}
-        </div>
-
-        <div
-          v-if="emailSuccess"
-          class="p-3 border border-success bg-success/10 text-success text-sm"
-        >
-          {{ emailSuccess }}
-        </div>
+        <SystemMessage
+          v-model="emailError"
+          variant="error"
+        />
 
         <form
           class="space-y-4"
@@ -352,19 +329,10 @@ onMounted(() => {
           </p>
         </div>
 
-        <div
-          v-if="passwordError"
-          class="p-3 border border-burgundy bg-white text-burgundy text-sm"
-        >
-          {{ passwordError }}
-        </div>
-
-        <div
-          v-if="passwordSuccess"
-          class="p-3 border border-success bg-success/10 text-success text-sm"
-        >
-          {{ passwordSuccess }}
-        </div>
+        <SystemMessage
+          v-model="passwordError"
+          variant="error"
+        />
 
         <form
           class="space-y-4"

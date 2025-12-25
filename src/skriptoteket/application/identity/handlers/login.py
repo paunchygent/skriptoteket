@@ -16,6 +16,7 @@ from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
     LoginHandlerProtocol,
     PasswordHasherProtocol,
+    ProfileRepositoryProtocol,
     SessionRepositoryProtocol,
     UserRepositoryProtocol,
 )
@@ -30,6 +31,7 @@ class LoginHandler(LoginHandlerProtocol):
         settings: Settings,
         uow: UnitOfWorkProtocol,
         users: UserRepositoryProtocol,
+        profiles: ProfileRepositoryProtocol,
         sessions: SessionRepositoryProtocol,
         password_hasher: PasswordHasherProtocol,
         clock: ClockProtocol,
@@ -39,6 +41,7 @@ class LoginHandler(LoginHandlerProtocol):
         self._settings = settings
         self._uow = uow
         self._users = users
+        self._profiles = profiles
         self._sessions = sessions
         self._password_hasher = password_hasher
         self._clock = clock
@@ -106,8 +109,11 @@ class LoginHandler(LoginHandlerProtocol):
 
             await self._sessions.create(session=session)
 
+            profile = await self._profiles.get_by_user_id(user_id=updated_user.id)
+
         return LoginResult(
             session_id=session.id,
             csrf_token=session.csrf_token,
             user=updated_user,
+            profile=profile,
         )

@@ -28,6 +28,7 @@ from skriptoteket.protocols.identity import (
     CurrentUserProviderProtocol,
     LoginHandlerProtocol,
     LogoutHandlerProtocol,
+    ProfileRepositoryProtocol,
     SessionRepositoryProtocol,
 )
 from skriptoteket.protocols.interactive_tools import StartActionHandlerProtocol
@@ -86,6 +87,7 @@ class ApiProvider(Provider):
         logout_handler: AsyncMock,
         current_user_provider: AsyncMock,
         sessions: AsyncMock,
+        profiles: AsyncMock,
         start_action: AsyncMock,
         create_draft: AsyncMock,
         save_draft: AsyncMock,
@@ -97,6 +99,7 @@ class ApiProvider(Provider):
         self._logout_handler = logout_handler
         self._current_user_provider = current_user_provider
         self._sessions = sessions
+        self._profiles = profiles
         self._start_action = start_action
         self._create_draft = create_draft
         self._save_draft = save_draft
@@ -124,6 +127,10 @@ class ApiProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def sessions(self) -> SessionRepositoryProtocol:
         return cast(SessionRepositoryProtocol, self._sessions)
+
+    @provide(scope=Scope.REQUEST)
+    def profiles(self) -> ProfileRepositoryProtocol:
+        return cast(ProfileRepositoryProtocol, self._profiles)
 
     @provide(scope=Scope.REQUEST)
     def start_action_handler(self) -> StartActionHandlerProtocol:
@@ -173,6 +180,13 @@ def sessions() -> AsyncMock:
 
 
 @pytest.fixture
+def profiles() -> AsyncMock:
+    repo = AsyncMock(spec=ProfileRepositoryProtocol)
+    repo.get_by_user_id.return_value = None
+    return repo
+
+
+@pytest.fixture
 def start_action_handler() -> AsyncMock:
     return AsyncMock(spec=StartActionHandlerProtocol)
 
@@ -195,6 +209,7 @@ def app(
     logout_handler: AsyncMock,
     current_user_provider: AsyncMock,
     sessions: AsyncMock,
+    profiles: AsyncMock,
     start_action_handler: AsyncMock,
     create_draft_handler: AsyncMock,
     save_draft_handler: AsyncMock,
@@ -206,6 +221,7 @@ def app(
         logout_handler=logout_handler,
         current_user_provider=current_user_provider,
         sessions=sessions,
+        profiles=profiles,
         start_action=start_action_handler,
         create_draft=create_draft_handler,
         save_draft=save_draft_handler,

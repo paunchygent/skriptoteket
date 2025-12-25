@@ -16,6 +16,7 @@ from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
     PasswordHasherProtocol,
+    ProfileRepositoryProtocol,
     SessionRepositoryProtocol,
     UserRepositoryProtocol,
 )
@@ -49,6 +50,9 @@ async def test_login_creates_session_and_returns_user(now: datetime) -> None:
 
     sessions = AsyncMock(spec=SessionRepositoryProtocol)
 
+    profiles = AsyncMock(spec=ProfileRepositoryProtocol)
+    profiles.get_by_user_id.return_value = None
+
     password_hasher = Mock(spec=PasswordHasherProtocol)
     password_hasher.verify.return_value = True
 
@@ -66,6 +70,7 @@ async def test_login_creates_session_and_returns_user(now: datetime) -> None:
         settings=settings,
         uow=uow,
         users=users,
+        profiles=profiles,
         sessions=sessions,
         password_hasher=password_hasher,
         clock=clock,
@@ -100,6 +105,8 @@ async def test_login_raises_for_invalid_credentials() -> None:
 
     sessions = AsyncMock(spec=SessionRepositoryProtocol)
 
+    profiles = AsyncMock(spec=ProfileRepositoryProtocol)
+
     password_hasher = Mock(spec=PasswordHasherProtocol)
     clock = Mock(spec=ClockProtocol)
     id_generator = Mock(spec=IdGeneratorProtocol)
@@ -109,6 +116,7 @@ async def test_login_raises_for_invalid_credentials() -> None:
         settings=settings,
         uow=uow,
         users=users,
+        profiles=profiles,
         sessions=sessions,
         password_hasher=password_hasher,
         clock=clock,
@@ -163,6 +171,9 @@ async def test_login_enters_uow_before_reading_user_auth(now: datetime) -> None:
 
     sessions.create.side_effect = create_session
 
+    profiles = AsyncMock(spec=ProfileRepositoryProtocol)
+    profiles.get_by_user_id.return_value = None
+
     password_hasher = Mock(spec=PasswordHasherProtocol)
     password_hasher.verify.return_value = True
 
@@ -179,6 +190,7 @@ async def test_login_enters_uow_before_reading_user_auth(now: datetime) -> None:
         settings=settings,
         uow=uow,
         users=users,
+        profiles=profiles,
         sessions=sessions,
         password_hasher=password_hasher,
         clock=clock,
@@ -212,6 +224,8 @@ async def test_login_locks_account_on_threshold(now: datetime) -> None:
 
     sessions = AsyncMock(spec=SessionRepositoryProtocol)
 
+    profiles = AsyncMock(spec=ProfileRepositoryProtocol)
+
     password_hasher = Mock(spec=PasswordHasherProtocol)
     password_hasher.verify.return_value = False
 
@@ -225,6 +239,7 @@ async def test_login_locks_account_on_threshold(now: datetime) -> None:
         settings=settings,
         uow=uow,
         users=users,
+        profiles=profiles,
         sessions=sessions,
         password_hasher=password_hasher,
         clock=clock,
@@ -261,6 +276,8 @@ async def test_login_rejects_when_already_locked(now: datetime) -> None:
 
     sessions = AsyncMock(spec=SessionRepositoryProtocol)
 
+    profiles = AsyncMock(spec=ProfileRepositoryProtocol)
+
     password_hasher = Mock(spec=PasswordHasherProtocol)
     password_hasher.verify.return_value = True
 
@@ -274,6 +291,7 @@ async def test_login_rejects_when_already_locked(now: datetime) -> None:
         settings=settings,
         uow=uow,
         users=users,
+        profiles=profiles,
         sessions=sessions,
         password_hasher=password_hasher,
         clock=clock,

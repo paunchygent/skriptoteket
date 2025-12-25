@@ -15,6 +15,7 @@ from skriptoteket.domain.identity.models import Session, User, UserProfile
 from skriptoteket.protocols.identity import (
     LoginHandlerProtocol,
     LogoutHandlerProtocol,
+    ProfileRepositoryProtocol,
     RegisterUserHandlerProtocol,
 )
 from skriptoteket.web.auth.api_dependencies import require_session_api, require_user_api
@@ -34,6 +35,7 @@ class LoginResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     user: User
+    profile: UserProfile | None = None
     csrf_token: str
 
 
@@ -58,6 +60,7 @@ class MeResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     user: User
+    profile: UserProfile | None = None
 
 
 class CsrfResponse(BaseModel):
@@ -85,7 +88,7 @@ async def login(
         samesite=settings.COOKIE_SAMESITE,
         path="/",
     )
-    return LoginResponse(user=result.user, csrf_token=result.csrf_token)
+    return LoginResponse(user=result.user, profile=result.profile, csrf_token=result.csrf_token)
 
 
 @router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
@@ -144,8 +147,13 @@ async def logout(
 
 
 @router.get("/me", response_model=MeResponse)
-async def me(user: User = Depends(require_user_api)) -> MeResponse:
-    return MeResponse(user=user)
+@inject
+async def me(
+    profiles: FromDishka[ProfileRepositoryProtocol],
+    user: User = Depends(require_user_api),
+) -> MeResponse:
+    profile = await profiles.get_by_user_id(user_id=user.id)
+    return MeResponse(user=user, profile=profile)
 
 
 @router.get("/csrf", response_model=CsrfResponse)

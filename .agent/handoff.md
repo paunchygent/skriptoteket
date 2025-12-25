@@ -13,7 +13,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-25
-- Branch / commit: `main` (`281a959`)
+- Branch / commit: `main` (`e1e0185`)
 - Current sprint: `SPR-2025-12-21` (EPIC-12 SPA UX)
 - Production: Full Vue SPA; `d0e0bd6` deployed 2025-12-23
 - Completed: EPIC-11 (SPA migration), EPIC-02 (identity) - see `.agent/readme-first.md`
@@ -96,6 +96,13 @@ Added shared inline “system message” component + CSS primitives and migrated
   `frontend/apps/skriptoteket/src/views/ToolRunView.vue`
 - Docs status: set EPIC-13 + ST-13-02 + ST-13-03 to `done` in `docs/backlog/`
 
+### ST-13-04 Toastify profile actions (done)
+
+Replace ProfileView inline success banners with toasts; standardize inline errors to `SystemMessage`.
+
+- View: `frontend/apps/skriptoteket/src/views/ProfileView.vue`
+- Docs status: set ST-13-04 + EPIC-13 to `done` in `docs/backlog/`
+
 ### EPIC-14 Admin tool authoring (ST-14-01 + ST-14-02) (done)
 
 Admin quick-create of draft tools + URL-namn lifecycle (ADR-0037).
@@ -160,7 +167,6 @@ pdm run python -m scripts.playwright_st_08_13_tool_usage_instructions_e2e --base
 
 ## Next Steps
 
-- EPIC-13 ST-13-04: Toastify ProfileView actions (remove inline success banners; keep validation errors inline)
 - ST-08-10: Implement script editor intelligence (Lezer integration)
 - EPIC-12: Continue SPA UX stories
 - EPIC-14 (done): Admin tool authoring (quick-create drafts + URL-namn lifecycle) — PRD `docs/prd/prd-tool-authoring-v0.1.md`, ADR `docs/adr/adr-0037-tool-slug-lifecycle.md`, stories `docs/backlog/stories/story-14-01-admin-quick-create-draft-tools.md` + `docs/backlog/stories/story-14-02-draft-slug-edit-and-publish-guards.md`

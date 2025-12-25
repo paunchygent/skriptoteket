@@ -1275,6 +1275,7 @@ export interface components {
         LoginResponse: {
             /** Csrf Token */
             csrf_token: string;
+            profile?: components["schemas"]["UserProfile"] | null;
             user: components["schemas"]["User"];
         };
         /** MaintainerListResponse */
@@ -1317,6 +1318,7 @@ export interface components {
         };
         /** MeResponse */
         MeResponse: {
+            profile?: components["schemas"]["UserProfile"] | null;
             user: components["schemas"]["User"];
         };
         /** MyRunItem */

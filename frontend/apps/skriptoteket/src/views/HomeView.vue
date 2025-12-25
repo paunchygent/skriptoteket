@@ -16,10 +16,7 @@ const loginModal = useLoginModal();
 const isAuthenticated = computed(() => auth.isAuthenticated);
 const canSeeContributor = computed(() => auth.hasAtLeastRole("contributor"));
 const canSeeAdmin = computed(() => auth.hasAtLeastRole("admin"));
-const userName = computed(() => {
-  if (!auth.user) return null;
-  return auth.user.email.split("@")[0];
-});
+const userName = computed(() => auth.displayName);
 
 // Dashboard data
 const runsCount = ref(0);

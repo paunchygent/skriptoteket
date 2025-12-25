@@ -20,6 +20,7 @@ class LoginResult(BaseModel):
     session_id: UUID
     csrf_token: str
     user: User
+    profile: UserProfile | None = None
 
 
 class LogoutCommand(BaseModel):
