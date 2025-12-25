@@ -160,6 +160,7 @@ class PostgreSQLToolVersionRepository(ToolVersionRepositoryProtocol):
             entrypoint=version.entrypoint,
             content_hash=version.content_hash,
             settings_schema=settings_schema,
+            usage_instructions=version.usage_instructions,
             derived_from_version_id=version.derived_from_version_id,
             created_by_user_id=version.created_by_user_id,
             created_at=version.created_at,

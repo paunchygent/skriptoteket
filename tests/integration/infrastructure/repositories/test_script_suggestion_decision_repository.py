@@ -95,3 +95,71 @@ async def test_decision_repository_create_and_list_ordering(db_session: AsyncSes
 
     decisions = await decision_repo.list_for_suggestion(suggestion_id=suggestion_id)
     assert [d.id for d in decisions] == [created_2.id, created_1.id]
+
+
+@pytest.mark.integration
+async def test_decision_field_verification(db_session: AsyncSession) -> None:
+    """Test that all decision fields are persisted and retrievable."""
+    suggestion_repo = PostgreSQLScriptSuggestionRepository(db_session)
+    decision_repo = PostgreSQLScriptSuggestionDecisionRepository(db_session)
+
+    submitter_id = await _create_user(db_session=db_session)
+    decider_id = await _create_user(db_session=db_session)
+
+    now = datetime.now(timezone.utc)
+    suggestion_id = uuid.uuid4()
+    suggestion = create_suggestion(
+        suggestion_id=suggestion_id,
+        submitted_by_user_id=submitter_id,
+        title="Tool Suggestion",
+        description="A tool that does something useful",
+        profession_slugs=["teacher", "researcher"],
+        category_slugs=["admin", "grading"],
+        now=now,
+    )
+    await suggestion_repo.create(suggestion=suggestion)
+    await db_session.flush()
+
+    # Create decision with all text fields populated (DENY to skip tool FK requirement)
+    updated, decision = decide_suggestion(
+        suggestion=suggestion,
+        decision_id=uuid.uuid4(),
+        decided_by_user_id=decider_id,
+        decision=SuggestionDecisionType.DENY,
+        rationale="Not feasible at this time, but good idea!",
+        title="Modified Title",
+        description="Modified description with more details",
+        profession_slugs=["teacher"],
+        category_slugs=["grading"],
+        created_tool_id=None,
+        now=now,
+    )
+    await suggestion_repo.update(suggestion=updated)
+    created = await decision_repo.create(decision=decision)
+
+    # Verify fields on created object
+    assert created.suggestion_id == suggestion_id
+    assert created.decided_by_user_id == decider_id
+    assert created.decision == SuggestionDecisionType.DENY
+    assert created.rationale == "Not feasible at this time, but good idea!"
+    assert created.title == "Modified Title"
+    assert created.description == "Modified description with more details"
+    assert list(created.profession_slugs) == ["teacher"]
+    assert list(created.category_slugs) == ["grading"]
+    assert created.created_tool_id is None
+    assert created.decided_at == now
+
+    # Verify fields persist via fetch
+    decisions = await decision_repo.list_for_suggestion(suggestion_id=suggestion_id)
+    assert len(decisions) == 1
+    fetched = decisions[0]
+
+    assert fetched.suggestion_id == suggestion_id
+    assert fetched.decided_by_user_id == decider_id
+    assert fetched.decision == SuggestionDecisionType.DENY
+    assert fetched.rationale == "Not feasible at this time, but good idea!"
+    assert fetched.title == "Modified Title"
+    assert fetched.description == "Modified description with more details"
+    assert list(fetched.profession_slugs) == ["teacher"]
+    assert list(fetched.category_slugs) == ["grading"]
+    assert fetched.created_tool_id is None

@@ -194,3 +194,146 @@ async def test_tool_run_update_missing_raises_not_found(db_session: AsyncSession
     with pytest.raises(DomainError) as exc:
         await repo.update(run=missing)
     assert exc.value.code is ErrorCode.NOT_FOUND
+
+
+@pytest.mark.integration
+async def test_tool_run_complex_fields_roundtrip(db_session: AsyncSession) -> None:
+    """Test that complex fields (input_manifest, artifacts_manifest, ui_payload) roundtrip."""
+    from skriptoteket.domain.scripting.ui.contract_v2 import (
+        UiNoticeLevel,
+        UiNoticeOutput,
+        UiPayloadV2,
+    )
+
+    now = datetime.now(timezone.utc)
+    user_id = await _create_user(db_session=db_session, now=now)
+    tool_id = await _create_tool(db_session=db_session, now=now, owner_user_id=user_id)
+    version_id = await _create_tool_version(
+        db_session=db_session, tool_id=tool_id, created_by_user_id=user_id, now=now
+    )
+
+    repo = PostgreSQLToolRunRepository(db_session)
+    run_id = uuid.uuid4()
+
+    # Create with complex input_manifest
+    input_manifest = InputManifest(
+        files=[
+            InputFileEntry(name="doc1.pdf", bytes=1024),
+            InputFileEntry(name="doc2.pdf", bytes=2048),
+        ]
+    )
+
+    run = ToolRun(
+        id=run_id,
+        tool_id=tool_id,
+        version_id=version_id,
+        context=RunContext.PRODUCTION,
+        requested_by_user_id=user_id,
+        status=RunStatus.RUNNING,
+        started_at=now,
+        finished_at=None,
+        workdir_path=f"{run_id}/work",
+        input_filename="doc1.pdf",
+        input_size_bytes=1024,
+        input_manifest=input_manifest,
+        html_output=None,
+        stdout=None,
+        stderr=None,
+        artifacts_manifest={},
+        error_summary=None,
+    )
+    await repo.create(run=run)
+
+    # Verify input_manifest roundtrip
+    fetched = await repo.get_by_id(run_id=run_id)
+    assert fetched is not None
+    assert fetched.input_manifest.files[0].name == "doc1.pdf"
+    assert fetched.input_manifest.files[0].bytes == 1024
+    assert fetched.input_manifest.files[1].name == "doc2.pdf"
+    assert fetched.input_manifest.files[1].bytes == 2048
+
+    # Update with ui_payload and artifacts_manifest
+    ui_payload = UiPayloadV2(
+        outputs=[UiNoticeOutput(level=UiNoticeLevel.INFO, message="Processing complete")]
+    )
+    artifacts_manifest = {
+        "artifacts": [{"name": "output.pdf", "size": 4096, "path": "artifacts/output.pdf"}]
+    }
+
+    finished_at = now + timedelta(seconds=5)
+    completed = fetched.model_copy(
+        update={
+            "status": RunStatus.SUCCEEDED,
+            "finished_at": finished_at,
+            "stdout": "Done",
+            "stderr": "",
+            "html_output": "<p>Complete</p>",
+            "artifacts_manifest": artifacts_manifest,
+            "ui_payload": ui_payload,
+        }
+    )
+    await repo.update(run=completed)
+
+    # Verify all complex fields roundtrip
+    fetched_again = await repo.get_by_id(run_id=run_id)
+    assert fetched_again is not None
+    assert fetched_again.artifacts_manifest == artifacts_manifest
+    assert fetched_again.ui_payload is not None
+    output = fetched_again.ui_payload.outputs[0]
+    assert isinstance(output, UiNoticeOutput)
+    assert output.message == "Processing complete"
+    assert fetched_again.html_output == "<p>Complete</p>"
+    assert fetched_again.stdout == "Done"
+    assert fetched_again.stderr == ""
+
+
+@pytest.mark.integration
+async def test_tool_run_error_summary_roundtrip(db_session: AsyncSession) -> None:
+    """Test that error_summary persists correctly on failed runs."""
+    now = datetime.now(timezone.utc)
+    user_id = await _create_user(db_session=db_session, now=now)
+    tool_id = await _create_tool(db_session=db_session, now=now, owner_user_id=user_id)
+    version_id = await _create_tool_version(
+        db_session=db_session, tool_id=tool_id, created_by_user_id=user_id, now=now
+    )
+
+    repo = PostgreSQLToolRunRepository(db_session)
+    run_id = uuid.uuid4()
+
+    run = ToolRun(
+        id=run_id,
+        tool_id=tool_id,
+        version_id=version_id,
+        context=RunContext.SANDBOX,
+        requested_by_user_id=user_id,
+        status=RunStatus.RUNNING,
+        started_at=now,
+        finished_at=None,
+        workdir_path=f"{run_id}/work",
+        input_filename="input.txt",
+        input_size_bytes=10,
+        input_manifest=InputManifest(files=[InputFileEntry(name="input.txt", bytes=10)]),
+        html_output=None,
+        stdout=None,
+        stderr=None,
+        artifacts_manifest={},
+        error_summary=None,
+    )
+    await repo.create(run=run)
+
+    # Update with error
+    failed = run.model_copy(
+        update={
+            "status": RunStatus.FAILED,
+            "finished_at": now + timedelta(seconds=1),
+            "stderr": "Traceback: SyntaxError",
+            "error_summary": "Script failed with SyntaxError on line 42",
+        }
+    )
+    await repo.update(run=failed)
+
+    fetched = await repo.get_by_id(run_id=run_id)
+    assert fetched is not None
+    assert fetched.status is RunStatus.FAILED
+    assert fetched.error_summary == "Script failed with SyntaxError on line 42"
+    assert fetched.stderr == "Traceback: SyntaxError"
