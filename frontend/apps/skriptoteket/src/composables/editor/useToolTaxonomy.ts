@@ -2,6 +2,7 @@ import { ref, watch, type Ref } from "vue";
 
 import { apiFetch, apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
+import type { UiNotifier } from "../notify";
 
 type ProfessionItem = components["schemas"]["ProfessionItem"];
 type CategoryItem = components["schemas"]["CategoryItem"];
@@ -10,15 +11,15 @@ type ToolTaxonomyResponse = components["schemas"]["ToolTaxonomyResponse"];
 type UseToolTaxonomyOptions = {
   toolId: Readonly<Ref<string>>;
   canEdit: Readonly<Ref<boolean>>;
+  notify: UiNotifier;
 };
 
-export function useToolTaxonomy({ toolId, canEdit }: UseToolTaxonomyOptions) {
+export function useToolTaxonomy({ toolId, canEdit, notify }: UseToolTaxonomyOptions) {
   const professions = ref<ProfessionItem[]>([]);
   const categories = ref<CategoryItem[]>([]);
   const selectedProfessionIds = ref<string[]>([]);
   const selectedCategoryIds = ref<string[]>([]);
   const taxonomyError = ref<string | null>(null);
-  const taxonomySuccess = ref<string | null>(null);
   const isTaxonomyLoading = ref(false);
   const isTaxonomySaving = ref(false);
 
@@ -33,7 +34,6 @@ export function useToolTaxonomy({ toolId, canEdit }: UseToolTaxonomyOptions) {
 
     isTaxonomyLoading.value = true;
     taxonomyError.value = null;
-    taxonomySuccess.value = null;
 
     try {
       const [profResp, catResp, taxonomyResp] = await Promise.all([
@@ -68,7 +68,6 @@ export function useToolTaxonomy({ toolId, canEdit }: UseToolTaxonomyOptions) {
     }
 
     taxonomyError.value = null;
-    taxonomySuccess.value = null;
 
     if (selectedProfessionIds.value.length === 0) {
       taxonomyError.value = "Välj minst ett yrke.";
@@ -94,14 +93,17 @@ export function useToolTaxonomy({ toolId, canEdit }: UseToolTaxonomyOptions) {
       );
       selectedProfessionIds.value = response.profession_ids;
       selectedCategoryIds.value = response.category_ids;
-      taxonomySuccess.value = "Taxonomi sparad.";
+      notify.success("Taxonomi sparad.");
     } catch (error: unknown) {
       if (isApiError(error)) {
         taxonomyError.value = error.message;
+        notify.failure(error.message);
       } else if (error instanceof Error) {
         taxonomyError.value = error.message;
+        notify.failure(error.message);
       } else {
         taxonomyError.value = "Det gick inte att spara taxonomi.";
+        notify.failure(taxonomyError.value);
       }
     } finally {
       isTaxonomySaving.value = false;
@@ -125,7 +127,6 @@ export function useToolTaxonomy({ toolId, canEdit }: UseToolTaxonomyOptions) {
     selectedProfessionIds,
     selectedCategoryIds,
     taxonomyError,
-    taxonomySuccess,
     isTaxonomyLoading,
     isTaxonomySaving,
     loadTaxonomy,

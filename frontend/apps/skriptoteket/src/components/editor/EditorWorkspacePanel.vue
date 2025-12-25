@@ -51,7 +51,6 @@ type EditorWorkspacePanelProps = {
   professions: ProfessionItem[];
   categories: CategoryItem[];
   taxonomyError: string | null;
-  taxonomySuccess: string | null;
   isTaxonomyLoading: boolean;
   isSavingAllMetadata: boolean;
 
@@ -60,7 +59,6 @@ type EditorWorkspacePanelProps = {
   isMaintainersLoading: boolean;
   isMaintainersSaving: boolean;
   maintainersError: string | null;
-  maintainersSuccess: string | null;
 };
 
 defineProps<EditorWorkspacePanelProps>();
@@ -86,6 +84,9 @@ const emit = defineEmits<{
   (event: "update:metadataTitle", value: string): void;
   (event: "update:metadataSlug", value: string): void;
   (event: "update:metadataSummary", value: string): void;
+  (event: "update:slugError", value: string | null): void;
+  (event: "update:taxonomyError", value: string | null): void;
+  (event: "update:maintainersError", value: string | null): void;
   (event: "update:selectedProfessionIds", value: string[]): void;
   (event: "update:selectedCategoryIds", value: string[]): void;
 }>();
@@ -269,7 +270,6 @@ const emit = defineEmits<{
         :selected-profession-ids="selectedProfessionIds"
         :selected-category-ids="selectedCategoryIds"
         :taxonomy-error="taxonomyError"
-        :taxonomy-success="taxonomySuccess"
         :is-loading="isTaxonomyLoading"
         :is-saving="isSavingAllMetadata"
         @close="emit('closeDrawer')"
@@ -277,9 +277,11 @@ const emit = defineEmits<{
         @update:metadata-title="emit('update:metadataTitle', $event)"
         @update:metadata-slug="emit('update:metadataSlug', $event)"
         @update:metadata-summary="emit('update:metadataSummary', $event)"
+        @update:slug-error="emit('update:slugError', $event)"
         @suggest-slug-from-title="emit('suggestSlugFromTitle')"
         @update:selected-profession-ids="emit('update:selectedProfessionIds', $event)"
         @update:selected-category-ids="emit('update:selectedCategoryIds', $event)"
+        @update:taxonomy-error="emit('update:taxonomyError', $event)"
       />
 
       <MaintainersDrawer
@@ -291,10 +293,10 @@ const emit = defineEmits<{
         :is-loading="isMaintainersLoading"
         :is-saving="isMaintainersSaving"
         :error="maintainersError"
-        :success="maintainersSuccess"
         @close="emit('closeDrawer')"
         @add="emit('addMaintainer', $event)"
         @remove="emit('removeMaintainer', $event)"
+        @update:error="emit('update:maintainersError', $event)"
       />
 
       <InstructionsDrawer

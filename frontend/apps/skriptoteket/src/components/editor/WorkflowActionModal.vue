@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import SystemMessage from "../ui/SystemMessage.vue";
+
 type WorkflowActionMeta = {
   title: string;
   description?: string;
@@ -23,6 +25,7 @@ const emit = defineEmits<{
   (event: "close"): void;
   (event: "submit"): void;
   (event: "update:note", value: string): void;
+  (event: "update:error", value: string | null): void;
 }>();
 </script>
 
@@ -61,13 +64,13 @@ const emit = defineEmits<{
             {{ actionMeta.description }}
           </p>
 
-          <div
-            v-if="error"
+          <SystemMessage
             id="workflow-modal-error"
-            class="mt-4 p-3 border border-burgundy bg-white text-burgundy text-sm"
-          >
-            {{ error }}
-          </div>
+            class="mt-4"
+            :model-value="error"
+            variant="error"
+            @update:model-value="emit('update:error', $event)"
+          />
 
           <form
             class="mt-5 space-y-4"

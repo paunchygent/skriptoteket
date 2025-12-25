@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
+import SystemMessage from "../ui/SystemMessage.vue";
 import { useAuthStore } from "../../stores/auth";
 
 const props = defineProps<{
@@ -69,13 +70,12 @@ async function onSubmit(): Promise<void> {
             Logga in
           </h2>
 
-          <div
-            v-if="submitError"
+          <SystemMessage
             id="login-modal-error"
-            class="mt-4 p-3 border border-error bg-white text-error text-sm"
-          >
-            {{ submitError }}
-          </div>
+            v-model="submitError"
+            class="mt-4"
+            variant="error"
+          />
 
           <form
             class="mt-5 space-y-4"

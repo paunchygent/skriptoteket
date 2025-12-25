@@ -2,6 +2,8 @@
 import { ref } from "vue";
 import type { components } from "../../api/openapi";
 
+import SystemMessage from "../ui/SystemMessage.vue";
+
 type MaintainerSummary = components["schemas"]["MaintainerSummary"];
 type ApiRole = components["schemas"]["Role"];
 
@@ -13,7 +15,6 @@ type MaintainersDrawerProps = {
   isLoading: boolean;
   isSaving: boolean;
   error: string | null;
-  success: string | null;
 };
 
 const props = defineProps<MaintainersDrawerProps>();
@@ -22,6 +23,7 @@ const emit = defineEmits<{
   (event: "close"): void;
   (event: "add", email: string): void;
   (event: "remove", userId: string): void;
+  (event: "update:error", value: string | null): void;
 }>();
 
 const email = ref("");
@@ -99,18 +101,12 @@ function removalBlockedReason(maintainer: MaintainerSummary): string | null {
     </div>
 
     <div class="flex-1 overflow-y-auto p-6 space-y-4">
-      <div
+      <SystemMessage
         v-if="error"
-        class="p-3 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
-      >
-        {{ error }}
-      </div>
-      <div
-        v-else-if="success"
-        class="p-3 border border-success bg-success/10 shadow-brutal-sm text-sm text-success"
-      >
-        {{ success }}
-      </div>
+        :model-value="error"
+        variant="error"
+        @update:model-value="emit('update:error', $event)"
+      />
 
       <div
         v-if="isLoading"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { components } from "../../api/openapi";
+import SystemMessage from "../ui/SystemMessage.vue";
 
 type ProfessionItem = components["schemas"]["ProfessionItem"];
 type CategoryItem = components["schemas"]["CategoryItem"];
@@ -16,7 +17,6 @@ type MetadataDrawerProps = {
   selectedProfessionIds: string[];
   selectedCategoryIds: string[];
   taxonomyError: string | null;
-  taxonomySuccess: string | null;
   isLoading: boolean;
   isSaving: boolean;
 };
@@ -29,6 +29,8 @@ const emit = defineEmits<{
   (event: "update:metadataTitle", value: string): void;
   (event: "update:metadataSlug", value: string): void;
   (event: "update:metadataSummary", value: string): void;
+  (event: "update:slugError", value: string | null): void;
+  (event: "update:taxonomyError", value: string | null): void;
   (event: "suggestSlugFromTitle"): void;
   (event: "update:selectedProfessionIds", value: string[]): void;
   (event: "update:selectedCategoryIds", value: string[]): void;
@@ -138,12 +140,11 @@ function toggleCategory(value: string): void {
               <span v-if="!canEditSlug">URL-namn är låst efter publicering.</span>
             </p>
 
-            <p
-              v-if="slugError"
-              class="text-sm text-burgundy"
-            >
-              {{ slugError }}
-            </p>
+            <SystemMessage
+              :model-value="slugError"
+              variant="error"
+              @update:model-value="emit('update:slugError', $event)"
+            />
           </div>
 
           <div class="space-y-1">
@@ -174,18 +175,12 @@ function toggleCategory(value: string): void {
           </span>
         </div>
 
-        <p
+        <SystemMessage
           v-if="taxonomyError"
-          class="text-sm text-burgundy"
-        >
-          {{ taxonomyError }}
-        </p>
-        <p
-          v-else-if="taxonomySuccess"
-          class="text-sm text-navy"
-        >
-          {{ taxonomySuccess }}
-        </p>
+          :model-value="taxonomyError"
+          variant="error"
+          @update:model-value="emit('update:taxonomyError', $event)"
+        />
 
         <div
           v-if="!isLoading"

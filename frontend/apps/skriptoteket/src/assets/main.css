@@ -142,6 +142,57 @@ body::before {
   .toast-failure {
     @apply bg-burgundy/90 text-canvas;
   }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     SYSTEM MESSAGE PRIMITIVES - Skriptoteket SPA
+
+     Inline (in-flow) messages for blocking states + validation.
+     Sticky until dismissed.
+     Variants:
+       - info:    navy border + text (white background)
+       - success: success border + tint
+       - warning: warning border + tint (navy text for contrast)
+       - error:   error border + tint
+     ════════════════════════════════════════════════════════════════════════ */
+
+  .system-message {
+    @apply pointer-events-auto border shadow-brutal-sm;
+    @apply flex items-start gap-3 p-3 text-sm leading-snug;
+  }
+
+  .system-message-content {
+    @apply break-words;
+  }
+
+  .system-message-close {
+    @apply ml-auto -mt-1.5 -mr-1.5 shrink-0;
+    @apply w-8 h-8 flex items-center justify-center;
+    @apply bg-transparent border-0 p-0;
+    @apply text-lg leading-none opacity-80;
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-current focus-visible:outline-offset-2;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .system-message-close:hover {
+      @apply opacity-100;
+    }
+  }
+
+  .system-message-info {
+    @apply border-navy bg-white text-navy;
+  }
+
+  .system-message-success {
+    @apply border-success bg-success/10 text-success;
+  }
+
+  .system-message-warning {
+    @apply border-warning bg-warning/10 text-navy;
+  }
+
+  .system-message-error {
+    @apply border-error bg-error/10 text-error;
+  }
 }
 
 @media (hover: hover) and (pointer: fine) {

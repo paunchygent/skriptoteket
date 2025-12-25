@@ -10,6 +10,7 @@ import ToolRunControlBar from "../components/tool-run/ToolRunControlBar.vue";
 import UsageInstructions from "../components/tool-run/UsageInstructions.vue";
 import ToolRunSettingsPanel from "../components/tool-run/ToolRunSettingsPanel.vue";
 import ToolRunStepIndicator from "../components/tool-run/ToolRunStepIndicator.vue";
+import SystemMessage from "../components/ui/SystemMessage.vue";
 import { useToolRun, type StepResult } from "../composables/tools/useToolRun";
 import { useToolSettings } from "../composables/tools/useToolSettings";
 
@@ -181,12 +182,11 @@ watch(hasSettingsSchema, (hasSchema) => {
       Laddar...
     </div>
 
-    <div
+    <SystemMessage
       v-else-if="errorMessage && !tool"
-      class="p-4 border border-error bg-white shadow-brutal-sm text-error text-sm"
-    >
-      {{ errorMessage }}
-    </div>
+      v-model="errorMessage"
+      variant="error"
+    />
 
     <!-- UNIFIED TOOL CARD -->
     <div
@@ -220,12 +220,12 @@ watch(hasSettingsSchema, (hasSchema) => {
         class="px-4 py-4 border-b border-navy/20 bg-canvas/30"
       >
         <ToolRunSettingsPanel
+          v-model:error-message="settingsErrorMessage"
           :id-base="idBase"
           :schema="settingsSchema"
           :model-value="settingsValues"
           :is-loading="isLoadingSettings"
           :is-saving="isSavingSettings"
-          :error-message="settingsErrorMessage"
           @update:model-value="onSettingsValuesUpdate"
           @save="saveSettings"
         />
@@ -246,9 +246,13 @@ watch(hasSettingsSchema, (hasSchema) => {
       <!-- Error message -->
       <div
         v-if="errorMessage"
-        class="px-4 py-3 border-b border-error/30 bg-error/5 text-error text-sm"
+        class="px-4 py-3 border-b border-navy/20 bg-white"
       >
-        {{ errorMessage }}
+        <SystemMessage
+          v-model="errorMessage"
+          variant="error"
+          class="shadow-none"
+        />
       </div>
 
       <!-- Running state -->
@@ -312,10 +316,10 @@ watch(hasSettingsSchema, (hasSchema) => {
           <!-- Actions -->
           <ToolRunActions
             v-if="nextActions.length > 0 && !selectedStepRun"
+            v-model:error-message="actionErrorMessage"
             :actions="nextActions"
             :id-base="idBase"
             :disabled="isSubmitting || !canSubmitActions"
-            :error-message="actionErrorMessage"
             @submit="onSubmitAction"
           />
 

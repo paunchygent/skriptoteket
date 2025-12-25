@@ -4,6 +4,7 @@ import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import type { components } from "../../api/openapi";
 import EditorWorkspacePanel from "../../components/editor/EditorWorkspacePanel.vue";
 import InlineEditableText from "../../components/editor/InlineEditableText.vue";
+import SystemMessage from "../../components/ui/SystemMessage.vue";
 import WorkflowActionModal from "../../components/editor/WorkflowActionModal.vue";
 import WorkflowContextButtons from "../../components/editor/WorkflowContextButtons.vue";
 import { useEditorWorkflowActions } from "../../composables/editor/useEditorWorkflowActions";
@@ -98,13 +99,13 @@ const {
   selectedProfessionIds,
   selectedCategoryIds,
   taxonomyError,
-  taxonomySuccess,
   isTaxonomyLoading,
   isTaxonomySaving,
   saveTaxonomy,
 } = useToolTaxonomy({
   toolId: editorToolId,
   canEdit: canEditTaxonomy,
+  notify,
 });
 const {
   maintainers,
@@ -112,13 +113,13 @@ const {
   isLoading: isMaintainersLoading,
   isSaving: isMaintainersSaving,
   error: maintainersError,
-  success: maintainersSuccess,
   loadMaintainers,
   addMaintainer,
   removeMaintainer,
 } = useToolMaintainers({
   toolId: editorToolId,
   canEdit: canEditMaintainers,
+  notify,
 });
 const entrypointOptions = ["run_tool", "main", "run", "execute"];
 const activeDrawer = ref<"history" | "metadata" | "maintainers" | "instructions" | null>(null);
@@ -301,12 +302,10 @@ watch(
     </RouterLink>
 
     <!-- Inline errors (validation / blocking states) -->
-    <div
-      v-if="errorMessage"
-      class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
-    >
-      {{ errorMessage }}
-    </div>
+    <SystemMessage
+      v-model="errorMessage"
+      variant="error"
+    />
 
     <!-- Loading state -->
     <div
@@ -375,6 +374,9 @@ watch(
 
       <!-- PANEL 2: Editor + Test -->
       <EditorWorkspacePanel
+        v-model:slug-error="slugError"
+        v-model:taxonomy-error="taxonomyError"
+        v-model:maintainers-error="maintainersError"
         :tool-id="editor.tool.id"
         :versions="editor.versions"
         :selected-version="selectedVersion"
@@ -387,7 +389,6 @@ watch(
         :metadata-title="metadataTitle"
         :metadata-slug="metadataSlug"
         :metadata-summary="metadataSummary"
-        :slug-error="slugError"
         :selected-profession-ids="selectedProfessionIds"
         :selected-category-ids="selectedCategoryIds"
         :can-edit-taxonomy="canEditTaxonomy"
@@ -404,16 +405,12 @@ watch(
         :is-instructions-drawer-open="isInstructionsDrawerOpen"
         :professions="professions"
         :categories="categories"
-        :taxonomy-error="taxonomyError"
-        :taxonomy-success="taxonomySuccess"
         :is-taxonomy-loading="isTaxonomyLoading"
         :is-saving-all-metadata="isSavingAllMetadata"
         :maintainers="maintainers"
         :owner-user-id="ownerUserId"
         :is-maintainers-loading="isMaintainersLoading"
         :is-maintainers-saving="isMaintainersSaving"
-        :maintainers-error="maintainersError"
-        :maintainers-success="maintainersSuccess"
         @save="save"
         @open-history-drawer="openHistoryDrawer"
         @open-metadata-drawer="openMetadataDrawer"
@@ -450,6 +447,7 @@ watch(
     :confirm-button-class="confirmButtonClass"
     @close="closeWorkflowModal"
     @submit="submitWorkflowAction"
+    @update:error="workflowError = $event"
     @update:note="workflowNote = $event"
   />
 </template>

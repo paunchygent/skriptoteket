@@ -3,6 +3,7 @@ import { computed, onMounted, reactive, watch } from "vue";
 
 import type { components } from "../../api/openapi";
 import UiActionFieldRenderer from "../ui-actions/UiActionFieldRenderer.vue";
+import SystemMessage from "../ui/SystemMessage.vue";
 
 type UiFormAction = components["schemas"]["UiFormAction"];
 type UiActionField = NonNullable<UiFormAction["fields"]>[number];
@@ -20,6 +21,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   submit: [payload: { actionId: string; input: Record<string, components["schemas"]["JsonValue"]> }];
+  "update:errorMessage": [value: string | null];
 }>();
 
 const textValues = reactive<Record<string, string>>({});
@@ -137,12 +139,11 @@ watch(allFields, () => ensureDefaults());
     v-if="actions.length > 0"
     class="space-y-4"
   >
-    <div
-      v-if="errorMessage"
-      class="text-sm text-error"
-    >
-      {{ errorMessage }}
-    </div>
+    <SystemMessage
+      :model-value="errorMessage"
+      variant="error"
+      @update:model-value="emit('update:errorMessage', $event)"
+    />
 
     <div
       v-if="allFields.length > 0"

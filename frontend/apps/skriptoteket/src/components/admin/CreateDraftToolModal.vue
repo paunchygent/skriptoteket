@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from "vue";
 
+import SystemMessage from "../ui/SystemMessage.vue";
+
 type CreateDraftToolModalProps = {
   isOpen: boolean;
   title: string;
@@ -16,6 +18,7 @@ const emit = defineEmits<{
   (event: "submit"): void;
   (event: "update:title", value: string): void;
   (event: "update:summary", value: string): void;
+  (event: "update:error", value: string | null): void;
 }>();
 
 const titleInputRef = ref<HTMLInputElement | null>(null);
@@ -96,12 +99,11 @@ watch(
             />
           </div>
 
-          <p
-            v-if="error"
-            class="text-sm text-burgundy"
-          >
-            {{ error }}
-          </p>
+          <SystemMessage
+            :model-value="error"
+            variant="error"
+            @update:model-value="emit('update:error', $event)"
+          />
         </div>
 
         <div class="flex justify-end gap-2">

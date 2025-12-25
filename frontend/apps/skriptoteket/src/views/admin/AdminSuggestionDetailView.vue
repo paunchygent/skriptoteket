@@ -5,6 +5,7 @@ import { useRoute, useRouter } from "vue-router";
 import { apiGet, apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import { useToast } from "../../composables/useToast";
+import SystemMessage from "../../components/ui/SystemMessage.vue";
 
 type SuggestionDetailResponse = components["schemas"]["SuggestionDetailResponse"];
 type SuggestionDetail = components["schemas"]["SuggestionDetail"];
@@ -205,12 +206,11 @@ const showDecisionFields = computed(() => decision.value === "accept");
       Laddar...
     </div>
 
-    <div
+    <SystemMessage
       v-else-if="loadErrorMessage"
-      class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
-    >
-      {{ loadErrorMessage }}
-    </div>
+      v-model="loadErrorMessage"
+      variant="error"
+    />
 
     <div
       v-else-if="!suggestion"
@@ -459,12 +459,10 @@ const showDecisionFields = computed(() => decision.value === "accept");
           </button>
         </div>
 
-        <div
-          v-if="decisionErrorMessage"
-          class="p-3 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
-        >
-          {{ decisionErrorMessage }}
-        </div>
+        <SystemMessage
+          v-model="decisionErrorMessage"
+          variant="error"
+        />
       </div>
 
       <div

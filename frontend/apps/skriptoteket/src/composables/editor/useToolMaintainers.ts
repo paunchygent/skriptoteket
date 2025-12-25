@@ -2,6 +2,7 @@ import { ref, watch, type Ref } from "vue";
 
 import { apiFetch, apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
+import type { UiNotifier } from "../notify";
 
 type MaintainerSummary = components["schemas"]["MaintainerSummary"];
 type MaintainerListResponse = components["schemas"]["MaintainerListResponse"];
@@ -9,15 +10,15 @@ type MaintainerListResponse = components["schemas"]["MaintainerListResponse"];
 type UseToolMaintainersOptions = {
   toolId: Readonly<Ref<string>>;
   canEdit: Readonly<Ref<boolean>>;
+  notify: UiNotifier;
 };
 
-export function useToolMaintainers({ toolId, canEdit }: UseToolMaintainersOptions) {
+export function useToolMaintainers({ toolId, canEdit, notify }: UseToolMaintainersOptions) {
   const maintainers = ref<MaintainerSummary[]>([]);
   const ownerUserId = ref<string | null>(null);
   const isLoading = ref(false);
   const isSaving = ref(false);
   const error = ref<string | null>(null);
-  const success = ref<string | null>(null);
 
   async function loadMaintainers(toolIdValue: string): Promise<void> {
     if (!toolIdValue || !canEdit.value) {
@@ -26,7 +27,6 @@ export function useToolMaintainers({ toolId, canEdit }: UseToolMaintainersOption
 
     isLoading.value = true;
     error.value = null;
-    success.value = null;
 
     try {
       const path = `/api/v1/editor/tools/${encodeURIComponent(toolIdValue)}/maintainers`;
@@ -60,7 +60,6 @@ export function useToolMaintainers({ toolId, canEdit }: UseToolMaintainersOption
 
     isSaving.value = true;
     error.value = null;
-    success.value = null;
 
     try {
       const path = `/api/v1/editor/tools/${encodeURIComponent(toolIdValue)}/maintainers`;
@@ -70,14 +69,17 @@ export function useToolMaintainers({ toolId, canEdit }: UseToolMaintainersOption
       });
       ownerUserId.value = response.owner_user_id;
       maintainers.value = response.maintainers;
-      success.value = "Redigeringsbehörigheter uppdaterade.";
+      notify.success("Redigeringsbehörigheter uppdaterade.");
     } catch (err: unknown) {
       if (isApiError(err)) {
         error.value = err.message;
+        notify.failure(err.message);
       } else if (err instanceof Error) {
         error.value = err.message;
+        notify.failure(err.message);
       } else {
         error.value = "Det gick inte att lägga till redigeringsbehörighet.";
+        notify.failure(error.value);
       }
     } finally {
       isSaving.value = false;
@@ -92,7 +94,6 @@ export function useToolMaintainers({ toolId, canEdit }: UseToolMaintainersOption
 
     isSaving.value = true;
     error.value = null;
-    success.value = null;
 
     try {
       const path =
@@ -103,14 +104,17 @@ export function useToolMaintainers({ toolId, canEdit }: UseToolMaintainersOption
       });
       ownerUserId.value = response.owner_user_id;
       maintainers.value = response.maintainers;
-      success.value = "Redigeringsbehörigheter uppdaterade.";
+      notify.success("Redigeringsbehörigheter uppdaterade.");
     } catch (err: unknown) {
       if (isApiError(err)) {
         error.value = err.message;
+        notify.failure(err.message);
       } else if (err instanceof Error) {
         error.value = err.message;
+        notify.failure(err.message);
       } else {
         error.value = "Det gick inte att ta bort redigeringsbehörighet.";
+        notify.failure(error.value);
       }
     } finally {
       isSaving.value = false;
@@ -136,7 +140,6 @@ export function useToolMaintainers({ toolId, canEdit }: UseToolMaintainersOption
     isLoading,
     isSaving,
     error,
-    success,
     loadMaintainers,
     addMaintainer,
     removeMaintainer,

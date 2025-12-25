@@ -6,6 +6,7 @@ import type { components } from "../../api/openapi";
 import CreateDraftToolModal from "../../components/admin/CreateDraftToolModal.vue";
 import { useToast } from "../../composables/useToast";
 import ToolListRow from "../../components/tools/ToolListRow.vue";
+import SystemMessage from "../../components/ui/SystemMessage.vue";
 import ToggleSwitch from "../../components/ui/ToggleSwitch.vue";
 
 type ListAdminToolsResponse = components["schemas"]["ListAdminToolsResponse"];
@@ -132,6 +133,7 @@ async function createDraftTool(): Promise<void> {
     });
 
     closeCreateModal();
+    toast.success("Verktyg skapat.");
     await router.push(`/admin/tools/${response.tool.id}`);
   } catch (error: unknown) {
     if (isApiError(error)) {
@@ -281,12 +283,10 @@ onMounted(() => {
       </button>
     </div>
 
-    <div
-      v-if="errorMessage"
-      class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
-    >
-      {{ errorMessage }}
-    </div>
+    <SystemMessage
+      v-model="errorMessage"
+      variant="error"
+    />
 
     <div
       v-if="isLoading"
@@ -484,6 +484,7 @@ onMounted(() => {
     :is-submitting="isCreating"
     @close="closeCreateModal"
     @submit="createDraftTool"
+    @update:error="createError = $event"
     @update:title="createTitle = $event"
     @update:summary="createSummary = $event"
   />

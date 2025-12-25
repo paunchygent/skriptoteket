@@ -4,6 +4,7 @@ import { onMounted, ref } from "vue";
 import { apiGet, apiPost, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
 import { useToast } from "../composables/useToast";
+import SystemMessage from "../components/ui/SystemMessage.vue";
 
 type ProfessionItem = components["schemas"]["ProfessionItem"];
 type CategoryItem = components["schemas"]["CategoryItem"];
@@ -129,23 +130,19 @@ onMounted(() => {
       v-else
       class="space-y-4"
     >
-      <div
-        v-if="loadErrorMessage"
-        class="p-3 border border-burgundy bg-white shadow-brutal-sm text-burgundy text-sm"
-      >
-        {{ loadErrorMessage }}
-      </div>
+      <SystemMessage
+        v-model="loadErrorMessage"
+        variant="error"
+      />
 
       <form
         class="space-y-4"
         @submit.prevent="submit"
       >
-        <div
-          v-if="formErrorMessage"
-          class="p-3 border border-burgundy bg-white shadow-brutal-sm text-burgundy text-sm"
-        >
-          {{ formErrorMessage }}
-        </div>
+        <SystemMessage
+          v-model="formErrorMessage"
+          variant="error"
+        />
 
         <div class="space-y-2">
           <label

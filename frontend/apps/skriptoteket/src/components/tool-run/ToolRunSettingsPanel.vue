@@ -3,6 +3,7 @@ import { computed } from "vue";
 
 import type { components } from "../../api/openapi";
 import UiActionFieldRenderer from "../ui-actions/UiActionFieldRenderer.vue";
+import SystemMessage from "../ui/SystemMessage.vue";
 
 type ToolSettingsResponse = components["schemas"]["ToolSettingsResponse"];
 type SettingsField = NonNullable<ToolSettingsResponse["settings_schema"]>[number];
@@ -22,6 +23,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   "update:modelValue": [value: SettingsFormValues];
+  "update:errorMessage": [value: string | null];
   save: [];
 }>();
 
@@ -99,11 +101,10 @@ function onSave(): void {
       />
     </div>
 
-    <div
-      v-if="errorMessage"
-      class="p-3 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
-    >
-      {{ errorMessage }}
-    </div>
+    <SystemMessage
+      :model-value="errorMessage"
+      variant="error"
+      @update:model-value="emit('update:errorMessage', $event)"
+    />
   </div>
 </template>
