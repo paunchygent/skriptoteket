@@ -6,6 +6,7 @@ import LoginModal from "./components/auth/LoginModal.vue";
 import HelpPanel from "./components/help/HelpPanel.vue";
 import AuthLayout from "./components/layout/AuthLayout.vue";
 import LandingLayout from "./components/layout/LandingLayout.vue";
+import ToastHost from "./components/ui/ToastHost.vue";
 import { useLoginModal } from "./composables/useLoginModal";
 import { useAuthStore } from "./stores/auth";
 
@@ -99,6 +100,8 @@ async function onLogout(): Promise<void> {
     </AuthLayout>
 
     <HelpPanel />
+
+    <ToastHost />
 
     <!-- Global Login Modal -->
     <LoginModal
