@@ -528,6 +528,7 @@ async def _seed_one_entry(
                     entrypoint=entry.entrypoint,
                     source_code=source_code,
                     settings_schema=entry.settings_schema,
+                    input_schema=entry.input_schema,
                     usage_instructions=entry.usage_instructions,
                     change_summary="Seed: initial version från repo",
                 ),
@@ -551,6 +552,7 @@ async def _seed_one_entry(
         or active_version.source_code != source_code
         or active_version.usage_instructions != entry.usage_instructions
         or active_version.settings_schema != entry.settings_schema
+        or active_version.input_schema != entry.input_schema
     ):
         if dry_run:
             typer.echo(f"[dry-run] Create + publish updated version: {entry.slug}")
@@ -563,6 +565,7 @@ async def _seed_one_entry(
                     entrypoint=entry.entrypoint,
                     source_code=source_code,
                     settings_schema=entry.settings_schema,
+                    input_schema=entry.input_schema,
                     usage_instructions=entry.usage_instructions,
                     change_summary="Seed: uppdaterad version från repo",
                 ),

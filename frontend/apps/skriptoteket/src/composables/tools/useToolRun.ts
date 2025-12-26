@@ -2,6 +2,7 @@ import { computed, onBeforeUnmount, ref, watch, type Ref } from "vue";
 
 import { apiFetch, apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
+import { useToolInputs } from "./useToolInputs";
 
 type ToolMetadataResponse = components["schemas"]["ToolMetadataResponse"];
 type GetRunResult = components["schemas"]["GetRunResult"];
@@ -9,6 +10,7 @@ type StartToolRunResponse = components["schemas"]["StartToolRunResponse"];
 type StartActionResult = components["schemas"]["StartActionResult"];
 type GetSessionStateResult = components["schemas"]["GetSessionStateResult"];
 type RunDetails = components["schemas"]["RunDetails"];
+type JsonValue = components["schemas"]["JsonValue"];
 
 export interface StepResult {
   id: string;
@@ -29,6 +31,9 @@ export function useToolRun({ slug }: UseToolRunOptions) {
   const completedSteps = ref<StepResult[]>([]);
   const stateRev = ref<number | null>(null);
 
+  const inputSchema = computed(() => tool.value?.input_schema ?? null);
+  const toolInputs = useToolInputs({ schema: inputSchema, selectedFiles });
+
   const isLoadingTool = ref(true);
   const isSubmitting = ref(false);
   const isPolling = ref(false);
@@ -42,6 +47,13 @@ export function useToolRun({ slug }: UseToolRunOptions) {
   const isRunning = computed(() => currentRun.value?.status === "running");
   const hasNextActions = computed(() => (currentRun.value?.ui_payload?.next_actions ?? []).length > 0);
   const canSubmitActions = computed(() => stateRev.value !== null && hasNextActions.value);
+  const canSubmitRun = computed(() => {
+    if (!tool.value) return false;
+    if (toolInputs.hasSchema.value) {
+      return toolInputs.isValid.value;
+    }
+    return hasFiles.value;
+  });
 
   function isTerminalStatus(status: string): boolean {
     return status !== "running";
@@ -112,7 +124,15 @@ export function useToolRun({ slug }: UseToolRunOptions) {
       errorMessage.value = "Verktyget är inte laddat.";
       return;
     }
-    if (!hasFiles.value) {
+    if (toolInputs.hasSchema.value) {
+      if (!toolInputs.isValid.value) {
+        errorMessage.value =
+          toolInputs.fileError.value ??
+          Object.values(toolInputs.fieldErrors.value)[0] ??
+          "Kontrollera indata.";
+        return;
+      }
+    } else if (!hasFiles.value) {
       errorMessage.value = "Välj minst en fil.";
       return;
     }
@@ -127,6 +147,22 @@ export function useToolRun({ slug }: UseToolRunOptions) {
     for (const file of selectedFiles.value) {
       formData.append("files", file);
     }
+
+    let inputValues: Record<string, JsonValue> = {};
+    if (toolInputs.hasSchema.value) {
+      try {
+        inputValues = toolInputs.buildApiValues();
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          errorMessage.value = error.message;
+        } else {
+          errorMessage.value = "Indata är ogiltig.";
+        }
+        isSubmitting.value = false;
+        return;
+      }
+    }
+    formData.append("inputs", JSON.stringify(inputValues));
 
     try {
       const response = await apiFetch<StartToolRunResponse>(
@@ -266,6 +302,14 @@ export function useToolRun({ slug }: UseToolRunOptions) {
     selectedFiles.value = files;
   }
 
+  watch(
+    () => slug.value,
+    () => {
+      selectedFiles.value = [];
+      toolInputs.resetValues();
+    },
+  );
+
   // Watch for status changes to manage polling
   watch(
     () => currentRun.value?.status,
@@ -290,6 +334,15 @@ export function useToolRun({ slug }: UseToolRunOptions) {
     // State
     tool,
     selectedFiles,
+    inputSchema,
+    inputValues: toolInputs.values,
+    inputFields: toolInputs.nonFileFields,
+    inputFieldErrors: toolInputs.fieldErrors,
+    fileField: toolInputs.fileField,
+    fileAccept: toolInputs.fileAccept,
+    fileLabel: toolInputs.fileLabel,
+    fileMultiple: toolInputs.fileMultiple,
+    fileError: toolInputs.fileError,
     currentRun,
     completedSteps,
     stateRev,
@@ -305,6 +358,7 @@ export function useToolRun({ slug }: UseToolRunOptions) {
 
     // Computed
     hasFiles,
+    canSubmitRun,
     hasResults,
     isRunning,
     hasNextActions,

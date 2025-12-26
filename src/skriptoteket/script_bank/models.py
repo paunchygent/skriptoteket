@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict
 
+from skriptoteket.domain.scripting.tool_inputs import ToolInputField
 from skriptoteket.domain.scripting.ui.contract_v2 import UiActionField
 
 
@@ -17,3 +18,4 @@ class ScriptBankEntry(BaseModel):
     entrypoint: str = "run_tool"
     source_filename: str
     settings_schema: list[UiActionField] | None = None
+    input_schema: list[ToolInputField] | None = None

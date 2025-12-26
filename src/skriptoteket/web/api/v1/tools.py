@@ -1,7 +1,8 @@
+import json
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 from pydantic import BaseModel, ConfigDict, JsonValue
 
 from skriptoteket.application.scripting.commands import RunActiveToolCommand
@@ -14,6 +15,7 @@ from skriptoteket.domain.catalog.models import Tool
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.models import ToolVersion, VersionState
+from skriptoteket.domain.scripting.tool_inputs import ToolInputField
 from skriptoteket.domain.scripting.tool_usage_instructions import (
     USAGE_INSTRUCTIONS_SEEN_HASH_KEY,
     USAGE_INSTRUCTIONS_SESSION_CONTEXT,
@@ -56,6 +58,7 @@ class ToolMetadataResponse(BaseModel):
     usage_instructions: str | None
     usage_instructions_seen: bool
     upload_constraints: UploadConstraints
+    input_schema: list[ToolInputField] | None = None
 
 
 class StartToolRunResponse(BaseModel):
@@ -179,6 +182,7 @@ async def get_tool_by_slug(
             max_file_bytes=settings.UPLOAD_MAX_FILE_BYTES,
             max_total_bytes=settings.UPLOAD_MAX_TOTAL_BYTES,
         ),
+        input_schema=version.input_schema,
     )
 
 
@@ -190,17 +194,41 @@ async def start_tool_run(
     settings: FromDishka[Settings],
     user: User = Depends(require_user_api),
     _: None = Depends(require_csrf_token),
-    files: list[UploadFile] = File(...),
+    files: list[UploadFile] | None = File(None),
+    inputs: str | None = Form(None),
 ) -> StartToolRunResponse:
-    input_files = await read_upload_files(
-        files=files,
-        max_files=settings.UPLOAD_MAX_FILES,
-        max_file_bytes=settings.UPLOAD_MAX_FILE_BYTES,
-        max_total_bytes=settings.UPLOAD_MAX_TOTAL_BYTES,
-    )
+    input_files: list[tuple[str, bytes]] = []
+    if files:
+        input_files = await read_upload_files(
+            files=files,
+            max_files=settings.UPLOAD_MAX_FILES,
+            max_file_bytes=settings.UPLOAD_MAX_FILE_BYTES,
+            max_total_bytes=settings.UPLOAD_MAX_TOTAL_BYTES,
+        )
+
+    input_values: dict[str, JsonValue] = {}
+    if inputs is not None and inputs.strip():
+        try:
+            parsed = json.loads(inputs)
+        except json.JSONDecodeError as exc:
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="inputs must be valid JSON",
+            ) from exc
+        if not isinstance(parsed, dict):
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="inputs must be a JSON object",
+            )
+        input_values = parsed
+
     result = await handler.handle(
         actor=user,
-        command=RunActiveToolCommand(tool_slug=slug, input_files=input_files),
+        command=RunActiveToolCommand(
+            tool_slug=slug,
+            input_files=input_files,
+            input_values=input_values,
+        ),
     )
     return StartToolRunResponse(run_id=result.run.id)
 

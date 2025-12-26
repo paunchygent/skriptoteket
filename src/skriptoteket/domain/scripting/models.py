@@ -5,10 +5,14 @@ from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.scripting.input_files import InputManifest
+from skriptoteket.domain.scripting.tool_inputs import (
+    ToolInputSchema,
+    normalize_tool_input_schema,
+)
 from skriptoteket.domain.scripting.tool_settings import (
     ToolSettingsSchema,
     normalize_tool_settings_schema,
@@ -52,6 +56,7 @@ class ToolVersion(BaseModel):
     entrypoint: str
     content_hash: str
     settings_schema: list[UiActionField] | None = None
+    input_schema: ToolInputSchema | None = None
     usage_instructions: str | None = None
     derived_from_version_id: UUID | None = None
 
@@ -87,9 +92,10 @@ class ToolRun(BaseModel):
     finished_at: datetime | None = None
 
     workdir_path: str
-    input_filename: str
+    input_filename: str | None = None
     input_size_bytes: int
     input_manifest: InputManifest
+    input_values: dict[str, JsonValue] = Field(default_factory=dict)
 
     html_output: str | None = None
     stdout: str | None = None
@@ -180,6 +186,7 @@ def create_draft_version(
     source_code: str,
     entrypoint: str,
     settings_schema: ToolSettingsSchema | None = None,
+    input_schema: ToolInputSchema | None = None,
     usage_instructions: str | None = None,
     created_by_user_id: UUID,
     derived_from_version_id: UUID | None,
@@ -202,6 +209,7 @@ def create_draft_version(
             source_code=normalized_source_code,
         ),
         settings_schema=normalize_tool_settings_schema(settings_schema=settings_schema),
+        input_schema=normalize_tool_input_schema(input_schema=input_schema),
         usage_instructions=_normalize_optional_text(usage_instructions),
         derived_from_version_id=derived_from_version_id,
         created_by_user_id=created_by_user_id,
@@ -218,6 +226,7 @@ def save_draft_snapshot(
     source_code: str,
     entrypoint: str,
     settings_schema: ToolSettingsSchema | None = None,
+    input_schema: ToolInputSchema | None = None,
     usage_instructions: str | None = None,
     saved_by_user_id: UUID,
     change_summary: str | None,
@@ -254,6 +263,7 @@ def save_draft_snapshot(
             source_code=normalized_source_code,
         ),
         settings_schema=normalize_tool_settings_schema(settings_schema=settings_schema),
+        input_schema=normalize_tool_input_schema(input_schema=input_schema),
         usage_instructions=_normalize_optional_text(usage_instructions),
         derived_from_version_id=previous_version.id,
         created_by_user_id=saved_by_user_id,
@@ -348,6 +358,7 @@ def publish_version(
         entrypoint=reviewed_version.entrypoint,
         content_hash=reviewed_version.content_hash,
         settings_schema=reviewed_version.settings_schema,
+        input_schema=reviewed_version.input_schema,
         usage_instructions=reviewed_version.usage_instructions,
         derived_from_version_id=reviewed_version.id,
         created_by_user_id=published_by_user_id,
@@ -411,6 +422,7 @@ def rollback_to_version(
         entrypoint=archived_version.entrypoint,
         content_hash=archived_version.content_hash,
         settings_schema=archived_version.settings_schema,
+        input_schema=archived_version.input_schema,
         usage_instructions=archived_version.usage_instructions,
         derived_from_version_id=archived_version.id,
         created_by_user_id=published_by_user_id,
@@ -434,21 +446,27 @@ def start_tool_version_run(
     context: RunContext,
     requested_by_user_id: UUID,
     workdir_path: str,
-    input_filename: str,
+    input_filename: str | None,
     input_size_bytes: int,
     input_manifest: InputManifest,
+    input_values: dict[str, JsonValue] | None = None,
     now: datetime,
 ) -> ToolRun:
     normalized_workdir_path = workdir_path.strip()
     if not normalized_workdir_path:
         raise validation_error("workdir_path is required")
-    normalized_input_filename = input_filename.strip()
-    if not normalized_input_filename:
-        raise validation_error("input_filename is required")
+    normalized_input_filename: str | None = None
+    if input_filename is not None:
+        stripped = input_filename.strip()
+        if not stripped:
+            raise validation_error("input_filename must not be blank")
+        normalized_input_filename = stripped
     if input_size_bytes < 0:
         raise validation_error(
             "input_size_bytes must be >= 0", details={"input_size_bytes": input_size_bytes}
         )
+
+    normalized_input_values = input_values if input_values is not None else {}
 
     return ToolRun(
         id=run_id,
@@ -465,6 +483,7 @@ def start_tool_version_run(
         input_filename=normalized_input_filename,
         input_size_bytes=input_size_bytes,
         input_manifest=input_manifest,
+        input_values=normalized_input_values,
         artifacts_manifest={},
     )
 

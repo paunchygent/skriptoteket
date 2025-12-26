@@ -17,12 +17,17 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
-from skriptoteket.domain.scripting.input_files import normalize_input_files
+from skriptoteket.domain.scripting.input_files import InputManifest, normalize_input_files
 from skriptoteket.domain.scripting.models import (
     RunStatus,
     ToolVersion,
     finish_run,
     start_tool_version_run,
+)
+from skriptoteket.domain.scripting.tool_inputs import (
+    normalize_tool_input_schema,
+    normalize_tool_input_values,
+    validate_input_files_count,
 )
 from skriptoteket.domain.scripting.tool_settings import (
     compute_settings_session_context,
@@ -175,10 +180,37 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         started_at: float,
     ) -> ExecuteToolVersionResult:
         """Execute tool version with tracing span context."""
-        normalized_input_files, input_manifest = normalize_input_files(
-            input_files=command.input_files
-        )
-        primary_filename = normalized_input_files[0][0]
+        normalized_input_values: dict[str, JsonValue] = {}
+        normalized_input_files: list[tuple[str, bytes]] = []
+        input_manifest = InputManifest()
+
+        if version.input_schema is None:
+            normalized_input_files, input_manifest = normalize_input_files(
+                input_files=command.input_files
+            )
+        else:
+            input_schema = normalize_tool_input_schema(input_schema=version.input_schema)
+            if input_schema is None:
+                raise DomainError(
+                    code=ErrorCode.VALIDATION_ERROR,
+                    message="Invalid input_schema (unexpected null)",
+                )
+
+            validate_input_files_count(
+                input_schema=input_schema,
+                files_count=len(command.input_files),
+            )
+            normalized_input_values = normalize_tool_input_values(
+                input_schema=input_schema,
+                values=command.input_values,
+            )
+
+            if command.input_files:
+                normalized_input_files, input_manifest = normalize_input_files(
+                    input_files=command.input_files
+                )
+
+        primary_filename = normalized_input_files[0][0] if normalized_input_files else None
         total_size_bytes = sum(len(content) for _, content in normalized_input_files)
 
         run = start_tool_version_run(
@@ -191,6 +223,7 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
             input_filename=primary_filename,
             input_size_bytes=total_size_bytes,
             input_manifest=input_manifest,
+            input_values=normalized_input_values,
             now=now,
         )
 
@@ -260,6 +293,7 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
                 version=version,
                 context=command.context,
                 input_files=normalized_input_files,
+                input_values=normalized_input_values,
                 memory_json=memory_json,
             )
         except SyntaxError as exc:

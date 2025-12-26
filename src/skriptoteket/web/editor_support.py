@@ -24,6 +24,7 @@ ERSÄTT denna kod med din egen verktygslogik.
 
 Demonstrerar:
 - Indatafiler via SKRIPTOTEKET_INPUT_MANIFEST
+- Indata via SKRIPTOTEKET_INPUTS (input_schema)
 - Användarinställningar via SKRIPTOTEKET_MEMORY_PATH
 - Utdatatyper: notice, markdown, table (+ fler i kommentarer)
 - Skriva artefakter till output_dir
@@ -40,18 +41,17 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
     output_root = Path(output_dir)
     output_root.mkdir(parents=True, exist_ok=True)
 
+    # ─── INDATA (valfritt) ───
+    # Form-baserade indata skickas via SKRIPTOTEKET_INPUTS (JSON-objekt).
+    inputs_raw = os.environ.get("SKRIPTOTEKET_INPUTS", "")
+    inputs = json.loads(inputs_raw) if inputs_raw.strip() else {}
+    # Exempel: title = inputs.get("title")
+
     # ─── INDATAFILER ───
     # Manifest innehåller: name (originalnamn), path (absolut sökväg), bytes (storlek)
     manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
     manifest = json.loads(manifest_raw) if manifest_raw.strip() else {"files": []}
     files = manifest.get("files", []) if isinstance(manifest, dict) else []
-
-    if not files:
-        return {
-            "outputs": [{"kind": "notice", "level": "error", "message": "Ingen fil uppladdad."}],
-            "next_actions": [],
-            "state": None,
-        }
 
     # ─── ANVÄNDARINSTÄLLNINGAR (valfritt) ───
     # Läs inställningar som användaren sparat via "Inställningar"-panelen
@@ -70,7 +70,9 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
     # ─── SKRIV ARTEFAKT (valfritt) ───
     # Filer i output_dir blir nedladdningsbara artefakter
     summary_path = output_root / "sammanfattning.txt"
-    summary_path.write_text(f"Antal filer: {len(files)}\\nInställningar: {settings}")
+    summary_path.write_text(
+        f"Antal filer: {len(files)}\\nIndata: {inputs}\\nInställningar: {settings}"
+    )
 
     # ─── RETURNERA RESULTAT ───
     outputs = [

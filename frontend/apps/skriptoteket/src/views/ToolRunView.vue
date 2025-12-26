@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 
 import type { components } from "../api/openapi";
 import { UiOutputRenderer } from "../components/ui-outputs";
+import ToolInputForm from "../components/tool-run/ToolInputForm.vue";
 import ToolRunActions from "../components/tool-run/ToolRunActions.vue";
 import ToolRunArtifacts from "../components/tool-run/ToolRunArtifacts.vue";
 import ToolRunControlBar from "../components/tool-run/ToolRunControlBar.vue";
@@ -27,6 +28,15 @@ const slug = computed(() => {
 const {
   tool,
   selectedFiles,
+  inputSchema,
+  inputValues,
+  inputFields,
+  inputFieldErrors,
+  fileField,
+  fileAccept,
+  fileLabel,
+  fileMultiple,
+  fileError,
   currentRun,
   completedSteps,
   isLoadingTool,
@@ -37,6 +47,7 @@ const {
   hasResults,
   hasNextActions,
   canSubmitActions,
+  canSubmitRun,
   loadTool,
   submitRun,
   submitAction,
@@ -92,6 +103,10 @@ function onToggleSettings(): void {
 
 function onSettingsValuesUpdate(next: Record<string, string | boolean | string[]>): void {
   settingsValues.value = next;
+}
+
+function onInputValuesUpdate(next: Record<string, string | boolean>): void {
+  inputValues.value = next;
 }
 
 function statusLabel(status: string): string {
@@ -202,12 +217,28 @@ watch(hasSettingsSchema, (hasSchema) => {
 
       <!-- Control bar section -->
       <div class="p-4 border-b border-navy/20">
+        <ToolInputForm
+          v-if="inputSchema !== null"
+          :id-base="`${idBase}-prerun`"
+          :fields="inputFields"
+          :model-value="inputValues"
+          :errors="inputFieldErrors"
+          class="mb-4"
+          @update:model-value="onInputValuesUpdate"
+        />
+
         <ToolRunControlBar
           :selected-files="selectedFiles"
           :is-running="isSubmitting || isRunning"
           :has-results="hasResults"
           :has-settings="hasSettingsSchema"
           :is-settings-open="isSettingsOpen"
+          :show-file-picker="inputSchema === null || fileField !== null"
+          :file-label="fileLabel"
+          :file-accept="fileAccept"
+          :file-multiple="fileMultiple"
+          :file-error="fileError"
+          :can-run="canSubmitRun"
           @files-selected="onFilesSelected"
           @run="onRun"
           @clear="onClear"

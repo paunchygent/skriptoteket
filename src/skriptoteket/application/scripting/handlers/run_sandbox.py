@@ -97,6 +97,7 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
                 version_id=command.version_id,
                 context=RunContext.SANDBOX,
                 input_files=command.input_files,
+                input_values=command.input_values,
             ),
         )
 

@@ -1,10 +1,11 @@
+import json
 from datetime import datetime
 from pathlib import Path
 from typing import Literal
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
@@ -34,6 +35,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, valida
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.models import RunStatus, ToolRun, ToolVersion, VersionState
+from skriptoteket.domain.scripting.tool_inputs import ToolInputField
 from skriptoteket.domain.scripting.ui.contract_v2 import UiActionField
 from skriptoteket.infrastructure.runner.path_safety import validate_output_path
 from skriptoteket.protocols.catalog import (
@@ -112,6 +114,7 @@ class EditorBootResponse(BaseModel):
     entrypoint: str
     source_code: str
     settings_schema: list[UiActionField] | None = None
+    input_schema: list[ToolInputField] | None = None
     usage_instructions: str | None = None
 
 
@@ -121,6 +124,7 @@ class CreateDraftVersionRequest(BaseModel):
     entrypoint: str = DEFAULT_ENTRYPOINT
     source_code: str
     settings_schema: list[UiActionField] | None = None
+    input_schema: list[ToolInputField] | None = None
     usage_instructions: str | None = None
     change_summary: str | None = None
     derived_from_version_id: UUID | None = None
@@ -132,6 +136,7 @@ class SaveDraftVersionRequest(BaseModel):
     entrypoint: str = DEFAULT_ENTRYPOINT
     source_code: str
     settings_schema: list[UiActionField] | None = None
+    input_schema: list[ToolInputField] | None = None
     usage_instructions: str | None = None
     change_summary: str | None = None
     expected_parent_version_id: UUID
@@ -312,9 +317,17 @@ def _to_version_summary(version: ToolVersion) -> EditorVersionSummary:
 
 def _resolve_editor_state(
     selected_version: ToolVersion | None,
-) -> tuple[str, str, list[UiActionField] | None, str | None, EditorSaveMode, UUID | None]:
+) -> tuple[
+    str,
+    str,
+    list[UiActionField] | None,
+    list[ToolInputField] | None,
+    str | None,
+    EditorSaveMode,
+    UUID | None,
+]:
     if selected_version is None:
-        return DEFAULT_ENTRYPOINT, STARTER_TEMPLATE, None, None, "create_draft", None
+        return DEFAULT_ENTRYPOINT, STARTER_TEMPLATE, None, None, None, "create_draft", None
 
     is_draft = selected_version.state is VersionState.DRAFT
     save_mode: EditorSaveMode = "snapshot" if is_draft else "create_draft"
@@ -323,6 +336,7 @@ def _resolve_editor_state(
         selected_version.entrypoint,
         selected_version.source_code,
         selected_version.settings_schema,
+        selected_version.input_schema,
         selected_version.usage_instructions,
         save_mode,
         derived_from_version_id,
@@ -339,6 +353,7 @@ def _build_editor_response(
         entrypoint,
         source_code,
         settings_schema,
+        input_schema,
         usage_instructions,
         save_mode,
         derived_from_version_id,
@@ -353,6 +368,7 @@ def _build_editor_response(
         entrypoint=entrypoint,
         source_code=source_code,
         settings_schema=settings_schema,
+        input_schema=input_schema,
         usage_instructions=usage_instructions,
     )
 
@@ -722,6 +738,8 @@ async def create_draft_version(
     }
     if "settings_schema" in payload.model_fields_set:
         command_payload["settings_schema"] = payload.settings_schema
+    if "input_schema" in payload.model_fields_set:
+        command_payload["input_schema"] = payload.input_schema
     if "usage_instructions" in payload.model_fields_set:
         command_payload["usage_instructions"] = payload.usage_instructions
     result = await handler.handle(
@@ -752,6 +770,8 @@ async def save_draft_version(
     }
     if "settings_schema" in payload.model_fields_set:
         command_payload["settings_schema"] = payload.settings_schema
+    if "input_schema" in payload.model_fields_set:
+        command_payload["input_schema"] = payload.input_schema
     if "usage_instructions" in payload.model_fields_set:
         command_payload["usage_instructions"] = payload.usage_instructions
     result = await handler.handle(
@@ -858,24 +878,45 @@ async def run_sandbox(
     settings: FromDishka[Settings],
     user: User = Depends(require_contributor_api),
     _: None = Depends(require_csrf_token),
-    files: list[UploadFile] = File(...),
+    files: list[UploadFile] | None = File(None),
+    inputs: str | None = Form(None),
 ) -> SandboxRunResponse:
     version = await versions_repo.get_by_id(version_id=version_id)
     if version is None:
         raise not_found("ToolVersion", str(version_id))
 
-    input_files = await read_upload_files(
-        files=files,
-        max_files=settings.UPLOAD_MAX_FILES,
-        max_file_bytes=settings.UPLOAD_MAX_FILE_BYTES,
-        max_total_bytes=settings.UPLOAD_MAX_TOTAL_BYTES,
-    )
+    input_files: list[tuple[str, bytes]] = []
+    if files:
+        input_files = await read_upload_files(
+            files=files,
+            max_files=settings.UPLOAD_MAX_FILES,
+            max_file_bytes=settings.UPLOAD_MAX_FILE_BYTES,
+            max_total_bytes=settings.UPLOAD_MAX_TOTAL_BYTES,
+        )
+
+    input_values: dict[str, JsonValue] = {}
+    if inputs is not None and inputs.strip():
+        try:
+            parsed = json.loads(inputs)
+        except json.JSONDecodeError as exc:
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="inputs must be valid JSON",
+            ) from exc
+        if not isinstance(parsed, dict):
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="inputs must be a JSON object",
+            )
+        input_values = parsed
+
     result = await handler.handle(
         actor=user,
         command=RunSandboxCommand(
             tool_id=version.tool_id,
             version_id=version_id,
             input_files=input_files,
+            input_values=input_values,
         ),
     )
     run = result.run

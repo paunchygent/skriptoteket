@@ -931,12 +931,16 @@ export interface components {
         /** Body_run_sandbox_api_v1_editor_tool_versions__version_id__run_sandbox_post */
         Body_run_sandbox_api_v1_editor_tool_versions__version_id__run_sandbox_post: {
             /** Files */
-            files: string[];
+            files?: string[] | null;
+            /** Inputs */
+            inputs?: string | null;
         };
         /** Body_start_tool_run_api_v1_tools__slug__run_post */
         Body_start_tool_run_api_v1_tools__slug__run_post: {
             /** Files */
-            files: string[];
+            files?: string[] | null;
+            /** Inputs */
+            inputs?: string | null;
         };
         /**
          * CategoryItem
@@ -991,6 +995,8 @@ export interface components {
              * @default run_tool
              */
             entrypoint: string;
+            /** Input Schema */
+            input_schema?: (components["schemas"]["ToolInputStringField"] | components["schemas"]["ToolInputTextField"] | components["schemas"]["ToolInputIntegerField"] | components["schemas"]["ToolInputNumberField"] | components["schemas"]["ToolInputBooleanField"] | components["schemas"]["ToolInputEnumField"] | components["schemas"]["ToolInputFileField"])[] | null;
             /** Settings Schema */
             settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
             /** Source Code */
@@ -1063,6 +1069,8 @@ export interface components {
             derived_from_version_id: string | null;
             /** Entrypoint */
             entrypoint: string;
+            /** Input Schema */
+            input_schema?: (components["schemas"]["ToolInputStringField"] | components["schemas"]["ToolInputTextField"] | components["schemas"]["ToolInputIntegerField"] | components["schemas"]["ToolInputNumberField"] | components["schemas"]["ToolInputBooleanField"] | components["schemas"]["ToolInputEnumField"] | components["schemas"]["ToolInputFileField"])[] | null;
             /**
              * Save Mode
              * @enum {string}
@@ -1500,6 +1508,8 @@ export interface components {
              * Format: uuid
              */
             expected_parent_version_id: string;
+            /** Input Schema */
+            input_schema?: (components["schemas"]["ToolInputStringField"] | components["schemas"]["ToolInputTextField"] | components["schemas"]["ToolInputIntegerField"] | components["schemas"]["ToolInputNumberField"] | components["schemas"]["ToolInputBooleanField"] | components["schemas"]["ToolInputEnumField"] | components["schemas"]["ToolInputFileField"])[] | null;
             /** Settings Schema */
             settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
             /** Source Code */
@@ -1739,6 +1749,105 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** ToolInputBooleanField */
+        ToolInputBooleanField: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "boolean";
+            /** Label */
+            label: string;
+            /** Name */
+            name: string;
+        };
+        /** ToolInputEnumField */
+        ToolInputEnumField: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "enum";
+            /** Label */
+            label: string;
+            /** Name */
+            name: string;
+            /** Options */
+            options: components["schemas"]["ToolInputEnumOption"][];
+        };
+        /** ToolInputEnumOption */
+        ToolInputEnumOption: {
+            /** Label */
+            label: string;
+            /** Value */
+            value: string;
+        };
+        /** ToolInputFileField */
+        ToolInputFileField: {
+            /** Accept */
+            accept?: string[] | null;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "file";
+            /** Label */
+            label: string;
+            /** Max */
+            max: number;
+            /** Min */
+            min: number;
+            /** Name */
+            name: string;
+        };
+        /** ToolInputIntegerField */
+        ToolInputIntegerField: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "integer";
+            /** Label */
+            label: string;
+            /** Name */
+            name: string;
+        };
+        /** ToolInputNumberField */
+        ToolInputNumberField: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "number";
+            /** Label */
+            label: string;
+            /** Name */
+            name: string;
+        };
+        /** ToolInputStringField */
+        ToolInputStringField: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "string";
+            /** Label */
+            label: string;
+            /** Name */
+            name: string;
+        };
+        /** ToolInputTextField */
+        ToolInputTextField: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "text";
+            /** Label */
+            label: string;
+            /** Name */
+            name: string;
+        };
         /**
          * ToolItem
          * @description Tool for API responses.
@@ -1763,6 +1872,8 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /** Input Schema */
+            input_schema?: (components["schemas"]["ToolInputStringField"] | components["schemas"]["ToolInputTextField"] | components["schemas"]["ToolInputIntegerField"] | components["schemas"]["ToolInputNumberField"] | components["schemas"]["ToolInputBooleanField"] | components["schemas"]["ToolInputEnumField"] | components["schemas"]["ToolInputFileField"])[] | null;
             /** Slug */
             slug: string;
             /** Summary */
@@ -2852,7 +2963,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
+        requestBody?: {
             content: {
                 "multipart/form-data": components["schemas"]["Body_run_sandbox_api_v1_editor_tool_versions__version_id__run_sandbox_post"];
             };
@@ -3701,7 +3812,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
+        requestBody?: {
             content: {
                 "multipart/form-data": components["schemas"]["Body_start_tool_run_api_v1_tools__slug__run_post"];
             };

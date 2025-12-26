@@ -5,6 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
 from skriptoteket.domain.scripting.models import RunContext, ToolRun, ToolVersion
+from skriptoteket.domain.scripting.tool_inputs import ToolInputSchema
 from skriptoteket.domain.scripting.tool_settings import ToolSettingsSchema
 
 type InputFile = tuple[str, bytes]
@@ -16,7 +17,8 @@ class ExecuteToolVersionCommand(BaseModel):
     tool_id: UUID
     version_id: UUID
     context: RunContext
-    input_files: list[InputFile]
+    input_files: list[InputFile] = Field(default_factory=list)
+    input_values: dict[str, JsonValue] = Field(default_factory=dict)
 
 
 class ExecuteToolVersionResult(BaseModel):
@@ -34,6 +36,7 @@ class CreateDraftVersionCommand(BaseModel):
     entrypoint: str = "run_tool"
     source_code: str
     settings_schema: ToolSettingsSchema | None = None
+    input_schema: ToolInputSchema | None = None
     usage_instructions: str | None = None
     change_summary: str | None = None
 
@@ -51,6 +54,7 @@ class SaveDraftVersionCommand(BaseModel):
     entrypoint: str = "run_tool"
     source_code: str
     settings_schema: ToolSettingsSchema | None = None
+    input_schema: ToolInputSchema | None = None
     usage_instructions: str | None = None
     change_summary: str | None = None
     expected_parent_version_id: UUID
@@ -109,7 +113,8 @@ class RunSandboxCommand(BaseModel):
 
     tool_id: UUID
     version_id: UUID
-    input_files: list[InputFile]
+    input_files: list[InputFile] = Field(default_factory=list)
+    input_values: dict[str, JsonValue] = Field(default_factory=dict)
 
 
 class RunSandboxResult(BaseModel):
@@ -125,7 +130,8 @@ class RunActiveToolCommand(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     tool_slug: str
-    input_files: list[InputFile]
+    input_files: list[InputFile] = Field(default_factory=list)
+    input_values: dict[str, JsonValue] = Field(default_factory=dict)
 
 
 class RunActiveToolResult(BaseModel):

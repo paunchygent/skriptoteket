@@ -23,6 +23,7 @@ type EditorWorkspacePanelProps = {
   entrypoint: string;
   sourceCode: string;
   settingsSchemaText: string;
+  inputSchemaText: string;
   usageInstructions: string;
 
   metadataTitle: string;
@@ -80,6 +81,7 @@ const emit = defineEmits<{
   (event: "update:entrypoint", value: string): void;
   (event: "update:sourceCode", value: string): void;
   (event: "update:settingsSchemaText", value: string): void;
+  (event: "update:inputSchemaText", value: string): void;
   (event: "update:usageInstructions", value: string): void;
   (event: "update:metadataTitle", value: string): void;
   (event: "update:metadataSlug", value: string): void;
@@ -212,6 +214,33 @@ const emit = defineEmits<{
             class="w-full border border-navy bg-white px-3 py-2 text-sm font-mono text-navy shadow-brutal-sm"
             placeholder="[{&quot;name&quot;:&quot;theme_color&quot;,&quot;label&quot;:&quot;Färgtema&quot;,&quot;kind&quot;:&quot;string&quot;}]"
             @input="emit('update:settingsSchemaText', ($event.target as HTMLTextAreaElement).value)"
+          />
+        </div>
+
+        <div class="border-t border-navy/20 pt-4 space-y-3">
+          <div class="space-y-1">
+            <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
+              Indata (input_schema)
+            </h2>
+            <p class="text-sm text-navy/60">
+              Valfritt. Ange en JSON-array av fält som visas innan körning (string, text, integer,
+              number, boolean, enum, file). V1: max 1 file-fält och file-fält kräver min/max.
+            </p>
+          </div>
+
+          <label
+            for="tool-input-schema"
+            class="text-xs font-semibold uppercase tracking-wide text-navy/70"
+          >
+            Schema (JSON)
+          </label>
+          <textarea
+            id="tool-input-schema"
+            :value="inputSchemaText"
+            rows="10"
+            class="w-full border border-navy bg-white px-3 py-2 text-sm font-mono text-navy shadow-brutal-sm"
+            placeholder="[{&quot;name&quot;:&quot;title&quot;,&quot;label&quot;:&quot;Titel&quot;,&quot;kind&quot;:&quot;string&quot;}]"
+            @input="emit('update:inputSchemaText', ($event.target as HTMLTextAreaElement).value)"
           />
         </div>
 

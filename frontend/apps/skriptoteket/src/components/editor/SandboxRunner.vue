@@ -128,7 +128,7 @@ async function pollRunStatus(runId: string): Promise<void> {
 }
 
 async function runSandbox(): Promise<void> {
-  if (!hasFiles.value || isRunning.value) return;
+  if (isRunning.value) return;
 
   isRunning.value = true;
   errorMessage.value = null;
@@ -287,7 +287,7 @@ onBeforeUnmount(() => {
 
       <button
         type="button"
-        :disabled="!hasFiles || isRunning"
+        :disabled="isRunning"
         class="btn-cta min-w-[120px]"
         @click="runSandbox"
       >

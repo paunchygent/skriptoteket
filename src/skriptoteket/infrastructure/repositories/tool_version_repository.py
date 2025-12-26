@@ -151,6 +151,11 @@ class PostgreSQLToolVersionRepository(ToolVersionRepositoryProtocol):
             if version.settings_schema is None
             else [field.model_dump(mode="json") for field in version.settings_schema]
         )
+        input_schema = (
+            None
+            if version.input_schema is None
+            else [field.model_dump(mode="json") for field in version.input_schema]
+        )
         model = ToolVersionModel(
             id=version.id,
             tool_id=version.tool_id,
@@ -160,6 +165,7 @@ class PostgreSQLToolVersionRepository(ToolVersionRepositoryProtocol):
             entrypoint=version.entrypoint,
             content_hash=version.content_hash,
             settings_schema=settings_schema,
+            input_schema=input_schema,
             usage_instructions=version.usage_instructions,
             derived_from_version_id=version.derived_from_version_id,
             created_by_user_id=version.created_by_user_id,

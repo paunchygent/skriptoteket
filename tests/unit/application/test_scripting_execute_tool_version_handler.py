@@ -137,9 +137,11 @@ async def test_execute_tool_version_commits_before_runner_execute(now: datetime)
         version: ToolVersion,
         context: RunContext,
         input_files: list[tuple[str, bytes]],
+        input_values: dict[str, object],
         memory_json: bytes,
     ) -> ToolExecutionResult:
         del run_id, version, context, input_files, memory_json
+        assert input_values == {}
         assert uow.active is False
         return execution_result
 

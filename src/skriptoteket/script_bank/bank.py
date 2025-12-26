@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+from skriptoteket.domain.scripting.tool_inputs import (
+    ToolInputEnumField,
+    ToolInputEnumOption,
+    ToolInputFileField,
+    ToolInputStringField,
+)
 from skriptoteket.domain.scripting.ui.contract_v2 import UiStringField
 
 from .models import ScriptBankEntry
@@ -158,6 +164,43 @@ Det här verktyget visar alla Skriptoteket-funktioner:
         source_filename="demo_settings_test.py",
         settings_schema=[
             UiStringField(name="theme_color", label="Färgtema"),
+        ],
+    ),
+    ScriptBankEntry(
+        slug="demo-inputs",
+        title="Demo: Indata utan filer (input_schema)",
+        summary="Demoverktyg för ST-12-04: text/dropdown inputs utan filuppladdning.",
+        profession_slugs=["gemensamt"],
+        category_slugs=["ovrigt"],
+        source_filename="demo_inputs.py",
+        input_schema=[
+            ToolInputStringField(name="title", label="Titel"),
+            ToolInputEnumField(
+                name="format",
+                label="Format",
+                options=[
+                    ToolInputEnumOption(value="pdf", label="PDF"),
+                    ToolInputEnumOption(value="txt", label="Text"),
+                ],
+            ),
+        ],
+    ),
+    ScriptBankEntry(
+        slug="demo-inputs-file",
+        title="Demo: Indata + filer (input_schema)",
+        summary="Demoverktyg för ST-12-04: inputs + file-fält med accept/min/max.",
+        profession_slugs=["gemensamt"],
+        category_slugs=["ovrigt"],
+        source_filename="demo_inputs.py",
+        input_schema=[
+            ToolInputStringField(name="title", label="Titel"),
+            ToolInputFileField(
+                name="documents",
+                label="Dokument",
+                accept=[".txt", ".md"],
+                min=1,
+                max=2,
+            ),
         ],
     ),
 ]

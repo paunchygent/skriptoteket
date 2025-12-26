@@ -4,6 +4,8 @@ from collections.abc import Iterable
 from typing import Protocol
 from uuid import UUID
 
+from pydantic import JsonValue
+
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest, RunnerArtifact
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
 from skriptoteket.domain.scripting.models import RunContext, ToolVersion
@@ -27,5 +29,6 @@ class ToolRunnerProtocol(Protocol):
         version: ToolVersion,
         context: RunContext,
         input_files: list[tuple[str, bytes]],
+        input_values: dict[str, JsonValue],
         memory_json: bytes,
     ) -> ToolExecutionResult: ...

@@ -1,13 +1,26 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   selectedFiles: File[];
   isRunning: boolean;
   hasResults: boolean;
   hasSettings: boolean;
   isSettingsOpen: boolean;
-}>();
+  showFilePicker?: boolean;
+  fileLabel?: string;
+  fileAccept?: string;
+  fileMultiple?: boolean;
+  fileError?: string | null;
+  canRun?: boolean;
+}>(), {
+  showFilePicker: true,
+  fileLabel: "Filer",
+  fileAccept: undefined,
+  fileMultiple: true,
+  fileError: null,
+  canRun: undefined,
+});
 
 const emit = defineEmits<{
   (e: "files-selected", files: File[]): void;
@@ -17,6 +30,7 @@ const emit = defineEmits<{
 }>();
 
 const hasFiles = computed(() => props.selectedFiles.length > 0);
+const canRun = computed(() => props.canRun ?? hasFiles.value);
 const fileCountLabel = computed(() => {
   if (!hasFiles.value) return "Inga filer valda";
   return `${props.selectedFiles.length} fil(er) valda`;
@@ -32,9 +46,12 @@ function onFilesSelected(event: Event): void {
 
 <template>
   <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-    <div class="flex-1 space-y-1">
+    <div
+      v-if="showFilePicker"
+      class="flex-1 space-y-1"
+    >
       <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-        Filer
+        {{ fileLabel }}
       </label>
       <div class="flex items-center gap-3 w-full border border-navy bg-canvas px-3 py-2">
         <label
@@ -43,7 +60,8 @@ function onFilesSelected(event: Event): void {
           Välj filer
           <input
             type="file"
-            multiple
+            :multiple="fileMultiple"
+            :accept="fileAccept"
             class="sr-only"
             @change="onFilesSelected"
           >
@@ -52,11 +70,17 @@ function onFilesSelected(event: Event): void {
           {{ fileCountLabel }}
         </span>
       </div>
+      <p
+        v-if="fileError"
+        class="text-xs font-semibold text-burgundy"
+      >
+        {{ fileError }}
+      </p>
     </div>
 
     <button
       type="button"
-      :disabled="!hasFiles || isRunning"
+      :disabled="!canRun || isRunning"
       class="btn-cta min-w-[80px]"
       @click="emit('run')"
     >

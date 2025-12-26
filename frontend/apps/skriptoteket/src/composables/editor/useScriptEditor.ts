@@ -9,6 +9,7 @@ type EditorBootResponse = components["schemas"]["EditorBootResponse"];
 type EditorToolMetadataResponse = components["schemas"]["EditorToolMetadataResponse"];
 type SaveResult = components["schemas"]["SaveResult"];
 type SettingsSchema = NonNullable<EditorBootResponse["settings_schema"]>;
+type InputSchema = NonNullable<EditorBootResponse["input_schema"]>;
 
 type UseScriptEditorOptions = {
   toolId: Readonly<Ref<string>>;
@@ -29,6 +30,7 @@ export function useScriptEditor({
   const entrypoint = ref("");
   const sourceCode = ref("");
   const settingsSchemaText = ref("");
+  const inputSchemaText = ref("");
   const usageInstructions = ref("");
   const changeSummary = ref("");
   const metadataTitle = ref("");
@@ -46,6 +48,7 @@ export function useScriptEditor({
     entrypoint: string;
     sourceCode: string;
     settingsSchemaText: string;
+    inputSchemaText: string;
     usageInstructions: string;
   } | null>(null);
 
@@ -63,6 +66,7 @@ export function useScriptEditor({
       initialSnapshot.value.entrypoint !== entrypoint.value ||
       initialSnapshot.value.sourceCode !== sourceCode.value ||
       initialSnapshot.value.settingsSchemaText !== settingsSchemaText.value ||
+      initialSnapshot.value.inputSchemaText !== inputSchemaText.value ||
       initialSnapshot.value.usageInstructions !== usageInstructions.value
     );
   });
@@ -105,6 +109,9 @@ export function useScriptEditor({
     const schema = response.settings_schema;
     settingsSchemaText.value = schema ? JSON.stringify(schema, null, 2) : "";
 
+    const inputSchema = response.input_schema;
+    inputSchemaText.value = inputSchema ? JSON.stringify(inputSchema, null, 2) : "";
+
     usageInstructions.value = response.usage_instructions ?? "";
 
     changeSummary.value = "";
@@ -115,6 +122,7 @@ export function useScriptEditor({
       entrypoint: response.entrypoint,
       sourceCode: response.source_code,
       settingsSchemaText: settingsSchemaText.value,
+      inputSchemaText: inputSchemaText.value,
       usageInstructions: usageInstructions.value,
     };
   }
@@ -161,6 +169,24 @@ export function useScriptEditor({
     }
 
     return parsed as SettingsSchema;
+  }
+
+  function parseInputSchema(): InputSchema | null {
+    const raw = inputSchemaText.value.trim();
+    if (!raw) return null;
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      throw new Error("Input schema måste vara giltig JSON.");
+    }
+
+    if (!Array.isArray(parsed)) {
+      throw new Error("Input schema måste vara en JSON-lista (array).");
+    }
+
+    return parsed as InputSchema;
   }
 
   async function loadEditorFromPath(
@@ -253,6 +279,18 @@ export function useScriptEditor({
         return;
       }
 
+      let inputSchema: InputSchema | null = null;
+      try {
+        inputSchema = parseInputSchema();
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          errorMessage.value = error.message;
+        } else {
+          errorMessage.value = "Input schema är ogiltig.";
+        }
+        return;
+      }
+
       if (editor.value.save_mode === "snapshot") {
         const version = selectedVersion.value;
         if (!version) {
@@ -266,6 +304,7 @@ export function useScriptEditor({
             entrypoint: entrypointValue,
             source_code: sourceCode.value,
             settings_schema: settingsSchema,
+            input_schema: inputSchema,
             usage_instructions: normalizedOptionalString(usageInstructions.value),
             change_summary: summaryValue,
             expected_parent_version_id: version.id,
@@ -283,6 +322,7 @@ export function useScriptEditor({
           entrypoint: entrypointValue,
           source_code: sourceCode.value,
           settings_schema: settingsSchema,
+          input_schema: inputSchema,
           usage_instructions: normalizedOptionalString(usageInstructions.value),
           change_summary: summaryValue,
           derived_from_version_id: editor.value.derived_from_version_id,
@@ -423,6 +463,7 @@ export function useScriptEditor({
     entrypoint,
     sourceCode,
     settingsSchemaText,
+    inputSchemaText,
     usageInstructions,
     changeSummary,
     isLoading,

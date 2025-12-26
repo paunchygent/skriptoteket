@@ -11,6 +11,7 @@ from typing import Protocol
 from uuid import UUID
 
 import structlog
+from pydantic import JsonValue
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest, RunnerArtifact
@@ -112,7 +113,9 @@ def _build_workdir_archive(
     input_files: list[tuple[str, bytes]],
     memory_json: bytes,
 ) -> bytes:
-    normalized_input_files, _ = normalize_input_files(input_files=input_files)
+    normalized_input_files = (
+        normalize_input_files(input_files=input_files)[0] if input_files else []
+    )
 
     tar_buffer = io.BytesIO()
     with tarfile.open(fileobj=tar_buffer, mode="w") as tar:
@@ -188,6 +191,7 @@ class DockerToolRunner(ToolRunnerProtocol):
         version: ToolVersion,
         context: RunContext,
         input_files: list[tuple[str, bytes]],
+        input_values: dict[str, JsonValue],
         memory_json: bytes,
     ) -> ToolExecutionResult:
         if not await self._capacity.try_acquire():
@@ -210,6 +214,7 @@ class DockerToolRunner(ToolRunnerProtocol):
                 version=version,
                 context=context,
                 input_files=input_files,
+                input_values=input_values,
                 memory_json=memory_json,
             )
         finally:
@@ -222,6 +227,7 @@ class DockerToolRunner(ToolRunnerProtocol):
         version: ToolVersion,
         context: RunContext,
         input_files: list[tuple[str, bytes]],
+        input_values: dict[str, JsonValue],
         memory_json: bytes,
     ) -> ToolExecutionResult:
         import docker
@@ -235,7 +241,9 @@ class DockerToolRunner(ToolRunnerProtocol):
             if context is RunContext.SANDBOX
             else self._production_timeout_seconds
         )
-        normalized_input_files, _ = normalize_input_files(input_files=input_files)
+        normalized_input_files = (
+            normalize_input_files(input_files=input_files)[0] if input_files else []
+        )
         input_manifest = {
             "files": [
                 {"name": name, "path": f"/work/input/{name}", "bytes": len(content)}
@@ -243,6 +251,7 @@ class DockerToolRunner(ToolRunnerProtocol):
             ]
         }
         input_manifest_json = json.dumps(input_manifest, ensure_ascii=False, separators=(",", ":"))
+        inputs_json = json.dumps(input_values, ensure_ascii=False, separators=(",", ":"))
 
         logger.info(
             "Runner execution start",
@@ -265,6 +274,7 @@ class DockerToolRunner(ToolRunnerProtocol):
             "SKRIPTOTEKET_ENTRYPOINT": version.entrypoint,
             "SKRIPTOTEKET_INPUT_DIR": "/work/input",
             "SKRIPTOTEKET_INPUT_MANIFEST": input_manifest_json,
+            "SKRIPTOTEKET_INPUTS": inputs_json,
             "SKRIPTOTEKET_MEMORY_PATH": "/work/memory.json",
             "SKRIPTOTEKET_OUTPUT_DIR": "/work/output",
             "SKRIPTOTEKET_RESULT_PATH": "/work/result.json",

@@ -43,6 +43,7 @@ const {
   entrypoint,
   sourceCode,
   settingsSchemaText,
+  inputSchemaText,
   usageInstructions,
   changeSummary,
   metadataTitle,
@@ -385,6 +386,7 @@ watch(
         :entrypoint="entrypoint"
         :source-code="sourceCode"
         :settings-schema-text="settingsSchemaText"
+        :input-schema-text="inputSchemaText"
         :usage-instructions="usageInstructions"
         :metadata-title="metadataTitle"
         :metadata-slug="metadataSlug"
@@ -427,6 +429,7 @@ watch(
         @update:entrypoint="entrypoint = $event"
         @update:source-code="sourceCode = $event"
         @update:settings-schema-text="settingsSchemaText = $event"
+        @update:input-schema-text="inputSchemaText = $event"
         @update:usage-instructions="usageInstructions = $event"
         @update:metadata-title="metadataTitle = $event"
         @update:metadata-slug="metadataSlug = $event"

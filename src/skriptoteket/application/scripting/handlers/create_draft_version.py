@@ -96,6 +96,11 @@ class CreateDraftVersionHandler(CreateDraftVersionHandlerProtocol):
                 if "settings_schema" in command.model_fields_set
                 else (derived_from.settings_schema if derived_from is not None else None)
             )
+            effective_input_schema = (
+                command.input_schema
+                if "input_schema" in command.model_fields_set
+                else (derived_from.input_schema if derived_from is not None else None)
+            )
             effective_usage_instructions = (
                 command.usage_instructions
                 if "usage_instructions" in command.model_fields_set
@@ -108,6 +113,7 @@ class CreateDraftVersionHandler(CreateDraftVersionHandlerProtocol):
                 source_code=command.source_code,
                 entrypoint=command.entrypoint,
                 settings_schema=effective_settings_schema,
+                input_schema=effective_input_schema,
                 usage_instructions=effective_usage_instructions,
                 created_by_user_id=actor.id,
                 derived_from_version_id=command.derived_from_version_id,
