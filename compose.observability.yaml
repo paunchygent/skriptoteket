@@ -22,8 +22,15 @@ services:
       - '--storage.tsdb.path=/prometheus'
       - '--storage.tsdb.retention.time=30d'
       - '--web.enable-lifecycle'
+      - '--web.external-url=https://prometheus.hemma.hule.education'
+    expose:
+      - "9090"
     ports:
-      - "9091:9090"
+      - "127.0.0.1:9091:9090"  # Local-only access for debugging
+    environment:
+      - VIRTUAL_HOST=prometheus.hemma.hule.education
+      - VIRTUAL_PORT=9090
+      - LETSENCRYPT_HOST=prometheus.hemma.hule.education
     volumes:
       - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
@@ -98,9 +105,15 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
-      - GF_SERVER_ROOT_URL=http://hemma.hule.education:3000
+      - GF_SERVER_ROOT_URL=https://grafana.hemma.hule.education
+      # nginx-proxy integration
+      - VIRTUAL_HOST=grafana.hemma.hule.education
+      - VIRTUAL_PORT=3000
+      - LETSENCRYPT_HOST=grafana.hemma.hule.education
+    expose:
+      - "3000"
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"  # Local-only access for debugging
     volumes:
       - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
       - grafana_data:/var/lib/grafana
