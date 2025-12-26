@@ -13,7 +13,7 @@ import {
   completionKeymap,
 } from "@codemirror/autocomplete";
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
-import { EditorState } from "@codemirror/state";
+import { Compartment, EditorState, type Extension } from "@codemirror/state";
 import {
   bracketMatching,
   defaultHighlightStyle,
@@ -39,13 +39,23 @@ import {
 } from "@codemirror/view";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 
-const props = defineProps<{ modelValue: string }>();
+const props = withDefaults(
+  defineProps<{
+    modelValue: string;
+    extensions?: Extension[];
+  }>(),
+  {
+    extensions: () => [],
+  },
+);
 const emit = defineEmits<{ "update:modelValue": [value: string] }>();
 
 const container = ref<HTMLDivElement | null>(null);
 
 let view: EditorView | null = null;
 let suppressEmit = false;
+
+const externalExtensions = new Compartment();
 
 const editorLayoutTheme = EditorView.theme(
   {
@@ -106,6 +116,7 @@ onMounted(() => {
         python(),
         EditorState.tabSize.of(4),
         editorLayoutTheme,
+        externalExtensions.of(props.extensions),
         updateListener,
       ],
     }),
@@ -126,6 +137,16 @@ watch(
       changes: { from: 0, to: view.state.doc.length, insert: value },
     });
     suppressEmit = false;
+  },
+);
+
+watch(
+  () => props.extensions,
+  (extensions) => {
+    if (!view) return;
+    view.dispatch({
+      effects: externalExtensions.reconfigure(extensions),
+    });
   },
 );
 

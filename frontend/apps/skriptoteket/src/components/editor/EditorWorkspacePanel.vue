@@ -1,12 +1,16 @@
 <script setup lang="ts">
+import { computed, defineAsyncComponent } from "vue";
 import type { components } from "../../api/openapi";
-import CodeMirrorEditor from "./CodeMirrorEditor.vue";
+
+import { useSkriptoteketIntelligenceExtensions } from "../../composables/editor/useSkriptoteketIntelligenceExtensions";
 import EntrypointDropdown from "./EntrypointDropdown.vue";
 import InstructionsDrawer from "./InstructionsDrawer.vue";
 import MaintainersDrawer from "./MaintainersDrawer.vue";
 import MetadataDrawer from "./MetadataDrawer.vue";
-import SandboxRunner from "./SandboxRunner.vue";
 import VersionHistoryDrawer from "./VersionHistoryDrawer.vue";
+
+const CodeMirrorEditor = defineAsyncComponent(() => import("./CodeMirrorEditor.vue"));
+const SandboxRunner = defineAsyncComponent(() => import("./SandboxRunner.vue"));
 
 type EditorVersionSummary = components["schemas"]["EditorVersionSummary"];
 type ProfessionItem = components["schemas"]["ProfessionItem"];
@@ -62,7 +66,7 @@ type EditorWorkspacePanelProps = {
   maintainersError: string | null;
 };
 
-defineProps<EditorWorkspacePanelProps>();
+const props = defineProps<EditorWorkspacePanelProps>();
 
 const emit = defineEmits<{
   (event: "save"): void;
@@ -92,6 +96,11 @@ const emit = defineEmits<{
   (event: "update:selectedProfessionIds", value: string[]): void;
   (event: "update:selectedCategoryIds", value: string[]): void;
 }>();
+
+const entrypointName = computed(() => props.entrypoint);
+const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtensions({
+  entrypointName,
+});
 </script>
 
 <template>
@@ -183,10 +192,23 @@ const emit = defineEmits<{
             Källkod
           </h2>
           <div class="h-[420px] border border-navy bg-canvas shadow-brutal-sm overflow-hidden">
-            <CodeMirrorEditor
-              :model-value="sourceCode"
-              @update:model-value="emit('update:sourceCode', $event)"
-            />
+            <Suspense>
+              <template #default>
+                <CodeMirrorEditor
+                  :model-value="sourceCode"
+                  :extensions="intelligenceExtensions"
+                  @update:model-value="emit('update:sourceCode', $event)"
+                />
+              </template>
+              <template #fallback>
+                <div class="h-full w-full flex items-center justify-center gap-3 text-sm text-navy/70">
+                  <span
+                    class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin"
+                  />
+                  <span>Laddar kodredigerare...</span>
+                </div>
+              </template>
+            </Suspense>
           </div>
         </div>
 
@@ -259,11 +281,20 @@ const emit = defineEmits<{
             />
           </div>
 
-          <SandboxRunner
-            v-if="selectedVersion"
-            :version-id="selectedVersion.id"
-            :tool-id="toolId"
-          />
+          <Suspense v-if="selectedVersion">
+            <template #default>
+              <SandboxRunner
+                :version-id="selectedVersion.id"
+                :tool-id="toolId"
+              />
+            </template>
+            <template #fallback>
+              <div class="flex items-center gap-3 p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70">
+                <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+                <span>Laddar testkörning...</span>
+              </div>
+            </template>
+          </Suspense>
           <p
             v-else
             class="text-sm text-navy/60"

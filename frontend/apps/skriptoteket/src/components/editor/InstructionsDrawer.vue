@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import UiMarkdown from "../ui/UiMarkdown.vue";
+import { defineAsyncComponent, ref } from "vue";
+
+const UiMarkdown = defineAsyncComponent(() => import("../ui/UiMarkdown.vue"));
 
 type InstructionsDrawerProps = {
   isOpen: boolean;
@@ -101,10 +102,19 @@ const showPreview = ref(false);
         v-else
         class="border border-navy/20 bg-white p-4 shadow-brutal-sm min-h-[300px]"
       >
-        <UiMarkdown
-          v-if="usageInstructions.trim()"
-          :markdown="usageInstructions"
-        />
+        <Suspense v-if="usageInstructions.trim()">
+          <template #default>
+            <UiMarkdown :markdown="usageInstructions" />
+          </template>
+          <template #fallback>
+            <div class="flex items-center gap-3 text-sm text-navy/70">
+              <span
+                class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin"
+              />
+              <span>Laddar förhandsgranskning...</span>
+            </div>
+          </template>
+        </Suspense>
         <p
           v-else
           class="text-sm text-navy/50 italic"
