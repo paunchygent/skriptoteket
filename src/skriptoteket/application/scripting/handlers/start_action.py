@@ -46,6 +46,7 @@ from skriptoteket.protocols.scripting_ui import (
     UiPayloadNormalizerProtocol,
     UiPolicyProviderProtocol,
 )
+from skriptoteket.protocols.session_files import SessionFileStorageProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
@@ -72,6 +73,7 @@ class StartActionHandler(StartActionHandlerProtocol):
         ui_normalizer: UiPayloadNormalizerProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
+        session_files: SessionFileStorageProtocol,
     ) -> None:
         self._uow = uow
         self._tools = tools
@@ -85,6 +87,7 @@ class StartActionHandler(StartActionHandlerProtocol):
         self._ui_normalizer = ui_normalizer
         self._clock = clock
         self._id_generator = id_generator
+        self._session_files = session_files
 
     async def _execute_curated_app_action(
         self,
@@ -315,13 +318,18 @@ class StartActionHandler(StartActionHandlerProtocol):
                     code=ErrorCode.INTERNAL_ERROR,
                     message="Internal error (missing active_version_id).",
                 )
+            persisted_files = await self._session_files.get_files(
+                tool_id=command.tool_id,
+                user_id=actor.id,
+                context=context,
+            )
             result = await self._execute.handle(
                 actor=actor,
                 command=ExecuteToolVersionCommand(
                     tool_id=command.tool_id,
                     version_id=active_version_id,
                     context=RunContext.PRODUCTION,
-                    input_files=[("action.json", input_bytes)],
+                    input_files=[*persisted_files, ("action.json", input_bytes)],
                 ),
             )
             run_id = result.run.id

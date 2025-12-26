@@ -23,6 +23,7 @@ from skriptoteket.protocols.scripting import (
     StartSandboxActionHandlerProtocol,
     ToolVersionRepositoryProtocol,
 )
+from skriptoteket.protocols.session_files import SessionFileStorageProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
@@ -47,12 +48,14 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
         maintainers: ToolMaintainerRepositoryProtocol,
         sessions: ToolSessionRepositoryProtocol,
         execute: ExecuteToolVersionHandlerProtocol,
+        session_files: SessionFileStorageProtocol,
     ) -> None:
         self._uow = uow
         self._versions = versions
         self._maintainers = maintainers
         self._sessions = sessions
         self._execute = execute
+        self._session_files = session_files
 
     async def handle(
         self,
@@ -133,6 +136,12 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
         }
         input_bytes = json.dumps(payload, ensure_ascii=False).encode("utf-8")
 
+        persisted_files = await self._session_files.get_files(
+            tool_id=command.tool_id,
+            user_id=actor.id,
+            context=context,
+        )
+
         # Execute the tool version in sandbox context
         result = await self._execute.handle(
             actor=actor,
@@ -140,7 +149,7 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
                 tool_id=command.tool_id,
                 version_id=command.version_id,
                 context=RunContext.SANDBOX,
-                input_files=[("action.json", input_bytes)],
+                input_files=[*persisted_files, ("action.json", input_bytes)],
             ),
         )
 

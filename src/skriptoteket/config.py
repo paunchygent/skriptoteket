@@ -54,6 +54,8 @@ class Settings(BaseSettings):
     UPLOAD_MAX_FILE_BYTES: int = 20_000_000
     UPLOAD_MAX_TOTAL_BYTES: int = 50_000_000
 
+    SESSION_FILES_TTL_SECONDS: int = 60 * 60 * 24  # 24 hours (ADR-0039)
+
     # Tracing (ST-07-03) - opt-in for monolith
     OTEL_TRACING_ENABLED: bool = False
     OTEL_EXPORTER_OTLP_ENDPOINT: str = "http://localhost:4317"

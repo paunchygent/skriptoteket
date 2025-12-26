@@ -9,12 +9,17 @@ from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.models import RunContext, VersionState
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
+from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
     RunActiveToolHandlerProtocol,
     ToolVersionRepositoryProtocol,
 )
+from skriptoteket.protocols.session_files import SessionFileStorageProtocol
+from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+
+_DEFAULT_SESSION_CONTEXT = "default"
 
 
 class RunActiveToolHandler(RunActiveToolHandlerProtocol):
@@ -32,11 +37,17 @@ class RunActiveToolHandler(RunActiveToolHandlerProtocol):
         tools: ToolRepositoryProtocol,
         versions: ToolVersionRepositoryProtocol,
         execute: ExecuteToolVersionHandlerProtocol,
+        sessions: ToolSessionRepositoryProtocol,
+        id_generator: IdGeneratorProtocol,
+        session_files: SessionFileStorageProtocol,
     ) -> None:
         self._uow = uow
         self._tools = tools
         self._versions = versions
         self._execute = execute
+        self._sessions = sessions
+        self._id_generator = id_generator
+        self._session_files = session_files
 
     async def handle(
         self,
@@ -76,4 +87,32 @@ class RunActiveToolHandler(RunActiveToolHandlerProtocol):
                 input_values=command.input_values,
             ),
         )
-        return RunActiveToolResult(run=result.run)
+
+        # Persist session-scoped files for subsequent action runs (ADR-0039).
+        if command.input_files:
+            await self._session_files.store_files(
+                tool_id=tool.id,
+                user_id=actor.id,
+                context=_DEFAULT_SESSION_CONTEXT,
+                files=command.input_files,
+            )
+
+        # Persist normalized session state after the initial run when next_actions exist (ADR-0024).
+        run = result.run
+        if run.ui_payload is not None and run.ui_payload.next_actions:
+            async with self._uow:
+                session = await self._sessions.get_or_create(
+                    session_id=self._id_generator.new_uuid(),
+                    tool_id=tool.id,
+                    user_id=actor.id,
+                    context=_DEFAULT_SESSION_CONTEXT,
+                )
+                await self._sessions.update_state(
+                    tool_id=tool.id,
+                    user_id=actor.id,
+                    context=_DEFAULT_SESSION_CONTEXT,
+                    expected_state_rev=session.state_rev,
+                    state=result.normalized_state,
+                )
+
+        return RunActiveToolResult(run=run)

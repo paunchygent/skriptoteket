@@ -56,6 +56,9 @@ from skriptoteket.infrastructure.runner.docker_runner import DockerRunnerLimits,
 from skriptoteket.infrastructure.scripting_ui.backend_actions import NoopBackendActionProvider
 from skriptoteket.infrastructure.scripting_ui.policy_provider import DefaultUiPolicyProvider
 from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordHasher
+from skriptoteket.infrastructure.session_files.local_session_file_storage import (
+    LocalSessionFileStorage,
+)
 from skriptoteket.infrastructure.token_generator import SecureTokenGenerator
 from skriptoteket.protocols.catalog import (
     CategoryRepositoryProtocol,
@@ -86,6 +89,7 @@ from skriptoteket.protocols.scripting_ui import (
     UiPayloadNormalizerProtocol,
     UiPolicyProviderProtocol,
 )
+from skriptoteket.protocols.session_files import SessionFileStorageProtocol
 from skriptoteket.protocols.suggestions import (
     SuggestionDecisionRepositoryProtocol,
     SuggestionRepositoryProtocol,
@@ -157,6 +161,18 @@ class InfrastructureProvider(Provider):
     @provide(scope=Scope.APP)
     def artifact_manager(self, settings: Settings) -> ArtifactManagerProtocol:
         return FilesystemArtifactManager(artifacts_root=settings.ARTIFACTS_ROOT)
+
+    @provide(scope=Scope.APP)
+    def session_file_storage(
+        self,
+        settings: Settings,
+        clock: ClockProtocol,
+    ) -> SessionFileStorageProtocol:
+        return LocalSessionFileStorage(
+            sessions_root=settings.ARTIFACTS_ROOT,
+            ttl_seconds=settings.SESSION_FILES_TTL_SECONDS,
+            clock=clock,
+        )
 
     @provide(scope=Scope.APP)
     def tool_runner(

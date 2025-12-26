@@ -18,6 +18,7 @@ from skriptoteket.protocols.scripting import (
     RunSandboxHandlerProtocol,
     ToolVersionRepositoryProtocol,
 )
+from skriptoteket.protocols.session_files import SessionFileStorageProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
@@ -37,6 +38,7 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
         sessions: ToolSessionRepositoryProtocol,
         id_generator: IdGeneratorProtocol,
         execute: ExecuteToolVersionHandlerProtocol,
+        session_files: SessionFileStorageProtocol,
     ) -> None:
         self._uow = uow
         self._versions = versions
@@ -44,6 +46,7 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
         self._sessions = sessions
         self._id_generator = id_generator
         self._execute = execute
+        self._session_files = session_files
 
     async def handle(
         self,
@@ -100,6 +103,15 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
                 input_values=command.input_values,
             ),
         )
+
+        # Persist session-scoped files for subsequent sandbox action runs (ADR-0039).
+        if command.input_files:
+            await self._session_files.store_files(
+                tool_id=command.tool_id,
+                user_id=actor.id,
+                context=_sandbox_context(command.version_id),
+                files=command.input_files,
+            )
 
         # Persist sandbox session state if run has next_actions (ADR-0038)
         state_rev: int | None = None

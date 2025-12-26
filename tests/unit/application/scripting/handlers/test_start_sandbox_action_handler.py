@@ -26,6 +26,7 @@ from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
     ToolVersionRepositoryProtocol,
 )
+from skriptoteket.protocols.session_files import SessionFileStorageProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from tests.fixtures.identity_fixtures import make_user
 from tests.unit.application.scripting.handlers.sandbox_test_support import (
@@ -40,10 +41,18 @@ from tests.unit.application.scripting.handlers.sandbox_test_support import (
 # -----------------------------------------------------------------------------
 
 
+@pytest.fixture
+def session_files() -> AsyncMock:
+    storage = AsyncMock(spec=SessionFileStorageProtocol)
+    storage.get_files.return_value = []
+    return storage
+
+
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_start_sandbox_action_success_returns_run_id_and_state_rev(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """Full success flow: session exists, state_rev matches, execute, update state."""
     actor = make_user(role=Role.ADMIN)
@@ -94,6 +103,7 @@ async def test_start_sandbox_action_success_returns_run_id_and_state_rev(
         maintainers=maintainers,
         sessions=sessions,
         execute=execute,
+        session_files=session_files,
     )
 
     result = await handler.handle(
@@ -117,6 +127,7 @@ async def test_start_sandbox_action_success_returns_run_id_and_state_rev(
 @pytest.mark.asyncio
 async def test_start_sandbox_action_builds_correct_payload_structure(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """Verify action.json payload has {action_id, input, state}."""
     outer_actor = make_user(role=Role.ADMIN)
@@ -180,6 +191,7 @@ async def test_start_sandbox_action_builds_correct_payload_structure(
         maintainers=maintainers,
         sessions=sessions,
         execute=execute,
+        session_files=session_files,
     )
 
     await handler.handle(
@@ -211,6 +223,7 @@ async def test_start_sandbox_action_builds_correct_payload_structure(
 @pytest.mark.asyncio
 async def test_start_sandbox_action_when_session_missing_raises_not_found(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """sessions.get() returns None → NOT_FOUND."""
     actor = make_user(role=Role.ADMIN)
@@ -234,6 +247,7 @@ async def test_start_sandbox_action_when_session_missing_raises_not_found(
         maintainers=maintainers,
         sessions=sessions,
         execute=execute,
+        session_files=session_files,
     )
 
     with pytest.raises(DomainError) as exc_info:
@@ -256,6 +270,7 @@ async def test_start_sandbox_action_when_session_missing_raises_not_found(
 @pytest.mark.asyncio
 async def test_start_sandbox_action_when_state_rev_mismatch_raises_conflict(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """expected_state_rev mismatch → CONFLICT, execute not called."""
     actor = make_user(role=Role.ADMIN)
@@ -285,6 +300,7 @@ async def test_start_sandbox_action_when_state_rev_mismatch_raises_conflict(
         maintainers=maintainers,
         sessions=sessions,
         execute=execute,
+        session_files=session_files,
     )
 
     with pytest.raises(DomainError) as exc_info:
@@ -309,6 +325,7 @@ async def test_start_sandbox_action_when_state_rev_mismatch_raises_conflict(
 @pytest.mark.asyncio
 async def test_start_sandbox_action_when_version_not_found_raises_not_found(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """versions.get_by_id() returns None → NOT_FOUND."""
     actor = make_user(role=Role.ADMIN)
@@ -329,6 +346,7 @@ async def test_start_sandbox_action_when_version_not_found_raises_not_found(
         maintainers=maintainers,
         sessions=sessions,
         execute=execute,
+        session_files=session_files,
     )
 
     with pytest.raises(DomainError) as exc_info:
@@ -351,6 +369,7 @@ async def test_start_sandbox_action_when_version_not_found_raises_not_found(
 @pytest.mark.asyncio
 async def test_start_sandbox_action_when_version_tool_id_mismatch_raises_conflict(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """version.tool_id != command.tool_id → CONFLICT."""
     actor = make_user(role=Role.ADMIN)
@@ -377,6 +396,7 @@ async def test_start_sandbox_action_when_version_tool_id_mismatch_raises_conflic
         maintainers=maintainers,
         sessions=sessions,
         execute=execute,
+        session_files=session_files,
     )
 
     with pytest.raises(DomainError) as exc_info:
@@ -404,6 +424,7 @@ async def test_start_sandbox_action_when_version_tool_id_mismatch_raises_conflic
 @pytest.mark.asyncio
 async def test_start_sandbox_action_contributor_not_maintainer_raises_forbidden(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """CONTRIBUTOR + is_maintainer=False → FORBIDDEN."""
     actor = make_user(role=Role.CONTRIBUTOR)
@@ -427,6 +448,7 @@ async def test_start_sandbox_action_contributor_not_maintainer_raises_forbidden(
         maintainers=maintainers,
         sessions=sessions,
         execute=execute,
+        session_files=session_files,
     )
 
     with pytest.raises(DomainError) as exc_info:
@@ -449,6 +471,7 @@ async def test_start_sandbox_action_contributor_not_maintainer_raises_forbidden(
 @pytest.mark.asyncio
 async def test_start_sandbox_action_contributor_other_user_draft_raises_forbidden(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """CONTRIBUTOR + own draft=False → FORBIDDEN."""
     actor = make_user(role=Role.CONTRIBUTOR)
@@ -476,6 +499,7 @@ async def test_start_sandbox_action_contributor_other_user_draft_raises_forbidde
         maintainers=maintainers,
         sessions=sessions,
         execute=execute,
+        session_files=session_files,
     )
 
     with pytest.raises(DomainError) as exc_info:
@@ -498,6 +522,7 @@ async def test_start_sandbox_action_contributor_other_user_draft_raises_forbidde
 @pytest.mark.asyncio
 async def test_start_sandbox_action_admin_bypasses_maintainer_check(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """ADMIN can run any sandbox action without maintainer check."""
     actor = make_user(role=Role.ADMIN)
@@ -548,6 +573,7 @@ async def test_start_sandbox_action_admin_bypasses_maintainer_check(
         maintainers=maintainers,
         sessions=sessions,
         execute=execute,
+        session_files=session_files,
     )
 
     result = await handler.handle(
@@ -569,6 +595,7 @@ async def test_start_sandbox_action_admin_bypasses_maintainer_check(
 @pytest.mark.asyncio
 async def test_start_sandbox_action_user_role_raises_insufficient_permissions(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """USER role → raised before any work."""
     actor = make_user(role=Role.USER)
@@ -587,6 +614,7 @@ async def test_start_sandbox_action_user_role_raises_insufficient_permissions(
         maintainers=maintainers,
         sessions=sessions,
         execute=execute,
+        session_files=session_files,
     )
 
     with pytest.raises(DomainError) as exc_info:
@@ -609,6 +637,7 @@ async def test_start_sandbox_action_user_role_raises_insufficient_permissions(
 @pytest.mark.asyncio
 async def test_start_sandbox_action_uses_sandbox_context_format(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """Verify context is sandbox:<version_id>."""
     actor = make_user(role=Role.ADMIN)
@@ -655,6 +684,7 @@ async def test_start_sandbox_action_uses_sandbox_context_format(
         maintainers=maintainers,
         sessions=sessions,
         execute=execute,
+        session_files=session_files,
     )
 
     await handler.handle(

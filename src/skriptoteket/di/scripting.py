@@ -76,6 +76,7 @@ from skriptoteket.protocols.scripting_ui import (
     UiPayloadNormalizerProtocol,
     UiPolicyProviderProtocol,
 )
+from skriptoteket.protocols.session_files import SessionFileStorageProtocol
 from skriptoteket.protocols.tool_sessions import (
     ClearToolSessionStateHandlerProtocol,
     GetToolSessionStateHandlerProtocol,
@@ -107,6 +108,7 @@ class ScriptingProvider(Provider):
         ui_normalizer: UiPayloadNormalizerProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
+        session_files: SessionFileStorageProtocol,
     ) -> StartActionHandlerProtocol:
         return StartActionHandler(
             uow=uow,
@@ -121,6 +123,7 @@ class ScriptingProvider(Provider):
             ui_normalizer=ui_normalizer,
             clock=clock,
             id_generator=id_generator,
+            session_files=session_files,
         )
 
     @provide(scope=Scope.REQUEST)
@@ -374,6 +377,7 @@ class ScriptingProvider(Provider):
         sessions: ToolSessionRepositoryProtocol,
         id_generator: IdGeneratorProtocol,
         execute: ExecuteToolVersionHandlerProtocol,
+        session_files: SessionFileStorageProtocol,
     ) -> RunSandboxHandlerProtocol:
         return RunSandboxHandler(
             uow=uow,
@@ -382,6 +386,7 @@ class ScriptingProvider(Provider):
             sessions=sessions,
             id_generator=id_generator,
             execute=execute,
+            session_files=session_files,
         )
 
     @provide(scope=Scope.REQUEST)
@@ -392,6 +397,7 @@ class ScriptingProvider(Provider):
         maintainers: ToolMaintainerRepositoryProtocol,
         sessions: ToolSessionRepositoryProtocol,
         execute: ExecuteToolVersionHandlerProtocol,
+        session_files: SessionFileStorageProtocol,
     ) -> StartSandboxActionHandlerProtocol:
         return StartSandboxActionHandler(
             uow=uow,
@@ -399,6 +405,7 @@ class ScriptingProvider(Provider):
             maintainers=maintainers,
             sessions=sessions,
             execute=execute,
+            session_files=session_files,
         )
 
     @provide(scope=Scope.REQUEST)
@@ -408,10 +415,16 @@ class ScriptingProvider(Provider):
         tools: ToolRepositoryProtocol,
         versions: ToolVersionRepositoryProtocol,
         execute: ExecuteToolVersionHandlerProtocol,
+        sessions: ToolSessionRepositoryProtocol,
+        id_generator: IdGeneratorProtocol,
+        session_files: SessionFileStorageProtocol,
     ) -> RunActiveToolHandlerProtocol:
         return RunActiveToolHandler(
             uow=uow,
             tools=tools,
             versions=versions,
             execute=execute,
+            sessions=sessions,
+            id_generator=id_generator,
+            session_files=session_files,
         )

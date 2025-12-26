@@ -22,6 +22,7 @@ from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
     ToolVersionRepositoryProtocol,
 )
+from skriptoteket.protocols.session_files import SessionFileStorageProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from tests.fixtures.identity_fixtures import make_user
 from tests.unit.application.scripting.handlers.sandbox_test_support import (
@@ -37,9 +38,16 @@ from tests.unit.application.scripting.handlers.sandbox_test_support import (
 # -----------------------------------------------------------------------------
 
 
+@pytest.fixture
+def session_files() -> AsyncMock:
+    return AsyncMock(spec=SessionFileStorageProtocol)
+
+
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_run_sandbox_with_next_actions_returns_state_rev(now: datetime) -> None:
+async def test_run_sandbox_with_next_actions_returns_state_rev(
+    now: datetime, session_files: AsyncMock
+) -> None:
     """Run with next_actions → state_rev is returned (not None)."""
     actor = make_user(role=Role.ADMIN)
     tool_id = uuid4()
@@ -96,6 +104,7 @@ async def test_run_sandbox_with_next_actions_returns_state_rev(now: datetime) ->
         sessions=sessions,
         id_generator=id_generator,
         execute=execute,
+        session_files=session_files,
     )
 
     result = await handler.handle(
@@ -111,12 +120,14 @@ async def test_run_sandbox_with_next_actions_returns_state_rev(now: datetime) ->
     assert result.run.id == run_id
     sessions.get_or_create.assert_awaited_once()
     sessions.update_state.assert_awaited_once()
+    session_files.store_files.assert_awaited_once()
 
 
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_run_sandbox_without_next_actions_returns_none_state_rev(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """Run without next_actions → state_rev is None, no session persistence."""
     actor = make_user(role=Role.ADMIN)
@@ -152,6 +163,7 @@ async def test_run_sandbox_without_next_actions_returns_none_state_rev(
         sessions=sessions,
         id_generator=id_generator,
         execute=execute,
+        session_files=session_files,
     )
 
     result = await handler.handle(
@@ -172,6 +184,7 @@ async def test_run_sandbox_without_next_actions_returns_none_state_rev(
 @pytest.mark.asyncio
 async def test_run_sandbox_with_empty_next_actions_returns_none_state_rev(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """Run with ui_payload but empty next_actions → state_rev is None."""
     actor = make_user(role=Role.ADMIN)
@@ -207,6 +220,7 @@ async def test_run_sandbox_with_empty_next_actions_returns_none_state_rev(
         sessions=sessions,
         id_generator=id_generator,
         execute=execute,
+        session_files=session_files,
     )
 
     result = await handler.handle(
@@ -226,6 +240,7 @@ async def test_run_sandbox_with_empty_next_actions_returns_none_state_rev(
 @pytest.mark.asyncio
 async def test_run_sandbox_persists_session_with_correct_context(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """Verify session uses sandbox:<version_id> context format."""
     actor = make_user(role=Role.ADMIN)
@@ -283,6 +298,7 @@ async def test_run_sandbox_persists_session_with_correct_context(
         sessions=sessions,
         id_generator=id_generator,
         execute=execute,
+        session_files=session_files,
     )
 
     await handler.handle(
@@ -306,6 +322,7 @@ async def test_run_sandbox_persists_session_with_correct_context(
 @pytest.mark.asyncio
 async def test_run_sandbox_uses_expected_state_rev_from_session(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """Verify update_state uses expected_state_rev from get_or_create result."""
     actor = make_user(role=Role.ADMIN)
@@ -364,6 +381,7 @@ async def test_run_sandbox_uses_expected_state_rev_from_session(
         sessions=sessions,
         id_generator=id_generator,
         execute=execute,
+        session_files=session_files,
     )
 
     result = await handler.handle(
@@ -389,6 +407,7 @@ async def test_run_sandbox_uses_expected_state_rev_from_session(
 @pytest.mark.asyncio
 async def test_run_sandbox_when_version_not_found_raises_not_found(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """versions.get_by_id() returns None → NOT_FOUND."""
     actor = make_user(role=Role.ADMIN)
@@ -411,6 +430,7 @@ async def test_run_sandbox_when_version_not_found_raises_not_found(
         sessions=sessions,
         id_generator=id_generator,
         execute=execute,
+        session_files=session_files,
     )
 
     with pytest.raises(DomainError) as exc_info:
@@ -431,6 +451,7 @@ async def test_run_sandbox_when_version_not_found_raises_not_found(
 @pytest.mark.asyncio
 async def test_run_sandbox_when_version_tool_id_mismatch_raises_conflict(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """version.tool_id != command.tool_id → CONFLICT."""
     actor = make_user(role=Role.ADMIN)
@@ -459,6 +480,7 @@ async def test_run_sandbox_when_version_tool_id_mismatch_raises_conflict(
         sessions=sessions,
         id_generator=id_generator,
         execute=execute,
+        session_files=session_files,
     )
 
     with pytest.raises(DomainError) as exc_info:
@@ -484,6 +506,7 @@ async def test_run_sandbox_when_version_tool_id_mismatch_raises_conflict(
 @pytest.mark.asyncio
 async def test_run_sandbox_contributor_not_maintainer_raises_forbidden(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """CONTRIBUTOR + is_maintainer=False → FORBIDDEN."""
     actor = make_user(role=Role.CONTRIBUTOR)
@@ -509,6 +532,7 @@ async def test_run_sandbox_contributor_not_maintainer_raises_forbidden(
         sessions=sessions,
         id_generator=id_generator,
         execute=execute,
+        session_files=session_files,
     )
 
     with pytest.raises(DomainError) as exc_info:
@@ -529,6 +553,7 @@ async def test_run_sandbox_contributor_not_maintainer_raises_forbidden(
 @pytest.mark.asyncio
 async def test_run_sandbox_user_role_raises_insufficient_permissions(
     now: datetime,
+    session_files: AsyncMock,
 ) -> None:
     """USER role → FORBIDDEN before any work."""
     actor = make_user(role=Role.USER)
@@ -549,6 +574,7 @@ async def test_run_sandbox_user_role_raises_insufficient_permissions(
         sessions=sessions,
         id_generator=id_generator,
         execute=execute,
+        session_files=session_files,
     )
 
     with pytest.raises(DomainError) as exc_info:

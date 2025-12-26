@@ -54,6 +54,7 @@ from skriptoteket.protocols.scripting_ui import (
     UiPayloadNormalizerProtocol,
     UiPolicyProviderProtocol,
 )
+from skriptoteket.protocols.session_files import SessionFileStorageProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.catalog_fixtures import make_tool
@@ -176,6 +177,9 @@ async def test_start_action_executes_with_session_state_and_updates_state_rev(
         now=now,
     )
 
+    session_files = AsyncMock(spec=SessionFileStorageProtocol)
+    session_files.get_files.return_value = [("original.txt", b"hello")]
+
     async def _execute(
         *,
         actor: object,
@@ -183,7 +187,11 @@ async def test_start_action_executes_with_session_state_and_updates_state_rev(
     ) -> ExecuteToolVersionResult:
         del actor
         assert uow.active is False
-        payload = json.loads(command.input_files[0][1].decode("utf-8"))
+        assert ("original.txt", b"hello") in command.input_files
+        action_bytes = next(
+            content for name, content in command.input_files if name == "action.json"
+        )
+        payload = json.loads(action_bytes.decode("utf-8"))
         assert payload["action_id"] == "confirm_flags"
         assert payload["input"] == {"notify_guardians": True}
         assert payload["state"] == {"step": "one"}
@@ -216,6 +224,7 @@ async def test_start_action_executes_with_session_state_and_updates_state_rev(
         ui_normalizer=ui_normalizer,
         clock=clock,
         id_generator=id_generator,
+        session_files=session_files,
     )
 
     result = await handler.handle(
@@ -275,6 +284,7 @@ async def test_start_action_rejects_state_rev_conflict_without_executing(now: da
     backend_actions = AsyncMock(spec=BackendActionProviderProtocol)
     ui_normalizer = Mock(spec=UiPayloadNormalizerProtocol)
     clock = Mock(spec=ClockProtocol)
+    session_files = AsyncMock(spec=SessionFileStorageProtocol)
 
     handler = StartActionHandler(
         uow=uow,
@@ -289,6 +299,7 @@ async def test_start_action_rejects_state_rev_conflict_without_executing(now: da
         ui_normalizer=ui_normalizer,
         clock=clock,
         id_generator=id_generator,
+        session_files=session_files,
     )
 
     with pytest.raises(DomainError) as exc_info:
@@ -418,6 +429,8 @@ async def test_start_action_executes_curated_app_without_tool_version(now: datet
     id_generator = Mock(spec=IdGeneratorProtocol)
     id_generator.new_uuid.side_effect = [session_id, run_id]
 
+    session_files = AsyncMock(spec=SessionFileStorageProtocol)
+
     handler = StartActionHandler(
         uow=uow,
         tools=tools,
@@ -431,6 +444,7 @@ async def test_start_action_executes_curated_app_without_tool_version(now: datet
         ui_normalizer=ui_normalizer,
         clock=clock,
         id_generator=id_generator,
+        session_files=session_files,
     )
 
     result = await handler.handle(
