@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 **Skriptoteket** (Script Hub) is a teacher-first platform for running curated, upload-based tools. Built with FastAPI (Python 3.13+) and PostgreSQL, using DDD/Clean Architecture with Dishka DI.
-UI direction: migrate to a full Vue/Vite SPA (see `docs/adr/adr-0027-full-vue-vite-spa.md`); legacy SSR/Jinja/HTMX remains until cutover.
+UI direction: migrate to a full Vue/Vite SPA (see `docs/adr/adr-0027-full-vue-vite-spa.md`)
 
 Roles hierarchy: **user → contributor → admin → superuser**. Tools are tagged by profession and category. Future: HuleEdu SSO via identity federation (identity external; roles remain local).
 
@@ -66,7 +66,7 @@ pdm run docs-validate           # Validate docs contract
 
 ### Layer Structure (`src/skriptoteket/`)
 
-```
+```text
 src/skriptoteket/
 ├── config.py              # Pydantic Settings
 ├── di.py                  # Dishka container setup
@@ -96,7 +96,7 @@ src/skriptoteket/
 
 ### Dependency Flow
 
-```
+```text
 web/ ──depends on──▶ application/ ──depends on──▶ domain/
          │                 │                         ▲
          └─────── protocols/ ◀── infrastructure/ ────┘
@@ -151,7 +151,8 @@ Read `.agent/rules/000-rule-index.md` for the complete rulebook. Key points:
 Playwright (recommended), Selenium, Puppeteer available. Run via `pdm run python -m scripts.<module>`.
 
 - **Credentials**: `superuser@local.dev` / `superuser-password`
-- **HTMX caveat**: Avoid `waitForNavigation()` - use explicit URL waits
+- **Test tool fixtures**: if a Playwright script needs a specific demo tool/script by slug, add it to the repo script bank
+  (`src/skriptoteket/script_bank/`) and seed it (`pdm run seed-script-bank --slug <slug>`; optionally `--sync-code`) before running.
 
 ## Documentation Contract
 
@@ -165,7 +166,6 @@ Playwright (recommended), Selenium, Puppeteer available. Run via `pdm run python
 ## Tech Stack
 
 - **Frontend (target)**: Vue 3, Vite, Vue Router, Pinia (ADR-0027)
-- **Frontend (legacy until cutover)**: Jinja2, HTMX, embedded SPA islands
 - **Runtime**: Python 3.13+, FastAPI, Uvicorn
 - **Database**: PostgreSQL (asyncpg), SQLAlchemy 2.x (async), Alembic
 - **DI**: Dishka (protocol-first)

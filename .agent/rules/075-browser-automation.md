@@ -16,6 +16,9 @@ scope: "testing"
 - REQUIRED: Local dev smokes use `.env` with `BOOTSTRAP_SUPERUSER_EMAIL` / `BOOTSTRAP_SUPERUSER_PASSWORD`.
 - REQUIRED: Prod smokes use a separate gitignored dotenv (e.g. `.env.prod-smoke`) with `BASE_URL` +
   `PLAYWRIGHT_EMAIL` / `PLAYWRIGHT_PASSWORD`, passed via `--dotenv` (or `DOTENV_PATH`).
+- REQUIRED: If a test needs a specific “demo tool/script”, do **not** create it ad hoc in the dev DB or rewrite an
+  existing demo tool’s source code. Add a dedicated entry to the **repo script bank** (`src/skriptoteket/script_bank/`)
+  and seed it to the DB before running Playwright (see “Script bank fixtures” below).
 
 ## Repo Smoke Scripts
 
@@ -49,6 +52,29 @@ Prereqs:
   - Dev/HMR: `http://127.0.0.1:5173` with `pdm run fe-dev` (Vite proxies `/api/*` to `:8000`)
   - Prod-style: your deployed host, or `http://127.0.0.1:8000` after `pdm run fe-install && pdm run fe-build`
     (backend serves built SPA)
+
+## Script bank fixtures (REQUIRED)
+
+If a Playwright script depends on a tool existing (by slug), the tool must be provisioned via the repo-level script bank:
+
+- Add/modify the tool in `src/skriptoteket/script_bank/bank.py` and its source under
+  `src/skriptoteket/script_bank/scripts/`.
+- Seed locally before running Playwright:
+
+```bash
+# Ensure the tool exists (and optionally sync code/metadata if it already exists)
+pdm run seed-script-bank --slug <tool-slug>
+pdm run seed-script-bank --slug <tool-slug> --sync-code
+pdm run seed-script-bank --slug <tool-slug> --sync-metadata
+```
+
+Rationale: avoids demo-script proliferation and prevents Playwright from polluting the dev DB by creating/re-writing
+tools on the fly (see ST-06-09).
+
+Refs:
+
+- Runbook: `docs/runbooks/runbook-script-bank-seeding.md`
+- Story: `docs/backlog/stories/story-06-09-playwright-test-isolation.md`
 
 ## One-time Browser Install
 

@@ -80,6 +80,9 @@ Run smokes with `pdm run ui-smoke` / `pdm run ui-editor-smoke` / `pdm run ui-run
 
 - **Do not create new superusers for UI checks**: reuse the existing local dev bootstrap account in `.env`
   (`BOOTSTRAP_SUPERUSER_EMAIL` / `BOOTSTRAP_SUPERUSER_PASSWORD`). Creating new accounts bloats the dev DB.
+- **Do not create ad hoc demo tools/scripts for Playwright**: if a browser automation script needs a specific tool by
+  slug, add it to the repo script bank (`src/skriptoteket/script_bank/`) and run `pdm run seed-script-bank --slug <slug>`
+  (optionally `--sync-code`) before running Playwright. This avoids polluting the dev DB (see `.agent/rules/075-browser-automation.md`).
 - **Prod smoke tests (recommended)**: keep `BOOTSTRAP_SUPERUSER_*` for provisioning/local dev; store prod UI smoke
   credentials in a gitignored `.env.prod-smoke` (`BASE_URL`, `PLAYWRIGHT_EMAIL`, `PLAYWRIGHT_PASSWORD`) and run
   `pdm run ui-smoke --dotenv .env.prod-smoke` (same for `ui-editor-smoke` / `ui-runtime-smoke`).

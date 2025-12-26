@@ -20,6 +20,10 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Current Session (2025-12-26)
 
+- ST-12-05: session-scoped file persistence + `action.json` injection for action runs (prod + sandbox); persist `normalized_state` on initial prod run when `next_actions` exist (ADR-0024 gap).
+- Docs: added ST-12-07 follow-up for explicit future session file reuse flags; updated ADR-0039 + ST-12-05 story.
+- ST-08-10: locked phase 1 with a dedicated Playwright E2E; marked story `done`. Started ST-08-11 phase 2 (contract completions + contract/security lint) in the same modular bundle.
+
 ### ST-08-13 Tool usage instructions (done)
 
 Display + editor for `usage_instructions` markdown field on tool versions.
@@ -30,13 +34,15 @@ Display + editor for `usage_instructions` markdown field on tool versions.
 - **API**: `usage_instructions` in `EditorBootResponse`, `CreateDraftVersionRequest`, `SaveDraftVersionRequest`
 - Story: `docs/backlog/stories/story-08-13-tool-usage-instructions.md`
 
-### ST-08-10 Script Editor Intelligence (design-ready)
+### ST-08-10 Script Editor Intelligence (phase 1 done)
 
-Lezer-first analysis for linting/completions. No implementation yet.
+Autocomplete/hover/lint for script author discoverability + entrypoint validation (CM6).
 
-- ADR: `docs/adr/adr-0035-script-editor-intelligence-architecture.md`
-- Stories: `story-08-10-script-editor-intelligence.md`, `story-08-11-script-editor-intelligence-phase2.md`
-- Notes: entrypoint-aware, `Compartment` + `reconfigure`, gated `startCompletion`, `lintGutter()`
+- Bundle: `frontend/apps/skriptoteket/src/composables/editor/skriptoteketIntelligence.ts` (+ completions/hover/linter/tree utils)
+- Wiring: `frontend/apps/skriptoteket/src/components/editor/CodeMirrorEditor.vue` `extensions` + dynamic load `useSkriptoteketIntelligenceExtensions.ts`
+- Docs: updated ST-08-10/11/12 story files to use these modules
+- E2E: `scripts/playwright_st_08_10_script_editor_intelligence_e2e.py` (autocomplete, hover docs, entrypoint lint)
+- Chunk size: lazy-load editor-heavy components (`EditorWorkspacePanel.vue`, `InstructionsDrawer.vue`) to keep Vite chunks <500 kB
 
 ### ST-12-02 Native PDF output helper (done)
 
@@ -114,53 +120,23 @@ Replace ProfileView inline success banners with toasts; standardize inline error
 
 ### EPIC-15 User Profile & Settings (ST-15-01) (done)
 
-Profile page redesign with view/edit mode separation and brutalist academic design.
-
-- **Architecture**: Decomposed monolithic `ProfileView.vue` (398 LOC) into orchestrator (<150 LOC) + 4 sub-components
-- **Components**:
-  - `frontend/apps/skriptoteket/src/components/profile/ProfileDisplay.vue` - Ledger-style view mode
-  - `frontend/apps/skriptoteket/src/components/profile/ProfileEditPersonal.vue` - Personal info form
-  - `frontend/apps/skriptoteket/src/components/profile/ProfileEditEmail.vue` - Email change form
-  - `frontend/apps/skriptoteket/src/components/profile/ProfileEditPassword.vue` - Password change form
-- **Design**: Ledger rows with `divide-y`, uppercase labels (`text-xs font-semibold uppercase tracking-wide`), compact spacing (`space-y-1` label-to-input)
-- **Docs**: EPIC-15 (`docs/backlog/epics/epic-15-user-profile-and-settings.md`), ADR-0040 (`docs/adr/adr-0040-profile-view-edit-separation.md`)
-- **Follow-up**: ST-15-02 Avatar Upload (deferred)
+- See `docs/backlog/epics/epic-15-user-profile-and-settings.md` (done) + `.agent/readme-first.md` for details.
 
 ### EPIC-14 Admin tool authoring (ST-14-01 + ST-14-02) (done)
 
-Admin quick-create of draft tools + URL-namn lifecycle (ADR-0037).
-
-- **Backend**
-  - Create draft tool: `POST /api/v1/admin/tools` (admin+CSRF) in `src/skriptoteket/web/api/v1/admin_tools.py`
-    → creates `Tool(id, slug=draft-<tool_id>, title, summary, owner=admin, maintainer=admin)` via
-    `src/skriptoteket/application/catalog/handlers/create_draft_tool.py`
-  - URL-namn edit (unpublished only): `PATCH /api/v1/editor/tools/{tool_id}/slug` (admin+CSRF) in
-    `src/skriptoteket/web/api/v1/editor.py` + handler `src/skriptoteket/application/catalog/handlers/update_tool_slug.py`
-  - Publish guards: `src/skriptoteket/application/catalog/handlers/publish_tool.py`
-    (requires active version + URL-namn not `draft-*` + valid + taxonomy present via `tools.list_tag_ids`)
-  - IMPORTANT: `PublishVersionHandler` no longer auto-publishes the tool; tool publish is gated via admin publish
-    (`src/skriptoteket/application/scripting/handlers/publish_version.py`)
-  - Suggestion accept placeholder unified: `draft-<tool_id>` in `src/skriptoteket/application/suggestions/handlers/decide_suggestion.py`
-- **SPA**
-  - Admin tools list create flow: `frontend/apps/skriptoteket/src/views/admin/AdminToolsView.vue` +
-    modal `frontend/apps/skriptoteket/src/components/admin/CreateDraftToolModal.vue`
-  - Editor metadata drawer: “URL-namn” field + “Använd nuvarande titel” helper in
-    `frontend/apps/skriptoteket/src/components/editor/MetadataDrawer.vue` + logic in
-    `frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.ts`
-  - Refactor: keep Vue files <500 LOC by extracting panel 2 into
-    `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`
-- **Copy**
-  - UI says “URL-namn” (not “slug”) everywhere in admin/editor flows.
+- See `docs/backlog/epics/epic-14-admin-tool-authoring.md` (done) + `.agent/readme-first.md` for details.
 
 ## Verification
 
 - Docs: `pdm run docs-validate` (pass)
 - Backend: `pdm run test` (pass)
 - Backend: `pdm run lint` (pass)
-- Types: `pnpm -C frontend --filter @skriptoteket/spa typecheck` (pass)
+- ST-08-10 E2E: `pdm run python -m scripts.playwright_st_08_10_script_editor_intelligence_e2e` (pass; artifacts in `.artifacts/st-08-10-script-editor-intelligence-e2e/`; Playwright needed escalation)
+- ST-12-05 E2E: `pdm run python -m scripts.playwright_st_12_05_session_file_persistence_e2e` (pass; downloads in `.artifacts/st-12-05-session-file-persistence-e2e/`; Playwright needed escalation)
+- Types/build: `pnpm -C frontend --filter @skriptoteket/spa typecheck` + `pnpm -C frontend --filter @skriptoteket/spa build` (pass; max chunk 411.46 kB)
 - Lint: `pnpm -C frontend --filter @skriptoteket/spa lint` (pass)
 - UI: `docker compose up -d db && pdm run db-upgrade`, then `pdm run dev` + `pdm run fe-dev`, then `pdm run ui-smoke --base-url http://127.0.0.1:5173` (pass; screenshots in `.artifacts/ui-smoke/`)
-- UI (editor): `pdm run ui-editor-smoke --base-url http://127.0.0.1:5173` (pass; screenshots in `.artifacts/ui-editor-smoke/`)
+- UI (editor): `pdm run ui-editor-smoke` (pass; screenshots in `.artifacts/ui-editor-smoke/`; Playwright run needed escalation)
  - ST-12-04 UI: `docker compose up -d db && pdm run db-upgrade && (set -a; source .env; set +a) && pdm run seed-script-bank`, then `pdm run ui-runtime-smoke --base-url http://127.0.0.1:5173` (pass; screenshots in `.artifacts/ui-runtime-smoke/`; Playwright run needed escalation)
  - EPIC-14 FE: `pdm run fe-type-check` (pass), `pdm run fe-lint` (pass)
  - EPIC-14 BE: `pdm run pytest -q tests/unit/application/test_scripting_review_handlers.py` (pass)
@@ -194,6 +170,6 @@ pdm run python -m scripts.playwright_st_08_13_tool_usage_instructions_e2e --base
 
 ## Next Steps
 
-- ST-08-10: Implement script editor intelligence (Lezer integration)
+- ST-08-11: add Playwright E2E coverage for contract completions + contract/security lint rules (keep using the same `skriptoteketIntelligence.ts` bundle).
 - EPIC-12: Continue SPA UX stories
 - ST-15-02: Avatar Upload (follow-up to profile redesign)

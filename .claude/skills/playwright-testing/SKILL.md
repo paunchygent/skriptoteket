@@ -24,6 +24,10 @@ pdm run ui-smoke
 pdm run ui-editor-smoke
 pdm run ui-runtime-smoke
 
+# Test tool fixtures: use repo script bank (no ad-hoc demo tools/scripts in DB)
+pdm run seed-script-bank --slug <tool-slug>
+pdm run seed-script-bank --slug <tool-slug> --sync-code
+
 # Dev/HMR (Vite): use --base-url http://127.0.0.1:5173
 
 # Prod (recommended): gitignored `.env.prod-smoke` with `BASE_URL` + `PLAYWRIGHT_*`
@@ -34,6 +38,18 @@ pdm run ui-runtime-smoke --dotenv .env.prod-smoke
 # Run an ad-hoc script
 pdm run python -m scripts.<module>
 ```
+
+## Script Bank Fixtures (REQUIRED)
+
+If a Playwright script depends on a “demo tool/script” by slug, do **not** create it ad hoc in the dev DB and do not
+overwrite other demo tools. Add a dedicated entry to the repo script bank (`src/skriptoteket/script_bank/`) and seed it
+before running Playwright.
+
+Refs:
+
+- `.agent/rules/075-browser-automation.md`
+- `docs/runbooks/runbook-script-bank-seeding.md`
+- `docs/backlog/stories/story-06-09-playwright-test-isolation.md`
 
 ## One-Time Setup (Browsers)
 
