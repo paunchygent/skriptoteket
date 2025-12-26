@@ -14,6 +14,7 @@ stories:
   - ST-17-03
   - ST-17-04
   - ST-17-05
+  - ST-17-06
 ---
 
 ## TL;DR
@@ -25,16 +26,18 @@ Extend the observability foundation (EPIC-07) with operational tooling: Grafana 
 Operators cannot effectively monitor Skriptoteket health:
 
 1. **No HTTP visibility** - Only session files dashboard exists; no request/error/latency metrics
-2. **No alerting** - Must manually check Prometheus; no proactive notification of issues
-3. **Jaeger requires SSH** - Trace investigation requires tunnel setup, slowing incident response
+2. **No user metrics** - No visibility into active sessions, login rates, or user activity
+3. **No alerting** - Must manually check Prometheus; no proactive notification of issues
+4. **Jaeger requires SSH** - Trace investigation requires tunnel setup, slowing incident response
 
 ## Proposed Solution
 
 1. Verify existing Grafana datasource provisioning works end-to-end
 2. Create HTTP metrics dashboard (request rates, error rates, latency percentiles)
-3. Define Prometheus alerting rules for critical conditions
-4. Expose Jaeger via nginx-proxy with SSL
-5. Update runbooks with alerting operations and new access patterns
+3. Add user session metrics (active sessions, login rates, users by role)
+4. Define Prometheus alerting rules for critical conditions
+5. Expose Jaeger via nginx-proxy with SSL
+6. Update runbooks with alerting operations and new access patterns
 
 **Architecture:** Builds on EPIC-07 foundation and ADR-0026 observability stack. No new ADRs required.
 
@@ -48,8 +51,9 @@ Operators cannot effectively monitor Skriptoteket health:
 | `docs/backlog/stories/story-17-03-prometheus-alerting-rules.md` | Rule definitions, thresholds | 4 min |
 | `docs/backlog/stories/story-17-04-jaeger-public-access.md` | Security implications | 2 min |
 | `docs/backlog/stories/story-17-05-runbook-verification.md` | Runbook completeness | 2 min |
+| `docs/backlog/stories/story-17-06-user-session-metrics.md` | Metrics design, instrumentation | 3 min |
 
-**Total estimated time:** ~16 minutes
+**Total estimated time:** ~19 minutes
 
 ## Key Decisions
 
@@ -59,6 +63,7 @@ Operators cannot effectively monitor Skriptoteket health:
 | Jaeger without auth | Traces are internal operational data; add auth if abuse detected | [ ] |
 | 500MB session files threshold | Matches cleanup TTL behavior; prevents disk pressure | [ ] |
 | P99 latency > 2s as warning | Generous threshold for initial deployment; tune based on observation | [ ] |
+| Compute active sessions at scrape time | Avoids maintaining separate state; simpler implementation | [ ] |
 
 ## Review Checklist
 
@@ -90,6 +95,7 @@ Operators cannot effectively monitor Skriptoteket health:
 - [ ] Jaeger without auth
 - [ ] 500MB session files threshold
 - [ ] P99 latency > 2s as warning
+- [ ] Compute active sessions at scrape time
 
 ---
 
