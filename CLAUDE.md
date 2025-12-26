@@ -219,6 +219,25 @@ ssh hemma "docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m
 | Network | `skriptoteket_default` | `hule-network` |
 | Proxy headers | Manual | Built-in |
 
+### Reverse Proxy (nginx-proxy + acme-companion)
+
+Infrastructure runs in `~/infrastructure/` with auto-SSL via Let's Encrypt:
+
+| Service | Image | Purpose |
+|---------|-------|---------|
+| `nginx-proxy` | `nginxproxy/nginx-proxy:1.6` | Auto-discovers containers via `VIRTUAL_HOST` |
+| `acme-companion` | `nginxproxy/acme-companion:2.4` | Auto SSL certificate management |
+
+**Public URLs:**
+- https://skriptoteket.hule.education (main app)
+- https://grafana.hemma.hule.education (admin / `GRAFANA_ADMIN_PASSWORD`)
+- https://prometheus.hemma.hule.education (admin / `PROMETHEUS_BASIC_AUTH_PASSWORD`)
+
+**Credentials** stored in `~/apps/skriptoteket/.env` on server. Reset Grafana password:
+```bash
+ssh hemma "docker exec grafana grafana cli admin reset-admin-password '<password>'"
+```
+
 ### Scheduled Jobs
 
 | Timer | Service | Schedule | Description |

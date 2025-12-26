@@ -312,17 +312,44 @@ pdm run obs-status   # Check status
 
 ### Access URLs
 
-| Service | URL |
-|---------|-----|
-| Grafana | http://hemma.hule.education:3000 |
-| Prometheus | http://hemma.hule.education:9091 |
-| Jaeger UI | http://hemma.hule.education:16686 |
+| Service | URL | Auth |
+|---------|-----|------|
+| Grafana | https://grafana.hemma.hule.education | admin / GRAFANA_ADMIN_PASSWORD |
+| Prometheus | https://prometheus.hemma.hule.education | None |
+| Jaeger UI | http://hemma.hule.education:16686 (SSH tunnel) | None |
+
+**Note**: Grafana and Prometheus are exposed via nginx-proxy with auto-SSL. Jaeger is internal-only (use SSH tunnel).
 
 ### Grafana Credentials
 
 - **Admin user**: `admin`
-- **Admin password**: Set via `GRAFANA_ADMIN_PASSWORD` environment variable (default: `admin`)
+- **Admin password**: Set via `GRAFANA_ADMIN_PASSWORD` in `~/apps/skriptoteket/.env`
 - **Anonymous access**: Enabled (Viewer role)
+
+**Reset admin password** (env var only works on first startup):
+
+```bash
+ssh hemma "docker exec grafana grafana cli admin reset-admin-password '<new-password>'"
+```
+
+### Prometheus Credentials
+
+- **Username**: `admin`
+- **Password**: Set via `PROMETHEUS_BASIC_AUTH_PASSWORD` in `~/apps/skriptoteket/.env`
+- **Auth method**: nginx basic auth via `~/infrastructure/htpasswd/prometheus.hemma.hule.education`
+
+**Update Prometheus password**:
+
+```bash
+# Generate new htpasswd entry (run locally, copy hash)
+openssl passwd -apr1 '<new-password>'
+
+# Update htpasswd file on server
+ssh hemma "echo 'admin:<hash-from-above>' > ~/infrastructure/htpasswd/prometheus.hemma.hule.education"
+
+# Reload nginx
+ssh hemma "docker exec nginx-proxy nginx -s reload"
+```
 
 ### Enable Tracing in Application
 

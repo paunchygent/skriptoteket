@@ -101,6 +101,14 @@ Run smokes with `pdm run ui-smoke` / `pdm run ui-editor-smoke` / `pdm run ui-run
 - `.agent/handoff.md` should only keep current sprint-critical backend/frontend info; move completed story detail to
   `.agent/readme-first.md` (links only) + `docs/`.
 
+## Observability Stack
+
+Public URLs (credentials in `~/apps/skriptoteket/.env` on server):
+- https://grafana.hemma.hule.education (admin / `GRAFANA_ADMIN_PASSWORD`)
+- https://prometheus.hemma.hule.education (admin / `PROMETHEUS_BASIC_AUTH_PASSWORD`)
+
+Reset Grafana password: `ssh hemma "docker exec grafana grafana cli admin reset-admin-password '<pw>'"` (env var only works on first startup).
+
 ## Security
 
 - Never commit secrets (API keys/tokens); use env vars / `.env` locally
