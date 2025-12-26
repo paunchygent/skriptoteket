@@ -84,19 +84,19 @@ const memberSince = computed(() => {
       </div>
 
       <dl class="divide-y divide-navy/20 px-4 text-sm">
-        <div class="grid grid-cols-2 gap-4 py-2">
+        <div class="grid gap-1 pt-3 pb-1 sm:gap-4 sm:items-baseline sm:grid-cols-[10rem_1fr]">
           <dt class="text-xs font-semibold uppercase tracking-wide text-navy/70">Förnamn</dt>
           <dd class="text-navy">{{ profile?.first_name || "–" }}</dd>
         </div>
-        <div class="grid grid-cols-2 gap-4 py-2">
+        <div class="grid gap-1 pt-3 pb-1 sm:gap-4 sm:items-baseline sm:grid-cols-[10rem_1fr]">
           <dt class="text-xs font-semibold uppercase tracking-wide text-navy/70">Efternamn</dt>
           <dd class="text-navy">{{ profile?.last_name || "–" }}</dd>
         </div>
-        <div class="grid grid-cols-2 gap-4 py-2">
+        <div class="grid gap-1 pt-3 pb-1 sm:gap-4 sm:items-baseline sm:grid-cols-[10rem_1fr]">
           <dt class="text-xs font-semibold uppercase tracking-wide text-navy/70">Visningsnamn</dt>
           <dd class="text-navy">{{ profile?.display_name || "–" }}</dd>
         </div>
-        <div class="grid grid-cols-2 gap-4 py-2">
+        <div class="grid gap-1 pt-3 pb-1 sm:gap-4 sm:items-baseline sm:grid-cols-[10rem_1fr]">
           <dt class="text-xs font-semibold uppercase tracking-wide text-navy/70">Språk</dt>
           <dd class="text-navy">{{ localeLabel }}</dd>
         </div>
@@ -120,7 +120,7 @@ const memberSince = computed(() => {
       </div>
 
       <dl class="divide-y divide-navy/20 px-4 text-sm">
-        <div class="grid grid-cols-2 gap-4 py-2">
+        <div class="grid gap-1 pt-3 pb-1 sm:gap-4 sm:items-baseline sm:grid-cols-[10rem_1fr]">
           <dt class="text-xs font-semibold uppercase tracking-wide text-navy/70">E-post</dt>
           <dd class="text-navy">{{ email }}</dd>
         </div>
@@ -144,7 +144,7 @@ const memberSince = computed(() => {
       </div>
 
       <dl class="divide-y divide-navy/20 px-4 text-sm">
-        <div class="grid grid-cols-2 gap-4 py-2">
+        <div class="grid gap-1 pt-3 pb-1 sm:gap-4 sm:items-baseline sm:grid-cols-[10rem_1fr]">
           <dt class="text-xs font-semibold uppercase tracking-wide text-navy/70">Lösenord</dt>
           <dd class="text-navy">••••••••</dd>
         </div>
