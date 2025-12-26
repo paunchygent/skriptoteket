@@ -101,7 +101,7 @@ body::before {
   }
 
   .toast {
-    @apply pointer-events-auto border border-current shadow-brutal-sm;
+    @apply pointer-events-auto border border-current;
     @apply flex items-start gap-3 p-3 text-sm leading-snug;
   }
 
