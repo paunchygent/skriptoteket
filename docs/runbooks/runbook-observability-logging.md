@@ -167,6 +167,16 @@ Labels use route patterns (e.g., `/tools/{id}`) to avoid high cardinality.
 
 Session file metrics are computed at scrape time by scanning `ARTIFACTS_ROOT/sessions/` (excluding `meta.json`).
 
+### Grafana panels / PromQL
+
+```promql
+# Session files size (MiB)
+skriptoteket_session_files_bytes_total / 1024 / 1024
+
+# Session files count
+skriptoteket_session_files_count
+```
+
 ### Local example
 
 ```bash

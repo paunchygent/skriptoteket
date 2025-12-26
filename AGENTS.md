@@ -50,6 +50,7 @@ Target Python is **3.13–3.14**.
 - Docker dev workflow: `pdm run dev-start` / `pdm run dev-stop` / `pdm run dev-build-start` / `pdm run dev-build-start-clean` / `pdm run dev-db-reset`
 - Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test` (lint runs Ruff + agent-doc budgets + docs contract)
 - Docs: `pdm run docs-validate`
+- Session file ops (prod): `pdm run cleanup-session-files` (TTL cleanup) / `pdm run clear-all-session-files` (danger: deletes all)
 - Skills prompt: `pdm run skills-prompt` / `pdm run skills-validate` (scans `.claude/skills/`)
 
 ## Tool Execution (Local Dev Only)

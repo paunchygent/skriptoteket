@@ -60,6 +60,10 @@ pytest -m docker                # Docker-dependent tests
 
 # Documentation
 pdm run docs-validate           # Validate docs contract
+
+# Session file management (production)
+pdm run cleanup-session-files      # Delete expired session dirs (TTL-based)
+pdm run clear-all-session-files    # DANGER: delete ALL session files
 ```
 
 ## Architecture
@@ -214,6 +218,23 @@ ssh hemma "docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m
 | Artifacts | Not mounted | Persistent volume |
 | Network | `skriptoteket_default` | `hule-network` |
 | Proxy headers | Manual | Built-in |
+
+### Scheduled Jobs
+
+| Timer | Service | Schedule | Description |
+|-------|---------|----------|-------------|
+| `skriptoteket-session-files-cleanup.timer` | `skriptoteket-session-files-cleanup.service` | Hourly | TTL cleanup of expired session files |
+
+```bash
+# Check timer status
+ssh hemma "systemctl list-timers | grep skriptoteket"
+
+# View cleanup logs
+ssh hemma "journalctl -u skriptoteket-session-files-cleanup.service -n 50 --no-pager"
+
+# Manual cleanup run
+ssh hemma "sudo systemctl start skriptoteket-session-files-cleanup.service"
+```
 
 ### Runbooks
 

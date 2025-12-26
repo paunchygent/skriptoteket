@@ -1,0 +1,16 @@
+# Grafana dashboard provisioning
+# Auto-loads dashboards from this directory
+
+apiVersion: 1
+
+providers:
+  - name: 'Skriptoteket'
+    orgId: 1
+    folder: 'Skriptoteket'
+    folderUid: 'skriptoteket'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
