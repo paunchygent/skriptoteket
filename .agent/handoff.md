@@ -20,6 +20,11 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Current Session (2025-12-26)
 
+- ST-12-06: session file cleanup job tooling + admin CLI + metrics + runbook updates.
+  - CLI: `src/skriptoteket/cli/main.py` (`cleanup-session-files`, `clear-all-session-files --yes`) + `pyproject.toml` PDM scripts.
+  - Storage: `src/skriptoteket/protocols/session_files.py` (`clear_all()`), `src/skriptoteket/infrastructure/session_files/local_session_file_storage.py`.
+  - Metrics: `src/skriptoteket/observability/metrics.py`, `src/skriptoteket/web/routes/observability.py` (scrape-time scan of `ARTIFACTS_ROOT/sessions/`).
+  - Docs: `docs/runbooks/runbook-home-server.md`, `docs/runbooks/runbook-observability-logging.md`.
 - ST-12-05: session-scoped file persistence + `action.json` injection for action runs (prod + sandbox); persist `normalized_state` on initial prod run when `next_actions` exist (ADR-0024 gap).
 - Docs: added ST-12-07 follow-up for explicit future session file reuse flags; updated ADR-0039 + ST-12-05 story.
 - ST-08-10: locked phase 1 with a dedicated Playwright E2E; marked story `done`. Started ST-08-11 phase 2 (contract completions + contract/security lint) in the same modular bundle.
@@ -131,6 +136,11 @@ Replace ProfileView inline success banners with toasts; standardize inline error
 - Docs: `pdm run docs-validate` (pass)
 - Backend: `pdm run test` (pass)
 - Backend: `pdm run lint` (pass)
+- Backend: `pdm run typecheck` (pass)
+- ST-12-06 manual metrics: `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts-st-12-06 pdm run uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8001`
+- ST-12-06 manual metrics: `curl -s http://127.0.0.1:8001/metrics | rg 'skriptoteket_session_files_(bytes_total|count)'`
+- ST-12-06 manual CLI: `PYTHONPATH=src pdm run python -m skriptoteket.cli cleanup-session-files --artifacts-root /tmp/skriptoteket/artifacts-st-12-06`
+- ST-12-06 manual CLI: `PYTHONPATH=src pdm run python -m skriptoteket.cli clear-all-session-files --yes --artifacts-root /tmp/skriptoteket/artifacts-st-12-06`
 - ST-08-10 E2E: `pdm run python -m scripts.playwright_st_08_10_script_editor_intelligence_e2e` (pass; artifacts in `.artifacts/st-08-10-script-editor-intelligence-e2e/`; Playwright needed escalation)
 - ST-12-05 E2E: `pdm run python -m scripts.playwright_st_12_05_session_file_persistence_e2e` (pass; downloads in `.artifacts/st-12-05-session-file-persistence-e2e/`; Playwright needed escalation)
 - Types/build: `pnpm -C frontend --filter @skriptoteket/spa typecheck` + `pnpm -C frontend --filter @skriptoteket/spa build` (pass; max chunk 411.46 kB)
