@@ -15,6 +15,8 @@ description: Browser automation with Playwright for Python. Recommended for visu
 For Skriptoteket-specific setup (login env vars, SPA dev server vs built assets, macOS Intel vs Apple Silicon), follow:
 
 - `.agent/rules/075-browser-automation.md`
+- For CodeMirror (CM6) editor interaction patterns (hover, autocomplete, lint tooltips), follow:
+  `.agent/rules/075-browser-automation.md` → “CodeMirror (CM6) interaction patterns (REQUIRED)”.
 
 ## Repo Commands
 

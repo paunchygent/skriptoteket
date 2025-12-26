@@ -190,6 +190,28 @@ with sync_playwright() as p:
     browser.close()
 ```
 
+## CodeMirror (CM6) interaction patterns (REQUIRED)
+
+- REQUIRED: Scope editor interactions to `.cm-editor .cm-content` (avoid broad `page.get_by_text(...)` that can match
+  autocomplete/tooltips instead of the editor).
+- REQUIRED: For “set the whole document”, prefer `.cm-content.fill(source)` after focusing the editor; for incremental
+  edits, use `page.keyboard.type(...)` after focus.
+- REQUIRED: Always close autocomplete/tooltips before asserting hover or editor text (`page.keyboard.press("Escape")`),
+  otherwise locators can hit `.cm-tooltip-autocomplete` instead of editor content.
+- REQUIRED: Hover tooltips are DOM-fragile; prefer coordinate-based hovering over a DOM Range inside `.cm-content` (see
+  `_hover_codemirror_text(...)` in `scripts/playwright_st_08_10_script_editor_intelligence_e2e.py`).
+- REQUIRED: Autocomplete assertions should target `.cm-tooltip-autocomplete` presence + content; avoid exact `<li>` text
+  matching (rendered labels/details can vary).
+- REQUIRED: Lint assertions should click `.cm-lint-marker` and assert `.cm-tooltip-lint` contains the Swedish message
+  snippet; close with Escape.
+- REQUIRED: If editor intelligence is dynamically loaded, the E2E must first wait for a deterministic signal that
+  extensions are active (e.g., a lint marker appears after typing invalid code) before asserting completions/hover.
+
+References:
+
+- Canonical CodeMirror E2E patterns: `scripts/playwright_st_08_10_script_editor_intelligence_e2e.py`
+- Canonical “set editor content” helper style: `scripts/playwright_st_12_02_native_pdf_output_helper_e2e.py`
+
 ## Navigation Caveat
 
 SPA route changes (and any legacy HTMX-style flows) do not always trigger full navigation events.
