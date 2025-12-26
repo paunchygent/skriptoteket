@@ -30,12 +30,13 @@ dependencies: ["EPIC-11"]
 
 ## Stories
 
-- [ST-12-01: Multi-file upload support](../stories/story-12-01-multi-file-upload.md)
+- [ST-12-01: Multi-file upload support](../stories/story-12-01-multi-file-upload.md) (done)
 - [ST-12-02: Native PDF output helper](../stories/story-12-02-native-pdf-output-helper.md) (done)
 - [ST-12-03: Personalized tool settings](../stories/story-12-03-personalized-tool-settings.md) (done)
-- [ST-12-04: Interactive text/dropdown inputs](../stories/story-12-04-interactive-text-dropdown-inputs.md) (ready)
-- [ST-12-05: Session-scoped file persistence](../stories/story-12-05-session-file-persistence.md) (ready)
+- [ST-12-04: Interactive text/dropdown inputs](../stories/story-12-04-interactive-text-dropdown-inputs.md) (done)
+- [ST-12-05: Session-scoped file persistence](../stories/story-12-05-session-file-persistence.md) (done)
 - [ST-12-06: Session file cleanup policies](../stories/story-12-06-session-file-cleanup.md) (ready)
+- [ST-12-07: Explicit session file reuse controls](../stories/story-12-07-explicit-session-file-reuse-controls.md) (ready)
 
 ## Risks
 

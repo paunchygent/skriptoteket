@@ -2,7 +2,7 @@
 type: story
 id: ST-08-10
 title: "Script editor intelligence Phase 1: Discoverability MVP"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-24
 epic: "EPIC-08"
@@ -71,6 +71,9 @@ defineProps<{ modelValue: string; extensions?: Extension[] }>()
 Implementation note: `extensions` must be applied via a CodeMirror `Compartment` and reconfigured on prop change (do not
 destroy/recreate the editor).
 
+NOTE: To keep Vite chunks under 500 kB, load the intelligence bundle via dynamic import and pass it into CodeMirror via
+the `extensions` prop (see `useSkriptoteketIntelligenceExtensions.ts`).
+
 ### Detection Using Lezer
 
 Use the Python syntax tree to find function definitions:
@@ -90,11 +93,13 @@ Use the Python syntax tree to find function definitions:
 - `frontend/apps/skriptoteket/src/composables/editor/skriptoteketHover.ts`
 - `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.ts`
 - `frontend/apps/skriptoteket/src/composables/editor/skriptoteketMetadata.ts`
+- `frontend/apps/skriptoteket/src/composables/editor/skriptoteketPythonTree.ts`
+- `frontend/apps/skriptoteket/src/composables/editor/useSkriptoteketIntelligenceExtensions.ts`
 
 ### Modify
 
 - `frontend/apps/skriptoteket/src/components/editor/CodeMirrorEditor.vue`
-- `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`
+- `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`
 
 ## Follow-up Stories
 

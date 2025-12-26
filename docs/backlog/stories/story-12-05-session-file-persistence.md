@@ -2,7 +2,7 @@
 type: story
 id: ST-12-05
 title: "Session-scoped file persistence for action runs"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-25
 epic: "EPIC-12"
@@ -50,8 +50,10 @@ to `tool_sessions` when it returns `next_actions`, otherwise the first action ru
    - Context selection:
      - Production tool runs use `context="default"` (same context the SPA uses for `start_action`).
      - Editor sandbox runs use `context="sandbox:{version_id}"` (ADR-0038).
-   - Optional-but-recommended: inject existing session files into the initial run when no new uploads are provided
-     (consistent `/work/input/` behavior across steps).
+   - Do not implicitly inject existing session files into the initial run when no new uploads are provided (avoid
+     ambiguous behavior for form-only tools).
+   - Future: add explicit initial-run flags to opt in to reuse/clear (`session_files_mode`, `session_context`);
+     see ST-12-07.
 
 3) Extend action run flow
 
@@ -83,3 +85,15 @@ Session files are transparent to the user - they upload files once and they pers
 - Unit: reserved filename behavior (`action.json` rejected on upload)
 - Integration: multi-step tool run where action step sees original uploaded files + `action.json` in `/work/input/`
 - E2E: html_to_pdf_preview.py works in sandbox and production
+
+## Implementation (done)
+
+- Storage protocol + local FS backend: `src/skriptoteket/protocols/session_files.py`, `src/skriptoteket/infrastructure/session_files/local_session_file_storage.py`
+- TTL config: `SESSION_FILES_TTL_SECONDS` in `src/skriptoteket/config.py`
+- Initial run persistence:
+  - Production: `src/skriptoteket/application/scripting/handlers/run_active_tool.py` (context `"default"`)
+  - Sandbox: `src/skriptoteket/application/scripting/handlers/run_sandbox.py` (context `sandbox:{version_id}`)
+- Action run injection (persisted files + platform `action.json`): `src/skriptoteket/application/scripting/handlers/start_action.py`,
+  `src/skriptoteket/application/scripting/handlers/start_sandbox_action.py`
+- Upload guard: reject user file named `action.json` in `src/skriptoteket/web/uploads.py`
+- ADR-0024 gap fix: persist `normalized_state` on initial production run when `next_actions` exist (`run_active_tool.py`)

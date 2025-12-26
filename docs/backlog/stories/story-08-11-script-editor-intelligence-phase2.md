@@ -26,6 +26,9 @@ catch common errors that would fail at runtime in the Docker sandbox.
 
 See [ADR-0035: Script editor intelligence architecture](../../adr/adr-0035-script-editor-intelligence-architecture.md).
 
+Implementation note: extend the existing intelligence bundle (`skriptoteketIntelligence.ts`) and keep editor wiring as-is
+(loaded via `useSkriptoteketIntelligenceExtensions.ts` and passed through `CodeMirrorEditor.vue` `extensions`).
+
 ## Scope
 
 ### Contract Completions
@@ -122,3 +125,4 @@ Use Lezer syntax tree context:
 - `frontend/apps/skriptoteket/src/composables/editor/skriptoteketCompletions.ts`
 - `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.ts`
 - `frontend/apps/skriptoteket/src/composables/editor/skriptoteketMetadata.ts`
+- `frontend/apps/skriptoteket/src/composables/editor/skriptoteketPythonTree.ts`

@@ -25,6 +25,9 @@ Phase 3 adds best-practice lint rules that guide script authors toward robust pa
 
 See [ADR-0035: Script editor intelligence architecture](../../adr/adr-0035-script-editor-intelligence-architecture.md).
 
+Implementation note: extend the existing intelligence bundle (`skriptoteketIntelligence.ts`) and keep editor wiring as-is
+(loaded via `useSkriptoteketIntelligenceExtensions.ts` and passed through `CodeMirrorEditor.vue` `extensions`).
+
 ## Scope
 
 ### Best Practice Lint Rules
@@ -106,3 +109,4 @@ If full Swedish UI is required, use `EditorState.phrases` to translate built-in 
 
 - `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.ts`
 - `frontend/apps/skriptoteket/src/composables/editor/skriptoteketMetadata.ts`
+- `frontend/apps/skriptoteket/src/composables/editor/skriptoteketPythonTree.ts`

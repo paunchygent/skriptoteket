@@ -49,6 +49,8 @@ Use local filesystem storage with session-keyed directories:
 `context_key` MUST be a filesystem-safe encoding of `context` (do not use raw `context` in paths). Store the original
 `context` in metadata for debugging/inspection.
 
+Implementation note: use `sha256(context.encode("utf-8")).hexdigest()` for `context_key`.
+
 Future: migrate to object storage (S3/MinIO) for horizontal scaling.
 
 ### 3) Size limits and cleanup
@@ -66,13 +68,17 @@ Future: migrate to object storage (S3/MinIO) for horizontal scaling.
 
 The runner receives session files in `/work/input/` for action runs:
 
-- Initial run: uploaded files (or existing session files, if no new uploads) → `/work/input/`
+- Initial run: uploaded files → `/work/input/`
+- Initial run (no uploads): do not implicitly inject prior session files; keep them for subsequent action runs
 - Action run: session files + `action.json` → `/work/input/`
 
-Tools see consistent file access regardless of step.
+Tools see consistent file access across action runs; initial-run reuse is explicit (no implicit reuse).
 
 This uses snapshot semantics: session files are copied into the container input directory per run (not mounted writable).
 The runner contract does not change; we reuse the existing multi-file input contract (ADR-0031 / ST-12-01).
+
+Future extension (ST-12-07): add explicit initial-run flags (`session_files_mode: none|reuse|clear`,
+`session_context: default`) so users can opt in to reuse/clear without ambiguity.
 
 ## Consequences
 
