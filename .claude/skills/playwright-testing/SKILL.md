@@ -12,7 +12,7 @@ description: Browser automation with Playwright for Python. Recommended for visu
 
 ## Canonical Repo Rules
 
-For Skriptoteket-specific setup (bootstrap login env vars, SPA island assets, macOS Intel vs Apple Silicon), follow:
+For Skriptoteket-specific setup (login env vars, SPA dev server vs built assets, macOS Intel vs Apple Silicon), follow:
 
 - `.agent/rules/075-browser-automation.md`
 
@@ -23,6 +23,8 @@ For Skriptoteket-specific setup (bootstrap login env vars, SPA island assets, ma
 pdm run ui-smoke
 pdm run ui-editor-smoke
 pdm run ui-runtime-smoke
+
+# Dev/HMR (Vite): use --base-url http://127.0.0.1:5173
 
 # Prod (recommended): gitignored `.env.prod-smoke` with `BASE_URL` + `PLAYWRIGHT_*`
 pdm run ui-smoke --dotenv .env.prod-smoke
@@ -117,9 +119,10 @@ with sync_playwright() as p:
     browser.close()
 ```
 
-## HTMX Caveat
+## Navigation Caveat
 
-Use `page.wait_for_url()` instead of waiting for navigation events.
+SPA route changes (and any legacy HTMX-style flows) do not always trigger full navigation events.
+Prefer `page.wait_for_url()`, locator waits, or `expect(...)` over navigation waits.
 
 ## Context7
 

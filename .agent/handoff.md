@@ -13,7 +13,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-25
-- Branch / commit: `main` (`e1e0185`)
+- Branch / commit: `main` (`a71759d`)
 - Current sprint: `SPR-2025-12-21` (EPIC-12 SPA UX)
 - Production: Full Vue SPA; `d0e0bd6` deployed 2025-12-23
 - Completed: EPIC-11 (SPA migration), EPIC-02 (identity) - see `.agent/readme-first.md`
@@ -135,6 +135,7 @@ Admin quick-create of draft tools + URL-namn lifecycle (ADR-0037).
 - Types: `pnpm -C frontend --filter @skriptoteket/spa typecheck` (pass)
 - Lint: `pnpm -C frontend --filter @skriptoteket/spa lint` (pass)
 - UI: `docker compose up -d db && pdm run db-upgrade`, then `pdm run dev` + `pdm run fe-dev`, then `pdm run ui-smoke --base-url http://127.0.0.1:5173` (pass; screenshots in `.artifacts/ui-smoke/`)
+- UI (editor): `pdm run ui-editor-smoke --base-url http://127.0.0.1:5173` (pass; screenshots in `.artifacts/ui-editor-smoke/`)
  - EPIC-14 FE: `pdm run fe-type-check` (pass), `pdm run fe-lint` (pass)
  - EPIC-14 BE: `pdm run pytest -q tests/unit/application/test_scripting_review_handlers.py` (pass)
  - EPIC-14 live: `docker compose up -d db && pdm run db-upgrade`, then `pdm run dev` + `pdm run fe-dev`

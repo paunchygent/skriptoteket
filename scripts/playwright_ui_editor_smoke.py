@@ -159,13 +159,13 @@ def main() -> None:
         file_input = sandbox.locator("input[type='file']")
         expect(file_input).to_have_count(1, timeout=30_000)
         inputs_summary_locator = sandbox.locator(
-            "summary", has_text=re.compile(r"Indata\\s*\\(JSON\\)", re.IGNORECASE)
+            "summary", has_text=re.compile(r"Indata\s*\(JSON\)", re.IGNORECASE)
         )
         if inputs_summary_locator.count() == 0:
             page.screenshot(path=str(artifacts_dir / "missing-inputs-summary.png"), full_page=True)
             global_summary_count = page.locator("summary").count()
             global_indata_count = page.locator(
-                "summary", has_text=re.compile(r"Indata\\s*\\(JSON\\)", re.IGNORECASE)
+                "summary", has_text=re.compile(r"Indata\s*\(JSON\)", re.IGNORECASE)
             ).count()
             raise RuntimeError(
                 "Could not find the 'Indata (JSON)' <summary> in the sandbox runner.\n"

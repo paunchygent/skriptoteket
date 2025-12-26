@@ -44,11 +44,11 @@ pdm run ui-runtime-smoke --dotenv .env.prod-smoke
 Prereqs:
 
 - Playwright installed locally: `pdm install -G dev`
-- App running at `BASE_URL` (defaults to `http://127.0.0.1:8000`)
-- For SPA island pages (e.g. editor), ensure the JS/CSS is available:
-  - Prod-style assets: `pdm run fe-install && pdm run fe-build`, or
-  - Dev/HMR: set `VITE_DEV_SERVER_URL=http://localhost:5173` and run `pdm run fe-dev`
-    (keep `pdm run dev` running too).
+- Backend API running (dev): `pdm run dev` (default: `http://127.0.0.1:8000`)
+- `BASE_URL` should point at the **frontend** you want to test:
+  - Dev/HMR: `http://127.0.0.1:5173` with `pdm run fe-dev` (Vite proxies `/api/*` to `:8000`)
+  - Prod-style: your deployed host, or `http://127.0.0.1:8000` after `pdm run fe-install && pdm run fe-build`
+    (backend serves built SPA)
 
 ## One-time Browser Install
 
@@ -106,6 +106,9 @@ pdm run playwright install
 
 ## Debugging
 
+If you're running Playwright under a sandboxed agent environment (e.g. Codex CLI), browser launch may require
+explicit approval/escalation in that environment.
+
 Useful environment variables:
 
 - `PWDEBUG=1` (or `PWDEBUG=console`) opens Playwright Inspector and disables timeouts.
@@ -161,10 +164,10 @@ with sync_playwright() as p:
     browser.close()
 ```
 
-## HTMX Caveat
+## Navigation Caveat
 
-HTMX updates do not always trigger navigation events. Avoid relying on navigation waits (e.g. `waitForNavigation()`).
-Prefer `page.wait_for_url(...)`, locator waits, or `expect(...)`.
+SPA route changes (and any legacy HTMX-style flows) do not always trigger full navigation events.
+Prefer `page.wait_for_url(...)`, locator waits, or `expect(...)` over navigation waits.
 
 ## Context7 (Docs Refresh)
 
