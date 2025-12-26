@@ -103,3 +103,11 @@ types:
     status_allowed: ["active", "deprecated"]
     required: ["topic"]
     optional: ["examples"]
+
+  review:
+    folder: docs/backlog/reviews
+    filename_regex: "^review-epic-\\d{2}-[a-z0-9-]+\\.md$"
+    id_regex: "^REV-EPIC-\\d{2}$"
+    status_allowed: ["pending", "approved", "changes_requested", "rejected"]
+    required: ["reviewer", "epic"]
+    optional: ["adrs", "stories"]

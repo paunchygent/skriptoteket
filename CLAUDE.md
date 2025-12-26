@@ -158,6 +158,7 @@ Playwright (recommended), Selenium, Puppeteer available. Run via `pdm run python
 - Contract: `docs/_meta/docs-contract.yaml`
 - Templates: `docs/templates/`
 - Planning workflow (REQUIRED): `docs/reference/ref-sprint-planning-workflow.md`
+- **Review workflow (REQUIRED)**: `docs/reference/ref-review-workflow.md` — all EPICs/ADRs must be reviewed before implementation
 - Run `pdm run docs-validate` before committing doc changes
 - Agent helpers: `.agent/readme-first.md`, `.agent/handoff.md`
 

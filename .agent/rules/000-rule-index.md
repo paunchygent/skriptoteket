@@ -43,6 +43,10 @@ scope: "all"
   - [093-distributed-tracing.md](093-distributed-tracing.md): OpenTelemetry, spans
   - [094-observability-infrastructure.md](094-observability-infrastructure.md): Stack deployment
 
+## Documentation & Planning
+
+- [096-review-workflow.md](096-review-workflow.md): EPIC/Story review workflow (REQUIRED before implementation)
+
 ---
 
 **Directive Keywords**: `MUST`, `SHALL`, `FORBIDDEN`, `REQUIRED` are non-negotiable. Other phrasing indicates best practices.
