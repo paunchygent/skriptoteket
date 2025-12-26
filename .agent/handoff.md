@@ -57,6 +57,15 @@ Per-user settings stored in tool_sessions, injected to runner as `memory.json`.
 - SPA: `ToolRunSettingsPanel.vue`, `useToolSettings.ts`
 - Editor: settings schema textarea in ScriptEditorView
 
+### ST-12-04 Interactive text/dropdown inputs (done)
+
+Schema-driven pre-run inputs (`input_schema`) with persisted `input_values` and runner env `SKRIPTOTEKET_INPUTS`.
+
+- DB: `migrations/versions/0016_tool_versions_input_schema.py`, `migrations/versions/0017_tool_runs_input_values.py`
+- Domain: `src/skriptoteket/domain/scripting/tool_inputs.py` (schema + input normalization/validation)
+- Runner: `src/skriptoteket/infrastructure/runner/docker_runner.py` passes `SKRIPTOTEKET_INPUTS`
+- SPA/editor: `frontend/apps/skriptoteket/src/components/tool-run/ToolInputForm.vue`, `frontend/apps/skriptoteket/src/composables/tools/useToolInputs.ts`
+
 ### ST-13-01 Toast system primitives (done)
 
 Consolidated toast feedback system (SPA) + docs-as-code artifacts.
@@ -146,17 +155,20 @@ Admin quick-create of draft tools + URL-namn lifecycle (ADR-0037).
 ## Verification
 
 - Docs: `pdm run docs-validate` (pass)
+- Backend: `pdm run test` (pass)
+- Backend: `pdm run lint` (pass)
 - Types: `pnpm -C frontend --filter @skriptoteket/spa typecheck` (pass)
 - Lint: `pnpm -C frontend --filter @skriptoteket/spa lint` (pass)
 - UI: `docker compose up -d db && pdm run db-upgrade`, then `pdm run dev` + `pdm run fe-dev`, then `pdm run ui-smoke --base-url http://127.0.0.1:5173` (pass; screenshots in `.artifacts/ui-smoke/`)
 - UI (editor): `pdm run ui-editor-smoke --base-url http://127.0.0.1:5173` (pass; screenshots in `.artifacts/ui-editor-smoke/`)
+ - ST-12-04 UI: `docker compose up -d db && pdm run db-upgrade && (set -a; source .env; set +a) && pdm run seed-script-bank`, then `pdm run ui-runtime-smoke --base-url http://127.0.0.1:5173` (pass; screenshots in `.artifacts/ui-runtime-smoke/`; Playwright run needed escalation)
  - EPIC-14 FE: `pdm run fe-type-check` (pass), `pdm run fe-lint` (pass)
  - EPIC-14 BE: `pdm run pytest -q tests/unit/application/test_scripting_review_handlers.py` (pass)
  - EPIC-14 live: `docker compose up -d db && pdm run db-upgrade`, then `pdm run dev` + `pdm run fe-dev`
   - EPIC-14 functional (API): verified create draft tool, URL-namn edit validation, publish guards (placeholder/taxonomy),
    and URL-namn immutability post-publish via authenticated `httpx` calls against `http://127.0.0.1:8000`
-- Playwright (ST-14): `pdm run python -m scripts.playwright_st_14_admin_tool_authoring_e2e --base-url http://127.0.0.1:5173` (pass; screenshots in `.artifacts/st-14-admin-tool-authoring/`)
-- Playwright note (Codex): if you run Playwright escalated, run `pdm run dev` + `pdm run fe-dev` escalated too (same “world”); otherwise Playwright may get `ERR_CONNECTION_REFUSED` to `http://127.0.0.1:5173`.
+- Playwright (ST-14): `pdm run python -m scripts.playwright_st_14_admin_tool_authoring_e2e --base-url http://127.0.0.1:5173` (pass)
+- Playwright note: if you run Playwright escalated, run `pdm run dev` + `pdm run fe-dev` escalated too (same "world")
 
 ## How to Run
 
