@@ -6,7 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-19
-updated: 2025-12-21
+updated: 2025-12-26
 links: ["ADR-0022", "ADR-0023", "ADR-0027", "PRD-script-hub-v0.2", "EPIC-10"]
 ---
 
@@ -89,6 +89,20 @@ Provide a minimal API for interactive “turn taking”:
 - `get_session_state`: return current state + available actions
 - `get_run`: return stored `ui_payload` + logs/artifacts metadata
 - `list_artifacts`: return stored artifacts for a run
+
+### 5) State persistence semantics (initial run + actions)
+
+For multi-step tools, **the platform MUST persist normalized session state after the initial run** so that the first
+action run receives the correct server-owned state.
+
+- If a run returns `ui_payload.next_actions[]` (i.e., the tool is interactive), the backend persists the run’s
+  `normalized_state` to `tool_sessions` under (`tool_id`, `user_id`, `context`).
+- This applies to both:
+  - the **initial run** started from the main tool execution endpoint (e.g. upload → run), and
+  - subsequent **action runs** started via `start_action` (which uses `expected_state_rev`).
+- Rationale: `start_action` injects `tool_sessions.state` into `action.json` as server-owned state. If the initial run
+  does not update `tool_sessions`, the first action run will receive stale/empty state and workflows that rely on state
+  handoff between steps will fail (e.g. preview → convert flows).
 
 ## API shape (minimal, sketch)
 

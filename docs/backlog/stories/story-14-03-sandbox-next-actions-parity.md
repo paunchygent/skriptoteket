@@ -12,7 +12,7 @@ acceptance_criteria:
   - "Given a multi-step tool returns state, when an action completes, then the normalized state is persisted to tool_sessions under a sandbox-specific context and the next action uses that server-side state."
   - "Given the user submits an action with a stale expected_state_rev, when the request is processed, then the API returns 409 and the UI shows an actionable conflict message."
   - "Given the html_to_pdf_preview demo tool is run in the editor sandbox with a small HTML input, when the user clicks 'Konvertera till PDF', then the next step completes and shows results (outputs + artifacts) and the user can 'Börja om'."
-dependencies: ["ADR-0022", "ADR-0024", "ADR-0030", "ADR-0038"]
+dependencies: ["ADR-0022", "ADR-0024", "ADR-0030", "ADR-0038", "ADR-0039", "ST-12-05"]
 ui_impact: "Yes (SandboxRunner.vue renders next_actions + action submission UX)"
 data_impact: "Yes (tool_sessions writes for sandbox context; no schema change)"
 ---
@@ -39,7 +39,7 @@ We must implement sandbox interactivity using the same invariants as production:
 1) Persist sandbox state after `run-sandbox`
 
 - Update the sandbox execution flow to persist `normalized_state` to `tool_sessions` using context
-  `sandbox:<version_id>`.
+  `sandbox:{version_id}`.
 - Use the existing `update_state(... expected_state_rev=...)` optimistic locking pattern with a small retry on conflict
   (see existing usages in `tools.py`).
 - Nice-to-have: include the resulting `state_rev` in the `run-sandbox` response to avoid an extra session fetch
@@ -57,7 +57,7 @@ We must implement sandbox interactivity using the same invariants as production:
   - `input: dict[str, JsonValue]`
   - `expected_state_rev: int`
 - Handler:
-  - loads session state for `sandbox:<version_id>`
+  - loads session state for `sandbox:{version_id}`
   - builds `action.json` bytes `{action_id, input, state}`
   - executes the draft `version_id` in `RunContext.SANDBOX`
   - updates `tool_sessions` with the new normalized state using `expected_state_rev`
@@ -87,10 +87,11 @@ We must implement sandbox interactivity using the same invariants as production:
 
 ### Demo tool alignment (html_to_pdf_preview)
 
-The demo tool must not assume input file paths exist across runs (each run is an isolated container).
+With session-scoped file persistence (ADR-0039 / ST-12-05), sandbox action runs receive the original uploaded files in
+`/work/input/` alongside `action.json`.
 
-- Ensure the tool does not store `/work/input/...` paths in `state`. Store the required content (e.g. HTML as UTF-8
-  string/bytes) with an explicit size cap, or require a re-upload for the convert step.
+- The demo tool may rely on stable `/work/input/...` paths across sandbox actions.
+- The demo tool MUST ignore `action.json` when discovering user-provided input files.
 
 ## Test plan
 

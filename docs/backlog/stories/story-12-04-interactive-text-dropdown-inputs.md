@@ -2,7 +2,7 @@
 type: story
 id: ST-12-04
 title: "Interactive text/dropdown inputs"
-status: in_progress
+status: done
 owners: "agents"
 created: 2025-12-21
 epic: "EPIC-12"

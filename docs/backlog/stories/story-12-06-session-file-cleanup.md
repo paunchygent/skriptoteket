@@ -7,9 +7,9 @@ owners: "agents"
 created: 2025-12-25
 epic: "EPIC-12"
 acceptance_criteria:
-  - "Given session files older than 24 hours, when the cleanup job runs, then expired files are deleted."
+  - "Given session files older than the configured TTL (default: 24 hours), when the cleanup job runs, then expired files are deleted."
   - "Given an admin wants to clear session storage, when they run the CLI command, then all session files are cleared."
-  - "Given session storage usage, when an admin checks metrics, then Prometheus exposes session_files_total_bytes and session_files_count."
+  - "Given session storage usage, when an admin checks metrics, then Prometheus exposes skriptoteket_session_files_bytes_total and skriptoteket_session_files_count."
 dependencies: ["ST-12-05"]
 ui_impact: "No"
 data_impact: "No"

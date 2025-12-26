@@ -2,10 +2,11 @@
 type: adr
 id: ADR-0039
 title: "Session-scoped file persistence for multi-step tools"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-25
+updated: 2025-12-26
 links: ["ADR-0022", "ADR-0024", "ADR-0031", "EPIC-12"]
 ---
 
@@ -34,32 +35,44 @@ Add a `session_files` storage layer that:
 - Persists files uploaded in the initial run
 - Injects files into `/work/input/` for action runs (alongside `action.json`)
 - Clears files when a new session starts (new initial run with files)
+- Keeps existing session files when a new initial run starts without file uploads
+- Works for both production and editor sandbox contexts
 
 ### 2) Storage backend
 
 Use local filesystem storage with session-keyed directories:
 
-- Path: `{ARTIFACTS_ROOT}/sessions/{tool_id}/{user_id}/{context}/`
+- Path: `{ARTIFACTS_ROOT}/sessions/{tool_id}/{user_id}/{context_key}/`
 - Production: `context = "default"`
 - Sandbox: `context = "sandbox:{version_id}"`
+
+`context_key` MUST be a filesystem-safe encoding of `context` (do not use raw `context` in paths). Store the original
+`context` in metadata for debugging/inspection.
 
 Future: migrate to object storage (S3/MinIO) for horizontal scaling.
 
 ### 3) Size limits and cleanup
 
-- Per-session file limit: 50MB total
-- Per-file limit: 10MB
-- TTL: 24 hours from last access (or explicit clear on new upload)
-- Cleanup job runs hourly to remove expired sessions
+- Upload limits are settings-driven (same caps used for input uploads):
+  - `UPLOAD_MAX_FILE_BYTES` (default: 20MB)
+  - `UPLOAD_MAX_TOTAL_BYTES` (default: 50MB)
+- `action.json` is a reserved filename (uploads must not include it).
+- TTL is settings-driven (default: 24 hours) and is counted from `last_accessed_at`.
+  - Access is defined as “session files were injected into a run” (initial run or action run).
+  - Storage MUST update `last_accessed_at` on access.
+- Cleanup job runs hourly to remove expired sessions (see ST-12-06 for scheduling/CLI/metrics).
 
-### 4) Runner contract extension
+### 4) Runner contract (no new extension)
 
 The runner receives session files in `/work/input/` for action runs:
 
-- Initial run: uploaded files → session storage → `/work/input/`
+- Initial run: uploaded files (or existing session files, if no new uploads) → `/work/input/`
 - Action run: session files + `action.json` → `/work/input/`
 
 Tools see consistent file access regardless of step.
+
+This uses snapshot semantics: session files are copied into the container input directory per run (not mounted writable).
+The runner contract does not change; we reuse the existing multi-file input contract (ADR-0031 / ST-12-01).
 
 ## Consequences
 

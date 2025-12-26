@@ -33,7 +33,7 @@ Additionally, sandbox interactivity must respect the same safety and correctness
 We will persist normalized tool state for sandbox runs using the existing `tool_sessions` model (ADR-0024).
 
 - Key: (`tool_id`, `user_id`, `context`)
-- Context: `sandbox:<version_id>` (UUID is short enough to satisfy the 64-char context cap)
+- Context: `sandbox:{version_id}` (UUID is short enough to satisfy the 64-char context cap)
 
 This ensures sandbox interactivity:
 
@@ -76,5 +76,5 @@ as actionable error messaging (409 → “session changed; refresh / retry”).
 ### Tradeoffs / Risks
 
 - Adds persisted state writes for sandbox runs (must use a sandbox-specific context to avoid collisions).
-- Tools that need prior input bytes across steps must store what they need in `state` (within policy caps) or ask the
-  user to re-upload; sandbox does not implicitly “carry forward” input files across action runs.
+- Tools that need prior input files across steps rely on session-scoped file persistence (ADR-0039). Sandbox action runs
+  receive the original uploaded files in `/work/input/` alongside `action.json` (same as production).
