@@ -1,7 +1,7 @@
 import { closeCompletion, startCompletion, type Completion, type CompletionContext } from "@codemirror/autocomplete";
-import { syntaxTree } from "@codemirror/language";
+import { ensureSyntaxTree, syntaxTree } from "@codemirror/language";
 import { pythonLanguage } from "@codemirror/lang-python";
-import type { Extension } from "@codemirror/state";
+import type { EditorState, Extension } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 
 import type { SkriptoteketIntelligenceConfig } from "./skriptoteketIntelligence";
@@ -109,7 +109,10 @@ type PythonStringNode = { name: string; from: number; to: number; parent: Python
 function findReturnDictionary(node: PythonStringNode | null): PythonStringNode | null {
   let current: PythonStringNode | null = node;
   while (current) {
-    if (current.name === "DictionaryExpression" && current.parent?.name === "ReturnStatement") {
+    if (
+      (current.name === "DictionaryExpression" || current.name === "SetComprehensionExpression") &&
+      current.parent?.name === "ReturnStatement"
+    ) {
       return current;
     }
     current = current.parent;
@@ -117,14 +120,23 @@ function findReturnDictionary(node: PythonStringNode | null): PythonStringNode |
   return null;
 }
 
-function resolveStringNode(
-  context: CompletionContext,
-): { node: PythonStringNode; contentFrom: number; partial: string } | null {
-  const { state, pos } = context;
-  const node = syntaxTree(state).resolveInner(pos, -1) as unknown as PythonStringNode;
+type ContractCompletionContext = {
+  stringNode: PythonStringNode;
+  contentFrom: number;
+  partial: string;
+  dictNode: PythonStringNode;
+  returnDict: PythonStringNode;
+  keyForValue: string | null;
+  isInOutputsArray: boolean;
+  outputKind: string | null;
+};
+
+function resolveContractCompletionContext(state: EditorState, pos: number): ContractCompletionContext | null {
+  const tree = ensureSyntaxTree(state, pos, 200) ?? syntaxTree(state);
+  const node = tree.resolveInner(pos, -1) as unknown as PythonStringNode;
   let current: PythonStringNode | null = node;
   while (current && current.name !== "String") current = current.parent;
-  if (!current || current.name !== "String") return null;
+  if (!current) return null;
 
   const raw = state.doc.sliceString(current.from, current.to);
   const quote = raw[0];
@@ -133,19 +145,17 @@ function resolveStringNode(
   const contentFrom = current.from + 1;
   if (pos < contentFrom) return null;
   const partial = state.doc.sliceString(contentFrom, pos);
-  return { node: current, contentFrom, partial };
-}
 
-function contractCompletions(context: CompletionContext) {
-  const { state } = context;
-  const resolved = resolveStringNode(context);
-  if (!resolved) return null;
-
-  const { node: stringNode, contentFrom, partial } = resolved;
   const dictNode = (function findDict(): PythonStringNode | null {
-    let current: PythonStringNode | null = stringNode;
-    while (current && current.name !== "DictionaryExpression") current = current.parent;
-    return current;
+    let cursor: PythonStringNode | null = current;
+    while (
+      cursor &&
+      cursor.name !== "DictionaryExpression" &&
+      cursor.name !== "SetComprehensionExpression"
+    ) {
+      cursor = cursor.parent;
+    }
+    return cursor;
   })();
 
   if (!dictNode) return null;
@@ -155,17 +165,13 @@ function contractCompletions(context: CompletionContext) {
 
   const dictEntries = extractPythonDictionaryEntries(state, { from: dictNode.from, to: dictNode.to });
   const keyForValue =
-    dictEntries.find((entry) => entry.value?.from === stringNode.from && entry.value?.to === stringNode.to)?.key ??
-    null;
+    dictEntries.find((entry) => entry.value?.from === current.from && entry.value?.to === current.to)?.key ?? null;
 
   const returnEntries = extractPythonDictionaryEntries(state, { from: returnDict.from, to: returnDict.to });
-  const outputsValue =
-    returnEntries.find((entry) => entry.key === "outputs")?.value ?? null;
-  const outputsArray =
-    outputsValue && outputsValue.name === "ArrayExpression" ? outputsValue : null;
+  const outputsValue = returnEntries.find((entry) => entry.key === "outputs")?.value ?? null;
+  const outputsArray = outputsValue && outputsValue.name === "ArrayExpression" ? outputsValue : null;
 
-  const isInOutputsArray =
-    outputsArray && dictNode.from >= outputsArray.from && dictNode.to <= outputsArray.to;
+  const isInOutputsArray = Boolean(outputsArray && dictNode.from >= outputsArray.from && dictNode.to <= outputsArray.to);
 
   const outputKind =
     isInOutputsArray && dictNode.name === "DictionaryExpression"
@@ -178,11 +184,30 @@ function contractCompletions(context: CompletionContext) {
         })()
       : null;
 
+  return {
+    stringNode: current,
+    contentFrom,
+    partial,
+    dictNode,
+    returnDict,
+    keyForValue,
+    isInOutputsArray,
+    outputKind,
+  };
+}
+
+function contractCompletions(context: CompletionContext) {
+  const resolved = resolveContractCompletionContext(context.state, context.pos);
+  if (!resolved) return null;
+
+  const { contentFrom, partial, dictNode, returnDict, keyForValue, isInOutputsArray, outputKind } = resolved;
+
   if (dictNode.from === returnDict.from && dictNode.to === returnDict.to && keyForValue === null) {
     const options = SKRIPTOTEKET_CONTRACT_KEYS.filter((key) => key.startsWith(partial)).map((key) => ({
       label: key,
       type: "property",
       detail: "Contract v2",
+      boost: 100,
     }));
 
     if (options.length === 0) return null;
@@ -197,7 +222,7 @@ function contractCompletions(context: CompletionContext) {
     const keys = ["kind", ...(outputKind === "notice" ? ["level", "message"] : [])];
     const options = keys
       .filter((key) => key.startsWith(partial))
-      .map((key) => ({ label: key, type: "property", detail: "Contract v2" }));
+      .map((key) => ({ label: key, type: "property", detail: "Contract v2", boost: 100 }));
 
     if (options.length === 0) return null;
     return {
@@ -212,6 +237,7 @@ function contractCompletions(context: CompletionContext) {
       label: kind,
       type: "keyword",
       detail: "Contract v2",
+      boost: 100,
     }));
 
     if (options.length === 0) return null;
@@ -227,6 +253,7 @@ function contractCompletions(context: CompletionContext) {
       label: level,
       type: "keyword",
       detail: "Contract v2",
+      boost: 100,
     }));
 
     if (options.length === 0) return null;
@@ -241,28 +268,65 @@ function contractCompletions(context: CompletionContext) {
 }
 
 export function skriptoteketCompletions(_config: SkriptoteketIntelligenceConfig): Extension {
-  const autoTriggerFromImports = EditorView.updateListener.of((update) => {
+  const autoTriggerCompletions = EditorView.updateListener.of((update) => {
     if (!update.docChanged) return;
 
     const selection = update.state.selection.main;
     if (!selection.empty) return;
 
     const head = selection.head;
-    if (isInNonCodeContext(update.state, head - 1)) return;
 
-    if (head >= 5 && update.state.doc.sliceString(head - 5, head) === "from ") {
-      closeCompletion(update.view);
-      startCompletion(update.view);
-      return;
-    }
-
-    if (head >= 7 && update.state.doc.sliceString(head - 7, head) === "import ") {
-      const line = update.state.doc.lineAt(head);
-      const prefix = line.text.slice(0, head - line.from);
-      if (/^\s*from\s+(pdf_helper|tool_errors)\s+import\s*$/.test(prefix)) {
+    // Import completions: trigger after `from ` and `import ` prefixes in code context.
+    if (!isInNonCodeContext(update.state, head - 1)) {
+      if (head >= 5 && update.state.doc.sliceString(head - 5, head) === "from ") {
         closeCompletion(update.view);
         startCompletion(update.view);
+        return;
       }
+
+      if (head >= 7 && update.state.doc.sliceString(head - 7, head) === "import ") {
+        const line = update.state.doc.lineAt(head);
+        const prefix = line.text.slice(0, head - line.from);
+        if (/^\s*from\s+(pdf_helper|tool_errors)\s+import\s*$/.test(prefix)) {
+          closeCompletion(update.view);
+          startCompletion(update.view);
+        }
+      }
+    }
+
+    // Contract completions: auto-trigger on first typed character in the supported contexts.
+    if (head <= 0) return;
+    const lastChar = update.state.doc.sliceString(head - 1, head);
+    if (!/^[a-zA-Z_]$/.test(lastChar)) return;
+
+    const contractContext = resolveContractCompletionContext(update.state, head);
+    if (!contractContext) return;
+    if (contractContext.partial.length !== 1) return;
+
+    const shouldTriggerTopLevelKeys =
+      contractContext.dictNode.from === contractContext.returnDict.from &&
+      contractContext.dictNode.to === contractContext.returnDict.to &&
+      contractContext.keyForValue === null;
+
+    const shouldTriggerOutputKeys = contractContext.isInOutputsArray && contractContext.keyForValue === null;
+
+    const shouldTriggerOutputKindValues = contractContext.isInOutputsArray && contractContext.keyForValue === "kind";
+
+    const shouldTriggerNoticeLevelValues =
+      contractContext.isInOutputsArray &&
+      contractContext.outputKind === "notice" &&
+      contractContext.keyForValue === "level";
+
+    if (
+      shouldTriggerTopLevelKeys ||
+      shouldTriggerOutputKeys ||
+      shouldTriggerOutputKindValues ||
+      shouldTriggerNoticeLevelValues
+    ) {
+      setTimeout(() => {
+        closeCompletion(update.view);
+        startCompletion(update.view);
+      }, 0);
     }
   });
 
@@ -271,6 +335,6 @@ export function skriptoteketCompletions(_config: SkriptoteketIntelligenceConfig)
       autocomplete: (context: CompletionContext) =>
         skriptoteketImportCompletions(context) ?? contractCompletions(context),
     }),
-    autoTriggerFromImports,
+    autoTriggerCompletions,
   ];
 }

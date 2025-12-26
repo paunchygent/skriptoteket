@@ -2,7 +2,7 @@
 type: story
 id: ST-08-11
 title: "Script editor intelligence Phase 2: Contract validation + security"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2025-12-24
 epic: "EPIC-08"
