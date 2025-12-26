@@ -2,45 +2,25 @@
 import { computed, onMounted, ref } from "vue";
 
 import { isApiError } from "../api/client";
-import { useProfile } from "../composables/useProfile";
-import { useToast } from "../composables/useToast";
-import { useAuthStore } from "../stores/auth";
+import ProfileDisplay from "../components/profile/ProfileDisplay.vue";
+import ProfileEditEmail from "../components/profile/ProfileEditEmail.vue";
+import ProfileEditPassword from "../components/profile/ProfileEditPassword.vue";
+import ProfileEditPersonal from "../components/profile/ProfileEditPersonal.vue";
 import SystemMessage from "../components/ui/SystemMessage.vue";
+import { useProfile } from "../composables/useProfile";
+import { useAuthStore } from "../stores/auth";
+
+type EditingSection = "personal" | "email" | "password" | null;
 
 const auth = useAuthStore();
-const { profile, load, updateProfile, changePassword, changeEmail } = useProfile();
-const toast = useToast();
+const { profile, load } = useProfile();
 
 const isLoading = ref(true);
 const loadError = ref<string | null>(null);
-
-const firstName = ref("");
-const lastName = ref("");
-const displayName = ref("");
-const locale = ref("sv-SE");
-
-const profileError = ref<string | null>(null);
-const isSavingProfile = ref(false);
-
-const newEmail = ref("");
-const emailError = ref<string | null>(null);
-const isSavingEmail = ref(false);
-
-const currentPassword = ref("");
-const newPassword = ref("");
-const confirmPassword = ref("");
-const passwordError = ref<string | null>(null);
-const isSavingPassword = ref(false);
+const editingSection = ref<EditingSection>(null);
 
 const currentEmail = computed(() => auth.user?.email ?? "");
-
-function syncProfileForm(): void {
-  if (!profile.value) return;
-  firstName.value = profile.value.first_name ?? "";
-  lastName.value = profile.value.last_name ?? "";
-  displayName.value = profile.value.display_name ?? "";
-  locale.value = profile.value.locale ?? "sv-SE";
-}
+const createdAt = computed(() => auth.user?.created_at ?? undefined);
 
 async function loadProfile(): Promise<void> {
   isLoading.value = true;
@@ -48,7 +28,6 @@ async function loadProfile(): Promise<void> {
 
   try {
     await load();
-    syncProfileForm();
   } catch (error: unknown) {
     if (isApiError(error)) {
       loadError.value = error.message;
@@ -62,109 +41,18 @@ async function loadProfile(): Promise<void> {
   }
 }
 
-async function saveProfile(): Promise<void> {
-  if (isSavingProfile.value) return;
-
-  profileError.value = null;
-
-  if (!firstName.value.trim() || !lastName.value.trim()) {
-    profileError.value = "Förnamn och efternamn krävs.";
-    return;
-  }
-
-  isSavingProfile.value = true;
-
-  try {
-    await updateProfile({
-      first_name: firstName.value,
-      last_name: lastName.value,
-      display_name: displayName.value,
-      locale: locale.value,
-    });
-    toast.success("Profilen uppdaterades.");
-  } catch (error: unknown) {
-    if (isApiError(error)) {
-      profileError.value = error.message;
-    } else if (error instanceof Error) {
-      profileError.value = error.message;
-    } else {
-      profileError.value = "Kunde inte uppdatera profilen.";
-    }
-  } finally {
-    isSavingProfile.value = false;
-  }
+function handleEditRequest(section: "personal" | "email" | "password"): void {
+  editingSection.value = section;
 }
 
-async function saveEmail(): Promise<void> {
-  if (isSavingEmail.value) return;
-
-  emailError.value = null;
-
-  const trimmed = newEmail.value.trim().toLowerCase();
-  if (!trimmed) {
-    emailError.value = "Ange en ny e-postadress.";
-    return;
-  }
-  if (trimmed === currentEmail.value.toLowerCase()) {
-    emailError.value = "E-postadressen är redan registrerad.";
-    return;
-  }
-
-  isSavingEmail.value = true;
-
-  try {
-    await changeEmail({ email: trimmed });
-    newEmail.value = "";
-    toast.success("E-postadressen uppdaterades.");
-  } catch (error: unknown) {
-    if (isApiError(error)) {
-      emailError.value = error.message;
-    } else if (error instanceof Error) {
-      emailError.value = error.message;
-    } else {
-      emailError.value = "Kunde inte uppdatera e-postadressen.";
-    }
-  } finally {
-    isSavingEmail.value = false;
-  }
+function handleCancel(): void {
+  editingSection.value = null;
 }
 
-async function savePassword(): Promise<void> {
-  if (isSavingPassword.value) return;
-
-  passwordError.value = null;
-
-  if (newPassword.value.length < 8) {
-    passwordError.value = "Lösenordet måste vara minst 8 tecken.";
-    return;
-  }
-  if (newPassword.value !== confirmPassword.value) {
-    passwordError.value = "Lösenorden matchar inte.";
-    return;
-  }
-
-  isSavingPassword.value = true;
-
-  try {
-    await changePassword({
-      current_password: currentPassword.value,
-      new_password: newPassword.value,
-    });
-    currentPassword.value = "";
-    newPassword.value = "";
-    confirmPassword.value = "";
-    toast.success("Lösenordet uppdaterades.");
-  } catch (error: unknown) {
-    if (isApiError(error)) {
-      passwordError.value = error.message;
-    } else if (error instanceof Error) {
-      passwordError.value = error.message;
-    } else {
-      passwordError.value = "Kunde inte uppdatera lösenordet.";
-    }
-  } finally {
-    isSavingPassword.value = false;
-  }
+async function handleSaved(): Promise<void> {
+  editingSection.value = null;
+  // Reload profile to get fresh data
+  await loadProfile();
 }
 
 onMounted(() => {
@@ -173,10 +61,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="max-w-3xl space-y-8">
-    <header class="space-y-2">
+  <div class="max-w-3xl space-y-6">
+    <header class="space-y-1">
       <h1 class="text-2xl font-semibold text-navy">Profil</h1>
-      <p class="text-sm text-navy/70">
+      <p class="text-xs text-navy/70">
         Hantera dina personuppgifter, preferenser och lösenord.
       </p>
     </header>
@@ -188,211 +76,73 @@ onMounted(() => {
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
+      class="space-y-6"
     >
-      Laddar profil...
+      <div class="h-20 animate-pulse border border-navy/20 bg-navy/5" />
+      <div class="h-28 animate-pulse border border-navy/20 bg-navy/5" />
+      <div class="h-16 animate-pulse border border-navy/20 bg-navy/5" />
+      <div class="h-16 animate-pulse border border-navy/20 bg-navy/5" />
     </div>
 
-    <template v-else>
-      <section class="border border-navy bg-white shadow-brutal-sm p-5 space-y-4">
-        <div class="space-y-1">
-          <h2 class="text-lg font-semibold text-navy">Personlig information</h2>
-          <p class="text-sm text-navy/60">Uppdatera namn och visningsnamn.</p>
-        </div>
-
-        <SystemMessage
-          v-model="profileError"
-          variant="error"
+    <template v-else-if="!loadError">
+      <Transition
+        name="profile-section"
+        mode="out-in"
+      >
+        <ProfileDisplay
+          v-if="!editingSection"
+          :profile="profile"
+          :email="currentEmail"
+          :created-at="createdAt"
+          @edit="handleEditRequest"
         />
 
-        <form
-          class="space-y-4"
-          @submit.prevent="saveProfile"
-        >
-          <div class="grid gap-4 sm:grid-cols-2">
-            <div class="space-y-2">
-              <label
-                for="profile-first-name"
-                class="text-sm font-semibold text-navy"
-              >Förnamn</label>
-              <input
-                id="profile-first-name"
-                v-model="firstName"
-                type="text"
-                required
-                class="w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm text-navy"
-                :disabled="isSavingProfile"
-              >
-            </div>
-            <div class="space-y-2">
-              <label
-                for="profile-last-name"
-                class="text-sm font-semibold text-navy"
-              >Efternamn</label>
-              <input
-                id="profile-last-name"
-                v-model="lastName"
-                type="text"
-                required
-                class="w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm text-navy"
-                :disabled="isSavingProfile"
-              >
-            </div>
-          </div>
-
-          <div class="space-y-2">
-            <label
-              for="profile-display-name"
-              class="text-sm font-semibold text-navy"
-            >Visningsnamn</label>
-            <input
-              id="profile-display-name"
-              v-model="displayName"
-              type="text"
-              placeholder="Valfritt"
-              class="w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm text-navy"
-              :disabled="isSavingProfile"
-            >
-          </div>
-
-          <div class="space-y-2">
-            <label
-              for="profile-locale"
-              class="text-sm font-semibold text-navy"
-            >Språk</label>
-            <select
-              id="profile-locale"
-              v-model="locale"
-              class="w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm text-navy"
-              :disabled="isSavingProfile"
-            >
-              <option value="sv-SE">Svenska (sv-SE)</option>
-              <option value="en-US">English (en-US)</option>
-            </select>
-          </div>
-
-          <button
-            type="submit"
-            class="btn-primary"
-            :disabled="isSavingProfile"
-          >
-            {{ isSavingProfile ? "Sparar…" : "Spara" }}
-          </button>
-        </form>
-      </section>
-
-      <section class="border border-navy bg-white shadow-brutal-sm p-5 space-y-4">
-        <div class="space-y-1">
-          <h2 class="text-lg font-semibold text-navy">E-postadress</h2>
-          <p class="text-sm text-navy/60">Nuvarande: {{ currentEmail }}</p>
-        </div>
-
-        <SystemMessage
-          v-model="emailError"
-          variant="error"
+        <ProfileEditPersonal
+          v-else-if="editingSection === 'personal' && profile"
+          :profile="profile"
+          @cancel="handleCancel"
+          @saved="handleSaved"
         />
 
-        <form
-          class="space-y-4"
-          @submit.prevent="saveEmail"
-        >
-          <div class="space-y-2">
-            <label
-              for="profile-email"
-              class="text-sm font-semibold text-navy"
-            >Ny e-post</label>
-            <input
-              id="profile-email"
-              v-model="newEmail"
-              type="email"
-              autocomplete="email"
-              class="w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm text-navy"
-              :disabled="isSavingEmail"
-            >
-          </div>
-
-          <button
-            type="submit"
-            class="btn-primary"
-            :disabled="isSavingEmail"
-          >
-            {{ isSavingEmail ? "Sparar…" : "Uppdatera e-post" }}
-          </button>
-        </form>
-      </section>
-
-      <section class="border border-navy bg-white shadow-brutal-sm p-5 space-y-4">
-        <div class="space-y-1">
-          <h2 class="text-lg font-semibold text-navy">Ändra lösenord</h2>
-          <p class="text-sm text-navy/60">
-            Ange ditt nuvarande lösenord och välj ett nytt.
-          </p>
-        </div>
-
-        <SystemMessage
-          v-model="passwordError"
-          variant="error"
+        <ProfileEditEmail
+          v-else-if="editingSection === 'email'"
+          :current-email="currentEmail"
+          @cancel="handleCancel"
+          @saved="handleSaved"
         />
 
-        <form
-          class="space-y-4"
-          @submit.prevent="savePassword"
-        >
-          <div class="space-y-2">
-            <label
-              for="current-password"
-              class="text-sm font-semibold text-navy"
-            >Nuvarande lösenord</label>
-            <input
-              id="current-password"
-              v-model="currentPassword"
-              type="password"
-              autocomplete="current-password"
-              class="w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm text-navy"
-              :disabled="isSavingPassword"
-            >
-          </div>
-
-          <div class="space-y-2">
-            <label
-              for="new-password"
-              class="text-sm font-semibold text-navy"
-            >Nytt lösenord</label>
-            <input
-              id="new-password"
-              v-model="newPassword"
-              type="password"
-              autocomplete="new-password"
-              class="w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm text-navy"
-              :disabled="isSavingPassword"
-            >
-            <p class="text-xs text-navy/60">Minst 8 tecken.</p>
-          </div>
-
-          <div class="space-y-2">
-            <label
-              for="confirm-password"
-              class="text-sm font-semibold text-navy"
-            >Bekräfta nytt lösenord</label>
-            <input
-              id="confirm-password"
-              v-model="confirmPassword"
-              type="password"
-              autocomplete="new-password"
-              class="w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm text-navy"
-              :disabled="isSavingPassword"
-            >
-          </div>
-
-          <button
-            type="submit"
-            class="btn-primary"
-            :disabled="isSavingPassword"
-          >
-            {{ isSavingPassword ? "Sparar…" : "Uppdatera lösenord" }}
-          </button>
-        </form>
-      </section>
+        <ProfileEditPassword
+          v-else-if="editingSection === 'password'"
+          @cancel="handleCancel"
+          @saved="handleSaved"
+        />
+      </Transition>
     </template>
   </div>
 </template>
+
+<style scoped>
+.profile-section-enter-active,
+.profile-section-leave-active {
+  transition:
+    opacity var(--huleedu-duration-slow, 300ms) var(--huleedu-ease-default, ease),
+    transform var(--huleedu-duration-slow, 300ms) var(--huleedu-ease-default, ease);
+}
+
+.profile-section-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.profile-section-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-section-enter-active,
+  .profile-section-leave-active {
+    transition: none;
+  }
+}
+</style>

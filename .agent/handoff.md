@@ -12,13 +12,13 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2025-12-25
+- Date: 2025-12-26
 - Branch / commit: `main` (`a71759d`)
-- Current sprint: `SPR-2025-12-21` (EPIC-12 SPA UX)
+- Current sprint: `SPR-2025-12-21` (EPIC-12 SPA UX, EPIC-15 User Profile)
 - Production: Full Vue SPA; `d0e0bd6` deployed 2025-12-23
 - Completed: EPIC-11 (SPA migration), EPIC-02 (identity) - see `.agent/readme-first.md`
 
-## Current Session (2025-12-25)
+## Current Session (2025-12-26)
 
 ### ST-08-13 Tool usage instructions (done)
 
@@ -103,6 +103,20 @@ Replace ProfileView inline success banners with toasts; standardize inline error
 - View: `frontend/apps/skriptoteket/src/views/ProfileView.vue`
 - Docs status: set ST-13-04 + EPIC-13 to `done` in `docs/backlog/`
 
+### EPIC-15 User Profile & Settings (ST-15-01) (done)
+
+Profile page redesign with view/edit mode separation and brutalist academic design.
+
+- **Architecture**: Decomposed monolithic `ProfileView.vue` (398 LOC) into orchestrator (<150 LOC) + 4 sub-components
+- **Components**:
+  - `frontend/apps/skriptoteket/src/components/profile/ProfileDisplay.vue` - Ledger-style view mode
+  - `frontend/apps/skriptoteket/src/components/profile/ProfileEditPersonal.vue` - Personal info form
+  - `frontend/apps/skriptoteket/src/components/profile/ProfileEditEmail.vue` - Email change form
+  - `frontend/apps/skriptoteket/src/components/profile/ProfileEditPassword.vue` - Password change form
+- **Design**: Ledger rows with `divide-y`, uppercase labels (`text-xs font-semibold uppercase tracking-wide`), compact spacing (`space-y-1` label-to-input)
+- **Docs**: EPIC-15 (`docs/backlog/epics/epic-15-user-profile-and-settings.md`), ADR-0040 (`docs/adr/adr-0040-profile-view-edit-separation.md`)
+- **Follow-up**: ST-15-02 Avatar Upload (deferred)
+
 ### EPIC-14 Admin tool authoring (ST-14-01 + ST-14-02) (done)
 
 Admin quick-create of draft tools + URL-namn lifecycle (ADR-0037).
@@ -170,4 +184,4 @@ pdm run python -m scripts.playwright_st_08_13_tool_usage_instructions_e2e --base
 
 - ST-08-10: Implement script editor intelligence (Lezer integration)
 - EPIC-12: Continue SPA UX stories
-- EPIC-14 (done): Admin tool authoring (quick-create drafts + URL-namn lifecycle) — PRD `docs/prd/prd-tool-authoring-v0.1.md`, ADR `docs/adr/adr-0037-tool-slug-lifecycle.md`, stories `docs/backlog/stories/story-14-01-admin-quick-create-draft-tools.md` + `docs/backlog/stories/story-14-02-draft-slug-edit-and-publish-guards.md`
+- ST-15-02: Avatar Upload (follow-up to profile redesign)
