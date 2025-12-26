@@ -110,7 +110,9 @@ function findReturnDictionary(node: PythonStringNode | null): PythonStringNode |
   let current: PythonStringNode | null = node;
   while (current) {
     if (
-      (current.name === "DictionaryExpression" || current.name === "SetComprehensionExpression") &&
+      (current.name === "DictionaryExpression" ||
+        current.name === "SetExpression" ||
+        current.name === "SetComprehensionExpression") &&
       current.parent?.name === "ReturnStatement"
     ) {
       return current;
@@ -151,6 +153,7 @@ function resolveContractCompletionContext(state: EditorState, pos: number): Cont
     while (
       cursor &&
       cursor.name !== "DictionaryExpression" &&
+      cursor.name !== "SetExpression" &&
       cursor.name !== "SetComprehensionExpression"
     ) {
       cursor = cursor.parent;

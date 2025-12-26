@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import time
 from pathlib import Path
 
 from playwright.sync_api import Error as PlaywrightError
@@ -129,6 +130,11 @@ def _clear_codemirror(page: object) -> None:
     content.click()
 
 
+def _set_codemirror_value(page: object, source_code: str) -> None:
+    content = _focus_codemirror(page)
+    content.fill(source_code)
+
+
 def _wait_for_intelligence_loaded(page: object) -> None:
     _clear_codemirror(page)
     page.keyboard.type("x")
@@ -170,25 +176,40 @@ def _expect_autocomplete_option(
 
 
 def _expect_any_lint_message(page: object, message_snippet: str) -> None:
-    markers = page.locator(".cm-lint-marker")
-    expect(markers.first).to_be_visible(timeout=15_000)
+    deadline = time.monotonic() + 15.0
+    seen_tooltips: list[str] = []
 
-    count = markers.count()
-    for index in range(count):
-        marker = markers.nth(index)
-        marker.click()
-
-        tooltip = page.locator(".cm-tooltip-lint").first
-        expect(tooltip).to_be_visible(timeout=10_000)
-        try:
-            expect(tooltip).to_contain_text(message_snippet)
-            page.keyboard.press("Escape")
-            return
-        except AssertionError:
-            page.keyboard.press("Escape")
+    while time.monotonic() < deadline:
+        markers = page.locator(".cm-lint-marker")
+        if markers.count() == 0:
+            page.wait_for_timeout(250)
             continue
 
-    raise AssertionError(f"Expected lint message snippet not found: {message_snippet!r}")
+        count = markers.count()
+        seen_tooltips = []
+        for index in range(count):
+            marker = markers.nth(index)
+            marker.click()
+
+            tooltip = page.locator(".cm-tooltip-lint").first
+            expect(tooltip).to_be_visible(timeout=10_000)
+            text = (tooltip.inner_text() or "").strip()
+            if text:
+                seen_tooltips.append(text)
+
+            if message_snippet in text:
+                page.keyboard.press("Escape")
+                return
+
+            page.keyboard.press("Escape")
+
+        page.wait_for_timeout(250)
+
+    details = "\n---\n".join(seen_tooltips) if seen_tooltips else "<no lint tooltips captured>"
+    raise AssertionError(
+        f"Expected lint message snippet not found: {message_snippet!r}\n"
+        f"Seen lint tooltips:\n{details}"
+    )
 
 
 def main() -> None:
@@ -233,40 +254,40 @@ def main() -> None:
         page.screenshot(path=str(artifacts_dir / "contract-key-completions.png"), full_page=True)
 
         # 2) Lint: missing outputs -> info diagnostic
-        _clear_codemirror(page)
-        page.keyboard.type(
+        _set_codemirror_value(
+            page,
             f"def {entrypoint}(input_dir, output_dir):\n"
             "    return {\n"
             '        "next_actions": [],\n'
             '        "state": None,\n'
-            "    }\n"
+            "    }\n",
         )
         _expect_any_lint_message(page, "Retur-dict saknar nycklar: outputs")
         page.screenshot(path=str(artifacts_dir / "lint-missing-outputs.png"), full_page=True)
 
         # 3) Lint: invalid kind warns and lists allowed kinds
-        _clear_codemirror(page)
-        page.keyboard.type(
+        _set_codemirror_value(
+            page,
             f"def {entrypoint}(input_dir, output_dir):\n"
             "    return {\n"
             '        "outputs": [{"kind": "nope"}],\n'
             '        "next_actions": [],\n'
             '        "state": None,\n'
-            "    }\n"
+            "    }\n",
         )
         _expect_any_lint_message(page, 'Ogiltigt kind: "nope".')
         _expect_any_lint_message(page, "Tillåtna: notice, markdown, table, json, html_sandboxed.")
         page.screenshot(path=str(artifacts_dir / "lint-invalid-kind.png"), full_page=True)
 
         # 4) Security: blocked network + shell exec
-        _clear_codemirror(page)
-        page.keyboard.type(
+        _set_codemirror_value(
+            page,
             "import requests\n"
             "import subprocess\n"
             "\n"
             f"def {entrypoint}(input_dir, output_dir):\n"
             '    subprocess.run(["echo", "hej"])\n'
-            '    return {"outputs": [], "next_actions": [], "state": None}\n'
+            '    return {"outputs": [], "next_actions": [], "state": None}\n',
         )
         _expect_any_lint_message(page, "Nätverksbibliotek stöds inte i sandbox")
         _expect_any_lint_message(page, "Undvik subprocess/os.system i sandbox")

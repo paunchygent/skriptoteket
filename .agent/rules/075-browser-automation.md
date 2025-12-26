@@ -204,12 +204,16 @@ with sync_playwright() as p:
   matching (rendered labels/details can vary).
 - REQUIRED: Lint assertions should click `.cm-lint-marker` and assert `.cm-tooltip-lint` contains the Swedish message
   snippet; close with Escape.
+- REQUIRED: Lint updates are debounced and can lag after `.cm-content.fill(...)`; poll for the expected tooltip text
+  instead of assuming the first marker is the new diagnostic (see `_expect_any_lint_message(...)` in
+  `scripts/playwright_st_08_11_script_editor_intelligence_phase2_e2e.py`).
 - REQUIRED: If editor intelligence is dynamically loaded, the E2E must first wait for a deterministic signal that
   extensions are active (e.g., a lint marker appears after typing invalid code) before asserting completions/hover.
 
 References:
 
 - Canonical CodeMirror E2E patterns: `scripts/playwright_st_08_10_script_editor_intelligence_e2e.py`
+- Canonical CodeMirror lint polling patterns: `scripts/playwright_st_08_11_script_editor_intelligence_phase2_e2e.py`
 - Canonical “set editor content” helper style: `scripts/playwright_st_12_02_native_pdf_output_helper_e2e.py`
 
 ## Navigation Caveat

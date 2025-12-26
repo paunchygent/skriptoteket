@@ -27,7 +27,8 @@ Keep this file updated so the next session can pick up work quickly.
   - Docs: `docs/runbooks/runbook-home-server.md`, `docs/runbooks/runbook-observability-logging.md`.
 - ST-12-05: session-scoped file persistence + `action.json` injection for action runs (prod + sandbox); persist `normalized_state` on initial prod run when `next_actions` exist (ADR-0024 gap).
 - Docs: added ST-12-07 follow-up for explicit future session file reuse flags; updated ADR-0039 + ST-12-05 story.
-- ST-08-10: locked phase 1 with a dedicated Playwright E2E; marked story `done`. Started ST-08-11 phase 2 (contract completions + contract/security lint) in the same modular bundle.
+- ST-08-10: locked phase 1 with a dedicated Playwright E2E; story `done`.
+- ST-08-11: Phase 2 contract completions + contract/security lint + Playwright E2E lock-in (`scripts/playwright_st_08_11_script_editor_intelligence_phase2_e2e.py`); story `done`.
 
 ### ST-08-13 Tool usage instructions (done)
 
@@ -46,7 +47,9 @@ Autocomplete/hover/lint for script author discoverability + entrypoint validatio
 - Bundle: `frontend/apps/skriptoteket/src/composables/editor/skriptoteketIntelligence.ts` (+ completions/hover/linter/tree utils)
 - Wiring: `frontend/apps/skriptoteket/src/components/editor/CodeMirrorEditor.vue` `extensions` + dynamic load `useSkriptoteketIntelligenceExtensions.ts`
 - Docs: updated ST-08-10/11/12 story files to use these modules
-- E2E: `scripts/playwright_st_08_10_script_editor_intelligence_e2e.py` (autocomplete, hover docs, entrypoint lint)
+- Phase 2 note: contract key completions must treat `SetExpression` as an “in-progress dict” (CM `closeBrackets()` can auto-insert `}` while typing).
+- E2E: `scripts/playwright_st_08_10_script_editor_intelligence_e2e.py` (imports/hover/entrypoint lint) +
+  `scripts/playwright_st_08_11_script_editor_intelligence_phase2_e2e.py` (contract autocomplete + contract/security lint)
 - Chunk size: lazy-load editor-heavy components (`EditorWorkspacePanel.vue`, `InstructionsDrawer.vue`) to keep Vite chunks <500 kB
 
 ### ST-12-02 Native PDF output helper (done)
@@ -142,8 +145,9 @@ Replace ProfileView inline success banners with toasts; standardize inline error
 - ST-12-06 manual CLI: `PYTHONPATH=src pdm run python -m skriptoteket.cli cleanup-session-files --artifacts-root /tmp/skriptoteket/artifacts-st-12-06`
 - ST-12-06 manual CLI: `PYTHONPATH=src pdm run python -m skriptoteket.cli clear-all-session-files --yes --artifacts-root /tmp/skriptoteket/artifacts-st-12-06`
 - ST-08-10 E2E: `pdm run python -m scripts.playwright_st_08_10_script_editor_intelligence_e2e` (pass; artifacts in `.artifacts/st-08-10-script-editor-intelligence-e2e/`; Playwright needed escalation)
+- ST-08-11 E2E: `pdm run python -m scripts.playwright_st_08_11_script_editor_intelligence_phase2_e2e --base-url http://127.0.0.1:5173` (pass; artifacts in `.artifacts/st-08-11-script-editor-intelligence-phase2-e2e/`; Playwright needed escalation)
 - ST-12-05 E2E: `pdm run python -m scripts.playwright_st_12_05_session_file_persistence_e2e` (pass; downloads in `.artifacts/st-12-05-session-file-persistence-e2e/`; Playwright needed escalation)
-- Types/build: `pnpm -C frontend --filter @skriptoteket/spa typecheck` + `pnpm -C frontend --filter @skriptoteket/spa build` (pass; max chunk 411.46 kB)
+- Types/build: `pnpm -C frontend --filter @skriptoteket/spa typecheck` + `pnpm -C frontend --filter @skriptoteket/spa build` (pass; max chunk 411.71 kB)
 - Lint: `pnpm -C frontend --filter @skriptoteket/spa lint` (pass)
 - UI: `docker compose up -d db && pdm run db-upgrade`, then `pdm run dev` + `pdm run fe-dev`, then `pdm run ui-smoke --base-url http://127.0.0.1:5173` (pass; screenshots in `.artifacts/ui-smoke/`)
 - UI (editor): `pdm run ui-editor-smoke` (pass; screenshots in `.artifacts/ui-editor-smoke/`; Playwright run needed escalation)
@@ -180,6 +184,6 @@ pdm run python -m scripts.playwright_st_08_13_tool_usage_instructions_e2e --base
 
 ## Next Steps
 
-- ST-08-11: add Playwright E2E coverage for contract completions + contract/security lint rules (keep using the same `skriptoteketIntelligence.ts` bundle).
+- ST-08-12: Phase 3 best practices + polish (lint hints), using the same `skriptoteketIntelligence.ts` bundle.
 - EPIC-12: Continue SPA UX stories
 - ST-15-02: Avatar Upload (follow-up to profile redesign)

@@ -2,7 +2,7 @@
 type: story
 id: ST-08-11
 title: "Script editor intelligence Phase 2: Contract validation + security"
-status: in_progress
+status: done
 owners: "agents"
 created: 2025-12-24
 epic: "EPIC-08"
@@ -55,7 +55,6 @@ Implementation note: extend the existing intelligence bundle (`skriptoteketIntel
 |---------|----------|-----------------|
 | `ST_SECURITY_NETWORK_IMPORT` | error | Nätverksbibliotek stöds inte i sandbox (ingen nätverksåtkomst). |
 | `ST_SECURITY_SHELL_EXEC` | warning | Undvik subprocess/os.system i sandbox. Använd rena Python-lösningar. |
-| `ST_SECURITY_WRITE_OUTSIDE_OUTPUT` | warning | Skrivning utanför output_dir blir inte en artefakt. |
 
 ## Technical Notes
 
@@ -104,21 +103,24 @@ os.system(...)
 os.popen(...)
 ```
 
-Writes outside `output_dir` (best-effort heuristic):
-
-- Warn only on obvious absolute string literal writes outside `/work/output`
-- Exclude `/tmp` (writable tmpfs) to reduce noise
-- Do not attempt dataflow/path inference
+Write-outside-output heuristics were considered for Phase 2, but deferred (too noisy without dataflow).
 
 ### Context-Aware Completions
 
 Use Lezer syntax tree context:
 
 - If cursor is inside a dict literal that is immediately returned → complete contract keys
+- Note: while typing before the first `:` key/value separator, Lezer may classify `{...}` as `SetExpression` or
+  `SetComprehensionExpression` (especially with CodeMirror `closeBrackets()` auto-inserting `}`), so treat those nodes
+  as an in-progress dict for completions.
 - If cursor is inside a dict literal that is inside `outputs` list → complete output fields
 - If current dict has `"kind": "notice"` → complete `level`, `message`
 
 ## Files
+
+### Create
+
+- `scripts/playwright_st_08_11_script_editor_intelligence_phase2_e2e.py`
 
 ### Modify
 

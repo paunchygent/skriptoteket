@@ -127,6 +127,9 @@ Reviewed in ST-08-10 technical design review:
 ### Risks / Gaps
 
 - Lezer Python node-name matching can be brittle; keep tree-walking utilities centralized and add focused fixtures/tests
+- In incomplete `return { ... }` literals (before typing the first `:` separator), Lezer can classify the container as
+  `SetExpression`/`SetComprehensionExpression` (especially with CodeMirror `closeBrackets()` auto-inserting `}`), so
+  completions should treat those nodes as “in-progress dicts”.
 - Ensure custom completions do not replace built-in Python completions (prefer language data over `autocompletion({override})`)
 - Performance: avoid multiple full tree traversals per lint run; build a small per-run snapshot for rules to consume
 - Tooltip styling may need a dedicated theme/CSS hook to match Skriptoteket’s brutalist UI (default CM6 tooltip is acceptable for MVP)
