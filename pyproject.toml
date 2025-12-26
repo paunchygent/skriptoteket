@@ -356,6 +356,8 @@ db-upgrade = "alembic upgrade head"
 bootstrap-superuser = { cmd = "python -m skriptoteket.cli bootstrap-superuser", env = { PYTHONPATH = "src" } }
 provision-user = { cmd = "python -m skriptoteket.cli provision-user", env = { PYTHONPATH = "src" } }
 artifacts-prune = { cmd = "python -m skriptoteket.cli prune-artifacts", env = { PYTHONPATH = "src" } }
+cleanup-session-files = { cmd = "python -m skriptoteket.cli cleanup-session-files", env = { PYTHONPATH = "src" } }
+clear-all-session-files = { cmd = "python -m skriptoteket.cli clear-all-session-files", env = { PYTHONPATH = "src" } }
 seed-script-bank = { cmd = "python -m skriptoteket.cli seed-script-bank", env = { PYTHONPATH = "src" } }
 
 # Docker dev workflow (compose base + dev overrides)

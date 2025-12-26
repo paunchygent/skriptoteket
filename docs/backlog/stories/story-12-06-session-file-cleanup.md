@@ -2,7 +2,7 @@
 type: story
 id: ST-12-06
 title: "Session file cleanup policies and admin tooling"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-25
 epic: "EPIC-12"
@@ -39,3 +39,19 @@ Session file storage needs cleanup policies to prevent unbounded growth.
 4) Documentation
 
    - Add to runbook: session file storage location, cleanup schedule, manual intervention
+
+## Implementation (done)
+
+- Storage:
+  - Protocol: `src/skriptoteket/protocols/session_files.py` (`clear_all()`)
+  - Local FS: `src/skriptoteket/infrastructure/session_files/local_session_file_storage.py`
+- CLI tooling:
+  - Commands: `src/skriptoteket/cli/main.py` (`cleanup-session-files`, `clear-all-session-files --yes`)
+  - PDM scripts: `pyproject.toml` (`cleanup-session-files`, `clear-all-session-files`)
+- Metrics:
+  - Gauges: `src/skriptoteket/observability/metrics.py` (`skriptoteket_session_files_bytes_total`, `skriptoteket_session_files_count`)
+  - Scrape-time updater: `src/skriptoteket/web/routes/observability.py` (scans `ARTIFACTS_ROOT/sessions/`)
+  - Scanner: `src/skriptoteket/infrastructure/session_files/usage.py` (excludes `meta.json`)
+- Runbooks:
+  - Ops: `docs/runbooks/runbook-home-server.md`
+  - Metrics table: `docs/runbooks/runbook-observability-logging.md`

@@ -198,6 +198,12 @@ class LocalSessionFileStorage(SessionFileStorageProtocol):
             return
         shutil.rmtree(session_dir, ignore_errors=True)
 
+    async def clear_all(self) -> None:
+        root = self._sessions_root / "sessions"
+        if not root.exists():
+            return
+        shutil.rmtree(root, ignore_errors=True)
+
     async def cleanup_expired(self) -> CleanupExpiredSessionFilesResult:
         now = self._clock.now()
         scanned_sessions = 0

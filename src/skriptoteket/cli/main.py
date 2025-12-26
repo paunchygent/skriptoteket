@@ -53,6 +53,10 @@ from skriptoteket.infrastructure.repositories.tool_version_repository import (
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
 from skriptoteket.infrastructure.runner.retention import prune_artifacts_root
 from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordHasher
+from skriptoteket.infrastructure.session_files.local_session_file_storage import (
+    LocalSessionFileStorage,
+)
+from skriptoteket.infrastructure.session_files.usage import get_session_file_usage
 from skriptoteket.script_bank.bank import SCRIPT_BANK
 
 app = typer.Typer(no_args_is_help=True)
@@ -204,6 +208,73 @@ def prune_artifacts(
         now=datetime.now(timezone.utc),
     )
     typer.echo(f"Deleted {deleted} artifact run directories from {effective_root}.")
+
+
+@app.command()
+def cleanup_session_files(
+    artifacts_root: Path | None = typer.Option(None, help="Override ARTIFACTS_ROOT"),
+) -> None:
+    """Delete expired session file directories based on TTL (cron-friendly)."""
+    asyncio.run(_cleanup_session_files_async(artifacts_root=artifacts_root))
+
+
+async def _cleanup_session_files_async(*, artifacts_root: Path | None) -> None:
+    settings = Settings()
+    effective_root = settings.ARTIFACTS_ROOT if artifacts_root is None else artifacts_root
+    storage = LocalSessionFileStorage(
+        sessions_root=effective_root,
+        ttl_seconds=settings.SESSION_FILES_TTL_SECONDS,
+        clock=UTCClock(),
+    )
+    result = await storage.cleanup_expired()
+    typer.echo(
+        "Cleanup session files complete: "
+        f"scanned_sessions={result.scanned_sessions} "
+        f"deleted_sessions={result.deleted_sessions} "
+        f"deleted_files={result.deleted_files} "
+        f"deleted_bytes={result.deleted_bytes} "
+        f"artifacts_root={effective_root}"
+    )
+
+
+@app.command()
+def clear_all_session_files(
+    yes: bool = typer.Option(False, "--yes", help="Skip confirmation prompt"),
+    artifacts_root: Path | None = typer.Option(None, help="Override ARTIFACTS_ROOT"),
+) -> None:
+    """Delete all session files under ARTIFACTS_ROOT/sessions/ (DANGER)."""
+    settings = Settings()
+    effective_root = settings.ARTIFACTS_ROOT if artifacts_root is None else artifacts_root
+    sessions_dir = effective_root / "sessions"
+
+    usage = get_session_file_usage(artifacts_root=effective_root)
+    if usage.sessions == 0:
+        typer.echo(f"No session files found under {sessions_dir}.")
+        return
+
+    typer.echo(
+        "About to delete ALL session files under "
+        f"{sessions_dir} (sessions={usage.sessions}, files={usage.files}, "
+        f"bytes_total={usage.bytes_total})."
+    )
+
+    if not yes:
+        confirmed = typer.confirm("Continue?", default=False)
+        if not confirmed:
+            raise SystemExit(1)
+
+    asyncio.run(_clear_all_session_files_async(artifacts_root=effective_root))
+    typer.echo(f"Deleted all session files under {sessions_dir}.")
+
+
+async def _clear_all_session_files_async(*, artifacts_root: Path) -> None:
+    settings = Settings()
+    storage = LocalSessionFileStorage(
+        sessions_root=artifacts_root,
+        ttl_seconds=settings.SESSION_FILES_TTL_SECONDS,
+        clock=UTCClock(),
+    )
+    await storage.clear_all()
 
 
 @app.command()

@@ -6,6 +6,8 @@ NOTE: Do NOT use `from __future__ import annotations` in router modules.
 See .agent/rules/040-fastapi-blueprint.md (OpenAPI-safe typing).
 """
 
+import asyncio
+
 from dishka import FromDishka
 from dishka.integrations.fastapi import inject
 from fastapi import APIRouter
@@ -14,7 +16,9 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from skriptoteket.config import Settings
+from skriptoteket.infrastructure.session_files.usage import get_session_file_usage
 from skriptoteket.observability.health import build_health_response, check_database
+from skriptoteket.observability.metrics import get_metrics
 
 router = APIRouter(tags=["observability"])
 
@@ -45,6 +49,13 @@ async def healthz(
 
 
 @router.get("/metrics", response_class=Response)
-async def metrics() -> Response:
+@inject
+async def metrics(settings: FromDishka[Settings]) -> Response:
     """Prometheus metrics endpoint for scraping."""
+    metrics = get_metrics()
+    usage = await asyncio.to_thread(get_session_file_usage, artifacts_root=settings.ARTIFACTS_ROOT)
+
+    metrics["session_files_bytes_total"].set(usage.bytes_total)
+    metrics["session_files_count"].set(usage.files)
+
     return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)

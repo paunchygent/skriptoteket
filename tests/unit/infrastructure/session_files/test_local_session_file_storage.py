@@ -116,6 +116,41 @@ async def test_clear_session_removes_files(tmp_path) -> None:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+async def test_clear_all_removes_all_sessions_but_not_other_artifacts(tmp_path) -> None:
+    clock = FakeClock(datetime(2025, 1, 1, tzinfo=timezone.utc))
+    storage = LocalSessionFileStorage(sessions_root=tmp_path, ttl_seconds=60, clock=clock)
+
+    tool_id_1 = uuid4()
+    tool_id_2 = uuid4()
+    user_id_1 = uuid4()
+    user_id_2 = uuid4()
+
+    await storage.store_files(
+        tool_id=tool_id_1,
+        user_id=user_id_1,
+        context="default",
+        files=[("a.txt", b"a")],
+    )
+    await storage.store_files(
+        tool_id=tool_id_2,
+        user_id=user_id_2,
+        context="default",
+        files=[("b.txt", b"b")],
+    )
+
+    other_artifacts_dir = tmp_path / "runs"
+    other_artifacts_dir.mkdir(parents=True, exist_ok=True)
+    keep_path = other_artifacts_dir / "keep.txt"
+    keep_path.write_text("keep", encoding="utf-8")
+
+    await storage.clear_all()
+
+    assert (tmp_path / "sessions").exists() is False
+    assert keep_path.exists()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
 async def test_cleanup_expired_deletes_sessions_by_last_accessed_at(tmp_path) -> None:
     tool_id = uuid4()
     user_id = uuid4()

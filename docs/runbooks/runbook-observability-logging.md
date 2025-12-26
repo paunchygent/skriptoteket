@@ -160,8 +160,12 @@ ssh hemma "curl -s http://localhost:8000/healthz" | jq
 |--------|------|--------|-------------|
 | `skriptoteket_http_requests_total` | Counter | method, endpoint, status_code | Total HTTP requests |
 | `skriptoteket_http_request_duration_seconds` | Histogram | method, endpoint | Request latency |
+| `skriptoteket_session_files_bytes_total` | Gauge | - | Total bytes of stored session files |
+| `skriptoteket_session_files_count` | Gauge | - | Count of stored session files |
 
 Labels use route patterns (e.g., `/tools/{id}`) to avoid high cardinality.
+
+Session file metrics are computed at scrape time by scanning `ARTIFACTS_ROOT/sessions/` (excluding `meta.json`).
 
 ### Local example
 
