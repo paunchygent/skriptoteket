@@ -2,7 +2,7 @@
 type: story
 id: ST-08-12
 title: "Script editor intelligence Phase 3: Best practices + polish"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-24
 epic: "EPIC-08"
@@ -105,8 +105,12 @@ If full Swedish UI is required, use `EditorState.phrases` to translate built-in 
 
 ## Files
 
+### Create
+
+- `frontend/apps/skriptoteket/src/composables/editor/skriptoteketPythonAnalysis.ts`
+- `scripts/playwright_st_08_12_script_editor_intelligence_phase3_e2e.py`
+
 ### Modify
 
 - `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.ts`
-- `frontend/apps/skriptoteket/src/composables/editor/skriptoteketMetadata.ts`
 - `frontend/apps/skriptoteket/src/composables/editor/skriptoteketPythonTree.ts`
