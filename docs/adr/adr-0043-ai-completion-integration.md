@@ -37,6 +37,10 @@ runner constraints and Contract v2 requirements.
 
 Use an **OpenAI-compatible backend proxy** with knowledge base injection.
 
+The long-term goal is to support multiple AI assistance capabilities (e.g. inline completions and edit suggestions).
+To keep the system protocol-first and DI-friendly, each capability gets its own protocol surface so we can inject
+different provider implementations per capability (local/small for inline, remote/large for edits).
+
 ### Architecture
 
 ```
@@ -69,14 +73,28 @@ Use an **OpenAI-compatible backend proxy** with knowledge base injection.
 ### Protocol Design
 
 ```python
-class LLMProviderProtocol(Protocol):
-    async def complete(
+class InlineCompletionProviderProtocol(Protocol):
+    async def complete_inline(
         self,
         *,
         request: LLMCompletionRequest,
         system_prompt: str,
     ) -> LLMCompletionResponse: ...
+
+
+class EditSuggestionProviderProtocol(Protocol):
+    async def suggest_edits(
+        self,
+        *,
+        request: LLMEditRequest,
+        system_prompt: str,
+    ) -> LLMEditResponse: ...
 ```
+
+Notes:
+
+- This ADR specifies the inline completion capability (ghost text). Edit suggestions are a follow-up capability that uses
+  a separate protocol surface so DI can inject a different provider configuration (often remote/bigger model).
 
 ### Prompt Strategy
 
@@ -103,6 +121,7 @@ discard the completion and return an empty completion to avoid partial blocks.
 ### Configuration
 
 ```
+# Inline completions (ghost text)
 LLM_COMPLETION_ENABLED=true
 LLM_COMPLETION_BASE_URL=http://localhost:11434/v1
 LLM_COMPLETION_API_KEY=sk-...        # Optional for Ollama/local
@@ -110,6 +129,15 @@ LLM_COMPLETION_MODEL=codellama:7b
 LLM_COMPLETION_MAX_TOKENS=256
 LLM_COMPLETION_TEMPERATURE=0.2
 LLM_COMPLETION_TIMEOUT_SECONDS=30
+
+# Edit suggestions (future capability; separate provider config)
+LLM_EDIT_ENABLED=false
+LLM_EDIT_BASE_URL=https://openrouter.ai/api/v1
+LLM_EDIT_API_KEY=sk-or-...           # Typically required
+LLM_EDIT_MODEL=...                   # e.g. a larger chat/edit model
+LLM_EDIT_MAX_TOKENS=512
+LLM_EDIT_TEMPERATURE=0.2
+LLM_EDIT_TIMEOUT_SECONDS=30
 ```
 
 ### File Layout
@@ -169,5 +197,6 @@ skriptoteketIntelligence(config)
 
 - [ADR-0035: Script editor intelligence architecture](adr-0035-script-editor-intelligence-architecture.md)
 - [ST-08-14: AI inline completions MVP](../backlog/stories/story-08-14-ai-inline-completions.md)
+- [ST-08-16: AI edit suggestions (CodeMirror changes)](../backlog/stories/story-08-16-ai-edit-suggestions.md)
 - [EPIC-08: Contextual help and onboarding](../backlog/epics/epic-08-contextual-help-and-onboarding.md)
 - [ref-ai-script-generation-kb.md](../reference/ref-ai-script-generation-kb.md) - KB content to inject

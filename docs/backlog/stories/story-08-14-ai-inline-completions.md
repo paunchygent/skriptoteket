@@ -28,6 +28,9 @@ requirements. This story adds Copilot-style inline completions that appear as gh
 
 This builds on the static intelligence system (ST-08-10/11/12) by adding dynamic, LLM-powered suggestions.
 
+This story covers the **inline completion** capability only. Chat-style edit suggestions that apply CodeMirror changes
+use a separate protocol surface and are tracked in ST-08-16.
+
 ## Technical Decisions
 
 See [ADR-0043: AI completion integration](../../adr/adr-0043-ai-completion-integration.md) for architecture decisions
@@ -42,8 +45,8 @@ See [ref-ai-completion-architecture.md](../../reference/ref-ai-completion-archit
 #### Protocol (`src/skriptoteket/protocols/llm.py`)
 
 ```python
-class LLMProviderProtocol(Protocol):
-    async def complete(
+class InlineCompletionProviderProtocol(Protocol):
+    async def complete_inline(
         self,
         *,
         request: LLMCompletionRequest,
