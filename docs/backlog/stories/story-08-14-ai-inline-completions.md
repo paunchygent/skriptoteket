@@ -9,11 +9,13 @@ epic: "EPIC-08"
 acceptance_criteria:
   - "Given the user types and pauses for 1.5 seconds, when LLM is enabled, then ghost text suggestion appears at cursor"
   - "Given ghost text is visible, when user presses Tab, then the suggestion is inserted into the document"
+  - "Given the suggestion contains multiple lines, when ghost text is visible, then whitespace/newlines are preserved and Tab inserts the entire suggestion verbatim"
   - "Given ghost text is visible, when user presses Escape, then the ghost text is dismissed"
   - "Given ghost text is visible, when user types any character, then the ghost text is cleared"
   - "Given user presses Alt+\\, when LLM is enabled, then a completion is requested immediately (manual trigger)"
   - "Given LLM is disabled in config, when completion is requested, then response returns enabled=false gracefully"
   - "Given LLM request times out, when ghost text is pending, then no error is shown and ghost text remains empty"
+  - "Given the upstream LLM response is truncated (finish_reason=length), when completion is requested, then no ghost text is shown (completion is empty) to avoid partial blocks"
 ui_impact: "Adds semi-transparent ghost text suggestions in the script editor, similar to GitHub Copilot."
 data_impact: "None - LLM requests are stateless."
 dependencies: ["ST-08-10", "ADR-0043"]
@@ -87,6 +89,7 @@ class LLMProviderProtocol(Protocol):
 ```
 LLM_COMPLETION_ENABLED=true
 LLM_COMPLETION_BASE_URL=http://localhost:11434/v1
+LLM_COMPLETION_API_KEY=sk-...        # Optional for Ollama/local
 LLM_COMPLETION_MODEL=codellama:7b
 LLM_COMPLETION_MAX_TOKENS=256
 LLM_COMPLETION_TEMPERATURE=0.2
@@ -121,22 +124,25 @@ LLM_COMPLETION_TIMEOUT_SECONDS=30
 - Unit: Handler injects KB into system prompt
 - Integration: Endpoint requires auth + CSRF
 - Integration: Returns `enabled=false` when disabled
+- Integration: Truncated upstream response (finish_reason="length") returns empty completion
 
 ### Frontend
 
 - Unit: Ghost text displays at cursor position
+- Unit: Multi-line ghost text preserves indentation/newlines
 - Unit: Tab accepts, Escape dismisses
+- Unit: Tab inserts all suggestion lines verbatim
 - Unit: Document change clears ghost text
 
 ### E2E
 
 - Playwright script with mock LLM server
 - Test auto-trigger, manual trigger, accept, dismiss
+- Test truncated completion suppression (no partial blocks)
 
 ## Out of Scope
 
 - Streaming responses (ghost text appears character-by-character)
-- Multi-line ghost text formatting
 - User preference settings UI
 - Per-user rate limiting (consider for follow-up)
 

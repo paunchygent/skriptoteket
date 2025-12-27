@@ -2,7 +2,7 @@
 type: review
 id: REV-EPIC-08
 title: "Review: AI Completion Integration for EPIC-08"
-status: pending
+status: changes_requested
 owners: "agents"
 created: 2025-12-26
 reviewer: "lead-developer"
@@ -49,11 +49,11 @@ See [ADR-0043](../../adr/adr-0043-ai-completion-integration.md) for architecture
 
 | Decision | Rationale | Approve? |
 |----------|-----------|----------|
-| OpenAI-compatible API | Supports Ollama (free/local), OpenRouter, OpenAI without vendor lock-in | [ ] |
-| Backend proxy (no frontend API keys) | Security: API keys never exposed to browser | [ ] |
-| KB injection in system prompt | Ensures suggestions follow runner constraints, Contract v2 | [ ] |
-| Fill-in-the-middle format | Standard approach for code completion prompts | [ ] |
-| Debounced auto-trigger (1500ms) | Balances responsiveness vs API load | [ ] |
+| OpenAI-compatible API | Supports Ollama (free/local), OpenRouter, OpenAI without vendor lock-in | ✅ |
+| Backend proxy (no frontend API keys) | Security: API keys never exposed to browser | ✅ |
+| KB injection in system prompt | Ensures suggestions follow runner constraints, Contract v2 | ⚠️ (approved w/ concerns) |
+| Fill-in-the-middle format | Standard approach for code completion prompts | ⚠️ (approved w/ concerns) |
+| Debounced auto-trigger (1500ms) | Balances responsiveness vs API load | ⚠️ (approved w/ concerns) |
 
 ## Review Checklist
 
@@ -69,24 +69,34 @@ See [ADR-0043](../../adr/adr-0043-ai-completion-integration.md) for architecture
 ## Review Feedback
 
 **Reviewer:** @user-lead
-**Date:** YYYY-MM-DD
-**Verdict:** pending
+**Date:** 2025-12-26
+**Verdict:** changes_requested
 
 ### Required Changes
 
-[To be filled by reviewer]
+1. Add multi-line completions as explicitly in-scope: update ST-08-14 acceptance criteria + remove "Multi-line ghost text formatting" from Out of Scope; add tests for multi-line render + Tab insertion + truncated suppression.
+2. Add `LLM_COMPLETION_API_KEY` to ADR-0043 and ST-08-14 configuration blocks (optional for Ollama).
+3. Align rate-limiting claims: ADR-0043 must not assert per-user rate limiting as implemented if it remains out-of-scope in ST-08-14.
+4. Update stop-token guidance in ADR-0043 + `ref-ai-completion-architecture`: remove `\n\n`, `def `, `class ` stop tokens; support multi-line blocks.
+5. Update `ref-ai-completion-architecture` API contract: completion may include newlines; backend must discard truncated upstream outputs (`finish_reason="length"`) and return empty completion instead of partial blocks.
+6. Update KB injection spec: package KB for production, cache it in memory, and define deterministic fallback behavior if KB cannot load.
+7. Specify Tab/Escape keymap precedence requirements so Tab acceptance overrides `indentWithTab` when ghost text is visible.
+8. Add explicit privacy/logging rules: never log code/prompt contents; clarify third-party code transmission risks.
 
 ### Suggestions (Optional)
 
-[To be filled by reviewer]
+- Consider a sentinel stop sequence (e.g. `<END_COMPLETION>`) for more reliable multi-line block termination; still discard truncated responses.
+- Revisit default `LLM_COMPLETION_MAX_TOKENS` now that multi-line is in scope (256 may truncate frequently); document cost/latency trade-offs.
+- Add trigger heuristics (avoid strings/comments; optional end-of-line gating) to reduce noise and request volume.
+- Document recommended debounce ranges and encourage measurement (1500ms may feel slow with 1–3s model latency).
 
 ### Decision Approvals
 
-- [ ] OpenAI-compatible API
-- [ ] Backend proxy (no frontend API keys)
-- [ ] KB injection in system prompt
-- [ ] Fill-in-the-middle format
-- [ ] Debounced auto-trigger (1500ms)
+- ✅ OpenAI-compatible API
+- ✅ Backend proxy (no frontend API keys)
+- ⚠️ KB injection in system prompt (needs packaging/caching + privacy stance)
+- ⚠️ Fill-in-the-middle format (stop tokens + truncation policy must support multi-line blocks)
+- ⚠️ Debounced auto-trigger (1500ms) (configurable; recommend tuning guidance)
 
 ---
 

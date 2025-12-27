@@ -56,6 +56,12 @@ X-CSRFToken: <csrf_token>
 }
 ```
 
+Notes:
+
+- `completion` MAY contain newline characters (`\n`) and should be inserted verbatim (preserve whitespace/newlines).
+- The backend MUST NOT surface partially truncated completions. If the upstream provider indicates truncation (e.g.
+  `finish_reason == "length"`), return `{ "completion": "", "enabled": true }`.
+
 **When LLM is disabled:**
 
 ```json
@@ -70,8 +76,10 @@ X-CSRFToken: <csrf_token>
 | Scenario | Response |
 |----------|----------|
 | LLM disabled | `{ "completion": "", "enabled": false }` |
+| KB unavailable (cannot load) | `{ "completion": "", "enabled": false }` |
 | LLM timeout | `{ "completion": "", "enabled": true }` |
 | LLM error | `{ "completion": "", "enabled": true }` |
+| Upstream truncated (finish_reason="length") | `{ "completion": "", "enabled": true }` |
 | Unauthorized | HTTP 401 |
 | Missing CSRF | HTTP 403 |
 
@@ -90,25 +98,35 @@ System: You are an AI code completion assistant for Skriptoteket...
         ## Rules
         - Complete the code at <FILL_ME> marker
         - Return ONLY the code to insert
+        - The completion MAY span multiple lines; preserve indentation and newlines
         - NO markdown formatting, NO explanations
         - Follow Contract v2 format for returns
 
 User: {prefix}<FILL_ME>{suffix}
 ```
 
-**Stop tokens:** `\n\n`, `def `, `class `, triple backticks
+**Stop tokens (recommended):** triple backticks
+
+The completion should prefer returning a complete coherent block rather than a partial fragment. If the upstream provider
+returns a truncated response, the backend must discard it (see API contract).
 
 ---
 
 ## 4. Knowledge Base Injection
 
-The handler loads `docs/reference/ref-ai-script-generation-kb.md` and injects it into the system prompt. This ensures
-the LLM understands:
+The handler injects Skriptoteket's knowledge base into the system prompt. This ensures the LLM understands:
 
 - Runner constraints (no network, sandbox environment)
 - Contract v2 format (outputs, next_actions, state)
 - Available helpers (pdf_helper, tool_errors)
 - Input/output conventions (SKRIPTOTEKET_INPUTS, manifest)
+
+Production requirements:
+
+- Loading strategy: load KB once at startup (or first request) and cache it in memory; do not read from disk per request.
+- Packaging strategy: ship KB content with the application (package data or embedded module constant). Do not depend on
+  `docs/` being present at runtime.
+- Failure mode: if KB cannot be loaded, treat the feature as disabled and return `{ "completion": "", "enabled": false }`.
 
 ---
 
@@ -148,6 +166,13 @@ type GhostTextState = {
 | Tab | Accept ghost text |
 | Escape | Dismiss ghost text |
 | Any document change | Clear ghost text |
+
+Keybinding requirement:
+
+- Ghost text Tab/Escape bindings must take precedence over existing editor keymaps (e.g. `indentWithTab`) only while
+  ghost text is visible.
+- Implementation note: use a high-precedence keymap (e.g. `Prec.highest(keymap.of([...]))`) and return `false` when no
+  ghost text is present so Tab behaves normally.
 
 ### 5.5 Request Management
 
@@ -204,7 +229,12 @@ type SkriptoteketIntelligenceConfig = {
 - Consider per-user rate limiting (10 requests/minute)
 - Prevents abuse and controls costs
 
-### 7.4 Input Validation
+### 7.4 Privacy & Logging
+
+- Do not log raw prefix/suffix/prompt/code. Log only metadata (lengths, provider, timing, status).
+- Make it explicit in product docs that remote providers receive user code; recommend local-first for sensitive content.
+
+### 7.5 Input Validation
 
 - Prefix/suffix length limits prevent oversized payloads
 - Sanitize before sending to LLM (optional PII filtering)
@@ -283,11 +313,14 @@ For code completion, prioritize speed over quality. `codellama:7b` is a good sta
 - Unit: Handler injects KB into system prompt
 - Integration: Endpoint requires auth + CSRF
 - Integration: Returns `enabled=false` when disabled
+- Integration: Truncated upstream response (finish_reason="length") returns empty completion
 
 ### 11.2 Frontend
 
 - Unit: Ghost text displays at cursor position
+- Unit: Multi-line ghost text preserves indentation/newlines
 - Unit: Tab accepts, Escape dismisses
+- Unit: Tab inserts all suggestion lines verbatim
 - Unit: Document change clears ghost text
 - E2E: Full flow with mock LLM server
 

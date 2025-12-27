@@ -89,13 +89,23 @@ System: You are an AI code completion assistant for Skriptoteket...
 User: {prefix}<FILL_ME>{suffix}
 ```
 
-Stop tokens: `\n\n`, `def `, `class `, triple backticks
+Rules:
+
+- The completion MAY span multiple lines; preserve indentation and newlines.
+- Return ONLY the code to insert (no markdown, no explanations).
+- Prefer returning a complete coherent block rather than a partial fragment.
+
+Stop tokens (recommended): triple backticks
+
+Truncation policy: if the upstream provider indicates truncation (e.g. `finish_reason == "length"`), the backend must
+discard the completion and return an empty completion to avoid partial blocks.
 
 ### Configuration
 
 ```
 LLM_COMPLETION_ENABLED=true
 LLM_COMPLETION_BASE_URL=http://localhost:11434/v1
+LLM_COMPLETION_API_KEY=sk-...        # Optional for Ollama/local
 LLM_COMPLETION_MODEL=codellama:7b
 LLM_COMPLETION_MAX_TOKENS=256
 LLM_COMPLETION_TEMPERATURE=0.2
@@ -148,10 +158,12 @@ skriptoteketIntelligence(config)
 
 ### Mitigations
 
-- Aggressive debouncing (1500ms) reduces unnecessary requests
+- Configurable debouncing reduces unnecessary requests (recommend measuring; typical range 500–1500ms)
 - Cancel pending requests on document change
-- Rate limiting (10 requests/minute per user) prevents abuse
+- Consider per-user rate limiting (e.g. 10 requests/minute) to prevent abuse and control costs (follow-up if not in MVP)
 - Quality: document recommended models in reference doc
+- KB injection must be production-safe: package KB content with the application, load once, and cache in memory
+- Privacy: never log raw prefix/suffix/prompt/code; log metadata only (lengths, provider, timing, status)
 
 ## References
 
