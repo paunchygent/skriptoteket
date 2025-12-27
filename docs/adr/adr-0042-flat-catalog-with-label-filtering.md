@@ -33,14 +33,27 @@ Teachers often know roughly what they're looking for but not the exact category.
 
 The `/browse` route shows ALL published tools by default in a single flat list. This replaces the profession-first navigation as the primary entry point.
 
-The old hierarchical browse is retained as an alternative path for users who prefer drill-down exploration.
+The hierarchical browse is retained as an alternative path for users who prefer drill-down exploration and to preserve curated app discoverability:
 
-### 2. Filter logic: OR (union)
+```
+/browse/professions → Profession list
+/browse/professions/{profession} → Category list
+/browse/professions/{profession}/{category} → Tool + curated apps list
+```
 
-When a user selects multiple labels (professions or categories), the filter uses OR logic:
+The flat browse view MUST include an explicit “Bläddra efter yrkesgrupp →” link to `/browse/professions`, and the
+existing hierarchical breadcrumbs MUST link back to `/browse/professions` (not `/browse`) to avoid confusing
+navigation after the route swap.
 
-- Selecting "Svenska" + "Matematik" shows tools tagged with Svenska **OR** Matematik
-- This maximizes discovery — users see more options, not fewer
+### 2. Filter logic: OR within facets, AND across facets
+
+When a user selects multiple labels, filtering behaves as:
+
+- **Within a facet** (professions or categories): selection uses **OR** (union).
+  - Example: selecting Svenska + Matematik returns tools tagged with Svenska **OR** Matematik.
+- **Across facets**: facets combine with **AND** (intersection).
+  - Example: selecting profession Lärare and category Svenska returns tools tagged with (Lärare) **AND** (Svenska).
+- Search term (`q`) is an additional **AND** constraint when provided.
 
 Rationale: Teachers exploring the catalog benefit from broader results. Narrowing can be done by adding more specific terms to search.
 
@@ -52,11 +65,14 @@ GET /api/v1/catalog/tools?professions=larare,skolkurator&categories=svenska,mate
 
 | Parameter | Format | Logic |
 |-----------|--------|-------|
-| `professions` | Comma-separated slugs | OR filter |
-| `categories` | Comma-separated slugs | OR filter |
-| `q` | Search term | ILIKE on title + summary |
+| `professions` | Comma-separated slugs | OR within professions; AND with other facets |
+| `categories` | Comma-separated slugs | OR within categories; AND with other facets |
+| `q` | Search term | AND constraint; ILIKE on title + summary |
 
 All parameters are optional. With no parameters, returns all published tools.
+
+Unknown slugs are ignored (no error). If a facet parameter is present but all provided slugs are unknown, the
+result set is empty (deterministic “no match” instead of “return everything”).
 
 ### 4. Response shape
 
@@ -72,7 +88,7 @@ All parameters are optional. With no parameters, returns all published tools.
     }
   ],
   "professions": [
-    { "id": "uuid", "slug": "larare", "label": "Lärare" }
+    { "id": "uuid", "slug": "larare", "label": "Lärare", "sort_order": 1 }
   ],
   "categories": [
     { "id": "uuid", "slug": "svenska", "label": "Svenska" }
@@ -80,7 +96,8 @@ All parameters are optional. With no parameters, returns all published tools.
 }
 ```
 
-The response includes all professions and categories for the filter UI to render checkboxes/chips.
+The response includes all professions and categories for the filter UI to render checkboxes/chips. The frontend
+MAY cache this taxonomy client-side to avoid re-processing the same arrays on every filter change.
 
 ### 5. Search implementation
 
@@ -111,6 +128,7 @@ This enables:
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ [Search: _______________]                                   │
+│ [Bläddra efter yrkesgrupp →]                                │
 ├─────────────────┬───────────────────────────────────────────┤
 │ Yrkesgrupper    │                                           │
 │ ☐ Lärare        │  ┌─────────────────────────────────┐      │
@@ -145,7 +163,8 @@ This enables:
 ### Negative
 
 - Potentially overwhelming if tool count grows large (mitigate with pagination later)
-- OR logic may surface too many results for some queries
+- OR-within-facet may surface too many results for some queries (mitigate via combining facets + search)
+- Requires careful routing/breadcrumb updates to avoid regressions in the hierarchical browse flow
 
 ### Implementation impact
 
@@ -160,6 +179,7 @@ Frontend:
 - New `BrowseFlatView.vue` component
 - New `useCatalogFilters.ts` composable
 - Route change: `/browse` uses flat view by default
+- New hierarchical entrypoint route: `/browse/professions` (preserves curated apps discoverability)
 
 ## Related
 

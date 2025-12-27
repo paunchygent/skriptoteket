@@ -7,13 +7,14 @@ owners: "agents"
 created: 2025-12-26
 epic: EPIC-16
 acceptance_criteria:
-  - "Given user has favorites, when visiting home, then 'Dina favoriter' section shows up to 5 tools"
-  - "Given user has run tools, when visiting home, then 'Senast använda' section shows up to 5 tools"
-  - "Given user has no favorites, when visiting home, then 'Dina favoriter' section is hidden (not empty state)"
-  - "Given user has no recent tools, when visiting home, then 'Senast använda' section is hidden"
-  - "Given sections rendered, when user clicks tool card, then navigates to /tool-run/{slug}"
+  - "Given authenticated user has favorites, when visiting home, then 'Dina favoriter' section shows up to 5 tools"
+  - "Given authenticated user has run tools, when visiting home, then 'Senast använda' section shows up to 5 tools"
+  - "Given authenticated user has no favorites, when visiting home, then 'Dina favoriter' section is hidden (not empty state)"
+  - "Given authenticated user has no recent tools, when visiting home, then 'Senast använda' section is hidden"
+  - "Given sections rendered, when user clicks tool card, then navigates to /tools/{slug}/run"
   - "Given sections rendered, when user toggles favorite star, then favorite state updates"
-  - "Given 'Visa alla' link in favorites section, when clicked, then navigates to /favorites (or /browse with favorite filter)"
+  - "Given 'Visa alla' link in favorites section, when clicked, then navigates to /browse?favorites=true"
+  - "Given authenticated user is contributor/admin, when visiting home, then the existing role-based dashboard sections still render"
 ---
 
 ## Context
@@ -52,17 +53,29 @@ Create `frontend/apps/skriptoteket/src/components/home/FavoritesSection.vue`:
 
 ```vue
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { apiGet } from '@/api/client'
-import ToolCard from '@/components/catalog/ToolCard.vue'
+import { onMounted, ref } from "vue";
 
-const tools = ref<Tool[]>([])
-const isLoading = ref(true)
+import { apiGet, isApiError } from "../../api/client";
+import type { components } from "../../api/openapi";
+import { useToast } from "../../composables/useToast";
+import ToolCard from "../catalog/ToolCard.vue";
+
+type ListFavoritesResponse = components["schemas"]["ListFavoritesResponse"];
+type FavoritedTool = components["schemas"]["FavoritedTool"];
+
+const tools = ref<FavoritedTool[]>([]);
+const isLoading = ref(true);
+const toast = useToast();
 
 onMounted(async () => {
-  const response = await apiGet<{ tools: Tool[] }>('/api/v1/favorites?limit=5')
-  tools.value = response.tools
-  isLoading.value = false
+  try {
+    const response = await apiGet<ListFavoritesResponse>("/api/v1/favorites?limit=5");
+    tools.value = response.tools;
+  } catch (error: unknown) {
+    toast.failure(isApiError(error) ? error.message : "Det gick inte att ladda favoriter.");
+  } finally {
+    isLoading.value = false;
+  }
 })
 </script>
 
@@ -87,20 +100,8 @@ Similar structure, calls `GET /api/v1/me/recent-tools?limit=5`.
 
 Modify `frontend/apps/skriptoteket/src/views/HomeView.vue`:
 
-```vue
-<template>
-  <div class="home">
-    <h1>Välkommen till Skriptoteket</h1>
-
-    <FavoritesSection />
-    <RecentToolsSection />
-
-    <RouterLink to="/browse" class="btn-primary">
-      Bläddra i katalogen →
-    </RouterLink>
-  </div>
-</template>
-```
+Integrate the two sections into the existing authenticated dashboard (do not replace the current role-based
+dashboard cards and counts). Place them near the top of the authenticated view, below the greeting.
 
 ### Loading states
 

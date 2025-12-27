@@ -10,8 +10,8 @@ acceptance_criteria:
   - "Given tool card, when rendered, then shows star icon in top-right corner"
   - "Given tool is favorited, when rendered, then star is filled (★)"
   - "Given tool is not favorited, when rendered, then star is outline (☆)"
-  - "Given user clicks star on non-favorite, when actioned, then POST /api/v1/favorites/{id} is called and star fills"
-  - "Given user clicks star on favorite, when actioned, then DELETE /api/v1/favorites/{id} is called and star unfills"
+  - "Given user clicks star on non-favorite, when actioned, then POST /api/v1/favorites/{tool_id} is called and star fills"
+  - "Given user clicks star on favorite, when actioned, then DELETE /api/v1/favorites/{tool_id} is called and star unfills"
   - "Given API call in progress, when star clicked, then button is disabled (prevent double-submit)"
   - "Given API call fails, when error occurs, then star reverts to previous state and toast shows error"
 ---
@@ -28,7 +28,7 @@ Create `frontend/apps/skriptoteket/src/components/catalog/ToolCard.vue`:
 
 ```vue
 <script setup lang="ts">
-import { useFavorites } from '@/composables/useFavorites'
+import { useFavorites } from "../../composables/useFavorites";
 
 const props = defineProps<{
   tool: {
@@ -40,10 +40,15 @@ const props = defineProps<{
   }
 }>()
 
-const { toggleFavorite, isToggling } = useFavorites()
+const emit = defineEmits<{
+  (e: "favorite-updated", payload: { toolId: string; isFavorite: boolean }): void;
+}>();
+
+const { toggleFavorite, isToggling } = useFavorites();
 
 async function handleToggle() {
-  await toggleFavorite(props.tool.id, props.tool.is_favorite)
+  const updated = await toggleFavorite(props.tool.id, props.tool.is_favorite);
+  emit("favorite-updated", { toolId: props.tool.id, isFavorite: updated });
 }
 </script>
 
@@ -68,36 +73,48 @@ async function handleToggle() {
 </template>
 ```
 
+`ToolCard` MUST be controlled by the parent list state. On success it emits `favorite-updated` so the parent can
+update the corresponding tool’s `is_favorite` flag (and keep browse/home lists consistent).
+
 ### useFavorites composable
 
 Create `frontend/apps/skriptoteket/src/composables/useFavorites.ts`:
 
 ```typescript
-export function useFavorites() {
-  const isToggling = ref(false)
+import { ref } from "vue";
 
-  async function toggleFavorite(toolId: string, currentlyFavorite: boolean) {
-    if (isToggling.value) return
-    isToggling.value = true
+import { apiFetch, isApiError } from "../api/client";
+import { useToast } from "./useToast";
+
+export function useFavorites() {
+  const isToggling = ref(false);
+  const toast = useToast();
+
+  async function toggleFavorite(toolId: string, currentlyFavorite: boolean): Promise<boolean> {
+    if (isToggling.value) return currentlyFavorite;
+    isToggling.value = true;
 
     try {
       if (currentlyFavorite) {
-        await apiFetch(`/api/v1/favorites/${toolId}`, { method: 'DELETE' })
-      } else {
-        await apiFetch(`/api/v1/favorites/${toolId}`, { method: 'POST' })
+        await apiFetch(`/api/v1/favorites/${toolId}`, { method: "DELETE" });
+        return false;
       }
-      // Emit event or update local state
-    } catch (error) {
-      // Show toast error
-      // Revert optimistic update if used
+      await apiFetch(`/api/v1/favorites/${toolId}`, { method: "POST" });
+      return true;
+    } catch (error: unknown) {
+      toast.failure(isApiError(error) ? error.message : "Det gick inte att uppdatera favoriten.");
+      return currentlyFavorite;
     } finally {
-      isToggling.value = false
+      isToggling.value = false;
     }
   }
 
   return { toggleFavorite, isToggling }
 }
 ```
+
+Note: `apiFetch` handles `X-CSRF-Token` for non-GET requests, so the favorite toggle does not need to manually set
+CSRF headers.
 
 ## Optimistic updates
 

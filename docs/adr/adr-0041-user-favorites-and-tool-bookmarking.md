@@ -30,8 +30,15 @@ Favorites are stored in PostgreSQL (not browser localStorage) to enable cross-de
 A new `favorites` bounded context with a simple domain model:
 
 ```python
-@dataclass(frozen=True)
-class UserFavorite:
+from datetime import datetime
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict
+
+
+class UserFavorite(BaseModel):
+    model_config = ConfigDict(frozen=True, from_attributes=True)
+
     user_id: UUID
     tool_id: UUID
     created_at: datetime
@@ -60,12 +67,15 @@ Cascade deletes ensure cleanup when users or tools are removed.
 ### 4. API contract
 
 ```
-POST   /api/v1/favorites/{tool_id}  → Add favorite (idempotent, 200 OK)
-DELETE /api/v1/favorites/{tool_id}  → Remove favorite (idempotent, 200 OK)
-GET    /api/v1/favorites            → List user's favorited tools
+POST   /api/v1/favorites/{tool_id}        → Add favorite (idempotent, 200 OK)
+DELETE /api/v1/favorites/{tool_id}        → Remove favorite (idempotent, 200 OK)
+GET    /api/v1/favorites?limit={limit}    → List user's favorited tools (optional limit)
 ```
 
-All endpoints require authentication. The tool_id in POST/DELETE is the tool UUID (not slug) for stability.
+All endpoints require authentication via the existing SPA session cookie. The tool_id in POST/DELETE is the tool
+UUID (not slug) for stability.
+
+State-changing endpoints require CSRF protection via `X-CSRF-Token` (same as existing SPA APIs).
 
 Response for GET includes full tool metadata:
 
@@ -89,13 +99,13 @@ Response for GET includes full tool metadata:
 - If a tool becomes unpublished after being favorited, the favorite record remains but the tool is **excluded from listings**
 - Adding an already-favorited tool is idempotent (no error, returns success)
 - Removing a non-favorited tool is idempotent (no error, returns success)
+- `GET /api/v1/favorites` supports an optional `limit` parameter for home page previews (e.g. `limit=5`)
 
 ### 6. Integration with tool listings
 
-All tool listing responses include an `is_favorite` boolean for the authenticated user:
+Tool list responses include an `is_favorite` boolean for the authenticated user (where applicable in EPIC-16):
 
 - `GET /api/v1/catalog/tools` (flat catalog)
-- `GET /api/v1/catalog/professions/{p}/categories/{c}/tools` (hierarchical)
 - `GET /api/v1/me/recent-tools` (recently used)
 
 This requires batch-checking favorites for the tools in each response.

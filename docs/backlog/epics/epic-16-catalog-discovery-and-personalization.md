@@ -13,11 +13,12 @@ outcome: "Teachers can discover tools via flat browsing with filters, search, an
 ### In scope
 
 - **Flat catalog view** as primary `/browse` experience showing all published tools
-- **Label filtering** with profession and category checkboxes (OR logic)
+- **Label filtering** with profession and category checkboxes (OR within facet; AND across facets)
 - **Text search** on tool title and summary (ILIKE, case-insensitive)
 - **User favorites** (add/remove/list bookmarked tools)
 - **Recently used tools** derived from existing `tool_runs` history
 - **Home page sections** for favorites and recent tools
+- Preserve hierarchical browse via an explicit entrypoint route (for drill-down navigation and curated apps placement)
 
 ### Out of scope
 
@@ -26,6 +27,9 @@ outcome: "Teachers can discover tools via flat browsing with filters, search, an
 - Tool recommendations based on usage patterns
 - Hierarchical browse redesign (retained as-is for users who prefer it)
 - Pagination (monitor and add if tool count grows)
+- Curated apps in the flat catalog list
+- Favorites for curated apps
+- Server-side “favorites only” filtering in `/api/v1/catalog/tools` (frontend may filter locally for now)
 
 ## Risks
 
@@ -33,7 +37,9 @@ outcome: "Teachers can discover tools via flat browsing with filters, search, an
 |------|------------|--------|------------|
 | Performance degradation with many tools | Low | Medium | Monitor query times; add pagination if needed |
 | Filter UI complexity confuses users | Medium | Low | Follow existing brutalist design patterns; user testing |
-| OR filter returns too many results | Low | Low | Clear filter state in URL; "Rensa filter" button |
+| OR-within-facet returns too many results | Low | Low | Clear filter state in URL; combine facets + search |
+| Curated apps become less discoverable after `/browse` swap | Medium | Medium | Keep hierarchical browse entrypoint visible (`/browse/professions`) and link to it from flat browse |
+| Breadcrumb confusion/regression in hierarchical browse | Medium | Medium | Update hierarchical breadcrumbs to link to `/browse/professions` instead of `/browse` |
 
 ## Dependencies
 
@@ -59,3 +65,4 @@ outcome: "Teachers can discover tools via flat browsing with filters, search, an
 3. Teachers can favorite tools and access them quickly from home page
 4. Teachers can see their recently used tools on home page
 5. Filter state is reflected in URL (shareable, bookmarkable)
+6. Profession-first browse remains easily reachable (no curated-app discoverability regression)

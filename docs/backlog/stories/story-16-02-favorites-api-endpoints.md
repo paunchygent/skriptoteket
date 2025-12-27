@@ -7,13 +7,15 @@ owners: "agents"
 created: 2025-12-26
 epic: EPIC-16
 acceptance_criteria:
-  - "Given authenticated user, when POST /api/v1/favorites/{tool_id} with valid published tool, then favorite is added and returns 200"
-  - "Given authenticated user, when POST /api/v1/favorites/{tool_id} for already-favorited tool, then returns 200 (idempotent)"
+  - "Given authenticated user with valid CSRF token, when POST /api/v1/favorites/{tool_id} with valid published tool, then favorite is added and returns 200"
+  - "Given authenticated user with valid CSRF token, when POST /api/v1/favorites/{tool_id} for already-favorited tool, then returns 200 (idempotent)"
   - "Given authenticated user, when POST /api/v1/favorites/{tool_id} for nonexistent tool, then returns 404"
   - "Given authenticated user, when POST /api/v1/favorites/{tool_id} for unpublished tool, then returns 404"
-  - "Given authenticated user, when DELETE /api/v1/favorites/{tool_id}, then favorite is removed and returns 200"
-  - "Given authenticated user, when DELETE /api/v1/favorites/{tool_id} for non-favorited tool, then returns 200 (idempotent)"
-  - "Given authenticated user with favorites, when GET /api/v1/favorites, then returns list of favorited tools with full metadata"
+  - "Given authenticated user with valid CSRF token, when DELETE /api/v1/favorites/{tool_id}, then favorite is removed and returns 200"
+  - "Given authenticated user with valid CSRF token, when DELETE /api/v1/favorites/{tool_id} for non-favorited tool, then returns 200 (idempotent)"
+  - "Given authenticated user, when POST/DELETE favorites without CSRF token, then returns 403"
+  - "Given authenticated user with favorites, when GET /api/v1/favorites, then returns list of favorited tools with full metadata (published only)"
+  - "Given limit=5, when GET /api/v1/favorites?limit=5, then returns at most 5 tools"
   - "Given authenticated user with no favorites, when GET /api/v1/favorites, then returns empty list"
   - "Given unauthenticated request, when calling any favorites endpoint, then returns 401"
 ---
@@ -28,7 +30,7 @@ This story implements the REST API endpoints for managing user favorites. It bui
 
 ```
 POST /api/v1/favorites/{tool_id}
-Authorization: Bearer <token>
+X-CSRF-Token: <token>
 
 Response 200:
 {
@@ -44,7 +46,7 @@ Response 401: Not authenticated
 
 ```
 DELETE /api/v1/favorites/{tool_id}
-Authorization: Bearer <token>
+X-CSRF-Token: <token>
 
 Response 200:
 {
@@ -58,8 +60,7 @@ Response 401: Not authenticated
 ### List favorites
 
 ```
-GET /api/v1/favorites
-Authorization: Bearer <token>
+GET /api/v1/favorites?limit=5
 
 Response 200:
 {
@@ -105,7 +106,7 @@ Create `src/skriptoteket/application/favorites/queries.py`:
 
 ```python
 class ListFavoritesQuery(BaseModel):
-    pass  # No parameters needed
+    limit: int | None = None
 
 class ListFavoritesResult(BaseModel):
     tools: list[FavoritedTool]

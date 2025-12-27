@@ -10,10 +10,13 @@ acceptance_criteria:
   - "Given /browse route, when loaded, then shows all published tools in flat list"
   - "Given filter sidebar, when user checks 'Svenska' category, then API is called with categories=svenska and tools are filtered"
   - "Given multiple categories checked, when filtering, then uses OR logic (shows tools matching any)"
+  - "Given multiple professions checked, when filtering, then uses OR logic (shows tools matching any)"
   - "Given search input, when user types 'ord', then after 300ms debounce API is called with q=ord"
   - "Given active filters, when user views URL, then filters are reflected in query params (?categories=svenska&q=ord)"
   - "Given URL with ?categories=svenska, when page loads, then 'Svenska' checkbox is pre-selected"
+  - "Given URL with ?favorites=true, when page loads, then only favorited tools are shown (frontend-only filter)"
   - "Given 'Rensa filter' button clicked, when actioned, then all filters are cleared and URL is reset"
+  - "Given user clicks 'Bläddra efter yrkesgrupp', when actioned, then navigates to /browse/professions"
   - "Given loading state, when API is fetching, then loading indicator is shown"
 ---
 
@@ -54,8 +57,8 @@ Create `frontend/apps/skriptoteket/src/views/BrowseFlatView.vue`:
 
 ```vue
 <script setup lang="ts">
-import { useCatalogFilters } from '@/composables/useCatalogFilters'
-import ToolCard from '@/components/catalog/ToolCard.vue'
+import { useCatalogFilters } from "../composables/useCatalogFilters";
+import ToolCard from "../components/catalog/ToolCard.vue";
 
 const {
   tools,
@@ -80,6 +83,7 @@ Create `frontend/apps/skriptoteket/src/composables/useCatalogFilters.ts`:
 - Syncs with URL query params (vue-router)
 - Debounces search input (300ms)
 - Calls `GET /api/v1/catalog/tools` with current filters
+- Supports `favorites=true` as a frontend-only filter (client-side filter on `is_favorite`, not an API parameter)
 
 ### URL sync
 
@@ -97,12 +101,19 @@ Modify `frontend/apps/skriptoteket/src/router/routes.ts`:
 {
   path: '/browse',
   name: 'browse',
-  component: () => import('@/views/BrowseFlatView.vue'),
+  component: () => import('../views/BrowseFlatView.vue'),
   meta: { requiresAuth: true },
 }
 ```
 
-Old hierarchical routes (`/browse/:profession`, `/browse/:profession/:category`) can remain as alternative paths.
+To preserve the hierarchical browse flow without conflicting with the new flat `/browse` route, introduce a clear
+hierarchical entrypoint:
+
+- `/browse/professions` -> `BrowseProfessionsView.vue`
+- `/browse/professions/:profession` -> `BrowseCategoriesView.vue`
+- `/browse/professions/:profession/:category` -> `BrowseToolsView.vue`
+
+Update breadcrumb links inside the hierarchical views so “Yrkesgrupper” points to `/browse/professions`.
 
 ## Files to create
 
@@ -112,6 +123,9 @@ Old hierarchical routes (`/browse/:profession`, `/browse/:profession/:category`)
 ## Files to modify
 
 - `frontend/apps/skriptoteket/src/router/routes.ts` (update /browse route)
+- `frontend/apps/skriptoteket/src/views/BrowseProfessionsView.vue` (update links to `/browse/professions/:profession`)
+- `frontend/apps/skriptoteket/src/views/BrowseCategoriesView.vue` (breadcrumb back-link to `/browse/professions`)
+- `frontend/apps/skriptoteket/src/views/BrowseToolsView.vue` (breadcrumb back-link to `/browse/professions`)
 
 ## Styling
 

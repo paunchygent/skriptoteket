@@ -10,11 +10,12 @@ acceptance_criteria:
   - "Given GET /api/v1/catalog/tools with no parameters, when called, then returns all published tools"
   - "Given GET /api/v1/catalog/tools?professions=larare, when called, then returns tools tagged with 'larare' profession"
   - "Given GET /api/v1/catalog/tools?categories=svenska,matematik, when called, then returns tools tagged with svenska OR matematik"
-  - "Given GET /api/v1/catalog/tools?professions=larare&categories=svenska, when called, then returns tools matching larare OR svenska"
+  - "Given GET /api/v1/catalog/tools?professions=larare&categories=svenska, when called, then returns tools tagged with profession larare AND category svenska"
   - "Given GET /api/v1/catalog/tools?q=ordlista, when called, then returns tools with 'ordlista' in title or summary (case-insensitive)"
   - "Given GET /api/v1/catalog/tools with filters, when response returned, then each tool includes is_favorite boolean for authenticated user"
   - "Given GET /api/v1/catalog/tools, when response returned, then includes all professions and categories for filter UI"
-  - "Given GET /api/v1/catalog/tools with invalid profession slug, when called, then that slug is ignored (no error)"
+  - "Given GET /api/v1/catalog/tools?professions=larare,doesnotexist, when called, then the unknown slug is ignored (no error) and filtering behaves as if only larare was provided"
+  - "Given GET /api/v1/catalog/tools?professions=doesnotexist, when called, then returns empty tools list (no match, no error)"
 ---
 
 ## Context
@@ -25,7 +26,6 @@ This story implements the flat catalog API endpoint that returns all published t
 
 ```
 GET /api/v1/catalog/tools?professions=slug1,slug2&categories=slug1,slug2&q=term
-Authorization: Bearer <token>
 
 Response 200:
 {
@@ -49,12 +49,12 @@ Response 200:
 
 ## Filter logic
 
-All filters use OR (union) logic:
+Filtering uses OR within each facet and AND across facets:
 
 1. If `professions` specified: Include tools tagged with ANY listed profession
 2. If `categories` specified: Include tools tagged with ANY listed category
 3. If `q` specified: Include tools where title OR summary contains the term (ILIKE)
-4. Filters are combined with AND: tool must match ALL specified filter groups
+4. Facets are combined with AND: tool must match ALL specified facets (professions facet AND categories facet AND q when present)
 
 Example: `?professions=larare&categories=svenska,matematik&q=ord`
 
@@ -91,6 +91,7 @@ Create `src/skriptoteket/application/catalog/handlers/list_all_tools.py`:
 
 1. Resolve profession slugs to IDs (ignore invalid)
 2. Resolve category slugs to IDs (ignore invalid)
+   - If a facet parameter is present but resolves to no IDs, return 0 tools (no match)
 3. Call `list_published_filtered` with resolved IDs
 4. Batch-check favorites for returned tools
 5. Return tools + all professions + all categories
