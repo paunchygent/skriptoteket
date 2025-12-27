@@ -30,7 +30,6 @@ pdm run dev-docker              # Server bound to 0.0.0.0 (for Docker)
 pdm run fe-install              # Install pnpm deps (frontend/)
 pdm run fe-dev                  # Vite dev server (SPA)
 pdm run fe-build                # SPA production build
-pdm run fe-dev-islands          # Legacy islands dev server (until cutover)
 
 # Tool execution (local dev only)
 # Add to .env: ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts

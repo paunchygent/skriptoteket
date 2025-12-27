@@ -15,7 +15,6 @@ Teacher-first Script Hub for running curated, upload-based tools. FastAPI backen
 
 - Install frontend deps: `pdm run fe-install`
 - Run SPA dev server: `pdm run fe-dev`
-- Legacy islands (until cutover): `pdm run fe-dev-islands`
 
 ## Documentation
 

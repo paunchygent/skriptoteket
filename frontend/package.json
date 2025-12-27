@@ -8,15 +8,6 @@
     "preview": "pnpm --filter @skriptoteket/spa preview",
     "typecheck": "pnpm --filter @skriptoteket/spa typecheck",
     "lint": "pnpm --filter @skriptoteket/spa lint",
-
-    "dev:islands": "pnpm --filter @skriptoteket/islands dev",
-    "build:islands": "pnpm --filter @skriptoteket/islands build",
-    "build:watch:islands": "pnpm --filter @skriptoteket/islands build:watch",
-    "preview:islands": "pnpm --filter @skriptoteket/islands preview",
-    "typecheck:islands": "pnpm --filter @skriptoteket/islands typecheck",
-    "lint:islands": "pnpm --filter @skriptoteket/islands lint",
-    "lint:fix:islands": "pnpm --filter @skriptoteket/islands lint:fix",
-
     "typecheck:all": "pnpm -r typecheck",
     "lint:all": "pnpm -r lint"
   }

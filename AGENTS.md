@@ -30,7 +30,7 @@ Target Python is **3.13–3.14**.
 - `docs/`: PRD/ADRs/backlog (start at `docs/index.md`); contract-enforced via `docs/_meta/docs-contract.yaml`
 - **Docs workflow (REQUIRED)**: follow `docs/reference/ref-sprint-planning-workflow.md` for PRD → ADR → epic → story → sprint planning.
 - **Review workflow (REQUIRED)**: all proposed EPICs/ADRs must be reviewed before implementation — see `docs/reference/ref-review-workflow.md` and `.agent/rules/096-review-workflow.md`
-- `frontend/`: pnpm workspace (Vue/Vite) — `apps/skriptoteket` (SPA), `packages/huleedu-ui` (component library), `islands/` (legacy; pending deletion)
+- `frontend/`: pnpm workspace (Vue/Vite) — `apps/skriptoteket` (SPA), `packages/huleedu-ui` (component library)
 - `.agent/`: agent workflow helpers (`.agent/readme-first.md`, `.agent/handoff.md`, prompt template) + coding rules (`.agent/rules/`)
 - `.claude/skills/`: repo-local agent skills (workflow playbooks + helpers)
 - `scripts/`: repo tooling (e.g., `scripts/validate_docs.py`)
@@ -45,7 +45,6 @@ Target Python is **3.13–3.14**.
 - Frontend deps: `pdm run fe-install` (or `pnpm -C frontend install`)
 - SPA dev: `pdm run fe-dev` (or `pnpm -C frontend --filter @skriptoteket/spa dev`)
 - SPA build: `pdm run fe-build` (or `pnpm -C frontend --filter @skriptoteket/spa build`)
-- Legacy islands (deprecated; pending deletion): `pdm run fe-dev-islands` / `pdm run fe-build-islands` (avoid unless explicitly needed)
 - **Dev services are long-running**: do not stop `pdm run dev` or `docker compose up -d db` unless explicitly requested.
 - Docker dev workflow: `pdm run dev-start` / `pdm run dev-stop` / `pdm run dev-build-start` / `pdm run dev-build-start-clean` / `pdm run dev-db-reset`
 - Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test` (lint runs Ruff + agent-doc budgets + docs contract)

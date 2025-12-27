@@ -306,27 +306,6 @@ fe-lint.working_dir = "frontend"
 fe-lint-fix.cmd = "pnpm --filter @skriptoteket/spa lint:fix"
 fe-lint-fix.working_dir = "frontend"
 
-# Frontend (legacy islands; to be deleted at EPIC-11 cutover)
-fe-dev-islands.cmd = "pnpm --filter @skriptoteket/islands dev"
-fe-dev-islands.working_dir = "frontend"
-
-fe-build-islands.cmd = "pnpm --filter @skriptoteket/islands build"
-fe-build-islands.working_dir = "frontend"
-
-fe-build-watch-islands.cmd = "pnpm --filter @skriptoteket/islands build:watch"
-fe-build-watch-islands.working_dir = "frontend"
-
-fe-preview-islands.cmd = "pnpm --filter @skriptoteket/islands preview"
-fe-preview-islands.working_dir = "frontend"
-
-fe-type-check-islands.cmd = "pnpm --filter @skriptoteket/islands type-check"
-fe-type-check-islands.working_dir = "frontend"
-
-fe-lint-islands.cmd = "pnpm --filter @skriptoteket/islands lint"
-fe-lint-islands.working_dir = "frontend"
-
-fe-lint-fix-islands.cmd = "pnpm --filter @skriptoteket/islands lint:fix"
-fe-lint-fix-islands.working_dir = "frontend"
 # Code quality
 format = "ruff format --force-exclude ."
 lint = { composite = [

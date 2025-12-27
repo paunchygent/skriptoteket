@@ -96,67 +96,6 @@ importers:
         specifier: ^2.0.0
         version: 2.2.12(typescript@5.9.3)
 
-  islands:
-    dependencies:
-      '@codemirror/autocomplete':
-        specifier: ^6.20.0
-        version: 6.20.0
-      '@codemirror/commands':
-        specifier: ^6.10.1
-        version: 6.10.1
-      '@codemirror/lang-python':
-        specifier: ^6.2.1
-        version: 6.2.1
-      '@codemirror/language':
-        specifier: ^6.11.3
-        version: 6.11.3
-      '@codemirror/lint':
-        specifier: ^6.9.2
-        version: 6.9.2
-      '@codemirror/search':
-        specifier: ^6.5.11
-        version: 6.5.11
-      '@codemirror/state':
-        specifier: ^6.5.2
-        version: 6.5.2
-      '@codemirror/view':
-        specifier: ^6.39.4
-        version: 6.39.4
-      vue:
-        specifier: ^3.5.0
-        version: 3.5.26(typescript@5.9.3)
-    devDependencies:
-      '@eslint/js':
-        specifier: ^9.0.0
-        version: 9.39.2
-      '@vitejs/plugin-vue':
-        specifier: ^5.0.0
-        version: 5.2.4(vite@6.4.1(jiti@2.6.1)(lightningcss@1.30.2))(vue@3.5.26(typescript@5.9.3))
-      eslint:
-        specifier: ^9.0.0
-        version: 9.39.2(jiti@2.6.1)
-      eslint-plugin-vue:
-        specifier: ^10.0.0
-        version: 10.6.2(@typescript-eslint/parser@8.50.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))(vue-eslint-parser@10.2.0(eslint@9.39.2(jiti@2.6.1)))
-      globals:
-        specifier: ^16.0.0
-        version: 16.5.0
-      typescript:
-        specifier: ^5.7.0
-        version: 5.9.3
-      typescript-eslint:
-        specifier: ^8.0.0
-        version: 8.50.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
-      vite:
-        specifier: ^6.0.0
-        version: 6.4.1(jiti@2.6.1)(lightningcss@1.30.2)
-      vue-eslint-parser:
-        specifier: ^10.0.0
-        version: 10.2.0(eslint@9.39.2(jiti@2.6.1))
-      vue-tsc:
-        specifier: ^2.0.0
-        version: 2.2.12(typescript@5.9.3)
-
   packages/huleedu-ui:
     devDependencies:
       '@eslint/js':
