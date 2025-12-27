@@ -12,13 +12,13 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2025-12-26
+- Date: 2025-12-27
 - Branch / commit: `main` (`a71759d`)
 - Current sprint: `SPR-2025-12-21` (EPIC-12 SPA UX, EPIC-15 User Profile)
 - Production: Full Vue SPA; `d0e0bd6` deployed 2025-12-23
 - Completed: EPIC-11 (SPA migration), EPIC-02 (identity) - see `.agent/readme-first.md`
 
-## Current Session (2025-12-26)
+## Current Session (2025-12-27)
 
 - ST-12-06: session file cleanup job tooling + admin CLI + metrics + runbook updates.
   - CLI: `src/skriptoteket/cli/main.py` (`cleanup-session-files`, `clear-all-session-files --yes`) + `pyproject.toml` PDM scripts.
@@ -29,6 +29,10 @@ Keep this file updated so the next session can pick up work quickly.
 - Docs: added ST-12-07 follow-up for explicit future session file reuse flags; updated ADR-0039 + ST-12-05 story.
 - ST-08-10: locked phase 1 with a dedicated Playwright E2E; story `done`.
 - ST-08-11: Phase 2 contract completions + contract/security lint + Playwright E2E lock-in (`scripts/playwright_st_08_11_script_editor_intelligence_phase2_e2e.py`); story `done`.
+- ST-08-12: Phase 3 best-practice lints + Playwright E2E lock-in; story `done`.
+  - FE: `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.ts`, `frontend/apps/skriptoteket/src/composables/editor/skriptoteketPythonTree.ts`,
+    `frontend/apps/skriptoteket/src/composables/editor/skriptoteketPythonAnalysis.ts`
+  - E2E: `scripts/playwright_st_08_12_script_editor_intelligence_phase3_e2e.py`
 
 ### ST-08-13 Tool usage instructions (done)
 
@@ -147,6 +151,7 @@ Replace ProfileView inline success banners with toasts; standardize inline error
 - ST-08-10 E2E: `pdm run python -m scripts.playwright_st_08_10_script_editor_intelligence_e2e` (pass; artifacts in `.artifacts/st-08-10-script-editor-intelligence-e2e/`; Playwright needed escalation)
 - ST-08-11 E2E: `pdm run python -m scripts.playwright_st_08_11_script_editor_intelligence_phase2_e2e --base-url http://127.0.0.1:5173` (pass; artifacts in `.artifacts/st-08-11-script-editor-intelligence-phase2-e2e/`; Playwright needed escalation)
 - ST-12-05 E2E: `pdm run python -m scripts.playwright_st_12_05_session_file_persistence_e2e` (pass; downloads in `.artifacts/st-12-05-session-file-persistence-e2e/`; Playwright needed escalation)
+- ST-08-12 E2E: `pdm run python -m scripts.playwright_st_08_12_script_editor_intelligence_phase3_e2e --base-url http://127.0.0.1:5173` (pass; artifacts in `.artifacts/st-08-12-script-editor-intelligence-phase3-e2e/`; Playwright needed escalation)
 - Types/build: `pnpm -C frontend --filter @skriptoteket/spa typecheck` + `pnpm -C frontend --filter @skriptoteket/spa build` (pass; max chunk 411.71 kB)
 - Lint: `pnpm -C frontend --filter @skriptoteket/spa lint` (pass)
 - UI: `docker compose up -d db && pdm run db-upgrade`, then `pdm run dev` + `pdm run fe-dev`, then `pdm run ui-smoke --base-url http://127.0.0.1:5173` (pass; screenshots in `.artifacts/ui-smoke/`)
@@ -184,6 +189,6 @@ pdm run python -m scripts.playwright_st_08_13_tool_usage_instructions_e2e --base
 
 ## Next Steps
 
-- ST-08-12: Phase 3 best practices + polish (lint hints), using the same `skriptoteketIntelligence.ts` bundle.
+- ST-08-15: Contract lint source IDs + hide source labels in error/warning tooltips (AI signal).
 - EPIC-12: Continue SPA UX stories
 - ST-15-02: Avatar Upload (follow-up to profile redesign)
