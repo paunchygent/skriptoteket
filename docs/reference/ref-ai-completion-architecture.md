@@ -17,6 +17,10 @@ This document specifies the technical architecture for AI-assisted inline comple
 The AI completion system provides Copilot-style ghost text suggestions while users write scripts. It integrates with the
 existing CodeMirror 6 intelligence bundle and uses an OpenAI-compatible backend proxy for LLM access.
 
+This reference covers the **inline completion** capability (ghost text). Chat-style edit suggestions that propose and
+apply CodeMirror changes are a separate capability with a separate protocol surface and provider configuration (see
+ST-08-16).
+
 **Key features:**
 
 - Ghost text appears after typing pause (debounced auto-trigger)
@@ -141,6 +145,12 @@ skriptoteketIntelligence(config)
 ├─ skriptoteketLinter (existing)
 └─ skriptoteketGhostText (NEW)
 ```
+
+Protocol-first DI note:
+
+- Inline completions should depend on an `InlineCompletionProviderProtocol` (ghost text).
+- Edit suggestions (ST-08-16) should depend on a separate `EditSuggestionProviderProtocol` so DI can inject a different
+  provider (often remote/bigger model) without coupling it to inline completion configuration.
 
 ### 5.2 Ghost Text State
 

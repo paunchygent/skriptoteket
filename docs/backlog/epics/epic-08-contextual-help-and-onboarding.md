@@ -38,6 +38,8 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - [ST-08-12: Script editor intelligence Phase 3 - Best practices](../stories/story-08-12-script-editor-intelligence-phase3.md)
 - [ST-08-13: Tool usage instructions](../stories/story-08-13-tool-usage-instructions.md)
 - [ST-08-14: AI inline completions MVP](../stories/story-08-14-ai-inline-completions.md)
+- [ST-08-15: Contract lint rule IDs (AI signal)](../stories/story-08-15-contract-lint-source-ids.md)
+- [ST-08-16: AI edit suggestions MVP](../stories/story-08-16-ai-edit-suggestions.md)
 
 ## Risks
 
