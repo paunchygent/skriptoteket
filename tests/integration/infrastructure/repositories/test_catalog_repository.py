@@ -313,6 +313,141 @@ async def test_tool_repository_list_by_tags_and_updates(db_session: AsyncSession
 
 
 @pytest.mark.integration
+async def test_tool_repository_list_published_filtered(db_session: AsyncSession) -> None:
+    tool_repo = PostgreSQLToolRepository(db_session)
+    now = datetime.now(timezone.utc)
+
+    user_id = uuid.uuid4()
+    db_session.add(
+        UserModel(
+            id=user_id,
+            email="tool-filter@example.com",
+            password_hash="hash",
+            role=Role.USER,
+            auth_provider=AuthProvider.LOCAL,
+            created_at=now,
+            updated_at=now,
+        )
+    )
+
+    prof_1 = ProfessionModel(
+        id=uuid.uuid4(),
+        slug="p1",
+        label="P1",
+        sort_order=1,
+        created_at=now,
+        updated_at=now,
+    )
+    prof_2 = ProfessionModel(
+        id=uuid.uuid4(),
+        slug="p2",
+        label="P2",
+        sort_order=2,
+        created_at=now,
+        updated_at=now,
+    )
+    cat_1 = CategoryModel(
+        id=uuid.uuid4(),
+        slug="c1",
+        label="C1",
+        created_at=now,
+        updated_at=now,
+    )
+    cat_2 = CategoryModel(
+        id=uuid.uuid4(),
+        slug="c2",
+        label="C2",
+        created_at=now,
+        updated_at=now,
+    )
+    db_session.add_all([prof_1, prof_2, cat_1, cat_2])
+    await db_session.flush()
+
+    tool_a = Tool(
+        id=uuid.uuid4(),
+        owner_user_id=user_id,
+        slug="alpha",
+        title="Alpha",
+        summary="Numbers",
+        is_published=False,
+        active_version_id=None,
+        created_at=now,
+        updated_at=now,
+    )
+    tool_b = Tool(
+        id=uuid.uuid4(),
+        owner_user_id=user_id,
+        slug="beta",
+        title="Beta",
+        summary=None,
+        is_published=False,
+        active_version_id=None,
+        created_at=now,
+        updated_at=now,
+    )
+    tool_c = Tool(
+        id=uuid.uuid4(),
+        owner_user_id=user_id,
+        slug="gamma",
+        title="Gamma",
+        summary="Beta summary",
+        is_published=False,
+        active_version_id=None,
+        created_at=now,
+        updated_at=now,
+    )
+    tool_d = Tool(
+        id=uuid.uuid4(),
+        owner_user_id=user_id,
+        slug="delta",
+        title="Delta",
+        summary=None,
+        is_published=False,
+        active_version_id=None,
+        created_at=now,
+        updated_at=now,
+    )
+
+    await tool_repo.create_draft(tool=tool_a, profession_ids=[prof_1.id], category_ids=[cat_1.id])
+    await tool_repo.create_draft(tool=tool_b, profession_ids=[prof_1.id], category_ids=[cat_2.id])
+    await tool_repo.create_draft(tool=tool_c, profession_ids=[prof_2.id], category_ids=[cat_2.id])
+    await tool_repo.create_draft(tool=tool_d, profession_ids=[prof_2.id], category_ids=[cat_1.id])
+
+    await tool_repo.set_published(tool_id=tool_a.id, is_published=True, now=now)
+    await tool_repo.set_published(tool_id=tool_b.id, is_published=True, now=now)
+    await tool_repo.set_published(tool_id=tool_c.id, is_published=True, now=now)
+    # Keep tool_d unpublished
+
+    by_profession = await tool_repo.list_published_filtered(
+        profession_ids=[prof_1.id],
+        category_ids=None,
+        search_term=None,
+    )
+    assert [tool.id for tool in by_profession] == [tool_a.id, tool_b.id]
+
+    by_category = await tool_repo.list_published_filtered(
+        profession_ids=None,
+        category_ids=[cat_2.id],
+        search_term=None,
+    )
+    assert [tool.id for tool in by_category] == [tool_b.id, tool_c.id]
+
+    combined = await tool_repo.list_published_filtered(
+        profession_ids=[prof_1.id],
+        category_ids=[cat_2.id],
+        search_term=None,
+    )
+    assert [tool.id for tool in combined] == [tool_b.id]
+
+    searched = await tool_repo.list_published_filtered(
+        profession_ids=None,
+        category_ids=None,
+        search_term="BETA",
+    )
+    assert [tool.id for tool in searched] == [tool_b.id, tool_c.id]
+
+
+@pytest.mark.integration
 async def test_tool_repository_list_tag_ids_and_replace_tags(db_session: AsyncSession) -> None:
     tool_repo = PostgreSQLToolRepository(db_session)
     now = datetime.now(timezone.utc)

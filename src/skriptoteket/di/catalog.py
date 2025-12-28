@@ -4,15 +4,18 @@ from __future__ import annotations
 
 from dishka import Provider, Scope, provide
 
+from skriptoteket.application.catalog.filtering import CatalogFilterService
 from skriptoteket.application.catalog.handlers.assign_maintainer import AssignMaintainerHandler
 from skriptoteket.application.catalog.handlers.create_draft_tool import CreateDraftToolHandler
 from skriptoteket.application.catalog.handlers.depublish_tool import DepublishToolHandler
 from skriptoteket.application.catalog.handlers.list_all_categories import ListAllCategoriesHandler
+from skriptoteket.application.catalog.handlers.list_all_tools import ListAllToolsHandler
 from skriptoteket.application.catalog.handlers.list_categories_for_profession import (
     ListCategoriesForProfessionHandler,
 )
 from skriptoteket.application.catalog.handlers.list_maintainers import ListMaintainersHandler
 from skriptoteket.application.catalog.handlers.list_professions import ListProfessionsHandler
+from skriptoteket.application.catalog.handlers.list_recent_tools import ListRecentToolsHandler
 from skriptoteket.application.catalog.handlers.list_tool_taxonomy import (
     ListToolTaxonomyHandler,
 )
@@ -30,13 +33,16 @@ from skriptoteket.application.catalog.handlers.update_tool_taxonomy import (
 )
 from skriptoteket.protocols.catalog import (
     AssignMaintainerHandlerProtocol,
+    CatalogFilterProtocol,
     CategoryRepositoryProtocol,
     CreateDraftToolHandlerProtocol,
     DepublishToolHandlerProtocol,
     ListAllCategoriesHandlerProtocol,
+    ListAllToolsHandlerProtocol,
     ListCategoriesForProfessionHandlerProtocol,
     ListMaintainersHandlerProtocol,
     ListProfessionsHandlerProtocol,
+    ListRecentToolsHandlerProtocol,
     ListToolsByTagsHandlerProtocol,
     ListToolsForAdminHandlerProtocol,
     ListToolsForContributorHandlerProtocol,
@@ -53,9 +59,13 @@ from skriptoteket.protocols.catalog import (
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
+from skriptoteket.protocols.favorites import FavoritesRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import UserRepositoryProtocol
-from skriptoteket.protocols.scripting import ToolVersionRepositoryProtocol
+from skriptoteket.protocols.scripting import (
+    ToolRunRepositoryProtocol,
+    ToolVersionRepositoryProtocol,
+)
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 
@@ -95,6 +105,44 @@ class CatalogProvider(Provider):
             categories=categories,
             tools=tools,
             curated_apps=curated_apps,
+        )
+
+    @provide(scope=Scope.APP)
+    def catalog_filter(self) -> CatalogFilterProtocol:
+        return CatalogFilterService()
+
+    @provide(scope=Scope.REQUEST)
+    def list_all_tools_handler(
+        self,
+        professions: ProfessionRepositoryProtocol,
+        categories: CategoryRepositoryProtocol,
+        tools: ToolRepositoryProtocol,
+        curated_apps: CuratedAppRegistryProtocol,
+        favorites: FavoritesRepositoryProtocol,
+        catalog_filter: CatalogFilterProtocol,
+    ) -> ListAllToolsHandlerProtocol:
+        return ListAllToolsHandler(
+            professions=professions,
+            categories=categories,
+            tools=tools,
+            curated_apps=curated_apps,
+            favorites=favorites,
+            catalog_filter=catalog_filter,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def list_recent_tools_handler(
+        self,
+        runs: ToolRunRepositoryProtocol,
+        tools: ToolRepositoryProtocol,
+        curated_apps: CuratedAppRegistryProtocol,
+        favorites: FavoritesRepositoryProtocol,
+    ) -> ListRecentToolsHandlerProtocol:
+        return ListRecentToolsHandler(
+            runs=runs,
+            tools=tools,
+            curated_apps=curated_apps,
+            favorites=favorites,
         )
 
     @provide(scope=Scope.REQUEST)

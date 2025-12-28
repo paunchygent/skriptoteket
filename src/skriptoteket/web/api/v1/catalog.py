@@ -1,5 +1,6 @@
 """Catalog API endpoints for SPA browse views (ST-11-06)."""
 
+from typing import Literal
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
@@ -7,7 +8,9 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict
 
 from skriptoteket.application.catalog.queries import (
+    CatalogItemKind,
     ListAllCategoriesQuery,
+    ListAllToolsQuery,
     ListCategoriesForProfessionQuery,
     ListProfessionsQuery,
     ListToolsByTagsQuery,
@@ -15,6 +18,7 @@ from skriptoteket.application.catalog.queries import (
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.protocols.catalog import (
     ListAllCategoriesHandlerProtocol,
+    ListAllToolsHandlerProtocol,
     ListCategoriesForProfessionHandlerProtocol,
     ListProfessionsHandlerProtocol,
     ListToolsByTagsHandlerProtocol,
@@ -23,6 +27,20 @@ from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.web.auth.api_dependencies import require_user_api
 
 router = APIRouter(prefix="/api/v1/catalog", tags=["catalog"])
+
+
+def _parse_slug_list(value: str | None) -> list[str] | None:
+    if value is None:
+        return None
+    slugs = [part.strip().lower() for part in value.split(",") if part.strip()]
+    return slugs or None
+
+
+def _parse_search_term(value: str | None) -> str | None:
+    if value is None:
+        return None
+    normalized = value.strip()
+    return normalized or None
 
 
 class ProfessionItem(BaseModel):
@@ -103,6 +121,36 @@ class ListToolsResponse(BaseModel):
     category: CategoryItem
     tools: list[ToolItem]
     curated_apps: list[CuratedAppItem]
+
+
+class CatalogToolItem(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    kind: Literal["tool"]
+    id: UUID
+    slug: str
+    title: str
+    summary: str | None
+    is_favorite: bool
+
+
+class CatalogCuratedAppItem(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    kind: Literal["curated_app"]
+    id: UUID
+    app_id: str
+    title: str
+    summary: str | None
+    is_favorite: bool
+
+
+class ListAllToolsResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    items: list[CatalogToolItem | CatalogCuratedAppItem]
+    professions: list[ProfessionItem]
+    categories: list[CategoryItem]
 
 
 @router.get("/professions", response_model=ListProfessionsResponse)
@@ -230,5 +278,68 @@ async def list_tools(
                 min_role=app.min_role,
             )
             for app in curated
+        ],
+    )
+
+
+@router.get("/tools", response_model=ListAllToolsResponse)
+@inject
+async def list_all_tools(
+    handler: FromDishka[ListAllToolsHandlerProtocol],
+    user: User = Depends(require_user_api),
+    professions: str | None = None,
+    categories: str | None = None,
+    q: str | None = None,
+) -> ListAllToolsResponse:
+    result = await handler.handle(
+        actor=user,
+        query=ListAllToolsQuery(
+            profession_slugs=_parse_slug_list(professions),
+            category_slugs=_parse_slug_list(categories),
+            search_term=_parse_search_term(q),
+        ),
+    )
+    items: list[CatalogToolItem | CatalogCuratedAppItem] = []
+    for item in result.items:
+        if item.kind is CatalogItemKind.TOOL:
+            items.append(
+                CatalogToolItem(
+                    kind="tool",
+                    id=item.id,
+                    slug=item.slug or "",
+                    title=item.title,
+                    summary=item.summary,
+                    is_favorite=item.is_favorite,
+                )
+            )
+        else:
+            items.append(
+                CatalogCuratedAppItem(
+                    kind="curated_app",
+                    id=item.id,
+                    app_id=item.app_id or "",
+                    title=item.title,
+                    summary=item.summary,
+                    is_favorite=item.is_favorite,
+                )
+            )
+    return ListAllToolsResponse(
+        items=items,
+        professions=[
+            ProfessionItem(
+                id=p.id,
+                slug=p.slug,
+                label=p.label,
+                sort_order=p.sort_order,
+            )
+            for p in result.professions
+        ],
+        categories=[
+            CategoryItem(
+                id=c.id,
+                slug=c.slug,
+                label=c.label,
+            )
+            for c in result.categories
         ],
     )

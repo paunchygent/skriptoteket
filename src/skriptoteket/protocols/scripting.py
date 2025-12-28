@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING, Protocol
 from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict
 
 if TYPE_CHECKING:
     from skriptoteket.domain.catalog.models import ToolVersionStats
@@ -33,6 +36,7 @@ from skriptoteket.application.scripting.interactive_sandbox import (
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.models import (
     RunContext,
+    RunSourceKind,
     ToolRun,
     ToolVersion,
     VersionState,
@@ -89,6 +93,29 @@ class ToolRunRepositoryProtocol(Protocol):
         context: RunContext,
         limit: int = 50,
     ) -> list[ToolRun]: ...
+
+    async def count_for_user_this_month(
+        self,
+        *,
+        user_id: UUID,
+        context: RunContext,
+    ) -> int: ...
+
+    async def list_recent_tools_for_user(
+        self,
+        *,
+        user_id: UUID,
+        limit: int = 10,
+    ) -> list["RecentRunRow"]: ...
+
+
+class RecentRunRow(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    source_kind: RunSourceKind
+    tool_id: UUID
+    curated_app_id: str | None = None
+    last_used_at: datetime
 
 
 class ExecuteToolVersionHandlerProtocol(Protocol):

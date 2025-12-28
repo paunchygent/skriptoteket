@@ -14,6 +14,7 @@ from dishka import make_async_container
 
 from skriptoteket.config import Settings
 from skriptoteket.di.catalog import CatalogProvider
+from skriptoteket.di.favorites import FavoritesProvider
 from skriptoteket.di.identity import IdentityProvider
 from skriptoteket.di.infrastructure import InfrastructureProvider
 from skriptoteket.di.scripting import ScriptingProvider
@@ -21,6 +22,7 @@ from skriptoteket.di.suggestions import SuggestionsProvider
 
 __all__ = [
     "CatalogProvider",
+    "FavoritesProvider",
     "IdentityProvider",
     "InfrastructureProvider",
     "ScriptingProvider",
@@ -35,6 +37,7 @@ def create_container(settings: Settings):
         InfrastructureProvider(settings),
         IdentityProvider(),
         CatalogProvider(),
+        FavoritesProvider(),
         ScriptingProvider(),
         SuggestionsProvider(),
     )

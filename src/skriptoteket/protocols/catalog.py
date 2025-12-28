@@ -25,12 +25,16 @@ from skriptoteket.application.catalog.commands import (
 from skriptoteket.application.catalog.queries import (
     ListAllCategoriesQuery,
     ListAllCategoriesResult,
+    ListAllToolsQuery,
+    ListAllToolsResult,
     ListCategoriesForProfessionQuery,
     ListCategoriesForProfessionResult,
     ListMaintainersQuery,
     ListMaintainersResult,
     ListProfessionsQuery,
     ListProfessionsResult,
+    ListRecentToolsQuery,
+    ListRecentToolsResult,
     ListToolsByTagsQuery,
     ListToolsByTagsResult,
     ListToolsForAdminQuery,
@@ -41,6 +45,7 @@ from skriptoteket.application.catalog.queries import (
     ListToolTaxonomyResult,
 )
 from skriptoteket.domain.catalog.models import Category, Profession, Tool
+from skriptoteket.domain.curated_apps.models import CuratedAppDefinition
 from skriptoteket.domain.identity.models import User
 
 
@@ -64,6 +69,16 @@ class ToolRepositoryProtocol(Protocol):
     async def list_by_tags(self, *, profession_id: UUID, category_id: UUID) -> list[Tool]: ...
 
     async def list_all(self) -> list[Tool]: ...
+
+    async def list_by_ids(self, *, tool_ids: list[UUID]) -> list[Tool]: ...
+
+    async def list_published_filtered(
+        self,
+        *,
+        profession_ids: list[UUID] | None = None,
+        category_ids: list[UUID] | None = None,
+        search_term: str | None = None,
+    ) -> list[Tool]: ...
 
     async def get_by_id(self, *, tool_id: UUID) -> Tool | None: ...
     async def get_by_slug(self, *, slug: str) -> Tool | None: ...
@@ -151,6 +166,18 @@ class ToolMaintainerAuditRepositoryProtocol(Protocol):
     ) -> None: ...
 
 
+class CatalogFilterProtocol(Protocol):
+    def filter_curated_apps(
+        self,
+        *,
+        apps: list[CuratedAppDefinition],
+        actor: User,
+        profession_slugs: list[str] | None,
+        category_slugs: list[str] | None,
+        search_term: str | None,
+    ) -> list[CuratedAppDefinition]: ...
+
+
 class ListProfessionsHandlerProtocol(Protocol):
     async def handle(self, query: ListProfessionsQuery) -> ListProfessionsResult: ...
 
@@ -168,6 +195,24 @@ class ListToolsByTagsHandlerProtocol(Protocol):
         actor: User,
         query: ListToolsByTagsQuery,
     ) -> ListToolsByTagsResult: ...
+
+
+class ListAllToolsHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        query: ListAllToolsQuery,
+    ) -> ListAllToolsResult: ...
+
+
+class ListRecentToolsHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        query: ListRecentToolsQuery,
+    ) -> ListRecentToolsResult: ...
 
 
 class ListAllCategoriesHandlerProtocol(Protocol):

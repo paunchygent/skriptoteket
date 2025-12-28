@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+from enum import StrEnum
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
@@ -56,6 +58,64 @@ class ListToolsByTagsResult(BaseModel):
     category: Category
     tools: list[Tool]
     curated_apps: list[CuratedAppDefinition]
+
+
+class CatalogItemKind(StrEnum):
+    TOOL = "tool"
+    CURATED_APP = "curated_app"
+
+
+class CatalogItem(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    kind: CatalogItemKind
+    id: UUID
+    slug: str | None = None
+    app_id: str | None = None
+    title: str
+    summary: str | None = None
+    is_favorite: bool = False
+
+
+class ListRecentToolsQuery(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    limit: int = 10
+
+
+class RecentCatalogItem(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    kind: CatalogItemKind
+    id: UUID
+    slug: str | None = None
+    app_id: str | None = None
+    title: str
+    summary: str | None = None
+    is_favorite: bool = False
+    last_used_at: datetime
+
+
+class ListRecentToolsResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    items: list[RecentCatalogItem]
+
+
+class ListAllToolsQuery(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    profession_slugs: list[str] | None = None
+    category_slugs: list[str] | None = None
+    search_term: str | None = None
+
+
+class ListAllToolsResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    items: list[CatalogItem]
+    professions: list[Profession]
+    categories: list[Category]
 
 
 class ListToolsForAdminQuery(BaseModel):

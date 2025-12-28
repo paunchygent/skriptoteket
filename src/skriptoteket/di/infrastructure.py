@@ -22,6 +22,9 @@ from skriptoteket.infrastructure.id_generator import UUID4Generator
 from skriptoteket.infrastructure.repositories.category_repository import (
     PostgreSQLCategoryRepository,
 )
+from skriptoteket.infrastructure.repositories.draft_lock_repository import (
+    PostgreSQLDraftLockRepository,
+)
 from skriptoteket.infrastructure.repositories.profession_repository import (
     PostgreSQLProfessionRepository,
 )
@@ -49,6 +52,9 @@ from skriptoteket.infrastructure.repositories.tool_session_repository import (
 from skriptoteket.infrastructure.repositories.tool_version_repository import (
     PostgreSQLToolVersionRepository,
 )
+from skriptoteket.infrastructure.repositories.user_favorite_repository import (
+    PostgreSQLFavoritesRepository,
+)
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
 from skriptoteket.infrastructure.runner.artifact_manager import FilesystemArtifactManager
 from skriptoteket.infrastructure.runner.capacity import RunnerCapacityLimiter
@@ -72,6 +78,8 @@ from skriptoteket.protocols.curated_apps import (
     CuratedAppExecutorProtocol,
     CuratedAppRegistryProtocol,
 )
+from skriptoteket.protocols.draft_locks import DraftLockRepositoryProtocol
+from skriptoteket.protocols.favorites import FavoritesRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
     PasswordHasherProtocol,
@@ -246,6 +254,10 @@ class InfrastructureProvider(Provider):
         return PostgreSQLToolRepository(session)
 
     @provide(scope=Scope.REQUEST)
+    def favorites_repo(self, session: AsyncSession) -> FavoritesRepositoryProtocol:
+        return PostgreSQLFavoritesRepository(session)
+
+    @provide(scope=Scope.REQUEST)
     def tool_maintainer_repo(self, session: AsyncSession) -> ToolMaintainerRepositoryProtocol:
         return PostgreSQLToolMaintainerRepository(session)
 
@@ -266,6 +278,10 @@ class InfrastructureProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def tool_session_repo(self, session: AsyncSession) -> ToolSessionRepositoryProtocol:
         return PostgreSQLToolSessionRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def draft_lock_repo(self, session: AsyncSession) -> DraftLockRepositoryProtocol:
+        return PostgreSQLDraftLockRepository(session)
 
     @provide(scope=Scope.REQUEST)
     def script_suggestion_repo(self, session: AsyncSession) -> SuggestionRepositoryProtocol:

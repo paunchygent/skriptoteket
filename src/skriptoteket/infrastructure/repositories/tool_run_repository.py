@@ -1,14 +1,15 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.errors import not_found
-from skriptoteket.domain.scripting.models import RunContext, ToolRun
+from skriptoteket.domain.scripting.models import RunContext, RunSourceKind, ToolRun
 from skriptoteket.infrastructure.db.models.tool_run import ToolRunModel
-from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
+from skriptoteket.protocols.scripting import RecentRunRow, ToolRunRepositoryProtocol
 
 
 class PostgreSQLToolRunRepository(ToolRunRepositoryProtocol):
@@ -110,3 +111,64 @@ class PostgreSQLToolRunRepository(ToolRunRepositoryProtocol):
         result = await self._session.execute(stmt)
         models = result.scalars().all()
         return [ToolRun.model_validate(m) for m in models]
+
+    async def count_for_user_this_month(
+        self,
+        *,
+        user_id: UUID,
+        context: RunContext,
+    ) -> int:
+        now = datetime.now(timezone.utc)
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        stmt = (
+            select(func.count())
+            .select_from(ToolRunModel)
+            .where(ToolRunModel.requested_by_user_id == user_id)
+            .where(ToolRunModel.context == context.value)
+            .where(ToolRunModel.started_at >= month_start)
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one()
+
+    async def list_recent_tools_for_user(
+        self,
+        *,
+        user_id: UUID,
+        limit: int = 10,
+    ) -> list[RecentRunRow]:
+        last_run = func.max(ToolRunModel.started_at)
+        stmt = (
+            select(
+                ToolRunModel.source_kind,
+                ToolRunModel.tool_id,
+                ToolRunModel.curated_app_id,
+                last_run.label("last_run"),
+            )
+            .where(ToolRunModel.requested_by_user_id == user_id)
+            .where(ToolRunModel.context == RunContext.PRODUCTION.value)
+            .where(
+                ToolRunModel.source_kind.in_(
+                    [
+                        RunSourceKind.TOOL_VERSION.value,
+                        RunSourceKind.CURATED_APP.value,
+                    ]
+                )
+            )
+            .group_by(
+                ToolRunModel.source_kind,
+                ToolRunModel.tool_id,
+                ToolRunModel.curated_app_id,
+            )
+            .order_by(last_run.desc())
+            .limit(limit)
+        )
+        result = await self._session.execute(stmt)
+        return [
+            RecentRunRow(
+                source_kind=RunSourceKind(row.source_kind),
+                tool_id=row.tool_id,
+                curated_app_id=row.curated_app_id,
+                last_used_at=row.last_run,
+            )
+            for row in result.all()
+        ]

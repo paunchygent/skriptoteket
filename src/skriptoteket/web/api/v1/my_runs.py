@@ -34,6 +34,7 @@ class ListMyRunsResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     runs: list[MyRunItem]
+    total_count: int
 
 
 @router.get("", response_model=ListMyRunsResponse)
@@ -50,6 +51,10 @@ async def list_my_runs(
             user_id=user.id,
             context=RunContext.PRODUCTION,
             limit=50,
+        )
+        total_count = await runs.count_for_user_this_month(
+            user_id=user.id,
+            context=RunContext.PRODUCTION,
         )
 
         items: list[MyRunItem] = []
@@ -79,4 +84,4 @@ async def list_my_runs(
                 )
             )
 
-    return ListMyRunsResponse(runs=items)
+    return ListMyRunsResponse(runs=items, total_count=total_count)

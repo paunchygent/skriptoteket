@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -42,6 +42,50 @@ class PostgreSQLToolRepository(ToolRepositoryProtocol):
 
     async def list_all(self) -> list[Tool]:
         stmt = select(ToolModel).order_by(ToolModel.title.asc(), ToolModel.slug.asc())
+        result = await self._session.execute(stmt)
+        return [Tool.model_validate(model) for model in result.scalars().all()]
+
+    async def list_by_ids(self, *, tool_ids: list[UUID]) -> list[Tool]:
+        if not tool_ids:
+            return []
+        stmt = (
+            select(ToolModel)
+            .where(ToolModel.id.in_(tool_ids))
+            .order_by(ToolModel.title.asc(), ToolModel.slug.asc())
+        )
+        result = await self._session.execute(stmt)
+        return [Tool.model_validate(model) for model in result.scalars().all()]
+
+    async def list_published_filtered(
+        self,
+        *,
+        profession_ids: list[UUID] | None = None,
+        category_ids: list[UUID] | None = None,
+        search_term: str | None = None,
+    ) -> list[Tool]:
+        if profession_ids is not None and not profession_ids:
+            return []
+        if category_ids is not None and not category_ids:
+            return []
+
+        stmt = select(ToolModel).where(ToolModel.is_published.is_(True))
+
+        if profession_ids is not None:
+            stmt = stmt.join(ToolProfessionModel, ToolProfessionModel.tool_id == ToolModel.id)
+            stmt = stmt.where(ToolProfessionModel.profession_id.in_(profession_ids))
+        if category_ids is not None:
+            stmt = stmt.join(ToolCategoryModel, ToolCategoryModel.tool_id == ToolModel.id)
+            stmt = stmt.where(ToolCategoryModel.category_id.in_(category_ids))
+        if search_term:
+            pattern = f"%{search_term}%"
+            stmt = stmt.where(
+                or_(
+                    ToolModel.title.ilike(pattern),
+                    ToolModel.summary.ilike(pattern),
+                )
+            )
+
+        stmt = stmt.distinct().order_by(ToolModel.title.asc(), ToolModel.slug.asc())
         result = await self._session.execute(stmt)
         return [Tool.model_validate(model) for model in result.scalars().all()]
 

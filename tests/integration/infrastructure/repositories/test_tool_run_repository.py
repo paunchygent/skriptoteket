@@ -6,9 +6,16 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from skriptoteket.domain.curated_apps.models import curated_app_tool_id
 from skriptoteket.domain.identity.models import AuthProvider, Role
 from skriptoteket.domain.scripting.input_files import InputFileEntry, InputManifest
-from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolRun, VersionState
+from skriptoteket.domain.scripting.models import (
+    RunContext,
+    RunSourceKind,
+    RunStatus,
+    ToolRun,
+    VersionState,
+)
 from skriptoteket.infrastructure.db.models.tool import ToolModel
 from skriptoteket.infrastructure.db.models.tool_version import ToolVersionModel
 from skriptoteket.infrastructure.db.models.user import UserModel
@@ -337,3 +344,194 @@ async def test_tool_run_error_summary_roundtrip(db_session: AsyncSession) -> Non
     assert fetched.status is RunStatus.FAILED
     assert fetched.error_summary == "Script failed with SyntaxError on line 42"
     assert fetched.stderr == "Traceback: SyntaxError"
+
+
+@pytest.mark.integration
+async def test_list_recent_tools_for_user_groups_orders_and_limits(
+    db_session: AsyncSession,
+) -> None:
+    now = datetime.now(timezone.utc)
+    user_id = await _create_user(db_session=db_session, now=now)
+    tool_id_a = await _create_tool(db_session=db_session, now=now, owner_user_id=user_id)
+    tool_id_b = await _create_tool(db_session=db_session, now=now, owner_user_id=user_id)
+    version_id_a = await _create_tool_version(
+        db_session=db_session,
+        tool_id=tool_id_a,
+        created_by_user_id=user_id,
+        now=now,
+    )
+    version_id_b = await _create_tool_version(
+        db_session=db_session,
+        tool_id=tool_id_b,
+        created_by_user_id=user_id,
+        now=now,
+    )
+
+    repo = PostgreSQLToolRunRepository(db_session)
+    input_manifest = InputManifest(files=[InputFileEntry(name="input.txt", bytes=1)])
+
+    tool_a_old = ToolRun(
+        id=uuid.uuid4(),
+        tool_id=tool_id_a,
+        version_id=version_id_a,
+        context=RunContext.PRODUCTION,
+        requested_by_user_id=user_id,
+        status=RunStatus.SUCCEEDED,
+        started_at=now - timedelta(minutes=5),
+        finished_at=None,
+        workdir_path="a-old/work",
+        input_filename="input.txt",
+        input_size_bytes=1,
+        input_manifest=input_manifest,
+        html_output=None,
+        stdout=None,
+        stderr=None,
+        artifacts_manifest={},
+        error_summary=None,
+    )
+    tool_a_new = tool_a_old.model_copy(
+        update={"id": uuid.uuid4(), "started_at": now - timedelta(minutes=1)}
+    )
+    tool_b = tool_a_old.model_copy(
+        update={"id": uuid.uuid4(), "tool_id": tool_id_b, "version_id": version_id_b}
+    )
+
+    app_id = "demo.counter"
+    curated_run = ToolRun(
+        id=uuid.uuid4(),
+        tool_id=curated_app_tool_id(app_id=app_id),
+        source_kind=RunSourceKind.CURATED_APP,
+        version_id=None,
+        curated_app_id=app_id,
+        curated_app_version="1.0.0",
+        context=RunContext.PRODUCTION,
+        requested_by_user_id=user_id,
+        status=RunStatus.SUCCEEDED,
+        started_at=now - timedelta(seconds=30),
+        finished_at=None,
+        workdir_path="app/work",
+        input_filename="input.txt",
+        input_size_bytes=1,
+        input_manifest=input_manifest,
+        html_output=None,
+        stdout=None,
+        stderr=None,
+        artifacts_manifest={},
+        error_summary=None,
+    )
+
+    sandbox_run = tool_a_old.model_copy(
+        update={"id": uuid.uuid4(), "context": RunContext.SANDBOX, "started_at": now}
+    )
+
+    for run in [tool_a_old, tool_a_new, tool_b, curated_run, sandbox_run]:
+        await repo.create(run=run)
+
+    rows = await repo.list_recent_tools_for_user(user_id=user_id, limit=10)
+    assert [(row.source_kind, row.tool_id) for row in rows] == [
+        (RunSourceKind.CURATED_APP, curated_run.tool_id),
+        (RunSourceKind.TOOL_VERSION, tool_id_a),
+        (RunSourceKind.TOOL_VERSION, tool_id_b),
+    ]
+    assert rows[1].last_used_at == tool_a_new.started_at
+
+    limited_rows = await repo.list_recent_tools_for_user(user_id=user_id, limit=2)
+    assert len(limited_rows) == 2
+    assert limited_rows[0].last_used_at == curated_run.started_at
+
+
+@pytest.mark.integration
+async def test_count_for_user_this_month_returns_correct_count(
+    db_session: AsyncSession,
+) -> None:
+    """Test that count_for_user_this_month only counts runs from current month."""
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    last_month = month_start - timedelta(days=1)
+
+    user_id = await _create_user(db_session=db_session, now=now)
+    tool_id = await _create_tool(db_session=db_session, now=now, owner_user_id=user_id)
+    version_id = await _create_tool_version(
+        db_session=db_session, tool_id=tool_id, created_by_user_id=user_id, now=now
+    )
+
+    repo = PostgreSQLToolRunRepository(db_session)
+    input_manifest = InputManifest(files=[InputFileEntry(name="input.txt", bytes=1)])
+
+    # Create 3 PRODUCTION runs for user THIS MONTH
+    for i in range(3):
+        run = ToolRun(
+            id=uuid.uuid4(),
+            tool_id=tool_id,
+            version_id=version_id,
+            context=RunContext.PRODUCTION,
+            requested_by_user_id=user_id,
+            status=RunStatus.SUCCEEDED,
+            started_at=now - timedelta(minutes=i),
+            finished_at=None,
+            workdir_path=f"prod-{i}/work",
+            input_filename="input.txt",
+            input_size_bytes=1,
+            input_manifest=input_manifest,
+            html_output=None,
+            stdout=None,
+            stderr=None,
+            artifacts_manifest={},
+            error_summary=None,
+        )
+        await repo.create(run=run)
+
+    # Create 2 PRODUCTION runs for user LAST MONTH (should not be counted)
+    for i in range(2):
+        run = ToolRun(
+            id=uuid.uuid4(),
+            tool_id=tool_id,
+            version_id=version_id,
+            context=RunContext.PRODUCTION,
+            requested_by_user_id=user_id,
+            status=RunStatus.SUCCEEDED,
+            started_at=last_month - timedelta(days=i),
+            finished_at=None,
+            workdir_path=f"last-month-{i}/work",
+            input_filename="input.txt",
+            input_size_bytes=1,
+            input_manifest=input_manifest,
+            html_output=None,
+            stdout=None,
+            stderr=None,
+            artifacts_manifest={},
+            error_summary=None,
+        )
+        await repo.create(run=run)
+
+    # Create 1 SANDBOX run for user THIS MONTH (should not be counted - wrong context)
+    sandbox_run = ToolRun(
+        id=uuid.uuid4(),
+        tool_id=tool_id,
+        version_id=version_id,
+        context=RunContext.SANDBOX,
+        requested_by_user_id=user_id,
+        status=RunStatus.SUCCEEDED,
+        started_at=now,
+        finished_at=None,
+        workdir_path="sandbox/work",
+        input_filename="input.txt",
+        input_size_bytes=1,
+        input_manifest=input_manifest,
+        html_output=None,
+        stdout=None,
+        stderr=None,
+        artifacts_manifest={},
+        error_summary=None,
+    )
+    await repo.create(run=sandbox_run)
+
+    # Verify count for user's PRODUCTION runs THIS MONTH only
+    count = await repo.count_for_user_this_month(user_id=user_id, context=RunContext.PRODUCTION)
+    assert count == 3  # Only this month's production runs
+
+    # Verify SANDBOX runs this month
+    sandbox_count = await repo.count_for_user_this_month(
+        user_id=user_id, context=RunContext.SANDBOX
+    )
+    assert sandbox_count == 1
