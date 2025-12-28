@@ -262,50 +262,55 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="space-y-4">
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-      <div class="flex-1 space-y-1 min-w-0">
-        <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-          Testfiler
-        </label>
-        <div class="flex items-center gap-3 w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm overflow-hidden">
-          <label
-            class="btn-cta shrink-0 px-3 py-1 text-xs font-semibold tracking-wide"
-          >
-            Välj filer
-            <input
-              type="file"
-              multiple
-              class="sr-only"
-              @change="selectFiles"
+    <div class="space-y-2">
+      <!-- Label row -->
+      <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
+        Testfiler
+      </label>
+
+      <!-- Input + buttons row (same height via items-stretch) -->
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-3 w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm overflow-hidden h-full">
+            <label
+              class="btn-cta shrink-0 px-3 py-1 text-xs font-semibold tracking-wide"
             >
-          </label>
-          <span class="text-sm text-navy/60 truncate">
-            {{ hasFiles ? `${selectedFiles.length} fil(er) valda` : 'Inga filer valda' }}
-          </span>
+              Välj filer
+              <input
+                type="file"
+                multiple
+                class="sr-only"
+                @change="selectFiles"
+              >
+            </label>
+            <span class="text-sm text-navy/60 truncate">
+              {{ hasFiles ? `${selectedFiles.length} fil(er) valda` : 'Inga filer valda' }}
+            </span>
+          </div>
         </div>
+
+        <button
+          type="button"
+          :disabled="isRunning"
+          class="btn-cta min-w-[120px]"
+          @click="runSandbox"
+        >
+          <span
+            v-if="isRunning"
+            class="inline-block w-3 h-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
+          />
+          <span v-else>Testkör kod</span>
+        </button>
+
+        <button
+          v-if="hasResults"
+          type="button"
+          class="btn-ghost"
+          @click="clearResult"
+        >
+          Rensa
+        </button>
       </div>
-
-      <button
-        type="button"
-        :disabled="isRunning"
-        class="btn-cta min-w-[120px]"
-        @click="runSandbox"
-      >
-        <span
-          v-if="isRunning"
-          class="inline-block w-3 h-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
-        />
-        <span v-else>Testkör kod</span>
-      </button>
-
-      <button
-        v-if="hasResults"
-        type="button"
-        class="btn-ghost"
-        @click="clearResult"
-      >
-        Rensa
-      </button>
     </div>
 
     <details class="border border-navy bg-white shadow-brutal-sm">

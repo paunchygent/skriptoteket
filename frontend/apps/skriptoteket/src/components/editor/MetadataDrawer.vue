@@ -233,17 +233,18 @@ function toggleCategory(value: string): void {
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="p-6 border-t border-navy">
-      <button
-        type="button"
-        class="btn-primary w-full"
-        :disabled="isSaving"
-        @click="emit('save')"
-      >
-        {{ isSaving ? "Sparar..." : "Spara metadata" }}
-      </button>
+      <!-- Save button -->
+      <div class="pt-4 border-t border-navy/20">
+        <button
+          type="button"
+          class="btn-primary w-full"
+          :disabled="isSaving"
+          @click="emit('save')"
+        >
+          {{ isSaving ? "Sparar..." : "Spara metadata" }}
+        </button>
+      </div>
     </div>
   </aside>
 </template>
