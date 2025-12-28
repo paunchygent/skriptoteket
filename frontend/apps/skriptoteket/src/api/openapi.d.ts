@@ -277,6 +277,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/catalog/tools": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List All Tools */
+        get: operations["list_all_tools_api_v1_catalog_tools_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/editor/tool-runs/{run_id}": {
         parameters: {
             query?: never;
@@ -504,6 +521,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/editor/tools/{tool_id}/draft-lock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Acquire Draft Lock */
+        post: operations["acquire_draft_lock_api_v1_editor_tools__tool_id__draft_lock_post"];
+        /** Release Draft Lock */
+        delete: operations["release_draft_lock_api_v1_editor_tools__tool_id__draft_lock_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/editor/tools/{tool_id}/maintainers": {
         parameters: {
             query?: never;
@@ -589,6 +624,58 @@ export interface paths {
         head?: never;
         /** Update Tool Taxonomy */
         patch: operations["update_tool_taxonomy_api_v1_editor_tools__tool_id__taxonomy_patch"];
+        trace?: never;
+    };
+    "/api/v1/favorites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Favorites */
+        get: operations["list_favorites_api_v1_favorites_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/favorites/{catalog_item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Favorite */
+        post: operations["add_favorite_api_v1_favorites__catalog_item_id__post"];
+        /** Remove Favorite */
+        delete: operations["remove_favorite_api_v1_favorites__catalog_item_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/recent-tools": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Recent Tools */
+        get: operations["list_recent_tools_api_v1_me_recent_tools_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/my-runs": {
@@ -942,6 +1029,48 @@ export interface components {
             /** Inputs */
             inputs?: string | null;
         };
+        /** CatalogCuratedAppItem */
+        CatalogCuratedAppItem: {
+            /** App Id */
+            app_id: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Favorite */
+            is_favorite: boolean;
+            /**
+             * Kind
+             * @constant
+             */
+            kind: "curated_app";
+            /** Summary */
+            summary: string | null;
+            /** Title */
+            title: string;
+        };
+        /** CatalogToolItem */
+        CatalogToolItem: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Favorite */
+            is_favorite: boolean;
+            /**
+             * Kind
+             * @constant
+             */
+            kind: "tool";
+            /** Slug */
+            slug: string;
+            /** Summary */
+            summary: string | null;
+            /** Title */
+            title: string;
+        };
         /**
          * CategoryItem
          * @description Category for API responses.
@@ -1063,10 +1192,59 @@ export interface components {
         DepublishToolResponse: {
             tool: components["schemas"]["AdminToolItem"];
         };
+        /** DraftLockReleaseResponse */
+        DraftLockReleaseResponse: {
+            /**
+             * Tool Id
+             * Format: uuid
+             */
+            tool_id: string;
+        };
+        /** DraftLockRequest */
+        DraftLockRequest: {
+            /**
+             * Draft Head Id
+             * Format: uuid
+             */
+            draft_head_id: string;
+            /**
+             * Force
+             * @default false
+             */
+            force: boolean;
+        };
+        /** DraftLockResponse */
+        DraftLockResponse: {
+            /**
+             * Draft Head Id
+             * Format: uuid
+             */
+            draft_head_id: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Is Owner */
+            is_owner: boolean;
+            /**
+             * Locked By User Id
+             * Format: uuid
+             */
+            locked_by_user_id: string;
+            /**
+             * Tool Id
+             * Format: uuid
+             */
+            tool_id: string;
+        };
         /** EditorBootResponse */
         EditorBootResponse: {
             /** Derived From Version Id */
             derived_from_version_id: string | null;
+            /** Draft Head Id */
+            draft_head_id: string | null;
+            draft_lock: components["schemas"]["DraftLockResponse"] | null;
             /** Entrypoint */
             entrypoint: string;
             /** Input Schema */
@@ -1173,6 +1351,58 @@ export interface components {
             /** Version Number */
             version_number: number;
         };
+        /** FavoriteCuratedAppItem */
+        FavoriteCuratedAppItem: {
+            /** App Id */
+            app_id: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Favorite */
+            is_favorite: boolean;
+            /**
+             * Kind
+             * @constant
+             */
+            kind: "curated_app";
+            /** Summary */
+            summary: string | null;
+            /** Title */
+            title: string;
+        };
+        /** FavoriteStatusResponse */
+        FavoriteStatusResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Favorite */
+            is_favorite: boolean;
+        };
+        /** FavoriteToolItem */
+        FavoriteToolItem: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Favorite */
+            is_favorite: boolean;
+            /**
+             * Kind
+             * @constant
+             */
+            kind: "tool";
+            /** Slug */
+            slug: string;
+            /** Summary */
+            summary: string | null;
+            /** Title */
+            title: string;
+        };
         /** GetRunResult */
         GetRunResult: {
             run: components["schemas"]["RunDetails"];
@@ -1218,6 +1448,15 @@ export interface components {
             /** Categories */
             categories: components["schemas"]["CategoryItem"][];
         };
+        /** ListAllToolsResponse */
+        ListAllToolsResponse: {
+            /** Categories */
+            categories: components["schemas"]["CategoryItem"][];
+            /** Items */
+            items: (components["schemas"]["CatalogToolItem"] | components["schemas"]["CatalogCuratedAppItem"])[];
+            /** Professions */
+            professions: components["schemas"]["ProfessionItem"][];
+        };
         /** ListArtifactsResult */
         ListArtifactsResult: {
             /** Artifacts */
@@ -1237,10 +1476,17 @@ export interface components {
             categories: components["schemas"]["CategoryItem"][];
             profession: components["schemas"]["ProfessionItem"];
         };
+        /** ListFavoritesResponse */
+        ListFavoritesResponse: {
+            /** Items */
+            items: (components["schemas"]["FavoriteToolItem"] | components["schemas"]["FavoriteCuratedAppItem"])[];
+        };
         /** ListMyRunsResponse */
         ListMyRunsResponse: {
             /** Runs */
             runs: components["schemas"]["MyRunItem"][];
+            /** Total Count */
+            total_count: number;
         };
         /** ListMyToolsResponse */
         ListMyToolsResponse: {
@@ -1254,6 +1500,11 @@ export interface components {
         ListProfessionsResponse: {
             /** Professions */
             professions: components["schemas"]["ProfessionItem"][];
+        };
+        /** ListRecentToolsResponse */
+        ListRecentToolsResponse: {
+            /** Items */
+            items: (components["schemas"]["RecentToolItem"] | components["schemas"]["RecentCuratedAppItem"])[];
         };
         /** ListSuggestionsResponse */
         ListSuggestionsResponse: {
@@ -1398,6 +1649,58 @@ export interface components {
         PublishVersionRequest: {
             /** Change Summary */
             change_summary?: string | null;
+        };
+        /** RecentCuratedAppItem */
+        RecentCuratedAppItem: {
+            /** App Id */
+            app_id: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Favorite */
+            is_favorite: boolean;
+            /**
+             * Kind
+             * @constant
+             */
+            kind: "curated_app";
+            /**
+             * Last Used At
+             * Format: date-time
+             */
+            last_used_at: string;
+            /** Summary */
+            summary: string | null;
+            /** Title */
+            title: string;
+        };
+        /** RecentToolItem */
+        RecentToolItem: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Favorite */
+            is_favorite: boolean;
+            /**
+             * Kind
+             * @constant
+             */
+            kind: "tool";
+            /**
+             * Last Used At
+             * Format: date-time
+             */
+            last_used_at: string;
+            /** Slug */
+            slug: string;
+            /** Summary */
+            summary: string | null;
+            /** Title */
+            title: string;
         };
         /** RegisterRequest */
         RegisterRequest: {
@@ -2751,6 +3054,39 @@ export interface operations {
             };
         };
     };
+    list_all_tools_api_v1_catalog_tools_get: {
+        parameters: {
+            query?: {
+                professions?: string | null;
+                categories?: string | null;
+                q?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListAllToolsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_run_api_v1_editor_tool_runs__run_id__get: {
         parameters: {
             query?: never;
@@ -3199,6 +3535,76 @@ export interface operations {
             };
         };
     };
+    acquire_draft_lock_api_v1_editor_tools__tool_id__draft_lock_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                tool_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftLockRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftLockResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    release_draft_lock_api_v1_editor_tools__tool_id__draft_lock_delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                tool_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftLockReleaseResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_tool_maintainers_api_v1_editor_tools__tool_id__maintainers_get: {
         parameters: {
             query?: never;
@@ -3430,6 +3836,134 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ToolTaxonomyResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_favorites_api_v1_favorites_get: {
+        parameters: {
+            query?: {
+                limit?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListFavoritesResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_favorite_api_v1_favorites__catalog_item_id__post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                catalog_item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FavoriteStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_favorite_api_v1_favorites__catalog_item_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                catalog_item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FavoriteStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_recent_tools_api_v1_me_recent_tools_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListRecentToolsResponse"];
                 };
             };
             /** @description Validation Error */
