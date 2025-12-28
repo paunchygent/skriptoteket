@@ -5,6 +5,7 @@ import { apiGet, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
 import FavoritesSection from "../components/home/FavoritesSection.vue";
 import RecentToolsSection from "../components/home/RecentToolsSection.vue";
+import SectionHeader from "../components/home/SectionHeader.vue";
 import { useFavorites } from "../composables/useFavorites";
 import { useLoginModal } from "../composables/useLoginModal";
 import { useAuthStore } from "../stores/auth";
@@ -328,7 +329,7 @@ onMounted(async () => {
           v-if="canSeeContributor"
           class="space-y-4"
         >
-          <h2 class="section-label">Bidragsgivare</h2>
+          <SectionHeader title="Bidragsgivare" />
           <div class="grid gap-5 sm:grid-cols-2">
             <!-- Mina verktyg -->
             <RouterLink
@@ -385,7 +386,7 @@ onMounted(async () => {
           v-if="canSeeAdmin"
           class="space-y-4"
         >
-          <h2 class="section-label">Administration</h2>
+          <SectionHeader title="Administration" />
           <div class="grid gap-5 sm:grid-cols-2">
             <!-- Att granska -->
             <RouterLink
@@ -456,19 +457,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* Section label */
-.section-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-navy);
-  opacity: 0.5;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--color-navy);
-  opacity: 0.2;
-}
-
 /* Dashboard card */
 .dashboard-card {
   display: block;
