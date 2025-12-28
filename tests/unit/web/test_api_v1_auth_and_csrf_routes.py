@@ -14,6 +14,10 @@ from fastapi import FastAPI
 
 from skriptoteket.application.identity.commands import LoginResult
 from skriptoteket.application.scripting.commands import CreateDraftVersionResult
+from skriptoteket.application.scripting.draft_locks import (
+    AcquireDraftLockResult,
+    ReleaseDraftLockResult,
+)
 from skriptoteket.application.scripting.interactive_tools import StartActionResult
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import ErrorCode
@@ -24,6 +28,10 @@ from skriptoteket.domain.scripting.models import (
     compute_content_hash,
 )
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.draft_locks import (
+    AcquireDraftLockHandlerProtocol,
+    ReleaseDraftLockHandlerProtocol,
+)
 from skriptoteket.protocols.identity import (
     CurrentUserProviderProtocol,
     LoginHandlerProtocol,
@@ -91,6 +99,8 @@ class ApiProvider(Provider):
         start_action: AsyncMock,
         create_draft: AsyncMock,
         save_draft: AsyncMock,
+        acquire_draft_lock: AsyncMock,
+        release_draft_lock: AsyncMock,
     ) -> None:
         super().__init__()
         self._settings = settings
@@ -103,6 +113,8 @@ class ApiProvider(Provider):
         self._start_action = start_action
         self._create_draft = create_draft
         self._save_draft = save_draft
+        self._acquire_draft_lock = acquire_draft_lock
+        self._release_draft_lock = release_draft_lock
 
     @provide(scope=Scope.APP)
     def settings(self) -> Settings:
@@ -143,6 +155,14 @@ class ApiProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def save_draft_handler(self) -> SaveDraftVersionHandlerProtocol:
         return cast(SaveDraftVersionHandlerProtocol, self._save_draft)
+
+    @provide(scope=Scope.REQUEST)
+    def acquire_draft_lock_handler(self) -> AcquireDraftLockHandlerProtocol:
+        return cast(AcquireDraftLockHandlerProtocol, self._acquire_draft_lock)
+
+    @provide(scope=Scope.REQUEST)
+    def release_draft_lock_handler(self) -> ReleaseDraftLockHandlerProtocol:
+        return cast(ReleaseDraftLockHandlerProtocol, self._release_draft_lock)
 
 
 @pytest.fixture
@@ -202,6 +222,16 @@ def save_draft_handler() -> AsyncMock:
 
 
 @pytest.fixture
+def acquire_draft_lock_handler() -> AsyncMock:
+    return AsyncMock(spec=AcquireDraftLockHandlerProtocol)
+
+
+@pytest.fixture
+def release_draft_lock_handler() -> AsyncMock:
+    return AsyncMock(spec=ReleaseDraftLockHandlerProtocol)
+
+
+@pytest.fixture
 def app(
     settings: Settings,
     clock: ClockProtocol,
@@ -213,6 +243,8 @@ def app(
     start_action_handler: AsyncMock,
     create_draft_handler: AsyncMock,
     save_draft_handler: AsyncMock,
+    acquire_draft_lock_handler: AsyncMock,
+    release_draft_lock_handler: AsyncMock,
 ) -> FastAPI:
     provider = ApiProvider(
         settings=settings,
@@ -225,6 +257,8 @@ def app(
         start_action=start_action_handler,
         create_draft=create_draft_handler,
         save_draft=save_draft_handler,
+        acquire_draft_lock=acquire_draft_lock_handler,
+        release_draft_lock=release_draft_lock_handler,
     )
     container = make_async_container(provider)
 
@@ -519,3 +553,90 @@ async def test_api_v1_post_requires_csrf_token_for_editor_create_draft_version(
     )
     assert ok.status_code == 200
     create_draft_handler.handle.assert_awaited_once()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_api_v1_post_requires_csrf_token_for_editor_draft_lock_acquire(
+    client: httpx.AsyncClient,
+    settings: Settings,
+    sessions: AsyncMock,
+    current_user_provider: AsyncMock,
+    acquire_draft_lock_handler: AsyncMock,
+) -> None:
+    contributor = make_user(role=Role.CONTRIBUTOR)
+    session_id = uuid4()
+    csrf_token = "csrf-token"
+    _setup_valid_auth(
+        user=contributor,
+        session_id=session_id,
+        csrf_token=csrf_token,
+        sessions=sessions,
+        current_user_provider=current_user_provider,
+    )
+
+    tool_id = uuid4()
+    draft_head_id = uuid4()
+    acquire_draft_lock_handler.handle.return_value = AcquireDraftLockResult(
+        tool_id=tool_id,
+        draft_head_id=draft_head_id,
+        locked_by_user_id=contributor.id,
+        expires_at=datetime(2025, 1, 1, 12, 10, tzinfo=timezone.utc),
+        is_owner=True,
+    )
+
+    payload = {"draft_head_id": str(draft_head_id), "force": False}
+
+    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session_id))
+    missing_csrf = await client.post(
+        f"/api/v1/editor/tools/{tool_id}/draft-lock",
+        json=payload,
+    )
+    assert missing_csrf.status_code == 403
+    assert missing_csrf.json()["error"]["code"] == ErrorCode.FORBIDDEN.value
+    acquire_draft_lock_handler.handle.assert_not_awaited()
+
+    ok = await client.post(
+        f"/api/v1/editor/tools/{tool_id}/draft-lock",
+        headers={"X-CSRF-Token": csrf_token},
+        json=payload,
+    )
+    assert ok.status_code == 200
+    acquire_draft_lock_handler.handle.assert_awaited_once()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_api_v1_delete_requires_csrf_token_for_editor_draft_lock_release(
+    client: httpx.AsyncClient,
+    settings: Settings,
+    sessions: AsyncMock,
+    current_user_provider: AsyncMock,
+    release_draft_lock_handler: AsyncMock,
+) -> None:
+    contributor = make_user(role=Role.CONTRIBUTOR)
+    session_id = uuid4()
+    csrf_token = "csrf-token"
+    _setup_valid_auth(
+        user=contributor,
+        session_id=session_id,
+        csrf_token=csrf_token,
+        sessions=sessions,
+        current_user_provider=current_user_provider,
+    )
+
+    tool_id = uuid4()
+    release_draft_lock_handler.handle.return_value = ReleaseDraftLockResult(tool_id=tool_id)
+
+    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session_id))
+    missing_csrf = await client.delete(f"/api/v1/editor/tools/{tool_id}/draft-lock")
+    assert missing_csrf.status_code == 403
+    assert missing_csrf.json()["error"]["code"] == ErrorCode.FORBIDDEN.value
+    release_draft_lock_handler.handle.assert_not_awaited()
+
+    ok = await client.delete(
+        f"/api/v1/editor/tools/{tool_id}/draft-lock",
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    assert ok.status_code == 200
+    release_draft_lock_handler.handle.assert_awaited_once()

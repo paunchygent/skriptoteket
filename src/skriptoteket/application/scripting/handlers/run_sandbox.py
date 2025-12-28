@@ -7,11 +7,14 @@ from skriptoteket.application.scripting.commands import (
     RunSandboxCommand,
     RunSandboxResult,
 )
+from skriptoteket.application.scripting.draft_lock_checks import require_active_draft_lock
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
-from skriptoteket.domain.scripting.models import RunContext
+from skriptoteket.domain.scripting.models import RunContext, VersionState
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
+from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.draft_locks import DraftLockRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
@@ -39,6 +42,8 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
         id_generator: IdGeneratorProtocol,
         execute: ExecuteToolVersionHandlerProtocol,
         session_files: SessionFileStorageProtocol,
+        locks: DraftLockRepositoryProtocol,
+        clock: ClockProtocol,
     ) -> None:
         self._uow = uow
         self._versions = versions
@@ -47,6 +52,8 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
         self._id_generator = id_generator
         self._execute = execute
         self._session_files = session_files
+        self._locks = locks
+        self._clock = clock
 
     async def handle(
         self,
@@ -55,6 +62,7 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
         command: RunSandboxCommand,
     ) -> RunSandboxResult:
         require_at_least_role(user=actor, role=Role.CONTRIBUTOR)
+        now = self._clock.now()
 
         async with self._uow:
             version = await self._versions.get_by_id(version_id=command.version_id)
@@ -91,6 +99,31 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
                         "version_id": str(version.id),
                         "created_by_user_id": str(version.created_by_user_id),
                     },
+                )
+
+            draft_versions = await self._versions.list_for_tool(
+                tool_id=version.tool_id,
+                states={VersionState.DRAFT},
+                limit=1,
+            )
+            if draft_versions:
+                draft_head = draft_versions[0]
+                if version.id != draft_head.id:
+                    raise DomainError(
+                        code=ErrorCode.CONFLICT,
+                        message="Sandbox runs require the current draft head",
+                        details={
+                            "tool_id": str(version.tool_id),
+                            "version_id": str(version.id),
+                            "draft_head_id": str(draft_head.id),
+                        },
+                    )
+                await require_active_draft_lock(
+                    locks=self._locks,
+                    tool_id=version.tool_id,
+                    draft_head_id=draft_head.id,
+                    actor=actor,
+                    now=now,
                 )
 
         result = await self._execute.handle(

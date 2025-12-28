@@ -9,6 +9,7 @@ import json
 from uuid import UUID
 
 from skriptoteket.application.scripting.commands import ExecuteToolVersionCommand
+from skriptoteket.application.scripting.draft_lock_checks import require_active_draft_lock
 from skriptoteket.application.scripting.interactive_sandbox import (
     StartSandboxActionCommand,
     StartSandboxActionResult,
@@ -16,8 +17,10 @@ from skriptoteket.application.scripting.interactive_sandbox import (
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
-from skriptoteket.domain.scripting.models import RunContext
+from skriptoteket.domain.scripting.models import RunContext, VersionState
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
+from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.draft_locks import DraftLockRepositoryProtocol
 from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
     StartSandboxActionHandlerProtocol,
@@ -49,6 +52,8 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
         sessions: ToolSessionRepositoryProtocol,
         execute: ExecuteToolVersionHandlerProtocol,
         session_files: SessionFileStorageProtocol,
+        locks: DraftLockRepositoryProtocol,
+        clock: ClockProtocol,
     ) -> None:
         self._uow = uow
         self._versions = versions
@@ -56,6 +61,8 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
         self._sessions = sessions
         self._execute = execute
         self._session_files = session_files
+        self._locks = locks
+        self._clock = clock
 
     async def handle(
         self,
@@ -66,6 +73,7 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
         require_at_least_role(user=actor, role=Role.CONTRIBUTOR)
 
         context = _sandbox_context(command.version_id)
+        now = self._clock.now()
 
         # Validate version and permissions
         async with self._uow:
@@ -103,6 +111,31 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
                             "version_id": str(version.id),
                         },
                     )
+
+            draft_versions = await self._versions.list_for_tool(
+                tool_id=version.tool_id,
+                states={VersionState.DRAFT},
+                limit=1,
+            )
+            if draft_versions:
+                draft_head = draft_versions[0]
+                if version.id != draft_head.id:
+                    raise DomainError(
+                        code=ErrorCode.CONFLICT,
+                        message="Sandbox actions require the current draft head",
+                        details={
+                            "tool_id": str(version.tool_id),
+                            "version_id": str(version.id),
+                            "draft_head_id": str(draft_head.id),
+                        },
+                    )
+                await require_active_draft_lock(
+                    locks=self._locks,
+                    tool_id=version.tool_id,
+                    draft_head_id=draft_head.id,
+                    actor=actor,
+                    now=now,
+                )
 
             # Get session and validate state_rev
             session = await self._sessions.get(

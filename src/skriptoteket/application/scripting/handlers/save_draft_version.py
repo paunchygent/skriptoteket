@@ -1,15 +1,21 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 from skriptoteket.application.scripting.commands import (
     SaveDraftVersionCommand,
     SaveDraftVersionResult,
 )
+from skriptoteket.application.scripting.draft_lock_checks import require_active_draft_lock
+from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
+from skriptoteket.domain.scripting.draft_locks import DraftLock
 from skriptoteket.domain.scripting.models import VersionState, save_draft_snapshot
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.draft_locks import DraftLockRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.scripting import (
     SaveDraftVersionHandlerProtocol,
@@ -22,15 +28,19 @@ class SaveDraftVersionHandler(SaveDraftVersionHandlerProtocol):
     def __init__(
         self,
         *,
+        settings: Settings,
         uow: UnitOfWorkProtocol,
         versions: ToolVersionRepositoryProtocol,
         maintainers: ToolMaintainerRepositoryProtocol,
+        locks: DraftLockRepositoryProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> None:
+        self._settings = settings
         self._uow = uow
         self._versions = versions
         self._maintainers = maintainers
+        self._locks = locks
         self._clock = clock
         self._id_generator = id_generator
 
@@ -105,6 +115,14 @@ class SaveDraftVersionHandler(SaveDraftVersionHandlerProtocol):
                     },
                 )
 
+            lock = await require_active_draft_lock(
+                locks=self._locks,
+                tool_id=previous.tool_id,
+                draft_head_id=draft_head.id,
+                actor=actor,
+                now=now,
+            )
+
             new_version_number = await self._versions.get_next_version_number(
                 tool_id=previous.tool_id
             )
@@ -137,5 +155,16 @@ class SaveDraftVersionHandler(SaveDraftVersionHandlerProtocol):
                 now=now,
             )
             created = await self._versions.create(version=saved)
+
+            await self._locks.upsert(
+                lock=DraftLock(
+                    tool_id=previous.tool_id,
+                    draft_head_id=created.id,
+                    locked_by_user_id=lock.locked_by_user_id,
+                    locked_at=now,
+                    expires_at=now + timedelta(seconds=self._settings.DRAFT_LOCK_TTL_SECONDS),
+                    forced_by_user_id=lock.forced_by_user_id,
+                )
+            )
 
         return SaveDraftVersionResult(version=created)

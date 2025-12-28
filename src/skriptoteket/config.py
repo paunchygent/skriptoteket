@@ -28,6 +28,7 @@ class Settings(BaseSettings):
 
     SESSION_COOKIE_NAME: str = "skriptoteket_session"
     SESSION_TTL_SECONDS: int = 60 * 60 * 24 * 7  # 7 days
+    DRAFT_LOCK_TTL_SECONDS: int = 60 * 10  # 10 minutes (ADR-0046)
 
     COOKIE_SECURE: bool = False
     COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"

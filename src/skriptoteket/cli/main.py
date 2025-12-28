@@ -37,6 +37,9 @@ from skriptoteket.infrastructure.id_generator import UUID4Generator
 from skriptoteket.infrastructure.repositories.category_repository import (
     PostgreSQLCategoryRepository,
 )
+from skriptoteket.infrastructure.repositories.draft_lock_repository import (
+    PostgreSQLDraftLockRepository,
+)
 from skriptoteket.infrastructure.repositories.profession_repository import (
     PostgreSQLProfessionRepository,
 )
@@ -384,12 +387,14 @@ async def _seed_script_bank_async(
             versions = PostgreSQLToolVersionRepository(session)
             professions = PostgreSQLProfessionRepository(session)
             categories = PostgreSQLCategoryRepository(session)
+            locks = PostgreSQLDraftLockRepository(session)
 
             create_draft_version = CreateDraftVersionHandler(
                 uow=uow,
                 tools=tools,
                 maintainers=maintainers,
                 versions=versions,
+                locks=locks,
                 clock=clock,
                 id_generator=id_generator,
             )

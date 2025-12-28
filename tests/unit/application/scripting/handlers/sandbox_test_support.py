@@ -15,7 +15,7 @@ from skriptoteket.domain.scripting.models import (
     compute_content_hash,
 )
 from skriptoteket.domain.scripting.tool_sessions import ToolSession
-from skriptoteket.domain.scripting.ui.contract_v2 import UiFormAction, UiPayloadV2
+from skriptoteket.domain.scripting.ui.contract_v2 import UiActionField, UiFormAction, UiPayloadV2
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 
@@ -43,6 +43,7 @@ def make_tool_version(
     tool_id: UUID | None = None,
     now: datetime,
     created_by_user_id: UUID,
+    settings_schema: list[UiActionField] | None = None,
     state: VersionState = VersionState.DRAFT,
     version_number: int = 1,
 ) -> ToolVersion:
@@ -57,6 +58,7 @@ def make_tool_version(
         source_code=source_code,
         entrypoint=entrypoint,
         content_hash=compute_content_hash(entrypoint=entrypoint, source_code=source_code),
+        settings_schema=settings_schema,
         derived_from_version_id=None,
         created_by_user_id=created_by_user_id,
         created_at=now,

@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from dishka import Provider, Scope, provide
 
+from skriptoteket.application.scripting.handlers.acquire_draft_lock import (
+    AcquireDraftLockHandler,
+)
 from skriptoteket.application.scripting.handlers.clear_tool_session_state import (
     ClearToolSessionStateHandler,
 )
@@ -27,6 +30,9 @@ from skriptoteket.application.scripting.handlers.list_run_artifacts import (
     ListArtifactsHandler as ListInteractiveArtifactsHandler,
 )
 from skriptoteket.application.scripting.handlers.publish_version import PublishVersionHandler
+from skriptoteket.application.scripting.handlers.release_draft_lock import (
+    ReleaseDraftLockHandler,
+)
 from skriptoteket.application.scripting.handlers.request_changes import RequestChangesHandler
 from skriptoteket.application.scripting.handlers.rollback_version import RollbackVersionHandler
 from skriptoteket.application.scripting.handlers.run_active_tool import RunActiveToolHandler
@@ -43,11 +49,17 @@ from skriptoteket.application.scripting.handlers.update_tool_session_state impor
 from skriptoteket.application.scripting.handlers.update_tool_settings import (
     UpdateToolSettingsHandler,
 )
+from skriptoteket.config import Settings
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol, ToolRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import (
     CuratedAppExecutorProtocol,
     CuratedAppRegistryProtocol,
+)
+from skriptoteket.protocols.draft_locks import (
+    AcquireDraftLockHandlerProtocol,
+    DraftLockRepositoryProtocol,
+    ReleaseDraftLockHandlerProtocol,
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.interactive_tools import (
@@ -275,6 +287,7 @@ class ScriptingProvider(Provider):
         tools: ToolRepositoryProtocol,
         maintainers: ToolMaintainerRepositoryProtocol,
         versions: ToolVersionRepositoryProtocol,
+        locks: DraftLockRepositoryProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> CreateDraftVersionHandlerProtocol:
@@ -283,6 +296,7 @@ class ScriptingProvider(Provider):
             tools=tools,
             maintainers=maintainers,
             versions=versions,
+            locks=locks,
             clock=clock,
             id_generator=id_generator,
         )
@@ -290,18 +304,48 @@ class ScriptingProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def save_draft_version_handler(
         self,
+        settings: Settings,
         uow: UnitOfWorkProtocol,
         versions: ToolVersionRepositoryProtocol,
         maintainers: ToolMaintainerRepositoryProtocol,
+        locks: DraftLockRepositoryProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> SaveDraftVersionHandlerProtocol:
         return SaveDraftVersionHandler(
+            settings=settings,
             uow=uow,
             versions=versions,
             maintainers=maintainers,
+            locks=locks,
             clock=clock,
             id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def acquire_draft_lock_handler(
+        self,
+        settings: Settings,
+        uow: UnitOfWorkProtocol,
+        locks: DraftLockRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> AcquireDraftLockHandlerProtocol:
+        return AcquireDraftLockHandler(
+            settings=settings,
+            uow=uow,
+            locks=locks,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def release_draft_lock_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        locks: DraftLockRepositoryProtocol,
+    ) -> ReleaseDraftLockHandlerProtocol:
+        return ReleaseDraftLockHandler(
+            uow=uow,
+            locks=locks,
         )
 
     @provide(scope=Scope.REQUEST)
@@ -374,6 +418,8 @@ class ScriptingProvider(Provider):
         uow: UnitOfWorkProtocol,
         versions: ToolVersionRepositoryProtocol,
         maintainers: ToolMaintainerRepositoryProtocol,
+        locks: DraftLockRepositoryProtocol,
+        clock: ClockProtocol,
         sessions: ToolSessionRepositoryProtocol,
         id_generator: IdGeneratorProtocol,
         execute: ExecuteToolVersionHandlerProtocol,
@@ -383,6 +429,8 @@ class ScriptingProvider(Provider):
             uow=uow,
             versions=versions,
             maintainers=maintainers,
+            locks=locks,
+            clock=clock,
             sessions=sessions,
             id_generator=id_generator,
             execute=execute,
@@ -395,6 +443,8 @@ class ScriptingProvider(Provider):
         uow: UnitOfWorkProtocol,
         versions: ToolVersionRepositoryProtocol,
         maintainers: ToolMaintainerRepositoryProtocol,
+        locks: DraftLockRepositoryProtocol,
+        clock: ClockProtocol,
         sessions: ToolSessionRepositoryProtocol,
         execute: ExecuteToolVersionHandlerProtocol,
         session_files: SessionFileStorageProtocol,
@@ -403,6 +453,8 @@ class ScriptingProvider(Provider):
             uow=uow,
             versions=versions,
             maintainers=maintainers,
+            locks=locks,
+            clock=clock,
             sessions=sessions,
             execute=execute,
             session_files=session_files,

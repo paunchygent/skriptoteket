@@ -4,12 +4,12 @@ Skriptoteket-kompatibel HTML-till-PDF-konverterare (stöder flera filer).
 Entrypoint: run_tool(input_dir: str, output_dir: str) -> dict
 
 - Tar emot en uppladdad HTML-fil (.html/.htm)
-- Om flera filer laddas upp hittar skriptet HTML-filen via SKRIPTOTEKET_INPUT_MANIFEST
+- Om flera filer laddas upp hittar skriptet HTML-filer via SKRIPTOTEKET_INPUT_MANIFEST
 - Stöder externa resurser som laddas upp tillsammans med HTML-filen:
   - Relativa CSS-länkar som <link rel="stylesheet" href="style.css">
   - Relativa bildlänkar som <img src="image.png">
-- genom att sätta base_url till /work/input/
-- Renderar till PDF (WeasyPrint i första hand, pypandoc som reserv)
+  - genom att injicera <base href="file:///.../"> i HTML
+- Renderar till PDF med pdf_helper.save_as_pdf
 - Skriver PDF-artefakten till output_dir
 - Returnerar Skriptoteket Contract v2-payload (outputs/next_actions/state)
 
@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import json
 import os
-from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import TypedDict
@@ -98,49 +97,32 @@ def _select_html_sources(*, input_files: list[ManifestFile]) -> list[Path]:
     return sorted(html_files, key=lambda path: path.name.lower())
 
 
-@contextmanager
-def _chdir(path: Path):
-    previous = Path.cwd()
-    os.chdir(path)
+def _with_base_href(html: str, *, base_href: str) -> str:
+    lower = html.lower()
+    if "<base" in lower:
+        return html
+
+    insert = f'<base href="{base_href}" />'
+
+    head_index = lower.find("<head")
+    if head_index == -1:
+        return insert + "\n" + html
+
+    head_end = lower.find(">", head_index)
+    if head_end == -1:
+        return insert + "\n" + html
+
+    return html[: head_end + 1] + "\n" + insert + html[head_end + 1 :]
+
+
+def _save_pdf(*, html_content: str, output_dir: Path, filename: str) -> Path:
     try:
-        yield
-    finally:
-        os.chdir(previous)
+        from pdf_helper import save_as_pdf  # type: ignore
+    except Exception as exc:
+        raise RuntimeError("pdf_helper is not available in the runtime.") from exc
 
-
-def _try_weasyprint(*, source: Path, pdf_path: Path) -> str | None:
-    try:
-        from weasyprint import HTML  # type: ignore
-    except Exception:
-        return None
-
-    HTML(filename=str(source), base_url=str(source.parent.resolve())).write_pdf(str(pdf_path))
-    return "weasyprint"
-
-
-def _try_pypandoc(*, source: Path, pdf_path: Path) -> str | None:
-    try:
-        import pypandoc  # type: ignore
-    except Exception:
-        return None
-
-    with _chdir(source.parent):
-        try:
-            pypandoc.convert_file(
-                str(source),
-                to="pdf",
-                outputfile=str(pdf_path),
-                extra_args=["--pdf-engine=weasyprint", f"--resource-path={source.parent}"],
-            )
-            return "pandoc(pypandoc, weasyprint-engine)"
-        except Exception:
-            pypandoc.convert_file(
-                str(source),
-                to="pdf",
-                outputfile=str(pdf_path),
-                extra_args=[f"--resource-path={source.parent}"],
-            )
-            return "pandoc(pypandoc)"
+    pdf_path = save_as_pdf(html_content, str(output_dir), filename)
+    return Path(pdf_path)
 
 
 def run_tool(input_dir: str, output_dir: str) -> dict[str, object]:
@@ -168,32 +150,40 @@ def run_tool(input_dir: str, output_dir: str) -> dict[str, object]:
             pdf_name = f"{source.stem}_{counter}.pdf"
             counter += 1
         used_pdf_names.add(pdf_name)
-        pdf_path = output / pdf_name
-
-        backend: str | None = None
-        errors: list[str] = []
 
         try:
-            backend = _try_weasyprint(source=source, pdf_path=pdf_path)
-        except Exception as exc:  # noqa: BLE001
-            errors.append(f"WeasyPrint misslyckades: {exc}")
-
-        if backend is None:
-            try:
-                backend = _try_pypandoc(source=source, pdf_path=pdf_path)
-            except Exception as exc:  # noqa: BLE001
-                errors.append(f"pypandoc/Pandoc misslyckades: {exc}")
-
-        if backend is None:
-            detail = " | ".join(errors) if errors else "Okänt fel."
+            html_content = source.read_text(encoding="utf-8", errors="replace")
+        except OSError as exc:
             pdf_rows.append(
                 {
                     "source": source.name,
                     "pdf": pdf_name,
-                    "backend": "",
+                    "backend": "pdf_helper",
                     "bytes": 0,
                     "status": "error",
-                    "message": detail,
+                    "message": f"Kunde inte läsa HTML: {exc}",
+                }
+            )
+            continue
+
+        base_href = source.parent.resolve().as_uri() + "/"
+        html_with_base = _with_base_href(html_content, base_href=base_href)
+
+        try:
+            pdf_path = _save_pdf(
+                html_content=html_with_base,
+                output_dir=output,
+                filename=pdf_name,
+            )
+        except Exception as exc:  # noqa: BLE001
+            pdf_rows.append(
+                {
+                    "source": source.name,
+                    "pdf": pdf_name,
+                    "backend": "pdf_helper",
+                    "bytes": 0,
+                    "status": "error",
+                    "message": f"Konverteringen misslyckades: {exc}",
                 }
             )
             continue
@@ -203,7 +193,7 @@ def run_tool(input_dir: str, output_dir: str) -> dict[str, object]:
                 {
                     "source": source.name,
                     "pdf": pdf_name,
-                    "backend": backend,
+                    "backend": "pdf_helper",
                     "bytes": 0,
                     "status": "error",
                     "message": "Konverteringen kördes, men ingen PDF skapades.",
@@ -214,8 +204,8 @@ def run_tool(input_dir: str, output_dir: str) -> dict[str, object]:
         pdf_rows.append(
             {
                 "source": source.name,
-                "pdf": pdf_name,
-                "backend": backend,
+                "pdf": pdf_path.name,
+                "backend": "pdf_helper",
                 "bytes": pdf_path.stat().st_size,
                 "status": "ok",
                 "message": "",

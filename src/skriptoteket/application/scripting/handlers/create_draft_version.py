@@ -4,13 +4,15 @@ from skriptoteket.application.scripting.commands import (
     CreateDraftVersionCommand,
     CreateDraftVersionResult,
 )
+from skriptoteket.application.scripting.draft_lock_checks import require_active_draft_lock
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
-from skriptoteket.domain.scripting.models import create_draft_version
+from skriptoteket.domain.scripting.models import VersionState, create_draft_version
 from skriptoteket.domain.scripting.policies import require_can_view_version
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol, ToolRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.draft_locks import DraftLockRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.scripting import (
     CreateDraftVersionHandlerProtocol,
@@ -27,6 +29,7 @@ class CreateDraftVersionHandler(CreateDraftVersionHandlerProtocol):
         tools: ToolRepositoryProtocol,
         maintainers: ToolMaintainerRepositoryProtocol,
         versions: ToolVersionRepositoryProtocol,
+        locks: DraftLockRepositoryProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> None:
@@ -34,6 +37,7 @@ class CreateDraftVersionHandler(CreateDraftVersionHandlerProtocol):
         self._tools = tools
         self._maintainers = maintainers
         self._versions = versions
+        self._locks = locks
         self._clock = clock
         self._id_generator = id_generator
 
@@ -89,6 +93,21 @@ class CreateDraftVersionHandler(CreateDraftVersionHandlerProtocol):
                     )
             else:
                 derived_from = None
+
+            draft_versions = await self._versions.list_for_tool(
+                tool_id=tool.id,
+                states={VersionState.DRAFT},
+                limit=1,
+            )
+            if draft_versions:
+                draft_head = draft_versions[0]
+                await require_active_draft_lock(
+                    locks=self._locks,
+                    tool_id=tool.id,
+                    draft_head_id=draft_head.id,
+                    actor=actor,
+                    now=now,
+                )
 
             version_number = await self._versions.get_next_version_number(tool_id=tool.id)
             effective_settings_schema = (

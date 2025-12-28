@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
-from unittest.mock import AsyncMock
+from datetime import datetime, timedelta
+from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import pytest
@@ -21,7 +21,10 @@ from skriptoteket.application.scripting.interactive_sandbox import (
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.scripting.draft_locks import DraftLock
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
+from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.draft_locks import DraftLockRepositoryProtocol
 from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
     ToolVersionRepositoryProtocol,
@@ -48,11 +51,25 @@ def session_files() -> AsyncMock:
     return storage
 
 
+@pytest.fixture
+def locks() -> AsyncMock:
+    return AsyncMock(spec=DraftLockRepositoryProtocol)
+
+
+@pytest.fixture
+def clock(now: datetime) -> Mock:
+    clock = Mock(spec=ClockProtocol)
+    clock.now.return_value = now
+    return clock
+
+
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_start_sandbox_action_success_returns_run_id_and_state_rev(
     now: datetime,
     session_files: AsyncMock,
+    locks: AsyncMock,
+    clock: Mock,
 ) -> None:
     """Full success flow: session exists, state_rev matches, execute, update state."""
     actor = make_user(role=Role.ADMIN)
@@ -69,6 +86,7 @@ async def test_start_sandbox_action_success_returns_run_id_and_state_rev(
     versions.get_by_id.return_value = make_tool_version(
         version_id=version_id, tool_id=tool_id, now=now, created_by_user_id=actor.id
     )
+    versions.list_for_tool.return_value = []
     sessions.get.return_value = make_tool_session(
         tool_id=tool_id,
         user_id=actor.id,
@@ -101,6 +119,8 @@ async def test_start_sandbox_action_success_returns_run_id_and_state_rev(
         uow=uow,
         versions=versions,
         maintainers=maintainers,
+        locks=locks,
+        clock=clock,
         sessions=sessions,
         execute=execute,
         session_files=session_files,
@@ -128,6 +148,8 @@ async def test_start_sandbox_action_success_returns_run_id_and_state_rev(
 async def test_start_sandbox_action_builds_correct_payload_structure(
     now: datetime,
     session_files: AsyncMock,
+    locks: AsyncMock,
+    clock: Mock,
 ) -> None:
     """Verify action.json payload has {action_id, input, state}."""
     outer_actor = make_user(role=Role.ADMIN)
@@ -147,6 +169,7 @@ async def test_start_sandbox_action_builds_correct_payload_structure(
         now=now,
         created_by_user_id=outer_actor.id,
     )
+    versions.list_for_tool.return_value = []
     sessions.get.return_value = make_tool_session(
         tool_id=tool_id,
         user_id=outer_actor.id,
@@ -189,6 +212,8 @@ async def test_start_sandbox_action_builds_correct_payload_structure(
         uow=uow,
         versions=versions,
         maintainers=maintainers,
+        locks=locks,
+        clock=clock,
         sessions=sessions,
         execute=execute,
         session_files=session_files,
@@ -224,6 +249,8 @@ async def test_start_sandbox_action_builds_correct_payload_structure(
 async def test_start_sandbox_action_when_session_missing_raises_not_found(
     now: datetime,
     session_files: AsyncMock,
+    locks: AsyncMock,
+    clock: Mock,
 ) -> None:
     """sessions.get() returns None → NOT_FOUND."""
     actor = make_user(role=Role.ADMIN)
@@ -239,12 +266,15 @@ async def test_start_sandbox_action_when_session_missing_raises_not_found(
     versions.get_by_id.return_value = make_tool_version(
         version_id=version_id, tool_id=tool_id, now=now, created_by_user_id=actor.id
     )
+    versions.list_for_tool.return_value = []
     sessions.get.return_value = None
 
     handler = StartSandboxActionHandler(
         uow=uow,
         versions=versions,
         maintainers=maintainers,
+        locks=locks,
+        clock=clock,
         sessions=sessions,
         execute=execute,
         session_files=session_files,
@@ -271,6 +301,8 @@ async def test_start_sandbox_action_when_session_missing_raises_not_found(
 async def test_start_sandbox_action_when_state_rev_mismatch_raises_conflict(
     now: datetime,
     session_files: AsyncMock,
+    locks: AsyncMock,
+    clock: Mock,
 ) -> None:
     """expected_state_rev mismatch → CONFLICT, execute not called."""
     actor = make_user(role=Role.ADMIN)
@@ -286,6 +318,7 @@ async def test_start_sandbox_action_when_state_rev_mismatch_raises_conflict(
     versions.get_by_id.return_value = make_tool_version(
         version_id=version_id, tool_id=tool_id, now=now, created_by_user_id=actor.id
     )
+    versions.list_for_tool.return_value = []
     sessions.get.return_value = make_tool_session(
         tool_id=tool_id,
         user_id=actor.id,
@@ -298,6 +331,8 @@ async def test_start_sandbox_action_when_state_rev_mismatch_raises_conflict(
         uow=uow,
         versions=versions,
         maintainers=maintainers,
+        locks=locks,
+        clock=clock,
         sessions=sessions,
         execute=execute,
         session_files=session_files,
@@ -326,6 +361,8 @@ async def test_start_sandbox_action_when_state_rev_mismatch_raises_conflict(
 async def test_start_sandbox_action_when_version_not_found_raises_not_found(
     now: datetime,
     session_files: AsyncMock,
+    locks: AsyncMock,
+    clock: Mock,
 ) -> None:
     """versions.get_by_id() returns None → NOT_FOUND."""
     actor = make_user(role=Role.ADMIN)
@@ -344,6 +381,8 @@ async def test_start_sandbox_action_when_version_not_found_raises_not_found(
         uow=uow,
         versions=versions,
         maintainers=maintainers,
+        locks=locks,
+        clock=clock,
         sessions=sessions,
         execute=execute,
         session_files=session_files,
@@ -370,6 +409,8 @@ async def test_start_sandbox_action_when_version_not_found_raises_not_found(
 async def test_start_sandbox_action_when_version_tool_id_mismatch_raises_conflict(
     now: datetime,
     session_files: AsyncMock,
+    locks: AsyncMock,
+    clock: Mock,
 ) -> None:
     """version.tool_id != command.tool_id → CONFLICT."""
     actor = make_user(role=Role.ADMIN)
@@ -389,11 +430,14 @@ async def test_start_sandbox_action_when_version_tool_id_mismatch_raises_conflic
         now=now,
         created_by_user_id=actor.id,
     )
+    versions.list_for_tool.return_value = []
 
     handler = StartSandboxActionHandler(
         uow=uow,
         versions=versions,
         maintainers=maintainers,
+        locks=locks,
+        clock=clock,
         sessions=sessions,
         execute=execute,
         session_files=session_files,
@@ -425,6 +469,8 @@ async def test_start_sandbox_action_when_version_tool_id_mismatch_raises_conflic
 async def test_start_sandbox_action_contributor_not_maintainer_raises_forbidden(
     now: datetime,
     session_files: AsyncMock,
+    locks: AsyncMock,
+    clock: Mock,
 ) -> None:
     """CONTRIBUTOR + is_maintainer=False → FORBIDDEN."""
     actor = make_user(role=Role.CONTRIBUTOR)
@@ -440,12 +486,15 @@ async def test_start_sandbox_action_contributor_not_maintainer_raises_forbidden(
     versions.get_by_id.return_value = make_tool_version(
         version_id=version_id, tool_id=tool_id, now=now, created_by_user_id=actor.id
     )
+    versions.list_for_tool.return_value = []
     maintainers.is_maintainer.return_value = False
 
     handler = StartSandboxActionHandler(
         uow=uow,
         versions=versions,
         maintainers=maintainers,
+        locks=locks,
+        clock=clock,
         sessions=sessions,
         execute=execute,
         session_files=session_files,
@@ -472,6 +521,8 @@ async def test_start_sandbox_action_contributor_not_maintainer_raises_forbidden(
 async def test_start_sandbox_action_contributor_other_user_draft_raises_forbidden(
     now: datetime,
     session_files: AsyncMock,
+    locks: AsyncMock,
+    clock: Mock,
 ) -> None:
     """CONTRIBUTOR + own draft=False → FORBIDDEN."""
     actor = make_user(role=Role.CONTRIBUTOR)
@@ -491,12 +542,15 @@ async def test_start_sandbox_action_contributor_other_user_draft_raises_forbidde
         now=now,
         created_by_user_id=other_user_id,
     )
+    versions.list_for_tool.return_value = []
     maintainers.is_maintainer.return_value = True
 
     handler = StartSandboxActionHandler(
         uow=uow,
         versions=versions,
         maintainers=maintainers,
+        locks=locks,
+        clock=clock,
         sessions=sessions,
         execute=execute,
         session_files=session_files,
@@ -523,6 +577,8 @@ async def test_start_sandbox_action_contributor_other_user_draft_raises_forbidde
 async def test_start_sandbox_action_admin_bypasses_maintainer_check(
     now: datetime,
     session_files: AsyncMock,
+    locks: AsyncMock,
+    clock: Mock,
 ) -> None:
     """ADMIN can run any sandbox action without maintainer check."""
     actor = make_user(role=Role.ADMIN)
@@ -543,6 +599,7 @@ async def test_start_sandbox_action_admin_bypasses_maintainer_check(
         now=now,
         created_by_user_id=other_user_id,
     )
+    versions.list_for_tool.return_value = []
     sessions.get.return_value = make_tool_session(
         tool_id=tool_id,
         user_id=actor.id,
@@ -571,6 +628,8 @@ async def test_start_sandbox_action_admin_bypasses_maintainer_check(
         uow=uow,
         versions=versions,
         maintainers=maintainers,
+        locks=locks,
+        clock=clock,
         sessions=sessions,
         execute=execute,
         session_files=session_files,
@@ -596,6 +655,8 @@ async def test_start_sandbox_action_admin_bypasses_maintainer_check(
 async def test_start_sandbox_action_user_role_raises_insufficient_permissions(
     now: datetime,
     session_files: AsyncMock,
+    locks: AsyncMock,
+    clock: Mock,
 ) -> None:
     """USER role → raised before any work."""
     actor = make_user(role=Role.USER)
@@ -612,6 +673,8 @@ async def test_start_sandbox_action_user_role_raises_insufficient_permissions(
         uow=uow,
         versions=versions,
         maintainers=maintainers,
+        locks=locks,
+        clock=clock,
         sessions=sessions,
         execute=execute,
         session_files=session_files,
@@ -638,6 +701,8 @@ async def test_start_sandbox_action_user_role_raises_insufficient_permissions(
 async def test_start_sandbox_action_uses_sandbox_context_format(
     now: datetime,
     session_files: AsyncMock,
+    locks: AsyncMock,
+    clock: Mock,
 ) -> None:
     """Verify context is sandbox:<version_id>."""
     actor = make_user(role=Role.ADMIN)
@@ -654,6 +719,7 @@ async def test_start_sandbox_action_uses_sandbox_context_format(
     versions.get_by_id.return_value = make_tool_version(
         version_id=version_id, tool_id=tool_id, now=now, created_by_user_id=actor.id
     )
+    versions.list_for_tool.return_value = []
     sessions.get.return_value = make_tool_session(
         tool_id=tool_id,
         user_id=actor.id,
@@ -682,6 +748,8 @@ async def test_start_sandbox_action_uses_sandbox_context_format(
         uow=uow,
         versions=versions,
         maintainers=maintainers,
+        locks=locks,
+        clock=clock,
         sessions=sessions,
         execute=execute,
         session_files=session_files,
@@ -700,3 +768,189 @@ async def test_start_sandbox_action_uses_sandbox_context_format(
 
     call_kwargs = sessions.get.call_args.kwargs
     assert call_kwargs["context"] == f"sandbox:{version_id}"
+
+
+# -----------------------------------------------------------------------------
+# Draft Lock Enforcement Tests (ST-14-07)
+# -----------------------------------------------------------------------------
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_start_sandbox_action_requires_active_draft_lock(
+    now: datetime,
+    session_files: AsyncMock,
+    locks: AsyncMock,
+    clock: Mock,
+) -> None:
+    actor = make_user(role=Role.ADMIN)
+    tool_id = uuid4()
+    version_id = uuid4()
+
+    uow = FakeUow()
+    versions = AsyncMock(spec=ToolVersionRepositoryProtocol)
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
+    sessions = AsyncMock(spec=ToolSessionRepositoryProtocol)
+    execute = AsyncMock(spec=ExecuteToolVersionHandlerProtocol)
+
+    draft = make_tool_version(
+        version_id=version_id,
+        tool_id=tool_id,
+        now=now,
+        created_by_user_id=actor.id,
+    )
+    versions.get_by_id.return_value = draft
+    versions.list_for_tool.return_value = [draft]
+    locks.get_for_tool.return_value = None
+
+    handler = StartSandboxActionHandler(
+        uow=uow,
+        versions=versions,
+        maintainers=maintainers,
+        locks=locks,
+        clock=clock,
+        sessions=sessions,
+        execute=execute,
+        session_files=session_files,
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(
+            actor=actor,
+            command=StartSandboxActionCommand(
+                tool_id=tool_id,
+                version_id=version_id,
+                action_id="next_step",
+                input={},
+                expected_state_rev=0,
+            ),
+        )
+
+    assert exc_info.value.code is ErrorCode.CONFLICT
+    execute.handle.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_start_sandbox_action_rejects_lock_owned_by_another_user(
+    now: datetime,
+    session_files: AsyncMock,
+    locks: AsyncMock,
+    clock: Mock,
+) -> None:
+    actor = make_user(role=Role.ADMIN)
+    other_user_id = uuid4()
+    tool_id = uuid4()
+    version_id = uuid4()
+
+    uow = FakeUow()
+    versions = AsyncMock(spec=ToolVersionRepositoryProtocol)
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
+    sessions = AsyncMock(spec=ToolSessionRepositoryProtocol)
+    execute = AsyncMock(spec=ExecuteToolVersionHandlerProtocol)
+
+    draft = make_tool_version(
+        version_id=version_id,
+        tool_id=tool_id,
+        now=now,
+        created_by_user_id=actor.id,
+    )
+    versions.get_by_id.return_value = draft
+    versions.list_for_tool.return_value = [draft]
+    locks.get_for_tool.return_value = DraftLock(
+        tool_id=tool_id,
+        draft_head_id=version_id,
+        locked_by_user_id=other_user_id,
+        locked_at=now,
+        expires_at=now + timedelta(minutes=5),
+        forced_by_user_id=None,
+    )
+
+    handler = StartSandboxActionHandler(
+        uow=uow,
+        versions=versions,
+        maintainers=maintainers,
+        locks=locks,
+        clock=clock,
+        sessions=sessions,
+        execute=execute,
+        session_files=session_files,
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(
+            actor=actor,
+            command=StartSandboxActionCommand(
+                tool_id=tool_id,
+                version_id=version_id,
+                action_id="next_step",
+                input={},
+                expected_state_rev=0,
+            ),
+        )
+
+    assert exc_info.value.code is ErrorCode.FORBIDDEN
+    execute.handle.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_start_sandbox_action_rejects_non_head_draft_version(
+    now: datetime,
+    session_files: AsyncMock,
+    locks: AsyncMock,
+    clock: Mock,
+) -> None:
+    actor = make_user(role=Role.ADMIN)
+    tool_id = uuid4()
+    version_id = uuid4()
+    head_id = uuid4()
+
+    uow = FakeUow()
+    versions = AsyncMock(spec=ToolVersionRepositoryProtocol)
+    maintainers = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
+    sessions = AsyncMock(spec=ToolSessionRepositoryProtocol)
+    execute = AsyncMock(spec=ExecuteToolVersionHandlerProtocol)
+
+    versions.get_by_id.return_value = make_tool_version(
+        version_id=version_id,
+        tool_id=tool_id,
+        now=now,
+        created_by_user_id=actor.id,
+    )
+    versions.list_for_tool.return_value = [
+        make_tool_version(
+            version_id=head_id,
+            tool_id=tool_id,
+            now=now,
+            created_by_user_id=actor.id,
+            version_number=2,
+        )
+    ]
+
+    handler = StartSandboxActionHandler(
+        uow=uow,
+        versions=versions,
+        maintainers=maintainers,
+        locks=locks,
+        clock=clock,
+        sessions=sessions,
+        execute=execute,
+        session_files=session_files,
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(
+            actor=actor,
+            command=StartSandboxActionCommand(
+                tool_id=tool_id,
+                version_id=version_id,
+                action_id="next_step",
+                input={},
+                expected_state_rev=0,
+            ),
+        )
+
+    assert exc_info.value.code is ErrorCode.CONFLICT
+    locks.get_for_tool.assert_not_called()
+    execute.handle.assert_not_called()

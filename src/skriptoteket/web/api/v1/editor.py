@@ -29,11 +29,16 @@ from skriptoteket.application.scripting.commands import (
     SaveDraftVersionCommand,
     SubmitForReviewCommand,
 )
+from skriptoteket.application.scripting.draft_locks import (
+    AcquireDraftLockCommand,
+    ReleaseDraftLockCommand,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.catalog.models import Tool
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
+from skriptoteket.domain.scripting.draft_locks import DraftLock
 from skriptoteket.domain.scripting.models import RunStatus, ToolRun, ToolVersion, VersionState
 from skriptoteket.domain.scripting.tool_inputs import ToolInputField
 from skriptoteket.domain.scripting.ui.contract_v2 import UiActionField
@@ -48,6 +53,12 @@ from skriptoteket.protocols.catalog import (
     UpdateToolMetadataHandlerProtocol,
     UpdateToolSlugHandlerProtocol,
     UpdateToolTaxonomyHandlerProtocol,
+)
+from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.draft_locks import (
+    AcquireDraftLockHandlerProtocol,
+    DraftLockRepositoryProtocol,
+    ReleaseDraftLockHandlerProtocol,
 )
 from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.protocols.scripting import (
@@ -103,12 +114,24 @@ class EditorVersionSummary(BaseModel):
     created_at: datetime
 
 
+class DraftLockResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    draft_head_id: UUID
+    locked_by_user_id: UUID
+    expires_at: datetime
+    is_owner: bool
+
+
 class EditorBootResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     tool: EditorToolSummary
     versions: list[EditorVersionSummary]
     selected_version: EditorVersionSummary | None
+    draft_head_id: UUID | None
+    draft_lock: DraftLockResponse | None
     save_mode: EditorSaveMode
     derived_from_version_id: UUID | None
     entrypoint: str
@@ -140,6 +163,19 @@ class SaveDraftVersionRequest(BaseModel):
     usage_instructions: str | None = None
     change_summary: str | None = None
     expected_parent_version_id: UUID
+
+
+class DraftLockRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    draft_head_id: UUID
+    force: bool = False
+
+
+class DraftLockReleaseResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
 
 
 class SaveResult(BaseModel):
@@ -315,6 +351,35 @@ def _to_version_summary(version: ToolVersion) -> EditorVersionSummary:
     )
 
 
+def _resolve_draft_head(versions: list[ToolVersion]) -> ToolVersion | None:
+    for version in versions:
+        if version.state is VersionState.DRAFT:
+            return version
+    return None
+
+
+def _to_draft_lock_response(
+    *,
+    lock: DraftLock | None,
+    draft_head_id: UUID | None,
+    actor: User,
+    now: datetime,
+) -> DraftLockResponse | None:
+    if lock is None or draft_head_id is None:
+        return None
+    if lock.expires_at <= now:
+        return None
+    if lock.draft_head_id != draft_head_id:
+        return None
+    return DraftLockResponse(
+        tool_id=lock.tool_id,
+        draft_head_id=lock.draft_head_id,
+        locked_by_user_id=lock.locked_by_user_id,
+        expires_at=lock.expires_at,
+        is_owner=lock.locked_by_user_id == actor.id,
+    )
+
+
 def _resolve_editor_state(
     selected_version: ToolVersion | None,
 ) -> tuple[
@@ -348,6 +413,8 @@ def _build_editor_response(
     tool: Tool,
     visible_versions: list[ToolVersion],
     selected_version: ToolVersion | None,
+    draft_head_id: UUID | None,
+    draft_lock: DraftLockResponse | None,
 ) -> EditorBootResponse:
     (
         entrypoint,
@@ -363,6 +430,8 @@ def _build_editor_response(
         tool=_to_tool_summary(tool),
         versions=[_to_version_summary(v) for v in visible_versions],
         selected_version=_to_version_summary(selected_version) if selected_version else None,
+        draft_head_id=draft_head_id,
+        draft_lock=draft_lock,
         save_mode=save_mode,
         derived_from_version_id=derived_from_version_id,
         entrypoint=entrypoint,
@@ -461,6 +530,8 @@ async def get_editor_for_tool(
     tools: FromDishka[ToolRepositoryProtocol],
     maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
+    locks: FromDishka[DraftLockRepositoryProtocol],
+    clock: FromDishka[ClockProtocol],
     user: User = Depends(require_contributor_api),
 ) -> EditorBootResponse:
     tool = await tools.get_by_id(tool_id=tool_id)
@@ -484,10 +555,20 @@ async def get_editor_for_tool(
         versions=versions,
         is_tool_maintainer=is_tool_maintainer,
     )
+    draft_head = _resolve_draft_head(versions)
+    draft_head_id = draft_head.id if draft_head else None
+    draft_lock = _to_draft_lock_response(
+        lock=await locks.get_for_tool(tool_id=tool.id),
+        draft_head_id=draft_head_id,
+        actor=user,
+        now=clock.now(),
+    )
     return _build_editor_response(
         tool=tool,
         visible_versions=visible_versions,
         selected_version=selected_version,
+        draft_head_id=draft_head_id,
+        draft_lock=draft_lock,
     )
 
 
@@ -498,6 +579,8 @@ async def get_editor_for_version(
     tools: FromDishka[ToolRepositoryProtocol],
     maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
+    locks: FromDishka[DraftLockRepositoryProtocol],
+    clock: FromDishka[ClockProtocol],
     user: User = Depends(require_contributor_api),
 ) -> EditorBootResponse:
     version = await versions_repo.get_by_id(version_id=version_id)
@@ -526,11 +609,62 @@ async def get_editor_for_version(
             details={"tool_id": str(tool.id), "version_id": str(version.id)},
         )
 
+    draft_head = _resolve_draft_head(versions)
+    draft_head_id = draft_head.id if draft_head else None
+    draft_lock = _to_draft_lock_response(
+        lock=await locks.get_for_tool(tool_id=tool.id),
+        draft_head_id=draft_head_id,
+        actor=user,
+        now=clock.now(),
+    )
     return _build_editor_response(
         tool=tool,
         visible_versions=visible_versions,
         selected_version=version,
+        draft_head_id=draft_head_id,
+        draft_lock=draft_lock,
     )
+
+
+@router.post("/tools/{tool_id}/draft-lock", response_model=DraftLockResponse)
+@inject
+async def acquire_draft_lock(
+    tool_id: UUID,
+    payload: DraftLockRequest,
+    handler: FromDishka[AcquireDraftLockHandlerProtocol],
+    user: User = Depends(require_contributor_api),
+    _: None = Depends(require_csrf_token),
+) -> DraftLockResponse:
+    result = await handler.handle(
+        actor=user,
+        command=AcquireDraftLockCommand(
+            tool_id=tool_id,
+            draft_head_id=payload.draft_head_id,
+            force=payload.force,
+        ),
+    )
+    return DraftLockResponse(
+        tool_id=result.tool_id,
+        draft_head_id=result.draft_head_id,
+        locked_by_user_id=result.locked_by_user_id,
+        expires_at=result.expires_at,
+        is_owner=result.is_owner,
+    )
+
+
+@router.delete("/tools/{tool_id}/draft-lock", response_model=DraftLockReleaseResponse)
+@inject
+async def release_draft_lock(
+    tool_id: UUID,
+    handler: FromDishka[ReleaseDraftLockHandlerProtocol],
+    user: User = Depends(require_contributor_api),
+    _: None = Depends(require_csrf_token),
+) -> DraftLockReleaseResponse:
+    result = await handler.handle(
+        actor=user,
+        command=ReleaseDraftLockCommand(tool_id=tool_id),
+    )
+    return DraftLockReleaseResponse(tool_id=result.tool_id)
 
 
 @router.get("/tools/{tool_id}/taxonomy", response_model=ToolTaxonomyResponse)
