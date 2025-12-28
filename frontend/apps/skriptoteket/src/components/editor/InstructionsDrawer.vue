@@ -7,6 +7,7 @@ type InstructionsDrawerProps = {
   isOpen: boolean;
   usageInstructions: string;
   isSaving: boolean;
+  isReadOnly: boolean;
 };
 
 defineProps<InstructionsDrawerProps>();
@@ -92,7 +93,7 @@ const showPreview = ref(false);
           rows="16"
           class="w-full border border-navy bg-white px-3 py-2 text-sm font-mono text-navy shadow-brutal-sm"
           placeholder="## Sa har gor du&#10;&#10;1. Ladda upp en fil&#10;2. Klicka pa Kor&#10;3. Ladda ner resultatet"
-          :disabled="isSaving"
+          :disabled="isSaving || isReadOnly"
           @input="emit('update:usageInstructions', ($event.target as HTMLTextAreaElement).value)"
         />
       </div>
@@ -128,7 +129,7 @@ const showPreview = ref(false);
         <button
           type="button"
           class="btn-primary w-full"
-          :disabled="isSaving"
+          :disabled="isSaving || isReadOnly"
           @click="emit('save')"
         >
           {{ isSaving ? "Sparar..." : "Spara" }}

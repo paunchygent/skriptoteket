@@ -46,6 +46,7 @@ type EditorWorkspacePanelProps = {
 
   isSaving: boolean;
   hasDirtyChanges: boolean;
+  isReadOnly: boolean;
 
   isDrawerOpen: boolean;
   isHistoryDrawerOpen: boolean;
@@ -113,7 +114,7 @@ const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtens
           <div class="flex items-center gap-2">
             <button
               type="button"
-              :disabled="isSaving"
+              :disabled="isSaving || isReadOnly"
               class="btn-primary min-w-[80px]"
               @click="emit('save')"
             >
@@ -139,6 +140,7 @@ const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtens
               :value="changeSummary"
               class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
               placeholder="T.ex. fixade bugg..."
+              :disabled="isReadOnly"
               @input="emit('update:changeSummary', ($event.target as HTMLInputElement).value)"
             >
           </div>
@@ -197,6 +199,7 @@ const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtens
                 <CodeMirrorEditor
                   :model-value="sourceCode"
                   :extensions="intelligenceExtensions"
+                  :read-only="isReadOnly"
                   @update:model-value="emit('update:sourceCode', $event)"
                 />
               </template>
@@ -235,6 +238,7 @@ const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtens
             rows="10"
             class="w-full border border-navy bg-white px-3 py-2 text-sm font-mono text-navy shadow-brutal-sm"
             placeholder="[{&quot;name&quot;:&quot;theme_color&quot;,&quot;label&quot;:&quot;Färgtema&quot;,&quot;kind&quot;:&quot;string&quot;}]"
+            :disabled="isReadOnly"
             @input="emit('update:settingsSchemaText', ($event.target as HTMLTextAreaElement).value)"
           />
         </div>
@@ -262,6 +266,7 @@ const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtens
             rows="10"
             class="w-full border border-navy bg-white px-3 py-2 text-sm font-mono text-navy shadow-brutal-sm"
             placeholder="[{&quot;name&quot;:&quot;title&quot;,&quot;label&quot;:&quot;Titel&quot;,&quot;kind&quot;:&quot;string&quot;}]"
+            :disabled="isReadOnly"
             @input="emit('update:inputSchemaText', ($event.target as HTMLTextAreaElement).value)"
           />
         </div>
@@ -277,6 +282,7 @@ const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtens
             <EntrypointDropdown
               :model-value="entrypoint"
               :options="entrypointOptions"
+              :disabled="isReadOnly"
               @update:model-value="emit('update:entrypoint', $event)"
             />
           </div>
@@ -286,6 +292,7 @@ const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtens
               <SandboxRunner
                 :version-id="selectedVersion.id"
                 :tool-id="toolId"
+                :is-read-only="isReadOnly"
               />
             </template>
             <template #fallback>
@@ -364,6 +371,7 @@ const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtens
         :is-open="isInstructionsDrawerOpen"
         :usage-instructions="usageInstructions"
         :is-saving="isSaving"
+        :is-read-only="isReadOnly"
         @close="emit('closeDrawer')"
         @save="emit('save')"
         @update:usage-instructions="emit('update:usageInstructions', $event)"

@@ -20,6 +20,7 @@ type JsonValue = components["schemas"]["JsonValue"];
 const props = defineProps<{
   versionId: string;
   toolId: string;
+  isReadOnly: boolean;
 }>();
 
 const selectedFiles = ref<File[]>([]);
@@ -62,7 +63,12 @@ const nextActions = computed<UiFormAction[]>(() => {
   return payload?.next_actions ?? [];
 });
 const canSubmitActions = computed(() => {
-  return stateRev.value !== null && !isRunning.value && !isSubmitting.value;
+  return (
+    stateRev.value !== null &&
+    !isRunning.value &&
+    !isSubmitting.value &&
+    !props.isReadOnly
+  );
 });
 
 function selectFiles(event: Event): void {
@@ -129,6 +135,10 @@ async function pollRunStatus(runId: string): Promise<void> {
 
 async function runSandbox(): Promise<void> {
   if (isRunning.value) return;
+  if (props.isReadOnly) {
+    errorMessage.value = "Du saknar redigeringslåset. Testkörning är spärrad.";
+    return;
+  }
 
   isRunning.value = true;
   errorMessage.value = null;
@@ -197,6 +207,10 @@ async function onSubmitAction(payload: {
   input: Record<string, JsonValue>;
 }): Promise<void> {
   if (!canSubmitActions.value || !runResult.value) return;
+  if (props.isReadOnly) {
+    actionErrorMessage.value = "Du saknar redigeringslåset. Åtgärden kan inte köras.";
+    return;
+  }
 
   isSubmitting.value = true;
   actionErrorMessage.value = null;
@@ -274,12 +288,14 @@ onBeforeUnmount(() => {
           <div class="flex items-center gap-3 w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm overflow-hidden h-full">
             <label
               class="btn-cta shrink-0 px-3 py-1 text-xs font-semibold tracking-wide"
+              :class="{ 'opacity-60 pointer-events-none': isReadOnly }"
             >
               Välj filer
               <input
                 type="file"
                 multiple
                 class="sr-only"
+                :disabled="isReadOnly"
                 @change="selectFiles"
               >
             </label>
@@ -291,7 +307,7 @@ onBeforeUnmount(() => {
 
         <button
           type="button"
-          :disabled="isRunning"
+          :disabled="isRunning || isReadOnly"
           class="btn-cta min-w-[120px]"
           @click="runSandbox"
         >

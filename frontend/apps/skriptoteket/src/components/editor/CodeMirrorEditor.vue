@@ -43,9 +43,11 @@ const props = withDefaults(
   defineProps<{
     modelValue: string;
     extensions?: Extension[];
+    readOnly?: boolean;
   }>(),
   {
     extensions: () => [],
+    readOnly: false,
   },
 );
 const emit = defineEmits<{ "update:modelValue": [value: string] }>();
@@ -56,6 +58,7 @@ let view: EditorView | null = null;
 let suppressEmit = false;
 
 const externalExtensions = new Compartment();
+const readOnlyExtension = new Compartment();
 
 const editorLayoutTheme = EditorView.theme(
   {
@@ -117,6 +120,10 @@ onMounted(() => {
         EditorState.tabSize.of(4),
         editorLayoutTheme,
         externalExtensions.of(props.extensions),
+        readOnlyExtension.of([
+          EditorView.editable.of(!props.readOnly),
+          EditorState.readOnly.of(props.readOnly),
+        ]),
         updateListener,
       ],
     }),
@@ -146,6 +153,19 @@ watch(
     if (!view) return;
     view.dispatch({
       effects: externalExtensions.reconfigure(extensions),
+    });
+  },
+);
+
+watch(
+  () => props.readOnly,
+  (readOnly) => {
+    if (!view) return;
+    view.dispatch({
+      effects: readOnlyExtension.reconfigure([
+        EditorView.editable.of(!readOnly),
+        EditorState.readOnly.of(readOnly),
+      ]),
     });
   },
 );

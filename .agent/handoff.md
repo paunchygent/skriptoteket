@@ -45,6 +45,15 @@ Keep this file updated so the next session can pick up work quickly.
   `docs/backlog/stories/story-14-06-editor-sandbox-preview-snapshots.md`,
   `docs/backlog/epics/epic-14-admin-tool-authoring.md`,
   `docs/backlog/reviews/review-epic-14-editor-sandbox-preview.md`.
+- ST-14-07 SPA lock UX: added draft lock acquisition/heartbeat + read-only gating + force takeover banner.
+  - New: `frontend/apps/skriptoteket/src/composables/editor/useDraftLock.ts`,
+    `frontend/apps/skriptoteket/src/components/editor/DraftLockBanner.vue`.
+  - Read-only gating: `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`,
+    `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`,
+    `frontend/apps/skriptoteket/src/components/editor/SandboxRunner.vue`,
+    `frontend/apps/skriptoteket/src/components/editor/CodeMirrorEditor.vue`,
+    `frontend/apps/skriptoteket/src/components/editor/InstructionsDrawer.vue`.
+  - Tracker: `docs/backlog/sprints/sprint-2026-01-05-tool-editor-vertical-slice.md` (ST-14-07 checkboxes).
 
 ## Verification
 
@@ -59,6 +68,9 @@ Keep this file updated so the next session can pick up work quickly.
 - SPA typecheck: `pdm run fe-type-check` (pass)
 - SPA lint: `pdm run fe-lint` (pass)
 - UI (editor): `pdm run ui-editor-smoke` (pass; artifacts in `.artifacts/ui-editor-smoke/`; Playwright required escalation on macOS)
+- Docs: `pdm run docs-validate` (pass; sprint tracker update)
+- Live check: `pdm run dev` (port 8000 already in use), `pdm run fe-dev` (port 5173 already in use)
+- Live check: `curl -I http://127.0.0.1:5173/` (200), `curl -I http://127.0.0.1:5173/admin/tools` (200)
 
 ## How to Run
 

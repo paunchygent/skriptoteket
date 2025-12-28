@@ -2,12 +2,14 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import type { components } from "../../api/openapi";
+import DraftLockBanner from "../../components/editor/DraftLockBanner.vue";
 import EditorWorkspacePanel from "../../components/editor/EditorWorkspacePanel.vue";
 import InlineEditableText from "../../components/editor/InlineEditableText.vue";
 import SystemMessage from "../../components/ui/SystemMessage.vue";
 import WorkflowActionModal from "../../components/editor/WorkflowActionModal.vue";
 import WorkflowContextButtons from "../../components/editor/WorkflowContextButtons.vue";
 import { useEditorWorkflowActions } from "../../composables/editor/useEditorWorkflowActions";
+import { useDraftLock } from "../../composables/editor/useDraftLock";
 import { useScriptEditor } from "../../composables/editor/useScriptEditor";
 import { useToolMaintainers } from "../../composables/editor/useToolMaintainers";
 import { useToolTaxonomy } from "../../composables/editor/useToolTaxonomy";
@@ -69,6 +71,22 @@ const {
   route,
   router,
   notify,
+});
+const draftHeadId = computed(() => editor.value?.draft_head_id ?? null);
+const initialDraftLock = computed(() => editor.value?.draft_lock ?? null);
+const canForceTakeover = computed(() => auth.hasAtLeastRole("admin"));
+const {
+  state: draftLockState,
+  isReadOnly,
+  isLocking,
+  expiresAt,
+  statusMessage: draftLockStatus,
+  lockError: draftLockError,
+  forceTakeover,
+} = useDraftLock({
+  toolId: editorToolId,
+  draftHeadId,
+  initialLock: initialDraftLock,
 });
 const canEditSlug = computed(() => auth.hasAtLeastRole("admin") && editor.value?.tool.is_published === false);
 const {
@@ -307,6 +325,10 @@ watch(
       v-model="errorMessage"
       variant="error"
     />
+    <SystemMessage
+      v-model="draftLockError"
+      variant="error"
+    />
 
     <!-- Loading state -->
     <div
@@ -374,69 +396,81 @@ watch(
       </div>
 
       <!-- PANEL 2: Editor + Test -->
-      <EditorWorkspacePanel
-        v-model:slug-error="slugError"
-        v-model:taxonomy-error="taxonomyError"
-        v-model:maintainers-error="maintainersError"
-        :tool-id="editor.tool.id"
-        :versions="editor.versions"
-        :selected-version="selectedVersion"
-        :entrypoint-options="entrypointOptions"
-        :change-summary="changeSummary"
-        :entrypoint="entrypoint"
-        :source-code="sourceCode"
-        :settings-schema-text="settingsSchemaText"
-        :input-schema-text="inputSchemaText"
-        :usage-instructions="usageInstructions"
-        :metadata-title="metadataTitle"
-        :metadata-slug="metadataSlug"
-        :metadata-summary="metadataSummary"
-        :selected-profession-ids="selectedProfessionIds"
-        :selected-category-ids="selectedCategoryIds"
-        :can-edit-taxonomy="canEditTaxonomy"
-        :can-edit-maintainers="canEditMaintainers"
-        :can-edit-slug="canEditSlug"
-        :can-rollback-versions="canRollbackVersions"
-        :is-workflow-submitting="isWorkflowSubmitting"
-        :is-saving="isSaving"
-        :has-dirty-changes="hasDirtyChanges"
-        :is-drawer-open="isDrawerOpen"
-        :is-history-drawer-open="isHistoryDrawerOpen"
-        :is-metadata-drawer-open="isMetadataDrawerOpen"
-        :is-maintainers-drawer-open="isMaintainersDrawerOpen"
-        :is-instructions-drawer-open="isInstructionsDrawerOpen"
-        :professions="professions"
-        :categories="categories"
-        :is-taxonomy-loading="isTaxonomyLoading"
-        :is-saving-all-metadata="isSavingAllMetadata"
-        :maintainers="maintainers"
-        :owner-user-id="ownerUserId"
-        :is-maintainers-loading="isMaintainersLoading"
-        :is-maintainers-saving="isMaintainersSaving"
-        @save="save"
-        @open-history-drawer="openHistoryDrawer"
-        @open-metadata-drawer="openMetadataDrawer"
-        @open-maintainers-drawer="openMaintainersDrawer"
-        @open-instructions-drawer="openInstructionsDrawer"
-        @close-drawer="closeDrawer"
-        @select-history-version="handleHistorySelect"
-        @rollback-version="openRollbackForVersion"
-        @save-all-metadata="saveAllMetadata"
-        @suggest-slug-from-title="applySlugSuggestionFromTitle"
-        @add-maintainer="addMaintainer"
-        @remove-maintainer="removeMaintainer"
-        @update:change-summary="changeSummary = $event"
-        @update:entrypoint="entrypoint = $event"
-        @update:source-code="sourceCode = $event"
-        @update:settings-schema-text="settingsSchemaText = $event"
-        @update:input-schema-text="inputSchemaText = $event"
-        @update:usage-instructions="usageInstructions = $event"
-        @update:metadata-title="metadataTitle = $event"
-        @update:metadata-slug="metadataSlug = $event"
-        @update:metadata-summary="metadataSummary = $event"
-        @update:selected-profession-ids="updateProfessionIds"
-        @update:selected-category-ids="updateCategoryIds"
-      />
+      <div class="space-y-3">
+        <DraftLockBanner
+          :state="draftLockState"
+          :message="draftLockStatus"
+          :expires-at="expiresAt"
+          :can-force="canForceTakeover"
+          :is-busy="isLocking"
+          @force="forceTakeover"
+        />
+
+        <EditorWorkspacePanel
+          v-model:slug-error="slugError"
+          v-model:taxonomy-error="taxonomyError"
+          v-model:maintainers-error="maintainersError"
+          :tool-id="editor.tool.id"
+          :versions="editor.versions"
+          :selected-version="selectedVersion"
+          :entrypoint-options="entrypointOptions"
+          :change-summary="changeSummary"
+          :entrypoint="entrypoint"
+          :source-code="sourceCode"
+          :settings-schema-text="settingsSchemaText"
+          :input-schema-text="inputSchemaText"
+          :usage-instructions="usageInstructions"
+          :metadata-title="metadataTitle"
+          :metadata-slug="metadataSlug"
+          :metadata-summary="metadataSummary"
+          :selected-profession-ids="selectedProfessionIds"
+          :selected-category-ids="selectedCategoryIds"
+          :can-edit-taxonomy="canEditTaxonomy"
+          :can-edit-maintainers="canEditMaintainers"
+          :can-edit-slug="canEditSlug"
+          :can-rollback-versions="canRollbackVersions"
+          :is-workflow-submitting="isWorkflowSubmitting"
+          :is-saving="isSaving"
+          :has-dirty-changes="hasDirtyChanges"
+          :is-read-only="isReadOnly"
+          :is-drawer-open="isDrawerOpen"
+          :is-history-drawer-open="isHistoryDrawerOpen"
+          :is-metadata-drawer-open="isMetadataDrawerOpen"
+          :is-maintainers-drawer-open="isMaintainersDrawerOpen"
+          :is-instructions-drawer-open="isInstructionsDrawerOpen"
+          :professions="professions"
+          :categories="categories"
+          :is-taxonomy-loading="isTaxonomyLoading"
+          :is-saving-all-metadata="isSavingAllMetadata"
+          :maintainers="maintainers"
+          :owner-user-id="ownerUserId"
+          :is-maintainers-loading="isMaintainersLoading"
+          :is-maintainers-saving="isMaintainersSaving"
+          @save="save"
+          @open-history-drawer="openHistoryDrawer"
+          @open-metadata-drawer="openMetadataDrawer"
+          @open-maintainers-drawer="openMaintainersDrawer"
+          @open-instructions-drawer="openInstructionsDrawer"
+          @close-drawer="closeDrawer"
+          @select-history-version="handleHistorySelect"
+          @rollback-version="openRollbackForVersion"
+          @save-all-metadata="saveAllMetadata"
+          @suggest-slug-from-title="applySlugSuggestionFromTitle"
+          @add-maintainer="addMaintainer"
+          @remove-maintainer="removeMaintainer"
+          @update:change-summary="changeSummary = $event"
+          @update:entrypoint="entrypoint = $event"
+          @update:source-code="sourceCode = $event"
+          @update:settings-schema-text="settingsSchemaText = $event"
+          @update:input-schema-text="inputSchemaText = $event"
+          @update:usage-instructions="usageInstructions = $event"
+          @update:metadata-title="metadataTitle = $event"
+          @update:metadata-slug="metadataSlug = $event"
+          @update:metadata-summary="metadataSummary = $event"
+          @update:selected-profession-ids="updateProfessionIds"
+          @update:selected-category-ids="updateCategoryIds"
+        />
+      </div>
     </template>
   </div>
 

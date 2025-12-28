@@ -2,7 +2,7 @@
 type: story
 id: ST-14-07
 title: "Editor draft head locks"
-status: in_progress
+status: done
 owners: "agents"
 created: 2025-12-27
 updated: 2025-12-28

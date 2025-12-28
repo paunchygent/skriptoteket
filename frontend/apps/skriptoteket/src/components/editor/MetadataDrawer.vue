@@ -202,6 +202,7 @@ function toggleCategory(value: string): void {
                   type="checkbox"
                   class="border-navy"
                   :checked="selectedProfessionIds.includes(profession.id)"
+                  :disabled="isSaving"
                   @change="toggleProfession(profession.id)"
                 >
                 <span>{{ profession.label }}</span>
@@ -225,6 +226,7 @@ function toggleCategory(value: string): void {
                   type="checkbox"
                   class="border-navy"
                   :checked="selectedCategoryIds.includes(category.id)"
+                  :disabled="isSaving"
                   @change="toggleCategory(category.id)"
                 >
                 <span>{{ category.label }}</span>

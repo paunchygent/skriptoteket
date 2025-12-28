@@ -82,12 +82,11 @@ Last updated: 2025-12-28
 
 ### ST-14-03 — Editor sandbox next_actions parity
 
-- [ ] Render next_actions via ToolRunActions (BLOCKED: lock UX not implemented).
-- [ ] Submit next_action executes same tool version in sandbox context; returns run_id (BLOCKED: lock UX).
-- [ ] Persist normalized_state to tool_sessions under sandbox context; next action uses server-owned state
-  (BLOCKED: lock UX).
-- [ ] Stale expected_state_rev returns 409; UI shows actionable conflict (BLOCKED: lock UX).
-- [ ] html_to_pdf_preview demo tool E2E in sandbox (BLOCKED: lock UX + snapshots).
+- [ ] Render next_actions via ToolRunActions.
+- [ ] Submit next_action executes same tool version in sandbox context; returns run_id.
+- [ ] Persist normalized_state to tool_sessions under sandbox context; next action uses server-owned state.
+- [ ] Stale expected_state_rev returns 409; UI shows actionable conflict.
+- [ ] html_to_pdf_preview demo tool E2E in sandbox (BLOCKED: snapshots).
 
 ### ST-14-04 — Sandbox input_schema form preview parity
 
@@ -119,10 +118,10 @@ Last updated: 2025-12-28
 
 ### ST-14-07 — Editor draft head locks
 
-- [ ] Acquire lock on editor load + refresh via heartbeat (BLOCKED: SPA lock UX).
-- [ ] Second user → read-only for draft edits + sandbox; metadata still editable (BLOCKED: SPA read-only UX).
-- [ ] Force takeover (admin/superuser) and previous holder loses permissions (BLOCKED: SPA force-take UX).
-- [ ] Expired lock can be acquired without manual intervention (BLOCKED: SPA auto-acquire).
+- [x] Acquire lock on editor load + refresh via heartbeat.
+- [x] Second user → read-only for draft edits + sandbox; metadata still editable.
+- [x] Force takeover (admin/superuser) and previous holder loses permissions.
+- [x] Expired lock can be acquired without manual intervention.
 - [x] Backend enforces lock ownership for saves + sandbox operations.
 - [x] Lock updates to new draft head in same transaction when save advances head.
 
