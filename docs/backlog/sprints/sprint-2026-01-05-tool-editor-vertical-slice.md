@@ -1,0 +1,80 @@
+---
+type: sprint
+id: SPR-2026-01-05
+title: "Sprint 2026-01-05: Tool editor vertical slice"
+status: planned
+owners: "agents"
+created: 2025-12-27
+starts: 2026-01-05
+ends: 2026-01-18
+objective: "Ship editor sandbox preview + draft locking + settings isolation so authors can iterate safely without publishing."
+prd: "PRD-editor-sandbox-v0.1"
+epics: ["EPIC-14"]
+stories: ["ST-14-03", "ST-14-04", "ST-14-05", "ST-14-06", "ST-14-07", "ST-14-08"]
+adrs: ["ADR-0038", "ADR-0044", "ADR-0045", "ADR-0046"]
+---
+
+## Objective
+
+Deliver the editor sandbox vertical slice: snapshot-based preview runs, draft head
+locks, sandbox-only settings, and parity for next_actions + input forms so
+authors can iterate on drafts without publishing.
+
+## Scope (committed stories)
+
+- [ST-14-03: Editor sandbox next_actions parity](../stories/story-14-03-sandbox-next-actions-parity.md)
+- [ST-14-04: Editor sandbox input_schema form preview](../stories/story-14-04-sandbox-input-schema-form-preview.md)
+- [ST-14-05: Editor sandbox settings parity](../stories/story-14-05-editor-sandbox-settings-parity.md)
+- [ST-14-06: Editor sandbox preview snapshots](../stories/story-14-06-editor-sandbox-preview-snapshots.md)
+- [ST-14-07: Editor draft head locks](../stories/story-14-07-editor-draft-head-locks.md)
+- [ST-14-08: Editor sandbox settings isolation](../stories/story-14-08-editor-sandbox-settings-isolation.md)
+
+## Out of scope
+
+- Admin quick-create + slug lifecycle stories (ST-14-01, ST-14-02).
+- AI/editor intelligence features (assistive code generation, suggestions).
+- New curated tool authoring flows beyond sandbox iteration.
+- Post-publish slug edits, aliases, or redirects.
+
+## Decisions required (ADRs)
+
+- ADR-0038: Editor sandbox interactive actions (accepted)
+- ADR-0044: Editor sandbox preview snapshots (accepted)
+- ADR-0045: Sandbox-only settings contexts (accepted)
+- ADR-0046: Draft head locks for editor concurrency (accepted)
+
+## Risks / edge cases
+
+- Lock heartbeat failures causing unexpected read-only states; ensure clear UI and override flow.
+- Snapshot TTL expiry interrupting multi-step flows; UI must surface actionable rerun guidance.
+- Snapshot payload size limits blocking preview runs; validation errors must be explicit.
+- Sandbox settings context hashing must stay <=64 chars and collision-resistant.
+
+## Execution plan
+
+1) Backend storage + migrations (sandbox_snapshots, draft_locks, tool_runs snapshot_id).
+2) Handlers + endpoints: preview run, start-action with snapshot_id, sandbox settings resolve/save, draft lock acquire/refresh/force.
+3) Frontend: snapshot payload wiring, ToolInputForm + ToolRunActions parity, settings panel, lock UX/read-only mode.
+4) Regenerate OpenAPI/TS types and update editor API client usage.
+5) Tests + manual verification (lock conflicts, snapshot expiry, settings isolation, next_actions).
+
+## Demo checklist
+
+- Run sandbox with unsaved code/schema and confirm outputs reflect edits.
+- Execute a next_action using snapshot_id and show stable multi-step behavior.
+- Save sandbox-only settings and confirm they apply to preview runs only.
+- Open two editor sessions to verify lock enforcement + force takeover behavior.
+
+## Verification checklist
+
+- `pdm run docs-validate`
+- `pdm run lint`
+- `pdm run test`
+- `pdm run fe-gen-api-types`
+- Live functional check (backend + SPA dev); record steps in `.agent/handoff.md`.
+
+## Notes / follow-ups
+
+- This sprint is adjacent to future editor intelligence and AI assistance work, but
+  deliberately focuses on editor workflow correctness and draft safety rather than
+  AI-driven authoring features.
