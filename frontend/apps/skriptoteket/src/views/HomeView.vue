@@ -27,7 +27,17 @@ const userName = computed(() => auth.displayName);
 
 // Dashboard data
 const runsCount = ref(0);
+const runsInList = ref(0);
 const runsLoading = ref(false);
+const currentMonth = new Date().toLocaleString("sv-SE", { month: "long" });
+
+function formatCount(n: number): string {
+  if (n >= 1000) {
+    const k = n / 1000;
+    return k % 1 === 0 ? `${k}k` : `${k.toFixed(1)}k`;
+  }
+  return String(n);
+}
 
 const toolsTotal = ref(0);
 const toolsPublished = ref(0);
@@ -48,7 +58,8 @@ async function loadUserDashboard(): Promise<void> {
   runsLoading.value = true;
   try {
     const response = await apiGet<ListMyRunsResponse>("/api/v1/my-runs");
-    runsCount.value = response.runs.length;
+    runsCount.value = response.total_count;
+    runsInList.value = response.runs.length;
   } catch (error: unknown) {
     if (isApiError(error)) {
       dashboardError.value = error.message;
@@ -286,11 +297,11 @@ onMounted(async () => {
                 <span
                   v-else
                   class="stat-number"
-                >{{ runsCount }}</span>
-                <span class="stat-label">körningar totalt</span>
+                >{{ formatCount(runsCount) }}</span>
+                <span class="stat-label">körningar i {{ currentMonth }}</span>
               </div>
               <p class="card-description">
-                Se resultat från tidigare körningar.
+                Se de senaste {{ runsInList }} körningarna.
               </p>
             </RouterLink>
 

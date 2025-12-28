@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { RouterLink } from "vue-router";
 
 import AuthSidebar from "./AuthSidebar.vue";
 import AuthTopBar from "./AuthTopBar.vue";
@@ -32,8 +33,14 @@ function onLogout(): void {
 </script>
 
 <template>
-  <!-- Mobile header bar: hamburger only (right-aligned) -->
+  <!-- Mobile header bar: brand left, hamburger right -->
   <header class="auth-mobile-header md:hidden">
+    <RouterLink
+      to="/"
+      class="mobile-brand"
+    >
+      Skriptoteket
+    </RouterLink>
     <button
       type="button"
       class="hamburger"
@@ -93,10 +100,20 @@ function onLogout(): void {
 .auth-mobile-header {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   padding: var(--huleedu-space-3) var(--huleedu-space-4);
   border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy);
   background-color: var(--huleedu-canvas);
+}
+
+/* Mobile brand - no hover state since touch devices have sticky :hover */
+.mobile-brand {
+  font-family: var(--huleedu-font-serif);
+  font-weight: var(--huleedu-font-bold);
+  font-size: var(--huleedu-text-lg);
+  letter-spacing: var(--huleedu-tracking-tight);
+  color: var(--huleedu-navy);
+  text-decoration: none;
 }
 
 @media (min-width: 768px) {
