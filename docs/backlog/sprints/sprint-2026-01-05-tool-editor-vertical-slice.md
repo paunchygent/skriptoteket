@@ -74,6 +74,67 @@ authors can iterate on drafts without publishing.
 - `pdm run fe-gen-api-types`
 - Live functional check (backend + SPA dev); record steps in `.agent/handoff.md`.
 
+## Implementation Tracker (checkboxes)
+
+Legend: [x] done · [ ] not done · (BLOCKED) depends on another story/step
+
+Last updated: 2025-12-28
+
+### ST-14-03 — Editor sandbox next_actions parity
+
+- [ ] Render next_actions via ToolRunActions (BLOCKED: lock UX not implemented).
+- [ ] Submit next_action executes same tool version in sandbox context; returns run_id (BLOCKED: lock UX).
+- [ ] Persist normalized_state to tool_sessions under sandbox context; next action uses server-owned state
+  (BLOCKED: lock UX).
+- [ ] Stale expected_state_rev returns 409; UI shows actionable conflict (BLOCKED: lock UX).
+- [ ] html_to_pdf_preview demo tool E2E in sandbox (BLOCKED: lock UX + snapshots).
+
+### ST-14-04 — Sandbox input_schema form preview parity
+
+- [ ] Non-file fields render via ToolInputForm.
+- [ ] No input_schema → show multi-file picker (upload-first parity).
+- [ ] input_schema includes file field → show picker with label/accept/min/max parity.
+- [ ] input_schema exists with no file field → hide picker.
+- [ ] Invalid input_schema JSON → actionable parse error; no crash.
+- [ ] Invalid non-file input values → block run; field-level errors; runner not invoked.
+- [ ] Unsaved valid schema used for preview (BLOCKED: snapshots).
+
+### ST-14-05 — Editor sandbox settings parity
+
+- [ ] settings_schema → settings toggle + ToolRunSettingsPanel in sandbox.
+- [ ] Save settings → next sandbox run receives values via SKRIPTOTEKET_MEMORY_PATH (BLOCKED: ST-14-08).
+- [ ] No settings_schema → hide settings UI.
+- [ ] Invalid schema JSON → parse error and disable settings save.
+- [ ] Unsaved valid settings_schema used for sandbox settings validation/save (BLOCKED: ST-14-08).
+
+### ST-14-06 — Editor sandbox preview snapshots
+
+- [ ] Unsaved code/schemas run uses snapshot payload (not last saved draft).
+- [ ] start_action requires snapshot_id and executes against same snapshot.
+- [ ] Snapshot expires → actionable error prompting rerun.
+- [ ] Session/files isolated per snapshot_id (sandbox:{snapshot_id}).
+- [ ] Run details include snapshot_id for continuation after reload.
+- [ ] Snapshot payload size limits enforced with clear validation errors.
+- [ ] Lock enforcement for preview run + start-action.
+
+### ST-14-07 — Editor draft head locks
+
+- [ ] Acquire lock on editor load + refresh via heartbeat (BLOCKED: SPA lock UX).
+- [ ] Second user → read-only for draft edits + sandbox; metadata still editable (BLOCKED: SPA read-only UX).
+- [ ] Force takeover (admin/superuser) and previous holder loses permissions (BLOCKED: SPA force-take UX).
+- [ ] Expired lock can be acquired without manual intervention (BLOCKED: SPA auto-acquire).
+- [x] Backend enforces lock ownership for saves + sandbox operations.
+- [x] Lock updates to new draft head in same transaction when save advances head.
+
+### ST-14-08 — Editor sandbox settings isolation
+
+- [ ] Sandbox settings stored per user + draft head; do not affect production settings.
+- [ ] Unsaved valid schema used for resolve/save and validation.
+- [ ] Invalid schema JSON → parse error and disables saving.
+- [ ] Saved settings applied to next sandbox preview run via SKRIPTOTEKET_MEMORY_PATH.
+- [ ] No settings_schema → settings panel hidden.
+- [ ] User without draft lock → API rejects resolve/save.
+
 ## Notes / follow-ups
 
 - This sprint is adjacent to future editor intelligence and AI assistance work, but
