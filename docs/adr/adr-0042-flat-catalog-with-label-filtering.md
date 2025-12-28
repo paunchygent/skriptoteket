@@ -2,10 +2,11 @@
 type: adr
 id: ADR-0042
 title: "Flat catalog with label filtering"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-26
+updated: 2025-12-28
 ---
 
 ## Context

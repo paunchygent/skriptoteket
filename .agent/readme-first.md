@@ -26,11 +26,11 @@ Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future H
 
 ## Current sprint dashboard (keep current only)
 
-- Sprint: `SPR-2025-12-21` (EPIC-12 SPA UX) — cutover deployed 2025-12-23 (ST-11-13)
+- Sprint: `SPR-2026-01-05` (EPIC-14 editor sandbox vertical slice) — active
+- Focus: ST-14-03..08 (sandbox next_actions parity, preview snapshots, settings isolation, draft locks)
 - Production: Full Vue SPA (SSR/HTMX removed)
-- Done: Route parity + admin/editor flows (ST-11-01..22)
-- Next: EPIC-12 is unblocked; pick next SPA UX story (ST-12-02/03/04)
-- Active planning: EPIC-14 admin tool authoring (quick-create drafts + slug lifecycle) — `docs/backlog/epics/epic-14-admin-tool-authoring.md`
+- Done: EPIC-11 (SPA migration), EPIC-16 (catalog personalization)
+- Active: EPIC-14 admin tool authoring — `docs/backlog/epics/epic-14-admin-tool-authoring.md`
 
 ## Current EPIC-04 decisions (dynamic scripts)
 
@@ -47,7 +47,7 @@ Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future H
 4. `doc_structure_requirements.md` (docs-contract governance)
 5. `docs/prd/prd-spa-frontend-v0.1.md` (SPA migration PRD)
 6. `docs/backlog/epics/epic-11-full-vue-spa-migration.md` (epic + story index)
-7. `docs/backlog/sprints/sprint-2025-12-21-spa-migration-foundations.md` (current sprint plan)
+7. `docs/backlog/sprints/sprint-2026-01-05-tool-editor-vertical-slice.md` (current sprint plan)
 
 ## Where to work
 

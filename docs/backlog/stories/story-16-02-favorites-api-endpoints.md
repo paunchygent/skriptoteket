@@ -2,9 +2,10 @@
 type: story
 id: ST-16-02
 title: "Favorites API endpoints (add/remove/list)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-26
+updated: 2025-12-28
 epic: EPIC-16
 acceptance_criteria:
   - "Given authenticated user with valid CSRF token, when POST /api/v1/favorites/{tool_id} with valid published tool, then favorite is added and returns 200"

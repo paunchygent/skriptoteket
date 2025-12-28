@@ -2,9 +2,10 @@
 type: story
 id: ST-16-03
 title: "Flat catalog API with label filtering and search"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-26
+updated: 2025-12-28
 epic: EPIC-16
 acceptance_criteria:
   - "Given GET /api/v1/catalog/tools with no parameters, when called, then returns all published tools"

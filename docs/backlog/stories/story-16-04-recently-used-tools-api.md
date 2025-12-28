@@ -2,9 +2,10 @@
 type: story
 id: ST-16-04
 title: "Recently used tools API endpoint"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-26
+updated: 2025-12-28
 epic: EPIC-16
 acceptance_criteria:
   - "Given user has run tools, when GET /api/v1/me/recent-tools, then returns tools ordered by most recent run first"

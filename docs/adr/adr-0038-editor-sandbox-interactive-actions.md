@@ -2,10 +2,11 @@
 type: adr
 id: ADR-0038
 title: "Editor sandbox interactive actions (next_actions + server-owned state)"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-25
+updated: 2025-12-28
 links: ["ADR-0022", "ADR-0024", "ADR-0027", "ADR-0030", "EPIC-14"]
 ---
 

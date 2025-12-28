@@ -2,9 +2,10 @@
 type: story
 id: ST-16-06
 title: "Tool card favorites toggle (star icon)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-26
+updated: 2025-12-28
 epic: EPIC-16
 acceptance_criteria:
   - "Given tool card, when rendered, then shows star icon in top-right corner"

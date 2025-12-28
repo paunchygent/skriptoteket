@@ -2,9 +2,10 @@
 type: story
 id: ST-14-07
 title: "Editor draft head locks"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2025-12-27
+updated: 2025-12-28
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given an editor loads a draft tool, when the editor initializes, then it acquires a draft head lock and refreshes it via heartbeat."

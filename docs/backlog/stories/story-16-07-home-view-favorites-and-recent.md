@@ -2,9 +2,10 @@
 type: story
 id: ST-16-07
 title: "Home view favorites and recently used sections"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-26
+updated: 2025-12-28
 epic: EPIC-16
 acceptance_criteria:
   - "Given authenticated user has favorites, when visiting home, then 'Dina favoriter' section shows up to 5 tools"

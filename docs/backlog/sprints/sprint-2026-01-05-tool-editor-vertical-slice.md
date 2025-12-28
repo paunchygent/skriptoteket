@@ -2,9 +2,10 @@
 type: sprint
 id: SPR-2026-01-05
 title: "Sprint 2026-01-05: Tool editor vertical slice"
-status: planned
+status: active
 owners: "agents"
 created: 2025-12-27
+updated: 2025-12-28
 starts: 2026-01-05
 ends: 2026-01-18
 objective: "Ship editor sandbox preview + draft locking + settings isolation so authors can iterate safely without publishing."

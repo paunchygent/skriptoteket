@@ -2,10 +2,11 @@
 type: adr
 id: ADR-0041
 title: "User favorites and tool bookmarking"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-26
+updated: 2025-12-28
 ---
 
 ## Context

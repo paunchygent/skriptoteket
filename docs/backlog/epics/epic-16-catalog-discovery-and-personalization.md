@@ -2,9 +2,10 @@
 type: epic
 id: EPIC-16
 title: "Catalog discovery and personalization"
-status: proposed
+status: done
 owners: "agents"
 created: 2025-12-26
+updated: 2025-12-28
 outcome: "Teachers can discover tools via flat browsing with filters, search, and access personalized favorites/recently-used lists"
 ---
 
@@ -50,13 +51,13 @@ outcome: "Teachers can discover tools via flat browsing with filters, search, an
 
 | ID | Title | Status |
 |----|-------|--------|
-| ST-16-01 | Favorites domain model and database migration | ready |
-| ST-16-02 | Favorites API endpoints (add/remove/list) | ready |
-| ST-16-03 | Flat catalog API with label filtering and search | ready |
-| ST-16-04 | Recently used tools API endpoint | ready |
-| ST-16-05 | Flat catalog Vue view with filter sidebar | ready |
-| ST-16-06 | Tool card favorites toggle (star icon) | ready |
-| ST-16-07 | Home view favorites and recently used sections | ready |
+| ST-16-01 | Favorites domain model and database migration | done |
+| ST-16-02 | Favorites API endpoints (add/remove/list) | done |
+| ST-16-03 | Flat catalog API with label filtering and search | done |
+| ST-16-04 | Recently used tools API endpoint | done |
+| ST-16-05 | Flat catalog Vue view with filter sidebar | done |
+| ST-16-06 | Tool card favorites toggle (star icon) | done |
+| ST-16-07 | Home view favorites and recently used sections | done |
 
 ## Success criteria
 

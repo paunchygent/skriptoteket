@@ -2,9 +2,10 @@
 type: story
 id: ST-16-01
 title: "Favorites domain model and database migration"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-26
+updated: 2025-12-28
 epic: EPIC-16
 acceptance_criteria:
   - "Given the migration runs, when I inspect the database, then user_favorites table exists with composite PK (user_id, tool_id) and created_at column"

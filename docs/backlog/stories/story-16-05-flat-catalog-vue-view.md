@@ -2,9 +2,10 @@
 type: story
 id: ST-16-05
 title: "Flat catalog Vue view with filter sidebar and search"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-26
+updated: 2025-12-28
 epic: EPIC-16
 acceptance_criteria:
   - "Given /browse route, when loaded, then shows all published tools in flat list"
