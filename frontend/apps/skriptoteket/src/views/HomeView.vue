@@ -3,15 +3,22 @@ import { computed, onMounted, ref } from "vue";
 
 import { apiGet, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
+import FavoritesSection from "../components/home/FavoritesSection.vue";
+import RecentToolsSection from "../components/home/RecentToolsSection.vue";
+import { useFavorites } from "../composables/useFavorites";
 import { useLoginModal } from "../composables/useLoginModal";
 import { useAuthStore } from "../stores/auth";
+import type { CatalogItem } from "../types/catalog";
 
 type ListMyRunsResponse = components["schemas"]["ListMyRunsResponse"];
 type ListMyToolsResponse = components["schemas"]["ListMyToolsResponse"];
 type ListAdminToolsResponse = components["schemas"]["ListAdminToolsResponse"];
+type ListFavoritesResponse = components["schemas"]["ListFavoritesResponse"];
+type ListRecentToolsResponse = components["schemas"]["ListRecentToolsResponse"];
 
 const auth = useAuthStore();
 const loginModal = useLoginModal();
+const { toggleFavorite, isToggling } = useFavorites();
 
 const isAuthenticated = computed(() => auth.isAuthenticated);
 const canSeeContributor = computed(() => auth.hasAtLeastRole("contributor"));
@@ -32,6 +39,10 @@ const adminPendingReview = ref(0);
 const adminLoading = ref(false);
 
 const dashboardError = ref<string | null>(null);
+
+// Favorites and recent tools
+const favorites = ref<CatalogItem[]>([]);
+const recentTools = ref<CatalogItem[]>([]);
 
 async function loadUserDashboard(): Promise<void> {
   runsLoading.value = true;
@@ -78,19 +89,61 @@ async function loadAdminDashboard(): Promise<void> {
   }
 }
 
+async function loadFavorites(): Promise<void> {
+  try {
+    const response = await apiGet<ListFavoritesResponse>("/api/v1/favorites?limit=5");
+    favorites.value = response.items as CatalogItem[];
+  } catch {
+    // Silent fail - section just won't show
+  }
+}
+
+async function loadRecentTools(): Promise<void> {
+  try {
+    const response = await apiGet<ListRecentToolsResponse>("/api/v1/me/recent-tools?limit=5");
+    recentTools.value = response.items as CatalogItem[];
+  } catch {
+    // Silent fail - section just won't show
+  }
+}
+
+async function handleFavoriteToggled(payload: { id: string; isFavorite: boolean }): Promise<void> {
+  if (isToggling(payload.id)) return;
+
+  const nextIsFavorite = !payload.isFavorite;
+
+  // Optimistic update for favorites list
+  const prevFavorites = favorites.value;
+  favorites.value = prevFavorites.flatMap((item) => {
+    if (item.id !== payload.id) return item;
+    if (!nextIsFavorite) return [];
+    return { ...item, is_favorite: nextIsFavorite };
+  });
+
+  // Optimistic update for recent tools list
+  const prevRecent = recentTools.value;
+  recentTools.value = prevRecent.map((item) =>
+    item.id === payload.id ? { ...item, is_favorite: nextIsFavorite } : item
+  );
+
+  const finalIsFavorite = await toggleFavorite(payload.id, payload.isFavorite);
+  if (finalIsFavorite !== nextIsFavorite) {
+    favorites.value = prevFavorites;
+    recentTools.value = prevRecent;
+  }
+}
+
 onMounted(async () => {
   if (!isAuthenticated.value) return;
 
-  // Load dashboard data based on role
-  await loadUserDashboard();
-
-  if (canSeeContributor.value) {
-    await loadContributorDashboard();
-  }
-
-  if (canSeeAdmin.value) {
-    await loadAdminDashboard();
-  }
+  // Load all dashboard data in parallel
+  await Promise.all([
+    loadUserDashboard(),
+    loadFavorites(),
+    loadRecentTools(),
+    canSeeContributor.value ? loadContributorDashboard() : Promise.resolve(),
+    canSeeAdmin.value ? loadAdminDashboard() : Promise.resolve(),
+  ]);
 });
 </script>
 
@@ -195,6 +248,21 @@ onMounted(async () => {
           </h1>
           <p class="mt-2 text-navy/60">Vad vill du göra?</p>
         </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             PERSONALIZED SECTIONS: Favorites and Recent Tools
+             ═══════════════════════════════════════════════════════════════════ -->
+        <FavoritesSection
+          :items="favorites"
+          :is-toggling="isToggling"
+          @favorite-toggled="handleFavoriteToggled"
+        />
+
+        <RecentToolsSection
+          :items="recentTools"
+          :is-toggling="isToggling"
+          @favorite-toggled="handleFavoriteToggled"
+        />
 
         <!-- ═══════════════════════════════════════════════════════════════════
              USER SECTION: All authenticated users

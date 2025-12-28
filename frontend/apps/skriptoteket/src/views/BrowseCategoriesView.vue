@@ -61,7 +61,7 @@ watch(professionSlug, () => {
   <div class="max-w-2xl">
     <nav class="flex items-center flex-wrap gap-2 mb-4 text-xs uppercase tracking-wide text-navy/60">
       <RouterLink
-        to="/browse"
+        to="/browse/professions"
         class="text-navy/70 border-b border-navy/40 pb-0.5 hover:text-burgundy hover:border-burgundy transition-colors"
       >
         Yrkesgrupper
@@ -108,7 +108,7 @@ watch(professionSlug, () => {
         class="border-b border-navy/20 last:border-b-0"
       >
         <RouterLink
-          :to="`/browse/${professionSlug}/${category.slug}`"
+          :to="`/browse/professions/${professionSlug}/${category.slug}`"
           class="group flex justify-between items-center p-4 no-underline text-inherit hover:bg-canvas transition-colors"
         >
           <span class="font-medium">{{ category.label }}</span>

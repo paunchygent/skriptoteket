@@ -68,7 +68,7 @@ onMounted(() => {
         class="border-b border-navy/20 last:border-b-0"
       >
         <RouterLink
-          :to="`/browse/${profession.slug}`"
+          :to="`/browse/professions/${profession.slug}`"
           class="group flex justify-between items-center p-4 no-underline text-inherit hover:bg-canvas transition-colors"
         >
           <span class="font-medium">{{ profession.label }}</span>

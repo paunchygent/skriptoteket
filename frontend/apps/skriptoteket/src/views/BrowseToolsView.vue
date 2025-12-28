@@ -74,7 +74,7 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
   <div class="max-w-2xl">
     <nav class="flex items-center flex-wrap gap-2 mb-4 text-xs uppercase tracking-wide text-navy/60">
       <RouterLink
-        to="/browse"
+        to="/browse/professions"
         class="text-navy/70 border-b border-navy/40 pb-0.5 hover:text-burgundy hover:border-burgundy transition-colors"
       >
         Yrkesgrupper
@@ -82,7 +82,7 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
       <span class="text-navy/30">/</span>
       <RouterLink
         v-if="profession"
-        :to="`/browse/${professionSlug}`"
+        :to="`/browse/professions/${professionSlug}`"
         class="text-navy/70 border-b border-navy/40 pb-0.5 hover:text-burgundy hover:border-burgundy transition-colors"
       >
         {{ profession.label }}

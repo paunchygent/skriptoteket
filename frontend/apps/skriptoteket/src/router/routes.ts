@@ -25,17 +25,23 @@ export const routes: RouteRecordRaw[] = [
   {
     path: "/browse",
     name: "browse",
+    component: () => import("../views/BrowseFlatView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/browse/professions",
+    name: "browse-professions",
     component: () => import("../views/BrowseProfessionsView.vue"),
     meta: { requiresAuth: true },
   },
   {
-    path: "/browse/:profession",
+    path: "/browse/professions/:profession",
     name: "browse-categories",
     component: () => import("../views/BrowseCategoriesView.vue"),
     meta: { requiresAuth: true },
   },
   {
-    path: "/browse/:profession/:category",
+    path: "/browse/professions/:profession/:category",
     name: "browse-tools",
     component: () => import("../views/BrowseToolsView.vue"),
     meta: { requiresAuth: true },
