@@ -94,6 +94,13 @@ With session-scoped file persistence (ADR-0039 / ST-12-05), sandbox action runs 
 - The demo tool may rely on stable `/work/input/...` paths across sandbox actions.
 - The demo tool MUST ignore `action.json` when discovering user-provided input files.
 
+## Superseded behavior note
+
+- This story predates snapshot preview (ST-14-06 / ADR-0044). The current
+  implementation uses `sandbox:{version_id}` for session state; snapshot preview
+  will move sandbox sessions/actions to `sandbox:{snapshot_id}` and add
+  `snapshot_id` handling to the session endpoint.
+
 ## Test plan
 
 - Manual: run `demo_next_actions.py` and `html_to_pdf_preview.py` in the editor sandbox and verify action loops.

@@ -42,6 +42,11 @@ This ensures sandbox interactivity:
 - remains concurrency-safe (`state_rev`)
 - stays aligned with the runtime architecture
 
+**Pre-snapshot note:** The current implementation uses `sandbox:{version_id}`. Once snapshot preview
+(ST-14-06 / ADR-0044) is implemented, sandbox sessions and actions will move to
+`sandbox:{snapshot_id}` and the session endpoint will accept an optional `snapshot_id`
+to select the snapshot-scoped context.
+
 ### 2) Editor API supports sandbox session + action submission
 
 Add editor-scoped endpoints under `/api/v1/editor`:

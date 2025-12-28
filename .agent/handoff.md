@@ -38,6 +38,13 @@ Keep this file updated so the next session can pick up work quickly.
     `tests/unit/web/test_api_v1_auth_and_csrf_routes.py`.
 - Migration idempotency: fixed `tests/integration/test_migration_0019_draft_locks_idempotent.py` (tz-aware datetime).
 - OpenAPI types + SPA build: `frontend/apps/skriptoteket/src/api/openapi.d.ts`, `src/skriptoteket/web/static/spa/` regenerated.
+- Docs alignment: split-phase notes + review updates in
+  `docs/adr/adr-0038-editor-sandbox-interactive-actions.md`,
+  `docs/adr/adr-0044-editor-sandbox-preview-snapshots.md`,
+  `docs/backlog/stories/story-14-03-sandbox-next-actions-parity.md`,
+  `docs/backlog/stories/story-14-06-editor-sandbox-preview-snapshots.md`,
+  `docs/backlog/epics/epic-14-admin-tool-authoring.md`,
+  `docs/backlog/reviews/review-epic-14-editor-sandbox-preview.md`.
 
 ## Verification
 

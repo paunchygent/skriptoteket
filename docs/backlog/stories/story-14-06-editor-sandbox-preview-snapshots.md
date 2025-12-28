@@ -12,6 +12,7 @@ acceptance_criteria:
   - "Given a snapshot expires, when the user submits a next_action, then the UI receives an actionable error prompting a rerun."
   - "Given sandbox runs use session files or state, then the session context is isolated per snapshot_id (sandbox:{snapshot_id})."
   - "Given a sandbox preview run is loaded later, when the run details are fetched, then the response includes snapshot_id for action continuation."
+  - "Given a user does not hold the active draft head lock, when they run a sandbox preview or start-action, then the API rejects the request."
   - "Given a snapshot payload exceeds configured limits, when the user runs the sandbox, then the API returns a validation error with a clear message."
 dependencies:
   - "ADR-0044"

@@ -31,6 +31,10 @@ Introduce sandbox preview snapshots for editor runs:
   `sandbox:{snapshot_id}` context, isolating runs by snapshot.
 - Snapshot metadata is recorded on `tool_runs` so run details can return
   `snapshot_id` after reloads.
+- Expired snapshots are cleaned up via a scheduled cleanup job (daily in prod),
+  with a CLI command available for manual/ops use; deleted counts should be
+  logged. Opportunistic cleanup on snapshot creation is acceptable as a fallback
+  but not the primary mechanism.
 
 ## Consequences
 

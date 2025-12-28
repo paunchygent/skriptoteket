@@ -52,10 +52,10 @@ TTL heartbeat and force takeover for admins/superusers.
 
 | Decision | Rationale | Approve? |
 | --- | --- | --- |
-| Snapshot storage uses `sandbox_snapshots` table with TTL cleanup | Durable across restarts; clear lifecycle | [ ] |
-| Sandbox settings saved per user + draft head with schema hash | Isolated from production and stable for iteration | [ ] |
-| `snapshot_id` required for next_actions | Guarantees multi-step consistency | [ ] |
-| Draft head lock (TTL + heartbeat), admin/superuser force takeover | Prevents concurrent edits and allows override | [ ] |
+| Snapshot storage uses `sandbox_snapshots` table with TTL cleanup | Durable across restarts; clear lifecycle | [x] |
+| Sandbox settings saved per user + draft head with schema hash | Isolated from production and stable for iteration | [x] |
+| `snapshot_id` required for next_actions | Guarantees multi-step consistency | [x] |
+| Draft head lock (TTL + heartbeat), admin/superuser force takeover | Prevents concurrent edits and allows override | [x] |
 
 ## Review Checklist
 
@@ -144,8 +144,8 @@ Tests:
 
 ## Review Feedback
 
-**Reviewer:** @gpt-5.2-pro  
-**Date:** 2025-12-27  
+**Reviewer:** @gpt-5.2-pro
+**Date:** 2025-12-27
 **Verdict:** approved
 
 ### Required Changes
@@ -196,7 +196,8 @@ Tests:
 
 ## Changes Made
 
-All required changes have been addressed and optional suggestions were adopted.
+Required doc alignment updates are addressed; implementation changes remain
+scoped to the sprint stories.
 
 | Change | Artifact | Description |
 | --- | --- | --- |
@@ -205,7 +206,7 @@ All required changes have been addressed and optional suggestions were adopted.
 | 3 | ST-14-08 | Updated context formula and lock enforcement for sandbox settings. |
 | 4 | ADR-0046 | Defined draft head semantics, lock update on save, and lock scope. |
 | 5 | ST-14-07 | Added lock update-on-save acceptance criteria and clarified read-only scope. |
-| 6 | ST-14-06 | Added snapshot_id recovery, payload limits, and lock enforcement. |
+| 6 | ST-14-06 | Clarified lock enforcement in acceptance criteria (snapshot_id recovery already present). |
 | 7 | ST-14-04 / ST-14-05 | Revised ACs to align with snapshot preview behavior (removed dirty-state blocks). |
-| 8 | ADR-0038 / ST-14-03 | Clarified snapshot-scoped sandbox context and session endpoint usage. |
+| 8 | ADR-0038 / ST-14-03 | Added pre-snapshot notes; snapshot-scoped context will be enforced by ST-14-06 / ADR-0044. |
 | 9 | ADR-0044 | Added TTL cleanup ops and snapshot_id in run details. |

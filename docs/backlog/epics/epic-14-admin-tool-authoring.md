@@ -33,6 +33,11 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 - [ST-14-01: Admin quick-create draft tool](../stories/story-14-01-admin-quick-create-draft-tools.md)
 - [ST-14-02: Draft slug edit + publish guards](../stories/story-14-02-draft-slug-edit-and-publish-guards.md)
 - [ST-14-03: Editor sandbox next_actions parity](../stories/story-14-03-sandbox-next-actions-parity.md)
+- [ST-14-04: Editor sandbox input_schema form preview](../stories/story-14-04-sandbox-input-schema-form-preview.md)
+- [ST-14-05: Editor sandbox settings parity](../stories/story-14-05-editor-sandbox-settings-parity.md)
+- [ST-14-06: Editor sandbox preview snapshots](../stories/story-14-06-editor-sandbox-preview-snapshots.md)
+- [ST-14-07: Editor draft head locks](../stories/story-14-07-editor-draft-head-locks.md)
+- [ST-14-08: Editor sandbox settings isolation](../stories/story-14-08-editor-sandbox-settings-isolation.md)
 
 ## Risks
 
