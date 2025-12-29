@@ -14,6 +14,7 @@ class StartSandboxActionCommand(BaseModel):
 
     tool_id: UUID
     version_id: UUID
+    snapshot_id: UUID
     action_id: str
     input: dict[str, JsonValue]
     expected_state_rev: int

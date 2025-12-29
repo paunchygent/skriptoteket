@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from uuid import UUID
 
 from pydantic import JsonValue
 
@@ -53,6 +54,17 @@ def compute_settings_schema_hash(*, settings_schema: ToolSettingsSchema) -> str:
 
 def compute_settings_session_context(*, settings_schema: ToolSettingsSchema) -> str:
     return f"settings:{compute_settings_schema_hash(settings_schema=settings_schema)[:32]}"
+
+
+def compute_sandbox_settings_context(
+    *,
+    draft_head_id: UUID,
+    settings_schema: ToolSettingsSchema,
+) -> str:
+    schema_hash = compute_settings_schema_hash(settings_schema=settings_schema)
+    payload = f"{draft_head_id}:{schema_hash}"
+    context_hash = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    return f"sandbox-settings:{context_hash[:32]}"
 
 
 def normalize_tool_settings_values(

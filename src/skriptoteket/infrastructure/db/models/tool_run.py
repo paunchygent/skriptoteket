@@ -23,6 +23,12 @@ class ToolRunModel(Base):
         index=True,
         nullable=True,
     )
+    snapshot_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("sandbox_snapshots.id", ondelete="SET NULL"),
+        index=True,
+        nullable=True,
+    )
 
     source_kind: Mapped[str] = mapped_column(
         String(32),

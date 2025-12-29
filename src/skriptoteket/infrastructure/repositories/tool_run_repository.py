@@ -32,6 +32,7 @@ class PostgreSQLToolRunRepository(ToolRunRepositoryProtocol):
             id=run.id,
             tool_id=run.tool_id,
             version_id=run.version_id,
+            snapshot_id=run.snapshot_id,
             source_kind=run.source_kind.value,
             curated_app_id=run.curated_app_id,
             curated_app_version=run.curated_app_version,

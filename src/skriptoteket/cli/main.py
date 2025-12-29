@@ -46,6 +46,9 @@ from skriptoteket.infrastructure.repositories.profession_repository import (
 from skriptoteket.infrastructure.repositories.profile_repository import (
     PostgreSQLProfileRepository,
 )
+from skriptoteket.infrastructure.repositories.sandbox_snapshot_repository import (
+    PostgreSQLSandboxSnapshotRepository,
+)
 from skriptoteket.infrastructure.repositories.tool_maintainer_repository import (
     PostgreSQLToolMaintainerRepository,
 )
@@ -238,6 +241,29 @@ async def _cleanup_session_files_async(*, artifacts_root: Path | None) -> None:
         f"deleted_bytes={result.deleted_bytes} "
         f"artifacts_root={effective_root}"
     )
+
+
+@app.command()
+def cleanup_sandbox_snapshots() -> None:
+    """Delete expired sandbox snapshots (systemd timer)."""
+    asyncio.run(_cleanup_sandbox_snapshots_async())
+
+
+async def _cleanup_sandbox_snapshots_async() -> None:
+    settings = Settings()
+    engine = create_async_engine(settings.DATABASE_URL, pool_pre_ping=True)
+    sessionmaker = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+
+    try:
+        async with sessionmaker() as session:
+            uow = SQLAlchemyUnitOfWork(session)
+            snapshots = PostgreSQLSandboxSnapshotRepository(session)
+            clock = UTCClock()
+            async with uow:
+                deleted = await snapshots.delete_expired(now=clock.now())
+        typer.echo(f"Cleanup sandbox snapshots complete: deleted={deleted}")
+    finally:
+        await engine.dispose()
 
 
 @app.command()

@@ -1,21 +1,35 @@
 from __future__ import annotations
 
+import json
+from collections.abc import Sequence
+from datetime import timedelta
 from uuid import UUID
+
+from pydantic import BaseModel
 
 from skriptoteket.application.scripting.commands import (
     ExecuteToolVersionCommand,
     RunSandboxCommand,
     RunSandboxResult,
+    ToolVersionOverride,
 )
 from skriptoteket.application.scripting.draft_lock_checks import require_active_draft_lock
-from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
+from skriptoteket.config import Settings
+from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.domain.scripting.models import RunContext, VersionState
+from skriptoteket.domain.scripting.sandbox_snapshots import SandboxSnapshot
+from skriptoteket.domain.scripting.tool_inputs import normalize_tool_input_schema
+from skriptoteket.domain.scripting.tool_settings import (
+    compute_sandbox_settings_context,
+    normalize_tool_settings_schema,
+)
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.draft_locks import DraftLockRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.sandbox_snapshots import SandboxSnapshotRepositoryProtocol
 from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
     RunSandboxHandlerProtocol,
@@ -26,9 +40,46 @@ from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 
-def _sandbox_context(version_id: UUID) -> str:
-    """Build sandbox session context per ADR-0038."""
-    return f"sandbox:{version_id}"
+def _sandbox_context(snapshot_id: UUID) -> str:
+    """Build sandbox session context per ADR-0044."""
+    return f"sandbox:{snapshot_id}"
+
+
+def _normalize_optional_text(value: str | None) -> str | None:
+    if value is None:
+        return None
+    normalized = value.strip()
+    return normalized if normalized else None
+
+
+def _serialize_schema(schema: Sequence[BaseModel] | None) -> list[dict[str, object]] | None:
+    if schema is None:
+        return None
+    return [item.model_dump(mode="json") for item in schema]
+
+
+def _snapshot_payload_bytes(
+    *,
+    entrypoint: str,
+    source_code: str,
+    settings_schema: Sequence[BaseModel] | None,
+    input_schema: Sequence[BaseModel] | None,
+    usage_instructions: str | None,
+) -> int:
+    payload = {
+        "entrypoint": entrypoint,
+        "source_code": source_code,
+        "settings_schema": _serialize_schema(settings_schema),
+        "input_schema": _serialize_schema(input_schema),
+        "usage_instructions": usage_instructions,
+    }
+    canonical = json.dumps(
+        payload,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return len(canonical)
 
 
 class RunSandboxHandler(RunSandboxHandlerProtocol):
@@ -44,6 +95,8 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
         session_files: SessionFileStorageProtocol,
         locks: DraftLockRepositoryProtocol,
         clock: ClockProtocol,
+        snapshots: SandboxSnapshotRepositoryProtocol,
+        settings: Settings,
     ) -> None:
         self._uow = uow
         self._versions = versions
@@ -54,6 +107,8 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
         self._session_files = session_files
         self._locks = locks
         self._clock = clock
+        self._snapshots = snapshots
+        self._settings = settings
 
     async def handle(
         self,
@@ -63,6 +118,34 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
     ) -> RunSandboxResult:
         require_at_least_role(user=actor, role=Role.CONTRIBUTOR)
         now = self._clock.now()
+        entrypoint = command.snapshot_payload.entrypoint.strip()
+        if not entrypoint:
+            raise validation_error("entrypoint is required")
+        source_code = command.snapshot_payload.source_code
+        settings_schema = normalize_tool_settings_schema(
+            settings_schema=command.snapshot_payload.settings_schema
+        )
+        input_schema = normalize_tool_input_schema(
+            input_schema=command.snapshot_payload.input_schema
+        )
+        usage_instructions = _normalize_optional_text(command.snapshot_payload.usage_instructions)
+        payload_bytes = _snapshot_payload_bytes(
+            entrypoint=entrypoint,
+            source_code=source_code,
+            settings_schema=settings_schema,
+            input_schema=input_schema,
+            usage_instructions=usage_instructions,
+        )
+        if payload_bytes > self._settings.SANDBOX_SNAPSHOT_MAX_BYTES:
+            raise validation_error(
+                "Sandbox snapshot payload exceeds size limit",
+                details={
+                    "payload_bytes": payload_bytes,
+                    "max_bytes": self._settings.SANDBOX_SNAPSHOT_MAX_BYTES,
+                },
+            )
+        snapshot_id = self._id_generator.new_uuid()
+        settings_context: str | None = None
 
         async with self._uow:
             version = await self._versions.get_by_id(version_id=command.version_id)
@@ -126,12 +209,43 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
                     now=now,
                 )
 
+            if settings_schema is not None:
+                settings_context = compute_sandbox_settings_context(
+                    draft_head_id=version.id,
+                    settings_schema=settings_schema,
+                )
+
+            snapshot = SandboxSnapshot(
+                id=snapshot_id,
+                tool_id=version.tool_id,
+                draft_head_id=version.id,
+                created_by_user_id=actor.id,
+                entrypoint=entrypoint,
+                source_code=source_code,
+                settings_schema=settings_schema,
+                input_schema=input_schema,
+                usage_instructions=usage_instructions,
+                payload_bytes=payload_bytes,
+                created_at=now,
+                expires_at=now + timedelta(seconds=self._settings.SANDBOX_SNAPSHOT_TTL_SECONDS),
+            )
+            await self._snapshots.create(snapshot=snapshot)
+
         result = await self._execute.handle(
             actor=actor,
             command=ExecuteToolVersionCommand(
                 tool_id=command.tool_id,
                 version_id=command.version_id,
+                snapshot_id=snapshot_id,
                 context=RunContext.SANDBOX,
+                settings_context=settings_context,
+                version_override=ToolVersionOverride(
+                    entrypoint=entrypoint,
+                    source_code=source_code,
+                    settings_schema=settings_schema,
+                    input_schema=input_schema,
+                    usage_instructions=usage_instructions,
+                ),
                 input_files=command.input_files,
                 input_values=command.input_values,
             ),
@@ -142,7 +256,7 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
             await self._session_files.store_files(
                 tool_id=command.tool_id,
                 user_id=actor.id,
-                context=_sandbox_context(command.version_id),
+                context=_sandbox_context(snapshot_id),
                 files=command.input_files,
             )
 
@@ -150,7 +264,7 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
         state_rev: int | None = None
         run = result.run
         if run.ui_payload is not None and run.ui_payload.next_actions:
-            context = _sandbox_context(command.version_id)
+            context = _sandbox_context(snapshot_id)
             async with self._uow:
                 session = await self._sessions.get_or_create(
                     session_id=self._id_generator.new_uuid(),
@@ -168,4 +282,4 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
                 )
                 state_rev = updated_session.state_rev
 
-        return RunSandboxResult(run=result.run, state_rev=state_rev)
+        return RunSandboxResult(run=result.run, state_rev=state_rev, snapshot_id=snapshot_id)

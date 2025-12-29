@@ -11,12 +11,35 @@ from skriptoteket.domain.scripting.tool_settings import ToolSettingsSchema
 type InputFile = tuple[str, bytes]
 
 
+class ToolVersionOverride(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    entrypoint: str | None = None
+    source_code: str | None = None
+    settings_schema: ToolSettingsSchema | None = None
+    input_schema: ToolInputSchema | None = None
+    usage_instructions: str | None = None
+
+
+class SandboxSnapshotPayload(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    entrypoint: str = Field(..., min_length=1, max_length=128)
+    source_code: str = Field(..., min_length=1)
+    settings_schema: ToolSettingsSchema | None = None
+    input_schema: ToolInputSchema | None = None
+    usage_instructions: str | None = None
+
+
 class ExecuteToolVersionCommand(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     tool_id: UUID
     version_id: UUID
+    snapshot_id: UUID | None = None
     context: RunContext
+    settings_context: str | None = None
+    version_override: ToolVersionOverride | None = None
     input_files: list[InputFile] = Field(default_factory=list)
     input_values: dict[str, JsonValue] = Field(default_factory=dict)
 
@@ -113,6 +136,7 @@ class RunSandboxCommand(BaseModel):
 
     tool_id: UUID
     version_id: UUID
+    snapshot_payload: SandboxSnapshotPayload
     input_files: list[InputFile] = Field(default_factory=list)
     input_values: dict[str, JsonValue] = Field(default_factory=dict)
 
@@ -122,6 +146,7 @@ class RunSandboxResult(BaseModel):
 
     run: ToolRun
     state_rev: int | None = None  # Populated when run has next_actions
+    snapshot_id: UUID
 
 
 class RunActiveToolCommand(BaseModel):

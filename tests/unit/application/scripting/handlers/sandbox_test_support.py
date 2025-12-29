@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from unittest.mock import Mock
 from uuid import UUID, uuid4
 
 from skriptoteket.domain.scripting.input_files import InputFileEntry, InputManifest
@@ -135,4 +136,61 @@ def make_ui_payload_with_next_actions() -> UiPayloadV2:
         next_actions=[
             UiFormAction(action_id="next_step", label="Continue", fields=[]),
         ],
+    )
+
+
+def make_snapshot_payload():
+    """Create a SandboxSnapshotPayload for testing."""
+    from skriptoteket.application.scripting.commands import SandboxSnapshotPayload
+
+    return SandboxSnapshotPayload(
+        entrypoint="run_tool",
+        source_code=(
+            "def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>ok</p>'\n"
+        ),
+        settings_schema=None,
+        input_schema=None,
+        usage_instructions=None,
+    )
+
+
+def make_settings_mock() -> Mock:
+    """Create a Settings mock with sandbox snapshot config."""
+    from skriptoteket.config import Settings
+
+    settings = Mock(spec=Settings)
+    settings.SANDBOX_SNAPSHOT_TTL_SECONDS = 86400  # 24 hours
+    settings.SANDBOX_SNAPSHOT_MAX_BYTES = 2_000_000  # 2 MB
+    return settings
+
+
+def make_sandbox_snapshot(
+    *,
+    snapshot_id: UUID | None = None,
+    tool_id: UUID,
+    draft_head_id: UUID,
+    created_by_user_id: UUID,
+    now: datetime,
+    expired: bool = False,
+):
+    """Create a SandboxSnapshot for testing."""
+    from datetime import timedelta
+
+    from skriptoteket.domain.scripting.sandbox_snapshots import SandboxSnapshot
+
+    return SandboxSnapshot(
+        id=snapshot_id or uuid4(),
+        tool_id=tool_id,
+        draft_head_id=draft_head_id,
+        created_by_user_id=created_by_user_id,
+        entrypoint="run_tool",
+        source_code=(
+            "def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>ok</p>'\n"
+        ),
+        settings_schema=None,
+        input_schema=None,
+        usage_instructions=None,
+        payload_bytes=100,
+        created_at=now,
+        expires_at=now - timedelta(hours=1) if expired else now + timedelta(hours=24),
     )

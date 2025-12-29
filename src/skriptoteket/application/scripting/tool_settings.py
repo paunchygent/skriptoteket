@@ -67,3 +67,31 @@ class UpdateToolVersionSettingsResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     settings: ToolSettingsState
+
+
+class ResolveSandboxSettingsQuery(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    version_id: UUID
+    settings_schema: list[UiActionField] | None
+
+
+class ResolveSandboxSettingsResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    settings: ToolSettingsState
+
+
+class SaveSandboxSettingsCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    version_id: UUID
+    settings_schema: list[UiActionField] | None
+    expected_state_rev: int
+    values: dict[str, JsonValue]
+
+
+class SaveSandboxSettingsResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    settings: ToolSettingsState

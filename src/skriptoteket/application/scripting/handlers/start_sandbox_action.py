@@ -8,7 +8,10 @@ from __future__ import annotations
 import json
 from uuid import UUID
 
-from skriptoteket.application.scripting.commands import ExecuteToolVersionCommand
+from skriptoteket.application.scripting.commands import (
+    ExecuteToolVersionCommand,
+    ToolVersionOverride,
+)
 from skriptoteket.application.scripting.draft_lock_checks import require_active_draft_lock
 from skriptoteket.application.scripting.interactive_sandbox import (
     StartSandboxActionCommand,
@@ -18,9 +21,12 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.domain.scripting.models import RunContext, VersionState
+from skriptoteket.domain.scripting.sandbox_snapshots import SandboxSnapshot
+from skriptoteket.domain.scripting.tool_settings import compute_sandbox_settings_context
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.draft_locks import DraftLockRepositoryProtocol
+from skriptoteket.protocols.sandbox_snapshots import SandboxSnapshotRepositoryProtocol
 from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
     StartSandboxActionHandlerProtocol,
@@ -31,9 +37,36 @@ from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 
-def _sandbox_context(version_id: UUID) -> str:
-    """Build sandbox session context per ADR-0038."""
-    return f"sandbox:{version_id}"
+def _sandbox_context(snapshot_id: UUID) -> str:
+    """Build sandbox session context per ADR-0044."""
+    return f"sandbox:{snapshot_id}"
+
+
+def _ensure_snapshot_is_valid(
+    *,
+    snapshot: SandboxSnapshot,
+    command: StartSandboxActionCommand,
+) -> None:
+    if snapshot.tool_id != command.tool_id:
+        raise DomainError(
+            code=ErrorCode.CONFLICT,
+            message="Sandbox snapshot does not belong to the specified Tool",
+            details={
+                "tool_id": str(command.tool_id),
+                "snapshot_id": str(snapshot.id),
+                "snapshot_tool_id": str(snapshot.tool_id),
+            },
+        )
+    if snapshot.draft_head_id != command.version_id:
+        raise DomainError(
+            code=ErrorCode.CONFLICT,
+            message="Sandbox snapshot does not match the specified draft head",
+            details={
+                "version_id": str(command.version_id),
+                "snapshot_id": str(snapshot.id),
+                "snapshot_draft_head_id": str(snapshot.draft_head_id),
+            },
+        )
 
 
 class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
@@ -54,6 +87,7 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
         session_files: SessionFileStorageProtocol,
         locks: DraftLockRepositoryProtocol,
         clock: ClockProtocol,
+        snapshots: SandboxSnapshotRepositoryProtocol,
     ) -> None:
         self._uow = uow
         self._versions = versions
@@ -63,6 +97,7 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
         self._session_files = session_files
         self._locks = locks
         self._clock = clock
+        self._snapshots = snapshots
 
     async def handle(
         self,
@@ -72,8 +107,8 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
     ) -> StartSandboxActionResult:
         require_at_least_role(user=actor, role=Role.CONTRIBUTOR)
 
-        context = _sandbox_context(command.version_id)
         now = self._clock.now()
+        context = _sandbox_context(command.snapshot_id)
 
         # Validate version and permissions
         async with self._uow:
@@ -137,6 +172,17 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
                     now=now,
                 )
 
+            snapshot = await self._snapshots.get_by_id(snapshot_id=command.snapshot_id)
+            if snapshot is None:
+                raise not_found("SandboxSnapshot", str(command.snapshot_id))
+            if snapshot.expires_at <= now:
+                raise DomainError(
+                    code=ErrorCode.CONFLICT,
+                    message="Sandbox snapshot has expired. Run the sandbox again.",
+                    details={"snapshot_id": str(command.snapshot_id)},
+                )
+            _ensure_snapshot_is_valid(snapshot=snapshot, command=command)
+
             # Get session and validate state_rev
             session = await self._sessions.get(
                 tool_id=command.tool_id,
@@ -147,7 +193,10 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
                 raise DomainError(
                     code=ErrorCode.NOT_FOUND,
                     message="Sandbox session not found. Run the tool first.",
-                    details={"version_id": str(command.version_id)},
+                    details={
+                        "version_id": str(command.version_id),
+                        "snapshot_id": str(command.snapshot_id),
+                    },
                 )
             if session.state_rev != command.expected_state_rev:
                 raise DomainError(
@@ -175,13 +224,29 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
             context=context,
         )
 
+        settings_context: str | None = None
+        if snapshot.settings_schema is not None:
+            settings_context = compute_sandbox_settings_context(
+                draft_head_id=snapshot.draft_head_id,
+                settings_schema=snapshot.settings_schema,
+            )
+
         # Execute the tool version in sandbox context
         result = await self._execute.handle(
             actor=actor,
             command=ExecuteToolVersionCommand(
                 tool_id=command.tool_id,
                 version_id=command.version_id,
+                snapshot_id=command.snapshot_id,
                 context=RunContext.SANDBOX,
+                settings_context=settings_context,
+                version_override=ToolVersionOverride(
+                    entrypoint=snapshot.entrypoint,
+                    source_code=snapshot.source_code,
+                    settings_schema=snapshot.settings_schema,
+                    input_schema=snapshot.input_schema,
+                    usage_instructions=snapshot.usage_instructions,
+                ),
                 input_files=[*persisted_files, ("action.json", input_bytes)],
             ),
         )

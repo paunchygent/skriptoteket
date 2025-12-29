@@ -56,6 +56,8 @@ class Settings(BaseSettings):
     UPLOAD_MAX_TOTAL_BYTES: int = 50_000_000
 
     SESSION_FILES_TTL_SECONDS: int = 60 * 60 * 24  # 24 hours (ADR-0039)
+    SANDBOX_SNAPSHOT_TTL_SECONDS: int = 60 * 60 * 24  # 24 hours (ADR-0044)
+    SANDBOX_SNAPSHOT_MAX_BYTES: int = 2_000_000  # 2 MB (ADR-0044)
 
     # Tracing (ST-07-03) - opt-in for monolith
     OTEL_TRACING_ENABLED: bool = False

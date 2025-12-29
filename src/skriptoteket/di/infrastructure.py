@@ -31,6 +31,9 @@ from skriptoteket.infrastructure.repositories.profession_repository import (
 from skriptoteket.infrastructure.repositories.profile_repository import (
     PostgreSQLProfileRepository,
 )
+from skriptoteket.infrastructure.repositories.sandbox_snapshot_repository import (
+    PostgreSQLSandboxSnapshotRepository,
+)
 from skriptoteket.infrastructure.repositories.script_suggestion_decision_repository import (
     PostgreSQLScriptSuggestionDecisionRepository,
 )
@@ -88,6 +91,7 @@ from skriptoteket.protocols.identity import (
     UserRepositoryProtocol,
 )
 from skriptoteket.protocols.runner import ArtifactManagerProtocol, ToolRunnerProtocol
+from skriptoteket.protocols.sandbox_snapshots import SandboxSnapshotRepositoryProtocol
 from skriptoteket.protocols.scripting import (
     ToolRunRepositoryProtocol,
     ToolVersionRepositoryProtocol,
@@ -282,6 +286,10 @@ class InfrastructureProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def draft_lock_repo(self, session: AsyncSession) -> DraftLockRepositoryProtocol:
         return PostgreSQLDraftLockRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def sandbox_snapshot_repo(self, session: AsyncSession) -> SandboxSnapshotRepositoryProtocol:
+        return PostgreSQLSandboxSnapshotRepository(session)
 
     @provide(scope=Scope.REQUEST)
     def script_suggestion_repo(self, session: AsyncSession) -> SuggestionRepositoryProtocol:
