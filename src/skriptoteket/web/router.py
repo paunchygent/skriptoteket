@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from skriptoteket.web.api.v1 import admin_tools as api_v1_admin_tools
+from skriptoteket.web.api.v1 import admin_users as api_v1_admin_users
 from skriptoteket.web.api.v1 import apps as api_v1_apps
 from skriptoteket.web.api.v1 import auth as api_v1_auth
 from skriptoteket.web.api.v1 import catalog as api_v1_catalog
@@ -28,6 +29,7 @@ router.include_router(api_v1_profile.router)
 router.include_router(api_v1_suggestions.router)
 router.include_router(api_v1_tools.router)
 router.include_router(api_v1_admin_tools.router)
+router.include_router(api_v1_admin_users.router)
 router.include_router(api_v1_editor.router)
 router.include_router(interactive_tools_routes.router)
 

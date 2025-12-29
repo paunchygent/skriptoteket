@@ -30,6 +30,7 @@ description: Skriptoteket frontend development (FastAPI backend + full Vue/Vite 
    - Backend dev: `pdm run dev`
    - Frontend install: `pdm run fe-install`
    - SPA dev server: `pdm run fe-dev`
+   - SPA tests: `pdm run fe-test` (Vitest), `pdm run fe-type-check`, `pdm run fe-lint`
 2. Implement in this order:
    - OpenAPI models (backend) -> regenerate TypeScript types (`pdm run fe-gen-api-types`)
    - API client calls in SPA
@@ -61,6 +62,14 @@ description: Skriptoteket frontend development (FastAPI backend + full Vue/Vite 
 - Future HuleEdu integration: identity federation without shared authorization (keep Skriptoteket roles local).
 - In the SPA, isolate auth transport details behind a small adapter (cookie vs bearer) so the UI can run in both modes.
 
+### Testing (Vitest)
+
+- Config: `frontend/apps/skriptoteket/vitest.config.ts`
+- Setup: `frontend/apps/skriptoteket/src/test/setup.ts`
+- Tests: `frontend/apps/skriptoteket/src/**/*.spec.ts` (colocate with code)
+- Commands: `pdm run fe-test` / `pdm run fe-test-watch` / `pdm run fe-test-coverage`
+- Prefer testing pure helpers/composables and mocking HTTP via `vi.mock` rather than snapshot-heavy component tests.
+
 ## HuleEdu compatibility checklist
 
 - Versions: Vue 3.5.x / Pinia 3.x / Vue Router 4.6.x / Vite 6.x (match HuleEdu minor lines).
@@ -85,4 +94,6 @@ Use Context7 when you need exact API details or version-specific behavior:
 - SPA hosting + history fallback: `docs/adr/adr-0028-spa-hosting-and-history-fallback.md`
 - OpenAPI + TS generation: `docs/adr/adr-0030-openapi-and-frontend-types.md`
 - Tailwind v4 tokens bridge: `docs/adr/adr-0032-tailwind-4-theme-tokens.md`
+- Testing runbook: `docs/runbooks/runbook-testing.md`
 - SPA design system rules: `.agent/rules/045-huleedu-design-system.md`
+- Testing standards: `.agent/rules/070-testing-standards.md`

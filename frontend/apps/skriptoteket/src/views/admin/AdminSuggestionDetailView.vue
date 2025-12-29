@@ -187,8 +187,8 @@ const showDecisionFields = computed(() => decision.value === "accept");
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <div class="space-y-1">
-        <h1 class="text-2xl font-semibold text-navy">Granska förslag</h1>
-        <p class="text-sm text-navy/70">Läs, besluta och se historik.</p>
+        <h1 class="page-title">Granska förslag</h1>
+        <p class="page-description">Läs, besluta och se historik.</p>
       </div>
       <button
         type="button"

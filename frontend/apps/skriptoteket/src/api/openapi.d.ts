@@ -107,6 +107,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Admin Users */
+        get: operations["list_admin_users_api_v1_admin_users_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Admin User */
+        get: operations["get_admin_user_api_v1_admin_users__user_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{user_id}/login-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Admin User Login Events */
+        get: operations["get_admin_user_login_events_api_v1_admin_users__user_id__login_events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/{app_id}": {
         parameters: {
             query?: never;
@@ -1010,6 +1061,16 @@ export interface components {
             /** Version Count */
             version_count: number;
         };
+        /** AdminUserLoginEventsResponse */
+        AdminUserLoginEventsResponse: {
+            /** Events */
+            events: components["schemas"]["LoginEvent"][];
+            user: components["schemas"]["User"];
+        };
+        /** AdminUserResponse */
+        AdminUserResponse: {
+            user: components["schemas"]["User"];
+        };
         /**
          * AppDetailResponse
          * @description Response payload for a curated app detail lookup.
@@ -1478,6 +1539,13 @@ export interface components {
             /** Tools */
             tools: components["schemas"]["AdminToolItem"][];
         };
+        /** ListAdminUsersResponse */
+        ListAdminUsersResponse: {
+            /** Total */
+            total: number;
+            /** Users */
+            users: components["schemas"]["User"][];
+        };
         /**
          * ListAllCategoriesResponse
          * @description Response for listing all categories (unfiltered).
@@ -1561,6 +1629,46 @@ export interface components {
             /** Tools */
             tools: components["schemas"]["ToolItem"][];
         };
+        /** LoginEvent */
+        LoginEvent: {
+            auth_provider: components["schemas"]["AuthProvider"];
+            /** Correlation Id */
+            correlation_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Failure Code */
+            failure_code: string | null;
+            /** Geo City */
+            geo_city: string | null;
+            /** Geo Country Code */
+            geo_country_code: string | null;
+            /** Geo Latitude */
+            geo_latitude: number | null;
+            /** Geo Longitude */
+            geo_longitude: number | null;
+            /** Geo Region */
+            geo_region: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Ip Address */
+            ip_address: string | null;
+            status: components["schemas"]["LoginEventStatus"];
+            /** User Agent */
+            user_agent: string | null;
+            /** User Id */
+            user_id: string | null;
+        };
+        /**
+         * LoginEventStatus
+         * @enum {string}
+         */
+        LoginEventStatus: "success" | "failure";
         /** LoginRequest */
         LoginRequest: {
             /** Email */
@@ -2854,6 +2962,102 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublishToolResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_admin_users_api_v1_admin_users_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListAdminUsersResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_admin_user_api_v1_admin_users__user_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_admin_user_login_events_api_v1_admin_users__user_id__login_events_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserLoginEventsResponse"];
                 };
             };
             /** @description Validation Error */

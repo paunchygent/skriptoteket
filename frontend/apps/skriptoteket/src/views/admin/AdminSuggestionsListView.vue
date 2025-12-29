@@ -80,8 +80,8 @@ onMounted(() => {
 <template>
   <div class="space-y-6">
     <div class="space-y-2">
-      <h1 class="text-2xl font-semibold text-navy">Förslag (granskning)</h1>
-      <p class="text-sm text-navy/70">Lista över inkomna förslag som väntar på beslut.</p>
+      <h1 class="page-title">Förslag (granskning)</h1>
+      <p class="page-description">Lista över inkomna förslag som väntar på beslut.</p>
     </div>
 
     <div

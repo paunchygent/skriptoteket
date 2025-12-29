@@ -83,6 +83,18 @@ export const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, minRole: "admin" },
   },
   {
+    path: "/admin/users",
+    name: "admin-users",
+    component: () => import("../views/admin/AdminUsersView.vue"),
+    meta: { requiresAuth: true, minRole: "superuser" },
+  },
+  {
+    path: "/admin/users/:userId",
+    name: "admin-user-detail",
+    component: () => import("../views/admin/AdminUserDetailView.vue"),
+    meta: { requiresAuth: true, minRole: "superuser" },
+  },
+  {
     path: "/admin/tools/:toolId",
     name: "admin-tool-editor",
     component: () => import("../views/admin/ScriptEditorView.vue"),

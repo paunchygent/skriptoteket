@@ -65,10 +65,8 @@ async function submit(): Promise<void> {
 <template>
   <div class="max-w-xl mx-auto space-y-6">
     <header class="space-y-2">
-      <h1 class="text-3xl font-semibold text-navy">Skapa konto</h1>
-      <p class="text-sm text-navy/70">
-        Registrera dig för att få tillgång till verktygen i Skriptoteket.
-      </p>
+      <h1 class="page-title">Skapa konto</h1>
+      <p class="page-description">Registrera dig för att få tillgång till verktygen i Skriptoteket.</p>
     </header>
 
     <div

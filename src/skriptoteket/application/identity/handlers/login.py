@@ -10,7 +10,8 @@ from skriptoteket.domain.identity.lockout import (
     record_failed_attempt,
     reset_failed_attempts,
 )
-from skriptoteket.domain.identity.models import AuthProvider, Session
+from skriptoteket.domain.identity.login_events import LoginEvent, LoginEventStatus
+from skriptoteket.domain.identity.models import AuthProvider, Session, User
 from skriptoteket.observability.metrics import get_metrics
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -21,6 +22,7 @@ from skriptoteket.protocols.identity import (
     SessionRepositoryProtocol,
     UserRepositoryProtocol,
 )
+from skriptoteket.protocols.login_events import LoginEventRepositoryProtocol
 from skriptoteket.protocols.token_generator import TokenGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
@@ -34,6 +36,7 @@ class LoginHandler(LoginHandlerProtocol):
         users: UserRepositoryProtocol,
         profiles: ProfileRepositoryProtocol,
         sessions: SessionRepositoryProtocol,
+        login_events: LoginEventRepositoryProtocol,
         password_hasher: PasswordHasherProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -44,6 +47,7 @@ class LoginHandler(LoginHandlerProtocol):
         self._users = users
         self._profiles = profiles
         self._sessions = sessions
+        self._login_events = login_events
         self._password_hasher = password_hasher
         self._clock = clock
         self._id_generator = id_generator
@@ -51,10 +55,18 @@ class LoginHandler(LoginHandlerProtocol):
 
     async def handle(self, command: LoginCommand) -> LoginResult:
         metrics = get_metrics()
-        try:
-            async with self._uow:
-                normalized_email = command.email.strip().lower()
-                user_auth = await self._users.get_auth_by_email(normalized_email)
+        error_to_raise: DomainError | None = None
+        result: LoginResult | None = None
+
+        async with self._uow:
+            normalized_email = command.email.strip().lower()
+            user_auth = await self._users.get_auth_by_email(normalized_email)
+            user: User | None = user_auth.user if user_auth else None
+            auth_provider = user.auth_provider if user else command.auth_provider
+            now = self._clock.now()
+            event_user_id = user.id if user else None
+
+            try:
                 if not user_auth or not user_auth.user.is_active:
                     raise DomainError(
                         code=ErrorCode.INVALID_CREDENTIALS,
@@ -62,6 +74,7 @@ class LoginHandler(LoginHandlerProtocol):
                     )
 
                 user = user_auth.user
+                event_user_id = user.id
 
                 if user.auth_provider is not AuthProvider.LOCAL:
                     raise DomainError(
@@ -75,7 +88,6 @@ class LoginHandler(LoginHandlerProtocol):
                         message="Invalid credentials",
                     )
 
-                now = self._clock.now()
                 if is_locked_out(user=user, now=now):
                     retry_after_seconds = 0
                     if user.locked_until is not None:
@@ -95,6 +107,7 @@ class LoginHandler(LoginHandlerProtocol):
                 ):
                     updated_user = record_failed_attempt(user=user, now=now)
                     await self._users.update(user=updated_user)
+                    event_user_id = updated_user.id
                     if updated_user.locked_until is not None:
                         retry_after_seconds = max(
                             0,
@@ -112,6 +125,7 @@ class LoginHandler(LoginHandlerProtocol):
 
                 updated_user = reset_failed_attempts(user=user, now=now)
                 await self._users.update(user=updated_user)
+                event_user_id = updated_user.id
 
                 session = Session(
                     id=self._id_generator.new_uuid(),
@@ -125,14 +139,42 @@ class LoginHandler(LoginHandlerProtocol):
                 await self._sessions.create(session=session)
 
                 profile = await self._profiles.get_by_user_id(user_id=updated_user.id)
-        except DomainError:
+                result = LoginResult(
+                    session_id=session.id,
+                    csrf_token=session.csrf_token,
+                    user=updated_user,
+                    profile=profile,
+                )
+                status = LoginEventStatus.SUCCESS
+                failure_code: str | None = None
+            except DomainError as exc:
+                error_to_raise = exc
+                status = LoginEventStatus.FAILURE
+                failure_code = exc.code.value
+
+            event = LoginEvent(
+                id=self._id_generator.new_uuid(),
+                user_id=event_user_id,
+                status=status,
+                failure_code=failure_code,
+                ip_address=command.ip_address,
+                user_agent=command.user_agent,
+                auth_provider=auth_provider,
+                correlation_id=command.correlation_id,
+                geo_country_code=None,
+                geo_region=None,
+                geo_city=None,
+                geo_latitude=None,
+                geo_longitude=None,
+                created_at=now,
+            )
+            await self._login_events.create(event=event)
+
+        if error_to_raise is not None:
             metrics["logins_total"].labels(status="failure").inc()
-            raise
+            raise error_to_raise
 
         metrics["logins_total"].labels(status="success").inc()
-        return LoginResult(
-            session_id=session.id,
-            csrf_token=session.csrf_token,
-            user=updated_user,
-            profile=profile,
-        )
+        if result is None:
+            raise DomainError(code=ErrorCode.INTERNAL_ERROR, message="Login failed")
+        return result

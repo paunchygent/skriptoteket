@@ -2,6 +2,25 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { ApiError, isApiError, apiFetch, apiGet, apiPost } from "./client";
 import { useAuthStore } from "../stores/auth";
+import type { components } from "./openapi";
+
+type ApiUser = components["schemas"]["User"];
+
+// Test factory - creates minimal user for testing
+function createTestUser(overrides: Partial<ApiUser> = {}): ApiUser {
+  return {
+    id: "550e8400-e29b-41d4-a716-446655440000",
+    email: "test@test.com",
+    role: "user",
+    auth_provider: "local",
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z",
+    email_verified: true,
+    failed_login_attempts: 0,
+    is_active: true,
+    ...overrides,
+  };
+}
 
 describe("client", () => {
   beforeEach(() => {
@@ -181,7 +200,7 @@ describe("client", () => {
 
     it("clears auth on 401 response", async () => {
       const auth = useAuthStore();
-      auth.user = { id: 1, email: "test@test.com", role: "user", display_name: "Test" };
+      auth.user = createTestUser();
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: false,

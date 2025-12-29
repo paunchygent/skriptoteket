@@ -15,6 +15,7 @@ outcome: "Operators can monitor Skriptoteket health via Grafana dashboards, rece
 - Grafana datasource provisioning verification (Prometheus, Loki, Jaeger with correlation)
 - HTTP metrics dashboard (request rates, error rates, latencies by endpoint)
 - User session metrics (active sessions, login rates, users by role)
+- Login events audit trail (superuser-only account history, 90-day retention)
 - Prometheus alerting rules (service availability, error rate thresholds, disk usage)
 - Jaeger public access via nginx-proxy with SSL (jaeger.hemma.hule.education)
 - Runbook updates for alerting operations
@@ -33,6 +34,7 @@ outcome: "Operators can monitor Skriptoteket health via Grafana dashboards, rece
 - ST-17-04: Jaeger public access
 - ST-17-05: Runbook updates and verification
 - ST-17-06: User session metrics
+- ST-17-07: Login events audit trail
 
 ## Risks
 

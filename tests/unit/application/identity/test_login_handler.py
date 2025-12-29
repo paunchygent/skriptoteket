@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
@@ -20,6 +20,7 @@ from skriptoteket.protocols.identity import (
     SessionRepositoryProtocol,
     UserRepositoryProtocol,
 )
+from skriptoteket.protocols.login_events import LoginEventRepositoryProtocol
 from skriptoteket.protocols.token_generator import TokenGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.identity_fixtures import make_user
@@ -49,6 +50,9 @@ async def test_login_creates_session_and_returns_user(now: datetime) -> None:
     users.update.return_value = updated_user
 
     sessions = AsyncMock(spec=SessionRepositoryProtocol)
+    login_events = AsyncMock(spec=LoginEventRepositoryProtocol)
+    login_events = AsyncMock(spec=LoginEventRepositoryProtocol)
+    login_events = AsyncMock(spec=LoginEventRepositoryProtocol)
 
     profiles = AsyncMock(spec=ProfileRepositoryProtocol)
     profiles.get_by_user_id.return_value = None
@@ -61,7 +65,8 @@ async def test_login_creates_session_and_returns_user(now: datetime) -> None:
 
     session_id = uuid4()
     id_generator = Mock(spec=IdGeneratorProtocol)
-    id_generator.new_uuid.return_value = session_id
+    event_id = uuid4()
+    id_generator.new_uuid.side_effect = [session_id, event_id]
 
     token_generator = Mock(spec=TokenGeneratorProtocol)
     token_generator.new_token.return_value = "csrf"
@@ -72,6 +77,7 @@ async def test_login_creates_session_and_returns_user(now: datetime) -> None:
         users=users,
         profiles=profiles,
         sessions=sessions,
+        login_events=login_events,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -85,11 +91,15 @@ async def test_login_creates_session_and_returns_user(now: datetime) -> None:
     assert result.user == updated_user
 
     sessions.create.assert_awaited_once()
+    login_events.create.assert_awaited_once()
     users.update.assert_awaited_once()
     created_session = sessions.create.call_args.kwargs["session"]
     assert created_session.user_id == user.id
     assert created_session.created_at == fixed_now
     assert created_session.expires_at == fixed_now + timedelta(seconds=settings.SESSION_TTL_SECONDS)
+    created_event = login_events.create.call_args.kwargs["event"]
+    assert created_event.user_id == user.id
+    assert created_event.status.value == "success"
 
 
 @pytest.mark.asyncio
@@ -104,12 +114,15 @@ async def test_login_raises_for_invalid_credentials() -> None:
     users.get_auth_by_email.return_value = None
 
     sessions = AsyncMock(spec=SessionRepositoryProtocol)
+    login_events = AsyncMock(spec=LoginEventRepositoryProtocol)
 
     profiles = AsyncMock(spec=ProfileRepositoryProtocol)
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     clock = Mock(spec=ClockProtocol)
+    clock.now.return_value = datetime.now(timezone.utc)
     id_generator = Mock(spec=IdGeneratorProtocol)
+    id_generator.new_uuid.side_effect = [uuid4(), uuid4()]
     token_generator = Mock(spec=TokenGeneratorProtocol)
 
     handler = LoginHandler(
@@ -118,6 +131,7 @@ async def test_login_raises_for_invalid_credentials() -> None:
         users=users,
         profiles=profiles,
         sessions=sessions,
+        login_events=login_events,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -130,6 +144,10 @@ async def test_login_raises_for_invalid_credentials() -> None:
     assert exc_info.value.code == ErrorCode.INVALID_CREDENTIALS
     sessions.create.assert_not_awaited()
     users.update.assert_not_awaited()
+    login_events.create.assert_awaited_once()
+    created_event = login_events.create.call_args.kwargs["event"]
+    assert created_event.user_id is None
+    assert created_event.status.value == "failure"
 
 
 @pytest.mark.asyncio
@@ -164,6 +182,7 @@ async def test_login_enters_uow_before_reading_user_auth(now: datetime) -> None:
     users.update.side_effect = update_user
 
     sessions = AsyncMock(spec=SessionRepositoryProtocol)
+    login_events = AsyncMock(spec=LoginEventRepositoryProtocol)
 
     async def create_session(*, session):
         events.append("sessions_create")
@@ -181,7 +200,7 @@ async def test_login_enters_uow_before_reading_user_auth(now: datetime) -> None:
     clock.now.return_value = now
 
     id_generator = Mock(spec=IdGeneratorProtocol)
-    id_generator.new_uuid.return_value = uuid4()
+    id_generator.new_uuid.side_effect = [uuid4(), uuid4()]
 
     token_generator = Mock(spec=TokenGeneratorProtocol)
     token_generator.new_token.return_value = "csrf"
@@ -192,6 +211,7 @@ async def test_login_enters_uow_before_reading_user_auth(now: datetime) -> None:
         users=users,
         profiles=profiles,
         sessions=sessions,
+        login_events=login_events,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -223,6 +243,7 @@ async def test_login_locks_account_on_threshold(now: datetime) -> None:
     users.get_auth_by_email.return_value = user_auth
 
     sessions = AsyncMock(spec=SessionRepositoryProtocol)
+    login_events = AsyncMock(spec=LoginEventRepositoryProtocol)
 
     profiles = AsyncMock(spec=ProfileRepositoryProtocol)
 
@@ -233,6 +254,7 @@ async def test_login_locks_account_on_threshold(now: datetime) -> None:
     clock.now.return_value = now
 
     id_generator = Mock(spec=IdGeneratorProtocol)
+    id_generator.new_uuid.return_value = uuid4()
     token_generator = Mock(spec=TokenGeneratorProtocol)
 
     handler = LoginHandler(
@@ -241,6 +263,7 @@ async def test_login_locks_account_on_threshold(now: datetime) -> None:
         users=users,
         profiles=profiles,
         sessions=sessions,
+        login_events=login_events,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -258,6 +281,10 @@ async def test_login_locks_account_on_threshold(now: datetime) -> None:
     assert updated_user.failed_login_attempts == 5
     assert updated_user.locked_until == now + LOCKOUT_DURATION
     sessions.create.assert_not_awaited()
+    login_events.create.assert_awaited_once()
+    created_event = login_events.create.call_args.kwargs["event"]
+    assert created_event.user_id == user.id
+    assert created_event.status.value == "failure"
 
 
 @pytest.mark.asyncio
@@ -275,6 +302,7 @@ async def test_login_rejects_when_already_locked(now: datetime) -> None:
     users.get_auth_by_email.return_value = user_auth
 
     sessions = AsyncMock(spec=SessionRepositoryProtocol)
+    login_events = AsyncMock(spec=LoginEventRepositoryProtocol)
 
     profiles = AsyncMock(spec=ProfileRepositoryProtocol)
 
@@ -285,6 +313,7 @@ async def test_login_rejects_when_already_locked(now: datetime) -> None:
     clock.now.return_value = now
 
     id_generator = Mock(spec=IdGeneratorProtocol)
+    id_generator.new_uuid.return_value = uuid4()
     token_generator = Mock(spec=TokenGeneratorProtocol)
 
     handler = LoginHandler(
@@ -293,6 +322,7 @@ async def test_login_rejects_when_already_locked(now: datetime) -> None:
         users=users,
         profiles=profiles,
         sessions=sessions,
+        login_events=login_events,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -307,3 +337,6 @@ async def test_login_rejects_when_already_locked(now: datetime) -> None:
     password_hasher.verify.assert_not_called()
     users.update.assert_not_awaited()
     sessions.create.assert_not_awaited()
+    login_events.create.assert_awaited_once()
+    created_event = login_events.create.call_args.kwargs["event"]
+    assert created_event.status.value == "failure"

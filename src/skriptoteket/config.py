@@ -46,6 +46,8 @@ class Settings(BaseSettings):
     ARTIFACTS_ROOT: Path = Path("/var/lib/skriptoteket/artifacts")
     ARTIFACTS_RETENTION_DAYS: int = 7
 
+    LOGIN_EVENTS_RETENTION_DAYS: int = 90
+
     RUN_OUTPUT_MAX_STDOUT_BYTES: int = 200_000
     RUN_OUTPUT_MAX_STDERR_BYTES: int = 200_000
     RUN_OUTPUT_MAX_HTML_BYTES: int = 500_000

@@ -41,7 +41,16 @@ describe("toolSettingsHelpers", () => {
 
     it("converts multi_enum field from API", () => {
       const schema: SettingsField[] = [
-        { name: "tags", kind: "multi_enum", label: "Tags", values: ["a", "b", "c"] },
+        {
+          name: "tags",
+          kind: "multi_enum",
+          label: "Tags",
+          options: [
+            { label: "A", value: "a" },
+            { label: "B", value: "b" },
+            { label: "C", value: "c" },
+          ],
+        },
       ];
 
       expect(buildFormValues(schema, { tags: ["a", "b"] })).toEqual({ tags: ["a", "b"] });
@@ -52,7 +61,15 @@ describe("toolSettingsHelpers", () => {
 
     it("handles mixed invalid multi_enum arrays", () => {
       const schema: SettingsField[] = [
-        { name: "tags", kind: "multi_enum", label: "Tags", values: ["a", "b"] },
+        {
+          name: "tags",
+          kind: "multi_enum",
+          label: "Tags",
+          options: [
+            { label: "A", value: "a" },
+            { label: "B", value: "b" },
+          ],
+        },
       ];
 
       // Array with non-string items should return empty
@@ -123,7 +140,16 @@ describe("toolSettingsHelpers", () => {
 
     it("converts multi_enum field to API", () => {
       const schema: SettingsField[] = [
-        { name: "tags", kind: "multi_enum", label: "Tags", values: ["a", "b", "c"] },
+        {
+          name: "tags",
+          kind: "multi_enum",
+          label: "Tags",
+          options: [
+            { label: "A", value: "a" },
+            { label: "B", value: "b" },
+            { label: "C", value: "c" },
+          ],
+        },
       ];
 
       expect(buildApiValues(schema, { tags: ["a", "b"] })).toEqual({ tags: ["a", "b"] });
@@ -180,7 +206,7 @@ describe("toolSettingsHelpers", () => {
     it("uses default value when field not in formValues", () => {
       const schema: SettingsField[] = [
         { name: "enabled", kind: "boolean", label: "Enabled" },
-        { name: "tags", kind: "multi_enum", label: "Tags", values: ["a"] },
+        { name: "tags", kind: "multi_enum", label: "Tags", options: [{ label: "A", value: "a" }] },
       ];
 
       const result = buildApiValues(schema, {});
@@ -208,7 +234,16 @@ describe("toolSettingsHelpers", () => {
         { name: "title", kind: "string", label: "Title" },
         { name: "enabled", kind: "boolean", label: "Enabled" },
         { name: "count", kind: "integer", label: "Count" },
-        { name: "tags", kind: "multi_enum", label: "Tags", values: ["a", "b", "c"] },
+        {
+          name: "tags",
+          kind: "multi_enum",
+          label: "Tags",
+          options: [
+            { label: "A", value: "a" },
+            { label: "B", value: "b" },
+            { label: "C", value: "c" },
+          ],
+        },
       ];
       const apiValues = { title: "Test", enabled: true, count: 42, tags: ["a", "c"] };
 

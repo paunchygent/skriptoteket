@@ -43,12 +43,8 @@ onMounted(() => {
 <template>
   <div class="max-w-4xl space-y-6">
     <div class="space-y-2">
-      <h1 class="text-2xl font-semibold text-navy">
-        Mina verktyg
-      </h1>
-      <p class="text-sm text-navy/60">
-        Verktyg som du ansvarar för att underhålla.
-      </p>
+      <h1 class="page-title">Mina verktyg</h1>
+      <p class="page-description">Verktyg som du ansvarar för att underhålla.</p>
     </div>
 
     <div

@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from skriptoteket.domain.identity.models import Role, User, UserProfile
+from skriptoteket.domain.identity.models import AuthProvider, Role, User, UserProfile
 
 
 class LoginCommand(BaseModel):
@@ -12,6 +12,10 @@ class LoginCommand(BaseModel):
 
     email: str
     password: str
+    ip_address: str | None = None
+    user_agent: str | None = None
+    correlation_id: UUID | None = None
+    auth_provider: AuthProvider = AuthProvider.LOCAL
 
 
 class LoginResult(BaseModel):

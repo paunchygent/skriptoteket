@@ -23,6 +23,7 @@ const logoutInProgress = ref(false);
 const isAuthenticated = computed(() => auth.isAuthenticated);
 const canSeeContributor = computed(() => auth.hasAtLeastRole("contributor"));
 const canSeeAdmin = computed(() => auth.hasAtLeastRole("admin"));
+const canSeeSuperuser = computed(() => auth.hasAtLeastRole("superuser"));
 
 const isPageTransitionEnabled = computed(() => {
   if (pageTransition.suppressNextPageTransition.value) {
@@ -138,6 +139,7 @@ async function onLogout(): Promise<void> {
       :user="auth.user"
       :can-see-contributor="canSeeContributor"
       :can-see-admin="canSeeAdmin"
+      :can-see-superuser="canSeeSuperuser"
       :logout-error="logoutError"
       :logout-in-progress="logoutInProgress"
       @logout="onLogout"

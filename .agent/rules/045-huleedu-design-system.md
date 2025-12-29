@@ -14,6 +14,8 @@ references:
 
 Skriptoteket adopts the HuleEdu Brutalist design system. This document covers the **Vue 3 SPA implementation** using Tailwind CSS v4 with `@theme` design tokens.
 
+Frontend unit/integration tests use **Vitest** (see `.agent/rules/070-testing-standards.md` and `docs/runbooks/runbook-testing.md`).
+
 > **Legacy SSR/HTMX**: Cutover is complete (EPIC-11). SSR/HTMX is deleted; do not re-introduce it.
 
 ---

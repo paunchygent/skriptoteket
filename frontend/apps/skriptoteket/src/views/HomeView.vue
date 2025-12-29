@@ -168,7 +168,7 @@ onMounted(async () => {
       <!-- Hero Section -->
       <section class="py-16 text-center">
         <h1
-          class="font-serif text-4xl md:text-5xl font-bold text-navy tracking-tighter leading-tight"
+          class="font-serif text-5xl md:text-6xl font-bold text-navy tracking-tighter leading-tight"
         >
           Verktyg för lärare
         </h1>
@@ -254,11 +254,9 @@ onMounted(async () => {
         </div>
 
         <!-- Greeting -->
-        <section>
-          <h1 class="text-3xl font-semibold text-navy">
-            Välkommen<template v-if="userName">, {{ userName }}</template>
-          </h1>
-          <p class="mt-2 text-navy/60">Vad vill du göra?</p>
+        <section class="space-y-2">
+          <h1 class="page-title">Välkommen<template v-if="userName">, {{ userName }}</template></h1>
+          <p class="page-description">Vad vill du göra?</p>
         </section>
 
         <!-- ═══════════════════════════════════════════════════════════════════

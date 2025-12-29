@@ -235,9 +235,7 @@ onUnmounted(() => {
     </div>
 
     <div class="space-y-2">
-      <h1 class="text-2xl font-semibold text-navy">
-        {{ app?.title ?? (isLoading ? "Laddar..." : "App") }}
-      </h1>
+      <h1 class="page-title">{{ app?.title ?? (isLoading ? "Laddar..." : "App") }}</h1>
       <p
         v-if="app?.summary"
         class="text-navy/70"

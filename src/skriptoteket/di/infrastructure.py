@@ -25,6 +25,9 @@ from skriptoteket.infrastructure.repositories.category_repository import (
 from skriptoteket.infrastructure.repositories.draft_lock_repository import (
     PostgreSQLDraftLockRepository,
 )
+from skriptoteket.infrastructure.repositories.login_event_repository import (
+    PostgreSQLLoginEventRepository,
+)
 from skriptoteket.infrastructure.repositories.profession_repository import (
     PostgreSQLProfessionRepository,
 )
@@ -90,6 +93,7 @@ from skriptoteket.protocols.identity import (
     SessionRepositoryProtocol,
     UserRepositoryProtocol,
 )
+from skriptoteket.protocols.login_events import LoginEventRepositoryProtocol
 from skriptoteket.protocols.runner import ArtifactManagerProtocol, ToolRunnerProtocol
 from skriptoteket.protocols.sandbox_snapshots import SandboxSnapshotRepositoryProtocol
 from skriptoteket.protocols.scripting import (
@@ -236,6 +240,10 @@ class InfrastructureProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def user_repo(self, session: AsyncSession) -> UserRepositoryProtocol:
         return PostgreSQLUserRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def login_event_repo(self, session: AsyncSession) -> LoginEventRepositoryProtocol:
+        return PostgreSQLLoginEventRepository(session)
 
     @provide(scope=Scope.REQUEST)
     def session_repo(self, session: AsyncSession) -> SessionRepositoryProtocol:

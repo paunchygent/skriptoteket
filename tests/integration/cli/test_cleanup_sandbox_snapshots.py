@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from skriptoteket.cli.main import _cleanup_sandbox_snapshots_async
+from skriptoteket.cli.commands.cleanup_sandbox_snapshots import _cleanup_sandbox_snapshots_async
 from skriptoteket.domain.scripting.sandbox_snapshots import SandboxSnapshot
 from skriptoteket.infrastructure.repositories.sandbox_snapshot_repository import (
     PostgreSQLSandboxSnapshotRepository,

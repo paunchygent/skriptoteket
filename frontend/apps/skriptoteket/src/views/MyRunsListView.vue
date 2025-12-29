@@ -60,12 +60,8 @@ onMounted(() => {
 <template>
   <div class="max-w-3xl space-y-6">
     <div class="space-y-2">
-      <h1 class="text-2xl font-semibold text-navy">
-        Mina körningar
-      </h1>
-      <p class="text-sm text-navy/60">
-        Se tidigare resultat, ladda ner filer och fortsätt med nästa steg.
-      </p>
+      <h1 class="page-title">Mina körningar</h1>
+      <p class="page-description">Se tidigare resultat, ladda ner filer och fortsätt med nästa steg.</p>
     </div>
 
     <div

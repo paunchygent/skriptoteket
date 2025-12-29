@@ -175,9 +175,7 @@ onUnmounted(() => {
     </RouterLink>
 
     <div class="space-y-2">
-      <h1 class="text-2xl font-semibold text-navy">
-        {{ run?.tool_title ?? (isLoading ? "Laddar..." : "Körning") }}
-      </h1>
+      <h1 class="page-title">{{ run?.tool_title ?? (isLoading ? "Laddar..." : "Körning") }}</h1>
 
       <RouterLink
         v-if="run?.tool_slug"

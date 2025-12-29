@@ -9,6 +9,7 @@ defineProps<{
   user: { email: string; role: string } | null;
   canSeeContributor: boolean;
   canSeeAdmin: boolean;
+  canSeeSuperuser: boolean;
   logoutError: string | null;
   logoutInProgress: boolean;
 }>();
@@ -68,6 +69,7 @@ function onLogout(): void {
     :user="user"
     :can-see-contributor="canSeeContributor"
     :can-see-admin="canSeeAdmin"
+    :can-see-superuser="canSeeSuperuser"
     :logout-in-progress="logoutInProgress"
     @close="closeSidebar"
     @logout="onLogout"

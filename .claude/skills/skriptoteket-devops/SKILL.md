@@ -7,6 +7,11 @@ description: DevOps and server management for Skriptoteket on home server (hemma
 
 Compact skill for managing Skriptoteket on home server.
 
+Source of truth for ops in this repo:
+
+- Home server ops: `docs/runbooks/runbook-home-server.md`
+- Observability ops: `docs/runbooks/runbook-observability.md`
+
 ## When to Use
 
 Activate when the user:
@@ -40,6 +45,8 @@ ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.
 ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"
 ssh hemma "docker exec skriptoteket-web pdm run db-upgrade"
 ```
+
+Note: On `hemma`, systemd units may need absolute docker path (`/snap/bin/docker`) due to PATH differences.
 
 ### Container Names
 
@@ -76,6 +83,8 @@ docker exec -T -e PYTHONPATH=/app/src skriptoteket-web pdm run <command>
 # Interactive (prompts): add -it
 docker exec -it -e PYTHONPATH=/app/src skriptoteket-web pdm run <command>
 ```
+
+See also: `docs/runbooks/runbook-home-server.md` (systemd timer patterns use `/snap/bin/docker exec ...`).
 
 ### Admin Credentials (Script Bank Seeding)
 
@@ -132,6 +141,15 @@ ssh hemma "docker exec shared-postgres pg_dump -U skriptoteket skriptoteket > ~/
 # Migrations
 ssh hemma "docker exec skriptoteket-web pdm run db-upgrade"
 ```
+
+### Cleanup timers (systemd)
+
+We enforce TTL-based cleanup using CLI commands + systemd timers (not cron). Examples:
+
+- Sandbox snapshots cleanup: `cleanup-sandbox-snapshots`
+- Login events cleanup (retention): `cleanup-login-events`
+
+Exact unit definitions and schedules: `docs/runbooks/runbook-home-server.md`.
 
 ### Users
 
@@ -190,17 +208,7 @@ ssh hemma "docker ps | grep -E 'skriptoteket|nginx|postgres'"
 
 Full research: `docs/reference/reports/ref-devops-skill-research.md`
 
-## Next Session TODO
+## Maintenance note
 
-Create branch files in `branches/` directory:
-- [ ] deploy.md
-- [ ] database.md
-- [ ] users.md
-- [ ] seed.md
-- [ ] cli.md
-- [ ] security.md
-- [ ] network.md
-- [ ] dns-provider.md
-- [ ] server-os.md
-- [ ] troubleshoot.md
-- [ ] reference.md (quick command reference)
+This skill includes deeper branches under `.claude/skills/skriptoteket-devops/branches/`.
+Keep those branch docs aligned with the runbooks above when ops patterns change.

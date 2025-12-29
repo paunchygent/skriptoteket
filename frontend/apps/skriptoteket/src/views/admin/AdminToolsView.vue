@@ -271,8 +271,8 @@ onMounted(() => {
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div class="space-y-2">
-        <h1 class="text-2xl font-semibold text-navy">Verktyg (admin)</h1>
-        <p class="text-sm text-navy/70">Hantera publicering av verktyg.</p>
+        <h1 class="page-title">Verktyg (admin)</h1>
+        <p class="page-description">Hantera publicering av verktyg.</p>
       </div>
       <button
         type="button"

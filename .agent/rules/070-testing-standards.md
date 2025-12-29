@@ -251,3 +251,36 @@ Run with:
 ```bash
 pytest --cov=src --cov-report=term-missing
 ```
+
+## 12. Frontend Testing (Vitest)
+
+The SPA uses **Vitest** for unit + integration tests. Browser/E2E automation remains **Playwright** (see
+`.agent/rules/075-browser-automation.md`).
+
+### Locations (REQUIRED)
+
+- Config: `frontend/apps/skriptoteket/vitest.config.ts`
+- Global setup: `frontend/apps/skriptoteket/src/test/setup.ts`
+- Tests: `frontend/apps/skriptoteket/src/**/*.spec.ts` (colocated with code)
+
+### Commands
+
+```bash
+# From repo root
+pdm run fe-test
+pdm run fe-test-watch
+pdm run fe-test-coverage
+```
+
+### Unit vs integration (frontend)
+
+- **Unit (default)**: pure helpers/composables (no router), mock HTTP (`vi.mock`), keep assertions tight.
+- **Integration (when needed)**: Vue component + Pinia/router wiring via `@vue/test-utils`, still mocked HTTP.
+- **E2E**: Playwright only (never Vitest).
+
+### Patterns (REQUIRED)
+
+- Mock at module boundaries (`vi.mock`) and assert calls/inputs/outputs.
+- Prefer testing pure helpers over mounting components when possible.
+- Keep test files <400–500 LoC; keep tests independent; avoid shared mutable state.
+- Avoid snapshot-heavy tests; prefer explicit assertions that survive small UI refactors.

@@ -103,3 +103,12 @@ class PostgreSQLUserRepository(UserRepositoryProtocol):
                 continue
             counts[role] = int(count)
         return counts
+
+    async def list_users(self, *, limit: int, offset: int) -> list[User]:
+        stmt = select(UserModel).order_by(UserModel.created_at.desc()).limit(limit).offset(offset)
+        result = await self._session.execute(stmt)
+        return [User.model_validate(model) for model in result.scalars().all()]
+
+    async def count_all(self) -> int:
+        result = await self._session.execute(select(func.count()).select_from(UserModel))
+        return int(result.scalar_one())

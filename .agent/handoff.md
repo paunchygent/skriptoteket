@@ -78,6 +78,17 @@ Keep this file updated so the next session can pick up work quickly.
   - ADR addendum: `docs/adr/adr-0045-sandbox-settings-isolation.md`.
   - Story updates: `docs/backlog/stories/story-14-05-editor-sandbox-settings-parity.md`,
     `docs/backlog/stories/story-14-08-editor-sandbox-settings-isolation.md`.
+- ST-17-06 metrics + runbooks: Prometheus metrics for sessions/logins/users, plus observability docs.
+  - Metrics: `src/skriptoteket/observability/metrics.py`, `src/skriptoteket/web/routes/observability.py`.
+  - Runbooks: `docs/runbooks/runbook-observability*.md`, `docs/runbooks/runbook-home-server.md` (links).
+- ST-17-07 login events audit trail: migration + repo + admin API/UI + cleanup command.
+  - Migration: `migrations/versions/0021_login_events.py` (+ idempotency: `tests/integration/test_migration_0021_login_events_idempotent.py`).
+  - Admin API/UI: `src/skriptoteket/web/api/v1/admin_users.py`, `frontend/apps/skriptoteket/src/views/admin/*.vue`.
+- CLI modularized to stay under 500 LoC per file: `src/skriptoteket/cli/main.py`, `src/skriptoteket/cli/commands/*`.
+- Frontend testing (Vitest) documented + runbook added:
+  - Runbook: `docs/runbooks/runbook-testing.md`.
+  - Rules: `.agent/rules/070-testing-standards.md`, `.agent/rules/045-huleedu-design-system.md`.
+  - Example tests: `frontend/apps/skriptoteket/src/composables/admin/useAdminUsers.spec.ts`.
   - Sprint note: `docs/backlog/sprints/sprint-2026-01-05-tool-editor-vertical-slice.md`.
 - Suggestions: added a small help toggle “sticky note” on `/suggestions/new` beside the description field.
   - UI: `frontend/apps/skriptoteket/src/views/SuggestionNewView.vue`.
@@ -156,6 +167,8 @@ Keep this file updated so the next session can pick up work quickly.
 - UI (editor settings): `pdm run python -m scripts.playwright_st_14_05_editor_sandbox_settings_e2e` (pass; artifacts in `.artifacts/st-14-05-editor-sandbox-settings-e2e`; Playwright required escalation on macOS)
 - Seed: `pdm run seed-script-bank --slug html-to-pdf-preview` (pass)
 - UI (html-to-pdf preview): `pdm run python -m scripts.playwright_st_14_03_editor_sandbox_html_to_pdf_preview_e2e` (pass; artifacts in `.artifacts/st-14-03-editor-sandbox-html-to-pdf-preview-e2e`; Playwright required escalation on macOS)
+- Frontend tests: `pdm run fe-test` (Vitest; pass)
+- Dev DB: `pdm run db-upgrade` (applied 0021_login_events)
 
 ## How to Run
 

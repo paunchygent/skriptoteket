@@ -3,27 +3,30 @@ from __future__ import annotations
 import uuid
 from collections.abc import Awaitable, Callable
 from datetime import datetime, timedelta, timezone
-from typing import Protocol, runtime_checkable
+from typing import Protocol, TypeVar, cast, runtime_checkable
 
 from starlette.requests import Request
-from starlette.responses import Response
 
 from skriptoteket.domain.catalog.models import Tool
 from skriptoteket.domain.identity.models import AuthProvider, Role, Session, User
 from skriptoteket.domain.scripting.models import ToolVersion, VersionState, compute_content_hash
 
-type _AsyncHandler = Callable[..., Awaitable[Response]]
+T = TypeVar("T")
+
+type _AsyncHandler[T] = Callable[..., Awaitable[T]]
 
 
 @runtime_checkable
-class _DishkaWrappedHandler(Protocol):
-    __dishka_orig_func__: _AsyncHandler
+class _DishkaWrappedHandler(Protocol[T]):
+    __dishka_orig_func__: _AsyncHandler[T]
 
-    def __call__(self, *args: object, **kwargs: object) -> Awaitable[Response]: ...
+    def __call__(self, *args: object, **kwargs: object) -> Awaitable[T]: ...
 
 
-def _original(fn: _AsyncHandler | _DishkaWrappedHandler) -> _AsyncHandler:
-    return fn.__dishka_orig_func__ if isinstance(fn, _DishkaWrappedHandler) else fn
+def _original[T](fn: _AsyncHandler[T] | _DishkaWrappedHandler[T]) -> _AsyncHandler[T]:
+    if isinstance(fn, _DishkaWrappedHandler):
+        return cast(_AsyncHandler[T], fn.__dishka_orig_func__)
+    return fn
 
 
 def _request(*, path: str, headers: dict[str, str] | None = None) -> Request:

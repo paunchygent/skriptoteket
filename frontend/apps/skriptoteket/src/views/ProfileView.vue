@@ -63,10 +63,8 @@ onMounted(() => {
 <template>
   <div class="max-w-3xl space-y-6">
     <header class="space-y-1">
-      <h1 class="text-2xl font-semibold text-navy">Profil</h1>
-      <p class="text-xs text-navy/70">
-        Hantera dina personuppgifter, preferenser och lösenord.
-      </p>
+      <h1 class="page-title">Profil</h1>
+      <p class="page-description">Hantera dina personuppgifter, preferenser och lösenord.</p>
     </header>
 
     <SystemMessage

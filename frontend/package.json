@@ -8,6 +8,9 @@
     "preview": "pnpm --filter @skriptoteket/spa preview",
     "typecheck": "pnpm --filter @skriptoteket/spa typecheck",
     "lint": "pnpm --filter @skriptoteket/spa lint",
+    "test": "pnpm --filter @skriptoteket/spa test",
+    "test:watch": "pnpm --filter @skriptoteket/spa test:watch",
+    "test:coverage": "pnpm --filter @skriptoteket/spa test:coverage",
     "typecheck:all": "pnpm -r typecheck",
     "lint:all": "pnpm -r lint"
   }

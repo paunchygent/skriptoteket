@@ -9,6 +9,9 @@ from skriptoteket.application.identity.handlers.change_email import ChangeEmailH
 from skriptoteket.application.identity.handlers.change_password import ChangePasswordHandler
 from skriptoteket.application.identity.handlers.create_local_user import CreateLocalUserHandler
 from skriptoteket.application.identity.handlers.get_profile import GetProfileHandler
+from skriptoteket.application.identity.handlers.get_user import GetUserHandler
+from skriptoteket.application.identity.handlers.list_login_events import ListLoginEventsHandler
+from skriptoteket.application.identity.handlers.list_users import ListUsersHandler
 from skriptoteket.application.identity.handlers.login import LoginHandler
 from skriptoteket.application.identity.handlers.logout import LogoutHandler
 from skriptoteket.application.identity.handlers.provision_local_user import (
@@ -25,6 +28,8 @@ from skriptoteket.protocols.identity import (
     CreateLocalUserHandlerProtocol,
     CurrentUserProviderProtocol,
     GetProfileHandlerProtocol,
+    GetUserHandlerProtocol,
+    ListUsersHandlerProtocol,
     LoginHandlerProtocol,
     LogoutHandlerProtocol,
     PasswordHasherProtocol,
@@ -34,6 +39,10 @@ from skriptoteket.protocols.identity import (
     SessionRepositoryProtocol,
     UpdateProfileHandlerProtocol,
     UserRepositoryProtocol,
+)
+from skriptoteket.protocols.login_events import (
+    ListLoginEventsHandlerProtocol,
+    LoginEventRepositoryProtocol,
 )
 from skriptoteket.protocols.token_generator import TokenGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
@@ -59,6 +68,7 @@ class IdentityProvider(Provider):
         users: UserRepositoryProtocol,
         profiles: ProfileRepositoryProtocol,
         sessions: SessionRepositoryProtocol,
+        login_events: LoginEventRepositoryProtocol,
         password_hasher: PasswordHasherProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -70,6 +80,7 @@ class IdentityProvider(Provider):
             users=users,
             profiles=profiles,
             sessions=sessions,
+            login_events=login_events,
             password_hasher=password_hasher,
             clock=clock,
             id_generator=id_generator,
@@ -191,3 +202,24 @@ class IdentityProvider(Provider):
         clock: ClockProtocol,
     ) -> ChangeEmailHandlerProtocol:
         return ChangeEmailHandler(uow=uow, users=users, clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def list_users_handler(self, users: UserRepositoryProtocol) -> ListUsersHandlerProtocol:
+        return ListUsersHandler(users=users)
+
+    @provide(scope=Scope.REQUEST)
+    def get_user_handler(self, users: UserRepositoryProtocol) -> GetUserHandlerProtocol:
+        return GetUserHandler(users=users)
+
+    @provide(scope=Scope.REQUEST)
+    def list_login_events_handler(
+        self,
+        settings: Settings,
+        clock: ClockProtocol,
+        login_events: LoginEventRepositoryProtocol,
+    ) -> ListLoginEventsHandlerProtocol:
+        return ListLoginEventsHandler(
+            settings=settings,
+            clock=clock,
+            login_events=login_events,
+        )

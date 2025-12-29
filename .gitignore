@@ -40,6 +40,9 @@ node_modules/
 pnpm-debug.log*
 .eslintcache
 
+# Vitest coverage output
+coverage/
+
 # Node.js (puppeteer for visual testing)
 tools/puppeteer/node_modules/
 tools/puppeteer/package.json

@@ -6,6 +6,7 @@ defineProps<{
   user: { email: string } | null;
   canSeeContributor: boolean;
   canSeeAdmin: boolean;
+  canSeeSuperuser: boolean;
   logoutInProgress: boolean;
 }>();
 
@@ -103,6 +104,14 @@ function onHelp(): void {
           @click="onClose"
         >
           Admin
+        </RouterLink>
+        <RouterLink
+          v-if="canSeeSuperuser"
+          to="/admin/users"
+          class="sidebar-nav-item"
+          @click="onClose"
+        >
+          Användare
         </RouterLink>
         <RouterLink
           v-if="canSeeAdmin"

@@ -139,10 +139,8 @@ onMounted(() => {
 <template>
   <div class="max-w-3xl space-y-6">
     <div class="space-y-2">
-      <h1 class="text-2xl font-semibold text-navy">Föreslå ett nytt verktyg</h1>
-      <p class="text-sm text-navy/70">
-        Kom med ett förslag på ett nytt verktyg som du skulle vilja skapa själv eller tillsammans med Skriptotekets admins.
-      </p>
+      <h1 class="page-title">Föreslå ett nytt verktyg</h1>
+      <p class="page-description">Kom med ett förslag på ett nytt verktyg som du skulle vilja skapa själv eller tillsammans med Skriptotekets admins.</p>
     </div>
 
     <div

@@ -179,9 +179,7 @@ watch(hasSettingsSchema, (hasSchema) => {
     </RouterLink>
 
     <div class="space-y-2">
-      <h1 class="text-2xl font-semibold text-navy">
-        {{ tool?.title ?? (isLoadingTool ? "Laddar..." : "Okänt verktyg") }}
-      </h1>
+      <h1 class="page-title">{{ tool?.title ?? (isLoadingTool ? "Laddar..." : "Okänt verktyg") }}</h1>
       <p
         v-if="tool?.summary"
         class="text-navy/60"

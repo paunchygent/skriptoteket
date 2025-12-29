@@ -45,6 +45,7 @@ Target Python is **3.13–3.14**.
 - Frontend deps: `pdm run fe-install` (or `pnpm -C frontend install`)
 - SPA dev: `pdm run fe-dev` (or `pnpm -C frontend --filter @skriptoteket/spa dev`)
 - SPA build: `pdm run fe-build` (or `pnpm -C frontend --filter @skriptoteket/spa build`)
+- SPA tests (Vitest): `pdm run fe-test` / `pdm run fe-test-watch` / `pdm run fe-test-coverage`
 - **Dev services are long-running**: do not stop `pdm run dev` or `docker compose up -d db` unless explicitly requested.
 - Docker dev workflow: `pdm run dev-start` / `pdm run dev-stop` / `pdm run dev-build-start` / `pdm run dev-build-start-clean` / `pdm run dev-db-reset`
 - Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test` (lint runs Ruff + agent-doc budgets + docs contract)
@@ -71,6 +72,7 @@ The default `ARTIFACTS_ROOT=/var/lib/skriptoteket/artifacts` doesn't exist local
 - Follow `.agent/rules/000-rule-index.md` (protocol-first DI, UoW-owned transactions, no business logic in web layer)
 - Keep files small (<400–500 LOC); Ruff format + lint (100 chars)
 - Use Pydantic for cross-boundary models; `dataclasses` only inside a single domain
+- Frontend unit/integration tests use Vitest: `frontend/apps/skriptoteket/vitest.config.ts`, tests in `frontend/apps/skriptoteket/src/**/*.spec.ts`
 
 ### Browser Automation
 

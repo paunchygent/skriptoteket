@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Depends, Header, Response, status
+from fastapi import APIRouter, Depends, Header, Request, Response, status
 from pydantic import BaseModel, ConfigDict
 
 from skriptoteket.application.identity.commands import (
@@ -20,6 +20,11 @@ from skriptoteket.protocols.identity import (
 )
 from skriptoteket.web.auth.api_dependencies import require_session_api, require_user_api
 from skriptoteket.web.auth.dependencies import get_current_session, get_session_id
+from skriptoteket.web.request_metadata import (
+    get_client_ip,
+    get_correlation_id,
+    get_user_agent,
+)
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -74,10 +79,19 @@ class CsrfResponse(BaseModel):
 async def login(
     payload: LoginRequest,
     response: Response,
+    request: Request,
     settings: FromDishka[Settings],
     handler: FromDishka[LoginHandlerProtocol],
 ) -> LoginResponse:
-    result = await handler.handle(LoginCommand(email=payload.email, password=payload.password))
+    result = await handler.handle(
+        LoginCommand(
+            email=payload.email,
+            password=payload.password,
+            ip_address=get_client_ip(request),
+            user_agent=get_user_agent(request),
+            correlation_id=get_correlation_id(request),
+        )
+    )
 
     response.set_cookie(
         key=settings.SESSION_COOKIE_NAME,

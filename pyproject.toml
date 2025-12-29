@@ -306,6 +306,15 @@ fe-lint.working_dir = "frontend"
 fe-lint-fix.cmd = "pnpm --filter @skriptoteket/spa lint:fix"
 fe-lint-fix.working_dir = "frontend"
 
+fe-test.cmd = "pnpm --filter @skriptoteket/spa test"
+fe-test.working_dir = "frontend"
+
+fe-test-watch.cmd = "pnpm --filter @skriptoteket/spa test:watch"
+fe-test-watch.working_dir = "frontend"
+
+fe-test-coverage.cmd = "pnpm --filter @skriptoteket/spa test:coverage"
+fe-test-coverage.working_dir = "frontend"
+
 # Code quality
 format = "ruff format --force-exclude ."
 lint = { composite = [

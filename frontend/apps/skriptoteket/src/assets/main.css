@@ -33,6 +33,22 @@ body::before {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @layer components {
+  /* ════════════════════════════════════════════════════════════════════════
+     PAGE HEADER - Academic brutalist typography
+     ════════════════════════════════════════════════════════════════════════ */
+  .page-title {
+    font-family: var(--huleedu-font-serif);
+    font-size: var(--huleedu-text-2xl);
+    color: var(--huleedu-navy);
+    margin: 0;
+  }
+
+  .page-description {
+    font-size: var(--huleedu-text-sm);
+    color: var(--huleedu-navy-70);
+    margin: 0;
+  }
+
   /* Standard action button: Navy base → Burgundy fill on hover, 4px press */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest select-none;

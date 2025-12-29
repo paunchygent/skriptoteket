@@ -4,6 +4,12 @@ from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
+from skriptoteket.application.identity.admin_users import (
+    GetUserQuery,
+    GetUserResult,
+    ListUsersQuery,
+    ListUsersResult,
+)
 from skriptoteket.application.identity.commands import (
     ChangeEmailCommand,
     ChangeEmailResult,
@@ -31,6 +37,8 @@ class UserRepositoryProtocol(Protocol):
     async def update_password_hash(
         self, *, user_id: UUID, password_hash: str, updated_at: datetime
     ) -> None: ...
+    async def list_users(self, *, limit: int, offset: int) -> list[User]: ...
+    async def count_all(self) -> int: ...
     async def count_active_by_role(self) -> dict[Role, int]: ...
 
 
@@ -92,3 +100,11 @@ class ChangePasswordHandlerProtocol(Protocol):
 
 class ChangeEmailHandlerProtocol(Protocol):
     async def handle(self, command: ChangeEmailCommand) -> ChangeEmailResult: ...
+
+
+class ListUsersHandlerProtocol(Protocol):
+    async def handle(self, *, actor: User, query: ListUsersQuery) -> ListUsersResult: ...
+
+
+class GetUserHandlerProtocol(Protocol):
+    async def handle(self, *, actor: User, query: GetUserQuery) -> GetUserResult: ...
