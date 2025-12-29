@@ -216,8 +216,14 @@ watch(
 
 .user-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--huleedu-space-4);
+}
+
+@media (max-width: 480px) {
+  .user-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .label {
@@ -231,5 +237,6 @@ watch(
 .value {
   font-size: var(--huleedu-text-sm);
   margin: 0;
+  word-break: break-word;
 }
 </style>

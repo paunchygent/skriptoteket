@@ -254,9 +254,11 @@ onMounted(async () => {
         </div>
 
         <!-- Greeting -->
-        <section class="space-y-2">
-          <h1 class="page-title">Välkommen<template v-if="userName">, {{ userName }}</template></h1>
-          <p class="page-description">Vad vill du göra?</p>
+        <section class="space-y-1">
+          <h1 class="font-serif text-3xl font-bold text-navy">
+            Välkommen<template v-if="userName">, {{ userName }}</template>
+          </h1>
+          <p class="text-sm text-navy/70">Vad vill du göra?</p>
         </section>
 
         <!-- ═══════════════════════════════════════════════════════════════════
