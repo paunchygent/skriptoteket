@@ -2,9 +2,10 @@
 type: story
 id: ST-17-05
 title: "Runbook updates and verification"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-26
+updated: 2025-12-29
 epic: "EPIC-17"
 dependencies:
   - "ST-17-01"
@@ -78,6 +79,11 @@ This story integrates all EPIC-17 work by updating runbooks and performing end-t
 3. Verify alert rules visible in Prometheus (ST-17-03)
 4. Verify Jaeger accessible via public URL (ST-17-04)
 5. Make a test request with known error, trace end-to-end
+
+## Verification (2025-12-29)
+
+- Confirmed Grafana datasource connectivity + correlation wiring.
+- Confirmed a failing request (`/api/v1/auth/me` -> 401) produces a Loki log line containing `trace_id`, and the same trace exists in Jaeger.
 
 ## Files
 

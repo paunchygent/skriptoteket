@@ -2,9 +2,10 @@
 type: story
 id: ST-17-03
 title: "Prometheus alerting rules"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-26
+updated: 2025-12-29
 epic: "EPIC-17"
 acceptance_criteria:
   - "Given Prometheus is running, when I query for alert rules, then I see rules for ServiceDown, HighErrorRate, HighLatency, SessionFilesQuota"
@@ -88,3 +89,7 @@ prometheus:
 - Alerts without Alertmanager are view-only in Prometheus UI
 - Future: Add Alertmanager for Slack/email notifications
 - Tune thresholds based on observed traffic patterns
+
+## Verification (2025-12-29)
+
+- Rules loaded in Prometheus under group `SkriptoteketAlerts`.

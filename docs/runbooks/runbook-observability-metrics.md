@@ -46,7 +46,7 @@ curl -s http://127.0.0.1:8000/healthz | jq
 Production example:
 
 ```bash
-ssh hemma "curl -s http://localhost:8000/healthz" | jq
+ssh hemma "curl -s https://skriptoteket.hule.education/healthz" | jq
 ```
 
 ## Prometheus Metrics Endpoint

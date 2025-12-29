@@ -2,9 +2,10 @@
 type: story
 id: ST-17-02
 title: "HTTP metrics dashboard"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-26
+updated: 2025-12-29
 epic: "EPIC-17"
 dependencies:
   - "ST-17-01"
@@ -45,3 +46,7 @@ Pattern: Follow `observability/grafana/provisioning/dashboards/skriptoteket-sess
 
 - Use route patterns (e.g., `/tools/{id}`) to avoid high cardinality
 - Dashboard UID should be `skriptoteket-http-metrics` for stable linking
+
+## Verification (2025-12-29)
+
+- Dashboard is provisioned in Grafana as `uid=skriptoteket-http-metrics`.

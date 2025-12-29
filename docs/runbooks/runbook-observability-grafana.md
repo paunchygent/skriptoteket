@@ -27,6 +27,19 @@ Verify that these are "Success" in Grafana → Connections → Data sources:
 If a datasource is failing, confirm the observability stack is running; see
 `docs/runbooks/runbook-home-server.md` (Observability section).
 
+### Correlation links (logs ↔ traces)
+
+Cross-links rely on the provisioned configuration in `observability/grafana/provisioning/datasources/datasources.yaml`:
+
+- Loki derived field extracts `"trace_id"` from JSON logs and links to the Jaeger datasource.
+- Jaeger `tracesToLogsV2` links traces back to Loki.
+
+**Important:** datasource UIDs must remain stable for these links. We pin:
+
+- Prometheus: `uid: prometheus`
+- Loki: `uid: loki`
+- Jaeger: `uid: jaeger`
+
 ## Dashboard Locations (Provisioned)
 
 Dashboards are stored in the repo at:

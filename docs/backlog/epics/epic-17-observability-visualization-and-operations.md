@@ -2,7 +2,7 @@
 type: epic
 id: EPIC-17
 title: "Observability visualization and operations"
-status: proposed
+status: done
 owners: "agents"
 created: 2025-12-26
 updated: 2025-12-29
@@ -39,6 +39,9 @@ outcome: "Operators can monitor Skriptoteket health via Grafana dashboards, rece
 
 ## Delivered (implemented)
 
+- ST-17-01: Grafana datasources verified (Prometheus/Loki/Jaeger + correlation links).
+- ST-17-02: HTTP metrics dashboard provisioned in Grafana.
+- ST-17-03: Prometheus alert rules loaded (view-only without Alertmanager).
 - ST-17-04: Jaeger UI is exposed via nginx-proxy with SSL + basic auth (jaeger.hemma.hule.education).
 - ST-17-06: user session + login-rate metrics, wired into Grafana (see observability runbooks).
 - ST-17-07: account-level login audit trail (DB + API + admin UI) with 90-day retention enforced via CLI cleanup and the systemd timer pattern documented in `docs/runbooks/runbook-home-server.md`.

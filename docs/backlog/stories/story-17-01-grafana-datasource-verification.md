@@ -2,9 +2,10 @@
 type: story
 id: ST-17-01
 title: "Grafana datasource verification"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-26
+updated: 2025-12-29
 epic: "EPIC-17"
 acceptance_criteria:
   - "Given the observability stack is running, when I check Grafana datasources via UI, then Prometheus shows 'Success' status"
@@ -38,3 +39,8 @@ This story verifies the provisioned configuration works end-to-end in the deploy
 - Jaeger internal URL is `http://jaeger:16686` (container name resolution)
 - Loki internal URL is `http://loki:3100`
 - Prometheus internal URL is `http://prometheus:9090`
+
+## Verification (2025-12-29)
+
+- Grafana proxy checks returned `200` for Prometheus/Loki/Jaeger.
+- Loki → Jaeger and Jaeger → Loki correlation wiring verified after pinning datasource UIDs (`prometheus`, `loki`, `jaeger`).
