@@ -1,0 +1,46 @@
+groups:
+  - name: SkriptoteketAlerts
+    rules:
+      - alert: SkriptoteketDown
+        expr: up{job="skriptoteket"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Skriptoteket is down"
+          description: "The skriptoteket-web service has been unreachable for more than 1 minute."
+
+      - alert: SkriptoteketHighErrorRate
+        expr: |
+          sum(rate(skriptoteket_http_requests_total{status_code=~"5.."}[5m]))
+          /
+          sum(rate(skriptoteket_http_requests_total[5m]))
+          > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High 5xx error rate (>10%)"
+          description: "More than 10% of requests are returning 5xx errors."
+
+      - alert: SkriptoteketHighLatency
+        expr: |
+          histogram_quantile(
+            0.99,
+            sum(rate(skriptoteket_http_request_duration_seconds_bucket[5m])) by (le)
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "P99 latency exceeds 2 seconds"
+          description: "The 99th percentile request latency has exceeded 2 seconds for 5 minutes."
+
+      - alert: SkriptoteketSessionFilesQuota
+        expr: skriptoteket_session_files_bytes_total > 524288000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Session files exceed 500MB quota"
+          description: "Session file storage has exceeded the 500MB warning threshold."

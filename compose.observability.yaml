@@ -33,6 +33,7 @@ services:
       - LETSENCRYPT_HOST=prometheus.hemma.hule.education
     volumes:
       - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/prometheus/rules:/etc/prometheus/rules:ro
       - prometheus_data:/prometheus
     networks:
       - hule-network
@@ -49,10 +50,14 @@ services:
     restart: unless-stopped
     environment:
       - JAEGER_LISTEN_HOST=0.0.0.0
-    ports:
-      - "16686:16686"
-      - "4317:4317"
-      - "4318:4318"
+      # nginx-proxy integration
+      - VIRTUAL_HOST=jaeger.hemma.hule.education
+      - VIRTUAL_PORT=16686
+      - LETSENCRYPT_HOST=jaeger.hemma.hule.education
+    expose:
+      - "16686"
+      - "4317"
+      - "4318"
     networks:
       - hule-network
     healthcheck:

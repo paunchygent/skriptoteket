@@ -8,6 +8,9 @@ global:
     cluster: 'home-server'
     environment: 'production'
 
+rule_files:
+  - "/etc/prometheus/rules/*.yml"
+
 scrape_configs:
   # Skriptoteket application metrics
   - job_name: 'skriptoteket'
