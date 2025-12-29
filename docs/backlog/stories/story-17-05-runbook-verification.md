@@ -68,7 +68,7 @@ This story integrates all EPIC-17 work by updating runbooks and performing end-t
 |---------|-----|------|
 | Grafana | https://grafana.hemma.hule.education | admin / GRAFANA_ADMIN_PASSWORD |
 | Prometheus | https://prometheus.hemma.hule.education | admin / PROMETHEUS_BASIC_AUTH_PASSWORD |
-| Jaeger | https://jaeger.hemma.hule.education | None (anonymous) |
+| Jaeger | https://jaeger.hemma.hule.education | admin / JAEGER_BASIC_AUTH_PASSWORD |
 ```
 
 ## Verification Procedure

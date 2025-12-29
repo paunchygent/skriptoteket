@@ -13,7 +13,9 @@ Distributed tracing in Skriptoteket using OpenTelemetry with OTLP export to Jaeg
 
 ## Access
 
-- Jaeger UI: http://hemma.hule.education:16686
+- Jaeger UI (home server): https://jaeger.hemma.hule.education (Basic auth, user `admin`)
+
+**Note:** Grafana connects to Jaeger via the internal Docker network (`http://jaeger:16686`) and is not affected by the public basic auth.
 
 ## Configuration
 

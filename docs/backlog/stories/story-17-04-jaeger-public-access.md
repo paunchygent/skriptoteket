@@ -2,9 +2,10 @@
 type: story
 id: ST-17-04
 title: "Jaeger public access"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-26
+updated: 2025-12-29
 epic: "EPIC-17"
 acceptance_criteria:
   - "Given nginx-proxy is running, when I navigate to https://jaeger.hemma.hule.education, then I see the Jaeger UI with valid SSL certificate"
@@ -25,6 +26,14 @@ Add A record in Namecheap:
 - Type: A
 - Value: (server IP, same as other subdomains)
 
+### Basic Auth
+
+Jaeger has no built-in authentication. We protect the public URL with nginx-proxy basic auth via an `htpasswd` file:
+
+- File on server: `~/infrastructure/htpasswd/jaeger.hemma.hule.education`
+- Username: `admin`
+- Password: store the plaintext in a password manager (optionally also in local `.env` as `JAEGER_BASIC_AUTH_PASSWORD` for convenience); do not commit secrets.
+
 ### compose.observability.yaml Changes
 
 ```yaml
@@ -40,10 +49,6 @@ jaeger:
     - LETSENCRYPT_HOST=jaeger.hemma.hule.education
   expose:
     - "16686"
-  ports:
-    # Keep OTLP ports for trace ingestion
-    - "4317:4317"
-    - "4318:4318"
   networks:
     - hule-network
 ```
@@ -58,6 +63,4 @@ Modify: `docs/runbooks/runbook-observability.md` (update access URLs table)
 
 ## Notes
 
-- Jaeger has no built-in authentication
-- If abuse is detected, add nginx basic auth similar to Prometheus
-- OTLP ports (4317, 4318) remain internal for trace ingestion from skriptoteket-web
+- OTLP ports (4317, 4318) remain internal for trace ingestion from `skriptoteket-web`.

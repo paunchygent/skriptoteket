@@ -39,6 +39,7 @@ outcome: "Operators can monitor Skriptoteket health via Grafana dashboards, rece
 
 ## Delivered (implemented)
 
+- ST-17-04: Jaeger UI is exposed via nginx-proxy with SSL + basic auth (jaeger.hemma.hule.education).
 - ST-17-06: user session + login-rate metrics, wired into Grafana (see observability runbooks).
 - ST-17-07: account-level login audit trail (DB + API + admin UI) with 90-day retention enforced via CLI cleanup and the systemd timer pattern documented in `docs/runbooks/runbook-home-server.md`.
 

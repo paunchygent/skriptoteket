@@ -20,7 +20,7 @@ Reference: `docs/reference/reports/ref-external-observability-integration.md`.
 |---------|-----|-------|
 | Grafana | https://grafana.hemma.hule.education | Credentials in `~/apps/skriptoteket/.env` |
 | Prometheus | https://prometheus.hemma.hule.education | Basic auth password in `~/apps/skriptoteket/.env` |
-| Jaeger | https://jaeger.hemma.hule.education | No auth (public via nginx-proxy) |
+| Jaeger | https://jaeger.hemma.hule.education | Basic auth (user `admin`, password `JAEGER_BASIC_AUTH_PASSWORD`) |
 
 For container lifecycle (start/stop/restart), see `docs/runbooks/runbook-home-server.md`.
 

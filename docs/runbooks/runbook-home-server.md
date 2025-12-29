@@ -431,6 +431,8 @@ ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.observability.yam
 | Loki | 3100 | - | Log aggregation |
 | Promtail | - | - | Log collection |
 
+Prometheus and Jaeger are protected by basic auth; see `docs/runbooks/runbook-observability.md` for access notes.
+
 ### View Observability Logs
 
 ```bash
