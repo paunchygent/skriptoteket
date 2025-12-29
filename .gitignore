@@ -60,10 +60,6 @@ frontend/apps/skriptoteket/openapi.json
 
 # Sensitive operational docs (credentials, server details)
 .agent/rules/080-home-server-deployment.md
-docs/runbooks/*
-!docs/runbooks/.gitkeep
-!docs/runbooks/runbook-script-bank-seeding.md
-!docs/runbooks/runbook-user-management.md
 .agent/handoff.md
 .claude/skills/skriptoteket-devops/SKILL.md
 .claude/skills/skriptoteket-devops/branches/cli.md
