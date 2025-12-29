@@ -98,12 +98,6 @@ def _open_editor(page: object, *, base_url: str, artifacts_dir: Path | None = No
         raise
 
 
-def _get_sandbox_section(page: object) -> object:
-    return page.get_by_text("Testfiler").locator(
-        "xpath=ancestor::div[contains(@class,'space-y-4')][1]"
-    )
-
-
 def main() -> None:
     config = get_config()
     base_url = config.base_url.rstrip("/")
@@ -155,13 +149,12 @@ def main() -> None:
             save_button.first.click()
             page.wait_for_url("**/admin/tool-versions/**", wait_until="domcontentloaded")
 
-        sandbox = _get_sandbox_section(page)
-        file_input = sandbox.locator("input[type='file']")
-        expect(file_input).to_have_count(1, timeout=30_000)
-        inputs_summary_locator = sandbox.locator(
+        inputs_summary_locator = page.locator(
             "summary", has_text=re.compile(r"Indata\s*\(JSON\)", re.IGNORECASE)
         )
-        if inputs_summary_locator.count() == 0:
+        try:
+            expect(inputs_summary_locator).to_have_count(1, timeout=30_000)
+        except AssertionError:
             page.screenshot(path=str(artifacts_dir / "missing-inputs-summary.png"), full_page=True)
             global_summary_count = page.locator("summary").count()
             global_indata_count = page.locator(
@@ -176,6 +169,13 @@ def main() -> None:
 
         inputs_summary = inputs_summary_locator.first
         expect(inputs_summary).to_be_visible(timeout=30_000)
+        sandbox = inputs_summary.locator("xpath=ancestor::div[contains(@class,'space-y-4')][1]")
+
+        choose_files_label = sandbox.get_by_text(re.compile(r"Välj filer", re.IGNORECASE))
+        if choose_files_label.count() > 0:
+            file_input = sandbox.locator("input[type='file']")
+            expect(file_input).to_have_count(1, timeout=30_000)
+
         inputs_summary.click()
         expect(sandbox.get_by_text("SKRIPTOTEKET_INPUTS")).to_be_visible(timeout=30_000)
         page.screenshot(path=str(artifacts_dir / "editor-loaded.png"), full_page=True)

@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from uuid import uuid4
 
 from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import expect, sync_playwright
@@ -72,7 +73,7 @@ def _ensure_draft_for_tool(
     base_url: str,
     tool_slug: str,
     artifacts_dir: Path,
-) -> str:
+) -> tuple[str, str]:
     """Ensure a draft version exists for the tool and navigate to editor."""
     csrf = context.request.get(f"{base_url}/api/v1/auth/csrf")
     expect(csrf).to_be_ok()
@@ -87,6 +88,18 @@ def _ensure_draft_for_tool(
     boot_payload = boot.json()
     entrypoint = str(boot_payload.get("entrypoint") or "run_tool")
     source_code = str(boot_payload.get("source_code") or "")
+
+    draft_head_id = boot_payload.get("draft_head_id")
+    if draft_head_id:
+        lock = context.request.post(
+            f"{base_url}/api/v1/editor/tools/{tool_id}/draft-lock",
+            headers={
+                "Content-Type": "application/json",
+                "X-CSRF-Token": csrf_token,
+            },
+            data=json.dumps({"draft_head_id": draft_head_id, "force": False}),
+        )
+        expect(lock).to_be_ok()
 
     draft = context.request.post(
         f"{base_url}/api/v1/editor/tools/{tool_id}/draft",
@@ -119,14 +132,20 @@ def _ensure_draft_for_tool(
     ).to_be_visible(timeout=30_000)
 
     page.screenshot(path=str(artifacts_dir / "editor-ready.png"), full_page=True)
-    return version_id
+    return tool_id, version_id
 
 
-def _get_sandbox_section(page: object) -> object:
+def _get_sandbox_input_panel(page: object) -> object:
     inputs_summary = page.locator(
         "summary", has_text=re.compile(r"Indata\s*\(JSON\)", re.IGNORECASE)
     ).first
     return inputs_summary.locator("xpath=ancestor::div[contains(@class,'space-y-4')][1]")
+
+
+def _get_settings_panel(page: object) -> object:
+    return page.get_by_role("heading", name=re.compile(r"^Inställningar$", re.IGNORECASE)).locator(
+        "xpath=ancestor::div[contains(@class,'border')][1]"
+    )
 
 
 def main() -> None:
@@ -150,28 +169,31 @@ def main() -> None:
         page = context.new_page()
 
         _login(page, base_url=base_url, email=email, password=password)
-        _ensure_draft_for_tool(
+        tool_slug = "demo-settings-test"
+        tool_id, _ = _ensure_draft_for_tool(
             context,
             page,
             base_url=base_url,
-            tool_slug="demo-settings-test",
+            tool_slug=tool_slug,
             artifacts_dir=artifacts_dir,
         )
 
-        sandbox = _get_sandbox_section(page)
+        sandbox_input = _get_sandbox_input_panel(page)
+        settings_panel = _get_settings_panel(page)
+        sandbox_theme = f"sandbox-{uuid4().hex[:8]}"
 
         # Open settings panel and configure theme_color
-        settings_toggle = sandbox.get_by_role(
-            "button", name=re.compile(r"^Inställningar$", re.IGNORECASE)
+        settings_toggle = settings_panel.get_by_role(
+            "button", name=re.compile(r"^(Visa|Dölj)$", re.IGNORECASE)
         ).first
         expect(settings_toggle).to_be_visible(timeout=20_000)
         settings_toggle.click()
 
-        theme_field = sandbox.get_by_label("Färgtema").first
+        theme_field = settings_panel.get_by_label("Färgtema").first
         expect(theme_field).to_be_visible()
-        theme_field.fill("#00ff00")
+        theme_field.fill(sandbox_theme)
 
-        save_settings = sandbox.get_by_role(
+        save_settings = settings_panel.get_by_role(
             "button", name=re.compile(r"^Spara$", re.IGNORECASE)
         ).first
         save_settings.click()
@@ -179,25 +201,32 @@ def main() -> None:
         page.screenshot(path=str(artifacts_dir / "settings-saved.png"), full_page=True)
 
         # Run sandbox and verify settings are injected
-        file_input = sandbox.locator("input[type='file']")
+        file_input = sandbox_input.locator("input[type='file']")
         expect(file_input).to_have_count(1, timeout=30_000)
         file_input.set_input_files(str(sample_file))
 
-        sandbox.get_by_role("button", name=re.compile(r"^Testkör kod", re.IGNORECASE)).click()
-        expect(sandbox.get_by_text(re.compile(r"Lyckades", re.IGNORECASE))).to_be_visible(
+        sandbox_input.get_by_role("button", name=re.compile(r"^Testkör kod", re.IGNORECASE)).click()
+        expect(page.get_by_text(re.compile(r"Lyckades", re.IGNORECASE))).to_be_visible(
             timeout=60_000
         )
-        expect(sandbox.get_by_text("theme_color=#00ff00")).to_be_visible(timeout=30_000)
+        expect(page.get_by_text(f"theme_color={sandbox_theme}")).to_be_visible(timeout=30_000)
         page.screenshot(path=str(artifacts_dir / "run-with-settings.png"), full_page=True)
 
         # Verify settings persistence after reload
         page.reload(wait_until="domcontentloaded")
-        sandbox = _get_sandbox_section(page)
-        sandbox.get_by_role(
-            "button", name=re.compile(r"^Inställningar$", re.IGNORECASE)
+        settings_panel = _get_settings_panel(page)
+        settings_panel.get_by_role(
+            "button", name=re.compile(r"^(Visa|Dölj)$", re.IGNORECASE)
         ).first.click()
-        expect(sandbox.get_by_label("Färgtema").first).to_have_value("#00ff00")
+        expect(settings_panel.get_by_label("Färgtema").first).to_have_value(sandbox_theme)
         page.screenshot(path=str(artifacts_dir / "settings-persisted.png"), full_page=True)
+
+        # Verify sandbox settings did not leak into production settings context
+        settings_response = context.request.get(f"{base_url}/api/v1/tools/{tool_id}/settings")
+        expect(settings_response).to_be_ok()
+        production_values = settings_response.json().get("values", {})
+        if production_values.get("theme_color") == sandbox_theme:
+            raise RuntimeError("Sandbox settings leaked into production settings context.")
 
         context.close()
         browser.close()
