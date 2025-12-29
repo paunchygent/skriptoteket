@@ -200,7 +200,7 @@ Keybinding requirement:
 |----------|---------|-------------|
 | `LLM_COMPLETION_ENABLED` | `false` | Enable/disable feature |
 | `LLM_COMPLETION_BASE_URL` | `http://localhost:11434/v1` | OpenAI-compatible API URL |
-| `LLM_COMPLETION_API_KEY` | `None` | API key (optional for Ollama) |
+| `OPENAI_LLM_COMPLETION_API_KEY` | `None` | API key (optional for Ollama) |
 | `LLM_COMPLETION_MODEL` | `codellama:7b` | Model name |
 | `LLM_COMPLETION_MAX_TOKENS` | `256` | Max tokens in response |
 | `LLM_COMPLETION_TEMPERATURE` | `0.2` | Sampling temperature |
@@ -265,7 +265,7 @@ LLM_COMPLETION_MODEL=codellama:7b
 
 ```bash
 LLM_COMPLETION_BASE_URL=https://openrouter.ai/api/v1
-LLM_COMPLETION_API_KEY=sk-or-...
+OPENAI_LLM_COMPLETION_API_KEY=sk-or-...
 LLM_COMPLETION_MODEL=meta-llama/llama-3.1-70b-instruct
 ```
 
@@ -273,7 +273,7 @@ LLM_COMPLETION_MODEL=meta-llama/llama-3.1-70b-instruct
 
 ```bash
 LLM_COMPLETION_BASE_URL=https://api.openai.com/v1
-LLM_COMPLETION_API_KEY=sk-...
+OPENAI_LLM_COMPLETION_API_KEY=sk-...
 LLM_COMPLETION_MODEL=gpt-4o-mini
 ```
 

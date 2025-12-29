@@ -2,7 +2,7 @@
 type: adr
 id: ADR-0043
 title: "AI-assisted inline completions for script editor"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-26
@@ -124,7 +124,7 @@ discard the completion and return an empty completion to avoid partial blocks.
 # Inline completions (ghost text)
 LLM_COMPLETION_ENABLED=true
 LLM_COMPLETION_BASE_URL=http://localhost:11434/v1
-LLM_COMPLETION_API_KEY=sk-...        # Optional for Ollama/local
+OPENAI_LLM_COMPLETION_API_KEY=sk-...  # Optional for Ollama/local
 LLM_COMPLETION_MODEL=codellama:7b
 LLM_COMPLETION_MAX_TOKENS=256
 LLM_COMPLETION_TEMPERATURE=0.2

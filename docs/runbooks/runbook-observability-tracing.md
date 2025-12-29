@@ -15,6 +15,11 @@ Distributed tracing in Skriptoteket using OpenTelemetry with OTLP export to Jaeg
 
 - Jaeger UI (home server): https://jaeger.hemma.hule.education (Basic auth, user `admin`)
 
+Basic auth is configured via nginx-proxy `htpasswd`:
+
+- Server file: `~/infrastructure/htpasswd/jaeger.hemma.hule.education`
+- Password: store in a password manager (optionally also as `JAEGER_BASIC_AUTH_PASSWORD` in a local `.env` for convenience)
+
 **Note:** Grafana connects to Jaeger via the internal Docker network (`http://jaeger:16686`) and is not affected by the public basic auth.
 
 ## Configuration

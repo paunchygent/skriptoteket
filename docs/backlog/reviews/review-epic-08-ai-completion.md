@@ -2,7 +2,7 @@
 type: review
 id: REV-EPIC-08
 title: "Review: AI Completion Integration for EPIC-08"
-status: changes_requested
+status: approved
 owners: "agents"
 created: 2025-12-26
 reviewer: "lead-developer"
@@ -75,7 +75,7 @@ See [ADR-0043](../../adr/adr-0043-ai-completion-integration.md) for architecture
 ### Required Changes
 
 1. Add multi-line completions as explicitly in-scope: update ST-08-14 acceptance criteria + remove "Multi-line ghost text formatting" from Out of Scope; add tests for multi-line render + Tab insertion + truncated suppression.
-2. Add `LLM_COMPLETION_API_KEY` to ADR-0043 and ST-08-14 configuration blocks (optional for Ollama).
+2. Add `OPENAI_LLM_COMPLETION_API_KEY` to ADR-0043 and ST-08-14 configuration blocks (optional for Ollama).
 3. Align rate-limiting claims: ADR-0043 must not assert per-user rate limiting as implemented if it remains out-of-scope in ST-08-14.
 4. Update stop-token guidance in ADR-0043 + `ref-ai-completion-architecture`: remove `\n\n`, `def `, `class ` stop tokens; support multi-line blocks.
 5. Update `ref-ai-completion-architecture` API contract: completion may include newlines; backend must discard truncated upstream outputs (`finish_reason="length"`) and return empty completion instead of partial blocks.
@@ -102,7 +102,13 @@ See [ADR-0043](../../adr/adr-0043-ai-completion-integration.md) for architecture
 
 ## Changes Made
 
-[Author fills this in after addressing feedback]
-
 | Change | Artifact | Description |
 |--------|----------|-------------|
+| Multi-line scope | ADR-0043:112-114, ST-08-14:12,135-137 | Multi-line completions explicitly in scope; AC and tests added |
+| API key config | ADR-0043:127, ref-ai-completion:203, ST-08-14:95 | `OPENAI_LLM_COMPLETION_API_KEY` added to all config blocks |
+| Rate limiting aligned | ADR-0043:190-191, ST-08-14:150 | Clarified as "follow-up if not in MVP" |
+| Stop tokens | ADR-0043:116, ref-ai-completion:112 | Simplified to triple backticks; restrictive tokens removed |
+| Truncation policy | ADR-0043:118-119, ref-ai-completion:66-67,86, ST-08-14:18 | Discard `finish_reason="length"`, return empty |
+| KB packaging | ADR-0043:193, ref-ai-completion:129-133 | Production packaging, memory cache, fallback behavior defined |
+| Keymap precedence | ref-ai-completion:182-185 | Tab/Escape override `indentWithTab` when ghost text visible |
+| Privacy/logging | ADR-0043:194, ref-ai-completion:244-245 | Never log code/prompts; third-party risks documented |

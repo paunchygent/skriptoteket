@@ -92,7 +92,7 @@ class InlineCompletionProviderProtocol(Protocol):
 ```
 LLM_COMPLETION_ENABLED=true
 LLM_COMPLETION_BASE_URL=http://localhost:11434/v1
-LLM_COMPLETION_API_KEY=sk-...        # Optional for Ollama/local
+OPENAI_LLM_COMPLETION_API_KEY=sk-...  # Optional for Ollama/local
 LLM_COMPLETION_MODEL=codellama:7b
 LLM_COMPLETION_MAX_TOKENS=256
 LLM_COMPLETION_TEMPERATURE=0.2
