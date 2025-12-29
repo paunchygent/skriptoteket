@@ -5,6 +5,7 @@ title: "Observability visualization and operations"
 status: proposed
 owners: "agents"
 created: 2025-12-26
+updated: 2025-12-29
 outcome: "Operators can monitor Skriptoteket health via Grafana dashboards, receive alerts for critical issues, and trace requests via public Jaeger UI"
 ---
 
@@ -35,6 +36,11 @@ outcome: "Operators can monitor Skriptoteket health via Grafana dashboards, rece
 - ST-17-05: Runbook updates and verification
 - ST-17-06: User session metrics
 - ST-17-07: Login events audit trail
+
+## Delivered (implemented)
+
+- ST-17-06: user session + login-rate metrics, wired into Grafana (see observability runbooks).
+- ST-17-07: account-level login audit trail (DB + API + admin UI) with 90-day retention enforced via CLI cleanup and the systemd timer pattern documented in `docs/runbooks/runbook-home-server.md`.
 
 ## Risks
 

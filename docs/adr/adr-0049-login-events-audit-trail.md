@@ -2,10 +2,11 @@
 type: adr
 id: ADR-0049
 title: "Login events audit trail"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["lead-developer", "user-lead"]
 created: 2025-12-29
+updated: 2025-12-29
 links: ["ST-17-07"]
 ---
 

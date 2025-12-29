@@ -2,9 +2,10 @@
 type: story
 id: ST-17-07
 title: "Login events audit trail"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-29
+updated: 2025-12-29
 epic: "EPIC-17"
 dependencies:
   - "ST-17-06"
