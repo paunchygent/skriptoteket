@@ -5,6 +5,7 @@ title: "Sandbox-only settings contexts"
 status: accepted
 owners: "agents"
 created: 2025-12-27
+updated: 2025-12-28
 deciders: "lead-developer"
 links: ["EPIC-14", "ST-14-08"]
 ---
@@ -27,6 +28,15 @@ Define sandbox-only settings contexts:
   body so unsaved schema edits can be validated and stored.
 - Production tool runs continue to use the existing shared context
   `settings:{schema_hash}`.
+
+## Addendum (2025-12-28)
+
+- Editor API endpoints are `POST /api/v1/editor/tool-versions/{version_id}/sandbox-settings/resolve`
+  and `PUT /api/v1/editor/tool-versions/{version_id}/sandbox-settings` (save).
+- Backend will introduce a settings service wrapper around `tool_sessions` for
+  resolve/save validation and context derivation.
+- `ExecuteToolVersion` gains an optional `settings_context` override so sandbox
+  runs read sandbox settings without touching production contexts.
 
 ## Consequences
 

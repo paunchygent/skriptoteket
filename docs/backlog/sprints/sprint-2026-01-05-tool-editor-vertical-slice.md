@@ -78,43 +78,43 @@ authors can iterate on drafts without publishing.
 
 Legend: [x] done · [ ] not done · (BLOCKED) depends on another story/step
 
-Last updated: 2025-12-28
+Last updated: 2025-12-29
 
 ### ST-14-03 — Editor sandbox next_actions parity
 
-- [ ] Render next_actions via ToolRunActions.
-- [ ] Submit next_action executes same tool version in sandbox context; returns run_id.
-- [ ] Persist normalized_state to tool_sessions under sandbox context; next action uses server-owned state.
-- [ ] Stale expected_state_rev returns 409; UI shows actionable conflict.
-- [ ] html_to_pdf_preview demo tool E2E in sandbox (BLOCKED: snapshots).
+- [x] Render next_actions via ToolRunActions.
+- [x] Submit next_action executes same tool version in sandbox context; returns run_id.
+- [x] Persist normalized_state to tool_sessions under sandbox context; next action uses server-owned state.
+- [x] Stale expected_state_rev returns 409; UI shows actionable conflict.
+- [x] html_to_pdf_preview demo tool E2E in sandbox.
 
 ### ST-14-04 — Sandbox input_schema form preview parity
 
-- [ ] Non-file fields render via ToolInputForm.
-- [ ] No input_schema → show multi-file picker (upload-first parity).
-- [ ] input_schema includes file field → show picker with label/accept/min/max parity.
-- [ ] input_schema exists with no file field → hide picker.
-- [ ] Invalid input_schema JSON → actionable parse error; no crash.
-- [ ] Invalid non-file input values → block run; field-level errors; runner not invoked.
-- [ ] Unsaved valid schema used for preview (BLOCKED: snapshots).
+- [x] Non-file fields render via ToolInputForm.
+- [x] No input_schema → show multi-file picker (upload-first parity).
+- [x] input_schema includes file field → show picker with label/accept/min/max parity.
+- [x] input_schema exists with no file field → hide picker.
+- [x] Invalid input_schema JSON → actionable parse error; no crash.
+- [x] Invalid non-file input values → block run; field-level errors; runner not invoked.
+- [x] Unsaved valid schema used for preview.
 
 ### ST-14-05 — Editor sandbox settings parity
 
-- [ ] settings_schema → settings toggle + ToolRunSettingsPanel in sandbox.
-- [ ] Save settings → next sandbox run receives values via SKRIPTOTEKET_MEMORY_PATH (BLOCKED: ST-14-08).
-- [ ] No settings_schema → hide settings UI.
-- [ ] Invalid schema JSON → parse error and disable settings save.
-- [ ] Unsaved valid settings_schema used for sandbox settings validation/save (BLOCKED: ST-14-08).
+- [x] settings_schema → settings toggle + ToolRunSettingsPanel in sandbox.
+- [x] Save settings → next sandbox run receives values via SKRIPTOTEKET_MEMORY_PATH.
+- [x] No settings_schema → hide settings UI.
+- [x] Invalid schema JSON → parse error and disable settings save.
+- [x] Unsaved valid settings_schema used for sandbox settings validation/save.
 
 ### ST-14-06 — Editor sandbox preview snapshots
 
-- [ ] Unsaved code/schemas run uses snapshot payload (not last saved draft).
-- [ ] start_action requires snapshot_id and executes against same snapshot.
-- [ ] Snapshot expires → actionable error prompting rerun.
-- [ ] Session/files isolated per snapshot_id (sandbox:{snapshot_id}).
-- [ ] Run details include snapshot_id for continuation after reload.
-- [ ] Snapshot payload size limits enforced with clear validation errors.
-- [ ] Lock enforcement for preview run + start-action.
+- [x] Unsaved code/schemas run uses snapshot payload (not last saved draft).
+- [x] start_action requires snapshot_id and executes against same snapshot.
+- [x] Snapshot expires → actionable error prompting rerun.
+- [x] Session/files isolated per snapshot_id (sandbox:{snapshot_id}).
+- [x] Run details include snapshot_id for continuation after reload.
+- [x] Snapshot payload size limits enforced with clear validation errors.
+- [x] Lock enforcement for preview run + start-action.
 
 ### ST-14-07 — Editor draft head locks
 
@@ -127,15 +127,19 @@ Last updated: 2025-12-28
 
 ### ST-14-08 — Editor sandbox settings isolation
 
-- [ ] Sandbox settings stored per user + draft head; do not affect production settings.
-- [ ] Unsaved valid schema used for resolve/save and validation.
-- [ ] Invalid schema JSON → parse error and disables saving.
-- [ ] Saved settings applied to next sandbox preview run via SKRIPTOTEKET_MEMORY_PATH.
-- [ ] No settings_schema → settings panel hidden.
-- [ ] User without draft lock → API rejects resolve/save.
+- [x] Sandbox settings stored per user + draft head; do not affect production settings.
+- [x] Unsaved valid schema used for resolve/save and validation.
+- [x] Invalid schema JSON → parse error and disables saving.
+- [x] Saved settings applied to next sandbox preview run via SKRIPTOTEKET_MEMORY_PATH.
+- [x] No settings_schema → settings panel hidden.
+- [x] User without draft lock → API rejects resolve/save.
 
 ## Notes / follow-ups
 
 - This sprint is adjacent to future editor intelligence and AI assistance work, but
   deliberately focuses on editor workflow correctness and draft safety rather than
   AI-driven authoring features.
+- Sandbox settings decisions locked (ST-14-05/08): POST resolve + PUT save endpoints,
+  settings service wrapper around tool_sessions, ExecuteToolVersion settings_context
+  override, and a new useSandboxSettings.ts composable that reuses helpers from
+  useToolSettings.ts.

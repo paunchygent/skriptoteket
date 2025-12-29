@@ -5,6 +5,7 @@ title: "Editor sandbox preview snapshots"
 status: ready
 owners: "agents"
 created: 2025-12-27
+updated: 2025-12-28
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given an editor has unsaved code or schemas, when the user runs the sandbox, then the run uses the unsaved snapshot payload (not the last saved draft)."
@@ -46,15 +47,22 @@ while ensuring multi-step actions remain stable via snapshot_id.
 - Changing the UI action schema contract.
 - Changing runner inputs beyond snapshot payload support.
 
+## Decisions (locked)
+
+- Storage: `sandbox_snapshots` table with explicit columns + `tool_runs.snapshot_id`.
+- Endpoint: extend existing `POST /api/v1/editor/tool-versions/{version_id}/run-sandbox` (multipart) to accept snapshot payload.
+- Execution: reuse `ExecuteToolVersion` with snapshot overrides (entrypoint/source_code/schema/usage).
+- Limits: TTL 24h, payload max 2MB (canonical JSON byte count).
+- Cleanup: CLI command scheduled via systemd timer (opportunistic cleanup optional).
+
 ## Implementation plan
 
-1) Add sandbox snapshot storage and TTL cleanup.
-2) Add preview run endpoint to accept snapshot payload.
-3) Require snapshot_id on start-action for sandbox runs.
-4) Enforce draft head lock for preview runs and start-action submissions.
-5) Store snapshot_id on tool runs and return it from run details endpoints.
-6) Update frontend sandbox runner to build snapshot payload and track
-   snapshot_id per run.
+1) Add `sandbox_snapshots` storage + `tool_runs.snapshot_id` + TTL cleanup command.
+2) Extend `run-sandbox` (multipart) to accept snapshot payload; enforce 2MB limit; return `snapshot_id`.
+3) Require `snapshot_id` on start-action and use `sandbox:{snapshot_id}` context for sessions/files.
+4) Include `snapshot_id` in run details response for reload continuation.
+5) Enforce draft head lock for preview runs and start-action submissions.
+6) Update frontend sandbox runner to build snapshot payload and track `snapshot_id` per run.
 
 ## Test plan
 

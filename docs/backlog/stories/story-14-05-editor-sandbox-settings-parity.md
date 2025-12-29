@@ -2,9 +2,10 @@
 type: story
 id: ST-14-05
 title: "Editor sandbox settings parity (draft-first)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-27
+updated: 2025-12-29
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given a draft tool version defines settings_schema, when the editor sandbox is shown, then a Settings toggle appears and renders fields using ToolRunSettingsPanel (same component as ToolRunView)."
@@ -51,11 +52,23 @@ Sandbox settings are stored in sandbox-only contexts per ADR-0045 and ST-14-08.
 This story focuses on UI parity and editor integration; storage semantics are
 defined in the sandbox settings isolation story.
 
+Additional decisions (locked):
+
+- Editor endpoints: `POST /api/v1/editor/tool-versions/{version_id}/sandbox-settings/resolve`
+  and `PUT /api/v1/editor/tool-versions/{version_id}/sandbox-settings`.
+- Backend: add a settings service wrapper around `tool_sessions` for
+  resolve/save validation and context derivation.
+- Execution: `ExecuteToolVersion` accepts an optional `settings_context` override
+  so sandbox runs read sandbox settings without touching production contexts.
+- Frontend: new `useSandboxSettings.ts` composable reusing helpers extracted from
+  `useToolSettings.ts`.
+
 ## Implementation plan
 
 ### Backend (sandbox settings)
 
-Use the sandbox settings resolve/save endpoints from ST-14-08, which accept
+Use the sandbox settings resolve/save endpoints from ST-14-08
+(`POST .../sandbox-settings/resolve`, `PUT .../sandbox-settings`), which accept
 `settings_schema` in the request and store values in sandbox-only contexts.
 
 ### Frontend (SandboxRunner UI)
