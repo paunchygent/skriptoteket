@@ -12,7 +12,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2025-12-28
+- Date: 2025-12-29
 - Branch / commit: `main` (`440ae14`)
 - Current sprint: `SPR-2026-01-05 Tool Editor Vertical Slice` (EPIC-14)
 - Production: Full Vue SPA (unchanged)
@@ -45,6 +45,18 @@ Keep this file updated so the next session can pick up work quickly.
   `docs/backlog/stories/story-14-06-editor-sandbox-preview-snapshots.md`,
   `docs/backlog/epics/epic-14-admin-tool-authoring.md`,
   `docs/backlog/reviews/review-epic-14-editor-sandbox-preview.md`.
+- ST-14-06 backend snapshots: migration + models/repos + handlers + API contracts + CLI cleanup.
+  - Migration: `migrations/versions/0020_sandbox_snapshots.py`.
+  - Domain/protocols: `src/skriptoteket/domain/scripting/sandbox_snapshots.py`,
+    `src/skriptoteket/protocols/sandbox_snapshots.py`.
+  - Infra/DI: `src/skriptoteket/infrastructure/db/models/sandbox_snapshot.py`,
+    `src/skriptoteket/infrastructure/repositories/sandbox_snapshot_repository.py`,
+    `src/skriptoteket/di/infrastructure.py`, `src/skriptoteket/di/scripting.py`.
+  - Handlers/API: `src/skriptoteket/application/scripting/handlers/run_sandbox.py`,
+    `src/skriptoteket/application/scripting/handlers/start_sandbox_action.py`,
+    `src/skriptoteket/web/api/v1/editor/sandbox.py`,
+    `src/skriptoteket/web/api/v1/editor/runs.py`.
+  - CLI/config: `src/skriptoteket/cli/main.py`, `src/skriptoteket/config.py`.
 - ST-14-07 SPA lock UX: added draft lock acquisition/heartbeat + read-only gating + force takeover banner.
   - New: `frontend/apps/skriptoteket/src/composables/editor/useDraftLock.ts`,
     `frontend/apps/skriptoteket/src/components/editor/DraftLockBanner.vue`.
@@ -54,6 +66,34 @@ Keep this file updated so the next session can pick up work quickly.
     `frontend/apps/skriptoteket/src/components/editor/CodeMirrorEditor.vue`,
     `frontend/apps/skriptoteket/src/components/editor/InstructionsDrawer.vue`.
   - Tracker: `docs/backlog/sprints/sprint-2026-01-05-tool-editor-vertical-slice.md` (ST-14-07 checkboxes).
+- ST-14-04 sandbox input_schema parity + snapshot payload wiring.
+  - New composable: `frontend/apps/skriptoteket/src/composables/editor/useEditorSchemaParsing.ts`.
+  - New components: `frontend/apps/skriptoteket/src/components/editor/SandboxInputPanel.vue`,
+    `frontend/apps/skriptoteket/src/components/editor/SandboxRunnerActions.vue`.
+  - Updated: `frontend/apps/skriptoteket/src/components/editor/SandboxRunner.vue`,
+    `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`,
+    `frontend/apps/skriptoteket/src/composables/tools/useToolInputs.ts`.
+- Sandbox settings decisions recorded in docs (endpoint shape, settings service wrapper,
+  ExecuteToolVersion settings_context override, new useSandboxSettings composable).
+  - ADR addendum: `docs/adr/adr-0045-sandbox-settings-isolation.md`.
+  - Story updates: `docs/backlog/stories/story-14-05-editor-sandbox-settings-parity.md`,
+    `docs/backlog/stories/story-14-08-editor-sandbox-settings-isolation.md`.
+  - Sprint note: `docs/backlog/sprints/sprint-2026-01-05-tool-editor-vertical-slice.md`.
+- Suggestions: added a small help toggle “sticky note” on `/suggestions/new` beside the description field.
+  - UI: `frontend/apps/skriptoteket/src/views/SuggestionNewView.vue`.
+- SPA: cohesive route transitions (fade-only, `mode="out-in"`), opt-out for editor routes, suppress on auth redirects to avoid “shutter” artifacts (esp. on `/my-runs` + `/my-tools`).
+  - Layout: `frontend/apps/skriptoteket/src/App.vue`.
+  - Styles: `frontend/apps/skriptoteket/src/assets/main.css`.
+  - Suppress helper: `frontend/apps/skriptoteket/src/composables/usePageTransition.ts`.
+  - Opt-out meta: `frontend/apps/skriptoteket/src/router/routes.ts`.
+  - Login redirect fix: `frontend/apps/skriptoteket/src/components/auth/LoginModal.vue` (emit `success` before `close`).
+- Smoke + typecheck fixes:
+  - UI smoke now anchors on `Indata (JSON)` and allows optional file picker: `scripts/playwright_ui_editor_smoke.py`.
+  - Mypy invariance fix in snapshot handler tests: `tests/unit/application/scripting/handlers/test_run_sandbox_handler_snapshots.py`,
+    `tests/unit/application/scripting/handlers/test_start_sandbox_action_handler_snapshots.py`.
+- ST-14-05/08 manual checks automation:
+  - Editor sandbox settings E2E updated for lock acquire + settings toggle targeting + isolation check:
+    `scripts/playwright_st_14_05_editor_sandbox_settings_e2e.py`.
 
 ## Verification
 
@@ -63,14 +103,24 @@ Keep this file updated so the next session can pick up work quickly.
 - Typecheck: `pdm run typecheck` (pass)
 - Tests: `pdm run test` (pass)
 - Migration idempotency: `pdm run pytest -m docker tests/integration/test_migration_0019_draft_locks_idempotent.py` (pass)
+- Tests: `pdm run pytest tests/unit/web/test_editor_sandbox_api.py` (pass)
+- Tests: `pdm run pytest tests/integration/infrastructure/repositories/test_sandbox_snapshot_repository.py tests/integration/cli/test_cleanup_sandbox_snapshots.py` (pass)
 - OpenAPI types: `pdm run fe-gen-api-types` (pass)
 - SPA build: `pdm run fe-build` (pass)
 - SPA typecheck: `pdm run fe-type-check` (pass)
 - SPA lint: `pdm run fe-lint` (pass)
 - UI (editor): `pdm run ui-editor-smoke` (pass; artifacts in `.artifacts/ui-editor-smoke/`; Playwright required escalation on macOS)
+- UI (suggestion-new): `pdm run python -m scripts.playwright_suggestion_new_smoke` (pass; artifacts in `.artifacts/ui-smoke/`; Playwright required escalation on macOS)
+- UI (nav transitions): `pdm run python -m scripts.playwright_nav_transitions_smoke --base-url http://127.0.0.1:5173` (pass; artifacts in `.artifacts/ui-smoke/`; Playwright required escalation on macOS)
 - Docs: `pdm run docs-validate` (pass; sprint tracker update)
 - Live check: `pdm run dev` (port 8000 already in use), `pdm run fe-dev` (port 5173 already in use)
 - Live check: `curl -I http://127.0.0.1:5173/` (200), `curl -I http://127.0.0.1:5173/admin/tools` (200)
+- Re-run (2025-12-29): `pdm run lint`, `pdm run typecheck`, `pdm run test`, `pdm run fe-gen-api-types`,
+  `pdm run fe-type-check`, `pdm run fe-lint` (all pass).
+- UI (editor): `pdm run ui-editor-smoke` (pass; artifacts in `.artifacts/ui-editor-smoke/`; Playwright required escalation on macOS)
+- Live check: `curl -I http://127.0.0.1:8000/health` (405 on HEAD; backend responding)
+- Seed: `pdm run seed-script-bank --slug demo-settings-test --sync-code` (pass)
+- UI (editor settings): `pdm run python -m scripts.playwright_st_14_05_editor_sandbox_settings_e2e` (pass; artifacts in `.artifacts/st-14-05-editor-sandbox-settings-e2e`; Playwright required escalation on macOS)
 
 ## How to Run
 
