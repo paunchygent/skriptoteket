@@ -2,10 +2,10 @@
 type: sprint
 id: SPR-2026-01-05
 title: "Sprint 2026-01-05: Tool editor vertical slice"
-status: active
+status: done
 owners: "agents"
 created: 2025-12-27
-updated: 2025-12-28
+updated: 2025-12-29
 starts: 2026-01-05
 ends: 2026-01-18
 objective: "Ship editor sandbox preview + draft locking + settings isolation so authors can iterate safely without publishing."
@@ -133,6 +133,29 @@ Last updated: 2025-12-29
 - [x] Saved settings applied to next sandbox preview run via SKRIPTOTEKET_MEMORY_PATH.
 - [x] No settings_schema → settings panel hidden.
 - [x] User without draft lock → API rejects resolve/save.
+
+## Wrap-up
+
+### Scope delivered
+
+- Snapshot-based sandbox preview runs with stable next_actions and session context.
+- Draft head locks enforced in API + SPA (heartbeat + takeover + read-only gating).
+- Sandbox input and settings parity with production run UI.
+- Sandbox settings isolation via sandbox-only settings context.
+
+### Verification (selected)
+
+- Backend: `pdm run lint`, `pdm run typecheck`, `pdm run test`.
+- Frontend: `pdm run fe-gen-api-types`, `pdm run fe-type-check`, `pdm run fe-lint`.
+- UI smoke: `pdm run ui-editor-smoke` (Playwright; escalation on macOS).
+- Manual E2E:
+  - `pdm run python -m scripts.playwright_st_14_05_editor_sandbox_settings_e2e`
+  - `pdm run python -m scripts.playwright_st_14_03_editor_sandbox_html_to_pdf_preview_e2e`
+
+### Ops notes
+
+- Sandbox snapshot TTL cleanup must be scheduled server-side via systemd timer.
+- See `docs/runbooks/runbook-home-server.md` and `docs/runbooks/runbook-observability.md`.
 
 ## Notes / follow-ups
 

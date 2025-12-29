@@ -40,4 +40,4 @@ Reference: `docs/reference/reports/ref-external-observability-integration.md`.
 - `observability/grafana/provisioning/datasources/datasources.yaml` (new)
 - `compose.prod.yaml` (modified - add tracing env vars)
 - `pyproject.toml` (modified - add obs-* scripts)
-- `docs/runbooks/runbook-observability-logging.md` (modified)
+- `docs/runbooks/runbook-observability.md` (modified)

@@ -2,9 +2,10 @@
 type: story
 id: ST-14-04
 title: "Editor sandbox input_schema form preview (ToolInputForm parity)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-27
+updated: 2025-12-29
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given a draft tool version has input_schema with non-file fields, when the editor sandbox is shown, then the sandbox renders those fields using the same ToolInputForm component as the user ToolRunView."

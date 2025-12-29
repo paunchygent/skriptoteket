@@ -2,10 +2,10 @@
 type: story
 id: ST-14-06
 title: "Editor sandbox preview snapshots"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-27
-updated: 2025-12-28
+updated: 2025-12-29
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given an editor has unsaved code or schemas, when the user runs the sandbox, then the run uses the unsaved snapshot payload (not the last saved draft)."

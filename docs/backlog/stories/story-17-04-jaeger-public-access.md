@@ -54,7 +54,7 @@ jaeger:
 
 Modify: `compose.observability.yaml`
 
-Modify: `docs/runbooks/runbook-observability-logging.md` (update access URLs table)
+Modify: `docs/runbooks/runbook-observability.md` (update access URLs table)
 
 ## Notes
 

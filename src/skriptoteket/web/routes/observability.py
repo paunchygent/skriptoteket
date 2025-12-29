@@ -16,9 +16,12 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from skriptoteket.config import Settings
+from skriptoteket.domain.identity.models import Role
 from skriptoteket.infrastructure.session_files.usage import get_session_file_usage
 from skriptoteket.observability.health import build_health_response, check_database
 from skriptoteket.observability.metrics import get_metrics
+from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.identity import SessionRepositoryProtocol, UserRepositoryProtocol
 
 router = APIRouter(tags=["observability"])
 
@@ -50,12 +53,23 @@ async def healthz(
 
 @router.get("/metrics", response_class=Response)
 @inject
-async def metrics(settings: FromDishka[Settings]) -> Response:
+async def metrics(
+    settings: FromDishka[Settings],
+    sessions: FromDishka[SessionRepositoryProtocol],
+    users: FromDishka[UserRepositoryProtocol],
+    clock: FromDishka[ClockProtocol],
+) -> Response:
     """Prometheus metrics endpoint for scraping."""
     metrics = get_metrics()
     usage = await asyncio.to_thread(get_session_file_usage, artifacts_root=settings.ARTIFACTS_ROOT)
+    now = clock.now()
+    active_sessions = await sessions.count_active(now=now)
+    users_by_role = await users.count_active_by_role()
 
     metrics["session_files_bytes_total"].set(usage.bytes_total)
     metrics["session_files_count"].set(usage.files)
+    metrics["active_sessions"].set(active_sessions)
+    for role in Role:
+        metrics["users_by_role"].labels(role=role.value).set(users_by_role.get(role, 0))
 
     return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)

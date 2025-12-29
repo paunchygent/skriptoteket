@@ -5,7 +5,7 @@ title: "Admin tool authoring (draft-first workflow)"
 status: active
 owners: "agents"
 created: 2025-12-25
-updated: 2025-12-28
+updated: 2025-12-29
 outcome: "Admins can quickly create draft tools directly from /admin/tools, iterate without contributor-only hoops, and publish only when slug and taxonomy are finalized."
 ---
 
@@ -38,6 +38,30 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 - [ST-14-06: Editor sandbox preview snapshots](../stories/story-14-06-editor-sandbox-preview-snapshots.md)
 - [ST-14-07: Editor draft head locks](../stories/story-14-07-editor-draft-head-locks.md)
 - [ST-14-08: Editor sandbox settings isolation](../stories/story-14-08-editor-sandbox-settings-isolation.md)
+- [ST-14-09: Editor input_schema modes (remove null vs [] footgun)](../stories/story-14-09-editor-input-schema-modes.md)
+- [ST-14-10: Editor schema JSON QoL (prettify + examples + guidance)](../stories/story-14-10-editor-schema-json-qol.md)
+- [ST-14-11: Editor sandbox run debug details API (stdout/stderr, gated)](../stories/story-14-11-editor-sandbox-run-debug-details-api.md)
+- [ST-14-12: Editor sandbox debug panel UX (copyable diagnostics)](../stories/story-14-12-editor-sandbox-debug-panel.md)
+- [ST-14-13: CodeMirror JSON editor for tool schemas](../stories/story-14-13-editor-schema-editor-json-codemirror.md)
+- [ST-14-14: Schema editor snippets + inline diagnostics UX](../stories/story-14-14-editor-schema-editor-snippets-and-diagnostics.md)
+- [ST-14-15: API endpoint to validate tool schemas (settings_schema/input_schema)](../stories/story-14-15-editor-schema-validation-endpoint.md)
+- [ST-14-16: Editor UX for structured schema validation errors](../stories/story-14-16-editor-schema-validation-errors-ux.md)
+- [ST-14-17: Editor version compare/diff view (code + schemas + instructions)](../stories/story-14-17-editor-version-diff-view.md)
+- [ST-14-18: Reviewer navigation improvements (compare targets + deep links)](../stories/story-14-18-editor-review-navigation-and-compare.md)
+- [ST-14-19: Runner toolkit helper module (inputs/settings/actions)](../stories/story-14-19-runner-toolkit-helper-module.md)
+- [ST-14-20: Editor intelligence updates for toolkit (completions/hover/lints)](../stories/story-14-20-editor-intelligence-toolkit-support.md)
+- [ST-14-21: Tool run actions remember prior inputs (sticky action forms)](../stories/story-14-21-tool-run-actions-sticky-inputs.md)
+- [ST-14-22: Tool run UX conventions for progress + input file references](../stories/story-14-22-tool-run-ux-progress-and-file-references.md)
+- [ST-14-23: UI contract v2.x: action defaults/prefill](../stories/story-14-23-ui-contract-action-defaults-prefill.md)
+- [ST-14-24: UI contract v2.x: first-class file references](../stories/story-14-24-ui-contract-file-references.md)
+- [ST-14-25: UI contract v2.x: layout editor output (layout_editor_v1)](../stories/story-14-25-ui-contract-layout-editor-v1-output.md)
+- [ST-14-26: UI renderer: layout editor v1 (click-to-assign + apply)](../stories/story-14-26-ui-renderer-layout-editor-v1-click-assign.md)
+- [ST-14-27: Layout editor v1: drag/drop interactions (library-based)](../stories/story-14-27-layout-editor-v1-drag-drop.md)
+- [ST-14-28: Layout editor v1: UX polish + accessibility + tests](../stories/story-14-28-layout-editor-v1-ux-polish-and-a11y.md)
+
+## References
+
+- Tool editor DX review: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
 ## Risks
 

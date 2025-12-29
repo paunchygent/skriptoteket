@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import func, select, update
@@ -40,3 +41,11 @@ class PostgreSQLSessionRepository(SessionRepositoryProtocol):
         await self._session.execute(
             update(SessionModel).where(SessionModel.id == session_id).values(revoked_at=func.now())
         )
+
+    async def count_active(self, *, now: datetime) -> int:
+        stmt = select(func.count()).where(
+            SessionModel.revoked_at.is_(None),
+            SessionModel.expires_at > now,
+        )
+        result = await self._session.execute(stmt)
+        return int(result.scalar() or 0)

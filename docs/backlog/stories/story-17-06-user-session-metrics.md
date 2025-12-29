@@ -2,9 +2,10 @@
 type: story
 id: ST-17-06
 title: "User session metrics"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-27
+updated: 2025-12-29
 epic: "EPIC-17"
 acceptance_criteria:
   - "Given the /metrics endpoint, when I query for user metrics, then I see skriptoteket_active_sessions gauge"

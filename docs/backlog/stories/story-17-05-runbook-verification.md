@@ -81,7 +81,7 @@ This story integrates all EPIC-17 work by updating runbooks and performing end-t
 
 ## Files
 
-Modify: `docs/runbooks/runbook-observability-logging.md`
+Modify: `docs/runbooks/runbook-observability.md`
 
 ## Notes
 

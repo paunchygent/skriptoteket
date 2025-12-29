@@ -91,13 +91,45 @@ Keep this file updated so the next session can pick up work quickly.
   - UI smoke now anchors on `Indata (JSON)` and allows optional file picker: `scripts/playwright_ui_editor_smoke.py`.
   - Mypy invariance fix in snapshot handler tests: `tests/unit/application/scripting/handlers/test_run_sandbox_handler_snapshots.py`,
     `tests/unit/application/scripting/handlers/test_start_sandbox_action_handler_snapshots.py`.
+- Ops: installed sandbox snapshot cleanup units on `hemma` and enabled timer.
+  - Systemd: `/etc/systemd/system/skriptoteket-sandbox-snapshots-cleanup.service`,
+    `/etc/systemd/system/skriptoteket-sandbox-snapshots-cleanup.timer`.
+  - Runbook reorganized + updated: `docs/runbooks/runbook-home-server.md`.
+- Docs: observability runbook split into index + tool-specific guides.
+  - New: `docs/runbooks/runbook-observability.md`,
+    `docs/runbooks/runbook-observability-logging.md`,
+    `docs/runbooks/runbook-observability-metrics.md`,
+    `docs/runbooks/runbook-observability-grafana.md`,
+    `docs/runbooks/runbook-observability-tracing.md`.
+  - Updated references in: `docs/backlog/sprints/sprint-2026-01-05-tool-editor-vertical-slice.md`,
+    `docs/backlog/stories/story-07-05-observability-stack-deployment.md`,
+    `docs/backlog/stories/story-12-06-session-file-cleanup.md`,
+    `docs/backlog/stories/story-17-04-jaeger-public-access.md`,
+    `docs/backlog/stories/story-17-05-runbook-verification.md`,
+    `docs/runbooks/runbook-home-server.md`.
+  - Docs hygiene: fixed missing ADR frontmatter owners in `docs/adr/adr-0048-linter-context-and-data-flow.md`.
+- ST-17-06 metrics + dashboard:
+  - Metrics: `skriptoteket_active_sessions`, `skriptoteket_logins_total`, `skriptoteket_users_by_role` in
+    `src/skriptoteket/observability/metrics.py`.
+  - Login instrumentation + metrics scrape updates in
+    `src/skriptoteket/application/identity/handlers/login.py`,
+    `src/skriptoteket/web/routes/observability.py`,
+    `src/skriptoteket/infrastructure/repositories/session_repository.py`,
+    `src/skriptoteket/infrastructure/repositories/user_repository.py`,
+    `src/skriptoteket/protocols/identity.py`.
+  - Grafana: `observability/grafana/provisioning/dashboards/skriptoteket-user-activity.json`.
+  - Story status: `docs/backlog/stories/story-17-06-user-session-metrics.md` (done).
 - ST-14-05/08 manual checks automation:
   - Editor sandbox settings E2E updated for lock acquire + settings toggle targeting + isolation check:
     `scripts/playwright_st_14_05_editor_sandbox_settings_e2e.py`.
+- ST-14-03 manual verification:
+  - New Playwright E2E for html-to-pdf preview next_actions in editor sandbox:
+    `scripts/playwright_st_14_03_editor_sandbox_html_to_pdf_preview_e2e.py`.
 
 ## Verification
 
 - Docs: `pdm run docs-validate` (pass)
+- Re-run (2025-12-29): `pdm run lint`, `pdm run typecheck`, `pdm run test`, `pdm run docs-validate` (pass)
 - Format: `pdm run format` (pass)
 - Lint: `pdm run lint` (pass)
 - Typecheck: `pdm run typecheck` (pass)
@@ -119,8 +151,11 @@ Keep this file updated so the next session can pick up work quickly.
   `pdm run fe-type-check`, `pdm run fe-lint` (all pass).
 - UI (editor): `pdm run ui-editor-smoke` (pass; artifacts in `.artifacts/ui-editor-smoke/`; Playwright required escalation on macOS)
 - Live check: `curl -I http://127.0.0.1:8000/health` (405 on HEAD; backend responding)
+- Docs: `pdm run docs-validate` (pass)
 - Seed: `pdm run seed-script-bank --slug demo-settings-test --sync-code` (pass)
 - UI (editor settings): `pdm run python -m scripts.playwright_st_14_05_editor_sandbox_settings_e2e` (pass; artifacts in `.artifacts/st-14-05-editor-sandbox-settings-e2e`; Playwright required escalation on macOS)
+- Seed: `pdm run seed-script-bank --slug html-to-pdf-preview` (pass)
+- UI (html-to-pdf preview): `pdm run python -m scripts.playwright_st_14_03_editor_sandbox_html_to_pdf_preview_e2e` (pass; artifacts in `.artifacts/st-14-03-editor-sandbox-html-to-pdf-preview-e2e`; Playwright required escalation on macOS)
 
 ## How to Run
 

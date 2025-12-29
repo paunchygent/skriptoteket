@@ -54,4 +54,4 @@ Session file storage needs cleanup policies to prevent unbounded growth.
   - Scanner: `src/skriptoteket/infrastructure/session_files/usage.py` (excludes `meta.json`)
 - Runbooks:
   - Ops: `docs/runbooks/runbook-home-server.md`
-  - Metrics table: `docs/runbooks/runbook-observability-logging.md`
+  - Metrics table: `docs/runbooks/runbook-observability-metrics.md`

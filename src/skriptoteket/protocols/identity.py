@@ -20,7 +20,7 @@ from skriptoteket.application.identity.commands import (
     UpdateProfileCommand,
     UpdateProfileResult,
 )
-from skriptoteket.domain.identity.models import Session, User, UserAuth, UserProfile
+from skriptoteket.domain.identity.models import Role, Session, User, UserAuth, UserProfile
 
 
 class UserRepositoryProtocol(Protocol):
@@ -31,6 +31,7 @@ class UserRepositoryProtocol(Protocol):
     async def update_password_hash(
         self, *, user_id: UUID, password_hash: str, updated_at: datetime
     ) -> None: ...
+    async def count_active_by_role(self) -> dict[Role, int]: ...
 
 
 class ProfileRepositoryProtocol(Protocol):
@@ -43,6 +44,7 @@ class SessionRepositoryProtocol(Protocol):
     async def create(self, *, session: Session) -> None: ...
     async def get_by_id(self, session_id: UUID) -> Session | None: ...
     async def revoke(self, *, session_id: UUID) -> None: ...
+    async def count_active(self, *, now: datetime) -> int: ...
 
 
 class PasswordHasherProtocol(Protocol):

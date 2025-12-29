@@ -5,7 +5,7 @@ title: "Editor sandbox next_actions parity (multi-step testing)"
 status: done
 owners: "agents"
 created: 2025-12-25
-updated: 2025-12-28
+updated: 2025-12-29
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given a contributor/admin runs a draft tool in the editor sandbox, when the run returns ui_payload.next_actions, then SandboxRunner renders action buttons and fields using the standard ToolRunActions UI."

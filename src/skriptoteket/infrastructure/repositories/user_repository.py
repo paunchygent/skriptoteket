@@ -3,11 +3,11 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.errors import not_found
-from skriptoteket.domain.identity.models import User, UserAuth
+from skriptoteket.domain.identity.models import Role, User, UserAuth
 from skriptoteket.infrastructure.db.models.user import UserModel
 from skriptoteket.protocols.identity import UserRepositoryProtocol
 
@@ -87,3 +87,19 @@ class PostgreSQLUserRepository(UserRepositoryProtocol):
         model.password_hash = password_hash
         model.updated_at = updated_at
         await self._session.flush()
+
+    async def count_active_by_role(self) -> dict[Role, int]:
+        stmt = (
+            select(UserModel.role, func.count())
+            .where(UserModel.is_active.is_(True))
+            .group_by(UserModel.role)
+        )
+        result = await self._session.execute(stmt)
+        counts: dict[Role, int] = {}
+        for role_value, count in result.all():
+            try:
+                role = Role(role_value)
+            except ValueError:
+                continue
+            counts[role] = int(count)
+        return counts
