@@ -1,29 +1,68 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from "vue";
+import { computed, onBeforeUnmount, ref, toRef, watch } from "vue";
 
 import { apiFetch, apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
-import { UiOutputRenderer } from "../ui-outputs";
-import ToolRunActions from "../tool-run/ToolRunActions.vue";
-import ToolRunArtifacts from "../tool-run/ToolRunArtifacts.vue";
+import { useSandboxSettings } from "../../composables/editor/useSandboxSettings";
+import { useToolInputs, type ToolInputFormValues } from "../../composables/tools/useToolInputs";
+import type { SettingsFormValues } from "../../composables/tools/toolSettingsHelpers";
+import ToolRunSettingsPanel from "../tool-run/ToolRunSettingsPanel.vue";
 import SystemMessage from "../ui/SystemMessage.vue";
+import SandboxInputPanel from "./SandboxInputPanel.vue";
+import SandboxRunnerActions from "./SandboxRunnerActions.vue";
 
 type SandboxRunResponse = components["schemas"]["SandboxRunResponse"];
 type StartSandboxActionResponse = components["schemas"]["StartSandboxActionResponse"];
 type EditorRunDetails = components["schemas"]["EditorRunDetails"];
 type RunStatus = components["schemas"]["RunStatus"];
-type UiOutput = NonNullable<components["schemas"]["UiPayloadV2"]["outputs"]>[number];
-type UiFormAction = NonNullable<components["schemas"]["UiPayloadV2"]["next_actions"]>[number];
-type UiPayloadV2 = components["schemas"]["UiPayloadV2"];
 type JsonValue = components["schemas"]["JsonValue"];
+
+type CreateDraftVersionRequest = components["schemas"]["CreateDraftVersionRequest"];
+type ToolInputSchema = NonNullable<CreateDraftVersionRequest["input_schema"]>;
+type ToolSettingsSchema = NonNullable<CreateDraftVersionRequest["settings_schema"]>;
 
 const props = defineProps<{
   versionId: string;
   toolId: string;
   isReadOnly: boolean;
+  entrypoint: string;
+  sourceCode: string;
+  usageInstructions: string;
+  inputSchema: ToolInputSchema | null;
+  inputSchemaError: string | null;
+  settingsSchema: ToolSettingsSchema | null;
+  settingsSchemaError: string | null;
 }>();
 
 const selectedFiles = ref<File[]>([]);
+const toolInputs = useToolInputs({ schema: toRef(props, "inputSchema"), selectedFiles });
+
+const inputValues = toolInputs.values;
+const inputFields = toolInputs.nonFileFields;
+const inputFieldErrors = toolInputs.fieldErrors;
+const hasSchema = toolInputs.hasSchema;
+const fileAccept = toolInputs.fileAccept;
+const fileLabel = toolInputs.fileLabel;
+const fileMultiple = toolInputs.fileMultiple;
+const fileError = toolInputs.fileError;
+const showFilePicker = toolInputs.showFilePicker;
+
+const sandboxSettings = useSandboxSettings({
+  versionId: toRef(props, "versionId"),
+  settingsSchema: toRef(props, "settingsSchema"),
+});
+
+const settingsValues = sandboxSettings.values;
+const settingsErrorMessage = sandboxSettings.errorMessage;
+const isLoadingSettings = sandboxSettings.isLoading;
+const isSavingSettings = sandboxSettings.isSaving;
+const hasSettingsSchema = sandboxSettings.hasSchema;
+
+const isSettingsOpen = ref(false);
+const isSettingsSaveDisabled = computed(
+  () => props.isReadOnly || Boolean(props.settingsSchemaError),
+);
+
 const isRunning = ref(false);
 const runResult = ref<EditorRunDetails | null>(null);
 const errorMessage = ref<string | null>(null);
@@ -36,32 +75,13 @@ const actionErrorMessage = ref<string | null>(null);
 const completedSteps = ref<EditorRunDetails[]>([]);
 const selectedStepIndex = ref<number | null>(null);
 
-const inputValues = ref<Record<string, JsonValue>>({});
+const snapshotId = ref<string | null>(null);
 const lastSentInputsJson = ref<string>("{}");
 
 const hasFiles = computed(() => selectedFiles.value.length > 0);
 const inputsPreview = computed(() => lastSentInputsJson.value);
-
-// Displayed run: current or selected past step
-const displayedRun = computed<EditorRunDetails | null>(() => {
-  if (selectedStepIndex.value !== null) {
-    return completedSteps.value[selectedStepIndex.value] ?? null;
-  }
-  return runResult.value;
-});
-
-const outputs = computed<UiOutput[]>(() => {
-  const payload = displayedRun.value?.ui_payload as UiPayloadV2 | null;
-  return payload?.outputs ?? [];
-});
-const artifacts = computed(() => displayedRun.value?.artifacts ?? []);
 const hasResults = computed(() => runResult.value !== null || errorMessage.value !== null);
 
-// Multi-step action computed properties
-const nextActions = computed<UiFormAction[]>(() => {
-  const payload = runResult.value?.ui_payload as UiPayloadV2 | null;
-  return payload?.next_actions ?? [];
-});
 const canSubmitActions = computed(() => {
   return (
     stateRev.value !== null &&
@@ -71,26 +91,35 @@ const canSubmitActions = computed(() => {
   );
 });
 
-function selectFiles(event: Event): void {
-  const target = event.target as HTMLInputElement;
-  if (target.files) {
-    selectedFiles.value = Array.from(target.files);
+const canRun = computed(() => {
+  if (props.isReadOnly || isRunning.value) return false;
+  if (props.inputSchemaError || props.settingsSchemaError) return false;
+  if (hasSchema.value) {
+    return toolInputs.isValid.value;
   }
+  return hasFiles.value;
+});
+
+function updateInputValues(values: ToolInputFormValues): void {
+  inputValues.value = values;
 }
 
-function statusLabel(status: RunStatus): string {
-  const labels: Record<RunStatus, string> = {
-    running: "Kör...",
-    succeeded: "Lyckades",
-    failed: "Misslyckades",
-    timed_out: "Tidsgräns",
-  };
-  return labels[status];
+function updateSelectedFiles(files: File[]): void {
+  selectedFiles.value = files;
+}
+
+function updateSettingsValues(values: SettingsFormValues): void {
+  settingsValues.value = values;
+}
+
+function toggleSettings(): void {
+  isSettingsOpen.value = !isSettingsOpen.value;
 }
 
 function clearResult(): void {
   runResult.value = null;
   errorMessage.value = null;
+  snapshotId.value = null;
   // Clear multi-step state
   stateRev.value = null;
   actionErrorMessage.value = null;
@@ -115,6 +144,9 @@ async function pollRunStatus(runId: string): Promise<void> {
       `/api/v1/editor/tool-runs/${encodeURIComponent(runId)}`,
     );
     runResult.value = result;
+    if (result.snapshot_id) {
+      snapshotId.value = result.snapshot_id;
+    }
 
     if (isTerminalStatus(result.status)) {
       stopPolling();
@@ -135,8 +167,15 @@ async function pollRunStatus(runId: string): Promise<void> {
 
 async function runSandbox(): Promise<void> {
   if (isRunning.value) return;
+  if (!canRun.value) return;
   if (props.isReadOnly) {
     errorMessage.value = "Du saknar redigeringslåset. Testkörning är spärrad.";
+    return;
+  }
+
+  const entrypoint = props.entrypoint.trim();
+  if (!entrypoint) {
+    errorMessage.value = "Entrypoint saknas. Ange en giltig entrypoint.";
     return;
   }
 
@@ -150,13 +189,39 @@ async function runSandbox(): Promise<void> {
   actionErrorMessage.value = null;
   completedSteps.value = [];
   selectedStepIndex.value = null;
+  snapshotId.value = null;
+
+  let apiInputs: Record<string, JsonValue> = {};
+  if (hasSchema.value) {
+    try {
+      apiInputs = toolInputs.buildApiValues();
+    } catch (error: unknown) {
+      isRunning.value = false;
+      if (error instanceof Error) {
+        errorMessage.value = error.message;
+      } else {
+        errorMessage.value = "Ogiltiga indata. Kontrollera fälten.";
+      }
+      return;
+    }
+  }
+
+  const usageInstructions = props.usageInstructions.trim();
+  const snapshotPayload = {
+    entrypoint,
+    source_code: props.sourceCode,
+    settings_schema: props.settingsSchema ?? null,
+    input_schema: props.inputSchema ?? null,
+    usage_instructions: usageInstructions ? usageInstructions : null,
+  };
 
   const formData = new FormData();
   for (const file of selectedFiles.value) {
     formData.append("files", file);
   }
-  formData.append("inputs", JSON.stringify(inputValues.value));
-  lastSentInputsJson.value = JSON.stringify(inputValues.value, null, 2);
+  formData.append("inputs", JSON.stringify(apiInputs));
+  formData.append("snapshot", JSON.stringify(snapshotPayload));
+  lastSentInputsJson.value = JSON.stringify(apiInputs, null, 2);
 
   try {
     const response = await apiFetch<SandboxRunResponse>(
@@ -167,6 +232,8 @@ async function runSandbox(): Promise<void> {
       },
     );
 
+    snapshotId.value = response.snapshot_id;
+
     // Capture state_rev if present (multi-step tools)
     if (response.state_rev !== null && response.state_rev !== undefined) {
       stateRev.value = response.state_rev;
@@ -175,6 +242,7 @@ async function runSandbox(): Promise<void> {
     runResult.value = {
       run_id: response.run_id,
       version_id: props.versionId,
+      snapshot_id: response.snapshot_id,
       status: response.status,
       started_at: response.started_at,
       finished_at: null,
@@ -211,6 +279,10 @@ async function onSubmitAction(payload: {
     actionErrorMessage.value = "Du saknar redigeringslåset. Åtgärden kan inte köras.";
     return;
   }
+  if (!snapshotId.value) {
+    actionErrorMessage.value = "Ingen snapshot tillgänglig. Testkör igen.";
+    return;
+  }
 
   isSubmitting.value = true;
   actionErrorMessage.value = null;
@@ -226,6 +298,7 @@ async function onSubmitAction(payload: {
       {
         method: "POST",
         body: JSON.stringify({
+          snapshot_id: snapshotId.value,
           action_id: payload.actionId,
           input: payload.input,
           expected_state_rev: stateRev.value,
@@ -241,6 +314,7 @@ async function onSubmitAction(payload: {
     runResult.value = {
       run_id: response.run_id,
       version_id: props.versionId,
+      snapshot_id: snapshotId.value,
       status: "running",
       started_at: new Date().toISOString(),
       finished_at: null,
@@ -272,174 +346,113 @@ async function onSubmitAction(payload: {
 onBeforeUnmount(() => {
   stopPolling();
 });
+
+watch(hasSettingsSchema, (next) => {
+  if (!next) {
+    isSettingsOpen.value = false;
+  }
+});
+
+watch(
+  () => props.settingsSchemaError,
+  (next) => {
+    if (next) {
+      isSettingsOpen.value = false;
+    }
+  },
+);
 </script>
 
 <template>
   <div class="space-y-4">
-    <div class="space-y-2">
-      <!-- Label row -->
-      <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
-        Testfiler
-      </label>
+    <SandboxInputPanel
+      :id-base="`sandbox-${versionId}`"
+      :has-schema="hasSchema"
+      :input-fields="inputFields"
+      :input-values="inputValues"
+      :input-field-errors="inputFieldErrors"
+      :input-schema-error="inputSchemaError"
+      :inputs-preview="inputsPreview"
+      :selected-files="selectedFiles"
+      :show-file-picker="showFilePicker"
+      :file-label="fileLabel"
+      :file-accept="fileAccept"
+      :file-multiple="fileMultiple"
+      :file-error="fileError"
+      :is-running="isRunning"
+      :is-read-only="isReadOnly"
+      :has-results="hasResults"
+      :can-run="canRun"
+      @update:input-values="updateInputValues"
+      @update:selected-files="updateSelectedFiles"
+      @run="runSandbox"
+      @clear="clearResult"
+    />
 
-      <!-- Input + buttons row (same height via items-stretch) -->
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-stretch">
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-3 w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm overflow-hidden h-full">
-            <label
-              class="btn-cta shrink-0 px-3 py-1 text-xs font-semibold tracking-wide"
-              :class="{ 'opacity-60 pointer-events-none': isReadOnly }"
-            >
-              Välj filer
-              <input
-                type="file"
-                multiple
-                class="sr-only"
-                :disabled="isReadOnly"
-                @change="selectFiles"
-              >
-            </label>
-            <span class="text-sm text-navy/60 truncate">
-              {{ hasFiles ? `${selectedFiles.length} fil(er) valda` : 'Inga filer valda' }}
-            </span>
-          </div>
+    <div
+      v-if="hasSettingsSchema || settingsSchemaError"
+      class="border border-navy bg-white shadow-brutal-sm"
+    >
+      <div class="flex items-center justify-between gap-3 px-3 py-2 border-b border-navy/20">
+        <div>
+          <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+            Inställningar
+          </h2>
+          <p class="text-xs text-navy/60">
+            Sparas för din sandbox.
+          </p>
         </div>
 
         <button
           type="button"
-          :disabled="isRunning || isReadOnly"
-          class="btn-cta min-w-[120px]"
-          @click="runSandbox"
+          class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
+          :disabled="!hasSettingsSchema"
+          @click="toggleSettings"
         >
-          <span
-            v-if="isRunning"
-            class="inline-block w-3 h-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
-          />
-          <span v-else>Testkör kod</span>
+          {{ isSettingsOpen ? "Dölj" : "Visa" }}
         </button>
+      </div>
 
-        <button
-          v-if="hasResults"
-          type="button"
-          class="btn-ghost"
-          @click="clearResult"
-        >
-          Rensa
-        </button>
+      <p
+        v-if="settingsSchemaError"
+        class="px-3 py-2 text-xs font-semibold text-burgundy"
+      >
+        {{ settingsSchemaError }}
+      </p>
+
+      <div
+        v-if="isSettingsOpen && hasSettingsSchema && settingsSchema"
+        class="px-3 py-4 border-t border-navy/20 bg-canvas/30"
+      >
+        <ToolRunSettingsPanel
+          v-model:error-message="settingsErrorMessage"
+          :id-base="`sandbox-${versionId}`"
+          :schema="settingsSchema"
+          :model-value="settingsValues"
+          :is-loading="isLoadingSettings"
+          :is-saving="isSavingSettings"
+          :is-save-disabled="isSettingsSaveDisabled"
+          @update:model-value="updateSettingsValues"
+          @save="sandboxSettings.saveSettings"
+        />
       </div>
     </div>
-
-    <details class="border border-navy bg-white shadow-brutal-sm">
-      <summary class="px-3 py-2 cursor-pointer text-xs font-semibold uppercase tracking-wide text-navy/70">
-        Indata (JSON)
-      </summary>
-      <div class="px-3 py-2 border-t border-navy/20 bg-canvas/30 space-y-2">
-        <p class="text-xs text-navy/60">
-          Skickas som <span class="font-mono">SKRIPTOTEKET_INPUTS</span>.
-        </p>
-        <pre class="whitespace-pre-wrap font-mono text-xs text-navy">{{ inputsPreview }}</pre>
-      </div>
-    </details>
 
     <SystemMessage
       v-model="errorMessage"
       variant="error"
     />
 
-    <!-- Running state -->
-    <div
-      v-if="isRunning && runResult?.status === 'running'"
-      class="flex items-center gap-2 text-sm text-navy/70"
-    >
-      <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
-      <span>Kör skriptet...</span>
-    </div>
-
-    <!-- Results -->
-    <template v-if="runResult && runResult.status !== 'running'">
-      <!-- Step history indicator -->
-      <div
-        v-if="completedSteps.length > 0"
-        class="flex flex-wrap gap-2"
-      >
-        <button
-          v-for="(step, index) in completedSteps"
-          :key="step.run_id"
-          type="button"
-          class="btn-ghost btn-sm text-xs"
-          :class="{ 'ring-2 ring-navy': selectedStepIndex === index }"
-          @click="selectedStepIndex = index"
-        >
-          Steg {{ index + 1 }}
-        </button>
-        <button
-          type="button"
-          class="btn-ghost btn-sm text-xs"
-          :class="{ 'ring-2 ring-navy': selectedStepIndex === null }"
-          @click="selectedStepIndex = null"
-        >
-          Aktuellt
-        </button>
-      </div>
-
-      <!-- Status row (uses displayedRun for viewing past steps) -->
-      <div
-        v-if="displayedRun"
-        class="flex items-center gap-2 text-sm"
-      >
-        <span
-          class="px-2 py-1 border font-semibold uppercase tracking-wide text-xs"
-          :class="{
-            'border-success bg-success/10 text-success': displayedRun.status === 'succeeded',
-            'border-burgundy bg-burgundy/10 text-burgundy': displayedRun.status === 'failed',
-            'border-warning bg-warning/10 text-warning': displayedRun.status === 'timed_out',
-          }"
-        >
-          {{ statusLabel(displayedRun.status) }}
-        </span>
-        <span class="font-mono text-xs text-navy/50">
-          {{ displayedRun.run_id.slice(0, 8) }}
-        </span>
-      </div>
-
-      <!-- Error summary -->
-      <div
-        v-if="displayedRun?.error_summary"
-        class="text-sm text-burgundy"
-      >
-        <p class="font-semibold">Ett fel uppstod</p>
-        <pre class="mt-1 whitespace-pre-wrap font-mono text-xs">{{ displayedRun.error_summary }}</pre>
-      </div>
-
-      <!-- Outputs -->
-      <div
-        v-if="outputs.length > 0"
-        class="space-y-3"
-      >
-        <UiOutputRenderer
-          v-for="(output, index) in outputs"
-          :key="index"
-          :output="output"
-        />
-      </div>
-
-      <!-- Artifacts -->
-      <ToolRunArtifacts :artifacts="artifacts" />
-
-      <!-- Action error message -->
-      <SystemMessage
-        v-model="actionErrorMessage"
-        variant="error"
-      />
-
-      <!-- Next Actions (multi-step tools) - only show for current run -->
-      <ToolRunActions
-        v-if="nextActions.length > 0 && selectedStepIndex === null"
-        :actions="nextActions"
-        :id-base="`sandbox-${versionId}-${runResult?.run_id ?? 'pending'}`"
-        :disabled="!canSubmitActions"
-        @submit="onSubmitAction"
-      />
-    </template>
+    <SandboxRunnerActions
+      v-model:action-error-message="actionErrorMessage"
+      :run-result="runResult"
+      :completed-steps="completedSteps"
+      :selected-step-index="selectedStepIndex"
+      :is-running="isRunning"
+      :version-id="versionId"
+      :can-submit-actions="canSubmitActions"
+      @select-step="selectedStepIndex = $event"
+      @submit-action="onSubmitAction"
+    />
   </div>
 </template>

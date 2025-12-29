@@ -86,13 +86,13 @@ export const routes: RouteRecordRaw[] = [
     path: "/admin/tools/:toolId",
     name: "admin-tool-editor",
     component: () => import("../views/admin/ScriptEditorView.vue"),
-    meta: { requiresAuth: true, minRole: "contributor" },
+    meta: { requiresAuth: true, minRole: "contributor", pageTransition: false },
   },
   {
     path: "/admin/tool-versions/:versionId",
     name: "admin-tool-version-editor",
     component: () => import("../views/admin/ScriptEditorView.vue"),
-    meta: { requiresAuth: true, minRole: "contributor" },
+    meta: { requiresAuth: true, minRole: "contributor", pageTransition: false },
   },
   {
     path: "/suggestions/new",

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import LoginModal from "./components/auth/LoginModal.vue";
@@ -8,12 +8,14 @@ import AuthLayout from "./components/layout/AuthLayout.vue";
 import LandingLayout from "./components/layout/LandingLayout.vue";
 import ToastHost from "./components/ui/ToastHost.vue";
 import { useLoginModal } from "./composables/useLoginModal";
+import { usePageTransition } from "./composables/usePageTransition";
 import { useAuthStore } from "./stores/auth";
 
 const auth = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 const loginModal = useLoginModal();
+const pageTransition = usePageTransition();
 
 const logoutError = ref<string | null>(null);
 const logoutInProgress = ref(false);
@@ -21,6 +23,13 @@ const logoutInProgress = ref(false);
 const isAuthenticated = computed(() => auth.isAuthenticated);
 const canSeeContributor = computed(() => auth.hasAtLeastRole("contributor"));
 const canSeeAdmin = computed(() => auth.hasAtLeastRole("admin"));
+
+const isPageTransitionEnabled = computed(() => {
+  if (pageTransition.suppressNextPageTransition.value) {
+    return false;
+  }
+  return route.meta.pageTransition !== false && !route.redirectedFrom;
+});
 
 onMounted(() => {
   void auth.bootstrap();
@@ -43,9 +52,22 @@ function onLoginSuccess(): void {
   const redirect = loginModal.redirectTo.value;
   closeLoginModal();
   if (redirect) {
-    router.push(redirect);
+    pageTransition.suppressNext();
+    void router.push(redirect);
   }
 }
+
+watch(
+  () => route.fullPath,
+  async () => {
+    if (!pageTransition.suppressNextPageTransition.value) {
+      return;
+    }
+    await nextTick();
+    pageTransition.reset();
+  },
+  { flush: "post" },
+);
 
 watch(
   () => auth.isAuthenticated,
@@ -70,6 +92,7 @@ async function onLogout(): Promise<void> {
 
   try {
     await auth.logout();
+    pageTransition.suppressNext();
     await router.push({ path: "/" });
   } catch (error: unknown) {
     logoutError.value = error instanceof Error ? error.message : "Logout failed";
@@ -83,7 +106,30 @@ async function onLogout(): Promise<void> {
   <div class="app-layout min-h-screen text-navy">
     <!-- Unauthenticated: Landing layout -->
     <LandingLayout v-if="!isAuthenticated">
-      <RouterView />
+      <div class="route-stage">
+        <RouterView v-slot="{ Component, route: viewRoute }">
+          <Transition
+            v-if="isPageTransitionEnabled"
+            name="page"
+            mode="out-in"
+            :duration="150"
+          >
+            <div
+              :key="viewRoute.path"
+              class="route-stage-item"
+            >
+              <component :is="Component" />
+            </div>
+          </Transition>
+          <div
+            v-else
+            :key="viewRoute.path"
+            class="route-stage-item"
+          >
+            <component :is="Component" />
+          </div>
+        </RouterView>
+      </div>
     </LandingLayout>
 
     <!-- Authenticated: Sidebar + Top bar layout -->
@@ -96,7 +142,30 @@ async function onLogout(): Promise<void> {
       :logout-in-progress="logoutInProgress"
       @logout="onLogout"
     >
-      <RouterView />
+      <div class="route-stage">
+        <RouterView v-slot="{ Component, route: viewRoute }">
+          <Transition
+            v-if="isPageTransitionEnabled"
+            name="page"
+            mode="out-in"
+            :duration="150"
+          >
+            <div
+              :key="viewRoute.path"
+              class="route-stage-item"
+            >
+              <component :is="Component" />
+            </div>
+          </Transition>
+          <div
+            v-else
+            :key="viewRoute.path"
+            class="route-stage-item"
+          >
+            <component :is="Component" />
+          </div>
+        </RouterView>
+      </div>
     </AuthLayout>
 
     <HelpPanel />

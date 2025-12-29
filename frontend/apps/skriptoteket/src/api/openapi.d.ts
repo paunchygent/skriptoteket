@@ -413,6 +413,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/editor/tool-versions/{version_id}/sandbox-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Sandbox Settings */
+        put: operations["save_sandbox_settings_api_v1_editor_tool_versions__version_id__sandbox_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/editor/tool-versions/{version_id}/sandbox-settings/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve Sandbox Settings */
+        post: operations["resolve_sandbox_settings_api_v1_editor_tool_versions__version_id__sandbox_settings_resolve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/editor/tool-versions/{version_id}/save": {
         parameters: {
             query?: never;
@@ -1021,6 +1055,8 @@ export interface components {
             files?: string[] | null;
             /** Inputs */
             inputs?: string | null;
+            /** Snapshot */
+            snapshot: string;
         };
         /** Body_start_tool_run_api_v1_tools__slug__run_post */
         Body_start_tool_run_api_v1_tools__slug__run_post: {
@@ -1278,6 +1314,8 @@ export interface components {
              * Format: uuid
              */
             run_id: string;
+            /** Snapshot Id */
+            snapshot_id: string | null;
             /**
              * Started At
              * Format: date-time
@@ -1777,6 +1815,11 @@ export interface components {
              */
             run_id: string;
             /**
+             * Snapshot Id
+             * Format: uuid
+             */
+            snapshot_id: string;
+            /**
              * Started At
              * Format: date-time
              */
@@ -1796,6 +1839,40 @@ export interface components {
             } | null;
             /** State Rev */
             state_rev: number;
+        };
+        /** SandboxSettingsResolveRequest */
+        SandboxSettingsResolveRequest: {
+            /** Settings Schema */
+            settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
+        };
+        /** SandboxSettingsResponse */
+        SandboxSettingsResponse: {
+            /** Schema Version */
+            schema_version: string | null;
+            /** Settings Schema */
+            settings_schema: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
+            /** State Rev */
+            state_rev: number;
+            /**
+             * Tool Id
+             * Format: uuid
+             */
+            tool_id: string;
+            /** Values */
+            values: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+        };
+        /** SandboxSettingsSaveRequest */
+        SandboxSettingsSaveRequest: {
+            /** Expected State Rev */
+            expected_state_rev: number;
+            /** Settings Schema */
+            settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
+            /** Values */
+            values?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
         };
         /** SaveDraftVersionRequest */
         SaveDraftVersionRequest: {
@@ -1874,6 +1951,11 @@ export interface components {
             input?: {
                 [key: string]: components["schemas"]["JsonValue"];
             };
+            /**
+             * Snapshot Id
+             * Format: uuid
+             */
+            snapshot_id: string;
         };
         /**
          * StartSandboxActionResponse
@@ -3299,7 +3381,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
+        requestBody: {
             content: {
                 "multipart/form-data": components["schemas"]["Body_run_sandbox_api_v1_editor_tool_versions__version_id__run_sandbox_post"];
             };
@@ -3312,6 +3394,80 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SandboxRunResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_sandbox_settings_api_v1_editor_tool_versions__version_id__sandbox_settings_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SandboxSettingsSaveRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SandboxSettingsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resolve_sandbox_settings_api_v1_editor_tool_versions__version_id__sandbox_settings_resolve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SandboxSettingsResolveRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SandboxSettingsResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3364,7 +3520,9 @@ export interface operations {
     };
     get_sandbox_session_api_v1_editor_tool_versions__version_id__session_get: {
         parameters: {
-            query?: never;
+            query?: {
+                snapshot_id?: string | null;
+            };
             header?: never;
             path: {
                 version_id: string;

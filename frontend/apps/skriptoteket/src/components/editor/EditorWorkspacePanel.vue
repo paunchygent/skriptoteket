@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from "vue";
+import { computed, defineAsyncComponent, toRef } from "vue";
 import type { components } from "../../api/openapi";
 
+import { useEditorSchemaParsing } from "../../composables/editor/useEditorSchemaParsing";
 import { useSkriptoteketIntelligenceExtensions } from "../../composables/editor/useSkriptoteketIntelligenceExtensions";
 import EntrypointDropdown from "./EntrypointDropdown.vue";
 import InstructionsDrawer from "./InstructionsDrawer.vue";
@@ -102,6 +103,12 @@ const entrypointName = computed(() => props.entrypoint);
 const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtensions({
   entrypointName,
 });
+
+const { inputSchema, inputSchemaError, settingsSchema, settingsSchemaError } =
+  useEditorSchemaParsing({
+    inputSchemaText: toRef(props, "inputSchemaText"),
+    settingsSchemaText: toRef(props, "settingsSchemaText"),
+  });
 </script>
 
 <template>
@@ -241,6 +248,12 @@ const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtens
             :disabled="isReadOnly"
             @input="emit('update:settingsSchemaText', ($event.target as HTMLTextAreaElement).value)"
           />
+          <p
+            v-if="settingsSchemaError"
+            class="text-xs font-semibold text-burgundy"
+          >
+            {{ settingsSchemaError }}
+          </p>
         </div>
 
         <div class="border-t border-navy/20 pt-4 space-y-3">
@@ -269,6 +282,12 @@ const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtens
             :disabled="isReadOnly"
             @input="emit('update:inputSchemaText', ($event.target as HTMLTextAreaElement).value)"
           />
+          <p
+            v-if="inputSchemaError"
+            class="text-xs font-semibold text-burgundy"
+          >
+            {{ inputSchemaError }}
+          </p>
         </div>
 
         <!-- Test section -->
@@ -293,6 +312,13 @@ const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtens
                 :version-id="selectedVersion.id"
                 :tool-id="toolId"
                 :is-read-only="isReadOnly"
+                :entrypoint="entrypoint"
+                :source-code="sourceCode"
+                :settings-schema="settingsSchema"
+                :settings-schema-error="settingsSchemaError"
+                :input-schema="inputSchema"
+                :input-schema-error="inputSchemaError"
+                :usage-instructions="usageInstructions"
               />
             </template>
             <template #fallback>

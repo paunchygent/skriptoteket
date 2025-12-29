@@ -140,6 +140,7 @@ function onLogout(): void {
   flex: 1;
   padding: var(--huleedu-space-6);
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 @media (min-width: 768px) {

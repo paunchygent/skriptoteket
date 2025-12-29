@@ -1,6 +1,6 @@
 import { computed, ref, watch, type Ref } from "vue";
 
-import { apiFetch, apiGet, isApiError } from "../../api/client";
+import { apiFetch, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import { useToast } from "../useToast";
 import {
@@ -9,34 +9,37 @@ import {
   type JsonValue,
   type SettingsField,
   type SettingsFormValues,
-} from "./toolSettingsHelpers";
+} from "../tools/toolSettingsHelpers";
 
-type ToolSettingsResponse = components["schemas"]["ToolSettingsResponse"];
+type SandboxSettingsResponse = components["schemas"]["SandboxSettingsResponse"];
 
-type UseToolSettingsOptions = {
-  toolId: Readonly<Ref<string>>;
+type UseSandboxSettingsOptions = {
+  versionId: Readonly<Ref<string>>;
+  settingsSchema: Readonly<Ref<SettingsField[] | null>>;
 };
 
-export function useToolSettings({ toolId }: UseToolSettingsOptions) {
-  const settingsSchema = ref<SettingsField[] | null>(null);
+export function useSandboxSettings({ versionId, settingsSchema }: UseSandboxSettingsOptions) {
   const schemaVersion = ref<string | null>(null);
   const stateRev = ref<number | null>(null);
   const values = ref<SettingsFormValues>({});
-
-  const toast = useToast();
-
   const isLoading = ref(false);
   const isSaving = ref(false);
   const errorMessage = ref<string | null>(null);
 
+  const toast = useToast();
+
   const hasSchema = computed(() => (settingsSchema.value?.length ?? 0) > 0);
 
+  function resetState(): void {
+    schemaVersion.value = null;
+    stateRev.value = null;
+    values.value = {};
+    errorMessage.value = null;
+  }
+
   async function loadSettings(): Promise<void> {
-    if (!toolId.value) {
-      settingsSchema.value = null;
-      schemaVersion.value = null;
-      stateRev.value = null;
-      values.value = {};
+    if (!versionId.value || !settingsSchema.value || !hasSchema.value) {
+      resetState();
       return;
     }
 
@@ -44,24 +47,21 @@ export function useToolSettings({ toolId }: UseToolSettingsOptions) {
     errorMessage.value = null;
 
     try {
-      const response = await apiGet<ToolSettingsResponse>(
-        `/api/v1/tools/${encodeURIComponent(toolId.value)}/settings`,
-      );
+      const resolveUrl = `/api/v1/editor/tool-versions/${encodeURIComponent(
+        versionId.value,
+      )}/sandbox-settings/resolve`;
+      const response = await apiFetch<SandboxSettingsResponse>(resolveUrl, {
+        method: "POST",
+        body: { settings_schema: settingsSchema.value },
+      });
 
-      settingsSchema.value = response.settings_schema;
       schemaVersion.value = response.schema_version;
       stateRev.value = response.state_rev;
-
-      if (response.settings_schema) {
-        values.value = buildFormValues(response.settings_schema, response.values);
-      } else {
-        values.value = {};
-      }
+      values.value = response.settings_schema
+        ? buildFormValues(response.settings_schema, response.values)
+        : {};
     } catch (error: unknown) {
-      settingsSchema.value = null;
-      schemaVersion.value = null;
-      stateRev.value = null;
-      values.value = {};
+      resetState();
       if (isApiError(error)) {
         errorMessage.value = error.message;
       } else if (error instanceof Error) {
@@ -75,8 +75,7 @@ export function useToolSettings({ toolId }: UseToolSettingsOptions) {
   }
 
   async function saveSettings(): Promise<void> {
-    if (!toolId.value) return;
-    if (!settingsSchema.value) return;
+    if (!versionId.value || !settingsSchema.value || !hasSchema.value) return;
     if (stateRev.value === null) {
       errorMessage.value = "Inställningarna är inte redo än. Ladda om sidan.";
       return;
@@ -99,18 +98,18 @@ export function useToolSettings({ toolId }: UseToolSettingsOptions) {
         return;
       }
 
-      const response = await apiFetch<ToolSettingsResponse>(
-        `/api/v1/tools/${encodeURIComponent(toolId.value)}/settings`,
-        {
-          method: "PUT",
-          body: {
-            expected_state_rev: stateRev.value,
-            values: apiValues,
-          },
+      const saveUrl = `/api/v1/editor/tool-versions/${encodeURIComponent(
+        versionId.value,
+      )}/sandbox-settings`;
+      const response = await apiFetch<SandboxSettingsResponse>(saveUrl, {
+        method: "PUT",
+        body: {
+          settings_schema: settingsSchema.value,
+          expected_state_rev: stateRev.value,
+          values: apiValues,
         },
-      );
+      });
 
-      settingsSchema.value = response.settings_schema;
       schemaVersion.value = response.schema_version;
       stateRev.value = response.state_rev;
       values.value = response.settings_schema
@@ -141,19 +140,18 @@ export function useToolSettings({ toolId }: UseToolSettingsOptions) {
   }
 
   watch(
-    () => toolId.value,
+    [() => versionId.value, () => settingsSchema.value],
     () => {
       void loadSettings();
     },
-    { immediate: true },
+    { immediate: true, deep: true },
   );
 
   return {
-    settingsSchema,
+    hasSchema,
     schemaVersion,
     stateRev,
     values,
-    hasSchema,
     isLoading,
     isSaving,
     errorMessage,

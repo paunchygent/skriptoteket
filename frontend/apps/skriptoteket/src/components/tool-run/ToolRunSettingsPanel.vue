@@ -18,6 +18,7 @@ const props = defineProps<{
   modelValue: SettingsFormValues;
   isLoading: boolean;
   isSaving: boolean;
+  isSaveDisabled?: boolean;
   errorMessage: string | null;
 }>();
 
@@ -67,7 +68,7 @@ function onSave(): void {
 
       <button
         type="button"
-        :disabled="isLoading || isSaving"
+        :disabled="isLoading || isSaving || props.isSaveDisabled"
         class="btn-ghost px-3 py-2"
         @click="onSave"
       >

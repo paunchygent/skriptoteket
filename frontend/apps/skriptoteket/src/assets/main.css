@@ -248,3 +248,42 @@ body::before {
     transition: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ROUTE TRANSITIONS (Vue <Transition name="page"> around RouterView)
+
+   Brutalist-friendly cross-fade (no transforms):
+   - Hard borders / hard shadows shimmer when subpixel-translated.
+   - Redirects can happen fast; cross-fade avoids "blink" gaps.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.route-stage {
+  position: relative;
+}
+
+.route-stage-item {
+  width: 100%;
+}
+
+.page-enter-active,
+.page-leave-active {
+  transition: opacity var(--huleedu-duration-default) var(--huleedu-ease-default);
+  will-change: opacity;
+}
+
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-active,
+  .page-leave-active {
+    transition: none;
+  }
+
+  .page-enter-from,
+  .page-leave-to {
+    opacity: 1;
+  }
+}

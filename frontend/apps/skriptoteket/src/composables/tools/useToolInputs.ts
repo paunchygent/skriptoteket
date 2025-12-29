@@ -63,6 +63,8 @@ export function useToolInputs({ schema, selectedFiles }: UseToolInputsOptions) {
     return (fileField.value?.max ?? 1) > 1;
   });
 
+  const showFilePicker = computed(() => !hasSchema.value || fileField.value !== null);
+
   const fileError = computed<string | null>(() => {
     if (!hasSchema.value) return null;
 
@@ -199,6 +201,7 @@ export function useToolInputs({ schema, selectedFiles }: UseToolInputsOptions) {
     fileAccept,
     fileLabel,
     fileMultiple,
+    showFilePicker,
     fileError,
     fieldErrors,
     isValid,

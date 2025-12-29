@@ -31,8 +31,8 @@ async function onSubmit(): Promise<void> {
   submitError.value = null;
   try {
     await auth.login({ email: email.value, password: password.value });
-    closeModal();
     emit("success");
+    closeModal();
   } catch (error: unknown) {
     submitError.value =
       error instanceof Error ? error.message : "Inloggningen misslyckades";
