@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BrandLogo from "../brand/BrandLogo.vue";
 import HelpButton from "../help/HelpButton.vue";
 </script>
 
@@ -10,7 +11,7 @@ import HelpButton from "../help/HelpButton.vue";
         to="/"
         class="landing-brand"
       >
-        Skriptoteket
+        <BrandLogo height="28px" />
       </RouterLink>
       <div class="landing-header-actions">
         <RouterLink

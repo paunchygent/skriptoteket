@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BrandLogo from "../brand/BrandLogo.vue";
 import { useHelp } from "../help/useHelp";
 
 defineProps<{
@@ -42,7 +43,7 @@ function onHelp(): void {
         class="sidebar-brand"
         @click="onClose"
       >
-        Skriptoteket
+        <BrandLogo height="32px" />
       </RouterLink>
 
       <nav class="sidebar-nav">

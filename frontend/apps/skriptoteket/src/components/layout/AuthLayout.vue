@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { RouterLink } from "vue-router";
 
+import BrandLogo from "../brand/BrandLogo.vue";
 import AuthSidebar from "./AuthSidebar.vue";
 import AuthTopBar from "./AuthTopBar.vue";
 
@@ -40,7 +41,7 @@ function onLogout(): void {
       to="/"
       class="mobile-brand"
     >
-      Skriptoteket
+      <BrandLogo height="22px" />
     </RouterLink>
     <button
       type="button"
