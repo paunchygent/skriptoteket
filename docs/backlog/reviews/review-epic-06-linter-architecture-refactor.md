@@ -7,6 +7,12 @@ owners: "agents"
 created: 2025-12-29
 reviewer: "lead-developer"
 epic: EPIC-06
+stories:
+  - ST-06-10
+  - ST-06-11
+  - ST-06-12
+  - ST-06-13
+  - ST-06-14
 ---
 
 ## Context
@@ -91,6 +97,26 @@ Adopt a **Context-Rule** architecture:
     The proposal does not explicitly state how standard Python syntax errors (runtime errors) are surfaced.
     - *Gap:* If the user types invalid Python, we need to show it.
     - *Requirement:* Implement a `SyntaxRule` that queries the Lezer tree for error nodes (`⚠`) and reports them as diagnostics with "Syntax Error" messages. This should be part of the default rule set.
+
+4. **CodeMirror Quick Fix Actions (Diagnostic Actions):**
+    The current plan does not use CodeMirror's diagnostic action buttons (IDE-like quick fixes).
+    - *Requirement:* Implement diagnostic actions for the agreed rule set (imports, encoding, missing entrypoint, missing contract keys).
+    - *Requirement:* Add a shared helper for safe import insertion (`findImportInsertPosition(state)`) to avoid corrupting shebang/docstring/`__future__` layouts.
+
+5. **Lint Panel + Keyboard Navigation:**
+    The current UX is gutter markers + hover only, which is not IDE-parity.
+    - *Requirement:* Add a dedicated lint panel (open/close) listing all diagnostics.
+    - *Requirement:* Add standard keybindings: `Mod-Shift-m` (open panel), `F8` (next), `Shift-F8` (previous).
+    - *Requirement:* Expose `diagnosticCount(state)` for status bar integration.
+
+6. **Gutter Marker Filtering:**
+    The gutter is cluttered when it mirrors all severities.
+    - *Requirement:* Show only `"error"` and `"warning"` markers in the gutter.
+    - *Requirement:* Keep tooltip/panel visibility for `"info"` and `"hint"` diagnostics.
+
+7. **AI Context Integration Design (EPIC-08):**
+    The context object is also the foundation for inline completions (ST-08-14).
+    - *Requirement:* Document which `LinterContext` facts are “prompt-grade” (imports, variables with scope chain, entrypoint, syntaxErrors, calls) and define rules for suppressing suggestions when syntax is invalid.
 
 ### Suggestions
 

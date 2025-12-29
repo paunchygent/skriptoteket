@@ -26,6 +26,11 @@ outcome: "Automated tests provide high confidence in critical flows; overall cov
 - ST-06-07: Integrate toast notifications into admin workflows (completes ST-05-06)
 - ST-06-08: Fix script editor UI issues (file input, CodeMirror scroll)
 - ST-06-09: Playwright test isolation: prevent source code pollution
+- ST-06-10: Context-Rule linter architecture foundation
+- ST-06-11: Editor quick fixes (CodeMirror diagnostic actions)
+- ST-06-12: Lint panel and keyboard navigation
+- ST-06-13: Lint gutter filtering and diagnostics polish
+- ST-06-14: Headless linter rule test harness
 
 ## Notes
 

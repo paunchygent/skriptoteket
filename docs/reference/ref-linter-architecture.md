@@ -12,6 +12,8 @@ topic: "Target architecture for the client-side Python linter (Context-Rule patt
 
 **Context:** [Review: Linter Architecture Refactor](../backlog/reviews/review-epic-06-linter-architecture-refactor.md) | [ADR-0048](../adr/adr-0048-linter-context-and-data-flow.md)
 
+Related: [CodeMirror integration reference](./ref-codemirror-integration.md)
+
 This document defines the target architecture for the Skriptoteket Python Linter (client-side in the browser). The goal is to move from ad-hoc AST traversal to a structured, testable, and deterministic "Context-Rule-Visitor" pattern.
 
 ## Problem Statement
@@ -39,6 +41,9 @@ interface LinterContext {
 
   // Semantic Facts (Pre-computed)
   facts: {
+    // Parse errors (always present; may be empty)
+    syntaxErrors: Diagnostic[];
+
     // Import graph
     imports: ImportBindings;
 
@@ -54,14 +59,15 @@ interface LinterContext {
     returns: ReturnStatement[];
 
     // Data Flow (The missing piece)
-    variables: VariableTable;
+    variables: ScopeChain;
   };
 }
 ```
 
 ### 2. Variable Tracking (Data Flow)
 
-To solve issues with dynamic code construction (like the `outputs` list), we implement a lightweight `VariableTable`.
+To solve issues with dynamic code construction (like the `outputs` list), we implement lightweight variable tracking
+backed by a **Scope Chain**.
 
 ```typescript
 interface VariableInfo {
@@ -71,7 +77,13 @@ interface VariableInfo {
   operations: string[]; // e.g., ["append", "extend"]
 }
 
-type VariableTable = Map<string, VariableInfo>;
+interface ScopeNode {
+  kind: "module" | "function" | "class" | "lambda" | "comprehension";
+  from: number;
+  to: number;
+}
+
+type ScopeChain = Map<ScopeNode, Map<string, VariableInfo>>;
 ```
 
 **Behavior:**
@@ -79,6 +91,17 @@ type VariableTable = Map<string, VariableInfo>;
 - **Assignment:** `x = []` → Record `x` as `List`.
 - **Modification:** `x.append(...)` → Record `append` operation on `x`.
 - **Usage:** `return {"outputs": x}` → Look up `x` in table to verify it's a list.
+
+**Scope correctness (required):**
+
+- The table MUST be scoped; a flat `Map<string, VariableInfo>` is not valid for Python.
+- Scope nodes represent Python lexical scopes (IDE-like behavior):
+  - Include: module, function/async function, class body, lambda, comprehensions.
+  - Exclude: `if/for/while/try/with/match` blocks.
+  - Note: class bodies are special; method bodies do not resolve free names through the class scope. The scope chain
+    MUST reflect this (methods should link to module scope, not class body scope).
+
+Lookup is `lookupVariable(chain, name, scopeNode)` with parent fallback.
 
 ### 3. The Rule Interface
 
@@ -99,6 +122,7 @@ const ContractRule: LintRule = {
   id: "ST002",
   severity: "error",
   check(ctx) {
+    if (ctx.facts.syntaxErrors.length > 0) return [];
     if (!ctx.facts.entrypoint) return [];
 
     // Logic uses facts, not cursor traversal
@@ -111,6 +135,22 @@ const ContractRule: LintRule = {
 };
 ```
 
+### 4. Syntax Errors (Default Rule)
+
+Syntax errors should always be visible (VS Code “Problems” style), and other rules should avoid cascading failures.
+
+- The context builder extracts `facts.syntaxErrors` from Lezer error nodes.
+- A default `SyntaxRule` returns `ctx.facts.syntaxErrors`.
+- Other rules SHOULD bail out when `syntaxErrors.length > 0` unless they are explicitly designed to work on broken code.
+
+### 5. Quick Fixes (Diagnostic Actions)
+
+Rules MAY provide IDE-like quick fixes by attaching CodeMirror actions to diagnostics.
+
+- Action buttons must be safe and idempotent.
+- For import-related fixes, use a shared `findImportInsertPosition(state)` helper (see
+  `docs/reference/ref-codemirror-integration.md` for lint action plumbing).
+
 ## Implementation Strategy
 
 ### Phase 1: Infrastructure & Harness
@@ -121,14 +161,16 @@ const ContractRule: LintRule = {
 
 ### Phase 2: Variable Tracking
 
-1. **Implement `VariableTable` population logic.**
+1. **Implement `ScopeChain` population logic.**
 2. **Update `contractDiagnostics` to use `ctx.facts.variables` for type inference.**
 3. **Downgrade "dynamic construction" errors to warnings if type inference is inconclusive.**
+4. **Add syntax error extraction + default `SyntaxRule`.**
 
 ### Phase 3: Decoupling
 
 1. **Split rules into individual files (e.g., `rules/security.ts`, `rules/best-practices.ts`).**
 2. **Refactor `skriptoteketLinter` to simply orchestrate `buildLinterContext` -> `rules.map(r => r.check(ctx))`.**
+3. **Add quick-fix actions + lint panel/keybindings (IDE parity).**
 
 ## Verification Plan
 
