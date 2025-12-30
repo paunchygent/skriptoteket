@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { apiPost, isApiError } from "../api/client";
+import { IconCheck, IconWarning, IconX } from "../components/icons";
 
 type VerifyState = "loading" | "success" | "expired" | "invalid";
 
@@ -122,20 +123,8 @@ onUnmounted(() => {
         v-else-if="state === 'success'"
         class="bg-white border border-navy shadow-brutal p-12 text-center"
       >
-        <div class="flex justify-center mb-6">
-          <svg
-            class="w-12 h-12 text-success"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
+        <div class="flex justify-center mb-6 text-success">
+          <IconCheck :size="48" />
         </div>
         <h1 class="font-sans text-xl font-semibold text-navy mb-4">
           Ditt konto är verifierat.
@@ -160,20 +149,8 @@ onUnmounted(() => {
         v-else-if="state === 'expired'"
         class="bg-white border border-navy shadow-brutal p-12 text-center"
       >
-        <div class="flex justify-center mb-6">
-          <svg
-            class="w-12 h-12 text-warning"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
-            />
-          </svg>
+        <div class="flex justify-center mb-6 text-warning">
+          <IconWarning :size="48" />
         </div>
         <h1 class="font-sans text-xl font-semibold text-navy mb-4">
           Verifieringslänken har gått ut
@@ -209,20 +186,8 @@ onUnmounted(() => {
         v-else
         class="bg-white border border-navy shadow-brutal p-12 text-center"
       >
-        <div class="flex justify-center mb-6">
-          <svg
-            class="w-12 h-12 text-burgundy"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+        <div class="flex justify-center mb-6 text-burgundy">
+          <IconX :size="48" />
         </div>
         <h1 class="font-sans text-xl font-semibold text-navy mb-4">
           Ogiltig verifieringslänk
