@@ -23,7 +23,6 @@ import {
   syntaxHighlighting,
 } from "@codemirror/language";
 import { python } from "@codemirror/lang-python";
-import { lintKeymap } from "@codemirror/lint";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
 import {
   crosshairCursor,
@@ -114,7 +113,6 @@ onMounted(() => {
           ...historyKeymap,
           ...foldKeymap,
           ...completionKeymap,
-          ...lintKeymap,
         ]),
         python(),
         EditorState.tabSize.of(4),
