@@ -34,6 +34,22 @@ function quoteAt(text: string, pos: number): StringQuote | null {
   return null;
 }
 
+function quoteStartAt(text: string, pos: number): { quote: StringQuote; from: number } | null {
+  let cursor = pos;
+  while (cursor < text.length) {
+    const ch = text[cursor] ?? "";
+    if (ch === "r" || ch === "R" || ch === "u" || ch === "U" || ch === "b" || ch === "B" || ch === "f" || ch === "F") {
+      cursor += 1;
+      continue;
+    }
+    break;
+  }
+
+  const quote = quoteAt(text, cursor);
+  if (!quote) return null;
+  return { quote, from: cursor };
+}
+
 function findStringLiteralEnd(text: string, start: number, quote: StringQuote): number | null {
   const quoteLen = quote.length;
   const end = text.indexOf(quote, start + quoteLen);
@@ -52,10 +68,10 @@ function skipModuleDocstring(text: string, start: number): number {
   if (firstNonWhitespace === -1) return start;
 
   const docStart = pos + firstNonWhitespace;
-  const quote = quoteAt(text, docStart);
-  if (!quote) return start;
+  const startQuote = quoteStartAt(text, docStart);
+  if (!startQuote) return start;
 
-  const docEnd = findStringLiteralEnd(text, docStart, quote);
+  const docEnd = findStringLiteralEnd(text, startQuote.from, startQuote.quote);
   if (docEnd === null) return start;
 
   return endOfLine(text, docEnd);

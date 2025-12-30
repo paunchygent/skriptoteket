@@ -158,6 +158,47 @@ def run_tool(input_dir, output_dir):
     }
   });
 
+  it("inserts ToolUserError import after docstring and __future__ imports", async () => {
+    const parent = document.createElement("div");
+    document.body.appendChild(parent);
+
+    const view = new EditorView({
+      state: EditorState.create({
+        doc: `#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+r"""Docstring."""
+from __future__ import annotations
+
+import os
+
+def run_tool(input_dir, output_dir):
+    raise ToolUserError("nope")
+`,
+        extensions: [python(), skriptoteketLinter({ entrypointName: "run_tool" })],
+      }),
+      parent,
+    });
+
+    try {
+      const diagnostics = await collectDiagnostics(view);
+      const diagnostic = diagnostics.find((entry) => entry.source === "ST_BESTPRACTICE_TOOLUSERERROR_IMPORT");
+      const action = diagnostic?.actions?.find((entry) => entry.name === "Lägg till import");
+      expect(action).toBeTruthy();
+
+      action?.apply(view, diagnostic?.from ?? 0, diagnostic?.to ?? 0);
+      const afterFirst = view.state.doc.toString();
+
+      const importIndex = afterFirst.indexOf("from tool_errors import ToolUserError");
+      expect(importIndex).toBeGreaterThan(-1);
+
+      expect(afterFirst.indexOf('r"""Docstring."""')).toBeLessThan(importIndex);
+      expect(afterFirst.indexOf("from __future__ import annotations")).toBeLessThan(importIndex);
+    } finally {
+      view.destroy();
+      parent.remove();
+    }
+  });
+
   it("supports quick fix: add encoding", async () => {
     const parent = document.createElement("div");
     document.body.appendChild(parent);

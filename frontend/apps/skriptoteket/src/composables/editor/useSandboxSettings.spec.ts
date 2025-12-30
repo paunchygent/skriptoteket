@@ -45,8 +45,8 @@ function createScope(
   const scope: EffectScope = effectScope();
   scope.run(() => {
     settings = useSandboxSettings({
-      versionId,
-      settingsSchema: schemaRef,
+      versionId: versionId as never,
+      settingsSchema: schemaRef as never,
     });
   });
   return { scope, settings };

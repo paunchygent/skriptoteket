@@ -46,7 +46,7 @@ function createScope(toolId: ReturnType<typeof ref>) {
   let settings!: ReturnType<typeof useToolSettings>;
   const scope: EffectScope = effectScope();
   scope.run(() => {
-    settings = useToolSettings({ toolId });
+    settings = useToolSettings({ toolId: toolId as never });
   });
   return { scope, settings };
 }

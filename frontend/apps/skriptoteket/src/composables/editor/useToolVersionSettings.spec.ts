@@ -46,7 +46,7 @@ function createScope(versionId: ReturnType<typeof ref>) {
   let settings!: ReturnType<typeof useToolVersionSettings>;
   const scope: EffectScope = effectScope();
   scope.run(() => {
-    settings = useToolVersionSettings({ versionId });
+    settings = useToolVersionSettings({ versionId: versionId as never });
   });
   return { scope, settings };
 }

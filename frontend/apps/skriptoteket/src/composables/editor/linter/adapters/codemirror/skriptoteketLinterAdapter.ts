@@ -33,6 +33,8 @@ function toCodeMirrorDiagnostic(domainDiagnostic: DomainDiagnostic): Diagnostic 
         const from = clampPos(fix.from, docLength);
         const to = clampPos(fix.to, docLength);
         if (doc.sliceString(from, to) === fix.insert) return;
+        const insertedEnd = clampPos(from + fix.insert.length, docLength);
+        if (doc.sliceString(from, insertedEnd) === fix.insert) return;
         view.dispatch({ changes: { from, to, insert: fix.insert } });
       } else if (fix.kind === "insertText") {
         const at = clampPos(fix.at, docLength);

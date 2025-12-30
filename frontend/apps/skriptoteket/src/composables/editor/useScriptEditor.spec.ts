@@ -3,6 +3,7 @@ import { defineComponent, nextTick, reactive, ref } from "vue";
 import { mount } from "@vue/test-utils";
 
 import { useScriptEditor } from "./useScriptEditor";
+import type { UiNotifier } from "../notify";
 
 const clientMocks = vi.hoisted(() => ({
   apiFetch: vi.fn(),
@@ -19,18 +20,18 @@ vi.mock("../../api/client", () => ({
 }));
 
 type NotifyMock = {
-  info: ReturnType<typeof vi.fn>;
-  success: ReturnType<typeof vi.fn>;
-  warning: ReturnType<typeof vi.fn>;
-  failure: ReturnType<typeof vi.fn>;
+  info: ReturnType<typeof vi.fn<(message: string) => void>>;
+  success: ReturnType<typeof vi.fn<(message: string) => void>>;
+  warning: ReturnType<typeof vi.fn<(message: string) => void>>;
+  failure: ReturnType<typeof vi.fn<(message: string) => void>>;
 };
 
 function createNotify(): NotifyMock {
   return {
-    info: vi.fn(),
-    success: vi.fn(),
-    warning: vi.fn(),
-    failure: vi.fn(),
+    info: vi.fn<(message: string) => void>(),
+    success: vi.fn<(message: string) => void>(),
+    warning: vi.fn<(message: string) => void>(),
+    failure: vi.fn<(message: string) => void>(),
   };
 }
 
@@ -88,7 +89,7 @@ async function mountEditor({
         versionId,
         route: route as never,
         router: router as never,
-        notify,
+        notify: notify as UiNotifier,
       });
     },
     template: "<div />",
@@ -115,7 +116,7 @@ describe("useScriptEditor", () => {
 
     clientMocks.apiPost.mockResolvedValueOnce({ redirect_url: "/admin/tools" });
 
-    const vm = wrapper.vm as ReturnType<typeof useScriptEditor>;
+    const vm = wrapper.vm as unknown as ReturnType<typeof useScriptEditor>;
     await vm.save();
 
     expect(clientMocks.apiPost).toHaveBeenCalledWith(
@@ -140,7 +141,7 @@ describe("useScriptEditor", () => {
     clientMocks.apiPost.mockRejectedValueOnce(conflictError);
     clientMocks.isApiError.mockReturnValue(true);
 
-    const vm = wrapper.vm as ReturnType<typeof useScriptEditor>;
+    const vm = wrapper.vm as unknown as ReturnType<typeof useScriptEditor>;
     await vm.save();
 
     expect(clientMocks.apiPost).toHaveBeenCalledWith(

@@ -2,7 +2,7 @@
 type: story
 id: ST-06-11
 title: "Editor quick fixes (CodeMirror diagnostic actions)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-29
 epic: "EPIC-06"
@@ -24,17 +24,29 @@ CodeMirror supports this through `Diagnostic.actions` (buttons in tooltips and t
 
 ## Scope
 
-- Add a quick-fix module that provides `actions` for agreed diagnostics:
+- Add quick-fix actions for agreed diagnostics by attaching `FixIntent[]` to `DomainDiagnostic.fixes`
+  (domain stays CodeMirror-free; adapter maps to `Diagnostic.actions`):
   - `ST_BESTPRACTICE_TOOLUSERERROR_IMPORT` → insert missing import
   - `ST_BESTPRACTICE_ENCODING` → add `encoding="utf-8"`
   - `ST_ENTRYPOINT_MISSING` → insert entrypoint stub
   - `ST_CONTRACT_KEYS_MISSING` → insert missing Contract v2 keys
-- Add `findImportInsertPosition(state)` helper:
+- Add `findImportInsertPosition(text)` helper:
   - inserts after shebang + encoding cookie, module docstring, and `from __future__` imports
-  - integrates into/after existing top-of-file import block when present
+  - inserts into/after existing top-of-file import block when present
+- Add `argListFrom/argListTo` (paren positions) to call-expression facts so the encoding fix can be inserted
+  deterministically (comma/no-comma) and idempotently.
 
 ## Files
 
 ### Create
 
-- `frontend/apps/skriptoteket/src/composables/editor/skriptoteketQuickFixes.ts`
+- `frontend/apps/skriptoteket/src/composables/editor/linter/domain/utils/pythonImports.ts`
+
+### Modify
+
+- `frontend/apps/skriptoteket/src/composables/editor/linter/adapters/codemirror/skriptoteketLinterAdapter.ts`
+- `frontend/apps/skriptoteket/src/composables/editor/linter/domain/pythonFacts.ts`
+- `frontend/apps/skriptoteket/src/composables/editor/linter/infra/pythonAnalysis.ts`
+- `frontend/apps/skriptoteket/src/composables/editor/linter/domain/rules/bestPracticesRule.ts`
+- `frontend/apps/skriptoteket/src/composables/editor/linter/domain/rules/entrypointRule.ts`
+- `frontend/apps/skriptoteket/src/composables/editor/linter/domain/rules/contractRule.ts`

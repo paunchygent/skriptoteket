@@ -13,14 +13,14 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-30
-- Branch / commit: `main` (`59da417`)
+- Branch / commit: `main` (`adbe200`)
 - Current sprint: `SPR-2026-01-05 Tool Editor Vertical Slice` (EPIC-14)
 - Production: Full Vue SPA (unchanged)
 - Completed: EPIC-14 Admin Tool Authoring (ST-14-01/14-02) done
 
 ## Current Session (2025-12-30)
 
-- EPIC-06 linter: refactored ST-06-10 Context-Rule foundation into layered structure (`frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.ts` (stable entry point), `frontend/apps/skriptoteket/src/composables/editor/linter/{domain,infra,adapters}/`, shared `frontend/apps/skriptoteket/src/composables/editor/pythonLezer/`).
+- EPIC-06 linter: layered structure (ST-06-10) + ST-06-11 quick-fix actions (FixIntents → CodeMirror `Diagnostic.actions`) for ToolUserError import, encoding, missing entrypoint stub, missing Contract v2 keys (`frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.ts` (stable entry point), `frontend/apps/skriptoteket/src/composables/editor/linter/domain/rules/{bestPracticesRule,entrypointRule,contractRule}.ts`, `frontend/apps/skriptoteket/src/composables/editor/linter/domain/utils/pythonImports.ts`, `frontend/apps/skriptoteket/src/composables/editor/linter/adapters/codemirror/skriptoteketLinterAdapter.ts`).
 - ST-14-07 draft head locks implemented end-to-end (API + enforcement + tests).
   - Config: `src/skriptoteket/config.py` (`DRAFT_LOCK_TTL_SECONDS`).
   - Helpers + handlers: `src/skriptoteket/application/scripting/draft_lock_checks.py`, updates in
@@ -154,6 +154,7 @@ Keep this file updated so the next session can pick up work quickly.
 - SPA typecheck: `pnpm -C frontend --filter @skriptoteket/spa typecheck` (pass)
 - SPA lint: `pnpm -C frontend --filter @skriptoteket/spa lint` (pass)
 - UI (editor): `pdm run ui-editor-smoke` (pass; artifacts in `.artifacts/ui-editor-smoke/`; Playwright required escalation on macOS)
+- UI (editor quick-fixes): `pdm run python -m scripts.playwright_st_06_11_quick_fix_actions_e2e` (pass; artifacts in `.artifacts/st-06-11-quick-fix-actions-e2e/`; Playwright required escalation on macOS)
 - UI (suggestion-new): `pdm run python -m scripts.playwright_suggestion_new_smoke` (pass; artifacts in `.artifacts/ui-smoke/`; Playwright required escalation on macOS)
 - UI (nav transitions): `pdm run python -m scripts.playwright_nav_transitions_smoke --base-url http://127.0.0.1:5173` (pass; artifacts in `.artifacts/ui-smoke/`; Playwright required escalation on macOS)
 - Docs: `pdm run docs-validate` (pass; sprint tracker update)
@@ -161,7 +162,6 @@ Keep this file updated so the next session can pick up work quickly.
 - Live check: `curl -I http://127.0.0.1:5173/` (200), `curl -I http://127.0.0.1:5173/admin/tools` (200)
 - Re-run (2025-12-29): `pdm run lint`, `pdm run typecheck`, `pdm run test`, `pdm run fe-gen-api-types`,
   `pdm run fe-type-check`, `pdm run fe-lint` (all pass).
-- UI (editor): `pdm run ui-editor-smoke` (pass; artifacts in `.artifacts/ui-editor-smoke/`; Playwright required escalation on macOS)
 - Live check: `curl -I http://127.0.0.1:8000/health` (405 on HEAD; backend responding)
 - Docs: `pdm run docs-validate` (pass)
 - Seed: `pdm run seed-script-bank --slug demo-settings-test --sync-code` (pass)

@@ -81,7 +81,7 @@ describe("useDraftLock", () => {
     const { wrapper } = mountDraftLock();
     await flushPromises();
 
-    const vm = wrapper.vm as ReturnType<typeof useDraftLock>;
+    const vm = wrapper.vm as unknown as ReturnType<typeof useDraftLock>;
     expect(vm.state).toBe("owner");
     expect(vm.isReadOnly).toBe(false);
     expect(vm.statusMessage).toContain("redigeringslåset");
@@ -103,7 +103,7 @@ describe("useDraftLock", () => {
     const { wrapper } = mountDraftLock();
     await flushPromises();
 
-    const vm = wrapper.vm as ReturnType<typeof useDraftLock>;
+    const vm = wrapper.vm as unknown as ReturnType<typeof useDraftLock>;
     expect(vm.state).toBe("locked");
     expect(vm.lockError).toBeNull();
 

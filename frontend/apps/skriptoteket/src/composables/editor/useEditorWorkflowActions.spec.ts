@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { effectScope, reactive, ref, type EffectScope } from "vue";
 
 import { useEditorWorkflowActions } from "./useEditorWorkflowActions";
+import type { UiNotifier } from "../notify";
 
 type AuthMock = {
   hasAtLeastRole: ReturnType<typeof vi.fn>;
@@ -26,18 +27,18 @@ vi.mock("../../stores/auth", () => ({
 }));
 
 type NotifyMock = {
-  info: ReturnType<typeof vi.fn>;
-  success: ReturnType<typeof vi.fn>;
-  warning: ReturnType<typeof vi.fn>;
-  failure: ReturnType<typeof vi.fn>;
+  info: ReturnType<typeof vi.fn<(message: string) => void>>;
+  success: ReturnType<typeof vi.fn<(message: string) => void>>;
+  warning: ReturnType<typeof vi.fn<(message: string) => void>>;
+  failure: ReturnType<typeof vi.fn<(message: string) => void>>;
 };
 
 function createNotify(): NotifyMock {
   return {
-    info: vi.fn(),
-    success: vi.fn(),
-    warning: vi.fn(),
-    failure: vi.fn(),
+    info: vi.fn<(message: string) => void>(),
+    success: vi.fn<(message: string) => void>(),
+    warning: vi.fn<(message: string) => void>(),
+    failure: vi.fn<(message: string) => void>(),
   };
 }
 
@@ -63,11 +64,11 @@ function createWorkflow(selectedVersion: ReturnType<typeof ref>) {
   const scope: EffectScope = effectScope();
   scope.run(() => {
     workflow = useEditorWorkflowActions({
-      selectedVersion,
+      selectedVersion: selectedVersion as never,
       route: route as never,
       router: router as never,
       reloadEditor,
-      notify,
+      notify: notify as UiNotifier,
     });
   });
 
