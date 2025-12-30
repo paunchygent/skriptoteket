@@ -2,6 +2,7 @@
 import { computed } from "vue";
 
 import type { CatalogItem } from "../../types/catalog";
+import { IconBookmark } from "../icons";
 
 type Variant = "default" | "compact";
 
@@ -67,17 +68,10 @@ function handleToggle(): void {
         ]"
         @click="handleToggle"
       >
-        <svg
+        <IconBookmark
           class="h-full w-full"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          :fill="item.is_favorite ? 'currentColor' : 'none'"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linejoin="miter"
-        >
-          <path d="M7 4h10v16l-5-3-5 3z" />
-        </svg>
+          :filled="item.is_favorite"
+        />
       </button>
       <p
         v-if="item.summary"
@@ -119,17 +113,10 @@ function handleToggle(): void {
         ]"
         @click="handleToggle"
       >
-        <svg
+        <IconBookmark
           class="h-full w-full"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          :fill="item.is_favorite ? 'currentColor' : 'none'"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linejoin="miter"
-        >
-          <path d="M7 4h10v16l-5-3-5 3z" />
-        </svg>
+          :filled="item.is_favorite"
+        />
       </button>
       <div class="space-y-1 min-w-0 pr-12 sm:pr-14">
         <div class="flex flex-wrap items-center gap-2">

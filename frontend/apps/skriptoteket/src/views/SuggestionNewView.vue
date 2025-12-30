@@ -5,6 +5,7 @@ import { apiGet, apiPost, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
 import { useToast } from "../composables/useToast";
 import SystemMessage from "../components/ui/SystemMessage.vue";
+import { IconHelp, IconX } from "../components/icons";
 
 type ProfessionItem = components["schemas"]["ProfessionItem"];
 type CategoryItem = components["schemas"]["CategoryItem"];
@@ -201,31 +202,7 @@ onMounted(() => {
               aria-controls="suggestion-description-help"
               @click="toggleHelp"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="square"
-                stroke-linejoin="miter"
-                aria-hidden="true"
-              >
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="9"
-                />
-                <path d="M9 9a3 3 0 0 1 6 1c0 2-3 3-3 3v1" />
-                <circle
-                  cx="12"
-                  cy="17"
-                  r="1"
-                  fill="currentColor"
-                  stroke="none"
-                />
-              </svg>
+              <IconHelp :size="16" />
             </button>
           </div>
 
@@ -258,19 +235,7 @@ onMounted(() => {
                   aria-label="Stäng hjälp"
                   @click="closeHelp"
                 >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="square"
-                    stroke-linejoin="miter"
-                    aria-hidden="true"
-                  >
-                    <path d="M8 8l8 8M16 8l-8 8" />
-                  </svg>
+                  <IconX :size="16" />
                 </button>
 
                 <ul class="list-disc pl-5">
