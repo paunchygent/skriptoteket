@@ -59,3 +59,4 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - [ADR-0035: Script editor intelligence architecture](../../adr/adr-0035-script-editor-intelligence-architecture.md)
 - [ADR-0036: Tool usage instructions architecture](../../adr/adr-0036-tool-usage-instructions.md)
 - [ADR-0043: AI completion integration](../../adr/adr-0043-ai-completion-integration.md)
+- [ADR-0050: Self-hosted LLM infrastructure](../../adr/adr-0050-self-hosted-llm-infrastructure.md)

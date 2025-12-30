@@ -254,6 +254,19 @@ ssh hemma "journalctl -u skriptoteket-session-files-cleanup.service -n 50 --no-p
 ssh hemma "sudo systemctl start skriptoteket-session-files-cleanup.service"
 ```
 
+### AI Inference Infrastructure
+
+| Service      | Port | Purpose                                  |
+|--------------|------|------------------------------------------|
+| llama-server | 8082 | ROCm GPU inference (Qwen3-Coder-30B-A3B) |
+| tabby        | 8083 | Code completion API (`/v1/completions`)  |
+
+```bash
+ssh hemma "curl -s http://localhost:8083/v1/health | jq .model"  # → "Remote"
+```
+
+Runbooks: `docs/runbooks/runbook-gpu-ai-workloads.md`, `docs/runbooks/runbook-tabby-codemirror.md`
+
 ### Runbooks
 
 See `docs/runbooks/runbook-home-server.md` for detailed operations.

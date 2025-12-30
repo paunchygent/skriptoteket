@@ -110,6 +110,17 @@ Public URLs (credentials in `~/apps/skriptoteket/.env` on server):
 
 Reset Grafana password: `ssh hemma "docker exec grafana grafana cli admin reset-admin-password '<pw>'"` (env var only works on first startup).
 
+## AI Inference Infrastructure
+
+| Service      | Port | Purpose                                  |
+|--------------|------|------------------------------------------|
+| llama-server | 8082 | ROCm GPU inference (Qwen3-Coder-30B-A3B) |
+| tabby        | 8083 | Code completion API (`/v1/completions`)  |
+
+Health check: `ssh hemma "curl -s http://localhost:8083/v1/health | jq .model"`
+
+Runbooks: `docs/runbooks/runbook-gpu-ai-workloads.md`, `docs/runbooks/runbook-tabby-codemirror.md`
+
 ## Security
 
 - Never commit secrets (API keys/tokens); use env vars / `.env` locally

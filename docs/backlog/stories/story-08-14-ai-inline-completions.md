@@ -36,6 +36,9 @@ use a separate protocol surface and are tracked in ST-08-16.
 See [ADR-0043: AI completion integration](../../adr/adr-0043-ai-completion-integration.md) for architecture decisions
 (OpenAI-compatible backend proxy, KB injection, CodeMirror extension design).
 
+See [ADR-0050: Self-hosted LLM infrastructure](../../adr/adr-0050-self-hosted-llm-infrastructure.md) for model choice
+(Qwen3-Coder-30B-A3B) and hosting stack (llama.cpp + Tabby on hemma.hule.education).
+
 See [ref-ai-completion-architecture.md](../../reference/ref-ai-completion-architecture.md) for technical specification.
 
 ## Scope
