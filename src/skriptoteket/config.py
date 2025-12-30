@@ -64,3 +64,21 @@ class Settings(BaseSettings):
     # Tracing (ST-07-03) - opt-in for monolith
     OTEL_TRACING_ENABLED: bool = False
     OTEL_EXPORTER_OTLP_ENDPOINT: str = "http://localhost:4317"
+
+    # Email (SMTP)
+    EMAIL_PROVIDER: Literal["mock", "smtp"] = "mock"
+    EMAIL_SMTP_HOST: str = "mail.privateemail.com"
+    EMAIL_SMTP_PORT: int = 587
+    EMAIL_SMTP_USERNAME: str = ""
+    EMAIL_SMTP_PASSWORD: str = ""
+    EMAIL_SMTP_USE_TLS: bool = True
+    EMAIL_SMTP_TIMEOUT: int = 30
+    EMAIL_DEFAULT_FROM_EMAIL: str = "noreply@hule.education"
+    EMAIL_DEFAULT_FROM_NAME: str = "Skriptoteket"
+
+    # Email verification
+    EMAIL_VERIFICATION_TTL_HOURS: int = 24
+    EMAIL_VERIFICATION_BASE_URL: str = "https://skriptoteket.hule.education"
+
+    # LLM API
+    OPENAI_LLM_COMPLETION_API_KEY: str = ""

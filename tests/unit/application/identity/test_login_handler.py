@@ -30,7 +30,7 @@ from tests.fixtures.identity_fixtures import make_user
 async def test_login_creates_session_and_returns_user(now: datetime) -> None:
     settings = Settings()
     fixed_now = now
-    user = make_user(email="teacher@example.com")
+    user = make_user(email="teacher@example.com").model_copy(update={"email_verified": True})
     user_auth = UserAuth(user=user, password_hash="hash")
     updated_user = user.model_copy(
         update={
@@ -50,8 +50,6 @@ async def test_login_creates_session_and_returns_user(now: datetime) -> None:
     users.update.return_value = updated_user
 
     sessions = AsyncMock(spec=SessionRepositoryProtocol)
-    login_events = AsyncMock(spec=LoginEventRepositoryProtocol)
-    login_events = AsyncMock(spec=LoginEventRepositoryProtocol)
     login_events = AsyncMock(spec=LoginEventRepositoryProtocol)
 
     profiles = AsyncMock(spec=ProfileRepositoryProtocol)
@@ -100,6 +98,55 @@ async def test_login_creates_session_and_returns_user(now: datetime) -> None:
     created_event = login_events.create.call_args.kwargs["event"]
     assert created_event.user_id == user.id
     assert created_event.status.value == "success"
+
+
+@pytest.mark.asyncio
+async def test_login_rejects_unverified_email(now: datetime) -> None:
+    """Login should fail if email is not verified."""
+    settings = Settings()
+    user = make_user(email="teacher@example.com").model_copy(update={"email_verified": False})
+    user_auth = UserAuth(user=user, password_hash="hash")
+
+    uow = AsyncMock(spec=UnitOfWorkProtocol)
+    uow.__aenter__.return_value = uow
+    uow.__aexit__.return_value = None
+
+    users = AsyncMock(spec=UserRepositoryProtocol)
+    users.get_auth_by_email.return_value = user_auth
+
+    sessions = AsyncMock(spec=SessionRepositoryProtocol)
+    login_events = AsyncMock(spec=LoginEventRepositoryProtocol)
+    profiles = AsyncMock(spec=ProfileRepositoryProtocol)
+
+    password_hasher = Mock(spec=PasswordHasherProtocol)
+    password_hasher.verify.return_value = True  # Password is correct
+
+    clock = Mock(spec=ClockProtocol)
+    clock.now.return_value = now
+
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    id_generator.new_uuid.side_effect = [uuid4(), uuid4()]
+    token_generator = Mock(spec=TokenGeneratorProtocol)
+
+    handler = LoginHandler(
+        settings=settings,
+        uow=uow,
+        users=users,
+        profiles=profiles,
+        sessions=sessions,
+        login_events=login_events,
+        password_hasher=password_hasher,
+        clock=clock,
+        id_generator=id_generator,
+        token_generator=token_generator,
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(LoginCommand(email="teacher@example.com", password="pw"))
+
+    assert exc_info.value.code == ErrorCode.EMAIL_NOT_VERIFIED
+    sessions.create.assert_not_awaited()
+    login_events.create.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -155,7 +202,7 @@ async def test_login_enters_uow_before_reading_user_auth(now: datetime) -> None:
     events: list[str] = []
 
     settings = Settings()
-    user = make_user(email="teacher@example.com")
+    user = make_user(email="teacher@example.com").model_copy(update={"email_verified": True})
     user_auth = UserAuth(user=user, password_hash="hash")
 
     uow = AsyncMock(spec=UnitOfWorkProtocol)
@@ -169,7 +216,7 @@ async def test_login_enters_uow_before_reading_user_auth(now: datetime) -> None:
 
     users = AsyncMock(spec=UserRepositoryProtocol)
 
-    async def get_auth_by_email(email: str):
+    async def get_auth_by_email(_email: str):
         events.append("users_get_auth_by_email")
         return user_auth
 
@@ -185,6 +232,7 @@ async def test_login_enters_uow_before_reading_user_auth(now: datetime) -> None:
     login_events = AsyncMock(spec=LoginEventRepositoryProtocol)
 
     async def create_session(*, session):
+        _ = session  # Mark as used
         events.append("sessions_create")
         return None
 

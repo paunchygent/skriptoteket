@@ -8,7 +8,13 @@ from skriptoteket.application.identity.commands import (
     LoginCommand,
     LogoutCommand,
     RegisterUserCommand,
+    ResendVerificationCommand,
+    VerifyEmailCommand,
 )
+from skriptoteket.application.identity.handlers.resend_verification import (
+    ResendVerificationHandlerProtocol,
+)
+from skriptoteket.application.identity.handlers.verify_email import VerifyEmailHandlerProtocol
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Session, User, UserProfile
@@ -58,7 +64,7 @@ class RegisterResponse(BaseModel):
 
     user: User
     profile: UserProfile
-    csrf_token: str
+    message: str = "Konto skapat! Kontrollera din e-post för att verifiera kontot."
 
 
 class MeResponse(BaseModel):
@@ -109,10 +115,12 @@ async def login(
 @inject
 async def register(
     payload: RegisterRequest,
-    response: Response,
-    settings: FromDishka[Settings],
     handler: FromDishka[RegisterUserHandlerProtocol],
 ) -> RegisterResponse:
+    """Register a new user account.
+
+    User must verify their email before they can login.
+    """
     result = await handler.handle(
         RegisterUserCommand(
             email=payload.email,
@@ -121,21 +129,8 @@ async def register(
             last_name=payload.last_name,
         )
     )
-
-    response.set_cookie(
-        key=settings.SESSION_COOKIE_NAME,
-        value=str(result.session_id),
-        max_age=settings.SESSION_TTL_SECONDS,
-        httponly=True,
-        secure=settings.COOKIE_SECURE,
-        samesite=settings.COOKIE_SAMESITE,
-        path="/",
-    )
-    return RegisterResponse(
-        user=result.user,
-        profile=result.profile,
-        csrf_token=result.csrf_token,
-    )
+    # No cookie - user must verify email first
+    return RegisterResponse(user=result.user, profile=result.profile)
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
@@ -173,3 +168,53 @@ async def me(
 @router.get("/csrf", response_model=CsrfResponse)
 async def csrf(session: Session = Depends(require_session_api)) -> CsrfResponse:
     return CsrfResponse(csrf_token=session.csrf_token)
+
+
+class VerifyEmailRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    token: str
+
+
+class VerifyEmailResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    message: str
+    user: User
+
+
+class ResendVerificationRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    email: str
+
+
+class ResendVerificationResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    message: str
+
+
+@router.post("/verify-email", response_model=VerifyEmailResponse)
+@inject
+async def verify_email(
+    payload: VerifyEmailRequest,
+    handler: FromDishka[VerifyEmailHandlerProtocol],
+) -> VerifyEmailResponse:
+    """Verify email with token from verification link."""
+    result = await handler.handle(VerifyEmailCommand(token=payload.token))
+    return VerifyEmailResponse(message=result.message, user=result.user)
+
+
+@router.post("/resend-verification", response_model=ResendVerificationResponse)
+@inject
+async def resend_verification(
+    payload: ResendVerificationRequest,
+    handler: FromDishka[ResendVerificationHandlerProtocol],
+) -> ResendVerificationResponse:
+    """Resend verification email.
+
+    Always returns success for security (doesn't reveal if email exists).
+    """
+    result = await handler.handle(ResendVerificationCommand(email=payload.email))
+    return ResendVerificationResponse(message=result.message)

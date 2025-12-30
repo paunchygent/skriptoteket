@@ -3,7 +3,7 @@ import { hoverTooltip } from "@codemirror/view";
 
 import type { SkriptoteketIntelligenceConfig } from "./skriptoteketIntelligence";
 import { SKRIPTOTEKET_HELPER_DOCS } from "./skriptoteketMetadata";
-import { isInNonCodeContext, resolvePythonIdentifierNode } from "./skriptoteketPythonTree";
+import { isInNonCodeContext, resolvePythonIdentifierNode } from "./pythonLezer";
 
 export function skriptoteketHover(_config: SkriptoteketIntelligenceConfig): Extension {
   const docsByExportId = new Map<string, { signature: string; swedishDoc: string }>(

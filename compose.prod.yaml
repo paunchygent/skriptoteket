@@ -21,12 +21,27 @@ services:
       DATABASE_URL: postgresql+asyncpg://skriptoteket:${SKRIPTOTEKET_DB_PASSWORD}@shared-postgres:5432/skriptoteket
       SECRET_KEY: ${SECRET_KEY}
       ENVIRONMENT: production
+      COOKIE_SECURE: "true"
       RUNNER_IMAGE: skriptoteket-runner:latest
       ARTIFACTS_ROOT: /app/.artifacts
       # Observability (requires compose.observability.yaml running)
       OTEL_TRACING_ENABLED: "true"
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       SERVICE_VERSION: "0.1.0"
+      # Email (SMTP)
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-smtp}
+      EMAIL_SMTP_HOST: ${EMAIL_SMTP_HOST:-mail.privateemail.com}
+      EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT:-587}
+      EMAIL_SMTP_USERNAME: ${EMAIL_SMTP_USERNAME:-}
+      EMAIL_SMTP_PASSWORD: ${EMAIL_SMTP_PASSWORD:-}
+      EMAIL_SMTP_USE_TLS: ${EMAIL_SMTP_USE_TLS:-true}
+      EMAIL_SMTP_TIMEOUT: ${EMAIL_SMTP_TIMEOUT:-30}
+      EMAIL_DEFAULT_FROM_EMAIL: ${EMAIL_DEFAULT_FROM_EMAIL:-noreply@hule.education}
+      EMAIL_DEFAULT_FROM_NAME: ${EMAIL_DEFAULT_FROM_NAME:-Skriptoteket}
+      EMAIL_VERIFICATION_BASE_URL: ${EMAIL_VERIFICATION_BASE_URL:-https://skriptoteket.hule.education}
+      EMAIL_VERIFICATION_TTL_HOURS: ${EMAIL_VERIFICATION_TTL_HOURS:-24}
+      # LLM API
+      OPENAI_LLM_COMPLETION_API_KEY: ${OPENAI_LLM_COMPLETION_API_KEY:-}
       # nginx-proxy integration
       VIRTUAL_HOST: skriptoteket.hule.education
       VIRTUAL_PORT: "8000"

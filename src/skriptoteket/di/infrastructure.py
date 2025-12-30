@@ -18,12 +18,17 @@ from skriptoteket.infrastructure.clock import UTCClock
 from skriptoteket.infrastructure.curated_apps.executor import InMemoryCuratedAppExecutor
 from skriptoteket.infrastructure.curated_apps.registry import InMemoryCuratedAppRegistry
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
+from skriptoteket.infrastructure.email.smtp_sender import SmtpEmailSender
+from skriptoteket.infrastructure.email.template_renderer import Jinja2EmailTemplateRenderer
 from skriptoteket.infrastructure.id_generator import UUID4Generator
 from skriptoteket.infrastructure.repositories.category_repository import (
     PostgreSQLCategoryRepository,
 )
 from skriptoteket.infrastructure.repositories.draft_lock_repository import (
     PostgreSQLDraftLockRepository,
+)
+from skriptoteket.infrastructure.repositories.email_verification_token_repository import (
+    PostgreSQLEmailVerificationTokenRepository,
 )
 from skriptoteket.infrastructure.repositories.login_event_repository import (
     PostgreSQLLoginEventRepository,
@@ -85,6 +90,8 @@ from skriptoteket.protocols.curated_apps import (
     CuratedAppRegistryProtocol,
 )
 from skriptoteket.protocols.draft_locks import DraftLockRepositoryProtocol
+from skriptoteket.protocols.email import EmailSenderProtocol, EmailTemplateRendererProtocol
+from skriptoteket.protocols.email_verification import EmailVerificationTokenRepositoryProtocol
 from skriptoteket.protocols.favorites import FavoritesRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
@@ -308,3 +315,19 @@ class InfrastructureProvider(Provider):
         self, session: AsyncSession
     ) -> SuggestionDecisionRepositoryProtocol:
         return PostgreSQLScriptSuggestionDecisionRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def email_verification_token_repo(
+        self, session: AsyncSession
+    ) -> EmailVerificationTokenRepositoryProtocol:
+        return PostgreSQLEmailVerificationTokenRepository(session)
+
+    # Email services
+
+    @provide(scope=Scope.APP)
+    def email_sender(self, settings: Settings) -> EmailSenderProtocol:
+        return SmtpEmailSender(settings)
+
+    @provide(scope=Scope.APP)
+    def email_template_renderer(self) -> EmailTemplateRendererProtocol:
+        return Jinja2EmailTemplateRenderer()

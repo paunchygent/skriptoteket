@@ -257,6 +257,11 @@ pytest --cov=src --cov-report=term-missing
 The SPA uses **Vitest** for unit + integration tests. Browser/E2E automation remains **Playwright** (see
 `.agent/rules/075-browser-automation.md`).
 
+### Default expectation (REQUIRED)
+
+- **Frontend changes require Vitest coverage** by default (components, composables, stores, utilities).
+- Only skip/add no tests with explicit approval from the user and document the reason in `.agent/handoff.md`.
+
 ### Locations (REQUIRED)
 
 - Config: `frontend/apps/skriptoteket/vitest.config.ts`

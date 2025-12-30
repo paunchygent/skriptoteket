@@ -123,6 +123,13 @@ class LoginHandler(LoginHandlerProtocol):
                         message="Invalid credentials",
                     )
 
+                # Check email verification before allowing login
+                if not user.email_verified:
+                    raise DomainError(
+                        code=ErrorCode.EMAIL_NOT_VERIFIED,
+                        message="Verifiera din e-postadress innan du loggar in",
+                    )
+
                 updated_user = reset_failed_attempts(user=user, now=now)
                 await self._users.update(user=updated_user)
                 event_user_id = updated_user.id

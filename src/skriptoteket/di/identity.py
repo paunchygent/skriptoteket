@@ -18,9 +18,19 @@ from skriptoteket.application.identity.handlers.provision_local_user import (
     ProvisionLocalUserHandler,
 )
 from skriptoteket.application.identity.handlers.register_user import RegisterUserHandler
+from skriptoteket.application.identity.handlers.resend_verification import (
+    ResendVerificationHandler,
+    ResendVerificationHandlerProtocol,
+)
 from skriptoteket.application.identity.handlers.update_profile import UpdateProfileHandler
+from skriptoteket.application.identity.handlers.verify_email import (
+    VerifyEmailHandler,
+    VerifyEmailHandlerProtocol,
+)
 from skriptoteket.config import Settings
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.email import EmailSenderProtocol, EmailTemplateRendererProtocol
+from skriptoteket.protocols.email_verification import EmailVerificationTokenRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
     ChangeEmailHandlerProtocol,
@@ -142,7 +152,9 @@ class IdentityProvider(Provider):
         uow: UnitOfWorkProtocol,
         users: UserRepositoryProtocol,
         profiles: ProfileRepositoryProtocol,
-        sessions: SessionRepositoryProtocol,
+        verification_tokens: EmailVerificationTokenRepositoryProtocol,
+        email_sender: EmailSenderProtocol,
+        email_renderer: EmailTemplateRendererProtocol,
         password_hasher: PasswordHasherProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -153,7 +165,9 @@ class IdentityProvider(Provider):
             uow=uow,
             users=users,
             profiles=profiles,
-            sessions=sessions,
+            verification_tokens=verification_tokens,
+            email_sender=email_sender,
+            email_renderer=email_renderer,
             password_hasher=password_hasher,
             clock=clock,
             id_generator=id_generator,
@@ -222,4 +236,46 @@ class IdentityProvider(Provider):
             settings=settings,
             clock=clock,
             login_events=login_events,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def verify_email_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        users: UserRepositoryProtocol,
+        verification_tokens: EmailVerificationTokenRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> VerifyEmailHandlerProtocol:
+        return VerifyEmailHandler(
+            uow=uow,
+            users=users,
+            verification_tokens=verification_tokens,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def resend_verification_handler(
+        self,
+        settings: Settings,
+        uow: UnitOfWorkProtocol,
+        users: UserRepositoryProtocol,
+        profiles: ProfileRepositoryProtocol,
+        verification_tokens: EmailVerificationTokenRepositoryProtocol,
+        email_sender: EmailSenderProtocol,
+        email_renderer: EmailTemplateRendererProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+        token_generator: TokenGeneratorProtocol,
+    ) -> ResendVerificationHandlerProtocol:
+        return ResendVerificationHandler(
+            settings=settings,
+            uow=uow,
+            users=users,
+            profiles=profiles,
+            verification_tokens=verification_tokens,
+            email_sender=email_sender,
+            email_renderer=email_renderer,
+            clock=clock,
+            id_generator=id_generator,
+            token_generator=token_generator,
         )

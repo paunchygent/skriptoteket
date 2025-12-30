@@ -58,12 +58,13 @@ class RegisterUserCommand(BaseModel):
 
 
 class RegisterUserResult(BaseModel):
+    """Result after registration - no session, user must verify email."""
+
     model_config = ConfigDict(frozen=True)
 
-    session_id: UUID
-    csrf_token: str
     user: User
     profile: UserProfile
+    verification_email_sent: bool = True
 
 
 class GetProfileCommand(BaseModel):
@@ -115,3 +116,36 @@ class ChangeEmailResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     user: User
+
+
+class VerifyEmailCommand(BaseModel):
+    """Command to verify email with token."""
+
+    model_config = ConfigDict(frozen=True)
+
+    token: str
+
+
+class VerifyEmailResult(BaseModel):
+    """Result of successful email verification."""
+
+    model_config = ConfigDict(frozen=True)
+
+    user: User
+    message: str = "E-postadressen har verifierats"
+
+
+class ResendVerificationCommand(BaseModel):
+    """Command to resend verification email."""
+
+    model_config = ConfigDict(frozen=True)
+
+    email: str
+
+
+class ResendVerificationResult(BaseModel):
+    """Result of resend request (always success for security)."""
+
+    model_config = ConfigDict(frozen=True)
+
+    message: str = "Om kontot finns skickas ett nytt verifieringsmail"

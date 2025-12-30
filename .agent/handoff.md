@@ -12,14 +12,15 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2025-12-29
-- Branch / commit: `main` (`440ae14`)
+- Date: 2025-12-30
+- Branch / commit: `main` (`59da417`)
 - Current sprint: `SPR-2026-01-05 Tool Editor Vertical Slice` (EPIC-14)
 - Production: Full Vue SPA (unchanged)
 - Completed: EPIC-14 Admin Tool Authoring (ST-14-01/14-02) done
 
-## Current Session (2025-12-28)
+## Current Session (2025-12-30)
 
+- EPIC-06 linter: refactored ST-06-10 Context-Rule foundation into layered structure (`frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.ts` (stable entry point), `frontend/apps/skriptoteket/src/composables/editor/linter/{domain,infra,adapters}/`, shared `frontend/apps/skriptoteket/src/composables/editor/pythonLezer/`).
 - ST-14-07 draft head locks implemented end-to-end (API + enforcement + tests).
   - Config: `src/skriptoteket/config.py` (`DRAFT_LOCK_TTL_SECONDS`).
   - Helpers + handlers: `src/skriptoteket/application/scripting/draft_lock_checks.py`, updates in
@@ -150,8 +151,8 @@ Keep this file updated so the next session can pick up work quickly.
 - Tests: `pdm run pytest tests/integration/infrastructure/repositories/test_sandbox_snapshot_repository.py tests/integration/cli/test_cleanup_sandbox_snapshots.py` (pass)
 - OpenAPI types: `pdm run fe-gen-api-types` (pass)
 - SPA build: `pdm run fe-build` (pass)
-- SPA typecheck: `pdm run fe-type-check` (pass)
-- SPA lint: `pdm run fe-lint` (pass)
+- SPA typecheck: `pnpm -C frontend --filter @skriptoteket/spa typecheck` (pass)
+- SPA lint: `pnpm -C frontend --filter @skriptoteket/spa lint` (pass)
 - UI (editor): `pdm run ui-editor-smoke` (pass; artifacts in `.artifacts/ui-editor-smoke/`; Playwright required escalation on macOS)
 - UI (suggestion-new): `pdm run python -m scripts.playwright_suggestion_new_smoke` (pass; artifacts in `.artifacts/ui-smoke/`; Playwright required escalation on macOS)
 - UI (nav transitions): `pdm run python -m scripts.playwright_nav_transitions_smoke --base-url http://127.0.0.1:5173` (pass; artifacts in `.artifacts/ui-smoke/`; Playwright required escalation on macOS)

@@ -1,0 +1,102 @@
+<!-- subject: Verifiera din e-postadress - Skriptoteket -->
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Verifiera din e-postadress</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+</head>
+<body style="margin: 0; padding: 0; background-color: #FFFFFF; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased;">
+    <!-- Wrapper table -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FFFFFF" style="background-color: #FFFFFF;">
+        <tr>
+            <td align="center" style="padding: 48px 16px;">
+                <!-- Main content card with brutalist shadow -->
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 512px; background-color: #FFFFFF; border: 1px solid #1C2E4A; box-shadow: 6px 6px 0px 0px #1C2E4A;">
+                    <!-- Header with logo -->
+                    <tr>
+                        <td style="padding: 32px 32px 24px 32px; border-bottom: 1px solid rgba(28, 46, 74, 0.3);">
+                            <img src="{{ base_url }}/static/spa/logo-horizontal.svg"
+                                 alt="Skriptoteket"
+                                 width="160"
+                                 style="display: block; max-width: 160px; height: auto;">
+                        </td>
+                    </tr>
+
+                    <!-- Body content -->
+                    <tr>
+                        <td style="padding: 32px;">
+                            <h1 style="margin: 0 0 24px 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 24px; font-weight: 600; color: #1C2E4A; line-height: 1.25; letter-spacing: -0.01em;">
+                                Hej {{ first_name }}!
+                            </h1>
+
+                            <p style="margin: 0 0 16px 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.625; color: #1C2E4A;">
+                                Tack för att du registrerade dig på Skriptoteket.
+                            </p>
+
+                            <p style="margin: 0 0 32px 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.625; color: #1C2E4A;">
+                                Klicka på knappen nedan för att verifiera din e-postadress:
+                            </p>
+
+                            <!-- CTA Button - huleedu-btn style -->
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 32px 0;">
+                                <tr>
+                                    <td style="background-color: #6B1C2E; border-radius: 2px;">
+                                        <a href="{{ verification_url }}"
+                                           style="display: inline-block; padding: 16px 32px; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 14px; font-weight: 600; color: #FAFAF6; text-decoration: none; text-transform: uppercase; letter-spacing: 0.08em;">
+                                            Verifiera e-postadress
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin: 0 0 12px 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(28, 46, 74, 0.6);">
+                                Om knappen inte fungerar
+                            </p>
+
+                            <p style="margin: 0 0 24px 0; font-family: 'IBM Plex Mono', ui-monospace, 'Courier New', monospace; font-size: 13px; line-height: 1.5; color: #1C2E4A; word-break: break-all; background-color: #FAFAF6; padding: 16px; border: 1px solid rgba(28, 46, 74, 0.3);">
+                                {{ verification_url }}
+                            </p>
+
+                            <p style="margin: 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 14px; line-height: 1.5; color: rgba(28, 46, 74, 0.6);">
+                                Länken är giltig i {{ expiry_hours }} timmar.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 24px 32px; border-top: 1px solid rgba(28, 46, 74, 0.3); background-color: #FAFAF6;">
+                            <p style="margin: 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 12px; line-height: 1.5; color: rgba(28, 46, 74, 0.6);">
+                                Om du inte registrerade dig på Skriptoteket kan du ignorera detta meddelande.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Footer branding -->
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 512px;">
+                    <tr>
+                        <td style="padding: 24px 32px; text-align: center;">
+                            <p style="margin: 0; font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(28, 46, 74, 0.4);">
+                                Skriptoteket är en del av HuleEdu
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

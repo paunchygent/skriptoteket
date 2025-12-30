@@ -15,7 +15,7 @@ import {
   extractPythonDictionaryEntries,
   isInNonCodeContext,
   parsePythonStringLiteralValue,
-} from "./skriptoteketPythonTree";
+} from "./pythonLezer";
 
 const MODULE_IDS = Array.from(new Set(SKRIPTOTEKET_HELPER_DOCS.map((doc) => doc.moduleId)));
 

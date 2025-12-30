@@ -1,12 +1,13 @@
 import type { EditorState } from "@codemirror/state";
 import { syntaxTree } from "@codemirror/language";
 
-import type { PythonNodeRange } from "./skriptoteketPythonTree";
-
-export type PythonImportBindingsSnapshot = {
-  moduleBindings: Map<string, string>;
-  fromBindings: Map<string, { modulePath: string; importedName: string }>;
-};
+import type {
+  PythonCallCallee,
+  PythonCallExpression,
+  PythonImportBindingsSnapshot,
+  PythonKeywordArgument,
+  PythonNodeRange,
+} from "../domain/pythonFacts";
 
 export function buildPythonImportBindingsSnapshot(state: EditorState): PythonImportBindingsSnapshot {
   type TreeCursorLike = {
@@ -164,37 +165,7 @@ export function buildPythonImportBindingsSnapshot(state: EditorState): PythonImp
   return { moduleBindings, fromBindings };
 }
 
-export type PythonKeywordArgument = {
-  name: string;
-  nameFrom: number;
-  nameTo: number;
-  value: PythonNodeRange | null;
-};
-
-export type PythonCallCallee =
-  | { kind: "variable"; name: string; nameFrom: number; nameTo: number }
-  | {
-      kind: "member";
-      objectName: string;
-      propertyName: string;
-      propertyFrom: number;
-      propertyTo: number;
-      from: number;
-      to: number;
-    };
-
-export type PythonCallExpression = {
-  from: number;
-  to: number;
-  callee: PythonCallCallee;
-  positionalArgs: PythonNodeRange[];
-  keywordArgs: PythonKeywordArgument[];
-};
-
-export function findPythonCallExpressions(
-  state: EditorState,
-  range: { from: number; to: number },
-): PythonCallExpression[] {
+export function findPythonCallExpressions(state: EditorState, range: { from: number; to: number }): PythonCallExpression[] {
   type TreeCursorLike = {
     name: string;
     from: number;

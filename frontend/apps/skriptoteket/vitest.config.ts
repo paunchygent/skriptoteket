@@ -8,7 +8,9 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "jsdom",
-    include: ["src/**/*.spec.ts"],
+    include: process.env.VITEST_INCLUDE
+      ? process.env.VITEST_INCLUDE.split(",").map((entry) => entry.trim()).filter(Boolean)
+      : ["src/**/*.spec.ts"],
     exclude: ["node_modules", "dist"],
     setupFiles: ["./src/test/setup.ts"],
     coverage: {

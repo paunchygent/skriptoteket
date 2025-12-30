@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, cast
+from typing import cast
 from uuid import UUID
 
 from sqlalchemy import delete, select
@@ -64,4 +64,4 @@ class PostgreSQLSandboxSnapshotRepository(SandboxSnapshotRepositoryProtocol):
         stmt = delete(SandboxSnapshotModel).where(SandboxSnapshotModel.expires_at <= now)
         result = await self._session.execute(stmt)
         await self._session.flush()
-        return int(cast(CursorResult[Any], result).rowcount or 0)
+        return int(cast(CursorResult[object], result).rowcount or 0)
