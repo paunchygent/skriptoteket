@@ -12,6 +12,11 @@ export const routes: RouteRecordRaw[] = [
     component: () => import("../views/RegisterView.vue"),
   },
   {
+    path: "/verify-email",
+    name: "verify-email",
+    component: () => import("../views/VerifyEmailView.vue"),
+  },
+  {
     path: "/profile",
     name: "profile",
     component: () => import("../views/ProfileView.vue"),

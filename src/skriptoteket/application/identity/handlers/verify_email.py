@@ -56,9 +56,12 @@ class VerifyEmailHandler(VerifyEmailHandlerProtocol):
                 )
 
             if token_record.is_expired(now):
+                # Lookup user to get email for resend functionality
+                expired_user = await self._users.get_by_id(token_record.user_id)
                 raise DomainError(
                     code=ErrorCode.VERIFICATION_TOKEN_EXPIRED,
                     message="Verifieringslänken har gått ut, begär en ny",
+                    details={"email": expired_user.email if expired_user else None},
                 )
 
             # Mark token as used
