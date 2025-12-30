@@ -74,6 +74,17 @@ Extract all editor logic to `frontend/apps/skriptoteket/src/composables/editor/`
 - `useToolMaintainers.ts` - maintainer management
 - `useEditorWorkflowActions.ts` - submit/publish/rollback
 
+### CodeMirror Intelligence (Editor)
+Editor intelligence is lazily loaded via `frontend/apps/skriptoteket/src/composables/editor/useSkriptoteketIntelligenceExtensions.ts`
+and assembled in `frontend/apps/skriptoteket/src/composables/editor/skriptoteketIntelligence.ts`.
+
+- Keep `frontend/apps/skriptoteket/src/components/editor/CodeMirrorEditor.vue` generic (no feature keymaps).
+- Linter entrypoints: `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.ts` and
+  `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLintPanel.ts`.
+- References: `docs/reference/ref-linter-architecture.md`, `docs/reference/ref-codemirror-integration.md`,
+  `docs/adr/adr-0048-linter-context-and-data-flow.md`.
+- Playwright + CodeMirror patterns: `.agent/rules/075-browser-automation.md`.
+
 ### Runner Input Contract
 Scripts receive inputs via environment variables (not CLI args):
 - `SKRIPTOTEKET_INPUT_DIR` - directory containing uploaded files

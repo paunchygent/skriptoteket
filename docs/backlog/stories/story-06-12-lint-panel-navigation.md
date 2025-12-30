@@ -2,7 +2,7 @@
 type: story
 id: ST-06-12
 title: "Lint panel and keyboard navigation"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-29
 epic: "EPIC-06"
@@ -29,6 +29,7 @@ CodeMirror supports this via `openLintPanel`, `closeLintPanel`, and `nextDiagnos
 - Add a small integration module that:
   - exposes commands to open/close the lint panel
   - installs `lintKeymap` plus `Shift-F8` binding for previous diagnostic
+  - includes macOS-friendly fallback keybindings (`Mod-Alt-n` next / `Mod-Alt-p` previous) in addition to F8/Shift-F8
   - optionally exposes `diagnosticCount(state)` for UI status integration
 
 ## Files
@@ -36,3 +37,9 @@ CodeMirror supports this via `openLintPanel`, `closeLintPanel`, and `nextDiagnos
 ### Create
 
 - `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLintPanel.ts`
+
+## Decisions (recorded)
+
+- Keep lint keybindings in the intelligence layer (not the base editor): remove `lintKeymap` from
+  `frontend/apps/skriptoteket/src/components/editor/CodeMirrorEditor.vue` and install all lint keybindings via
+  `skriptoteketLintPanel.ts` (wired from `frontend/apps/skriptoteket/src/composables/editor/skriptoteketIntelligence.ts`).
