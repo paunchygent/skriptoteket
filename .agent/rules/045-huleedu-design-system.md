@@ -96,7 +96,7 @@ The `@theme inline` block in `tailwind-theme.css` maps HuleEdu tokens to Tailwin
 |-------|----------------|-----|-------|
 | `--huleedu-canvas` | `bg-canvas`, `text-canvas` | #FAFAF6 | Background, button text on dark |
 | `--huleedu-navy` | `bg-navy`, `text-navy`, `border-navy` | #1C2E4A | Primary text, borders, functional buttons |
-| `--huleedu-burgundy` | `bg-burgundy`, `text-burgundy` | #6B1C2E | CTA accent, errors, publish actions |
+| `--huleedu-burgundy` | `bg-burgundy`, `text-burgundy` | #4D1521 | CTA accent, errors, publish actions |
 | `--huleedu-success` | `text-success`, `border-success` | #059669 | Success states |
 | `--huleedu-warning` | `text-warning`, `bg-warning/20` | #D97706 | Attention, pending review |
 | `--huleedu-error` | `text-error` | #DC2626 | Error states |

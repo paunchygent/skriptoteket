@@ -4,7 +4,7 @@ import { computed } from "vue";
 import type { CatalogItem } from "../../types/catalog";
 import { IconBookmark } from "../icons";
 
-type Variant = "default" | "compact";
+type Variant = "default" | "compact" | "list";
 
 type Props = {
   item: CatalogItem;
@@ -19,6 +19,7 @@ const emit = defineEmits<{
 
 const isCuratedApp = computed(() => props.item.kind === "curated_app");
 const isCompact = computed(() => props.variant === "compact");
+const isList = computed(() => props.variant === "list");
 const actionLabel = computed(() => (isCuratedApp.value ? "Öppna" : "Välj"));
 
 const actionTarget = computed(() => {
@@ -36,8 +37,9 @@ function handleToggle(): void {
 <template>
   <article
     :class="[
-      'relative border border-navy bg-white shadow-brutal-sm',
-      isCompact ? 'flex flex-col h-full p-3' : 'p-4',
+      'relative',
+      isList ? 'px-4 py-3' : 'border border-navy bg-white shadow-brutal-sm',
+      isCompact ? 'flex flex-col h-full p-3' : (!isList && 'p-4'),
     ]"
   >
     <div
@@ -96,9 +98,13 @@ function handleToggle(): void {
 
     <div
       v-else
-      class="flex flex-col gap-3 sm:flex-row sm:items-stretch sm:justify-between sm:gap-6"
+      :class="[
+        'flex flex-col sm:flex-row sm:items-center sm:justify-between',
+        isList ? 'gap-2 sm:gap-4' : 'gap-3 sm:gap-6 sm:items-stretch',
+      ]"
     >
       <button
+        v-if="!isList"
         type="button"
         :disabled="isToggling"
         :aria-label="item.is_favorite ? 'Ta bort favorit' : 'Lägg till favorit'"
@@ -118,33 +124,64 @@ function handleToggle(): void {
           :filled="item.is_favorite"
         />
       </button>
-      <div class="space-y-1 min-w-0 pr-12 sm:pr-14">
+      <div :class="['min-w-0', isList ? 'space-y-0.5' : 'space-y-1 pr-12 sm:pr-14']">
         <div class="flex flex-wrap items-center gap-2">
-          <h3 class="text-base font-semibold text-navy">
+          <h3 :class="['font-semibold text-navy', isList ? 'text-sm' : 'text-base']">
             {{ item.title }}
           </h3>
           <span
             v-if="isCuratedApp"
-            class="inline-flex items-center self-center h-5 px-2 py-0 text-[10px] uppercase tracking-wide border border-navy/60 bg-canvas text-navy leading-none sm:text-xs"
+            :class="[
+              'inline-flex items-center self-center px-2 py-0 uppercase tracking-wide border border-navy/60 bg-canvas text-navy leading-none',
+              isList ? 'h-4 text-[9px]' : 'h-5 text-[10px] sm:text-xs',
+            ]"
           >
             Kurerad app
           </span>
         </div>
         <p
           v-if="item.summary"
-          class="text-sm text-navy/60 break-words"
+          :class="['text-navy/60 break-words', isList ? 'text-xs line-clamp-1' : 'text-sm']"
         >
           {{ item.summary }}
         </p>
       </div>
 
-      <div class="flex flex-col gap-2 shrink-0 items-end sm:self-stretch sm:justify-end pt-6 sm:pt-7">
+      <div
+        :class="[
+          'flex shrink-0 items-center gap-3',
+          isList ? '' : 'flex-col gap-2 items-end sm:self-stretch sm:justify-end pt-6 sm:pt-7',
+        ]"
+      >
         <RouterLink
           :to="actionTarget"
-          class="btn-ghost w-full sm:w-auto sm:min-w-24 text-center no-underline"
+          :class="[
+            'text-center no-underline',
+            isList ? 'btn-ghost text-xs py-1.5 px-3' : 'btn-ghost w-full sm:w-auto sm:min-w-24',
+          ]"
         >
           {{ actionLabel }}
         </RouterLink>
+        <button
+          v-if="isList"
+          type="button"
+          :disabled="isToggling"
+          :aria-label="item.is_favorite ? 'Ta bort favorit' : 'Lägg till favorit'"
+          :aria-pressed="item.is_favorite"
+          :class="[
+            'inline-flex items-center justify-center h-5 w-5',
+            'focus-visible:outline focus-visible:outline-2',
+            'focus-visible:outline-burgundy/40 focus-visible:outline-offset-2',
+            'transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
+            item.is_favorite ? 'text-burgundy' : 'text-burgundy/70 hover:text-burgundy',
+          ]"
+          @click="handleToggle"
+        >
+          <IconBookmark
+            class="h-full w-full"
+            :filled="item.is_favorite"
+          />
+        </button>
       </div>
     </div>
   </article>

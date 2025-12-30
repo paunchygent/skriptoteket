@@ -93,7 +93,7 @@ The subagent returns. You then:
 ```
 Canvas:   #F9F8F2  (warm off-white background)
 Navy:     #1C2E4A  (text, borders, functional buttons)
-Burgundy: #6B1C2E  (CTA accent, error toasts)
+Burgundy: #4D1521  (CTA accent, error toasts)
 ```
 
 ### Button Hierarchy (MUST follow)

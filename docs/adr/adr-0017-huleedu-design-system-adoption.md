@@ -25,7 +25,7 @@ Adopt the HuleEdu design system for all Skriptoteket frontend styling:
 
 ### Design Tokens
 
-- **Colors**: Canvas (#F9F8F2), Navy (#1C2E4A), Burgundy (#6B1C2E)
+- **Colors**: Canvas (#F9F8F2), Navy (#1C2E4A), Burgundy (#4D1521)
 - **Typography**: IBM Plex Sans/Serif/Mono via Google Fonts CDN
 - **Shadows**: Brutalist style (hard offsets, no blur)
 - **Layout**: Ledger frame pattern with 1px navy border

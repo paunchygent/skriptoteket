@@ -67,65 +67,53 @@ async function handleFavoriteToggled(payload: { id: string; isFavorite: boolean 
         <p class="page-description">Alla publicerade verktyg och kurerade appar.</p>
       </div>
 
-      <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div class="w-full lg:max-w-md space-y-1">
-          <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-            Sök
-          </label>
-          <input
-            v-model="searchInput"
-            type="text"
-            placeholder="Sök verktyg..."
-            class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
-          >
-        </div>
-        <div class="w-full lg:w-auto">
-          <div class="flex flex-col gap-3 border border-navy bg-white px-4 py-3 shadow-brutal-sm lg:min-w-[320px]">
-            <label class="flex items-start gap-3 text-sm text-navy cursor-pointer">
-              <input
-                type="checkbox"
-                class="mt-0.5 h-4 w-4 accent-burgundy"
-                :checked="curatedOnly"
-                @change="setCuratedOnly(($event.target as HTMLInputElement).checked)"
-              >
-              <span class="space-y-1">
-                <span class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
-                  Enbart kurerade appar
-                </span>
-                <span class="block text-xs text-navy/60">
-                  Visar enbart kurerade appar.
-                </span>
-              </span>
-            </label>
-
-            <label class="flex items-start gap-3 text-sm text-navy cursor-pointer">
-              <input
-                type="checkbox"
-                class="mt-0.5 h-4 w-4 accent-burgundy"
-                :checked="favoritesOnly"
-                @change="setFavoritesOnly(($event.target as HTMLInputElement).checked)"
-              >
-              <span class="space-y-1">
-                <span class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
-                  Enbart favoriter
-                </span>
-                <span class="block text-xs text-navy/60">
-                  Visar bara bokmärkta verktyg och appar.
-                </span>
-              </span>
-            </label>
-          </div>
-        </div>
+      <div class="w-full max-w-md space-y-1">
+        <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+          Sök
+        </label>
+        <input
+          v-model="searchInput"
+          type="text"
+          placeholder="Sök verktyg..."
+          class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+        >
       </div>
     </header>
 
     <div class="grid gap-6 lg:grid-cols-[260px_1fr]">
-      <aside class="space-y-6">
-        <section class="space-y-3">
-          <h3 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-            Yrkesgrupper
-          </h3>
-          <div class="p-4 border border-navy bg-white shadow-brutal-sm">
+      <aside class="space-y-4">
+        <h3 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+          Filter
+        </h3>
+        <div class="border border-navy bg-white shadow-brutal-sm divide-y divide-navy/20">
+          <!-- Snabbfilter -->
+          <div class="p-4 space-y-3">
+            <label class="flex items-center gap-3 text-sm text-navy cursor-pointer">
+              <input
+                type="checkbox"
+                class="h-4 w-4 accent-burgundy"
+                :checked="curatedOnly"
+                @change="setCuratedOnly(($event.target as HTMLInputElement).checked)"
+              >
+              <span>Enbart kurerade appar</span>
+            </label>
+
+            <label class="flex items-center gap-3 text-sm text-navy cursor-pointer">
+              <input
+                type="checkbox"
+                class="h-4 w-4 accent-burgundy"
+                :checked="favoritesOnly"
+                @change="setFavoritesOnly(($event.target as HTMLInputElement).checked)"
+              >
+              <span>Enbart favoriter</span>
+            </label>
+          </div>
+
+          <!-- Yrkesgrupper -->
+          <div class="p-4 space-y-3">
+            <h4 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+              Yrkesgrupper
+            </h4>
             <div
               v-if="professions.length === 0 && isLoading"
               class="flex items-center gap-2 text-sm text-navy/60"
@@ -155,13 +143,12 @@ async function handleFavoriteToggled(payload: { id: string; isFavorite: boolean 
               </label>
             </div>
           </div>
-        </section>
 
-        <section class="space-y-3">
-          <h3 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-            Kategorier
-          </h3>
-          <div class="p-4 border border-navy bg-white shadow-brutal-sm">
+          <!-- Kategorier -->
+          <div class="p-4 space-y-3">
+            <h4 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+              Kategorier
+            </h4>
             <div
               v-if="categories.length === 0 && isLoading"
               class="flex items-center gap-2 text-sm text-navy/60"
@@ -191,15 +178,18 @@ async function handleFavoriteToggled(payload: { id: string; isFavorite: boolean 
               </label>
             </div>
           </div>
-        </section>
 
-        <button
-          type="button"
-          class="btn-ghost w-full"
-          @click="clearFilters"
-        >
-          Rensa filter
-        </button>
+          <!-- Rensa -->
+          <div class="p-4">
+            <button
+              type="button"
+              class="btn-ghost w-full"
+              @click="clearFilters"
+            >
+              Rensa filter
+            </button>
+          </div>
+        </div>
       </aside>
 
       <section class="space-y-4">
@@ -232,15 +222,19 @@ async function handleFavoriteToggled(payload: { id: string; isFavorite: boolean 
           <div class="text-xs uppercase tracking-wide text-navy/60">
             Visar {{ items.length }} objekt
           </div>
-          <div class="space-y-4">
-            <CatalogItemCard
+          <ul class="border border-navy bg-white shadow-brutal-sm divide-y divide-navy/20">
+            <li
               v-for="item in items"
               :key="`${item.kind}-${item.id}`"
-              :item="item"
-              :is-toggling="isToggling(item.id)"
-              @favorite-toggled="handleFavoriteToggled"
-            />
-          </div>
+            >
+              <CatalogItemCard
+                :item="item"
+                :is-toggling="isToggling(item.id)"
+                variant="list"
+                @favorite-toggled="handleFavoriteToggled"
+              />
+            </li>
+          </ul>
         </div>
       </section>
     </div>

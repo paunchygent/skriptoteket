@@ -209,6 +209,18 @@ body::before {
   .system-message-error {
     @apply border-error bg-error/10 text-error;
   }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     STATUS PILL - Consistent badge styling across the app
+     ════════════════════════════════════════════════════════════════════════ */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: var(--huleedu-text-xs);
+    font-weight: var(--huleedu-font-medium);
+  }
 }
 
 @media (hover: hover) and (pointer: fine) {

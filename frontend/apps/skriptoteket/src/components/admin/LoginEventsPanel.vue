@@ -155,15 +155,6 @@ function statusClass(event: LoginEvent): string {
   color: var(--huleedu-navy-60);
 }
 
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: var(--huleedu-text-xs);
-  font-weight: var(--huleedu-font-medium);
-}
-
 .truncate {
   max-width: 280px;
   white-space: nowrap;

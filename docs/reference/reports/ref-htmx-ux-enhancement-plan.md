@@ -134,7 +134,7 @@ Imports tokens and adds Skriptoteket-specific extensions:
 :root {
   --huleedu-canvas: #F9F8F2;      /* Warm off-white background */
   --huleedu-navy: #1C2E4A;        /* Primary text, borders, functional buttons */
-  --huleedu-burgundy: #6B1C2E;    /* CTA accent, error toasts */
+  --huleedu-burgundy: #4D1521;    /* CTA accent, error toasts */
   --huleedu-font-sans: "IBM Plex Sans", system-ui, sans-serif;
   --huleedu-shadow-brutal: 6px 6px 0px 0px var(--huleedu-navy);
 }

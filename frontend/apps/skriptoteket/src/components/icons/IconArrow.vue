@@ -11,10 +11,6 @@ defineProps<{
     :height="size ?? 24"
     viewBox="0 0 24 24"
     fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="square"
-    stroke-linejoin="miter"
     aria-hidden="true"
     :class="{
       'rotate-180': direction === 'left',
@@ -22,9 +18,14 @@ defineProps<{
       '-rotate-90': direction === 'up',
     }"
   >
-    <!-- Double arrow inspired by HuleEdu design -->
-    <path d="M4 12H18" />
-    <path d="M12 5L19 12L12 19" />
-    <path d="M8 8L12 12L8 16" />
+    <g
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M2 12H18" />
+      <path d="M11 5L18 12L11 19" />
+    </g>
   </svg>
 </template>

@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from "vue";
 
 import { apiGet, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
+import { IconArrow } from "../components/icons";
 
 type ListMyRunsResponse = components["schemas"]["ListMyRunsResponse"];
 type MyRunItem = components["schemas"]["MyRunItem"];
@@ -20,6 +21,20 @@ function statusLabel(status: RunStatus): string {
     timed_out: "Tidsgräns",
   };
   return labels[status];
+}
+
+function statusClass(status: RunStatus): string {
+  switch (status) {
+    case "succeeded":
+      return "bg-canvas text-navy/70 border border-navy/30";
+    case "failed":
+    case "timed_out":
+      return "bg-error/10 text-error border border-error/30";
+    case "running":
+      return "bg-burgundy/10 text-burgundy border border-burgundy/40";
+    default:
+      return "bg-canvas text-navy/70 border border-navy/30";
+  }
 }
 
 function formatDateTime(value: string): string {
@@ -92,32 +107,89 @@ onMounted(() => {
       <li
         v-for="run in runs"
         :key="run.run_id"
-        class="p-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3"
       >
-        <div class="min-w-0 space-y-1">
-          <div class="font-semibold text-navy break-words">
-            {{ run.tool_title }}
+        <RouterLink
+          :to="{ name: 'my-runs-detail', params: { runId: run.run_id } }"
+          class="run-row"
+        >
+          <div class="min-w-0 space-y-1">
+            <div class="font-semibold text-navy break-words">
+              {{ run.tool_title }}
+            </div>
+            <div class="text-xs text-navy/60">
+              <span class="font-mono">{{ run.run_id }}</span>
+            </div>
+            <div class="text-sm text-navy/70">
+              Startade: {{ formatDateTime(run.started_at) }}
+            </div>
           </div>
-          <div class="text-xs text-navy/60">
-            <span class="font-mono">{{ run.run_id }}</span>
-          </div>
-          <div class="text-sm text-navy/70">
-            Startade: {{ formatDateTime(run.started_at) }}
-          </div>
-        </div>
 
-        <div class="shrink-0 flex flex-col sm:items-end gap-2">
-          <span class="px-2 py-1 border border-navy bg-canvas shadow-brutal-sm text-xs font-semibold uppercase tracking-wide text-navy/70">
-            {{ statusLabel(run.status) }}
-          </span>
-          <RouterLink
-            :to="{ name: 'my-runs-detail', params: { runId: run.run_id } }"
-            class="text-sm underline text-burgundy hover:text-navy"
-          >
-            Öppna →
-          </RouterLink>
-        </div>
+          <div class="shrink-0 flex flex-col sm:items-end gap-2">
+            <span
+              class="status-pill"
+              :class="statusClass(run.status)"
+            >
+              {{ statusLabel(run.status) }}
+            </span>
+            <span class="run-link">
+              Öppna
+              <IconArrow
+                :size="14"
+                class="run-arrow"
+              />
+            </span>
+          </div>
+        </RouterLink>
       </li>
     </ul>
   </div>
 </template>
+
+<style scoped>
+.run-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  text-decoration: none;
+  transition: background-color var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+@media (min-width: 640px) {
+  .run-row {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.run-row:hover {
+  background-color: var(--huleedu-navy-02);
+}
+
+.run-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: var(--huleedu-text-sm);
+  color: var(--huleedu-navy);
+  transition: color var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.run-row:hover .run-link {
+  color: var(--huleedu-burgundy);
+}
+
+.run-arrow {
+  color: var(--huleedu-navy);
+  flex-shrink: 0;
+  transition: transform var(--huleedu-duration-default) var(--huleedu-ease-default),
+              color var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.run-row:hover .run-arrow {
+  transform: translateX(2px);
+  color: var(--huleedu-burgundy);
+}
+
+</style>

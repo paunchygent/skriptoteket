@@ -25,12 +25,12 @@ function statusLabel(status: SuggestionStatus): string {
 
 function statusClass(status: SuggestionStatus): string {
   if (status === "pending_review") {
-    return "inline-block px-2 py-1 text-xs font-medium bg-burgundy/10 text-burgundy border border-burgundy/40";
+    return "bg-burgundy/10 text-burgundy border border-burgundy/40";
   }
   if (status === "accepted") {
-    return "inline-block px-2 py-1 text-xs font-medium text-success";
+    return "bg-success/10 text-success border border-success/30";
   }
-  return "inline-block px-2 py-1 text-xs font-medium text-navy/50";
+  return "bg-navy/10 text-navy/60 border border-navy/30";
 }
 
 function actionClass(status: SuggestionStatus): string {
@@ -126,7 +126,10 @@ onMounted(() => {
         </template>
 
         <template #status>
-          <span :class="statusClass(suggestion.status)">
+          <span
+            class="status-pill"
+            :class="statusClass(suggestion.status)"
+          >
             {{ statusLabel(suggestion.status) }}
           </span>
         </template>

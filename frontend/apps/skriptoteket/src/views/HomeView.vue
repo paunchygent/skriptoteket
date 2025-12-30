@@ -6,6 +6,7 @@ import type { components } from "../api/openapi";
 import FavoritesSection from "../components/home/FavoritesSection.vue";
 import RecentToolsSection from "../components/home/RecentToolsSection.vue";
 import SectionHeader from "../components/home/SectionHeader.vue";
+import { IconArrow } from "../components/icons";
 import { useFavorites } from "../composables/useFavorites";
 import { useLoginModal } from "../composables/useLoginModal";
 import { useAuthStore } from "../stores/auth";
@@ -288,7 +289,10 @@ onMounted(async () => {
             >
               <div class="card-header">
                 <span class="card-label">Senaste körningar</span>
-                <span class="card-arrow">&rarr;</span>
+                <IconArrow
+                  :size="18"
+                  class="card-arrow"
+                />
               </div>
               <div class="card-stats">
                 <span
@@ -313,7 +317,10 @@ onMounted(async () => {
             >
               <div class="card-header">
                 <span class="card-label">Hitta verktyg</span>
-                <span class="card-arrow">&rarr;</span>
+                <IconArrow
+                  :size="18"
+                  class="card-arrow"
+                />
               </div>
               <p class="card-description mt-4">
                 Bläddra i katalogen och kör det du behöver.
@@ -338,7 +345,10 @@ onMounted(async () => {
             >
               <div class="card-header">
                 <span class="card-label">Mina verktyg</span>
-                <span class="card-arrow">&rarr;</span>
+                <IconArrow
+                  :size="18"
+                  class="card-arrow"
+                />
               </div>
               <div class="card-stats">
                 <span
@@ -370,7 +380,10 @@ onMounted(async () => {
             >
               <div class="card-header">
                 <span class="card-label">Föreslå verktyg</span>
-                <span class="card-arrow">&rarr;</span>
+                <IconArrow
+                  :size="18"
+                  class="card-arrow"
+                />
               </div>
               <p class="card-description mt-4">
                 Har du en idé? Skicka in ett förslag.
@@ -396,7 +409,10 @@ onMounted(async () => {
             >
               <div class="card-header">
                 <span class="card-label">Att granska</span>
-                <span class="card-arrow">&rarr;</span>
+                <IconArrow
+                  :size="18"
+                  class="card-arrow"
+                />
               </div>
               <div class="card-stats">
                 <span
@@ -425,7 +441,10 @@ onMounted(async () => {
             >
               <div class="card-header">
                 <span class="card-label">Alla verktyg</span>
-                <span class="card-arrow">&rarr;</span>
+                <IconArrow
+                  :size="18"
+                  class="card-arrow"
+                />
               </div>
               <div class="card-stats">
                 <span
@@ -491,7 +510,13 @@ onMounted(async () => {
 }
 
 .card-arrow {
-  font-size: 1.125rem;
+  color: var(--color-navy);
+  flex-shrink: 0;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.dashboard-card:hover .card-arrow {
+  transform: translateX(4px);
   color: var(--color-burgundy);
 }
 

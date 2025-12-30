@@ -334,7 +334,7 @@ onMounted(() => {
             <template #status>
               <span
                 v-if="getDevStatus(tool)"
-                class="inline-block px-2 py-1 text-xs font-medium whitespace-nowrap"
+                class="status-pill"
                 :class="getDevStatusClass(tool)"
               >
                 {{ getDevStatus(tool) }}
@@ -376,7 +376,7 @@ onMounted(() => {
                   {{ tool.title }}
                 </div>
                 <span
-                  class="inline-block px-2 py-1 text-xs font-medium bg-burgundy/10 text-burgundy border border-burgundy/40 whitespace-nowrap self-start sm:self-auto shrink-0"
+                  class="status-pill bg-burgundy/10 text-burgundy border border-burgundy/40 self-start sm:self-auto shrink-0"
                 >
                   Ny version granskas
                 </span>

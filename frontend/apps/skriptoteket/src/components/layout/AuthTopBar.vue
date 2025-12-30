@@ -18,20 +18,13 @@ function onLogout(): void {
 <template>
   <header class="top-user-bar">
     <div class="top-user-bar-left">
-      <!-- Future: breadcrumb or page title -->
-    </div>
-    <div class="top-user-bar-right">
-      <HelpButton />
-      <RouterLink
-        to="/profile"
-        class="top-link"
-      >
-        Profil
-      </RouterLink>
       <span class="user-info">
         {{ user?.email }}
         <span class="user-role">({{ user?.role }})</span>
       </span>
+    </div>
+    <div class="top-user-bar-right">
+      <HelpButton />
       <span class="user-separator">|</span>
       <button
         type="button"
@@ -54,6 +47,9 @@ function onLogout(): void {
   border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy);
   background-color: var(--huleedu-canvas);
   color: var(--huleedu-navy);
+  position: sticky;
+  top: 0;
+  z-index: 30;
 }
 
 @media (min-width: 768px) {
@@ -70,20 +66,6 @@ function onLogout(): void {
   display: flex;
   align-items: center;
   gap: var(--huleedu-space-3);
-}
-
-.top-link {
-  font-size: var(--huleedu-text-xs);
-  font-weight: var(--huleedu-font-semibold);
-  text-transform: uppercase;
-  letter-spacing: var(--huleedu-tracking-label);
-  color: var(--huleedu-navy);
-  text-decoration: none;
-  transition: color var(--huleedu-duration-default) var(--huleedu-ease-default);
-}
-
-.top-link:hover {
-  color: var(--huleedu-burgundy);
 }
 
 .user-info {

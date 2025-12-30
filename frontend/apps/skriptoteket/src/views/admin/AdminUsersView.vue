@@ -210,12 +210,4 @@ onMounted(() => {
   background-color: var(--huleedu-navy-02);
 }
 
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: var(--huleedu-text-xs);
-  font-weight: var(--huleedu-font-medium);
-}
 </style>

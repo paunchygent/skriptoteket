@@ -66,7 +66,7 @@ font-family: var(--huleedu-font-mono);  /* code/ids */
 /* Use HuleEdu tokens for all color decisions (no hardcoded hex). */
 --huleedu-navy: #1C2E4A;      /* ink */
 --huleedu-canvas: #F9F8F2;    /* paper */
---huleedu-burgundy: #6B1C2E;  /* accent / CTA / attention */
+--huleedu-burgundy: #4D1521;  /* accent / CTA / attention */
 --huleedu-warning: #D97706;
 --huleedu-error: #DC2626;
 ```

@@ -99,7 +99,7 @@ From `src/skriptoteket/web/static/css/huleedu-design-tokens.css`:
 /* Core Colors */
 --huleedu-canvas: #F9F8F2;
 --huleedu-navy: #1C2E4A;
---huleedu-burgundy: #6B1C2E;
+--huleedu-burgundy: #4D1521;
 --huleedu-success: #059669;
 --huleedu-warning: #D97706;
 --huleedu-error: #DC2626;
