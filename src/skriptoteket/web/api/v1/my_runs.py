@@ -1,6 +1,7 @@
 """My runs API endpoints for SPA views (ST-11-08)."""
 
 from datetime import datetime
+from pathlib import PurePosixPath
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
@@ -8,7 +9,8 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict
 
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.scripting.models import RunContext, RunStatus
+from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
+from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolRun
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
@@ -16,6 +18,51 @@ from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.web.auth.api_dependencies import require_user_api
 
 router = APIRouter(prefix="/api/v1/my-runs", tags=["my-runs"])
+
+
+class InputFileSummary(BaseModel):
+    """Input file info for my-runs list."""
+
+    model_config = ConfigDict(frozen=True)
+
+    filename: str
+    bytes: int
+
+
+class OutputFileSummary(BaseModel):
+    """Output artifact info for my-runs list."""
+
+    model_config = ConfigDict(frozen=True)
+
+    artifact_id: str
+    filename: str
+    download_url: str
+
+
+def _extract_filename(path: str) -> str:
+    """Extract filename from artifact path."""
+    return PurePosixPath(path).name
+
+
+def _build_file_summaries(run: ToolRun) -> tuple[list[InputFileSummary], list[OutputFileSummary]]:
+    """Build input/output file summaries for a run."""
+    input_files = [
+        InputFileSummary(filename=f.name, bytes=f.bytes) for f in run.input_manifest.files
+    ]
+
+    output_files: list[OutputFileSummary] = []
+    if run.artifacts_manifest:
+        manifest = ArtifactsManifest.model_validate(run.artifacts_manifest)
+        output_files = [
+            OutputFileSummary(
+                artifact_id=a.artifact_id,
+                filename=_extract_filename(a.path),
+                download_url=f"/api/v1/runs/{run.id}/artifacts/{a.artifact_id}",
+            )
+            for a in manifest.artifacts
+        ]
+
+    return input_files, output_files
 
 
 class MyRunItem(BaseModel):
@@ -28,6 +75,8 @@ class MyRunItem(BaseModel):
     status: RunStatus
     started_at: datetime
     finished_at: datetime | None
+    input_files: list[InputFileSummary]
+    output_files: list[OutputFileSummary]
 
 
 class ListMyRunsResponse(BaseModel):
@@ -72,6 +121,7 @@ async def list_my_runs(
                     tool_slug = tool.slug
                     tool_title = tool.title
 
+            input_files, output_files = _build_file_summaries(run)
             items.append(
                 MyRunItem(
                     run_id=run.id,
@@ -81,6 +131,8 @@ async def list_my_runs(
                     status=run.status,
                     started_at=run.started_at,
                     finished_at=run.finished_at,
+                    input_files=input_files,
+                    output_files=output_files,
                 )
             )
 
