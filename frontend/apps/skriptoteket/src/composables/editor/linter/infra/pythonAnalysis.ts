@@ -275,6 +275,8 @@ export function findPythonCallExpressions(state: EditorState, range: { from: num
     if (!cursor.firstChild()) return null;
 
     let callee: PythonCallCallee | null = null;
+    let argListFrom: number | null = null;
+    let argListTo: number | null = null;
     let positionalArgs: PythonNodeRange[] = [];
     let keywordArgs: PythonKeywordArgument[] = [];
 
@@ -296,6 +298,8 @@ export function findPythonCallExpressions(state: EditorState, range: { from: num
       }
 
       if (cursor.name === "ArgList") {
+        argListFrom = cursor.from;
+        argListTo = cursor.to;
         const parsed = parseArgList();
         positionalArgs = parsed.positionalArgs;
         keywordArgs = parsed.keywordArgs;
@@ -305,7 +309,7 @@ export function findPythonCallExpressions(state: EditorState, range: { from: num
     cursor.parent();
 
     if (!callee) return null;
-    return { from: callFrom, to: callTo, callee, positionalArgs, keywordArgs };
+    return { from: callFrom, to: callTo, callee, argListFrom, argListTo, positionalArgs, keywordArgs };
   }
 
   function walk(): void {

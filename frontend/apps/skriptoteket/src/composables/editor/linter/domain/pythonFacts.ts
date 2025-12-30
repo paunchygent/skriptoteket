@@ -77,6 +77,8 @@ export type PythonCallExpression = {
   from: number;
   to: number;
   callee: PythonCallCallee;
+  argListFrom: number | null;
+  argListTo: number | null;
   positionalArgs: PythonNodeRange[];
   keywordArgs: PythonKeywordArgument[];
 };

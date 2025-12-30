@@ -1,8 +1,10 @@
 import type { DomainDiagnostic } from "../diagnostics";
+import type { FixIntent } from "../fixIntents";
 import type { LintRule } from "../lintRule";
 import type { LinterContext } from "../linterContext";
 import type { PythonCallExpression, PythonKeywordArgument, PythonNodeRange } from "../pythonFacts";
 import { parsePythonStringLiteralValue } from "../utils/pythonStringLiterals";
+import { findImportInsertPosition } from "../utils/pythonImports";
 
 const ST_BESTPRACTICE_TOOLUSERERROR_IMPORT = "ST_BESTPRACTICE_TOOLUSERERROR_IMPORT";
 const ST_BESTPRACTICE_ENCODING = "ST_BESTPRACTICE_ENCODING";
@@ -14,6 +16,9 @@ const MSG_TOOLUSERERROR_IMPORT =
 const MSG_ENCODING = "Ange `encoding=\"utf-8\"` vid textläsning/skrivning.";
 const MSG_WEASYPRINT_DIRECT = "Använd `pdf_helper.save_as_pdf` istället för `weasyprint.HTML` direkt.";
 const MSG_MKDIR = "Skapa gärna kataloger innan du skriver filer (särskilt undermappar).";
+
+const FIX_ADD_IMPORT = "Lägg till import";
+const FIX_ADD_ENCODING = "Lägg till encoding";
 
 function findKeyword(call: PythonCallExpression, keyword: string): PythonKeywordArgument | null {
   return call.keywordArgs.find((arg) => arg.name === keyword) ?? null;
@@ -47,6 +52,38 @@ function openModeIsWriting(mode: string): boolean {
   return /[wax+]/.test(mode);
 }
 
+function addEncodingFix(ctxText: string, call: PythonCallExpression): FixIntent | null {
+  if (call.argListFrom === null || call.argListTo === null) return null;
+
+  const openParenPos = call.argListFrom;
+  const closeParenPos = call.argListTo - 1;
+
+  const positionalEnds = call.positionalArgs.map((arg) => arg.to);
+  const keywordEnds = call.keywordArgs.map((arg) => arg.value?.to ?? arg.nameTo);
+  const lastArgEnd = Math.max(...positionalEnds, ...keywordEnds, openParenPos);
+  const hasArgs = lastArgEnd !== openParenPos;
+
+  let insertAt = openParenPos + 1;
+  let prefix = "";
+
+  if (hasArgs) {
+    let scan = lastArgEnd;
+    while (scan < closeParenPos && /\s/.test(ctxText[scan] ?? "")) scan += 1;
+
+    if ((ctxText[scan] ?? "") === ",") {
+      insertAt = scan + 1;
+      prefix = " ";
+    } else {
+      insertAt = lastArgEnd;
+      prefix = ", ";
+    }
+  }
+
+  const text = `${prefix}encoding="utf-8"`;
+
+  return { kind: "insertText", label: FIX_ADD_ENCODING, at: insertAt, text };
+}
+
 export const BestPracticesRule: LintRule = {
   id: "ST_BEST_PRACTICES",
   check(ctx: LinterContext): DomainDiagnostic[] {
@@ -58,6 +95,16 @@ export const BestPracticesRule: LintRule = {
     const imports = ctx.facts.imports;
     const calls = ctx.facts.calls;
     const callsByRange = new Map(calls.map((call) => [`${call.from}:${call.to}`, call]));
+
+    const toolUserErrorImportAt = findImportInsertPosition(ctx.text);
+    const toolUserErrorImportPrefix =
+      toolUserErrorImportAt > 0 && ctx.text[toolUserErrorImportAt - 1] !== "\n" ? "\n" : "";
+    const toolUserErrorFromImportFix: FixIntent = {
+      kind: "insertText",
+      label: FIX_ADD_IMPORT,
+      at: toolUserErrorImportAt,
+      text: `${toolUserErrorImportPrefix}from tool_errors import ToolUserError\n`,
+    };
 
     const toolErrorsModuleNames = new Set(
       [...imports.moduleBindings.entries()]
@@ -85,6 +132,7 @@ export const BestPracticesRule: LintRule = {
             severity: "error",
             source: ST_BESTPRACTICE_TOOLUSERERROR_IMPORT,
             message: MSG_TOOLUSERERROR_IMPORT,
+            fixes: [toolUserErrorFromImportFix],
           });
         }
         continue;
@@ -92,12 +140,22 @@ export const BestPracticesRule: LintRule = {
 
       if (call.callee.kind === "member" && call.callee.propertyName === "ToolUserError") {
         if (!toolErrorsModuleNames.has(call.callee.objectName)) {
+          const toolUserErrorModuleImport = call.callee.objectName === "tool_errors"
+            ? "import tool_errors\n"
+            : `import tool_errors as ${call.callee.objectName}\n`;
+          const toolUserErrorModuleFix: FixIntent = {
+            kind: "insertText",
+            label: FIX_ADD_IMPORT,
+            at: toolUserErrorImportAt,
+            text: `${toolUserErrorImportPrefix}${toolUserErrorModuleImport}`,
+          };
           diagnostics.push({
             from: call.callee.propertyFrom,
             to: call.callee.propertyTo,
             severity: "error",
             source: ST_BESTPRACTICE_TOOLUSERERROR_IMPORT,
             message: MSG_TOOLUSERERROR_IMPORT,
+            fixes: [toolUserErrorModuleFix],
           });
         }
       }
@@ -107,12 +165,14 @@ export const BestPracticesRule: LintRule = {
       if (call.callee.kind === "variable" && call.callee.name === "open") {
         if (shouldSkipEncodingForOpenCall(ctx.text, call)) continue;
         if (hasEncodingKeyword(call)) continue;
+        const fix = addEncodingFix(ctx.text, call);
         diagnostics.push({
           from: call.callee.nameFrom,
           to: call.callee.nameTo,
           severity: "info",
           source: ST_BESTPRACTICE_ENCODING,
           message: MSG_ENCODING,
+          fixes: fix ? [fix] : undefined,
         });
         continue;
       }
@@ -124,12 +184,14 @@ export const BestPracticesRule: LintRule = {
         const encodingPositional = parseStringLiteral(ctx.text, call.positionalArgs[0] ?? null);
         if (encodingPositional) continue;
 
+        const fix = addEncodingFix(ctx.text, call);
         diagnostics.push({
           from: call.callee.propertyFrom,
           to: call.callee.propertyTo,
           severity: "info",
           source: ST_BESTPRACTICE_ENCODING,
           message: MSG_ENCODING,
+          fixes: fix ? [fix] : undefined,
         });
         continue;
       }
@@ -139,12 +201,14 @@ export const BestPracticesRule: LintRule = {
         const encodingPositional = parseStringLiteral(ctx.text, call.positionalArgs[1] ?? null);
         if (encodingPositional) continue;
 
+        const fix = addEncodingFix(ctx.text, call);
         diagnostics.push({
           from: call.callee.propertyFrom,
           to: call.callee.propertyTo,
           severity: "info",
           source: ST_BESTPRACTICE_ENCODING,
           message: MSG_ENCODING,
+          fixes: fix ? [fix] : undefined,
         });
       }
     }

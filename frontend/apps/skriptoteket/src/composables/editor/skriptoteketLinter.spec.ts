@@ -6,6 +6,22 @@ import { forceLinting, forEachDiagnostic, type Diagnostic } from "@codemirror/li
 
 import { skriptoteketLinter } from "./skriptoteketLinter";
 
+async function flushMicrotasks(): Promise<void> {
+  await new Promise<void>((resolve) => queueMicrotask(() => resolve()));
+}
+
+async function collectDiagnostics(view: EditorView): Promise<Diagnostic[]> {
+  forceLinting(view);
+  await flushMicrotasks();
+  await flushMicrotasks();
+
+  const diagnostics: Diagnostic[] = [];
+  forEachDiagnostic(view.state, (diagnostic) => {
+    diagnostics.push(diagnostic);
+  });
+  return diagnostics;
+}
+
 async function runLinter(doc: string, entrypointName = "run_tool"): Promise<Diagnostic[]> {
   const parent = document.createElement("div");
   document.body.appendChild(parent);
@@ -19,15 +35,7 @@ async function runLinter(doc: string, entrypointName = "run_tool"): Promise<Diag
   });
 
   try {
-    forceLinting(view);
-    await new Promise<void>((resolve) => queueMicrotask(() => resolve()));
-    await new Promise<void>((resolve) => queueMicrotask(() => resolve()));
-
-    const diagnostics: Diagnostic[] = [];
-    forEachDiagnostic(view.state, (diagnostic) => {
-      diagnostics.push(diagnostic);
-    });
-    return diagnostics;
+    return await collectDiagnostics(view);
   } finally {
     view.destroy();
     parent.remove();
@@ -110,5 +118,162 @@ def run_tool(input_dir, output_dir)
 
     expect(diagnostics.length).toBeGreaterThan(0);
     expect(diagnostics.every((diagnostic) => diagnostic.source === "ST_SYNTAX_ERROR")).toBe(true);
+  });
+
+  it("supports quick fix: add ToolUserError import", async () => {
+    const parent = document.createElement("div");
+    document.body.appendChild(parent);
+
+    const view = new EditorView({
+      state: EditorState.create({
+        doc: `
+def run_tool(input_dir, output_dir):
+    raise ToolUserError("nope")
+`,
+        extensions: [python(), skriptoteketLinter({ entrypointName: "run_tool" })],
+      }),
+      parent,
+    });
+
+    try {
+      const diagnostics = await collectDiagnostics(view);
+      const diagnostic = diagnostics.find((entry) => entry.source === "ST_BESTPRACTICE_TOOLUSERERROR_IMPORT");
+      expect(diagnostic?.actions?.some((action) => action.name === "Lägg till import")).toBe(true);
+
+      const action = diagnostic?.actions?.find((entry) => entry.name === "Lägg till import");
+      expect(action).toBeTruthy();
+
+      action?.apply(view, diagnostic?.from ?? 0, diagnostic?.to ?? 0);
+      const afterFirst = view.state.doc.toString();
+      expect(afterFirst).toContain("from tool_errors import ToolUserError");
+
+      action?.apply(view, diagnostic?.from ?? 0, diagnostic?.to ?? 0);
+      expect(view.state.doc.toString()).toBe(afterFirst);
+
+      const afterDiagnostics = await collectDiagnostics(view);
+      expect(afterDiagnostics.some((entry) => entry.source === "ST_BESTPRACTICE_TOOLUSERERROR_IMPORT")).toBe(false);
+    } finally {
+      view.destroy();
+      parent.remove();
+    }
+  });
+
+  it("supports quick fix: add encoding", async () => {
+    const parent = document.createElement("div");
+    document.body.appendChild(parent);
+
+    const view = new EditorView({
+      state: EditorState.create({
+        doc: `
+from pathlib import Path
+
+def run_tool(input_dir, output_dir):
+    Path("x.txt").read_text()
+    return {"outputs": [], "next_actions": [], "state": {}}
+`,
+        extensions: [python(), skriptoteketLinter({ entrypointName: "run_tool" })],
+      }),
+      parent,
+    });
+
+    try {
+      const diagnostics = await collectDiagnostics(view);
+      const diagnostic = diagnostics.find((entry) => entry.source === "ST_BESTPRACTICE_ENCODING");
+      expect(diagnostic?.actions?.some((action) => action.name === "Lägg till encoding")).toBe(true);
+
+      const action = diagnostic?.actions?.find((entry) => entry.name === "Lägg till encoding");
+      expect(action).toBeTruthy();
+
+      action?.apply(view, diagnostic?.from ?? 0, diagnostic?.to ?? 0);
+      const afterFirst = view.state.doc.toString();
+      expect(afterFirst).toContain('read_text(encoding="utf-8")');
+
+      action?.apply(view, diagnostic?.from ?? 0, diagnostic?.to ?? 0);
+      expect(view.state.doc.toString()).toBe(afterFirst);
+
+      const afterDiagnostics = await collectDiagnostics(view);
+      expect(afterDiagnostics.some((entry) => entry.source === "ST_BESTPRACTICE_ENCODING")).toBe(false);
+    } finally {
+      view.destroy();
+      parent.remove();
+    }
+  });
+
+  it("supports quick fix: create entrypoint stub", async () => {
+    const parent = document.createElement("div");
+    document.body.appendChild(parent);
+
+    const view = new EditorView({
+      state: EditorState.create({
+        doc: `
+def other(input_dir, output_dir):
+    return {}
+`,
+        extensions: [python(), skriptoteketLinter({ entrypointName: "run_tool" })],
+      }),
+      parent,
+    });
+
+    try {
+      const diagnostics = await collectDiagnostics(view);
+      const diagnostic = diagnostics.find((entry) => entry.source === "ST_ENTRYPOINT_MISSING");
+      expect(diagnostic?.actions?.some((action) => action.name === "Skapa startfunktion")).toBe(true);
+
+      const action = diagnostic?.actions?.find((entry) => entry.name === "Skapa startfunktion");
+      expect(action).toBeTruthy();
+
+      action?.apply(view, diagnostic?.from ?? 0, diagnostic?.to ?? 0);
+      const afterFirst = view.state.doc.toString();
+      expect(afterFirst).toContain("def run_tool(input_dir, output_dir):");
+      expect(afterFirst).toContain('"next_actions": []');
+
+      action?.apply(view, diagnostic?.from ?? 0, diagnostic?.to ?? 0);
+      expect(view.state.doc.toString()).toBe(afterFirst);
+
+      const afterDiagnostics = await collectDiagnostics(view);
+      expect(afterDiagnostics.some((entry) => entry.source === "ST_ENTRYPOINT_MISSING")).toBe(false);
+    } finally {
+      view.destroy();
+      parent.remove();
+    }
+  });
+
+  it("supports quick fix: add missing contract keys", async () => {
+    const parent = document.createElement("div");
+    document.body.appendChild(parent);
+
+    const view = new EditorView({
+      state: EditorState.create({
+        doc: `
+def run_tool(input_dir, output_dir):
+    return {"outputs": []}
+`,
+        extensions: [python(), skriptoteketLinter({ entrypointName: "run_tool" })],
+      }),
+      parent,
+    });
+
+    try {
+      const diagnostics = await collectDiagnostics(view);
+      const diagnostic = diagnostics.find((entry) => entry.source === "ST_CONTRACT_KEYS_MISSING");
+      expect(diagnostic?.actions?.some((action) => action.name === "Lägg till nycklar")).toBe(true);
+
+      const action = diagnostic?.actions?.find((entry) => entry.name === "Lägg till nycklar");
+      expect(action).toBeTruthy();
+
+      action?.apply(view, diagnostic?.from ?? 0, diagnostic?.to ?? 0);
+      const afterFirst = view.state.doc.toString();
+      expect(afterFirst).toContain('"next_actions": []');
+      expect(afterFirst).toContain('"state": {}');
+
+      action?.apply(view, diagnostic?.from ?? 0, diagnostic?.to ?? 0);
+      expect(view.state.doc.toString()).toBe(afterFirst);
+
+      const afterDiagnostics = await collectDiagnostics(view);
+      expect(afterDiagnostics.some((entry) => entry.source === "ST_CONTRACT_KEYS_MISSING")).toBe(false);
+    } finally {
+      view.destroy();
+      parent.remove();
+    }
   });
 });

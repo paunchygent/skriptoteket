@@ -1,7 +1,10 @@
 import type { DomainDiagnostic } from "../diagnostics";
+import type { FixIntent } from "../fixIntents";
 import type { LintRule } from "../lintRule";
 
 const ST_ENTRYPOINT_MISSING = "ST_ENTRYPOINT_MISSING";
+
+const FIX_CREATE_ENTRYPOINT = "Skapa startfunktion";
 
 export function createEntrypointRule(entrypointName: string): LintRule {
   const resolvedEntrypointName = entrypointName.trim() || "run_tool";
@@ -11,6 +14,17 @@ export function createEntrypointRule(entrypointName: string): LintRule {
 
     if (!match) {
       const expectedSignature = `def ${resolvedEntrypointName}(input_dir, output_dir)`;
+      const stub = `def ${resolvedEntrypointName}(input_dir, output_dir):\n    return {"outputs": [], "next_actions": [], "state": {}}\n`;
+      const prefix =
+        ctx.text.trim().length === 0 ? "" : ctx.text.endsWith("\n\n") ? "" : ctx.text.endsWith("\n") ? "\n" : "\n\n";
+
+      const fix: FixIntent = {
+        kind: "insertText",
+        label: FIX_CREATE_ENTRYPOINT,
+        at: ctx.text.length,
+        text: `${prefix}${stub}`,
+      };
+
       return [
         {
           from: 0,
@@ -18,6 +32,7 @@ export function createEntrypointRule(entrypointName: string): LintRule {
           severity: "warning",
           source: ST_ENTRYPOINT_MISSING,
           message: `Saknar startfunktion: \`${expectedSignature}\``,
+          fixes: [fix],
         },
       ];
     }

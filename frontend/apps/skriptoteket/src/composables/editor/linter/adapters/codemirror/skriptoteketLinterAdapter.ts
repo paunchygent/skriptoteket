@@ -27,17 +27,21 @@ function toCodeMirrorDiagnostic(domainDiagnostic: DomainDiagnostic): Diagnostic 
     name: fix.label,
     apply(view) {
       const docLength = view.state.doc.length;
+      const doc = view.state.doc;
 
       if (fix.kind === "replaceRange") {
         const from = clampPos(fix.from, docLength);
         const to = clampPos(fix.to, docLength);
+        if (doc.sliceString(from, to) === fix.insert) return;
         view.dispatch({ changes: { from, to, insert: fix.insert } });
       } else if (fix.kind === "insertText") {
         const at = clampPos(fix.at, docLength);
+        if (doc.sliceString(at, at + fix.text.length) === fix.text) return;
         view.dispatch({ changes: { from: at, insert: fix.text } });
       } else if (fix.kind === "deleteRange") {
         const from = clampPos(fix.from, docLength);
         const to = clampPos(fix.to, docLength);
+        if (from === to) return;
         view.dispatch({ changes: { from, to, insert: "" } });
       }
     },

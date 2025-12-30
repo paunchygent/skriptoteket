@@ -5,11 +5,78 @@ import {
 } from "../../../skriptoteketMetadata";
 
 import type { DomainDiagnostic } from "../diagnostics";
+import type { FixIntent } from "../fixIntents";
 import type { LintRule } from "../lintRule";
 import type { LinterContext } from "../linterContext";
 import { stringLiteralValue } from "../utils/pythonStringLiterals";
 
 const ST_CONTRACT_KEYS_MISSING = "ST_CONTRACT_KEYS_MISSING";
+
+const FIX_ADD_CONTRACT_KEYS = "Lägg till nycklar";
+
+function contractKeyDefaultValue(key: string): string {
+  if (key === "outputs") return "[]";
+  if (key === "next_actions") return "[]";
+  if (key === "state") return "{}";
+  return "None";
+}
+
+function safeQuoteForDictKeys(ctx: LinterContext, dictRange: { from: number; to: number }): "'" | '"' {
+  const entries = ctx.pythonLiterals.dictionaryEntries(dictRange);
+  const first = entries[0] ?? null;
+  if (!first) return '"';
+
+  const raw = ctx.text.slice(first.keyFrom, first.keyTo);
+  return raw.startsWith("'") ? "'" : '"';
+}
+
+function addContractKeysFix(
+  ctx: LinterContext,
+  dictRange: { from: number; to: number },
+  missingKeys: readonly string[],
+): FixIntent | null {
+  const closeBracePos = dictRange.to - 1;
+  const quote = safeQuoteForDictKeys(ctx, dictRange);
+
+  let lastNonWhitespace = closeBracePos - 1;
+  while (lastNonWhitespace > dictRange.from && /\s/.test(ctx.text[lastNonWhitespace] ?? "")) {
+    lastNonWhitespace -= 1;
+  }
+
+  const lastChar = ctx.text[lastNonWhitespace] ?? "";
+  const insertAt = lastNonWhitespace + 1;
+  const isEmpty = lastChar === "{";
+  const hasTrailingComma = lastChar === ",";
+
+  const dictText = ctx.text.slice(dictRange.from, dictRange.to);
+  const isMultiLine = dictText.includes("\n");
+
+  const segments = missingKeys.map((key) => `${quote}${key}${quote}: ${contractKeyDefaultValue(key)}`);
+
+  let text = "";
+
+  if (!isMultiLine) {
+    const separator = isEmpty ? "" : hasTrailingComma ? " " : ", ";
+    text = `${separator}${segments.join(", ")}`;
+  } else {
+    const lineStartClose = ctx.text.lastIndexOf("\n", closeBracePos - 1) + 1;
+    const closeIndent = ctx.text.slice(lineStartClose, closeBracePos).match(/^[ \t]*/)?.[0] ?? "";
+
+    const firstEntry = ctx.pythonLiterals.dictionaryEntries(dictRange)[0] ?? null;
+    let entryIndent = `${closeIndent}    `;
+    if (firstEntry) {
+      const lineStartEntry = ctx.text.lastIndexOf("\n", firstEntry.keyFrom - 1) + 1;
+      entryIndent = ctx.text.slice(lineStartEntry, firstEntry.keyFrom).match(/^[ \t]*/)?.[0] ?? entryIndent;
+    }
+
+    const lines = segments.map((segment) => `${entryIndent}${segment},`);
+    const prefix = isEmpty || hasTrailingComma ? "" : ",";
+    text = `${prefix}\n${lines.join("\n")}`;
+  }
+
+  if (text === "") return null;
+  return { kind: "insertText", label: FIX_ADD_CONTRACT_KEYS, at: insertAt, text };
+}
 
 export const ContractRule: LintRule = {
   id: "ST_CONTRACT",
@@ -47,12 +114,14 @@ export const ContractRule: LintRule = {
 
       const missingKeys = SKRIPTOTEKET_CONTRACT_KEYS.filter((key) => !byKey.has(key));
       if (missingKeys.length > 0) {
+        const fix = addContractKeysFix(ctx, { from: dictNode.from, to: dictNode.to }, missingKeys);
         diagnostics.push({
           from: dictNode.from,
           to: Math.min(dictNode.from + 1, ctx.text.length),
           severity: "info",
           source: ST_CONTRACT_KEYS_MISSING,
           message: `Retur-dict saknar nycklar: ${missingKeys.join(" / ")}.`,
+          fixes: fix ? [fix] : undefined,
         });
       }
 
