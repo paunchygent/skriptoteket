@@ -5,35 +5,242 @@ title: "AI Completion Architecture Technical Specification"
 status: active
 owners: "agents"
 created: 2025-12-26
+updated: 2025-12-30
 topic: "ai-completion"
 ---
 
-This document specifies the technical architecture for AI-assisted inline completions in the Skriptoteket script editor.
+Technical architecture for AI-assisted code completions in the Skriptoteket script editor.
 
 ---
 
 ## 1. Overview
 
 The AI completion system provides Copilot-style ghost text suggestions while users write scripts. It integrates with the
-existing CodeMirror 6 intelligence bundle and uses an OpenAI-compatible backend proxy for LLM access.
+CodeMirror 6 intelligence bundle and supports both self-hosted and API-based LLM providers.
 
-This reference covers the **inline completion** capability (ghost text). Chat-style edit suggestions that propose and
-apply CodeMirror changes are a separate capability with a separate protocol surface and provider configuration (see
-ST-08-16).
+**Capabilities:**
+
+| Capability | Story | Description |
+| ---------- | ----- | ----------- |
+| Inline completions (ghost text) | ST-08-14 | FIM-based code suggestions at cursor |
+| Chat/edit suggestions | ST-08-16 | Chat-based code modifications (separate protocol) |
 
 **Key features:**
 
 - Ghost text appears after typing pause (debounced auto-trigger)
 - Manual trigger via Alt+\ keyboard shortcut
 - Tab to accept, Escape to dismiss
-- Backend proxy handles LLM calls and KB injection
-- Works with Ollama (local), OpenRouter, OpenAI, and other providers
+- Knowledge base injection for Skriptoteket-specific patterns
+- Works with self-hosted (Tabby/llama.cpp) and API providers
 
 ---
 
-## 2. API Contract
+## 2. FIM Token Interpolation
 
-### 2.1 Request
+**FIM (Fill-in-the-Middle)** is a prompting technique for code completion where the model receives:
+
+- **Prefix**: Code before the cursor position
+- **Suffix**: Code after the cursor position
+- **Middle token**: Signals where to generate the completion
+
+Example with Qwen FIM tokens:
+
+```text
+<|fim_prefix|>def hello(name):
+    greeting = f"Hello, {name}!"
+    <|fim_suffix|>
+    return greeting<|fim_middle|>
+```
+
+The model generates what belongs between prefix and suffix (e.g., `# Format the greeting`).
+
+### 2.1 Model-Specific FIM Tokens
+
+| Model Family | Prefix | Suffix | Middle |
+| ------------ | ------ | ------ | ------ |
+| Qwen3-Coder | `<\|fim_prefix\|>` | `<\|fim_suffix\|>` | `<\|fim_middle\|>` |
+| CodeLlama | `<PRE>` | `<SUF>` | `<MID>` |
+| StarCoder | `<fim_prefix>` | `<fim_suffix>` | `<fim_middle>` |
+
+---
+
+## 3. Infrastructure Architecture
+
+### 3.1 Self-Hosted Stack (Current)
+
+```text
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  CodeMirror 6   │────▶│  Backend Proxy  │────▶│  llama.cpp      │
+│  (Frontend)     │     │  (FastAPI)      │     │  :8082 (ROCm)   │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+                         KB injection            Qwen3-Coder-30B-A3B
+                         + auth + CSRF
+```
+
+See [ADR-0050](../adr/adr-0050-self-hosted-llm-infrastructure.md) for infrastructure details.
+
+### 3.2 Tabby Integration (Optional)
+
+Tabby can serve as an intermediary for repository indexing and caching:
+
+```text
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  Backend Proxy  │────▶│  Tabby :8083    │────▶│  llama.cpp      │
+│  (FastAPI)      │     │                 │     │  :8082          │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+```
+
+### 3.3 Tabby Customization Options
+
+Based on [Tabby documentation](https://tabby.tabbyml.com/docs/administration/config-toml/):
+
+| Feature | Scope | Custom Context? | Notes |
+| ------- | ----- | --------------- | ----- |
+| `prompt_template` | FIM completion | ❌ | Only `{prefix}` and `{suffix}` placeholders |
+| `[answer] system_prompt` | Chat/Answer Engine | ✅ | Full system prompt customization |
+| `[[repositories]]` | Both | ✅ | Indexes code, injects relevant snippets |
+| `max_input_length` | Completion | — | Context window (default 1536 chars) |
+| `max_decoding_tokens` | Completion | — | Output length (default 64 tokens) |
+
+**Key limitation:** Tabby's `prompt_template` only interpolates `{prefix}` and `{suffix}`. Arbitrary context prefixes
+cause parsing errors. For KB injection, use the backend proxy or Tabby's chat endpoint with `[answer] system_prompt`.
+
+### 3.4 Integration Options
+
+| Option | Architecture | KB Injection | Pros | Cons |
+| ------ | ------------ | ------------ | ---- | ---- |
+| A: Backend → llama.cpp | Direct | In prompt prefix | Full control, FIM format | No Tabby features |
+| B: Backend → Tabby chat | `/v1/chat/completions` | System prompt | Native Tabby, repo context | Chat format, not FIM |
+| C: Backend → Tabby FIM | `/v1/completions` | None (Tabby limitation) | Fast, caching | No custom KB |
+
+**Recommended:** Option A for inline completions (full KB control), Option B for chat/edit suggestions.
+
+---
+
+## 4. Recommended Models (December 2025)
+
+### 4.1 Self-Hosted
+
+| Model | Architecture | VRAM | Context | Use Case |
+| ----- | ------------ | ---- | ------- | -------- |
+| **Qwen3-Coder-30B-A3B** | MoE (3.3B active) | ~18.5 GB | 262K | FIM completions (current) |
+| **Kimi K2** | Open-source | Varies | - | Alternative for code |
+
+### 4.2 API Providers
+
+| Provider | Model | Use Case |
+| -------- | ----- | -------- |
+| Anthropic | **Claude Opus 4.5** | High-quality completions |
+| OpenAI | **GPT-5-2-Codex** | Code-specialized model |
+| OpenAI | **GPT-5-2** | Dense big model |
+| OpenAI | **GPT-5.2 High** | Planning model (chat, more reliable than Opus 4.5) |
+
+### 4.3 Configuration Examples
+
+**Self-hosted (Qwen3-Coder via llama.cpp):**
+
+```bash
+LLM_COMPLETION_ENABLED=true
+LLM_COMPLETION_BASE_URL=http://localhost:8082
+LLM_COMPLETION_MODEL=qwen3-coder-30b-a3b
+LLM_COMPLETION_MAX_TOKENS=256
+LLM_COMPLETION_TEMPERATURE=0.2
+```
+
+**API Provider (Claude Opus 4.5):**
+
+```bash
+LLM_COMPLETION_ENABLED=true
+LLM_COMPLETION_BASE_URL=https://api.anthropic.com/v1
+OPENAI_LLM_COMPLETION_API_KEY=sk-ant-...
+LLM_COMPLETION_MODEL=claude-opus-4.5
+```
+
+**API Provider (GPT-5-2-Codex):**
+
+```bash
+LLM_COMPLETION_ENABLED=true
+LLM_COMPLETION_BASE_URL=https://api.openai.com/v1
+OPENAI_LLM_COMPLETION_API_KEY=sk-...
+LLM_COMPLETION_MODEL=gpt-5-2-codex
+```
+
+---
+
+## 5. Knowledge Base Injection
+
+The backend injects Skriptoteket's knowledge base into the system prompt or FIM prefix. This ensures the LLM
+understands:
+
+- Runner constraints (no network, sandbox environment)
+- Contract v2 format (outputs, next_actions, state)
+- Available helpers (pdf_helper, tool_errors)
+- Input/output conventions (SKRIPTOTEKET_INPUT_MANIFEST)
+
+### 5.1 Condensed KB (~450 tokens)
+
+For injection into prompts:
+
+```text
+Skriptoteket Python script completion. Scripts process uploaded files and return structured results.
+
+ENTRYPOINT:
+def run_tool(input_dir: str, output_dir: str) -> dict:
+
+FILE INPUT (always use manifest):
+import json, os
+from pathlib import Path
+manifest = json.loads(os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "{}"))
+files = [Path(f["path"]) for f in manifest.get("files", [])]
+path = files[0] if files else None
+
+RETURN FORMAT (Contract v2):
+return {
+    "outputs": [...],      # UI elements
+    "next_actions": [],    # empty for now
+    "state": None          # optional dict
+}
+
+OUTPUT KINDS:
+{"kind": "notice", "level": "info"|"warning"|"error", "message": "..."}
+{"kind": "markdown", "markdown": "## Title\n\nText with **bold**."}
+{"kind": "table", "title": "...", "columns": [{"key": "k", "label": "L"}], "rows": [{"k": "v"}]}
+{"kind": "json", "title": "...", "value": {...}}
+{"kind": "html_sandboxed", "html": "<p>...</p>"}
+
+ERROR PATTERN:
+if path is None:
+    return {"outputs": [{"kind": "notice", "level": "error", "message": "Ingen fil uppladdad"}], "next_actions": [], "state": None}
+
+ARTIFACTS (downloadable files):
+output = Path(output_dir)
+output.mkdir(parents=True, exist_ok=True)
+(output / "result.txt").write_text(content, encoding="utf-8")
+
+HELPERS:
+from pdf_helper import save_as_pdf  # save_as_pdf(html, output_dir, filename) -> path
+from tool_errors import ToolUserError  # raise ToolUserError("User message")
+
+CONSTRAINTS:
+- No network (--network none)
+- Timeout: 120s
+- Memory: 1GB
+- Swedish UI messages preferred
+
+LIBRARIES: pandas, openpyxl, pypdf, python-docx, weasyprint, jinja2
+```
+
+### 5.2 Production Requirements
+
+- **Loading strategy:** Load KB once at startup (or first request) and cache in memory
+- **Packaging strategy:** Ship KB content with the application (package data or embedded constant)
+- **Failure mode:** If KB cannot be loaded, return `{ "completion": "", "enabled": false }`
+
+---
+
+## 6. API Contract
+
+### 6.1 Request
 
 ```
 POST /api/v1/editor/completions
@@ -51,7 +258,7 @@ X-CSRFToken: <csrf_token>
 - `prefix`: max 8000 characters
 - `suffix`: max 4000 characters
 
-### 2.2 Response
+### 6.2 Response
 
 ```json
 {
@@ -62,81 +269,26 @@ X-CSRFToken: <csrf_token>
 
 Notes:
 
-- `completion` MAY contain newline characters (`\n`) and should be inserted verbatim (preserve whitespace/newlines).
-- The backend MUST NOT surface partially truncated completions. If the upstream provider indicates truncation (e.g.
-  `finish_reason == "length"`), return `{ "completion": "", "enabled": true }`.
+- `completion` MAY contain newline characters (`\n`) and should be inserted verbatim
+- The backend MUST NOT surface truncated completions. If `finish_reason == "length"`, return empty completion
 
-**When LLM is disabled:**
-
-```json
-{
-  "completion": "",
-  "enabled": false
-}
-```
-
-### 2.3 Error Handling
+### 6.3 Error Handling
 
 | Scenario | Response |
-|----------|----------|
+| -------- | -------- |
 | LLM disabled | `{ "completion": "", "enabled": false }` |
-| KB unavailable (cannot load) | `{ "completion": "", "enabled": false }` |
+| KB unavailable | `{ "completion": "", "enabled": false }` |
 | LLM timeout | `{ "completion": "", "enabled": true }` |
 | LLM error | `{ "completion": "", "enabled": true }` |
-| Upstream truncated (finish_reason="length") | `{ "completion": "", "enabled": true }` |
+| Upstream truncated | `{ "completion": "", "enabled": true }` |
 | Unauthorized | HTTP 401 |
 | Missing CSRF | HTTP 403 |
 
 ---
 
-## 3. Fill-in-the-Middle Prompt Format
+## 7. CodeMirror Extension Architecture
 
-The backend constructs the prompt in fill-in-the-middle (FIM) format:
-
-```
-System: You are an AI code completion assistant for Skriptoteket...
-
-        ## Skriptoteket Knowledge Base
-        [Content from ref-ai-script-generation-kb.md]
-
-        ## Rules
-        - Complete the code at <FILL_ME> marker
-        - Return ONLY the code to insert
-        - The completion MAY span multiple lines; preserve indentation and newlines
-        - NO markdown formatting, NO explanations
-        - Follow Contract v2 format for returns
-
-User: {prefix}<FILL_ME>{suffix}
-```
-
-**Stop tokens (recommended):** triple backticks
-
-The completion should prefer returning a complete coherent block rather than a partial fragment. If the upstream provider
-returns a truncated response, the backend must discard it (see API contract).
-
----
-
-## 4. Knowledge Base Injection
-
-The handler injects Skriptoteket's knowledge base into the system prompt. This ensures the LLM understands:
-
-- Runner constraints (no network, sandbox environment)
-- Contract v2 format (outputs, next_actions, state)
-- Available helpers (pdf_helper, tool_errors)
-- Input/output conventions (SKRIPTOTEKET_INPUTS, manifest)
-
-Production requirements:
-
-- Loading strategy: load KB once at startup (or first request) and cache it in memory; do not read from disk per request.
-- Packaging strategy: ship KB content with the application (package data or embedded module constant). Do not depend on
-  `docs/` being present at runtime.
-- Failure mode: if KB cannot be loaded, treat the feature as disabled and return `{ "completion": "", "enabled": false }`.
-
----
-
-## 5. CodeMirror Extension Architecture
-
-### 5.1 Extension Composition
+### 7.1 Extension Composition
 
 ```typescript
 skriptoteketIntelligence(config)
@@ -146,13 +298,7 @@ skriptoteketIntelligence(config)
 └─ skriptoteketGhostText (NEW)
 ```
 
-Protocol-first DI note:
-
-- Inline completions should depend on an `InlineCompletionProviderProtocol` (ghost text).
-- Edit suggestions (ST-08-16) should depend on a separate `EditSuggestionProviderProtocol` so DI can inject a different
-  provider (often remote/bigger model) without coupling it to inline completion configuration.
-
-### 5.2 Ghost Text State
+### 7.2 Ghost Text State
 
 ```typescript
 type GhostTextState = {
@@ -162,29 +308,17 @@ type GhostTextState = {
 };
 ```
 
-### 5.3 State Effects
-
-- `setGhostText({ text, from })` - Display ghost text at position
-- `clearGhostText` - Remove ghost text
-
-### 5.4 Triggers
+### 7.3 Triggers
 
 | Trigger | Behavior |
-|---------|----------|
+| ------- | -------- |
 | Typing pause (1500ms) | Auto-fetch completion if enabled |
 | Alt+\ | Manual fetch completion |
 | Tab | Accept ghost text |
 | Escape | Dismiss ghost text |
 | Any document change | Clear ghost text |
 
-Keybinding requirement:
-
-- Ghost text Tab/Escape bindings must take precedence over existing editor keymaps (e.g. `indentWithTab`) only while
-  ghost text is visible.
-- Implementation note: use a high-precedence keymap (e.g. `Prec.highest(keymap.of([...]))`) and return `false` when no
-  ghost text is present so Tab behaves normally.
-
-### 5.5 Request Management
+### 7.4 Request Management
 
 - Cancel pending requests on document change
 - Ignore stale responses (cursor moved since request)
@@ -192,21 +326,21 @@ Keybinding requirement:
 
 ---
 
-## 6. Configuration
+## 8. Configuration
 
-### 6.1 Backend (Environment Variables)
+### 8.1 Backend (Environment Variables)
 
 | Variable | Default | Description |
-|----------|---------|-------------|
+| -------- | ------- | ----------- |
 | `LLM_COMPLETION_ENABLED` | `false` | Enable/disable feature |
-| `LLM_COMPLETION_BASE_URL` | `http://localhost:11434/v1` | OpenAI-compatible API URL |
-| `OPENAI_LLM_COMPLETION_API_KEY` | `None` | API key (optional for Ollama) |
-| `LLM_COMPLETION_MODEL` | `codellama:7b` | Model name |
+| `LLM_COMPLETION_BASE_URL` | `http://localhost:8082` | LLM API URL |
+| `OPENAI_LLM_COMPLETION_API_KEY` | `None` | API key (optional for self-hosted) |
+| `LLM_COMPLETION_MODEL` | `qwen3-coder-30b-a3b` | Model name |
 | `LLM_COMPLETION_MAX_TOKENS` | `256` | Max tokens in response |
 | `LLM_COMPLETION_TEMPERATURE` | `0.2` | Sampling temperature |
 | `LLM_COMPLETION_TIMEOUT_SECONDS` | `30` | Request timeout |
 
-### 6.2 Frontend (Intelligence Config)
+### 8.2 Frontend (Intelligence Config)
 
 ```typescript
 type SkriptoteketIntelligenceConfig = {
@@ -221,74 +355,29 @@ type SkriptoteketIntelligenceConfig = {
 
 ---
 
-## 7. Security Considerations
+## 9. Security Considerations
 
-### 7.1 API Key Protection
+### 9.1 API Key Protection
 
 - API keys stored as environment variables on backend only
 - Never exposed to frontend
 - Backend proxies all LLM requests
 
-### 7.2 Authentication
+### 9.2 Authentication
 
 - Endpoint requires `require_contributor_api` (authenticated contributor+)
 - CSRF token required for all POST requests
 
-### 7.3 Rate Limiting
+### 9.3 Rate Limiting
 
 - Consider per-user rate limiting (10 requests/minute)
 - Prevents abuse and controls costs
 
-### 7.4 Privacy & Logging
+### 9.4 Privacy & Logging
 
-- Do not log raw prefix/suffix/prompt/code. Log only metadata (lengths, provider, timing, status).
-- Make it explicit in product docs that remote providers receive user code; recommend local-first for sensitive content.
-
-### 7.5 Input Validation
-
-- Prefix/suffix length limits prevent oversized payloads
-- Sanitize before sending to LLM (optional PII filtering)
-
----
-
-## 8. Provider Compatibility
-
-### 8.1 Ollama (Local)
-
-```bash
-LLM_COMPLETION_BASE_URL=http://localhost:11434/v1
-LLM_COMPLETION_MODEL=codellama:7b
-# No API key needed
-```
-
-### 8.2 OpenRouter
-
-```bash
-LLM_COMPLETION_BASE_URL=https://openrouter.ai/api/v1
-OPENAI_LLM_COMPLETION_API_KEY=sk-or-...
-LLM_COMPLETION_MODEL=meta-llama/llama-3.1-70b-instruct
-```
-
-### 8.3 OpenAI
-
-```bash
-LLM_COMPLETION_BASE_URL=https://api.openai.com/v1
-OPENAI_LLM_COMPLETION_API_KEY=sk-...
-LLM_COMPLETION_MODEL=gpt-4o-mini
-```
-
----
-
-## 9. Recommended Models
-
-| Provider | Model | Quality | Speed | Cost |
-|----------|-------|---------|-------|------|
-| Ollama | codellama:7b | Medium | Fast | Free |
-| Ollama | codellama:13b | Good | Medium | Free |
-| OpenRouter | llama-3.1-70b | Very Good | Medium | Low |
-| OpenAI | gpt-4o-mini | Excellent | Fast | Medium |
-
-For code completion, prioritize speed over quality. `codellama:7b` is a good starting point.
+- Do not log raw prefix/suffix/prompt/code
+- Log only metadata (lengths, provider, timing, status)
+- Document that remote providers receive user code; recommend self-hosted for sensitive content
 
 ---
 
@@ -297,7 +386,7 @@ For code completion, prioritize speed over quality. `codellama:7b` is a good sta
 ### 10.1 Backend
 
 | Path | Purpose |
-|------|---------|
+| ---- | ------- |
 | `src/skriptoteket/protocols/llm.py` | Protocol definitions |
 | `src/skriptoteket/infrastructure/llm/openai_provider.py` | OpenAI-compatible client |
 | `src/skriptoteket/application/editor/completion_handler.py` | Handler with KB injection |
@@ -308,10 +397,10 @@ For code completion, prioritize speed over quality. `codellama:7b` is a good sta
 ### 10.2 Frontend
 
 | Path | Purpose |
-|------|---------|
-| `frontend/apps/skriptoteket/src/composables/editor/skriptoteketGhostText.ts` | Ghost text extension |
-| `frontend/apps/skriptoteket/src/composables/editor/skriptoteketIntelligence.ts` | Bundle integration |
-| `frontend/apps/skriptoteket/src/composables/editor/useSkriptoteketIntelligenceExtensions.ts` | Config composable |
+| ---- | ------- |
+| `frontend/.../skriptoteketGhostText.ts` | Ghost text extension |
+| `frontend/.../skriptoteketIntelligence.ts` | Bundle integration |
+| `frontend/.../useSkriptoteketIntelligenceExtensions.ts` | Config composable |
 
 ---
 
@@ -323,14 +412,13 @@ For code completion, prioritize speed over quality. `codellama:7b` is a good sta
 - Unit: Handler injects KB into system prompt
 - Integration: Endpoint requires auth + CSRF
 - Integration: Returns `enabled=false` when disabled
-- Integration: Truncated upstream response (finish_reason="length") returns empty completion
+- Integration: Truncated response returns empty completion
 
 ### 11.2 Frontend
 
 - Unit: Ghost text displays at cursor position
 - Unit: Multi-line ghost text preserves indentation/newlines
 - Unit: Tab accepts, Escape dismisses
-- Unit: Tab inserts all suggestion lines verbatim
 - Unit: Document change clears ghost text
 - E2E: Full flow with mock LLM server
 
@@ -339,5 +427,8 @@ For code completion, prioritize speed over quality. `codellama:7b` is a good sta
 ## 12. References
 
 - [ADR-0043: AI completion integration](../adr/adr-0043-ai-completion-integration.md)
+- [ADR-0050: Self-hosted LLM infrastructure](../adr/adr-0050-self-hosted-llm-infrastructure.md)
 - [ADR-0035: Script editor intelligence architecture](../adr/adr-0035-script-editor-intelligence-architecture.md)
-- [ref-ai-script-generation-kb.md](ref-ai-script-generation-kb.md) - Knowledge base content
+- [ref-ai-script-generation-kb.md](ref-ai-script-generation-kb.md) - Full knowledge base
+- [Tabby Config.toml](https://tabby.tabbyml.com/docs/administration/config-toml/) - Tabby configuration
+- [Tabby Code Completion](https://tabby.tabbyml.com/docs/administration/code-completion/) - Tabby settings

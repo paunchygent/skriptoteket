@@ -16,6 +16,8 @@ services:
       context: .
       target: production
     container_name: skriptoteket_web
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8000:8000"
     environment:

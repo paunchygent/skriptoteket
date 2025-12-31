@@ -17,6 +17,8 @@ services:
     image: skriptoteket-web:latest
     container_name: skriptoteket-web
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       DATABASE_URL: postgresql+asyncpg://skriptoteket:${SKRIPTOTEKET_DB_PASSWORD}@shared-postgres:5432/skriptoteket
       SECRET_KEY: ${SECRET_KEY}
@@ -40,7 +42,9 @@ services:
       EMAIL_DEFAULT_FROM_NAME: ${EMAIL_DEFAULT_FROM_NAME:-Skriptoteket}
       EMAIL_VERIFICATION_BASE_URL: ${EMAIL_VERIFICATION_BASE_URL:-https://skriptoteket.hule.education}
       EMAIL_VERIFICATION_TTL_HOURS: ${EMAIL_VERIFICATION_TTL_HOURS:-24}
-      # LLM API
+      # LLM API (host.docker.internal reaches host's llama-server)
+      LLM_COMPLETION_ENABLED: ${LLM_COMPLETION_ENABLED:-false}
+      LLM_COMPLETION_BASE_URL: ${LLM_COMPLETION_BASE_URL:-http://host.docker.internal:8082}
       OPENAI_LLM_COMPLETION_API_KEY: ${OPENAI_LLM_COMPLETION_API_KEY:-}
       # nginx-proxy integration
       VIRTUAL_HOST: skriptoteket.hule.education

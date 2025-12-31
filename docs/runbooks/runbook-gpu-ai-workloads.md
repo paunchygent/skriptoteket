@@ -365,31 +365,94 @@ ssh hemma "sudo reboot"
 ssh hemma "rm -rf ~/.config/miopen ~/.cache/miopen"
 ```
 
-## Docker with GPU
+## Docker Integration
 
-### Enable GPU in Docker
+GPU inference runs as systemd services on the host. Docker containers reach them via `host.docker.internal`.
 
-```bash
-# Verify ROCm Docker support
-ssh hemma "docker run --rm --device=/dev/kfd --device=/dev/dri --group-add video rocm/rocm-terminal rocminfo"
+### Container Access to Host GPU Services
 
-# Run PyTorch container
-ssh hemma "docker run -it --rm --device=/dev/kfd --device=/dev/dri --group-add video rocm/pytorch:latest python -c 'import torch; print(torch.cuda.is_available())'"
-```
-
-### Docker Compose Example
+Add to any compose file that needs GPU inference:
 
 ```yaml
 services:
-  ai-worker:
-    image: rocm/pytorch:latest
-    devices:
-      - /dev/kfd
-      - /dev/dri
-    group_add:
-      - video
+  my-service:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
-      - HIP_VISIBLE_DEVICES=0
+      - LLM_BASE_URL=http://host.docker.internal:8082
+```
+
+### Verify Connectivity
+
+```bash
+# From inside a container
+docker exec skriptoteket-web curl -s http://host.docker.internal:8082/health
+# Expected: {"status":"ok"}
+
+# Test completion
+docker exec skriptoteket-web curl -s http://host.docker.internal:8082/completion \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "def hello", "n_predict": 10}'
+```
+
+### Port Reference
+
+| Service      | Host Port | Container URL                       |
+|--------------|-----------|-------------------------------------|
+| llama-server | 8082      | `http://host.docker.internal:8082` |
+| Tabby        | 8083      | `http://host.docker.internal:8083` |
+
+## Remote Development (SSH Tunnel)
+
+Access hemma's GPU from your local dev machine via SSH tunnel.
+
+### Setup (macOS)
+
+```bash
+# Install autossh (once)
+brew install autossh
+
+# Start persistent tunnel (auto-reconnects)
+autossh -M 0 -f -N -o "ServerAliveInterval=30" -o "ServerAliveCountMax=3" -L 8082:localhost:8082 hemma
+```
+
+### Verify
+
+```bash
+# Health check
+curl http://localhost:8082/health
+# Expected: {"status":"ok"}
+
+# Test completion
+curl -s http://localhost:8082/completion \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "def hello():", "n_predict": 20}'
+```
+
+### Manage Tunnel
+
+```bash
+# Check if running
+pgrep -f "autossh.*8082" && echo "Running" || echo "Not running"
+
+# Stop tunnel
+pkill -f "autossh.*8082"
+
+# Restart tunnel
+autossh -M 0 -f -N -o "ServerAliveInterval=30" -o "ServerAliveCountMax=3" -L 8082:localhost:8082 hemma
+```
+
+### Use in Docker Compose
+
+Local containers reach the tunnel via `host.docker.internal`:
+
+```yaml
+services:
+  my-service:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - LLM_URL=http://host.docker.internal:8082
 ```
 
 ## References
