@@ -1,4 +1,5 @@
 import type { Extension } from "@codemirror/state";
+import { EditorView } from "@codemirror/view";
 import { lintGutter, linter, type Diagnostic } from "@codemirror/lint";
 
 import type { SkriptoteketIntelligenceConfig } from "../../../skriptoteketIntelligence";
@@ -52,11 +53,21 @@ function toCodeMirrorDiagnostic(domainDiagnostic: DomainDiagnostic): Diagnostic 
   return diagnostic;
 }
 
+const lintTooltipTheme = EditorView.baseTheme({
+  ".cm-tooltip-lint .cm-diagnostic.cm-diagnostic-error .cm-diagnosticSource": {
+    display: "none",
+  },
+  ".cm-tooltip-lint .cm-diagnostic.cm-diagnostic-warning .cm-diagnosticSource": {
+    display: "none",
+  },
+});
+
 export function skriptoteketLinterAdapter(config: SkriptoteketIntelligenceConfig): Extension {
   const entrypointName = config.entrypointName.trim() || "run_tool";
   const rules = createDefaultLintRules({ entrypointName });
 
   return [
+    lintTooltipTheme,
     lintGutter({
       markerFilter: (diagnostics) =>
         diagnostics.filter((diagnostic) => diagnostic.severity === "error" || diagnostic.severity === "warning"),

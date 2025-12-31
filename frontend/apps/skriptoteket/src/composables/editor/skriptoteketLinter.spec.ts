@@ -71,7 +71,8 @@ def run_tool(input_dir, output_dir):
     expect(diagnostics.some((diagnostic) => diagnostic.source === "ST_CONTRACT_KEYS_MISSING")).toBe(true);
     expect(
       diagnostics.some(
-        (diagnostic) => diagnostic.source === "ST_CONTRACT" && diagnostic.message.includes("Ogiltigt kind"),
+        (diagnostic) =>
+          diagnostic.source === "ST_CONTRACT_OUTPUT_KIND_INVALID" && diagnostic.message.includes("Ogiltigt kind"),
       ),
     ).toBe(true);
   });
@@ -312,6 +313,58 @@ def run_tool(input_dir, output_dir):
 
       const afterDiagnostics = await collectDiagnostics(view);
       expect(afterDiagnostics.some((entry) => entry.source === "ST_CONTRACT_KEYS_MISSING")).toBe(false);
+    } finally {
+      view.destroy();
+      parent.remove();
+    }
+  });
+
+  it("hides diagnostic source row in lint tooltip for error/warning only", () => {
+    const parent = document.createElement("div");
+    document.body.appendChild(parent);
+
+    const view = new EditorView({
+      state: EditorState.create({
+        doc: "print('x')\n",
+        extensions: [python(), skriptoteketLinter({ entrypointName: "run_tool" })],
+      }),
+      parent,
+    });
+
+    function createTooltipSource(severity: "error" | "warning" | "info" | "hint") {
+      const tooltip = document.createElement("div");
+      tooltip.className = "cm-tooltip cm-tooltip-lint";
+
+      const diagnostic = document.createElement("div");
+      diagnostic.className = `cm-diagnostic cm-diagnostic-${severity}`;
+
+      const source = document.createElement("div");
+      source.className = "cm-diagnosticSource";
+      source.textContent = `ST_TEST_${severity.toUpperCase()}`;
+
+      diagnostic.appendChild(source);
+      tooltip.appendChild(diagnostic);
+      view.dom.appendChild(tooltip);
+
+      return { tooltip, source };
+    }
+
+    try {
+      const error = createTooltipSource("error");
+      expect(getComputedStyle(error.source).display).toBe("none");
+      error.tooltip.remove();
+
+      const warning = createTooltipSource("warning");
+      expect(getComputedStyle(warning.source).display).toBe("none");
+      warning.tooltip.remove();
+
+      const info = createTooltipSource("info");
+      expect(getComputedStyle(info.source).display).not.toBe("none");
+      info.tooltip.remove();
+
+      const hint = createTooltipSource("hint");
+      expect(getComputedStyle(hint.source).display).not.toBe("none");
+      hint.tooltip.remove();
     } finally {
       view.destroy();
       parent.remove();

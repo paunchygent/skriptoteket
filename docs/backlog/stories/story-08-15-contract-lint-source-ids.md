@@ -2,7 +2,7 @@
 type: story
 id: ST-08-15
 title: "Contract lint: stable source IDs + clean tooltips (AI signal)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-27
 epic: "EPIC-08"
@@ -25,7 +25,7 @@ message text, which is brittle.
 
 ### Add stable rule IDs (`Diagnostic.source`)
 
-In `contractDiagnostics(...)` in `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.ts`, set
+In `ContractRule` in `frontend/apps/skriptoteket/src/composables/editor/linter/domain/rules/contractRule.ts`, set
 `source` for each contract diagnostic, using the IDs already documented in ST-08-11:
 
 - `ST_CONTRACT_KEYS_MISSING`
@@ -35,7 +35,7 @@ In `contractDiagnostics(...)` in `frontend/apps/skriptoteket/src/composables/edi
 - `ST_NOTICE_FIELDS_MISSING`
 - `ST_NOTICE_LEVEL_INVALID`
 
-(Optionally also add a `source` for the "dynamic return" hint.)
+(Also add a stable `source` for the "dynamic return" hint.)
 
 ### Hide the source row in tooltips for error/warning
 
@@ -55,5 +55,5 @@ Implementation note: do this via a minimal CodeMirror theme/CSS override targeti
 
 ### Modify
 
-- `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.ts`
-- `frontend/apps/skriptoteket/src/components/editor/CodeMirrorEditor.vue` (or another existing global CSS/theme entry point)
+- `frontend/apps/skriptoteket/src/composables/editor/linter/domain/rules/contractRule.ts`
+- `frontend/apps/skriptoteket/src/composables/editor/linter/adapters/codemirror/skriptoteketLinterAdapter.ts`

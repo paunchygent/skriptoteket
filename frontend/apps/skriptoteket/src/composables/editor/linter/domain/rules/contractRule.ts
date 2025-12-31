@@ -11,6 +11,12 @@ import type { LinterContext } from "../linterContext";
 import { stringLiteralValue } from "../utils/pythonStringLiterals";
 
 const ST_CONTRACT_KEYS_MISSING = "ST_CONTRACT_KEYS_MISSING";
+const ST_CONTRACT_OUTPUTS_NOT_LIST = "ST_CONTRACT_OUTPUTS_NOT_LIST";
+const ST_CONTRACT_OUTPUT_KIND_MISSING = "ST_CONTRACT_OUTPUT_KIND_MISSING";
+const ST_CONTRACT_OUTPUT_KIND_INVALID = "ST_CONTRACT_OUTPUT_KIND_INVALID";
+const ST_NOTICE_FIELDS_MISSING = "ST_NOTICE_FIELDS_MISSING";
+const ST_NOTICE_LEVEL_INVALID = "ST_NOTICE_LEVEL_INVALID";
+const ST_CONTRACT_DYNAMIC_RETURN = "ST_CONTRACT_DYNAMIC_RETURN";
 
 const FIX_ADD_CONTRACT_KEYS = "Lägg till nycklar";
 
@@ -96,7 +102,7 @@ export const ContractRule: LintRule = {
           from: match.nameFrom,
           to: match.nameTo,
           severity: "hint",
-          source: "ST_CONTRACT",
+          source: ST_CONTRACT_DYNAMIC_RETURN,
           message:
             "Kunde inte verifiera Contract v2 eftersom returvärdet byggs dynamiskt. Kontrollera att du returnerar dict med outputs/next_actions/state.",
         },
@@ -134,7 +140,7 @@ export const ContractRule: LintRule = {
           from: outputsEntry.keyFrom,
           to: outputsEntry.keyTo,
           severity: "error",
-          source: "ST_CONTRACT",
+          source: ST_CONTRACT_OUTPUTS_NOT_LIST,
           message: "`outputs` måste vara en lista (`[...]`).",
         });
         continue;
@@ -155,7 +161,7 @@ export const ContractRule: LintRule = {
             from: outputDict.from,
             to: Math.min(outputDict.from + 1, ctx.text.length),
             severity: "warning",
-            source: "ST_CONTRACT",
+            source: ST_CONTRACT_OUTPUT_KIND_MISSING,
             message: 'Ett output-objekt saknar "kind".',
           });
           continue;
@@ -166,7 +172,7 @@ export const ContractRule: LintRule = {
             from: kindEntry.value?.from ?? outputDict.from,
             to: kindEntry.value?.to ?? Math.min(outputDict.from + 1, ctx.text.length),
             severity: "warning",
-            source: "ST_CONTRACT",
+            source: ST_CONTRACT_OUTPUT_KIND_INVALID,
             message: `Ogiltigt kind: "${kindValue}". Tillåtna: ${SKRIPTOTEKET_OUTPUT_KINDS.join(", ")}.`,
           });
           continue;
@@ -181,7 +187,7 @@ export const ContractRule: LintRule = {
             from: outputDict.from,
             to: Math.min(outputDict.from + 1, ctx.text.length),
             severity: "warning",
-            source: "ST_CONTRACT",
+            source: ST_NOTICE_FIELDS_MISSING,
             message: 'Notice saknar "level" eller "message".',
           });
           continue;
@@ -196,7 +202,7 @@ export const ContractRule: LintRule = {
             from: levelEntry.value?.from ?? outputDict.from,
             to: levelEntry.value?.to ?? Math.min(outputDict.from + 1, ctx.text.length),
             severity: "warning",
-            source: "ST_CONTRACT",
+            source: ST_NOTICE_LEVEL_INVALID,
             message: "Notice level måste vara info/warning/error.",
           });
         }
