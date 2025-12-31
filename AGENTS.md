@@ -93,6 +93,7 @@ Run smokes with `pdm run ui-smoke` / `pdm run ui-editor-smoke` / `pdm run ui-run
 
 - **Never use `git commit --amend`**: always create fresh commits for fixes discovered after the initial commit
 - **Never force push**: if you need to fix something, make a new commit
+- Runbooks in `docs/runbooks/` are first-class, versioned docs; commit updates (no local-only runbook edits)
 - Include what/why + how to test in commit messages
 - Run `pdm run docs-validate` for doc changes
 
