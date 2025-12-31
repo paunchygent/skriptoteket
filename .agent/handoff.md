@@ -13,7 +13,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-31
-- Branch / commit: `main` (`003a7e7`)
+- Branch / commit: `main` (`9858fd9`)
 - Current sprint: `SPR-2026-01-05 Tool Editor Vertical Slice` (EPIC-14)
 - Production: Full Vue SPA (unchanged)
 - Completed: EPIC-14 Admin Tool Authoring (ST-14-01/14-02) done
@@ -22,6 +22,10 @@ Keep this file updated so the next session can pick up work quickly.
 
 - **AI infrastructure deployed**: llama-server (ROCm) + Tabby on hemma for self-hosted code completion.
   - Model: Qwen3-Coder-30B-A3B (MoE, ~18.5GB VRAM); ADR-0050; runbooks in `docs/runbooks/`.
+- ST-08-14: AI inline completions MVP (ghost text) wired end-to-end.
+  - Backend proxy: `POST /api/v1/editor/completions` in `src/skriptoteket/web/api/v1/editor/completions.py` (auth + CSRF), with protocol-first DI in `src/skriptoteket/di/llm.py`.
+  - OpenAI-compatible provider: `src/skriptoteket/infrastructure/llm/openai_provider.py` (chat/completions + Qwen FIM tokens; truncation discard).
+  - CodeMirror extension: `frontend/apps/skriptoteket/src/composables/editor/skriptoteketGhostText.ts` (auto-trigger 1500ms, Alt+\\, Tab accept, Escape dismiss, clear-on-change).
 - EPIC-06 linter (ST-06-10/11/12): lint panel + navigation keymaps live in intelligence (`frontend/apps/skriptoteket/src/composables/editor/skriptoteketLintPanel.ts`, `frontend/apps/skriptoteket/src/composables/editor/skriptoteketIntelligence.ts`); base editor stays generic (`frontend/apps/skriptoteket/src/components/editor/CodeMirrorEditor.vue`).
 - ST-06-13: lint gutter filtering now shows only error/warning markers via `lintGutter({ markerFilter, tooltipFilter })` in `frontend/apps/skriptoteket/src/composables/editor/linter/adapters/codemirror/skriptoteketLinterAdapter.ts` (info/hint still discoverable via lint panel/tooltip).
 - ST-06-14: headless linter rule harness + unit tests (EditorState-only) in `frontend/apps/skriptoteket/src/test/headlessLinterHarness.ts` and `frontend/apps/skriptoteket/src/composables/editor/linter/headlessLinterHarness.spec.ts` (syntax error mapping + scope chain variable resolution + entrypoint rule example).
@@ -39,6 +43,8 @@ Keep this file updated so the next session can pick up work quickly.
 - Frontend tests: `pdm run fe-test` (pass)
 - SPA build: `pdm run fe-build` (pass)
 - UI (editor smoke): `pdm run ui-editor-smoke` (pass; artifacts in `.artifacts/ui-editor-smoke/`; Playwright required escalation on macOS)
+- UI (ST-08-14): `pdm run python -m scripts.playwright_st_08_14_ai_inline_completions_e2e` (pass; artifacts in `.artifacts/st-08-14-ai-inline-completions-e2e/`; Playwright required escalation on macOS)
+- Backend tests (ST-08-14): `pdm run test tests/unit/application/test_editor_inline_completion_handler.py tests/unit/web/test_editor_inline_completion_api.py` (pass)
 - UI (ST-06-11): `pdm run python -m scripts.playwright_st_06_11_quick_fix_actions_e2e` (pass; artifacts in `.artifacts/st-06-11-quick-fix-actions-e2e/`; Playwright required escalation on macOS)
 - UI (ST-06-12): `pdm run python -m scripts.playwright_st_06_12_lint_panel_navigation_e2e` (pass; artifacts in `.artifacts/st-06-12-lint-panel-navigation-e2e/`; Playwright required escalation on macOS)
 

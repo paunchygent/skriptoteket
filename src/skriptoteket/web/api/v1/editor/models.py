@@ -265,6 +265,20 @@ class StartSandboxActionRequest(BaseModel):
     expected_state_rev: int
 
 
+class EditorInlineCompletionRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    prefix: str
+    suffix: str
+
+
+class EditorInlineCompletionResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    completion: str
+    enabled: bool
+
+
 class StartSandboxActionResponse(BaseModel):
     """Response for POST /api/v1/editor/tool-versions/{version_id}/start-action."""
 

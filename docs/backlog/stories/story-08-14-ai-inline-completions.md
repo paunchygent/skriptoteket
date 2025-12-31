@@ -2,7 +2,7 @@
 type: story
 id: ST-08-14
 title: "AI inline completions MVP (Copilot-style ghost text)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-26
 epic: "EPIC-08"
@@ -118,9 +118,10 @@ LLM_COMPLETION_TIMEOUT_SECONDS=30
 
 - `src/skriptoteket/config.py` - Add LLM settings
 - `src/skriptoteket/di/__init__.py` - Register LLMProvider
-- `src/skriptoteket/web/api/v1/editor.py` - Add `/completions` endpoint
+- `src/skriptoteket/web/api/v1/editor/__init__.py` - Add `/completions` endpoint router
 - `frontend/apps/skriptoteket/src/composables/editor/skriptoteketIntelligence.ts` - Add ghost text
 - `frontend/apps/skriptoteket/src/composables/editor/useSkriptoteketIntelligenceExtensions.ts` - Add config
+- `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue` - Pass ghost text config
 
 ## Testing
 

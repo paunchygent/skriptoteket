@@ -7,10 +7,16 @@ type IntelligenceModule = typeof import("./skriptoteketIntelligence");
 
 type UseSkriptoteketIntelligenceExtensionsOptions = {
   entrypointName: Readonly<Ref<string>>;
+  ghostText?: {
+    enabled: Readonly<Ref<boolean>>;
+    autoTrigger: Readonly<Ref<boolean>>;
+    debounceMs: Readonly<Ref<number>>;
+  };
 };
 
 export function useSkriptoteketIntelligenceExtensions({
   entrypointName,
+  ghostText,
 }: UseSkriptoteketIntelligenceExtensionsOptions): {
   extensions: Readonly<Ref<Extension[]>>;
   isLoading: Readonly<Ref<boolean>>;
@@ -27,7 +33,16 @@ export function useSkriptoteketIntelligenceExtensions({
 
   const extensions = computed<Extension[]>(() => {
     if (!moduleRef.value) return [];
-    const config: SkriptoteketIntelligenceConfig = { entrypointName: resolvedEntrypointName.value };
+    const config: SkriptoteketIntelligenceConfig = {
+      entrypointName: resolvedEntrypointName.value,
+      ghostText: ghostText
+        ? {
+            enabled: ghostText.enabled.value,
+            autoTrigger: ghostText.autoTrigger.value,
+            debounceMs: ghostText.debounceMs.value,
+          }
+        : undefined,
+    };
     const result = moduleRef.value.skriptoteketIntelligence(config);
     return Array.isArray(result) ? [...result] : [result];
   });

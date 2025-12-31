@@ -81,4 +81,10 @@ class Settings(BaseSettings):
     EMAIL_VERIFICATION_BASE_URL: str = "https://skriptoteket.hule.education"
 
     # LLM API
+    LLM_COMPLETION_ENABLED: bool = False
+    LLM_COMPLETION_BASE_URL: str = "http://localhost:8082"
     OPENAI_LLM_COMPLETION_API_KEY: str = ""
+    LLM_COMPLETION_MODEL: str = "qwen3-coder-30b-a3b"
+    LLM_COMPLETION_MAX_TOKENS: int = 256
+    LLM_COMPLETION_TEMPERATURE: float = 0.2
+    LLM_COMPLETION_TIMEOUT_SECONDS: int = 30

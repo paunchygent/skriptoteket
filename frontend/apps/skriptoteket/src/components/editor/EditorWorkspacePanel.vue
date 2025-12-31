@@ -100,8 +100,16 @@ const emit = defineEmits<{
 }>();
 
 const entrypointName = computed(() => props.entrypoint);
+const ghostTextEnabled = computed(() => !props.isReadOnly);
+const ghostTextAutoTrigger = computed(() => true);
+const ghostTextDebounceMs = computed(() => 1500);
 const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtensions({
   entrypointName,
+  ghostText: {
+    enabled: ghostTextEnabled,
+    autoTrigger: ghostTextAutoTrigger,
+    debounceMs: ghostTextDebounceMs,
+  },
 });
 
 const { inputSchema, inputSchemaError, settingsSchema, settingsSchemaError } =

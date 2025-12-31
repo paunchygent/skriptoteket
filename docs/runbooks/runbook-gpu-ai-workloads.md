@@ -5,7 +5,7 @@ title: "Runbook: GPU AI Workloads (AMD Radeon AI PRO R9700)"
 status: active
 owners: "olof"
 created: 2025-12-30
-updated: 2025-12-30
+updated: 2025-12-31
 system: "hemma.hule.education"
 ---
 
@@ -240,7 +240,7 @@ ssh hemma "rocm-smi --showperflevel"
 
 ### Persistent Settings (systemd)
 
-Create `/etc/systemd/system/rocm-perf.service`:
+GPU settings persist across reboots via `/etc/systemd/system/rocm-perf.service`:
 
 ```ini
 [Unit]
@@ -250,6 +250,7 @@ After=multi-user.target
 [Service]
 Type=oneshot
 ExecStart=/opt/rocm/bin/rocm-smi --setprofile COMPUTE
+ExecStartPost=/opt/rocm/bin/rocm-smi --setperflevel high
 RemainAfterExit=yes
 
 [Install]
@@ -259,7 +260,13 @@ WantedBy=multi-user.target
 Enable:
 
 ```bash
-ssh hemma "sudo systemctl enable rocm-perf.service"
+ssh hemma "sudo systemctl daemon-reload && sudo systemctl enable --now rocm-perf.service"
+```
+
+Verify:
+
+```bash
+ssh hemma "systemctl status rocm-perf.service"
 ```
 
 ## Troubleshooting
@@ -406,14 +413,127 @@ docker exec skriptoteket-web curl -s http://host.docker.internal:8082/completion
 
 Access hemma's GPU from your local dev machine via SSH tunnel.
 
-### Setup (macOS)
+### Prerequisites (macOS)
 
 ```bash
-# Install autossh (once)
 brew install autossh
+```
 
-# Start persistent tunnel (auto-reconnects)
-autossh -M 0 -f -N -o "ServerAliveInterval=30" -o "ServerAliveCountMax=3" -L 8082:localhost:8082 hemma
+### Tunnel Management Script
+
+Install `~/bin/hemma-gpu-tunnel` for easy tunnel management:
+
+```bash
+#!/bin/bash
+# SSH tunnels to hemma GPU services (llama-server + Tabby)
+
+LLAMA_PORT=8082
+TABBY_PORT=8083
+HOST=hemma
+
+start_tunnel() {
+    local port=$1
+    local name=$2
+    if pgrep -f "ssh.*-L ${port}:localhost:${port}.*${HOST}" > /dev/null; then
+        echo "✓ ${name} tunnel already running (port ${port})"
+    else
+        autossh -M 0 -f -N \
+            -o "ServerAliveInterval=30" \
+            -o "ServerAliveCountMax=3" \
+            -L ${port}:localhost:${port} ${HOST}
+        echo "▶ Started ${name} tunnel (port ${port})"
+    fi
+}
+
+stop_tunnel() {
+    local port=$1
+    local name=$2
+    pkill -f "ssh.*-L ${port}:localhost:${port}.*${HOST}" 2>/dev/null && \
+        echo "■ Stopped ${name} tunnel" || \
+        echo "  ${name} tunnel not running"
+}
+
+status() {
+    echo "=== Hemma GPU Tunnels ==="
+    for port in $LLAMA_PORT $TABBY_PORT; do
+        if pgrep -f "ssh.*-L ${port}:localhost:${port}.*${HOST}" > /dev/null; then
+            if curl -s --connect-timeout 2 http://localhost:${port}/health > /dev/null 2>&1 || \
+               curl -s --connect-timeout 2 http://localhost:${port}/v1/health > /dev/null 2>&1; then
+                echo "✓ Port ${port}: connected"
+            else
+                echo "? Port ${port}: tunnel up, service unreachable"
+            fi
+        else
+            echo "✗ Port ${port}: not running"
+        fi
+    done
+}
+
+case "${1:-start}" in
+    start)
+        start_tunnel $LLAMA_PORT "llama-server"
+        start_tunnel $TABBY_PORT "tabby"
+        ;;
+    stop)
+        stop_tunnel $LLAMA_PORT "llama-server"
+        stop_tunnel $TABBY_PORT "tabby"
+        ;;
+    restart)
+        $0 stop
+        sleep 1
+        $0 start
+        ;;
+    status)
+        status
+        ;;
+    *)
+        echo "Usage: $(basename $0) {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
+```
+
+Usage:
+
+```bash
+hemma-gpu-tunnel start    # Start tunnels
+hemma-gpu-tunnel stop     # Stop tunnels
+hemma-gpu-tunnel restart  # Restart
+hemma-gpu-tunnel status   # Check status
+```
+
+### Auto-Start on Login (LaunchAgent)
+
+Create `~/Library/LaunchAgents/com.hemma.gpu-tunnel.plist`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.hemma.gpu-tunnel</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/YOUR_USERNAME/bin/hemma-gpu-tunnel</string>
+        <string>start</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StartInterval</key>
+    <integer>300</integer>
+    <key>StandardOutPath</key>
+    <string>/tmp/hemma-gpu-tunnel.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/hemma-gpu-tunnel.log</string>
+</dict>
+</plist>
+```
+
+Load:
+
+```bash
+launchctl load ~/Library/LaunchAgents/com.hemma.gpu-tunnel.plist
 ```
 
 ### Verify
@@ -423,23 +543,17 @@ autossh -M 0 -f -N -o "ServerAliveInterval=30" -o "ServerAliveCountMax=3" -L 808
 curl http://localhost:8082/health
 # Expected: {"status":"ok"}
 
-# Test completion
+# Test chat completion (recommended for instruction-tuned models)
+curl -s http://localhost:8082/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"messages": [{"role": "user", "content": "Write a fibonacci function in Python"}], "max_tokens": 100}' | \
+  jq -r '.choices[0].message.content'
+
+# Test raw completion (for base models or text continuation)
 curl -s http://localhost:8082/completion \
   -H "Content-Type: application/json" \
-  -d '{"prompt": "def hello():", "n_predict": 20}'
-```
-
-### Manage Tunnel
-
-```bash
-# Check if running
-pgrep -f "autossh.*8082" && echo "Running" || echo "Not running"
-
-# Stop tunnel
-pkill -f "autossh.*8082"
-
-# Restart tunnel
-autossh -M 0 -f -N -o "ServerAliveInterval=30" -o "ServerAliveCountMax=3" -L 8082:localhost:8082 hemma
+  -d '{"prompt": "The capital of Sweden is", "n_predict": 10}' | \
+  jq -r '.content'
 ```
 
 ### Use in Docker Compose

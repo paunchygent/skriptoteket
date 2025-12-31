@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from . import (
     boot,
+    completions,
     drafts,
     locks,
     maintainers,
@@ -13,6 +14,7 @@ from . import (
     workflow,
 )
 from .boot import get_editor_for_tool, get_editor_for_version
+from .completions import create_inline_completion
 from .drafts import create_draft_version, save_draft_version
 from .locks import acquire_draft_lock, release_draft_lock
 from .maintainers import (
@@ -28,6 +30,8 @@ from .models import (
     DraftLockRequest,
     DraftLockResponse,
     EditorBootResponse,
+    EditorInlineCompletionRequest,
+    EditorInlineCompletionResponse,
     EditorRunDetails,
     EditorSaveMode,
     EditorToolMetadataRequest,
@@ -70,6 +74,7 @@ router.include_router(workflow.router)
 router.include_router(sandbox.router)
 router.include_router(sandbox_settings.router)
 router.include_router(runs.router)
+router.include_router(completions.router)
 
 __all__ = [
     "AssignMaintainerRequest",
@@ -78,6 +83,8 @@ __all__ = [
     "DraftLockRequest",
     "DraftLockResponse",
     "EditorBootResponse",
+    "EditorInlineCompletionRequest",
+    "EditorInlineCompletionResponse",
     "EditorRunDetails",
     "EditorSaveMode",
     "EditorToolMetadataRequest",
@@ -105,6 +112,7 @@ __all__ = [
     "acquire_draft_lock",
     "assign_tool_maintainer",
     "create_draft_version",
+    "create_inline_completion",
     "download_artifact",
     "get_editor_for_tool",
     "get_editor_for_version",

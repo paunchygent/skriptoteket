@@ -18,6 +18,7 @@ from skriptoteket.di.editor import EditorProvider
 from skriptoteket.di.favorites import FavoritesProvider
 from skriptoteket.di.identity import IdentityProvider
 from skriptoteket.di.infrastructure import InfrastructureProvider
+from skriptoteket.di.llm import LlmProvider
 from skriptoteket.di.scripting import ScriptingProvider
 from skriptoteket.di.suggestions import SuggestionsProvider
 
@@ -27,6 +28,7 @@ __all__ = [
     "FavoritesProvider",
     "IdentityProvider",
     "InfrastructureProvider",
+    "LlmProvider",
     "ScriptingProvider",
     "SuggestionsProvider",
     "create_container",
@@ -41,6 +43,7 @@ def create_container(settings: Settings):
         CatalogProvider(),
         FavoritesProvider(),
         EditorProvider(),
+        LlmProvider(),
         ScriptingProvider(),
         SuggestionsProvider(),
     )
