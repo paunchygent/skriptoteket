@@ -13,7 +13,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-31
-- Branch / commit: `main` (`c25e400`)
+- Branch / commit: `main` (`8e5f630`)
 - Current sprint: `SPR-2026-01-05 Tool Editor Vertical Slice` (EPIC-14)
 - Production: Full Vue SPA (unchanged)
 - Completed: EPIC-14 Admin Tool Authoring (ST-14-01/14-02) done
@@ -67,5 +67,5 @@ pdm run ui-editor-smoke
 
 ## Next Steps
 
-- EPIC-06 review close-out: re-check `docs/backlog/reviews/review-epic-06-linter-architecture-refactor.md` and update review state if ST-06-10..14 now satisfy the requested changes.
+- Push `main` to `origin/main` (currently ahead locally).
 - ST-08-14: CodeMirror ghost-text integration with Tabby (ADR-0043 + ADR-0050); see `docs/runbooks/runbook-tabby-codemirror.md` for API client code.
