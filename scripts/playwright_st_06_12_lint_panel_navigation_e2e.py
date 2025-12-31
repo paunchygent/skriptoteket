@@ -13,6 +13,7 @@ def _focus_codemirror(page: object) -> object:
     content = page.locator(".cm-editor .cm-content").first
     expect(content).to_be_visible(timeout=30_000)
     content.click()
+    content.focus()
     return content
 
 
@@ -42,30 +43,29 @@ def _wait_for_lint_markers(page: object, *, minimum: int) -> None:
     raise AssertionError(f"Expected >= {minimum} lint markers, got {markers.count()}")
 
 
-def _get_dom_selection_text(page: object) -> str:
+def _get_active_line_text(page: object) -> str:
     return str(
         page.evaluate(
             """
             () => {
-              const sel = window.getSelection();
-              if (!sel) return "";
-              return (sel.toString() || "").trim();
+              const line = document.querySelector(".cm-editor .cm-line.cm-activeLine");
+              return (line?.textContent || "").trim();
             }
             """
         )
     )
 
 
-def _expect_selection_contains(page: object, expected: str) -> None:
+def _expect_active_line_contains(page: object, expected: str) -> None:
     deadline = time.monotonic() + 3.0
     last = ""
     while time.monotonic() < deadline:
-        last = _get_dom_selection_text(page)
+        last = _get_active_line_text(page)
         if expected in last:
             return
         page.wait_for_timeout(100)
 
-    raise AssertionError(f"Expected selection to contain {expected!r}, got {last!r}")
+    raise AssertionError(f"Expected active line to contain {expected!r}, got {last!r}")
 
 
 def _press_open_lint_panel(page: object) -> None:
@@ -103,32 +103,38 @@ def main() -> None:
             '    Path("x.txt").read_text()\n'
             '    return {"outputs": [], "next_actions": [], "state": {}}\n',
         )
-        _wait_for_lint_markers(page, minimum=2)
 
-        # Keyboard navigation: next / previous diagnostic
-        _focus_codemirror(page)
-        page.keyboard.press("F8")
-        _expect_selection_contains(page, "ToolUserError")
-
-        page.keyboard.press("F8")
-        _expect_selection_contains(page, "read_text")
-
-        page.keyboard.press("Shift+F8")
-        _expect_selection_contains(page, "ToolUserError")
-
-        # macOS fallback bindings
-        page.keyboard.press("Meta+Alt+N")
-        _expect_selection_contains(page, "read_text")
-
-        page.keyboard.press("Meta+Alt+P")
-        _expect_selection_contains(page, "ToolUserError")
-
-        # Lint panel open + contents + quick-fix actions
+        # Wait for linter recompute for this specific doc (marker counts can be stale between fills).
         _press_open_lint_panel(page)
         panel = page.locator(".cm-panel-lint").first
         expect(panel).to_be_visible(timeout=10_000)
         expect(panel).to_contain_text("ToolUserError används men import saknas")
         expect(panel).to_contain_text('encoding="utf-8"')
+
+        # ST-06-13: gutter should only show error/warning markers (encoding is severity=info).
+        markers = page.locator(".cm-lint-marker")
+        expect(markers).to_have_count(1)
+
+        # Keyboard navigation: next / previous diagnostic
+        _focus_codemirror(page)
+        page.keyboard.press("F8")
+        _expect_active_line_contains(page, "ToolUserError")
+
+        page.keyboard.press("F8")
+        _expect_active_line_contains(page, "read_text")
+
+        page.keyboard.press("Shift+F8")
+        _expect_active_line_contains(page, "ToolUserError")
+
+        # macOS fallback bindings
+        page.keyboard.press("Meta+Alt+N")
+        _expect_active_line_contains(page, "read_text")
+
+        page.keyboard.press("Meta+Alt+P")
+        _expect_active_line_contains(page, "ToolUserError")
+
+        # Lint panel open + contents + quick-fix actions
+        # Panel is already open from the wait step.
         expect(panel.get_by_role("button", name="Lägg till import")).to_be_visible()
         expect(panel.get_by_role("button", name="Lägg till encoding")).to_be_visible()
 

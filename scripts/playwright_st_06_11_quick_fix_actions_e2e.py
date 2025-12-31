@@ -56,6 +56,51 @@ def _wait_for_intelligence_loaded(page: object) -> None:
     _set_codemirror_value(page, "")
 
 
+def _press_open_lint_panel(page: object) -> object:
+    page.keyboard.press("Meta+Shift+M")
+    panel = page.locator(".cm-panel-lint").first
+    if panel.is_visible():
+        return panel
+    page.keyboard.press("Control+Shift+M")
+    return panel
+
+
+def _apply_quick_fix_in_lint_panel(
+    page: object,
+    *,
+    message_snippet: str,
+    action_label: str,
+    artifacts_dir: Path | None = None,
+    checkpoint: str | None = None,
+) -> None:
+    panel = _press_open_lint_panel(page)
+    expect(panel).to_be_visible(timeout=10_000)
+    expect(panel).to_contain_text(message_snippet, timeout=10_000)
+
+    button = panel.get_by_role("button", name=action_label).first
+    expect(button).to_be_visible(timeout=10_000)
+
+    if artifacts_dir and checkpoint:
+        (artifacts_dir / f"{checkpoint}-panel.html").write_text(
+            panel.inner_html() or "", encoding="utf-8"
+        )
+        page.screenshot(
+            path=str(artifacts_dir / f"{checkpoint}-panel-before-click.png"), full_page=True
+        )
+
+    button.click()
+    page.wait_for_timeout(100)
+    if button.is_visible():
+        button.click()
+
+    if artifacts_dir and checkpoint:
+        page.screenshot(
+            path=str(artifacts_dir / f"{checkpoint}-panel-after-click.png"), full_page=True
+        )
+
+    page.keyboard.press("Escape")
+
+
 def _apply_quick_fix(
     page: object,
     *,
@@ -188,7 +233,7 @@ def main() -> None:
             '    return {"outputs": [], "next_actions": [], "state": {}}\n',
         )
         page.wait_for_timeout(1_000)
-        _apply_quick_fix(
+        _apply_quick_fix_in_lint_panel(
             page,
             message_snippet='encoding="utf-8"',
             action_label="Lägg till encoding",
@@ -216,7 +261,7 @@ def main() -> None:
             page, 'def run_tool(input_dir, output_dir):\n    return {"outputs": []}\n'
         )
         page.wait_for_timeout(1_000)
-        _apply_quick_fix(
+        _apply_quick_fix_in_lint_panel(
             page,
             message_snippet="Retur-dict saknar nycklar",
             action_label="Lägg till nycklar",

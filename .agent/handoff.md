@@ -12,17 +12,19 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2025-12-30
-- Branch / commit: `main` (`2a04d3d`)
+- Date: 2025-12-31
+- Branch / commit: `main` (`c25e400`)
 - Current sprint: `SPR-2026-01-05 Tool Editor Vertical Slice` (EPIC-14)
 - Production: Full Vue SPA (unchanged)
 - Completed: EPIC-14 Admin Tool Authoring (ST-14-01/14-02) done
 
-## Current Session (2025-12-30)
+## Current Session (2025-12-31)
 
 - **AI infrastructure deployed**: llama-server (ROCm) + Tabby on hemma for self-hosted code completion.
   - Model: Qwen3-Coder-30B-A3B (MoE, ~18.5GB VRAM); ADR-0050; runbooks in `docs/runbooks/`.
 - EPIC-06 linter (ST-06-10/11/12): lint panel + navigation keymaps live in intelligence (`frontend/apps/skriptoteket/src/composables/editor/skriptoteketLintPanel.ts`, `frontend/apps/skriptoteket/src/composables/editor/skriptoteketIntelligence.ts`); base editor stays generic (`frontend/apps/skriptoteket/src/components/editor/CodeMirrorEditor.vue`).
+- ST-06-13: lint gutter filtering now shows only error/warning markers via `lintGutter({ markerFilter, tooltipFilter })` in `frontend/apps/skriptoteket/src/composables/editor/linter/adapters/codemirror/skriptoteketLinterAdapter.ts` (info/hint still discoverable via lint panel/tooltip).
+- ST-06-14: headless linter rule harness + unit tests (EditorState-only) in `frontend/apps/skriptoteket/src/test/headlessLinterHarness.ts` and `frontend/apps/skriptoteket/src/composables/editor/linter/headlessLinterHarness.spec.ts` (syntax error mapping + scope chain variable resolution + entrypoint rule example).
 - ST-06-12 E2E: `scripts/playwright_st_06_12_lint_panel_navigation_e2e.py` (opens lint panel, verifies F8/Shift-F8 + Mod-Alt-n/p, checks quick-fix buttons appear in the panel).
 - Frontend auth: align register response typing by not reading `csrf_token` from `RegisterResponse` (`frontend/apps/skriptoteket/src/stores/auth.ts`).
 - EPIC-14 ongoing: see `docs/backlog/sprints/sprint-2026-01-05-tool-editor-vertical-slice.md`.
@@ -65,5 +67,5 @@ pdm run ui-editor-smoke
 
 ## Next Steps
 
-- ST-06-13: lint gutter filtering/polish (markerFilter/tooltipFilter) and severity policy.
+- EPIC-06 review close-out: re-check `docs/backlog/reviews/review-epic-06-linter-architecture-refactor.md` and update review state if ST-06-10..14 now satisfy the requested changes.
 - ST-08-14: CodeMirror ghost-text integration with Tabby (ADR-0043 + ADR-0050); see `docs/runbooks/runbook-tabby-codemirror.md` for API client code.

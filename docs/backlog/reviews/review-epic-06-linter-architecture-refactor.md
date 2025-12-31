@@ -2,7 +2,7 @@
 type: review
 id: REV-EPIC-06
 title: "Review: Linter Architecture Refactor"
-status: changes_requested
+status: approved
 owners: "agents"
 created: 2025-12-29
 reviewer: "lead-developer"
@@ -65,7 +65,7 @@ Adopt a **Context-Rule** architecture:
 
 - [x] **Architecture:** Does the "Context" object capture enough information for current and future rules?
 - [x] **Data Flow:** Is the proposed `VariableTable` sufficient to solve the "dynamic outputs" problem without full type inference complexity?
-- [ ] **Testability:** Does the plan adequately address the lack of testing infrastructure?
+- [x] **Testability:** Does the plan adequately address the lack of testing infrastructure?
 - [x] **Migration:** Is the phased approach (Infrastructure -> Variable Tracking -> Decoupling) safe?
 
 ## Risk Assessment
@@ -122,3 +122,40 @@ Adopt a **Context-Rule** architecture:
 
 - **Type Guards:** Consider tracking `isinstance` checks in control flow to support `if isinstance(outputs, list): return outputs`, future-proofing the "dynamic" check.
 - **Performance Budget:** Add a constraint to the ADR that the entire Context Builder pass must stay under 5-10ms for typical files (<500 LOC) to ensure typing latency remains low.
+
+## Changes Made (2025-12-31)
+
+All required changes are implemented across ST-06-10..14:
+
+1. **Scoped Variable Table**
+   - Implemented `ScopeChain` + `lookupVariable` in `frontend/apps/skriptoteket/src/composables/editor/linter/domain/variables.ts`.
+   - Built from Lezer tree in `frontend/apps/skriptoteket/src/composables/editor/linter/infra/pythonVariables.ts` (scope stack + non-class parent chain).
+
+2. **Robustness Strategy + Syntax Error Handling**
+   - Context exposes syntax errors as domain diagnostics with stable `source: "ST_SYNTAX_ERROR"` via
+     `frontend/apps/skriptoteket/src/composables/editor/linter/infra/buildLinterContext.ts`.
+   - Default ruleset includes `SyntaxRule` returning `ctx.facts.syntaxErrors` (`frontend/apps/skriptoteket/src/composables/editor/linter/domain/rules/syntaxRule.ts`).
+
+3. **CodeMirror Quick Fix Actions**
+   - Domain rules emit `FixIntent[]` (`frontend/apps/skriptoteket/src/composables/editor/linter/domain/fixIntents.ts`).
+   - Adapter maps `FixIntent[]` → CodeMirror `Diagnostic.actions` with idempotency guards in
+     `frontend/apps/skriptoteket/src/composables/editor/linter/adapters/codemirror/skriptoteketLinterAdapter.ts`.
+
+4. **Lint Panel + Keyboard Navigation**
+   - Implemented in intelligence layer (keeps base editor generic) in
+     `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLintPanel.ts`.
+
+5. **Gutter Marker Filtering**
+   - `lintGutter({ markerFilter, tooltipFilter })` configured so gutter shows only error/warning markers while tooltip/panel keep all
+     severities in `frontend/apps/skriptoteket/src/composables/editor/linter/adapters/codemirror/skriptoteketLinterAdapter.ts`.
+
+6. **Headless Test Harness**
+   - Added true headless correctness harness (EditorState-only + `python()`) in `frontend/apps/skriptoteket/src/test/headlessLinterHarness.ts`.
+   - Added focused rule tests (syntax errors + scope-chain variable resolution) in
+     `frontend/apps/skriptoteket/src/composables/editor/linter/headlessLinterHarness.spec.ts`.
+   - Kept integration-heavy CodeMirror wiring spec in `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.spec.ts`.
+
+## Re-review (2025-12-31)
+
+**Reviewer:** lead-developer (agent)
+**Verdict:** approved (all required changes satisfied; headless harness added and verified in Vitest).

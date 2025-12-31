@@ -2,7 +2,7 @@
 type: story
 id: ST-06-14
 title: "Headless linter rule test harness"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-29
 epic: "EPIC-06"
@@ -21,7 +21,7 @@ and makes the architecture refactor safe.
 
 ## Scope
 
-- Add a Vitest harness to build a minimal test context from a code string.
+- Add a Vitest harness to build a minimal test context from a code string (EditorState-only + `python()`).
 - Add focused unit tests for:
   - syntax rule behavior
   - scope chain variable resolution (representative cases)
@@ -30,4 +30,10 @@ and makes the architecture refactor safe.
 
 ### Create
 
-- `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.spec.ts`
+- `frontend/apps/skriptoteket/src/test/headlessLinterHarness.ts`
+- `frontend/apps/skriptoteket/src/composables/editor/linter/headlessLinterHarness.spec.ts`
+
+### Notes
+
+- Keep `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.spec.ts` as a small integration spec
+  (EditorView/jsdom + CodeMirror wiring), but move rule correctness coverage into the headless harness.

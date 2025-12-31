@@ -57,7 +57,11 @@ export function skriptoteketLinterAdapter(config: SkriptoteketIntelligenceConfig
   const rules = createDefaultLintRules({ entrypointName });
 
   return [
-    lintGutter(),
+    lintGutter({
+      markerFilter: (diagnostics) =>
+        diagnostics.filter((diagnostic) => diagnostic.severity === "error" || diagnostic.severity === "warning"),
+      tooltipFilter: (diagnostics) => diagnostics.slice(),
+    }),
     linter((view) => {
       const ctx = buildLinterContext(view.state, { entrypointName });
 

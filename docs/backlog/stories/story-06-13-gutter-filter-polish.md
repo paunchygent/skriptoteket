@@ -2,7 +2,7 @@
 type: story
 id: ST-06-13
 title: "Lint gutter filtering and diagnostics polish"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-29
 epic: "EPIC-06"
