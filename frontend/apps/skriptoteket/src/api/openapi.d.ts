@@ -392,6 +392,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/editor/completions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Inline Completion */
+        post: operations["create_inline_completion_api_v1_editor_completions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/editor/tool-runs/{run_id}": {
         parameters: {
             query?: never;
@@ -1408,6 +1425,20 @@ export interface components {
             usage_instructions?: string | null;
             /** Versions */
             versions: components["schemas"]["EditorVersionSummary"][];
+        };
+        /** EditorInlineCompletionRequest */
+        EditorInlineCompletionRequest: {
+            /** Prefix */
+            prefix: string;
+            /** Suffix */
+            suffix: string;
+        };
+        /** EditorInlineCompletionResponse */
+        EditorInlineCompletionResponse: {
+            /** Completion */
+            completion: string;
+            /** Enabled */
+            enabled: boolean;
         };
         /** EditorRunDetails */
         EditorRunDetails: {
@@ -3523,6 +3554,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ListAllToolsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_inline_completion_api_v1_editor_completions_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditorInlineCompletionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorInlineCompletionResponse"];
                 };
             };
             /** @description Validation Error */
