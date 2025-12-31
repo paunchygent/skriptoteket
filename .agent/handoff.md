@@ -13,7 +13,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2025-12-31
-- Branch / commit: `main` (`f4a4269`)
+- Branch / commit: `main` (`003a7e7`)
 - Current sprint: `SPR-2026-01-05 Tool Editor Vertical Slice` (EPIC-14)
 - Production: Full Vue SPA (unchanged)
 - Completed: EPIC-14 Admin Tool Authoring (ST-14-01/14-02) done
@@ -26,6 +26,7 @@ Keep this file updated so the next session can pick up work quickly.
 - ST-06-13: lint gutter filtering now shows only error/warning markers via `lintGutter({ markerFilter, tooltipFilter })` in `frontend/apps/skriptoteket/src/composables/editor/linter/adapters/codemirror/skriptoteketLinterAdapter.ts` (info/hint still discoverable via lint panel/tooltip).
 - ST-06-14: headless linter rule harness + unit tests (EditorState-only) in `frontend/apps/skriptoteket/src/test/headlessLinterHarness.ts` and `frontend/apps/skriptoteket/src/composables/editor/linter/headlessLinterHarness.spec.ts` (syntax error mapping + scope chain variable resolution + entrypoint rule example).
 - ST-08-15: Contract diagnostics now emit stable `source` IDs (e.g. `ST_CONTRACT_OUTPUT_KIND_INVALID`) in `frontend/apps/skriptoteket/src/composables/editor/linter/domain/rules/contractRule.ts`; lint tooltip hides source row for error/warning only via CodeMirror theme in `frontend/apps/skriptoteket/src/composables/editor/linter/adapters/codemirror/skriptoteketLinterAdapter.ts` (lint panel still shows sources).
+- Contract copy tweak: invalid output kind message now says "Ogiltig typ" (not "Ogiltigt kind") in `frontend/apps/skriptoteket/src/composables/editor/linter/domain/rules/contractRule.ts`.
 - ST-06-12 E2E: `scripts/playwright_st_06_12_lint_panel_navigation_e2e.py` (opens lint panel, verifies F8/Shift-F8 + Mod-Alt-n/p, checks quick-fix buttons appear in the panel).
 - Frontend auth: align register response typing by not reading `csrf_token` from `RegisterResponse` (`frontend/apps/skriptoteket/src/stores/auth.ts`).
 - EPIC-14 ongoing: see `docs/backlog/sprints/sprint-2026-01-05-tool-editor-vertical-slice.md`.
