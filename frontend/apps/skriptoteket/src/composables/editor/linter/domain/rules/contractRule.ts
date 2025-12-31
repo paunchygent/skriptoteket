@@ -173,7 +173,7 @@ export const ContractRule: LintRule = {
             to: kindEntry.value?.to ?? Math.min(outputDict.from + 1, ctx.text.length),
             severity: "warning",
             source: ST_CONTRACT_OUTPUT_KIND_INVALID,
-            message: `Ogiltigt kind: "${kindValue}". Tillåtna: ${SKRIPTOTEKET_OUTPUT_KINDS.join(", ")}.`,
+            message: `Ogiltig typ: "${kindValue}". Tillåtna: ${SKRIPTOTEKET_OUTPUT_KINDS.join(", ")}.`,
           });
           continue;
         }

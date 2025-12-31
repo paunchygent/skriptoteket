@@ -45,7 +45,7 @@ Implementation note: extend the existing intelligence bundle (`skriptoteketIntel
 | `ST_CONTRACT_KEYS_MISSING` | info | Retur-dict saknar nycklar: outputs / next_actions / state. |
 | `ST_CONTRACT_OUTPUTS_NOT_LIST` | error | `outputs` måste vara en lista (`[...]`). |
 | `ST_CONTRACT_OUTPUT_KIND_MISSING` | warning | Ett output-objekt saknar "kind". |
-| `ST_CONTRACT_OUTPUT_KIND_INVALID` | warning | Ogiltigt kind: "\<value\>". Tillåtna: notice, markdown, table, json, html_sandboxed. |
+| `ST_CONTRACT_OUTPUT_KIND_INVALID` | warning | Ogiltig typ: "\<value\>". Tillåtna: notice, markdown, table, json, html_sandboxed. |
 | `ST_NOTICE_FIELDS_MISSING` | warning | Notice saknar "level" eller "message". |
 | `ST_NOTICE_LEVEL_INVALID` | warning | Notice level måste vara info/warning/error. |
 

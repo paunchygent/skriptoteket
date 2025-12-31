@@ -72,7 +72,7 @@ def run_tool(input_dir, output_dir):
     expect(
       diagnostics.some(
         (diagnostic) =>
-          diagnostic.source === "ST_CONTRACT_OUTPUT_KIND_INVALID" && diagnostic.message.includes("Ogiltigt kind"),
+          diagnostic.source === "ST_CONTRACT_OUTPUT_KIND_INVALID" && diagnostic.message.includes("Ogiltig typ"),
       ),
     ).toBe(true);
   });

@@ -275,7 +275,7 @@ def main() -> None:
             '        "state": None,\n'
             "    }\n",
         )
-        _expect_any_lint_message(page, 'Ogiltigt kind: "nope".')
+        _expect_any_lint_message(page, 'Ogiltig typ: "nope".')
         _expect_any_lint_message(page, "Tillåtna: notice, markdown, table, json, html_sandboxed.")
         page.screenshot(path=str(artifacts_dir / "lint-invalid-kind.png"), full_page=True)
 
