@@ -12,13 +12,13 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2025-12-31
-- Branch / commit: `main` (`9858fd9`)
+- Date: 2026-01-01
+- Branch / commit: `main` (`e968eb0`) + local changes
 - Current sprint: `SPR-2026-01-05 Tool Editor Vertical Slice` (EPIC-14)
 - Production: Full Vue SPA (unchanged)
 - Completed: EPIC-14 Admin Tool Authoring (ST-14-01/14-02) done
 
-## Current Session (2025-12-31)
+## Current Session (2026-01-01)
 
 - **AI infrastructure deployed**: llama-server (ROCm) + Tabby on hemma for self-hosted code completion.
   - Model: Qwen3-Coder-30B-A3B (MoE, ~18.5GB VRAM); ADR-0050; runbooks in `docs/runbooks/`.
@@ -26,6 +26,32 @@ Keep this file updated so the next session can pick up work quickly.
   - Backend proxy: `POST /api/v1/editor/completions` in `src/skriptoteket/web/api/v1/editor/completions.py` (auth + CSRF), with protocol-first DI in `src/skriptoteket/di/llm.py`.
   - OpenAI-compatible provider: `src/skriptoteket/infrastructure/llm/openai_provider.py` (chat/completions + Qwen FIM tokens; truncation discard).
   - CodeMirror extension: `frontend/apps/skriptoteket/src/composables/editor/skriptoteketGhostText.ts` (auto-trigger 1500ms, Alt+\\, Tab accept, Escape dismiss, clear-on-change).
+- ST-08-16: AI edit suggestions MVP (llama-server only, raw replacement text).
+  - Backend endpoint: `POST /api/v1/editor/edits` in `src/skriptoteket/web/api/v1/editor/edits.py` (auth + CSRF).
+  - Handler + protocol: `src/skriptoteket/application/editor/edit_suggestion_handler.py`, `src/skriptoteket/protocols/llm.py` (separate edit provider config).
+  - UI preview/apply: `frontend/apps/skriptoteket/src/components/editor/EditorEditSuggestionPanel.vue` + `useEditorEditSuggestions.ts`.
+  - CodeMirror view exposure: `CodeMirrorEditor.vue` emits `viewReady` for edit-apply transactions.
+- ST-08-16 fix (empty suggestions): Qwen edit responses were empty due to stop sequence + fenced outputs.
+  - Remove fenced examples from Contract fragment: `src/skriptoteket/application/editor/prompt_fragments.py`.
+  - Edit provider uses stop `"\n```"` (avoid immediate stop): `src/skriptoteket/infrastructure/llm/openai_provider.py`.
+  - Edit handler unwraps fenced output + accepts raw text: `src/skriptoteket/application/editor/edit_suggestion_handler.py`.
+- ST-08-16 context budget fix (llama.cpp `n_ctx=4096`): switch to LLM KB + strict prompt budgeting + graceful 400 handling.
+  - System prompt templates: `LLM_COMPLETION_TEMPLATE_ID` / `LLM_EDIT_TEMPLATE_ID` defaults in `src/skriptoteket/config.py` (registry in `src/skriptoteket/application/editor/prompt_templates.py`).
+  - Budgeting helper: `src/skriptoteket/application/editor/prompt_budget.py` (selection preserved; trim prefix/suffix first).
+  - Handlers: `src/skriptoteket/application/editor/completion_handler.py`, `src/skriptoteket/application/editor/edit_suggestion_handler.py`.
+  - Docs: updated env var + budgeting spec in `docs/reference/ref-ai-completion-architecture.md`.
+- ST-08-17 drafted: Tabby edit suggestions + prompt A/B evaluation follow-up story.
+  - `docs/backlog/stories/story-08-17-tabby-edit-suggestions-ab-testing.md` + epic list update.
+- ST-08-18: AI prompt system v1 (templates + contract fragments + validation + template-id logging).
+  - Registry: `src/skriptoteket/application/editor/prompt_templates.py` (IDs + required placeholders).
+  - Composition/validation: `src/skriptoteket/application/editor/prompt_composer.py` (placeholder resolution + system prompt budget).
+  - Code-owned fragments: `src/skriptoteket/application/editor/prompt_fragments.py` (Contract v2 + runner constraints + helpers).
+  - Templates: `src/skriptoteket/application/editor/system_prompts/*.txt` (placeholders like `{{CONTRACT_V2_FRAGMENT}}`).
+  - Env vars: `LLM_COMPLETION_TEMPLATE_ID`, `LLM_EDIT_TEMPLATE_ID`.
+  - Tests: `tests/unit/application/test_ai_prompt_system_v1.py`.
+- ST-08-19: live prompt eval harness + admin-only eval headers.
+  - Harness: `scripts/ai_prompt_eval/run_live_backend.py` + fixture bank in `scripts/ai_prompt_eval/fixture_bank.py`.
+  - Eval headers: `X-Skriptoteket-Eval` on `/api/v1/editor/completions` and `/api/v1/editor/edits`.
 - EPIC-06 linter (ST-06-10/11/12): lint panel + navigation keymaps live in intelligence (`frontend/apps/skriptoteket/src/composables/editor/skriptoteketLintPanel.ts`, `frontend/apps/skriptoteket/src/composables/editor/skriptoteketIntelligence.ts`); base editor stays generic (`frontend/apps/skriptoteket/src/components/editor/CodeMirrorEditor.vue`).
 - ST-06-13: lint gutter filtering now shows only error/warning markers via `lintGutter({ markerFilter, tooltipFilter })` in `frontend/apps/skriptoteket/src/composables/editor/linter/adapters/codemirror/skriptoteketLinterAdapter.ts` (info/hint still discoverable via lint panel/tooltip).
 - ST-06-14: headless linter rule harness + unit tests (EditorState-only) in `frontend/apps/skriptoteket/src/test/headlessLinterHarness.ts` and `frontend/apps/skriptoteket/src/composables/editor/linter/headlessLinterHarness.spec.ts` (syntax error mapping + scope chain variable resolution + entrypoint rule example).
@@ -41,10 +67,16 @@ Keep this file updated so the next session can pick up work quickly.
 - SPA typecheck: `pnpm -C frontend --filter @skriptoteket/spa typecheck` (pass)
 - SPA lint: `pnpm -C frontend --filter @skriptoteket/spa lint` (pass)
 - Frontend tests: `pdm run fe-test` (pass)
-- SPA build: `pdm run fe-build` (pass)
+- OpenAPI types: `pdm run fe-gen-api-types` (pass)
+- SPA build: not rerun after ST-08-16 changes
 - UI (editor smoke): `pdm run ui-editor-smoke` (pass; artifacts in `.artifacts/ui-editor-smoke/`; Playwright required escalation on macOS)
 - UI (ST-08-14): `pdm run python -m scripts.playwright_st_08_14_ai_inline_completions_e2e` (pass; artifacts in `.artifacts/st-08-14-ai-inline-completions-e2e/`; Playwright required escalation on macOS)
+- UI (ST-08-16): `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_08_16_ai_edit_suggestions_e2e` (pass; artifacts in `.artifacts/st-08-16-ai-edit-suggestions-e2e/`; Playwright required escalation on macOS)
+- Manual (ST-08-16): `PYTHONPATH=src pdm run python - <<'PY'` login + `POST /api/v1/editor/edits` (eval headers) confirms non-empty suggestion after restart.
 - Backend tests (ST-08-14): `pdm run test tests/unit/application/test_editor_inline_completion_handler.py tests/unit/web/test_editor_inline_completion_api.py` (pass)
+- Backend tests (ST-08-16): `pdm run test tests/unit/application/test_editor_edit_suggestion_handler.py tests/unit/web/test_editor_edit_suggestion_api.py` (pass)
+- Backend tests (context budgeting): `pdm run test tests/unit/application/test_editor_inline_completion_handler.py tests/unit/application/test_editor_edit_suggestion_handler.py` (pass)
+- Backend tests (ST-08-18): `pdm run test tests/unit/application/test_ai_prompt_system_v1.py tests/unit/application/test_editor_inline_completion_handler.py tests/unit/application/test_editor_edit_suggestion_handler.py` (pass)
 - UI (ST-06-11): `pdm run python -m scripts.playwright_st_06_11_quick_fix_actions_e2e` (pass; artifacts in `.artifacts/st-06-11-quick-fix-actions-e2e/`; Playwright required escalation on macOS)
 - UI (ST-06-12): `pdm run python -m scripts.playwright_st_06_12_lint_panel_navigation_e2e` (pass; artifacts in `.artifacts/st-06-12-lint-panel-navigation-e2e/`; Playwright required escalation on macOS)
 
@@ -72,7 +104,10 @@ pdm run ui-editor-smoke
 
 - Playwright Chromium may require escalated permissions on macOS (MachPort permission errors); CodeMirror lint tooltip action buttons can be flaky to click in Playwright—use a DOM-evaluate click helper.
 - AI inference: llama-server (:8082) + Tabby (:8083) running on hemma; see GPU/Tabby runbooks if services need restart.
+- Prompt budgeting is a conservative char→token approximation; rare over-budget cases can still happen and return empty completion/suggestion (see `docs/reference/reports/ref-ai-edit-suggestions-kb-context-budget-blocker.md`).
+- Dev UI uses Vite proxy to `127.0.0.1:8000` (host backend); check the `pdm run dev` terminal for errors, not `docker logs`, unless the UI is pointed at the container port directly.
 
 ## Next Steps
 
-- ST-08-14: CodeMirror ghost-text integration with Tabby (ADR-0043 + ADR-0050); see `docs/runbooks/runbook-tabby-codemirror.md` for API client code.
+- ST-08-17: Evaluate Tabby chat + prompt A/B testing once ST-08-16 is validated.
+- Re-run `pdm run fe-build` after recent editor UI changes.
