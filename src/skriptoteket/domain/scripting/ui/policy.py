@@ -32,6 +32,7 @@ class UiPolicyCaps(BaseModel):
     max_outputs: int
     max_next_actions: int
     max_fields_per_action: int
+    notice_message_max_bytes: int
 
     markdown_max_bytes: int
     html_sandboxed_max_bytes: int
@@ -54,6 +55,7 @@ class UiPolicyCaps(BaseModel):
         "max_outputs",
         "max_next_actions",
         "max_fields_per_action",
+        "notice_message_max_bytes",
         "markdown_max_bytes",
         "html_sandboxed_max_bytes",
         "table_max_rows",
@@ -125,6 +127,7 @@ DEFAULT_UI_POLICY = UiPolicy(
         max_outputs=50,
         max_next_actions=10,
         max_fields_per_action=25,
+        notice_message_max_bytes=8 * _KIB,
         markdown_max_bytes=64 * _KIB,
         html_sandboxed_max_bytes=96 * _KIB,
         table_max_rows=750,
@@ -161,6 +164,7 @@ CURATED_UI_POLICY = UiPolicy(
         max_outputs=150,
         max_next_actions=25,
         max_fields_per_action=60,
+        notice_message_max_bytes=8 * _KIB,
         markdown_max_bytes=256 * _KIB,
         html_sandboxed_max_bytes=192 * _KIB,
         table_max_rows=2_500,

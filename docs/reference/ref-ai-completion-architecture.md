@@ -169,8 +169,11 @@ LLM_COMPLETION_MODEL=gpt-5-2-codex
 
 ## 5. Knowledge Base Injection
 
-The backend injects Skriptoteket's knowledge base into the system prompt or FIM prefix. This ensures the LLM
-understands:
+The backend injects Skriptoteket's knowledge base into the **system prompt** (chat system message). Inline completions
+still use FIM prompting for the **user** content (prefix/suffix + model FIM tokens), but the KB is treated as
+high-priority instruction content.
+
+This ensures the LLM understands:
 
 - Runner constraints (no network, sandbox environment)
 - Contract v2 format (outputs, next_actions, state)
@@ -179,7 +182,9 @@ understands:
 
 ### 5.1 Condensed KB (~450 tokens)
 
-For injection into prompts:
+For injection into prompts (example content). In production we compose the system prompt from a repo-owned prompt
+template selected by `LLM_COMPLETION_TEMPLATE_ID` / `LLM_EDIT_TEMPLATE_ID`, with code-owned fragments (Contract v2 +
+runner constraints + helpers) (ST-08-18).
 
 ```text
 Skriptoteket Python script completion. Scripts process uploaded files and return structured results.
@@ -232,9 +237,24 @@ LIBRARIES: pandas, openpyxl, pypdf, python-docx, weasyprint, jinja2
 
 ### 5.2 Production Requirements
 
-- **Loading strategy:** Load KB once at startup (or first request) and cache in memory
-- **Packaging strategy:** Ship KB content with the application (package data or embedded constant)
-- **Failure mode:** If KB cannot be loaded, return `{ "completion": "", "enabled": false }`
+- **Loading strategy:** Load template text from disk (cached) and compose the system prompt per request
+- **Packaging strategy:** Ship prompt templates with the application (`src/skriptoteket/application/editor/system_prompts/`)
+- **Failure mode:** If a prompt template cannot be loaded or composed, return `{ "completion": "", "enabled": false }`
+
+### 5.3 Context Budget Enforcement (llama.cpp `n_ctx=4096`)
+
+For both inline completions and edit suggestions, llama.cpp enforces that **prompt tokens + output tokens** fit within
+the configured context window (`n_ctx`). This means `max_tokens` reduces the available prompt budget.
+
+Skriptoteket enforces a deterministic prompt budget in the backend:
+
+- Use the dedicated system prompt templates (selected by template ID):
+  - `LLM_COMPLETION_TEMPLATE_ID` (inline completions)
+  - `LLM_EDIT_TEMPLATE_ID` (edit suggestions)
+- Reserve an explicit safety margin
+- Trim suffix first, then prefix; reduce KB last (if still over budget)
+
+Budgeting is implemented as a conservative, char-based approximation in `src/skriptoteket/application/editor/prompt_budget.py`.
 
 ---
 
@@ -253,10 +273,10 @@ X-CSRFToken: <csrf_token>
 }
 ```
 
-**Limits:**
+Notes:
 
-- `prefix`: max 8000 characters
-- `suffix`: max 4000 characters
+- The API accepts large `prefix`/`suffix` strings, but the backend will trim them deterministically to fit the configured
+  context budget (see 5.3).
 
 ### 6.2 Response
 
@@ -330,15 +350,53 @@ type GhostTextState = {
 
 ### 8.1 Backend (Environment Variables)
 
+Prompt templates:
+
+- `LLM_COMPLETION_TEMPLATE_ID` (default: `inline_completion_v1`)
+- `LLM_EDIT_TEMPLATE_ID` (default: `edit_suggestion_v1`)
+
+Notes:
+
+- Templates are repo-owned text files with placeholders like `{{CONTRACT_V2_FRAGMENT}}`.
+- Placeholders are replaced with code-owned fragments sourced from canonical Contract v2 + policy definitions.
+
+Inline completions:
+
 | Variable | Default | Description |
 | -------- | ------- | ----------- |
+| `LLM_COMPLETION_TEMPLATE_ID` | `inline_completion_v1` | Prompt template ID for system prompt composition |
 | `LLM_COMPLETION_ENABLED` | `false` | Enable/disable feature |
 | `LLM_COMPLETION_BASE_URL` | `http://localhost:8082` | LLM API URL |
-| `OPENAI_LLM_COMPLETION_API_KEY` | `None` | API key (optional for self-hosted) |
+| `OPENAI_LLM_COMPLETION_API_KEY` | `""` | API key (optional for self-hosted) |
 | `LLM_COMPLETION_MODEL` | `qwen3-coder-30b-a3b` | Model name |
 | `LLM_COMPLETION_MAX_TOKENS` | `256` | Max tokens in response |
 | `LLM_COMPLETION_TEMPERATURE` | `0.2` | Sampling temperature |
 | `LLM_COMPLETION_TIMEOUT_SECONDS` | `30` | Request timeout |
+| `LLM_COMPLETION_CONTEXT_WINDOW_TOKENS` | `4096` | Context window (prompt + output), matches llama.cpp `n_ctx` |
+| `LLM_COMPLETION_CONTEXT_SAFETY_MARGIN_TOKENS` | `256` | Reserved prompt budget for chat wrapping/variance |
+| `LLM_COMPLETION_SYSTEM_PROMPT_MAX_TOKENS` | `1024` | Target max tokens for system prompt (rules + KB) |
+| `LLM_COMPLETION_PREFIX_MAX_TOKENS` | `2048` | Target max tokens for prefix (keeps tail near cursor) |
+| `LLM_COMPLETION_SUFFIX_MAX_TOKENS` | `512` | Target max tokens for suffix (keeps head after cursor) |
+
+Edit suggestions:
+
+| Variable | Default | Description |
+| -------- | ------- | ----------- |
+| `LLM_EDIT_TEMPLATE_ID` | `edit_suggestion_v1` | Prompt template ID for system prompt composition |
+| `LLM_EDIT_ENABLED` | `false` | Enable/disable feature |
+| `LLM_EDIT_BASE_URL` | `http://localhost:8082` | LLM API URL |
+| `OPENAI_LLM_EDIT_API_KEY` | `""` | API key (optional for self-hosted) |
+| `LLM_EDIT_MODEL` | `qwen3-coder-30b-a3b` | Model name |
+| `LLM_EDIT_MAX_TOKENS` | `512` | Max tokens in response |
+| `LLM_EDIT_TEMPERATURE` | `0.2` | Sampling temperature |
+| `LLM_EDIT_TIMEOUT_SECONDS` | `60` | Request timeout |
+| `LLM_EDIT_CONTEXT_WINDOW_TOKENS` | `4096` | Context window (prompt + output), matches llama.cpp `n_ctx` |
+| `LLM_EDIT_CONTEXT_SAFETY_MARGIN_TOKENS` | `256` | Reserved prompt budget for chat wrapping/variance |
+| `LLM_EDIT_SYSTEM_PROMPT_MAX_TOKENS` | `1024` | Target max tokens for system prompt (rules + KB) |
+| `LLM_EDIT_INSTRUCTION_MAX_TOKENS` | `128` | Target max tokens for edit instruction |
+| `LLM_EDIT_SELECTION_MAX_TOKENS` | `896` | Target max tokens for selection (preserved first) |
+| `LLM_EDIT_PREFIX_MAX_TOKENS` | `1024` | Target max tokens for prefix context |
+| `LLM_EDIT_SUFFIX_MAX_TOKENS` | `256` | Target max tokens for suffix context |
 
 ### 8.2 Frontend (Intelligence Config)
 
@@ -392,6 +450,9 @@ type SkriptoteketIntelligenceConfig = {
 | `src/skriptoteket/application/editor/completion_handler.py` | Handler with KB injection |
 | `src/skriptoteket/di/llm.py` | DI provider |
 | `src/skriptoteket/config.py` | Configuration settings |
+| `src/skriptoteket/application/editor/prompt_templates.py` | Prompt template registry (IDs + required placeholders) |
+| `src/skriptoteket/application/editor/prompt_fragments.py` | Code-owned fragments (Contract v2 + runner constraints + helpers) |
+| `src/skriptoteket/application/editor/prompt_composer.py` | Template composition + validation (placeholders + budget) |
 | `src/skriptoteket/web/api/v1/editor.py` | API endpoint |
 
 ### 10.2 Frontend
@@ -409,7 +470,7 @@ type SkriptoteketIntelligenceConfig = {
 ### 11.1 Backend
 
 - Unit: Provider formats FIM request correctly
-- Unit: Handler injects KB into system prompt
+- Unit: System prompt template composes (placeholders resolved, within budget)
 - Integration: Endpoint requires auth + CSRF
 - Integration: Returns `enabled=false` when disabled
 - Integration: Truncated response returns empty completion

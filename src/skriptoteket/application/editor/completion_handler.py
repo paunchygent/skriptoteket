@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
-from functools import lru_cache
-from pathlib import Path
 
 import httpx
 import structlog
 
+from skriptoteket.application.editor.prompt_budget import apply_inline_completion_budget
+from skriptoteket.application.editor.prompt_composer import (
+    PromptTemplateError,
+    compose_system_prompt,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
@@ -16,49 +20,63 @@ from skriptoteket.protocols.llm import (
     InlineCompletionProviderProtocol,
     InlineCompletionResult,
     LLMCompletionRequest,
+    PromptEvalMeta,
 )
 
 logger = structlog.get_logger(__name__)
 
-_PREFIX_MAX_CHARS = 8000
-_SUFFIX_MAX_CHARS = 4000
+_CODE_FENCE_PATTERN = re.compile(r"```[a-zA-Z0-9_-]*\n(.*?)```", re.DOTALL)
 
 
-def _resolve_kb_path() -> Path:
-    # Repo layout: <root>/src/skriptoteket/application/editor/completion_handler.py
-    root = Path(__file__).resolve().parents[4]
-    return root / "docs/reference/ref-ai-script-generation-kb.md"
+def _looks_like_fence_tag(line: str) -> bool:
+    tag = line.strip()
+    if not tag:
+        return False
+    if len(tag) > 32:
+        return False
+    return all(ch.isalnum() or ch in ("-", "_", "+", ".") for ch in tag)
 
 
-@lru_cache(maxsize=1)
-def _load_kb_text() -> str:
-    path = _resolve_kb_path()
-    return path.read_text(encoding="utf-8")
+def _extract_first_fenced_block(text: str) -> str | None:
+    match = _CODE_FENCE_PATTERN.search(text)
+    if not match:
+        if "```" not in text:
+            return None
+        parts = text.split("```", 2)
+        if len(parts) < 2:
+            return None
+        content = parts[1]
+    else:
+        content = match.group(1)
+
+    if "\n" in content:
+        first_line, rest = content.split("\n", 1)
+        if _looks_like_fence_tag(first_line):
+            content = rest
+    return content
 
 
-def _build_system_prompt(kb_text: str) -> str:
-    return (
-        "You are an AI code completion assistant for Skriptoteket.\n"
-        "Return ONLY the code that should be inserted at the cursor.\n"
-        "- No markdown\n"
-        "- No explanations\n"
-        "- Preserve indentation and newlines\n"
-        "- Prefer Swedish user-facing messages\n\n"
-        "Knowledge base:\n"
-        f"{kb_text}\n"
-    )
+def _normalize_inline_completion(completion: str) -> str:
+    if not completion:
+        return ""
+    fenced = _extract_first_fenced_block(completion)
+    if fenced is not None:
+        return fenced.strip("\n")
+    return completion.strip("\n")
 
 
-def _trim_prefix(prefix: str) -> str:
-    if len(prefix) <= _PREFIX_MAX_CHARS:
-        return prefix
-    return prefix[-_PREFIX_MAX_CHARS:]
-
-
-def _trim_suffix(suffix: str) -> str:
-    if len(suffix) <= _SUFFIX_MAX_CHARS:
-        return suffix
-    return suffix[:_SUFFIX_MAX_CHARS]
+def _is_context_window_error(exc: httpx.HTTPStatusError) -> bool:
+    response = exc.response
+    if response is None:
+        return False
+    if response.status_code != 400:
+        return False
+    try:
+        payload = response.json()
+    except ValueError:
+        payload = None
+    haystack = str(payload) if payload is not None else response.text
+    return "exceed_context_size_error" in haystack.lower()
 
 
 class InlineCompletionHandler(InlineCompletionHandlerProtocol):
@@ -67,11 +85,15 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
         *,
         settings: Settings,
         provider: InlineCompletionProviderProtocol,
-        kb_loader: Callable[[], str] = _load_kb_text,
+        system_prompt_loader: Callable[[str], str] | None = None,
     ) -> None:
         self._settings = settings
         self._provider = provider
-        self._kb_loader = kb_loader
+        self._system_prompt_loader = system_prompt_loader or (
+            lambda template_id: compose_system_prompt(
+                template_id=template_id, settings=settings
+            ).text
+        )
 
     async def handle(
         self,
@@ -82,18 +104,56 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
         require_at_least_role(user=actor, role=Role.CONTRIBUTOR)
 
         if not self._settings.LLM_COMPLETION_ENABLED:
-            return InlineCompletionResult(completion="", enabled=False)
+            return InlineCompletionResult(
+                completion="",
+                enabled=False,
+                eval_meta=PromptEvalMeta(
+                    template_id=self._settings.LLM_COMPLETION_TEMPLATE_ID,
+                    outcome="error",
+                    system_prompt_chars=0,
+                    prefix_chars=len(command.prefix),
+                    suffix_chars=len(command.suffix),
+                ),
+            )
 
+        template_id = self._settings.LLM_COMPLETION_TEMPLATE_ID
         try:
-            kb_text = self._kb_loader()
-        except OSError:
-            logger.warning("ai_completion_kb_unavailable")
-            return InlineCompletionResult(completion="", enabled=False)
+            system_prompt = self._system_prompt_loader(template_id)
+        except (OSError, PromptTemplateError):
+            logger.warning(
+                "ai_completion_system_prompt_unavailable",
+                template_id=getattr(self._settings, "LLM_COMPLETION_TEMPLATE_ID", None),
+            )
+            return InlineCompletionResult(
+                completion="",
+                enabled=False,
+                eval_meta=PromptEvalMeta(
+                    template_id=template_id,
+                    outcome="error",
+                    system_prompt_chars=0,
+                    prefix_chars=len(command.prefix),
+                    suffix_chars=len(command.suffix),
+                ),
+            )
 
-        system_prompt = _build_system_prompt(kb_text)
-        request = LLMCompletionRequest(
-            prefix=_trim_prefix(command.prefix),
-            suffix=_trim_suffix(command.suffix),
+        system_prompt, prefix, suffix = apply_inline_completion_budget(
+            system_prompt=system_prompt,
+            prefix=command.prefix,
+            suffix=command.suffix,
+            context_window_tokens=self._settings.LLM_COMPLETION_CONTEXT_WINDOW_TOKENS,
+            max_output_tokens=self._settings.LLM_COMPLETION_MAX_TOKENS,
+            safety_margin_tokens=self._settings.LLM_COMPLETION_CONTEXT_SAFETY_MARGIN_TOKENS,
+            system_prompt_max_tokens=self._settings.LLM_COMPLETION_SYSTEM_PROMPT_MAX_TOKENS,
+            prefix_max_tokens=self._settings.LLM_COMPLETION_PREFIX_MAX_TOKENS,
+            suffix_max_tokens=self._settings.LLM_COMPLETION_SUFFIX_MAX_TOKENS,
+        )
+        request = LLMCompletionRequest(prefix=prefix, suffix=suffix)
+        logger.info(
+            "ai_inline_completion_request",
+            template_id=template_id,
+            prefix_len=len(request.prefix),
+            suffix_len=len(request.suffix),
+            user_id=str(actor.id),
         )
 
         try:
@@ -101,20 +161,108 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
                 request=request,
                 system_prompt=system_prompt,
             )
-        except (httpx.TimeoutException, httpx.RequestError):
+        except httpx.TimeoutException:
             logger.info(
                 "ai_inline_completion_failed",
+                template_id=template_id,
                 prefix_len=len(request.prefix),
                 suffix_len=len(request.suffix),
                 user_id=str(actor.id),
             )
-            return InlineCompletionResult(completion="", enabled=True)
+            return InlineCompletionResult(
+                completion="",
+                enabled=True,
+                eval_meta=PromptEvalMeta(
+                    template_id=template_id,
+                    outcome="timeout",
+                    system_prompt_chars=len(system_prompt),
+                    prefix_chars=len(request.prefix),
+                    suffix_chars=len(request.suffix),
+                ),
+            )
+        except httpx.HTTPStatusError as exc:
+            if _is_context_window_error(exc):
+                logger.info(
+                    "ai_inline_completion_over_budget",
+                    template_id=template_id,
+                    prefix_len=len(request.prefix),
+                    suffix_len=len(request.suffix),
+                    user_id=str(actor.id),
+                )
+                return InlineCompletionResult(
+                    completion="",
+                    enabled=True,
+                    eval_meta=PromptEvalMeta(
+                        template_id=template_id,
+                        outcome="over_budget",
+                        system_prompt_chars=len(system_prompt),
+                        prefix_chars=len(request.prefix),
+                        suffix_chars=len(request.suffix),
+                    ),
+                )
+
+            logger.info(
+                "ai_inline_completion_failed",
+                template_id=template_id,
+                prefix_len=len(request.prefix),
+                suffix_len=len(request.suffix),
+                user_id=str(actor.id),
+                status_code=exc.response.status_code if exc.response is not None else None,
+            )
+            return InlineCompletionResult(
+                completion="",
+                enabled=True,
+                eval_meta=PromptEvalMeta(
+                    template_id=template_id,
+                    outcome="error",
+                    system_prompt_chars=len(system_prompt),
+                    prefix_chars=len(request.prefix),
+                    suffix_chars=len(request.suffix),
+                ),
+            )
+        except (httpx.RequestError, ValueError):
+            logger.info(
+                "ai_inline_completion_failed",
+                template_id=template_id,
+                prefix_len=len(request.prefix),
+                suffix_len=len(request.suffix),
+                user_id=str(actor.id),
+            )
+            return InlineCompletionResult(
+                completion="",
+                enabled=True,
+                eval_meta=PromptEvalMeta(
+                    template_id=template_id,
+                    outcome="error",
+                    system_prompt_chars=len(system_prompt),
+                    prefix_chars=len(request.prefix),
+                    suffix_chars=len(request.suffix),
+                ),
+            )
 
         if response.finish_reason == "length":
-            return InlineCompletionResult(completion="", enabled=True)
+            return InlineCompletionResult(
+                completion="",
+                enabled=True,
+                eval_meta=PromptEvalMeta(
+                    template_id=template_id,
+                    outcome="truncated",
+                    system_prompt_chars=len(system_prompt),
+                    prefix_chars=len(request.prefix),
+                    suffix_chars=len(request.suffix),
+                ),
+            )
 
-        completion = response.completion
-        if completion and completion.lstrip().startswith("```"):
-            completion = ""
-
-        return InlineCompletionResult(completion=completion, enabled=True)
+        completion = _normalize_inline_completion(response.completion)
+        outcome = "ok" if completion else "empty"
+        return InlineCompletionResult(
+            completion=completion,
+            enabled=True,
+            eval_meta=PromptEvalMeta(
+                template_id=template_id,
+                outcome=outcome,
+                system_prompt_chars=len(system_prompt),
+                prefix_chars=len(request.prefix),
+                suffix_chars=len(request.suffix),
+            ),
+        )

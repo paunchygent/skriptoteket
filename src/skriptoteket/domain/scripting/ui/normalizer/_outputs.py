@@ -10,8 +10,6 @@ from ._json_canonical import (
 )
 from ._stats import _NormalizationStats
 
-_TOOL_NOTICE_MAX_BYTES = 8 * 1024
-
 
 def _normalize_table_output(
     output: contract_v2.UiTableOutput,
@@ -101,7 +99,7 @@ def _normalize_outputs(
         if isinstance(output, contract_v2.UiNoticeOutput):
             truncated, did_truncate = _utf8_truncate(
                 output.message,
-                max_bytes=_TOOL_NOTICE_MAX_BYTES,
+                max_bytes=caps.notice_message_max_bytes,
             )
             if did_truncate:
                 stats.notices_truncated += 1
