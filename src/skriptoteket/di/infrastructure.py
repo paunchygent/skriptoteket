@@ -76,6 +76,7 @@ from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordH
 from skriptoteket.infrastructure.session_files.local_session_file_storage import (
     LocalSessionFileStorage,
 )
+from skriptoteket.infrastructure.time.asyncio_sleeper import AsyncioSleeper
 from skriptoteket.infrastructure.token_generator import SecureTokenGenerator
 from skriptoteket.protocols.catalog import (
     CategoryRepositoryProtocol,
@@ -113,6 +114,7 @@ from skriptoteket.protocols.scripting_ui import (
     UiPolicyProviderProtocol,
 )
 from skriptoteket.protocols.session_files import SessionFileStorageProtocol
+from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.suggestions import (
     SuggestionDecisionRepositoryProtocol,
     SuggestionRepositoryProtocol,
@@ -164,6 +166,10 @@ class InfrastructureProvider(Provider):
     @provide(scope=Scope.APP)
     def clock(self) -> ClockProtocol:
         return UTCClock()
+
+    @provide(scope=Scope.APP)
+    def sleeper(self) -> SleeperProtocol:
+        return AsyncioSleeper()
 
     @provide(scope=Scope.APP)
     def id_generator(self) -> IdGeneratorProtocol:

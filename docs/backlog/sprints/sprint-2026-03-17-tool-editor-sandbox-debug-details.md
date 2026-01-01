@@ -19,6 +19,19 @@ Improve author iteration speed by making sandbox errors debuggable without serve
 
 Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
+## Before / After
+
+**Before**
+
+- Sandbox failures surface a safe `error_summary`, but stdout/stderr are not available in the editor UI.
+- Authors often need server-side logs (or trial-and-error) to diagnose Python errors.
+
+**After**
+
+- Authorized users can view **truncated** stdout/stderr for a sandbox run in an editor Debug panel.
+- Users can copy a single “debug bundle” (ids + truncation flags + stdout/stderr) for support and future AI assistance.
+- Non-authorized users never receive stdout/stderr.
+
 ## Scope (committed stories)
 
 - [ST-14-11: Editor sandbox run debug details API (stdout/stderr, gated)](../stories/story-14-11-editor-sandbox-run-debug-details-api.md)
@@ -40,9 +53,11 @@ Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
 ## Execution plan (suggested)
 
-1) Extend editor run details response model to optionally include `stdout`/`stderr` (truncated).
-2) Gate the new fields based on role/maintainer access.
-3) Add a debug UI panel in `SandboxRunner` to show/copy the details.
+## Pacing checklist (suggested)
+
+- [ ] Extend editor run details response model to include `stdout`/`stderr` (truncated) with explicit truncation flags.
+- [ ] Gate the new fields based on role/maintainer access, and keep logs metadata-only (never stdout/stderr content).
+- [ ] Add a Debug panel UI in `SandboxRunner` to show/copy the details (including a single “copy bundle” action).
 
 ## Demo checklist
 

@@ -2,7 +2,7 @@
 type: story
 id: ST-08-02
 title: "Robust email verification flow"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-30
 epic: "EPIC-08"

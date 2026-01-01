@@ -17,9 +17,12 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
   - discrete help icons next to non-trivial fields
   - short, action-focused explanations (Swedish, no technical jargon)
   - examples via placeholder/ghost text that disappears as the user types
-- Keep the implementation **vanilla** (server-rendered templates + HTMX where helpful, plain CSS/JS, no new dependencies).
+- Keep the implementation **minimal and consistent with the SPA** (Vue/Vite, existing UI patterns/tokens; avoid new heavy
+  dependencies).
 - Add **in-editor intelligence** for the script editor (CodeMirror 6 extensions for autocomplete, lint, hover docs).
 - Add **AI-powered inline completions** (Copilot-style ghost text) with backend LLM proxy.
+- Add a **chat-first AI assistant** in the script editor that can propose deterministic CRUD edits (insert/replace/delete)
+  with **diff preview + explicit apply/undo**, and privacy-safe metadata-only observability (no prompt/code logging).
 - Accessibility baseline: keyboard operable, reasonable ARIA, close-on-escape, does not trap focus.
 
 ## Stories
@@ -43,6 +46,9 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - [ST-08-17: Tabby edit suggestions + prompt A/B evaluation](../stories/story-08-17-tabby-edit-suggestions-ab-testing.md)
 - [ST-08-18: AI prompt system v1 (templates + contract fragments + validation)](../stories/story-08-18-ai-prompt-system-v1.md)
 - [ST-08-19: AI prompt evaluation harness (live backend + llama.cpp)](../stories/story-08-19-ai-prompt-eval-harness-live-backend.md)
+- [ST-08-20: Editor AI chat drawer MVP (beginner-friendly assistant UI)](../stories/story-08-20-editor-ai-chat-drawer-mvp.md)
+- [ST-08-21: AI structured CRUD edit ops protocol v1 (insert/replace/delete)](../stories/story-08-21-ai-structured-crud-edit-ops-protocol-v1.md)
+- [ST-08-22: Editor AI proposed changes diff preview + apply/undo](../stories/story-08-22-editor-ai-diff-preview-apply-undo.md)
 
 ## Implementation Summary (as of 2026-01-01)
 
@@ -50,7 +56,9 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - AI edit suggestions are live in the editor with preview + apply flow (ST-08-16).
 - Prompt system v1 is in place: template registry, contract fragments, budget validation, and template ID logging (ST-08-18).
 - Live prompt evaluation harness exists with metadata-only artifacts under `.artifacts/ai-prompt-eval/` (ST-08-19).
-- Remaining work: Tabby provider switch + prompt A/B evaluation for edit suggestions (ST-08-17).
+- Remaining work:
+  - Tabby provider switch + prompt A/B evaluation for edit suggestions (ST-08-17).
+  - Chat-first editor AI UX (drawer + structured CRUD edits + diff preview + apply/undo) (ST-08-20/21/22).
 
 ## Risks
 
@@ -58,12 +66,17 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - Copy drift across pages (mitigate: centralized patterns + “source of truth” per story).
 - Accessibility regressions (mitigate: keyboard/escape/outside-click close, aria-controls/expanded).
 - Maintenance overhead as features evolve (mitigate: keep help content near templates/routes it describes).
+- AI UX trust: if previews are unclear or edits apply unexpectedly, users will stop using the feature (mitigate: diff
+  preview + atomic apply + easy undo + explicit scope indicators).
 
 ## Dependencies
 
 - EPIC-05 (HuleEdu design system) for consistent styling.
 - ST-05-07 for stabilized layout primitives (panel width + dvh fallback) if needed before polishing the help drawer.
 - ST-11-12 (Script editor migration) for CodeMirror 6 base setup.
+- EPIC-14 editor foundations that the AI UX builds on:
+  - ST-14-11/12 (sandbox debug details + copy bundle)
+  - ST-14-17 (diff viewer primitive)
 
 ## ADRs
 
@@ -71,3 +84,5 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - [ADR-0036: Tool usage instructions architecture](../../adr/adr-0036-tool-usage-instructions.md)
 - [ADR-0043: AI completion integration](../../adr/adr-0043-ai-completion-integration.md)
 - [ADR-0050: Self-hosted LLM infrastructure](../../adr/adr-0050-self-hosted-llm-infrastructure.md)
+- [ADR-0051: Chat-first AI editing](../../adr/adr-0051-chat-first-ai-editing.md)
+- [ADR-0052: LLM prompt budgeting + KB fragments](../../adr/adr-0052-llm-prompt-budgets-and-kb-fragments.md)

@@ -19,6 +19,19 @@ Ship small, high-leverage UX/DX improvements for tool authors that reduce common
 
 Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
+## Before / After
+
+**Before**
+
+- `input_schema: null` vs `input_schema: []` semantics are easy to accidentally change via an empty textarea.
+- Authors get late feedback and spend time on avoidable JSON formatting/boilerplate.
+
+**After**
+
+- Authors explicitly choose an input mode (legacy/files-required vs schema-driven vs no inputs), and the UI makes the
+  runtime behavior predictable.
+- Authors can quickly format and insert minimal valid examples for schemas, reducing setup friction.
+
 ## Scope (committed stories)
 
 - [ST-14-09: Editor input_schema modes (remove null vs [] footgun)](../stories/story-14-09-editor-input-schema-modes.md)
@@ -41,9 +54,11 @@ Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
 ## Execution plan (suggested)
 
-1) Add explicit “Input mode” selector in the editor and map it to `input_schema` representation.
-2) Add schema helper actions: “Prettify JSON”, “Insert example”, “Reset”.
-3) Ensure snapshot preview uses the resulting schema as-is (no “helpful” implicit conversions).
+## Pacing checklist (suggested)
+
+- [ ] Add explicit “Input mode” selector and map it to `input_schema` representation.
+- [ ] Add schema helper actions: “Prettify JSON”, “Insert example”, “Reset”.
+- [ ] Ensure snapshot preview uses the resulting schema as-is (no implicit conversions).
 
 ## Demo checklist
 

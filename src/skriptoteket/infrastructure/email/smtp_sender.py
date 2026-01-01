@@ -7,12 +7,45 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 import aiosmtplib
+from aiosmtplib import errors as smtp_errors
 
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.email import EmailMessage, EmailSenderProtocol
 
 logger = logging.getLogger(__name__)
+
+RETRYABLE_SMTP_CODES = frozenset(range(400, 500))
+
+
+def _is_retryable_smtp_error(exc: smtp_errors.SMTPException) -> bool:
+    if isinstance(
+        exc,
+        (
+            smtp_errors.SMTPConnectError,
+            smtp_errors.SMTPConnectTimeoutError,
+            smtp_errors.SMTPReadTimeoutError,
+            smtp_errors.SMTPTimeoutError,
+            smtp_errors.SMTPServerDisconnected,
+        ),
+    ):
+        return True
+
+    if isinstance(
+        exc,
+        (
+            smtp_errors.SMTPAuthenticationError,
+            smtp_errors.SMTPRecipientRefused,
+            smtp_errors.SMTPRecipientsRefused,
+            smtp_errors.SMTPSenderRefused,
+        ),
+    ):
+        return False
+
+    if isinstance(exc, smtp_errors.SMTPResponseException):
+        return exc.code in RETRYABLE_SMTP_CODES
+
+    return False
 
 
 class SmtpEmailSender(EmailSenderProtocol):
@@ -56,11 +89,24 @@ class SmtpEmailSender(EmailSenderProtocol):
                 extra={"to": message.to_email, "subject": message.subject},
             )
         except aiosmtplib.SMTPException as e:
+            is_retryable = _is_retryable_smtp_error(e)
+            smtp_code = getattr(e, "code", None)
             logger.error(
                 "Failed to send email",
-                extra={"to": message.to_email, "error": str(e)},
+                extra={
+                    "to": message.to_email,
+                    "error": str(e),
+                    "retryable": is_retryable,
+                    "smtp_code": smtp_code,
+                    "smtp_error_type": type(e).__name__,
+                },
             )
             raise DomainError(
-                code=ErrorCode.SERVICE_UNAVAILABLE,
+                code=ErrorCode.EMAIL_SEND_FAILED,
                 message="Kunde inte skicka e-post",
+                details={
+                    "retryable": is_retryable,
+                    "smtp_code": smtp_code,
+                    "smtp_error_type": type(e).__name__,
+                },
             ) from e

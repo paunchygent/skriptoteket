@@ -95,6 +95,7 @@ Notes:
 
 - This ADR specifies the inline completion capability (ghost text). Edit suggestions are a follow-up capability that uses
   a separate protocol surface so DI can inject a different provider configuration (often remote/bigger model).
+- Chat-first AI editing (structured CRUD ops + diff preview + apply/undo) is specified in ADR-0051.
 
 ### Prompt Strategy
 
@@ -196,6 +197,7 @@ skriptoteketIntelligence(config)
 ## References
 
 - [ADR-0035: Script editor intelligence architecture](adr-0035-script-editor-intelligence-architecture.md)
+- [ADR-0051: Chat-first AI editing](adr-0051-chat-first-ai-editing.md)
 - [ST-08-14: AI inline completions MVP](../backlog/stories/story-08-14-ai-inline-completions.md)
 - [ST-08-16: AI edit suggestions (CodeMirror changes)](../backlog/stories/story-08-16-ai-edit-suggestions.md)
 - [EPIC-08: Contextual help and onboarding](../backlog/epics/epic-08-contextual-help-and-onboarding.md)

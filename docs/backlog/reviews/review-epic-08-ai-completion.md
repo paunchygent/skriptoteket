@@ -1,22 +1,31 @@
 ---
 type: review
 id: REV-EPIC-08
-title: "Review: AI Completion Integration for EPIC-08"
+title: "Review: AI Editor Integration for EPIC-08"
 status: approved
 owners: "agents"
 created: 2025-12-26
+updated: 2026-01-01
 reviewer: "lead-developer"
 epic: EPIC-08
 adrs:
   - ADR-0043
+  - ADR-0051
+  - ADR-0052
 stories:
   - ST-08-14
+  - ST-08-20
+  - ST-08-21
+  - ST-08-22
 ---
 
 ## TL;DR
 
 This review covers the addition of AI-powered inline completions (ST-08-14) to the existing script editor intelligence
 system (EPIC-08). The feature adds Copilot-style ghost text using an OpenAI-compatible backend proxy with KB injection.
+
+Addendum: This review also records the approved direction for chat-first AI editing (ADR-0051) and the accepted prompt
+budgeting + KB fragment strategy (ADR-0052).
 
 ## Problem Statement
 
@@ -33,6 +42,8 @@ AI-powered completions.
 - **Provider-agnostic**: Works with Ollama (local), OpenRouter, OpenAI
 
 See [ADR-0043](../../adr/adr-0043-ai-completion-integration.md) for architecture.
+See [ADR-0051](../../adr/adr-0051-chat-first-ai-editing.md) for chat-first editing decisions.
+See [ADR-0052](../../adr/adr-0052-llm-prompt-budgets-and-kb-fragments.md) for prompt budgeting + KB fragment decisions.
 
 ## Artifacts to Review
 
@@ -112,3 +123,23 @@ See [ADR-0043](../../adr/adr-0043-ai-completion-integration.md) for architecture
 | KB packaging | ADR-0043:193, ref-ai-completion:129-133 | Production packaging, memory cache, fallback behavior defined |
 | Keymap precedence | ref-ai-completion:182-185 | Tab/Escape override `indentWithTab` when ghost text visible |
 | Privacy/logging | ADR-0043:194, ref-ai-completion:244-245 | Never log code/prompts; third-party risks documented |
+
+---
+
+## Addendum (2026-01-01): Chat-first AI editing + prompt budgeting ADR cleanup
+
+**Reviewer/decider:** @user-lead
+**Verdict:** approved
+
+### Decisions recorded
+
+- Chat-first editor AI uses a drawer UI and proposes structured CRUD edit operations with diff preview + explicit apply/undo:
+  `ADR-0051` (supports `ST-08-20/21/22`).
+- Prompt budgeting + KB fragments are enforced via templates + code-owned fragments and deterministic budgeting:
+  `ADR-0052` (previously drafted as a separate `ADR-0044` file; renumbered to avoid duplicate ADR IDs).
+
+### Review checklist (addendum)
+
+- [ ] Privacy: no prompt/code/message logging; metadata-only observability.
+- [ ] Safety: diff preview before apply; atomic apply; reliable undo; block apply on document mismatch.
+- [ ] Budgeting: deterministic prompt budgeting; graceful over-budget and truncated handling.

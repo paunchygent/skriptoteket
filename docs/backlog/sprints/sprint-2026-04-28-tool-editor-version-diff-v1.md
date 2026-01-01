@@ -19,6 +19,19 @@ Reduce review friction and mistakes by making “what changed” obvious before 
 
 Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
+## Before / After
+
+**Before**
+
+- Reviewers can navigate version history, but “what changed” requires manual copy/paste or eyeballing.
+- There is no reusable diff preview surface for other workflows (e.g., AI proposed changes).
+
+**After**
+
+- Reviewers can compare source code, entrypoint, schemas, and instructions with a first-class diff view.
+- Compare targets are sensible by default and can be deep-linked without leaking access.
+- The diff viewer is implemented as a reusable primitive that can later be reused for AI “proposed changes” preview.
+
 ## Scope (committed stories)
 
 - [ST-14-17: Editor version compare/diff view (code + schemas + instructions)](../stories/story-14-17-editor-version-diff-view.md)
@@ -37,6 +50,13 @@ Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
 - Diff rendering performance for large scripts.
 - Permissions: ensure reviewers only compare versions they’re allowed to view.
+
+## Pacing checklist (suggested)
+
+- [ ] Implement the diff viewer as a reusable component that can compare arbitrary before/after text blobs.
+- [ ] Build the version compare UI on top of the diff viewer (code + schemas + instructions).
+- [ ] Add compare target selection rules + deep links (including which field is being compared).
+- [ ] Enforce permissions and keep large diffs usable (copy/download of compared content).
 
 ## Demo checklist
 

@@ -1,11 +1,13 @@
 from pathlib import Path
 
+import structlog
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from skriptoteket.config import Settings
 from skriptoteket.di import create_container
+from skriptoteket.observability.health import check_smtp
 from skriptoteket.observability.logging import configure_logging
 from skriptoteket.observability.tracing import init_tracing
 from skriptoteket.web.middleware.correlation import CorrelationMiddleware
@@ -14,6 +16,8 @@ from skriptoteket.web.middleware.metrics import metrics_middleware
 from skriptoteket.web.middleware.tracing import tracing_middleware
 from skriptoteket.web.router import router as web_router
 from skriptoteket.web.routes.observability import router as observability_router
+
+logger = structlog.get_logger(__name__)
 
 
 def create_app() -> FastAPI:
@@ -53,6 +57,20 @@ def create_app() -> FastAPI:
 
     # Application routes
     app.include_router(web_router)
+
+    async def smtp_startup_check() -> None:
+        status, error = await check_smtp(settings)
+        if status == "healthy":
+            return
+        logger.warning(
+            "SMTP health check failed on startup",
+            smtp_status=status,
+            smtp_error=error,
+            smtp_host=settings.EMAIL_SMTP_HOST,
+            smtp_port=settings.EMAIL_SMTP_PORT,
+        )
+
+    app.add_event_handler("startup", smtp_startup_check)
 
     return app
 

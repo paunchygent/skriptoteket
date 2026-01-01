@@ -20,6 +20,20 @@ in editor completions/hover/linting.
 
 Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
+## Before / After
+
+**Before**
+
+- Tool authors hand-roll boilerplate for inputs/settings/actions; errors are common and repetitive.
+- Editor intelligence can help with lint/completions, but it can’t recommend a single canonical “toolkit” approach.
+- AI edit suggestions exist, but provider routing + prompt evaluation are not finalized (ST-08-17).
+
+**After**
+
+- A small runner-side toolkit exists with stable, documented helpers for common patterns.
+- Editor intelligence recognizes and supports the toolkit (completions/hover/lints), reducing reliance on AI.
+- AI editing evaluation can compare prompt/provider variants with metadata-only reporting (ST-08-17).
+
 ## Scope (committed stories)
 
 - [ST-14-19: Runner toolkit helper module (inputs/settings/actions)](../stories/story-14-19-runner-toolkit-helper-module.md)
@@ -39,6 +53,12 @@ Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
 - Backwards compatibility: existing scripts should not break due to toolkit introduction.
 - Keep the toolkit minimal to avoid long-term maintenance drag.
+
+## Pacing checklist (suggested)
+
+- [ ] Implement the runner toolkit with a small, stable API surface + docs/examples.
+- [ ] Add editor intelligence support for the toolkit (autocomplete/hover/lints) without false positives.
+- [ ] Add optional Tabby chat provider routing for edit suggestions + prompt A/B evaluation harness (metadata only).
 
 ## Demo checklist
 

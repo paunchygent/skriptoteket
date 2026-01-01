@@ -1,0 +1,53 @@
+---
+type: adr
+id: ADR-0052
+title: "LLM prompt budgeting + KB fragments for AI editor features"
+status: accepted
+owners: "agents"
+deciders: ["user-lead"]
+created: 2025-12-31
+updated: 2026-01-01
+links: ["EPIC-08", "ADR-0043", "ST-08-18", "REF-ai-completion-architecture"]
+---
+
+## Context
+
+ST-08-14 (inline completions) and ST-08-16 (edit suggestions) rely on injecting a knowledge base
+into the system prompt. The existing KB (`docs/reference/ref-ai-script-generation-kb.md`) is
+human-readable and large (~900 LoC). When used verbatim, prompts exceed the local model context
+window (llama.cpp default 4096), producing upstream 400 errors and backend 500s.
+
+We control the backend, so prompt size and truncation must be enforced deterministically and safely.
+We also need a stable, reviewable prompt surface that does not drift from Contract v2 or runner constraints.
+
+## Decision
+
+1. **Use repo-owned system prompt templates + code-owned fragments**
+   Compose system prompts from:
+   - repo-owned templates (selected by template ID)
+   - code-owned fragments sourced from canonical definitions (Contract v2 + runner constraints + helpers)
+
+2. **Enforce a context budget in the backend**
+   Define a prompt budget that accounts for:
+   - system prompt (templates + fragments)
+   - instruction
+   - selection
+   - prefix/suffix
+   - expected completion tokens
+   Truncate deterministically (keep selection intact; trim suffix/prefix first; reduce system prompt last if needed).
+
+3. **Graceful handling of over-budget responses**
+   Treat upstream “context too large” responses as non-fatal:
+   - Return enabled with empty suggestion
+   - Log prompt sizing metadata (no code content)
+
+## Consequences
+
+- System prompts become reviewable, testable repo artifacts, and contract-sensitive content is sourced from canonical code.
+- Prompt budgets are enforced consistently across providers and model context windows.
+- Avoids LLM failures that manifest as 500s and improves real-pipeline reliability.
+
+## Notes
+
+An LLM-optimized KB reference exists at `docs/reference/ref-ai-script-generation-kb-llm.md`, but prompt injection uses
+the template/fragment system so Contract v2 and runner constraints remain the single source of truth.

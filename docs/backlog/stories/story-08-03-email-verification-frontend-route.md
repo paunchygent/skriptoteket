@@ -2,7 +2,7 @@
 type: story
 id: ST-08-03
 title: "Email verification frontend route"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-30
 epic: "EPIC-08"

@@ -75,6 +75,7 @@ class Settings(BaseSettings):
     EMAIL_SMTP_TIMEOUT: int = 30
     EMAIL_DEFAULT_FROM_EMAIL: str = "noreply@hule.education"
     EMAIL_DEFAULT_FROM_NAME: str = "Skriptoteket"
+    HEALTHZ_SMTP_CHECK_ENABLED: bool = True
 
     # Email verification
     EMAIL_VERIFICATION_TTL_HOURS: int = 24

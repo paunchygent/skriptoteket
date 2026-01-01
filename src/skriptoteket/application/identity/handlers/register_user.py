@@ -24,10 +24,14 @@ from skriptoteket.protocols.identity import (
     RegisterUserHandlerProtocol,
     UserRepositoryProtocol,
 )
+from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.token_generator import TokenGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 logger = logging.getLogger(__name__)
+
+EMAIL_SEND_MAX_ATTEMPTS = 3
+EMAIL_SEND_BACKOFF_BASE_SECONDS = 0.5
 
 
 class RegisterUserHandler(RegisterUserHandlerProtocol):
@@ -41,6 +45,7 @@ class RegisterUserHandler(RegisterUserHandlerProtocol):
         verification_tokens: EmailVerificationTokenRepositoryProtocol,
         email_sender: EmailSenderProtocol,
         email_renderer: EmailTemplateRendererProtocol,
+        sleeper: SleeperProtocol,
         password_hasher: PasswordHasherProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -53,6 +58,7 @@ class RegisterUserHandler(RegisterUserHandlerProtocol):
         self._verification_tokens = verification_tokens
         self._email_sender = email_sender
         self._email_renderer = email_renderer
+        self._sleeper = sleeper
         self._password_hasher = password_hasher
         self._clock = clock
         self._id_generator = id_generator
@@ -113,43 +119,102 @@ class RegisterUserHandler(RegisterUserHandlerProtocol):
             )
             await self._verification_tokens.create(token=verification_token)
 
-        # Send verification email outside transaction
-        email_sent = await self._send_verification_email(
-            email=result.user.email,
-            first_name=first_name,
-            token=verification_token.token,
-        )
+            await self._send_verification_email_with_retry(
+                email=result.user.email,
+                first_name=first_name,
+                token=verification_token.token,
+            )
 
         return RegisterUserResult(
             user=result.user,
             profile=created_profile,
-            verification_email_sent=email_sent,
+            verification_email_sent=True,
         )
 
-    async def _send_verification_email(
+    async def _send_verification_email_with_retry(
         self,
         *,
         email: str,
         first_name: str,
         token: str,
-    ) -> bool:
-        """Send verification email. Returns True if sent successfully."""
-        try:
-            verification_url = (
-                f"{self._settings.EMAIL_VERIFICATION_BASE_URL}/verify-email?token={token}"
-            )
-            message = self._email_renderer.render(
-                template_name="verify_email.html",
-                context={
-                    "to_email": email,
-                    "first_name": first_name,
-                    "verification_url": verification_url,
-                    "expiry_hours": self._settings.EMAIL_VERIFICATION_TTL_HOURS,
-                    "base_url": self._settings.EMAIL_VERIFICATION_BASE_URL,
-                },
-            )
-            await self._email_sender.send(message=message)
-            return True
-        except Exception:
-            logger.exception("Failed to send verification email", extra={"email": email})
-            return False
+    ) -> None:
+        """Send verification email with retry + exponential backoff.
+
+        Must be called inside the registration transaction so failures roll back user creation.
+        """
+        base_url = self._settings.EMAIL_VERIFICATION_BASE_URL
+        verification_url = f"{base_url}/verify-email?token={token}"
+        message = self._email_renderer.render(
+            template_name="verify_email.html",
+            context={
+                "to_email": email,
+                "first_name": first_name,
+                "verification_url": verification_url,
+                "expiry_hours": self._settings.EMAIL_VERIFICATION_TTL_HOURS,
+                "base_url": base_url,
+            },
+        )
+
+        last_error: DomainError | None = None
+
+        for attempt in range(1, EMAIL_SEND_MAX_ATTEMPTS + 1):
+            try:
+                await self._email_sender.send(message=message)
+                return
+            except DomainError as exc:
+                last_error = exc
+                is_retryable = bool(exc.details.get("retryable"))
+                if not is_retryable or attempt >= EMAIL_SEND_MAX_ATTEMPTS:
+                    logger.warning(
+                        "Registration failed: could not send verification email",
+                        extra={
+                            "attempt": attempt,
+                            "retryable": is_retryable,
+                            "error_code": exc.code.value,
+                        },
+                    )
+                    raise DomainError(
+                        code=ErrorCode.EMAIL_SEND_FAILED,
+                        message="Kunde inte skicka verifieringsmail. Försök igen.",
+                        details={
+                            "retryable": False,
+                            "attempts": attempt,
+                            "last_error_code": exc.code.value,
+                        },
+                    ) from exc
+
+                delay_seconds = EMAIL_SEND_BACKOFF_BASE_SECONDS * (2 ** (attempt - 1))
+                logger.info(
+                    "Transient email failure; retrying verification email send",
+                    extra={
+                        "attempt": attempt,
+                        "retry_in_seconds": delay_seconds,
+                        "error_code": exc.code.value,
+                    },
+                )
+                await self._sleeper.sleep(delay_seconds)
+            except Exception as exc:  # pragma: no cover
+                logger.exception(
+                    "Registration failed: unexpected error while sending verification email",
+                    extra={"attempt": attempt},
+                )
+                raise DomainError(
+                    code=ErrorCode.EMAIL_SEND_FAILED,
+                    message="Kunde inte skicka verifieringsmail. Försök igen.",
+                    details={
+                        "retryable": False,
+                        "attempts": attempt,
+                        "last_error_type": type(exc).__name__,
+                    },
+                ) from exc
+
+        # Defensive: loop should always return or raise.
+        raise DomainError(
+            code=ErrorCode.EMAIL_SEND_FAILED,
+            message="Kunde inte skicka verifieringsmail. Försök igen.",
+            details={
+                "retryable": False,
+                "attempts": EMAIL_SEND_MAX_ATTEMPTS,
+                "last_error_code": last_error.code.value if last_error else None,
+            },
+        )

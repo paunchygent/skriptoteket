@@ -21,6 +21,10 @@ Keep this file updated so the next session can pick up work quickly.
 ## Current Session (2026-01-01)
 
 - Docs/backlog alignment: updated statuses (ST-14-01/02, ST-06-10, ST-11-01/02/07/08/09/15/16), EPIC-08 active, EPIC-16 active with ST-16-08 pending, added ST-15-02 stub, aligned sprint dates, moved ST-08-17 to `SPR-2026-05-12`, added EPIC-11 implementation summary, refreshed `.agent/readme-first.md`.
+- EPIC-14 story alignment (AI-ready foundations): updated ST-14-11/12/17/18/19/20 to support upcoming chat-first AI editing (explicit debug truncation flags + copy bundle, reusable diff viewer, field-aware compare deep links, AI-friendly toolkit conventions).
+- Drafted AI continuation stories for chat-first CRUD editing: ST-08-20 (chat drawer), ST-08-21 (structured CRUD edit ops protocol), ST-08-22 (diff preview + apply/undo); added to EPIC-08 and validated docs.
+- EPIC-08 + sprint plans: updated EPIC-08 scope to include chat-first AI edits and updated sprint plans (SPR-2026-03-03/03-17/04-28/05-12) with explicit Before/After sections + pacing checklists; `pdm run docs-validate` passes.
+- ADRs (AI): added `ADR-0051` (chat-first AI editing) and renumbered the duplicate LLM budgeting ADR to `ADR-0052` (accepted); updated EPIC-08 references, ST-08-18 dependencies, and `docs/backlog/reviews/review-epic-08-ai-completion.md`; `pdm run docs-validate` passes.
 - **AI infrastructure deployed**: llama-server (ROCm) + Tabby on hemma for self-hosted code completion.
   - Model: Qwen3-Coder-30B-A3B (MoE, ~18.5GB VRAM); ADR-0050; runbooks in `docs/runbooks/`.
 - ST-08-14: AI inline completions MVP (ghost text) wired end-to-end.
@@ -61,10 +65,18 @@ Keep this file updated so the next session can pick up work quickly.
 - ST-06-12 E2E: `scripts/playwright_st_06_12_lint_panel_navigation_e2e.py` (opens lint panel, verifies F8/Shift-F8 + Mod-Alt-n/p, checks quick-fix buttons appear in the panel).
 - Frontend auth: align register response typing by not reading `csrf_token` from `RegisterResponse` (`frontend/apps/skriptoteket/src/stores/auth.ts`).
 - EPIC-14 ongoing: see `docs/backlog/sprints/sprint-2026-01-05-tool-editor-vertical-slice.md`.
+- ST-08-02: robust email verification — registration email send is transactional with retry/backoff + new `EMAIL_SEND_FAILED` error code; SMTP health check runs on startup and is optionally included in `/healthz` via `HEALTHZ_SMTP_CHECK_ENABLED`.
+- ST-08-03: email verification frontend route confirmed implemented; story marked `done`.
+- Healthz SMTP strict mode: default `HEALTHZ_SMTP_CHECK_ENABLED=true` (and set in `compose.prod.yaml` + `.env.example*`) so `/healthz` includes SMTP when `EMAIL_PROVIDER=smtp`.
 
 ## Verification
 
 - Docs: `pdm run docs-validate` (pass; rerun after backlog alignment)
+- ST-08-02 tests: `pdm run test tests/unit/application/identity/test_register_user_handler.py` (pass)
+- ST-08-02 health/api tests: `pdm run test tests/unit/observability/test_health_smtp.py tests/unit/web/test_register_api_routes.py` (pass)
+- Typecheck: `pdm run typecheck` (pass)
+- Lint: `pdm run lint` (pass)
+- Live check: `pdm run dev` started; `curl -s http://127.0.0.1:8000/healthz | python -m json.tool` returns healthy
 - SPA typecheck: `pnpm -C frontend --filter @skriptoteket/spa typecheck` (pass)
 - SPA lint: `pnpm -C frontend --filter @skriptoteket/spa lint` (pass)
 - Frontend tests: `pdm run fe-test` (pass)

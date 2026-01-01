@@ -54,6 +54,7 @@ from skriptoteket.protocols.login_events import (
     ListLoginEventsHandlerProtocol,
     LoginEventRepositoryProtocol,
 )
+from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.token_generator import TokenGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
@@ -155,6 +156,7 @@ class IdentityProvider(Provider):
         verification_tokens: EmailVerificationTokenRepositoryProtocol,
         email_sender: EmailSenderProtocol,
         email_renderer: EmailTemplateRendererProtocol,
+        sleeper: SleeperProtocol,
         password_hasher: PasswordHasherProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -168,6 +170,7 @@ class IdentityProvider(Provider):
             verification_tokens=verification_tokens,
             email_sender=email_sender,
             email_renderer=email_renderer,
+            sleeper=sleeper,
             password_hasher=password_hasher,
             clock=clock,
             id_generator=id_generator,

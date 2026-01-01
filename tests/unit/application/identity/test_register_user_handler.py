@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, call
 from uuid import uuid4
 
 import pytest
@@ -25,6 +25,7 @@ from skriptoteket.protocols.identity import (
     ProfileRepositoryProtocol,
     UserRepositoryProtocol,
 )
+from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.token_generator import TokenGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.identity_fixtures import make_user
@@ -80,6 +81,8 @@ async def test_register_user_creates_profile_and_sends_verification_email(now: d
         text_body="verification link",
     )
 
+    sleeper = AsyncMock(spec=SleeperProtocol)
+
     password_hasher = Mock(spec=PasswordHasherProtocol)
     password_hasher.hash.return_value = "hash"
 
@@ -100,6 +103,7 @@ async def test_register_user_creates_profile_and_sends_verification_email(now: d
         verification_tokens=verification_tokens,
         email_sender=email_sender,
         email_renderer=email_renderer,
+        sleeper=sleeper,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -144,6 +148,7 @@ async def test_register_user_rejects_invalid_email(now: datetime) -> None:
     verification_tokens = AsyncMock(spec=EmailVerificationTokenRepositoryProtocol)
     email_sender = AsyncMock(spec=EmailSenderProtocol)
     email_renderer = Mock(spec=EmailTemplateRendererProtocol)
+    sleeper = AsyncMock(spec=SleeperProtocol)
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     clock = Mock(spec=ClockProtocol)
@@ -160,6 +165,7 @@ async def test_register_user_rejects_invalid_email(now: datetime) -> None:
         verification_tokens=verification_tokens,
         email_sender=email_sender,
         email_renderer=email_renderer,
+        sleeper=sleeper,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -203,6 +209,7 @@ async def test_register_user_rejects_duplicate_email(now: datetime) -> None:
     verification_tokens = AsyncMock(spec=EmailVerificationTokenRepositoryProtocol)
     email_sender = AsyncMock(spec=EmailSenderProtocol)
     email_renderer = Mock(spec=EmailTemplateRendererProtocol)
+    sleeper = AsyncMock(spec=SleeperProtocol)
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     clock = Mock(spec=ClockProtocol)
@@ -220,6 +227,7 @@ async def test_register_user_rejects_duplicate_email(now: datetime) -> None:
         verification_tokens=verification_tokens,
         email_sender=email_sender,
         email_renderer=email_renderer,
+        sleeper=sleeper,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -244,8 +252,7 @@ async def test_register_user_rejects_duplicate_email(now: datetime) -> None:
 
 
 @pytest.mark.asyncio
-async def test_register_user_handles_email_failure_gracefully(now: datetime) -> None:
-    """Registration should succeed even if email sending fails."""
+async def test_register_user_retries_transient_email_failure_then_succeeds(now: datetime) -> None:
     settings = Settings()
     user_id = uuid4()
     token_id = uuid4()
@@ -276,7 +283,14 @@ async def test_register_user_handles_email_failure_gracefully(now: datetime) -> 
     verification_tokens = AsyncMock(spec=EmailVerificationTokenRepositoryProtocol)
 
     email_sender = AsyncMock(spec=EmailSenderProtocol)
-    email_sender.send.side_effect = Exception("SMTP connection failed")
+    email_sender.send.side_effect = [
+        DomainError(
+            code=ErrorCode.EMAIL_SEND_FAILED,
+            message="SMTP timeout",
+            details={"retryable": True},
+        ),
+        None,
+    ]
 
     email_renderer = Mock(spec=EmailTemplateRendererProtocol)
     email_renderer.render.return_value = EmailMessage(
@@ -285,6 +299,8 @@ async def test_register_user_handles_email_failure_gracefully(now: datetime) -> 
         html_body="<html>verification link</html>",
         text_body="verification link",
     )
+
+    sleeper = AsyncMock(spec=SleeperProtocol)
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     password_hasher.hash.return_value = "hash"
@@ -306,6 +322,7 @@ async def test_register_user_handles_email_failure_gracefully(now: datetime) -> 
         verification_tokens=verification_tokens,
         email_sender=email_sender,
         email_renderer=email_renderer,
+        sleeper=sleeper,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -323,7 +340,200 @@ async def test_register_user_handles_email_failure_gracefully(now: datetime) -> 
 
     assert result.user == created_user
     assert result.profile == expected_profile
-    assert result.verification_email_sent is False  # Email failed but user was created
+    assert result.verification_email_sent is True
+    assert email_sender.send.await_count == 2
+    sleeper.sleep.assert_awaited_once_with(0.5)
+
+
+@pytest.mark.asyncio
+async def test_register_user_fails_fast_on_permanent_email_error(now: datetime) -> None:
+    settings = Settings()
+    user_id = uuid4()
+    token_id = uuid4()
+    created_user = make_user(email="teacher@example.com", user_id=user_id).model_copy(
+        update={"created_at": now, "updated_at": now, "email_verified": False}
+    )
+
+    uow = AsyncMock(spec=UnitOfWorkProtocol)
+    uow.__aenter__.return_value = uow
+    uow.__aexit__.return_value = None
+
+    users = AsyncMock(spec=UserRepositoryProtocol)
+    users.get_auth_by_email.return_value = None
+    users.create.return_value = created_user
+
+    profiles = AsyncMock(spec=ProfileRepositoryProtocol)
+    expected_profile = UserProfile(
+        user_id=user_id,
+        first_name="Ada",
+        last_name="Lovelace",
+        display_name=None,
+        locale="sv-SE",
+        created_at=now,
+        updated_at=now,
+    )
+    profiles.create.return_value = expected_profile
+
+    verification_tokens = AsyncMock(spec=EmailVerificationTokenRepositoryProtocol)
+
+    email_sender = AsyncMock(spec=EmailSenderProtocol)
+    email_sender.send.side_effect = DomainError(
+        code=ErrorCode.EMAIL_SEND_FAILED,
+        message="SMTP auth failed",
+        details={"retryable": False},
+    )
+
+    email_renderer = Mock(spec=EmailTemplateRendererProtocol)
+    email_renderer.render.return_value = EmailMessage(
+        to_email="teacher@example.com",
+        subject="Verifiera din e-postadress",
+        html_body="<html>verification link</html>",
+        text_body="verification link",
+    )
+
+    sleeper = AsyncMock(spec=SleeperProtocol)
+
+    password_hasher = Mock(spec=PasswordHasherProtocol)
+    password_hasher.hash.return_value = "hash"
+
+    clock = Mock(spec=ClockProtocol)
+    clock.now.return_value = now
+
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    id_generator.new_uuid.side_effect = [user_id, token_id]
+
+    token_generator = Mock(spec=TokenGeneratorProtocol)
+    token_generator.new_token.return_value = "verification-token"
+
+    handler = RegisterUserHandler(
+        settings=settings,
+        uow=uow,
+        users=users,
+        profiles=profiles,
+        verification_tokens=verification_tokens,
+        email_sender=email_sender,
+        email_renderer=email_renderer,
+        sleeper=sleeper,
+        password_hasher=password_hasher,
+        clock=clock,
+        id_generator=id_generator,
+        token_generator=token_generator,
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(
+            RegisterUserCommand(
+                email="teacher@example.com",
+                password="password123",
+                first_name="Ada",
+                last_name="Lovelace",
+            )
+        )
+
+    assert exc_info.value.code == ErrorCode.EMAIL_SEND_FAILED
+    email_sender.send.assert_awaited_once()
+    sleeper.sleep.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_register_user_rolls_back_when_email_send_fails_after_retries(now: datetime) -> None:
+    settings = Settings()
+    user_id = uuid4()
+    token_id = uuid4()
+    created_user = make_user(email="teacher@example.com", user_id=user_id).model_copy(
+        update={"created_at": now, "updated_at": now, "email_verified": False}
+    )
+
+    uow = AsyncMock(spec=UnitOfWorkProtocol)
+    uow.__aenter__.return_value = uow
+    uow.__aexit__.return_value = None
+
+    users = AsyncMock(spec=UserRepositoryProtocol)
+    users.get_auth_by_email.return_value = None
+    users.create.return_value = created_user
+
+    profiles = AsyncMock(spec=ProfileRepositoryProtocol)
+    profiles.create.return_value = UserProfile(
+        user_id=user_id,
+        first_name="Ada",
+        last_name="Lovelace",
+        display_name=None,
+        locale="sv-SE",
+        created_at=now,
+        updated_at=now,
+    )
+
+    verification_tokens = AsyncMock(spec=EmailVerificationTokenRepositoryProtocol)
+
+    email_sender = AsyncMock(spec=EmailSenderProtocol)
+    email_sender.send.side_effect = [
+        DomainError(
+            code=ErrorCode.EMAIL_SEND_FAILED,
+            message="SMTP timeout",
+            details={"retryable": True},
+        ),
+        DomainError(
+            code=ErrorCode.EMAIL_SEND_FAILED,
+            message="SMTP timeout",
+            details={"retryable": True},
+        ),
+        DomainError(
+            code=ErrorCode.EMAIL_SEND_FAILED,
+            message="SMTP timeout",
+            details={"retryable": True},
+        ),
+    ]
+
+    email_renderer = Mock(spec=EmailTemplateRendererProtocol)
+    email_renderer.render.return_value = EmailMessage(
+        to_email="teacher@example.com",
+        subject="Verifiera din e-postadress",
+        html_body="<html>verification link</html>",
+        text_body="verification link",
+    )
+
+    sleeper = AsyncMock(spec=SleeperProtocol)
+
+    password_hasher = Mock(spec=PasswordHasherProtocol)
+    password_hasher.hash.return_value = "hash"
+
+    clock = Mock(spec=ClockProtocol)
+    clock.now.return_value = now
+
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    id_generator.new_uuid.side_effect = [user_id, token_id]
+
+    token_generator = Mock(spec=TokenGeneratorProtocol)
+    token_generator.new_token.return_value = "verification-token"
+
+    handler = RegisterUserHandler(
+        settings=settings,
+        uow=uow,
+        users=users,
+        profiles=profiles,
+        verification_tokens=verification_tokens,
+        email_sender=email_sender,
+        email_renderer=email_renderer,
+        sleeper=sleeper,
+        password_hasher=password_hasher,
+        clock=clock,
+        id_generator=id_generator,
+        token_generator=token_generator,
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(
+            RegisterUserCommand(
+                email="teacher@example.com",
+                password="password123",
+                first_name="Ada",
+                last_name="Lovelace",
+            )
+        )
+
+    assert exc_info.value.code == ErrorCode.EMAIL_SEND_FAILED
+    assert email_sender.send.await_count == 3
+    sleeper.sleep.assert_has_awaits([call(0.5), call(1.0)])
     users.create.assert_awaited_once()
     profiles.create.assert_awaited_once()
     verification_tokens.create.assert_awaited_once()
@@ -343,6 +553,7 @@ async def test_register_user_rejects_empty_first_name(now: datetime) -> None:
     verification_tokens = AsyncMock(spec=EmailVerificationTokenRepositoryProtocol)
     email_sender = AsyncMock(spec=EmailSenderProtocol)
     email_renderer = Mock(spec=EmailTemplateRendererProtocol)
+    sleeper = AsyncMock(spec=SleeperProtocol)
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     clock = Mock(spec=ClockProtocol)
@@ -359,6 +570,7 @@ async def test_register_user_rejects_empty_first_name(now: datetime) -> None:
         verification_tokens=verification_tokens,
         email_sender=email_sender,
         email_renderer=email_renderer,
+        sleeper=sleeper,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -393,6 +605,7 @@ async def test_register_user_rejects_empty_last_name(now: datetime) -> None:
     verification_tokens = AsyncMock(spec=EmailVerificationTokenRepositoryProtocol)
     email_sender = AsyncMock(spec=EmailSenderProtocol)
     email_renderer = Mock(spec=EmailTemplateRendererProtocol)
+    sleeper = AsyncMock(spec=SleeperProtocol)
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     clock = Mock(spec=ClockProtocol)
@@ -409,6 +622,7 @@ async def test_register_user_rejects_empty_last_name(now: datetime) -> None:
         verification_tokens=verification_tokens,
         email_sender=email_sender,
         email_renderer=email_renderer,
+        sleeper=sleeper,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -443,6 +657,7 @@ async def test_register_user_rejects_name_too_long(now: datetime) -> None:
     verification_tokens = AsyncMock(spec=EmailVerificationTokenRepositoryProtocol)
     email_sender = AsyncMock(spec=EmailSenderProtocol)
     email_renderer = Mock(spec=EmailTemplateRendererProtocol)
+    sleeper = AsyncMock(spec=SleeperProtocol)
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     clock = Mock(spec=ClockProtocol)
@@ -459,6 +674,7 @@ async def test_register_user_rejects_name_too_long(now: datetime) -> None:
         verification_tokens=verification_tokens,
         email_sender=email_sender,
         email_renderer=email_renderer,
+        sleeper=sleeper,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -534,6 +750,7 @@ async def test_register_user_enters_uow_before_user_creation(now: datetime) -> N
         html_body="<html>verification link</html>",
         text_body="verification link",
     )
+    sleeper = AsyncMock(spec=SleeperProtocol)
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     password_hasher.hash.return_value = "hash"
@@ -555,6 +772,7 @@ async def test_register_user_enters_uow_before_user_creation(now: datetime) -> N
         verification_tokens=verification_tokens,
         email_sender=email_sender,
         email_renderer=email_renderer,
+        sleeper=sleeper,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,

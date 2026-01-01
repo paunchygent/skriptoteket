@@ -9,8 +9,8 @@ updated: 2026-01-01
 epic: "EPIC-08"
 dependencies:
   - "ADR-0043"
-  - "ADR-0044"
-links: ["EPIC-08", "SPR-2026-01-05", "ADR-0043", "ADR-0044"]
+  - "ADR-0052"
+links: ["EPIC-08", "SPR-2026-01-05", "ADR-0043", "ADR-0052"]
 acceptance_criteria:
   - "Given a prompt template uses placeholders for code-owned fragments, when the backend composes a system prompt, then all placeholders are resolved and no unknown placeholders remain"
   - "Given Contract v2 changes, when the canonical contract fragment is updated, then all capabilities that reference the fragment automatically pick up the change (no duplicated contract text per template)"
