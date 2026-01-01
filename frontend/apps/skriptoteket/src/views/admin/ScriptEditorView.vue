@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import type { EditorView } from "@codemirror/view";
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import type { components } from "../../api/openapi";
 import DraftLockBanner from "../../components/editor/DraftLockBanner.vue";
@@ -8,6 +9,7 @@ import InlineEditableText from "../../components/editor/InlineEditableText.vue";
 import SystemMessage from "../../components/ui/SystemMessage.vue";
 import WorkflowActionModal from "../../components/editor/WorkflowActionModal.vue";
 import WorkflowContextButtons from "../../components/editor/WorkflowContextButtons.vue";
+import { useEditorEditSuggestions } from "../../composables/editor/useEditorEditSuggestions";
 import { useEditorWorkflowActions } from "../../composables/editor/useEditorWorkflowActions";
 import { useDraftLock } from "../../composables/editor/useDraftLock";
 import { useScriptEditor } from "../../composables/editor/useScriptEditor";
@@ -142,6 +144,20 @@ const {
 });
 const entrypointOptions = ["run_tool"];
 const activeDrawer = ref<"history" | "metadata" | "maintainers" | "instructions" | null>(null);
+const editorView = shallowRef<EditorView | null>(null);
+const {
+  instruction: editInstruction,
+  suggestion: editSuggestion,
+  isLoading: isEditLoading,
+  error: editError,
+  canApply: canApplyEdit,
+  requestSuggestion: requestEditSuggestion,
+  applySuggestion: applyEditSuggestion,
+  clearSuggestion: clearEditSuggestion,
+} = useEditorEditSuggestions({
+  editorView,
+  isReadOnly,
+});
 
 const isSavingAllMetadata = computed(
   () => isMetadataSaving.value || isTaxonomySaving.value || isSlugSaving.value,
@@ -438,6 +454,11 @@ watch(
           :is-metadata-drawer-open="isMetadataDrawerOpen"
           :is-maintainers-drawer-open="isMaintainersDrawerOpen"
           :is-instructions-drawer-open="isInstructionsDrawerOpen"
+          :edit-instruction="editInstruction"
+          :edit-suggestion="editSuggestion"
+          :edit-is-loading="isEditLoading"
+          :edit-error="editError"
+          :can-apply-edit="canApplyEdit"
           :professions="professions"
           :categories="categories"
           :is-taxonomy-loading="isTaxonomyLoading"
@@ -458,6 +479,10 @@ watch(
           @suggest-slug-from-title="applySlugSuggestionFromTitle"
           @add-maintainer="addMaintainer"
           @remove-maintainer="removeMaintainer"
+          @editor-view-ready="editorView = $event"
+          @request-edit-suggestion="requestEditSuggestion"
+          @apply-edit-suggestion="applyEditSuggestion"
+          @clear-edit-suggestion="clearEditSuggestion"
           @update:change-summary="changeSummary = $event"
           @update:entrypoint="entrypoint = $event"
           @update:source-code="sourceCode = $event"
@@ -467,6 +492,7 @@ watch(
           @update:metadata-title="metadataTitle = $event"
           @update:metadata-slug="metadataSlug = $event"
           @update:metadata-summary="metadataSummary = $event"
+          @update:edit-instruction="editInstruction = $event"
           @update:selected-profession-ids="updateProfessionIds"
           @update:selected-category-ids="updateCategoryIds"
         />

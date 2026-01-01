@@ -2,9 +2,10 @@
 type: story
 id: ST-08-16
 title: "AI edit suggestions MVP (apply CodeMirror changes)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-27
+updated: 2026-01-01
 epic: "EPIC-08"
 acceptance_criteria:
   - "Given the user selects a range and requests an AI edit, when LLM edit suggestions are enabled, then the UI shows a preview of the suggested change"

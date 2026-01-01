@@ -6,9 +6,12 @@ import httpx
 
 from skriptoteket.config import Settings
 from skriptoteket.protocols.llm import (
+    EditSuggestionProviderProtocol,
     InlineCompletionProviderProtocol,
     LLMCompletionRequest,
     LLMCompletionResponse,
+    LLMEditRequest,
+    LLMEditResponse,
 )
 
 
@@ -68,6 +71,7 @@ class OpenAIInlineCompletionProvider(InlineCompletionProviderProtocol):
         self._model = settings.LLM_COMPLETION_MODEL.strip()
         self._max_tokens = settings.LLM_COMPLETION_MAX_TOKENS
         self._temperature = settings.LLM_COMPLETION_TEMPERATURE
+        self._timeout = settings.LLM_COMPLETION_TIMEOUT_SECONDS
         self._client = client
 
     async def complete_inline(
@@ -98,9 +102,10 @@ class OpenAIInlineCompletionProvider(InlineCompletionProviderProtocol):
                 ],
                 "max_tokens": self._max_tokens,
                 "temperature": self._temperature,
-                "stop": ["```"],
+                "stop": ["\n```"],
                 "stream": False,
             },
+            timeout=self._timeout,
         )
         response.raise_for_status()
         payload = response.json()
@@ -109,3 +114,61 @@ class OpenAIInlineCompletionProvider(InlineCompletionProviderProtocol):
 
         content, finish_reason = _extract_first_choice_content(payload)
         return LLMCompletionResponse(completion=content, finish_reason=finish_reason)
+
+
+class OpenAIEditSuggestionProvider(EditSuggestionProviderProtocol):
+    def __init__(self, *, settings: Settings, client: httpx.AsyncClient) -> None:
+        self._base_url = _normalize_base_url(settings.LLM_EDIT_BASE_URL)
+        self._api_key = settings.OPENAI_LLM_EDIT_API_KEY.strip()
+        self._model = settings.LLM_EDIT_MODEL.strip()
+        self._max_tokens = settings.LLM_EDIT_MAX_TOKENS
+        self._temperature = settings.LLM_EDIT_TEMPERATURE
+        self._timeout = settings.LLM_EDIT_TIMEOUT_SECONDS
+        self._client = client
+
+    async def suggest_edits(
+        self,
+        *,
+        request: LLMEditRequest,
+        system_prompt: str,
+    ) -> LLMEditResponse:
+        url = f"{self._base_url}/chat/completions"
+        headers: dict[str, str] = {}
+        if self._api_key:
+            headers["Authorization"] = f"Bearer {self._api_key}"
+
+        instruction = request.instruction or ""
+        user_prompt = (
+            "Instruction:\n"
+            f"{instruction}\n\n"
+            "Selected text:\n"
+            f"{request.selection}\n\n"
+            "Context before selection:\n"
+            f"{request.prefix}\n\n"
+            "Context after selection:\n"
+            f"{request.suffix}\n"
+        )
+
+        response = await self._client.post(
+            url,
+            headers=headers,
+            json={
+                "model": self._model,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                "max_tokens": self._max_tokens,
+                "temperature": self._temperature,
+                "stop": ["\n```"],
+                "stream": False,
+            },
+            timeout=self._timeout,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        if not isinstance(payload, dict):
+            raise ValueError("Upstream LLM response is not an object")
+
+        content, finish_reason = _extract_first_choice_content(payload)
+        return LLMEditResponse(suggestion=content, finish_reason=finish_reason)

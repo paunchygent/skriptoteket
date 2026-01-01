@@ -4,6 +4,7 @@ from . import (
     boot,
     completions,
     drafts,
+    edits,
     locks,
     maintainers,
     metadata,
@@ -16,6 +17,7 @@ from . import (
 from .boot import get_editor_for_tool, get_editor_for_version
 from .completions import create_inline_completion
 from .drafts import create_draft_version, save_draft_version
+from .edits import create_edit_suggestion
 from .locks import acquire_draft_lock, release_draft_lock
 from .maintainers import (
     assign_tool_maintainer,
@@ -30,6 +32,8 @@ from .models import (
     DraftLockRequest,
     DraftLockResponse,
     EditorBootResponse,
+    EditorEditSuggestionRequest,
+    EditorEditSuggestionResponse,
     EditorInlineCompletionRequest,
     EditorInlineCompletionResponse,
     EditorRunDetails,
@@ -75,6 +79,7 @@ router.include_router(sandbox.router)
 router.include_router(sandbox_settings.router)
 router.include_router(runs.router)
 router.include_router(completions.router)
+router.include_router(edits.router)
 
 __all__ = [
     "AssignMaintainerRequest",
@@ -83,6 +88,8 @@ __all__ = [
     "DraftLockRequest",
     "DraftLockResponse",
     "EditorBootResponse",
+    "EditorEditSuggestionRequest",
+    "EditorEditSuggestionResponse",
     "EditorInlineCompletionRequest",
     "EditorInlineCompletionResponse",
     "EditorRunDetails",
@@ -112,6 +119,7 @@ __all__ = [
     "acquire_draft_lock",
     "assign_tool_maintainer",
     "create_draft_version",
+    "create_edit_suggestion",
     "create_inline_completion",
     "download_artifact",
     "get_editor_for_tool",

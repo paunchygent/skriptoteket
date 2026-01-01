@@ -53,6 +53,7 @@ dependencies = [
 
     # Preferred core libs (kept in runtime since you want them broadly available)
     "aiohttp",
+    "httpx",
     "psutil",
     "typer",
     "click",
@@ -71,7 +72,6 @@ monorepo-tools = [
     "pytest-asyncio",
     "pytest-xdist",
     "pytest-timeout",
-    "httpx",
     "testcontainers",
     "pre-commit",
     "jsonschema",

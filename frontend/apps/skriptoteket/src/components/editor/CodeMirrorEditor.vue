@@ -49,7 +49,10 @@ const props = withDefaults(
     readOnly: false,
   },
 );
-const emit = defineEmits<{ "update:modelValue": [value: string] }>();
+const emit = defineEmits<{
+  "update:modelValue": [value: string];
+  viewReady: [view: EditorView | null];
+}>();
 
 const container = ref<HTMLDivElement | null>(null);
 
@@ -127,6 +130,7 @@ onMounted(() => {
     }),
     parent,
   });
+  emit("viewReady", view);
 });
 
 watch(
@@ -169,6 +173,7 @@ watch(
 );
 
 onBeforeUnmount(() => {
+  emit("viewReady", null);
   view?.destroy();
   view = null;
 });

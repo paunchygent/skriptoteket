@@ -60,6 +60,22 @@ class EditorBootResponse(BaseModel):
     usage_instructions: str | None = None
 
 
+class EditorEditSuggestionRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    prefix: str
+    selection: str
+    suffix: str
+    instruction: str | None = None
+
+
+class EditorEditSuggestionResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    suggestion: str
+    enabled: bool
+
+
 class CreateDraftVersionRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 

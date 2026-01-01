@@ -8,9 +8,15 @@ import httpx
 from dishka import Provider, Scope, provide
 
 from skriptoteket.application.editor.completion_handler import InlineCompletionHandler
+from skriptoteket.application.editor.edit_suggestion_handler import EditSuggestionHandler
 from skriptoteket.config import Settings
-from skriptoteket.infrastructure.llm.openai_provider import OpenAIInlineCompletionProvider
+from skriptoteket.infrastructure.llm.openai_provider import (
+    OpenAIEditSuggestionProvider,
+    OpenAIInlineCompletionProvider,
+)
 from skriptoteket.protocols.llm import (
+    EditSuggestionHandlerProtocol,
+    EditSuggestionProviderProtocol,
     InlineCompletionHandlerProtocol,
     InlineCompletionProviderProtocol,
 )
@@ -31,6 +37,14 @@ class LlmProvider(Provider):
     ) -> InlineCompletionProviderProtocol:
         return OpenAIInlineCompletionProvider(settings=settings, client=client)
 
+    @provide(scope=Scope.APP)
+    def edit_suggestion_provider(
+        self,
+        settings: Settings,
+        client: httpx.AsyncClient,
+    ) -> EditSuggestionProviderProtocol:
+        return OpenAIEditSuggestionProvider(settings=settings, client=client)
+
     @provide(scope=Scope.REQUEST)
     def inline_completion_handler(
         self,
@@ -38,3 +52,11 @@ class LlmProvider(Provider):
         provider: InlineCompletionProviderProtocol,
     ) -> InlineCompletionHandlerProtocol:
         return InlineCompletionHandler(settings=settings, provider=provider)
+
+    @provide(scope=Scope.REQUEST)
+    def edit_suggestion_handler(
+        self,
+        settings: Settings,
+        provider: EditSuggestionProviderProtocol,
+    ) -> EditSuggestionHandlerProtocol:
+        return EditSuggestionHandler(settings=settings, provider=provider)

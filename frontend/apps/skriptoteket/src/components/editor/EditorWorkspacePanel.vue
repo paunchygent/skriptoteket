@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import type { EditorView } from "@codemirror/view";
 import { computed, defineAsyncComponent, toRef } from "vue";
 import type { components } from "../../api/openapi";
 
 import { useEditorSchemaParsing } from "../../composables/editor/useEditorSchemaParsing";
 import { useSkriptoteketIntelligenceExtensions } from "../../composables/editor/useSkriptoteketIntelligenceExtensions";
+import EditorEditSuggestionPanel from "./EditorEditSuggestionPanel.vue";
 import EntrypointDropdown from "./EntrypointDropdown.vue";
 import InstructionsDrawer from "./InstructionsDrawer.vue";
 import MaintainersDrawer from "./MaintainersDrawer.vue";
@@ -55,6 +57,12 @@ type EditorWorkspacePanelProps = {
   isMaintainersDrawerOpen: boolean;
   isInstructionsDrawerOpen: boolean;
 
+  editInstruction: string;
+  editSuggestion: string;
+  editIsLoading: boolean;
+  editError: string | null;
+  canApplyEdit: boolean;
+
   professions: ProfessionItem[];
   categories: CategoryItem[];
   taxonomyError: string | null;
@@ -97,6 +105,11 @@ const emit = defineEmits<{
   (event: "update:maintainersError", value: string | null): void;
   (event: "update:selectedProfessionIds", value: string[]): void;
   (event: "update:selectedCategoryIds", value: string[]): void;
+  (event: "editorViewReady", value: EditorView | null): void;
+  (event: "requestEditSuggestion"): void;
+  (event: "applyEditSuggestion"): void;
+  (event: "clearEditSuggestion"): void;
+  (event: "update:editInstruction", value: string): void;
 }>();
 
 const entrypointName = computed(() => props.entrypoint);
@@ -215,6 +228,7 @@ const { inputSchema, inputSchemaError, settingsSchema, settingsSchemaError } =
                   :model-value="sourceCode"
                   :extensions="intelligenceExtensions"
                   :read-only="isReadOnly"
+                  @view-ready="emit('editorViewReady', $event)"
                   @update:model-value="emit('update:sourceCode', $event)"
                 />
               </template>
@@ -229,6 +243,19 @@ const { inputSchema, inputSchemaError, settingsSchema, settingsSchemaError } =
             </Suspense>
           </div>
         </div>
+
+        <EditorEditSuggestionPanel
+          :instruction="editInstruction"
+          :suggestion="editSuggestion"
+          :is-loading="editIsLoading"
+          :error="editError"
+          :is-read-only="isReadOnly"
+          :can-apply="canApplyEdit"
+          @update:instruction="emit('update:editInstruction', $event)"
+          @request="emit('requestEditSuggestion')"
+          @apply="emit('applyEditSuggestion')"
+          @clear="emit('clearEditSuggestion')"
+        />
 
         <div class="border-t border-navy/20 pt-4 space-y-3">
           <div class="space-y-1">
