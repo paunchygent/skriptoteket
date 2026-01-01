@@ -5,13 +5,13 @@ title: "Sprint 2026-01-05: Tool editor vertical slice"
 status: done
 owners: "agents"
 created: 2025-12-27
-updated: 2025-12-29
+updated: 2025-12-31
 starts: 2026-01-05
 ends: 2026-01-18
 objective: "Ship editor sandbox preview + draft locking + settings isolation so authors can iterate safely without publishing."
 prd: "PRD-editor-sandbox-v0.1"
 epics: ["EPIC-14"]
-stories: ["ST-14-03", "ST-14-04", "ST-14-05", "ST-14-06", "ST-14-07", "ST-14-08"]
+stories: ["ST-14-03", "ST-14-04", "ST-14-05", "ST-14-06", "ST-14-07", "ST-14-08", "ST-08-17"]
 adrs: ["ADR-0038", "ADR-0044", "ADR-0045", "ADR-0046"]
 ---
 
@@ -29,11 +29,12 @@ authors can iterate on drafts without publishing.
 - [ST-14-06: Editor sandbox preview snapshots](../stories/story-14-06-editor-sandbox-preview-snapshots.md)
 - [ST-14-07: Editor draft head locks](../stories/story-14-07-editor-draft-head-locks.md)
 - [ST-14-08: Editor sandbox settings isolation](../stories/story-14-08-editor-sandbox-settings-isolation.md)
+- [ST-08-17: Tabby edit suggestions + prompt A/B evaluation](../stories/story-08-17-tabby-edit-suggestions-ab-testing.md)
 
 ## Out of scope
 
 - Admin quick-create + slug lifecycle stories (ST-14-01, ST-14-02).
-- AI/editor intelligence features (assistive code generation, suggestions).
+- AI/editor intelligence features beyond ST-08-17 prompt evaluation work.
 - New curated tool authoring flows beyond sandbox iteration.
 - Post-publish slug edits, aliases, or redirects.
 

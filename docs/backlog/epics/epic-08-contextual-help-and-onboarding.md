@@ -40,6 +40,17 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - [ST-08-14: AI inline completions MVP](../stories/story-08-14-ai-inline-completions.md)
 - [ST-08-15: Contract lint rule IDs (AI signal)](../stories/story-08-15-contract-lint-source-ids.md)
 - [ST-08-16: AI edit suggestions MVP](../stories/story-08-16-ai-edit-suggestions.md)
+- [ST-08-17: Tabby edit suggestions + prompt A/B evaluation](../stories/story-08-17-tabby-edit-suggestions-ab-testing.md)
+- [ST-08-18: AI prompt system v1 (templates + contract fragments + validation)](../stories/story-08-18-ai-prompt-system-v1.md)
+- [ST-08-19: AI prompt evaluation harness (live backend + llama.cpp)](../stories/story-08-19-ai-prompt-eval-harness-live-backend.md)
+
+## Implementation Summary (as of 2026-01-01)
+
+- AI inline completions (ghost text) are live with backend LLM proxy and CodeMirror integration (ST-08-14).
+- AI edit suggestions are live in the editor with preview + apply flow (ST-08-16).
+- Prompt system v1 is in place: template registry, contract fragments, budget validation, and template ID logging (ST-08-18).
+- Live prompt evaluation harness exists with metadata-only artifacts under `.artifacts/ai-prompt-eval/` (ST-08-19).
+- Remaining work: Tabby provider switch + prompt A/B evaluation for edit suggestions (ST-08-17).
 
 ## Risks
 
