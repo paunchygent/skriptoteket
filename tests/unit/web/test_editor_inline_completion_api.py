@@ -18,7 +18,11 @@ from skriptoteket.protocols.identity import (
     CurrentUserProviderProtocol,
     SessionRepositoryProtocol,
 )
-from skriptoteket.protocols.llm import InlineCompletionHandlerProtocol, InlineCompletionResult
+from skriptoteket.protocols.llm import (
+    InlineCompletionHandlerProtocol,
+    InlineCompletionResult,
+    PromptEvalMeta,
+)
 from skriptoteket.web.api.v1.editor import completions as completions_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.identity_fixtures import make_session, make_user
@@ -191,3 +195,103 @@ async def test_inline_completion_success(
 
     assert response.status_code == 200
     assert response.json() == {"completion": "pass\n", "enabled": True}
+
+
+@pytest.mark.asyncio
+async def test_inline_completion_eval_headers_require_admin(
+    client: httpx.AsyncClient,
+    settings: Settings,
+    current_user_provider: AsyncMock,
+    sessions: AsyncMock,
+    now: datetime,
+) -> None:
+    user = make_user(role=Role.CONTRIBUTOR)
+    session = make_session(user_id=user.id, now=now)
+
+    current_user_provider.get_current_user.return_value = user
+    sessions.get_by_id.return_value = session
+
+    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
+    response = await client.post(
+        "/api/v1/editor/completions",
+        headers={
+            "X-CSRF-Token": session.csrf_token,
+            "X-Skriptoteket-Eval": "1",
+        },
+        json={"prefix": "def x():\n    ", "suffix": ""},
+    )
+
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_inline_completion_includes_eval_headers_for_superuser(
+    client: httpx.AsyncClient,
+    settings: Settings,
+    current_user_provider: AsyncMock,
+    sessions: AsyncMock,
+    handler: AsyncMock,
+    now: datetime,
+) -> None:
+    user = make_user(role=Role.SUPERUSER)
+    session = make_session(user_id=user.id, now=now)
+
+    current_user_provider.get_current_user.return_value = user
+    sessions.get_by_id.return_value = session
+    handler.handle.return_value = InlineCompletionResult(
+        completion="pass\n",
+        enabled=True,
+        eval_meta=PromptEvalMeta(
+            template_id="inline_completion_v1",
+            outcome="ok",
+            system_prompt_chars=123,
+            prefix_chars=12,
+            suffix_chars=0,
+        ),
+    )
+
+    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
+    response = await client.post(
+        "/api/v1/editor/completions",
+        headers={
+            "X-CSRF-Token": session.csrf_token,
+            "X-Skriptoteket-Eval": "1",
+        },
+        json={"prefix": "def x():\n    ", "suffix": ""},
+    )
+
+    assert response.status_code == 200
+    assert response.headers["X-Skriptoteket-Eval-Template-Id"] == "inline_completion_v1"
+    assert response.headers["X-Skriptoteket-Eval-Outcome"] == "ok"
+    assert response.headers["X-Skriptoteket-Eval-System-Prompt-Chars"] == "123"
+    assert response.headers["X-Skriptoteket-Eval-Prefix-Chars"] == "12"
+    assert response.headers["X-Skriptoteket-Eval-Suffix-Chars"] == "0"
+
+
+@pytest.mark.asyncio
+async def test_inline_completion_eval_headers_denied_in_production(
+    client: httpx.AsyncClient,
+    settings: Settings,
+    current_user_provider: AsyncMock,
+    sessions: AsyncMock,
+    now: datetime,
+) -> None:
+    settings.ENVIRONMENT = "production"
+
+    user = make_user(role=Role.SUPERUSER)
+    session = make_session(user_id=user.id, now=now)
+
+    current_user_provider.get_current_user.return_value = user
+    sessions.get_by_id.return_value = session
+
+    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
+    response = await client.post(
+        "/api/v1/editor/completions",
+        headers={
+            "X-CSRF-Token": session.csrf_token,
+            "X-Skriptoteket-Eval": "1",
+        },
+        json={"prefix": "def x():\n    ", "suffix": ""},
+    )
+
+    assert response.status_code == 403
