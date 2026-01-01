@@ -2,7 +2,7 @@
 type: story
 id: ST-11-08
 title: "My runs list + detail"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-21
 epic: "EPIC-11"

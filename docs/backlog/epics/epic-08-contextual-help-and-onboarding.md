@@ -2,7 +2,7 @@
 type: epic
 id: EPIC-08
 title: "Contextual help (Hjälp) and onboarding"
-status: proposed
+status: active
 owners: "agents"
 created: 2025-12-17
 outcome: "Users understand what they can do on each page via concise, Swedish, context-aware help without external documentation."

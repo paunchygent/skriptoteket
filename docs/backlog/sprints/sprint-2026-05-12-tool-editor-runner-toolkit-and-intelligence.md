@@ -9,8 +9,8 @@ starts: 2026-05-12
 ends: 2026-05-25
 objective: "Reduce script author friction by providing a small runner-side toolkit and editor intelligence support for it."
 prd: "PRD-tool-authoring-v0.1"
-epics: ["EPIC-14"]
-stories: ["ST-14-19", "ST-14-20"]
+epics: ["EPIC-14", "EPIC-08"]
+stories: ["ST-14-19", "ST-14-20", "ST-08-17"]
 ---
 
 ## Objective
@@ -24,6 +24,7 @@ Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
 - [ST-14-19: Runner toolkit helper module (inputs/settings/actions)](../stories/story-14-19-runner-toolkit-helper-module.md)
 - [ST-14-20: Editor intelligence updates for toolkit (completions/hover/lints)](../stories/story-14-20-editor-intelligence-toolkit-support.md)
+- [ST-08-17: Tabby edit suggestions + prompt A/B evaluation](../stories/story-08-17-tabby-edit-suggestions-ab-testing.md)
 
 ## Out of scope
 

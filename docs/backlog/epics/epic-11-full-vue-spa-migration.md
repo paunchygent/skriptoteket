@@ -62,6 +62,12 @@ outcome: "Skriptoteket runs as a single Vue/Vite SPA for all routes (user + admi
 - [ST-11-22: Remove /login route (modal-only login)](../stories/story-11-22-remove-login-route.md) (done)
 - [ST-11-23: Tool owner + maintainer permission hardening](../stories/story-11-23-tool-owner-and-maintainer-permissions.md) (done)
 
+## Implementation Summary (as of 2026-01-01)
+
+- Full SPA cutover complete; legacy SSR/HTMX routes removed and FastAPI serves built SPA with history fallback.
+- API v1 + OpenAPI-to-TypeScript types are the source of truth for SPA integration.
+- Route parity delivered across user, contributor, admin, and superuser flows (browse, run, my-runs, my-tools, editor).
+
 ## Risks
 
 - Cutover risk (mitigate with route parity + Playwright E2E before deletion).

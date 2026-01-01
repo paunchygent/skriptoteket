@@ -2,11 +2,11 @@
 type: sprint
 id: SPR-2025-12-21
 title: "Sprint 2025-12-21: SPA migration foundations"
-status: active
+status: done
 owners: "agents"
 created: 2025-12-21
 starts: 2025-12-21
-ends: 2026-01-04
+ends: 2025-12-22
 objective: "Establish the full-SPA foundation: frontend workspace + SPA scaffold, Tailwind 4 + design tokens, FastAPI hosting plan, OpenAPI→TypeScript workflow, and an initial auth+routing shell."
 prd: "PRD-spa-frontend-v0.1"
 epics: ["EPIC-11"]

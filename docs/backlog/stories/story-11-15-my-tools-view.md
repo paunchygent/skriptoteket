@@ -2,7 +2,7 @@
 type: story
 id: ST-11-15
 title: "My Tools view (contributor dashboard)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-22
 epic: "EPIC-11"

@@ -2,7 +2,7 @@
 type: story
 id: ST-11-07
 title: "Tool run + results (uploads, artifacts, typed outputs)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-21
 epic: "EPIC-11"
@@ -46,9 +46,8 @@ After API changes, regenerate TypeScript OpenAPI types:
   - `UiActionForm.vue` (no API calls; emits `{ actionId, input }`)
   - `UiActionFieldRenderer.vue` dispatches by `field.kind` (no template switch)
   - Per-kind field components: `string`, `text`, `integer`, `number`, `boolean`, `enum`, `multi_enum`
-- New views:
-  - `frontend/apps/skriptoteket/src/views/ToolRunFormView.vue` (`/tools/:slug/run`)
-  - `frontend/apps/skriptoteket/src/views/ToolRunResultView.vue` (`/tools/:slug/runs/:runId`)
+- View:
+  - `frontend/apps/skriptoteket/src/views/ToolRunView.vue` (`/tools/:slug/run`)
 - Routes:
   - `frontend/apps/skriptoteket/src/router/routes.ts`
   - `frontend/apps/skriptoteket/src/views/BrowseToolsView.vue` links to tool-run via `RouterLink`

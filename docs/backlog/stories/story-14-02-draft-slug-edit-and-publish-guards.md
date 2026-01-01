@@ -2,7 +2,7 @@
 type: story
 id: ST-14-02
 title: "Draft slug edit (admin-only) + publish guards (slug + taxonomy)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-25
 epic: "EPIC-14"

@@ -20,6 +20,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Current Session (2026-01-01)
 
+- Docs/backlog alignment: updated statuses (ST-14-01/02, ST-06-10, ST-11-01/02/07/08/09/15/16), EPIC-08 active, EPIC-16 active with ST-16-08 pending, added ST-15-02 stub, aligned sprint dates, moved ST-08-17 to `SPR-2026-05-12`, added EPIC-11 implementation summary, refreshed `.agent/readme-first.md`.
 - **AI infrastructure deployed**: llama-server (ROCm) + Tabby on hemma for self-hosted code completion.
   - Model: Qwen3-Coder-30B-A3B (MoE, ~18.5GB VRAM); ADR-0050; runbooks in `docs/runbooks/`.
 - ST-08-14: AI inline completions MVP (ghost text) wired end-to-end.
@@ -63,7 +64,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Verification
 
-- Docs: `pdm run docs-validate` (pass)
+- Docs: `pdm run docs-validate` (pass; rerun after backlog alignment)
 - SPA typecheck: `pnpm -C frontend --filter @skriptoteket/spa typecheck` (pass)
 - SPA lint: `pnpm -C frontend --filter @skriptoteket/spa lint` (pass)
 - Frontend tests: `pdm run fe-test` (pass)

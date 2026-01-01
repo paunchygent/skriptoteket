@@ -5,8 +5,8 @@ title: "Sprint 2026-01-20: SSR typed UI rendering"
 status: done
 owners: "agents"
 created: 2025-12-19
-starts: 2026-01-20
-ends: 2026-02-02
+starts: 2025-12-19
+ends: 2025-12-21
 objective: "Render stored typed ui_payload outputs/actions in SSR pages to enable incremental rollout without requiring SPA islands."
 prd: "PRD-script-hub-v0.2"
 epics: ["EPIC-10"]

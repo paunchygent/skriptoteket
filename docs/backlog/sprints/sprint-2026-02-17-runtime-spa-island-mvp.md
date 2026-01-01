@@ -5,8 +5,8 @@ title: "Sprint 2026-02-17: Runtime SPA island MVP"
 status: done
 owners: "agents"
 created: 2025-12-19
-starts: 2026-02-17
-ends: 2026-03-02
+starts: 2025-12-19
+ends: 2025-12-21
 objective: "Ship a runtime SPA island MVP that renders typed outputs/actions/state for end users and supports turn-taking."
 prd: "PRD-script-hub-v0.2"
 epics: ["EPIC-10"]

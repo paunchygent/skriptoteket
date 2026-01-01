@@ -5,8 +5,8 @@ title: "Sprint 2026-01-06: Interactive API + curated apps MVP"
 status: done
 owners: "agents"
 created: 2025-12-19
-starts: 2026-01-06
-ends: 2026-01-19
+starts: 2025-12-19
+ends: 2025-12-21
 objective: "Ship turn-taking APIs and a curated apps MVP using the same typed UI contract and persistence model."
 prd: "PRD-script-hub-v0.2"
 epics: ["EPIC-10"]

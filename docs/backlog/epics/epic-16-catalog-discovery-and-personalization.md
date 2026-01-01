@@ -2,7 +2,7 @@
 type: epic
 id: EPIC-16
 title: "Catalog discovery and personalization"
-status: done
+status: active
 owners: "agents"
 created: 2025-12-26
 updated: 2025-12-28
@@ -58,6 +58,7 @@ outcome: "Teachers can discover tools via flat browsing with filters, search, an
 | ST-16-05 | Flat catalog Vue view with filter sidebar | done |
 | ST-16-06 | Tool card favorites toggle (star icon) | done |
 | ST-16-07 | Home view favorites and recently used sections | done |
+| ST-16-08 | Catalog cleanup: curated-apps-only filter + final EPIC-16 review | ready |
 
 ## Success criteria
 

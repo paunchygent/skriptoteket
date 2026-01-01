@@ -26,11 +26,12 @@ Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future H
 
 ## Current sprint dashboard (keep current only)
 
-- Sprint: `SPR-2026-01-05` (EPIC-14 editor sandbox vertical slice) — active
+- Sprint: `SPR-2026-01-05` (EPIC-14 editor sandbox vertical slice) — done (completed 2026-01-01)
 - Focus: ST-14-03..08 (sandbox next_actions parity, preview snapshots, settings isolation, draft locks)
 - Production: Full Vue SPA (SSR/HTMX removed)
-- Done: EPIC-11 (SPA migration), EPIC-16 (catalog personalization)
+- Done: EPIC-11 (SPA migration)
 - Active: EPIC-14 admin tool authoring — `docs/backlog/epics/epic-14-admin-tool-authoring.md`
+- Active: EPIC-16 catalog discovery — ST-16-08 pending
 
 ## Current EPIC-04 decisions (dynamic scripts)
 
@@ -106,8 +107,8 @@ Completed stories belong in story docs + link index here (not in `.agent/handoff
 ### EPIC-11 (SPA Migration) - Complete
 All stories ST-11-01..23 done. Cutover deployed 2025-12-23. See `docs/backlog/epics/epic-11-full-vue-spa-migration.md`.
 
-### EPIC-02 (Identity) - Complete
-Self-registration, profiles, lockout. See story docs under `docs/backlog/stories/story-02-*.md`.
+### EPIC-02 (Identity) - Active (ST-02-02 pending)
+Most EPIC-02 stories are complete (self-registration, profiles, lockout). ST-02-02 remains ready; see `docs/backlog/stories/story-02-02-admin-nomination-and-superuser-approval.md`.
 
 ### Older Stories
 - ST-07-02: `docs/backlog/stories/story-07-02-healthz-and-metrics-endpoints.md`

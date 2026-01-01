@@ -2,7 +2,7 @@
 type: story
 id: ST-11-09
 title: "Curated apps views (`/apps/:app_id`)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-21
 epic: "EPIC-11"

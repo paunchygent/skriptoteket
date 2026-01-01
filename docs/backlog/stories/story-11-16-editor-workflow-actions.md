@@ -2,7 +2,7 @@
 type: story
 id: ST-11-16
 title: "Editor workflow actions (review, publish, request changes, rollback)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-22
 epic: "EPIC-11"

@@ -5,8 +5,8 @@ title: "Sprint 2026-02-03: SPA toolchain + editor island MVP"
 status: done
 owners: "agents"
 created: 2025-12-19
-starts: 2026-02-03
-ends: 2026-02-16
+starts: 2025-12-19
+ends: 2025-12-21
 objective: "Introduce the Vue/Vite/Tailwind toolchain and ship an editor SPA island MVP for admin/contributor editor surfaces."
 prd: "PRD-script-hub-v0.2"
 epics: ["EPIC-10"]
