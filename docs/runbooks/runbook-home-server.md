@@ -5,7 +5,7 @@ title: "Runbook: Home Server Operations"
 status: active
 owners: "olof"
 created: 2025-12-16
-updated: 2025-12-29
+updated: 2026-01-01
 system: "hemma.hule.education"
 ---
 
@@ -21,6 +21,84 @@ ssh hemma
 
 # Local network access
 ssh hemma-local
+```
+
+### SSH Hardening (Checklist)
+
+```bash
+sudo nano /etc/ssh/sshd_config.d/99-hardening.conf
+```
+
+```text
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+PermitRootLogin prohibit-password
+AllowUsers root paunchygent
+```
+
+```bash
+sudo sshd -t
+sudo systemctl reload ssh
+sudo install -d -m 700 /root/.ssh
+sudo tee -a /root/.ssh/authorized_keys
+sudo chmod 600 /root/.ssh/authorized_keys
+```
+
+### Fail2ban (Checklist)
+
+```bash
+sudo apt install fail2ban
+sudo nano /etc/fail2ban/jail.d/sshd.local
+```
+
+```text
+[sshd]
+enabled = true
+backend = systemd
+maxretry = 5
+findtime = 10m
+bantime = 1h
+```
+
+```bash
+sudo systemctl enable --now fail2ban
+sudo fail2ban-client status sshd
+sudo fail2ban-client get sshd banip
+sudo fail2ban-client set sshd unbanip <ip>
+```
+
+### SSH/Network Watchdog (Logs Only)
+
+Runs every 2 minutes and logs if SSH or network health degrades (no changes applied).
+
+```bash
+sudo systemctl status ssh-watchdog.timer --no-pager
+journalctl -t ssh-watchdog --since "1 hour ago"
+sudo systemctl disable --now ssh-watchdog.timer
+```
+
+### Current Network + DDNS Settings (as of 2026-01-01)
+
+```text
+# Network (ethernet only; Wi‑Fi disabled)
+/etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
+  network: {config: disabled}
+
+/etc/netplan/01-netcfg.yaml
+  enp7s0: dhcp4=true, dhcp6=false, optional=true
+
+systemctl status wpa_supplicant@wlp5s0.service -> inactive (disabled)
+```
+
+```text
+# DDNS (Namecheap)
+systemctl status ddclient -> active
+/etc/ddclient.conf
+  protocol=namecheap
+  server=dynamicdns.park-your-domain.com
+  login=hule.education
+  host=hemma
 ```
 
 ### Repo + Compose Layout (Production)
@@ -135,6 +213,7 @@ ssh hemma "docker ps"
 # Skriptoteket + core services
 ssh hemma "docker ps | grep -E 'skriptoteket|nginx|postgres'"
 ```
+
 
 ### View Logs
 
@@ -454,6 +533,23 @@ ssh hemma "curl -s https://skriptoteket.hule.education/metrics | grep skriptotek
 ```
 
 ## Troubleshooting
+
+### SSH Unreachable After Reboot
+
+**Symptom**: `ssh hemma` times out even though the server is powered on.
+
+**Common cause**: Network instability or DHCP churn (Wi‑Fi flapping / multiple default routes).
+
+**Fix**:
+```bash
+# Server should use ethernet only; Wi‑Fi disabled via netplan override.
+# Confirm on the server:
+ssh hemma "ip -4 addr show enp7s0"
+ssh hemma "ip route | head -n 5"
+
+# If needed, check watchdog logs for evidence:
+ssh hemma "journalctl -t ssh-watchdog --since '2 hours ago'"
+```
 
 ### 502 Bad Gateway
 
