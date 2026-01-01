@@ -43,9 +43,14 @@ services:
       EMAIL_VERIFICATION_BASE_URL: ${EMAIL_VERIFICATION_BASE_URL:-https://skriptoteket.hule.education}
       EMAIL_VERIFICATION_TTL_HOURS: ${EMAIL_VERIFICATION_TTL_HOURS:-24}
       # LLM API (host.docker.internal reaches host's llama-server)
+      LLM_EDIT_ENABLED: ${LLM_EDIT_ENABLED:-false}
+      LLM_EDIT_BASE_URL: ${LLM_EDIT_BASE_URL:-http://host.docker.internal:8082}
+      LLM_EDIT_MODEL: ${LLM_EDIT_MODEL:-qwen3-coder-30b-a3b}
+      LLM_EDIT_TEMPLATE_ID: ${LLM_EDIT_TEMPLATE_ID:-edit_suggestion_v1}
       LLM_COMPLETION_ENABLED: ${LLM_COMPLETION_ENABLED:-false}
       LLM_COMPLETION_BASE_URL: ${LLM_COMPLETION_BASE_URL:-http://host.docker.internal:8082}
-      OPENAI_LLM_COMPLETION_API_KEY: ${OPENAI_LLM_COMPLETION_API_KEY:-}
+      LLM_COMPLETION_MODEL: ${LLM_COMPLETION_MODEL:-qwen3-coder-30b-a3b}
+      LLM_COMPLETION_TEMPLATE_ID: ${LLM_COMPLETION_TEMPLATE_ID:-inline_completion_v1}
       # nginx-proxy integration
       VIRTUAL_HOST: skriptoteket.hule.education
       VIRTUAL_PORT: "8000"
