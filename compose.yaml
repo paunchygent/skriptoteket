@@ -14,14 +14,20 @@ services:
   web:
     build:
       context: .
-      target: production
+      target: development
     container_name: skriptoteket_web
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-skriptoteket}
+      - LLM_COMPLETION_BASE_URL=http://host.docker.internal:8082
+      - LLM_EDIT_BASE_URL=http://host.docker.internal:8082
+    volumes:
+      - ./src:/app/src
     depends_on:
       - db
     restart: unless-stopped
@@ -37,9 +43,32 @@ services:
         aliases:
           - skriptoteket-web
 
+  frontend:
+    image: node:22-slim
+    working_dir: /app/frontend
+    command: >
+      sh -c "corepack enable
+      && corepack prepare pnpm@latest --activate
+      && pnpm install
+      && pnpm --filter @skriptoteket/spa dev --host 0.0.0.0 --port 5173"
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_DEV_HOST=0.0.0.0
+      - VITE_DEV_PORT=5173
+      - VITE_DEV_PROXY_TARGET=http://skriptoteket_web:8000
+    volumes:
+      - ./frontend:/app/frontend
+      - ./src:/app/src:cached
+      - frontend_node_modules:/app/frontend/node_modules
+    depends_on:
+      - web
+    restart: unless-stopped
+
 networks:
   hule-network:
     external: true
 
 volumes:
   skriptoteket-db:
+  frontend_node_modules:

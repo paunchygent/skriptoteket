@@ -42,6 +42,7 @@ Target Python is **3.13–3.14**.
 - DB (dev): `docker compose up -d db` then `pdm run db-upgrade`
 - Bootstrap first superuser: `pdm run bootstrap-superuser`
 - Run: `pdm run dev`
+- Dev logs: when using Vite (`pdm run fe-dev`), API calls proxy to `127.0.0.1:8000` → check the **host** `pdm run dev` terminal for backend errors (container logs only apply if you point the UI at the container port).
 - Frontend deps: `pdm run fe-install` (or `pnpm -C frontend install`)
 - SPA dev: `pdm run fe-dev` (or `pnpm -C frontend --filter @skriptoteket/spa dev`)
 - SPA build: `pdm run fe-build` (or `pnpm -C frontend --filter @skriptoteket/spa build`)
