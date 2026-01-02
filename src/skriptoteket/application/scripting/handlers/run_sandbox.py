@@ -11,6 +11,7 @@ from skriptoteket.application.scripting.commands import (
     ExecuteToolVersionCommand,
     RunSandboxCommand,
     RunSandboxResult,
+    SessionFilesMode,
     ToolVersionOverride,
 )
 from skriptoteket.application.scripting.draft_lock_checks import require_active_draft_lock
@@ -21,6 +22,7 @@ from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.domain.scripting.models import RunContext, VersionState
 from skriptoteket.domain.scripting.sandbox_snapshots import SandboxSnapshot
 from skriptoteket.domain.scripting.tool_inputs import normalize_tool_input_schema
+from skriptoteket.domain.scripting.tool_sessions import normalize_tool_session_context
 from skriptoteket.domain.scripting.tool_settings import (
     compute_sandbox_settings_context,
     normalize_tool_settings_schema,
@@ -43,6 +45,26 @@ from skriptoteket.protocols.uow import UnitOfWorkProtocol
 def _sandbox_context(snapshot_id: UUID) -> str:
     """Build sandbox session context per ADR-0044."""
     return f"sandbox:{snapshot_id}"
+
+
+def _require_sandbox_session_context(value: str | None) -> str:
+    if value is None or not value.strip():
+        raise validation_error("session_context is required for sandbox reuse/clear")
+    normalized = normalize_tool_session_context(context=value)
+    if not normalized.startswith("sandbox:"):
+        raise validation_error(
+            "session_context must start with 'sandbox:'",
+            details={"session_context": normalized},
+        )
+    snapshot_raw = normalized.removeprefix("sandbox:")
+    try:
+        UUID(snapshot_raw)
+    except ValueError as exc:
+        raise validation_error(
+            "session_context must include a valid snapshot_id",
+            details={"session_context": normalized},
+        ) from exc
+    return normalized
 
 
 def _normalize_optional_text(value: str | None) -> str | None:
@@ -231,6 +253,24 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
             )
             await self._snapshots.create(snapshot=snapshot)
 
+        input_files = list(command.input_files)
+        reuse_files: list[tuple[str, bytes]] = []
+        if not input_files and command.session_files_mode is SessionFilesMode.REUSE:
+            reuse_context = _require_sandbox_session_context(command.session_context)
+            reuse_files = await self._session_files.get_files(
+                tool_id=command.tool_id,
+                user_id=actor.id,
+                context=reuse_context,
+            )
+            input_files = reuse_files
+        elif not input_files and command.session_files_mode is SessionFilesMode.CLEAR:
+            reuse_context = _require_sandbox_session_context(command.session_context)
+            await self._session_files.clear_session(
+                tool_id=command.tool_id,
+                user_id=actor.id,
+                context=reuse_context,
+            )
+
         result = await self._execute.handle(
             actor=actor,
             command=ExecuteToolVersionCommand(
@@ -246,18 +286,19 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
                     input_schema=input_schema,
                     usage_instructions=usage_instructions,
                 ),
-                input_files=command.input_files,
+                input_files=input_files,
                 input_values=command.input_values,
             ),
         )
 
         # Persist session-scoped files for subsequent sandbox action runs (ADR-0039).
-        if command.input_files:
+        files_to_store = command.input_files or reuse_files
+        if files_to_store:
             await self._session_files.store_files(
                 tool_id=command.tool_id,
                 user_id=actor.id,
                 context=_sandbox_context(snapshot_id),
-                files=command.input_files,
+                files=files_to_store,
             )
 
         # Persist sandbox session state if run has next_actions (ADR-0038)

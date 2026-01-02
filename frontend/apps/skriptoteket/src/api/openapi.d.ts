@@ -616,6 +616,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/editor/tool-versions/{version_id}/session-files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sandbox Session Files */
+        get: operations["list_sandbox_session_files_api_v1_editor_tool_versions__version_id__session_files_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/editor/tool-versions/{version_id}/start-action": {
         parameters: {
             query?: never;
@@ -1049,6 +1066,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tools/{tool_id}/session-files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Session Files */
+        get: operations["list_session_files_api_v1_tools__tool_id__session_files_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tools/{tool_id}/sessions/{context}": {
         parameters: {
             query?: never;
@@ -1197,6 +1231,10 @@ export interface components {
             files?: string[] | null;
             /** Inputs */
             inputs?: string | null;
+            /** Session Context */
+            session_context?: string | null;
+            /** Session Files Mode */
+            session_files_mode?: string | null;
             /** Snapshot */
             snapshot: string;
         };
@@ -1206,6 +1244,10 @@ export interface components {
             files?: string[] | null;
             /** Inputs */
             inputs?: string | null;
+            /** Session Context */
+            session_context?: string | null;
+            /** Session Files Mode */
+            session_files_mode?: string | null;
         };
         /** CatalogCuratedAppItem */
         CatalogCuratedAppItem: {
@@ -1735,6 +1777,38 @@ export interface components {
             /** Items */
             items: (components["schemas"]["RecentToolItem"] | components["schemas"]["RecentCuratedAppItem"])[];
         };
+        /** ListSandboxSessionFilesResult */
+        ListSandboxSessionFilesResult: {
+            /** Files */
+            files?: components["schemas"]["SessionFileInfo"][];
+            /**
+             * Snapshot Id
+             * Format: uuid
+             */
+            snapshot_id: string;
+            /**
+             * Tool Id
+             * Format: uuid
+             */
+            tool_id: string;
+            /**
+             * Version Id
+             * Format: uuid
+             */
+            version_id: string;
+        };
+        /** ListSessionFilesResult */
+        ListSessionFilesResult: {
+            /** Context */
+            context: string;
+            /** Files */
+            files?: components["schemas"]["SessionFileInfo"][];
+            /**
+             * Tool Id
+             * Format: uuid
+             */
+            tool_id: string;
+        };
         /** ListSuggestionsResponse */
         ListSuggestionsResponse: {
             /** Suggestions */
@@ -2166,6 +2240,13 @@ export interface components {
              * Format: uuid
              */
             version_id: string;
+        };
+        /** SessionFileInfo */
+        SessionFileInfo: {
+            /** Bytes */
+            bytes: number;
+            /** Name */
+            name: string;
         };
         /**
          * StartActionCommand
@@ -3606,6 +3687,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                "X-Skriptoteket-Eval"?: string | null;
                 "X-CSRF-Token"?: string | null;
             };
             path?: never;
@@ -3641,6 +3723,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                "X-Skriptoteket-Eval"?: string | null;
                 "X-CSRF-Token"?: string | null;
             };
             path?: never;
@@ -4041,6 +4124,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SandboxSessionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_sandbox_session_files_api_v1_editor_tool_versions__version_id__session_files_get: {
+        parameters: {
+            query: {
+                snapshot_id: string;
+            };
+            header?: never;
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListSandboxSessionFilesResult"];
                 };
             };
             /** @description Validation Error */
@@ -5020,6 +5136,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StartToolRunResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_session_files_api_v1_tools__tool_id__session_files_get: {
+        parameters: {
+            query?: {
+                context?: string;
+            };
+            header?: never;
+            path: {
+                tool_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListSessionFilesResult"];
                 };
             };
             /** @description Validation Error */

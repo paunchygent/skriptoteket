@@ -12,6 +12,10 @@ from skriptoteket.application.scripting.interactive_tools import (
     StartActionCommand,
     StartActionResult,
 )
+from skriptoteket.application.scripting.session_files import (
+    ListSessionFilesQuery,
+    ListSessionFilesResult,
+)
 from skriptoteket.domain.identity.models import User
 
 
@@ -39,3 +43,12 @@ class ListArtifactsHandlerProtocol(Protocol):
         actor: User,
         query: ListArtifactsQuery,
     ) -> ListArtifactsResult: ...
+
+
+class ListSessionFilesHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        query: ListSessionFilesQuery,
+    ) -> ListSessionFilesResult: ...

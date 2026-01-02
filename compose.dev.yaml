@@ -16,3 +16,9 @@ services:
       - ENVIRONMENT=development
       - ENABLE_DOCS=true
       - COOKIE_SECURE=false
+      - WATCHFILES_FORCE_POLLING=true
+      - WATCHFILES_POLL_DELAY_MS=300
+  frontend:
+    environment:
+      - VITE_DEV_POLLING=true
+      - VITE_DEV_POLLING_INTERVAL=200

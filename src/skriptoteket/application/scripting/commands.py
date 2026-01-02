@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import StrEnum
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue
@@ -9,6 +10,12 @@ from skriptoteket.domain.scripting.tool_inputs import ToolInputSchema
 from skriptoteket.domain.scripting.tool_settings import ToolSettingsSchema
 
 type InputFile = tuple[str, bytes]
+
+
+class SessionFilesMode(StrEnum):
+    NONE = "none"
+    REUSE = "reuse"
+    CLEAR = "clear"
 
 
 class ToolVersionOverride(BaseModel):
@@ -139,6 +146,8 @@ class RunSandboxCommand(BaseModel):
     snapshot_payload: SandboxSnapshotPayload
     input_files: list[InputFile] = Field(default_factory=list)
     input_values: dict[str, JsonValue] = Field(default_factory=dict)
+    session_context: str | None = None
+    session_files_mode: SessionFilesMode = SessionFilesMode.NONE
 
 
 class RunSandboxResult(BaseModel):
@@ -157,6 +166,8 @@ class RunActiveToolCommand(BaseModel):
     tool_slug: str
     input_files: list[InputFile] = Field(default_factory=list)
     input_values: dict[str, JsonValue] = Field(default_factory=dict)
+    session_context: str = "default"
+    session_files_mode: SessionFilesMode = SessionFilesMode.NONE
 
 
 class RunActiveToolResult(BaseModel):

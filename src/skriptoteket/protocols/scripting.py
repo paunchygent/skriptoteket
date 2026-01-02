@@ -33,6 +33,10 @@ from skriptoteket.application.scripting.interactive_sandbox import (
     StartSandboxActionCommand,
     StartSandboxActionResult,
 )
+from skriptoteket.application.scripting.session_files import (
+    ListSandboxSessionFilesQuery,
+    ListSandboxSessionFilesResult,
+)
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.models import (
     RunContext,
@@ -210,3 +214,12 @@ class StartSandboxActionHandlerProtocol(Protocol):
         actor: User,
         command: StartSandboxActionCommand,
     ) -> StartSandboxActionResult: ...
+
+
+class ListSandboxSessionFilesHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        query: ListSandboxSessionFilesQuery,
+    ) -> ListSandboxSessionFilesResult: ...

@@ -2,7 +2,7 @@ from pathlib import Path
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import FileResponse, Response
 
 from skriptoteket.application.scripting.interactive_tools import (
@@ -15,6 +15,10 @@ from skriptoteket.application.scripting.interactive_tools import (
     StartActionCommand,
     StartActionResult,
 )
+from skriptoteket.application.scripting.session_files import (
+    ListSessionFilesQuery,
+    ListSessionFilesResult,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import User
@@ -25,6 +29,7 @@ from skriptoteket.protocols.interactive_tools import (
     GetRunHandlerProtocol,
     GetSessionStateHandlerProtocol,
     ListArtifactsHandlerProtocol,
+    ListSessionFilesHandlerProtocol,
     StartActionHandlerProtocol,
 )
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
@@ -97,6 +102,20 @@ async def get_session_state(
     return await handler.handle(
         actor=user,
         query=GetSessionStateQuery(tool_id=tool_id, context=context),
+    )
+
+
+@router.get("/tools/{tool_id}/session-files", response_model=ListSessionFilesResult)
+@inject
+async def list_session_files(
+    tool_id: UUID,
+    handler: FromDishka[ListSessionFilesHandlerProtocol],
+    user: User = Depends(require_user_api),
+    context: str = Query("default"),
+) -> ListSessionFilesResult:
+    return await handler.handle(
+        actor=user,
+        query=ListSessionFilesQuery(tool_id=tool_id, context=context),
     )
 
 

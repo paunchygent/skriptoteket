@@ -17,6 +17,13 @@ class CleanupExpiredSessionFilesResult(BaseModel):
     deleted_bytes: int
 
 
+class SessionFileMetadata(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    name: str
+    bytes: int
+
+
 class SessionFileStorageProtocol(Protocol):
     async def store_files(
         self,
@@ -34,6 +41,14 @@ class SessionFileStorageProtocol(Protocol):
         user_id: UUID,
         context: str,
     ) -> list[InputFile]: ...
+
+    async def list_files(
+        self,
+        *,
+        tool_id: UUID,
+        user_id: UUID,
+        context: str,
+    ) -> list[SessionFileMetadata]: ...
 
     async def clear_session(
         self,

@@ -12,6 +12,10 @@ dependencies: ["EPIC-11"]
 > Status note: EPIC-12 was blocked until EPIC-11 (full SPA migration) was complete.
 > EPIC-11 cutover (ST-11-13) is complete as of **2025-12-23**. ST-12-01 is delivered as a backend/runtime contract;
 > all remaining EPIC-12 work should be implemented directly in the SPA (no SSR duplication).
+>
+> Backlog hygiene note (2026-01-01): ST-06-08 and ST-09-02 are closed as superseded by the SPA cutover; legacy
+> HTMX/Jinja editor and CSP assumptions no longer apply. Track editor UX gaps under EPIC-14 and CSP work under EPIC-09
+> with an SPA-first scope.
 
 ## Scope
 
@@ -36,7 +40,7 @@ dependencies: ["EPIC-11"]
 - [ST-12-04: Interactive text/dropdown inputs](../stories/story-12-04-interactive-text-dropdown-inputs.md) (done)
 - [ST-12-05: Session-scoped file persistence](../stories/story-12-05-session-file-persistence.md) (done)
 - [ST-12-06: Session file cleanup policies](../stories/story-12-06-session-file-cleanup.md) (ready)
-- [ST-12-07: Explicit session file reuse controls](../stories/story-12-07-explicit-session-file-reuse-controls.md) (ready)
+- [ST-12-07: Explicit session file reuse controls](../stories/story-12-07-explicit-session-file-reuse-controls.md) (done)
 
 ## Risks
 

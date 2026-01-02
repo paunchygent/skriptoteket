@@ -15,6 +15,7 @@ from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.session_files import (
     CleanupExpiredSessionFilesResult,
     InputFile,
+    SessionFileMetadata,
     SessionFileStorageProtocol,
 )
 
@@ -177,6 +178,37 @@ class LocalSessionFileStorage(SessionFileStorageProtocol):
             if not item.is_file():
                 continue
             files.append((item.name, item.read_bytes()))
+
+        now_iso = self._clock.now().isoformat()
+        _safe_write_json(
+            path=self._meta_path(session_dir),
+            payload=self._build_meta(key=key, now_iso=now_iso),
+        )
+        return files
+
+    async def list_files(
+        self,
+        *,
+        tool_id: UUID,
+        user_id: UUID,
+        context: str,
+    ) -> list[SessionFileMetadata]:
+        key = self._key(tool_id=tool_id, user_id=user_id, context=context)
+        session_dir = self._session_dir(key)
+        if not session_dir.exists():
+            return []
+
+        files: list[SessionFileMetadata] = []
+        for item in sorted(session_dir.iterdir(), key=lambda path: path.name):
+            if item.name == _META_FILENAME:
+                continue
+            if not item.is_file():
+                continue
+            try:
+                size_bytes = item.stat().st_size
+            except OSError:
+                size_bytes = 0
+            files.append(SessionFileMetadata(name=item.name, bytes=size_bytes))
 
         now_iso = self._clock.now().isoformat()
         _safe_write_json(

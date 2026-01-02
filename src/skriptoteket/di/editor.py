@@ -10,6 +10,9 @@ from skriptoteket.application.scripting.handlers.acquire_draft_lock import (
 from skriptoteket.application.scripting.handlers.create_draft_version import (
     CreateDraftVersionHandler,
 )
+from skriptoteket.application.scripting.handlers.list_sandbox_session_files import (
+    ListSandboxSessionFilesHandler,
+)
 from skriptoteket.application.scripting.handlers.publish_version import PublishVersionHandler
 from skriptoteket.application.scripting.handlers.release_draft_lock import (
     ReleaseDraftLockHandler,
@@ -45,6 +48,7 @@ from skriptoteket.protocols.sandbox_snapshots import SandboxSnapshotRepositoryPr
 from skriptoteket.protocols.scripting import (
     CreateDraftVersionHandlerProtocol,
     ExecuteToolVersionHandlerProtocol,
+    ListSandboxSessionFilesHandlerProtocol,
     PublishVersionHandlerProtocol,
     RequestChangesHandlerProtocol,
     RollbackVersionHandlerProtocol,
@@ -226,6 +230,25 @@ class EditorProvider(Provider):
             execute=execute,
             session_files=session_files,
             snapshots=snapshots,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def list_sandbox_session_files_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
+        snapshots: SandboxSnapshotRepositoryProtocol,
+        session_files: SessionFileStorageProtocol,
+        clock: ClockProtocol,
+    ) -> ListSandboxSessionFilesHandlerProtocol:
+        return ListSandboxSessionFilesHandler(
+            uow=uow,
+            versions=versions,
+            maintainers=maintainers,
+            snapshots=snapshots,
+            session_files=session_files,
+            clock=clock,
         )
 
     @provide(scope=Scope.REQUEST)

@@ -6,6 +6,7 @@ import type { components } from "../../api/openapi";
 import { useSandboxSettings } from "../../composables/editor/useSandboxSettings";
 import { useToolInputs, type ToolInputFormValues } from "../../composables/tools/useToolInputs";
 import type { SettingsFormValues } from "../../composables/tools/toolSettingsHelpers";
+import SessionFilesPanel from "../tool-run/SessionFilesPanel.vue";
 import ToolRunSettingsPanel from "../tool-run/ToolRunSettingsPanel.vue";
 import SystemMessage from "../ui/SystemMessage.vue";
 import SandboxInputPanel from "./SandboxInputPanel.vue";
@@ -16,6 +17,15 @@ type StartSandboxActionResponse = components["schemas"]["StartSandboxActionRespo
 type EditorRunDetails = components["schemas"]["EditorRunDetails"];
 type RunStatus = components["schemas"]["RunStatus"];
 type JsonValue = components["schemas"]["JsonValue"];
+
+type SessionFilesMode = "none" | "reuse" | "clear";
+type SessionFileInfo = { name: string; bytes: number };
+type SandboxSessionFilesResponse = {
+  tool_id: string;
+  version_id: string;
+  snapshot_id: string;
+  files: SessionFileInfo[];
+};
 
 type CreateDraftVersionRequest = components["schemas"]["CreateDraftVersionRequest"];
 type ToolInputSchema = NonNullable<CreateDraftVersionRequest["input_schema"]>;
@@ -46,6 +56,10 @@ const fileLabel = toolInputs.fileLabel;
 const fileMultiple = toolInputs.fileMultiple;
 const fileError = toolInputs.fileError;
 const showFilePicker = toolInputs.showFilePicker;
+
+const sessionFiles = ref<SessionFileInfo[]>([]);
+const sessionFilesMode = ref<SessionFilesMode>("none");
+const sessionFilesSnapshotId = ref<string | null>(null);
 
 const sandboxSettings = useSandboxSettings({
   versionId: toRef(props, "versionId"),
@@ -79,6 +93,38 @@ const snapshotId = ref<string | null>(null);
 const lastSentInputsJson = ref<string>("{}");
 
 const hasFiles = computed(() => selectedFiles.value.length > 0);
+const hasSessionFiles = computed(() => sessionFiles.value.length > 0);
+const effectiveSessionFilesMode = computed<SessionFilesMode>(() => {
+  if (hasFiles.value) return "none";
+  if (sessionFilesMode.value === "reuse" && !hasSessionFiles.value) return "none";
+  return sessionFilesMode.value;
+});
+const effectiveFileError = computed<string | null>(() => {
+  const baseError = fileError.value;
+  if (!hasSchema.value) return baseError;
+  const field = toolInputs.fileField.value;
+  if (!field) return baseError;
+  if (hasFiles.value) return baseError;
+  if (effectiveSessionFilesMode.value !== "reuse") return baseError;
+
+  const count = sessionFiles.value.length;
+  const min = field.min;
+  const max = field.max;
+
+  if (count < min) {
+    return min === 1 ? "Välj minst en fil." : `Välj minst ${min} filer.`;
+  }
+  if (count > max) {
+    return max === 1 ? "Du kan välja max 1 fil." : `Du kan välja max ${max} filer.`;
+  }
+  return null;
+});
+const inputsValid = computed(() => {
+  return (
+    effectiveFileError.value === null &&
+    Object.keys(inputFieldErrors.value).length === 0
+  );
+});
 const inputsPreview = computed(() => lastSentInputsJson.value);
 const hasResults = computed(() => runResult.value !== null || errorMessage.value !== null);
 
@@ -95,9 +141,37 @@ const canRun = computed(() => {
   if (props.isReadOnly || isRunning.value) return false;
   if (props.inputSchemaError || props.settingsSchemaError) return false;
   if (hasSchema.value) {
-    return toolInputs.isValid.value;
+    return inputsValid.value;
   }
-  return hasFiles.value;
+  return hasFiles.value || (effectiveSessionFilesMode.value === "reuse" && hasSessionFiles.value);
+});
+
+const canReuseSessionFiles = computed(() => {
+  return (
+    !props.isReadOnly &&
+    !isRunning.value &&
+    !isSubmitting.value &&
+    !hasFiles.value &&
+    hasSessionFiles.value
+  );
+});
+const canClearSessionFiles = computed(() => {
+  return (
+    !props.isReadOnly &&
+    !isRunning.value &&
+    !isSubmitting.value &&
+    !hasFiles.value &&
+    hasSessionFiles.value
+  );
+});
+const sessionFilesHelperText = computed(() => {
+  if (props.isReadOnly) {
+    return "Du saknar redigeringslåset. Sparade filer kan inte användas.";
+  }
+  if (hasFiles.value) {
+    return "Väljer du filer används de istället för sparade.";
+  }
+  return null;
 });
 
 function updateInputValues(values: ToolInputFormValues): void {
@@ -146,11 +220,15 @@ async function pollRunStatus(runId: string): Promise<void> {
     runResult.value = result;
     if (result.snapshot_id) {
       snapshotId.value = result.snapshot_id;
+      sessionFilesSnapshotId.value = result.snapshot_id;
     }
 
     if (isTerminalStatus(result.status)) {
       stopPolling();
       isRunning.value = false;
+      if (result.snapshot_id) {
+        void fetchSessionFiles(result.snapshot_id);
+      }
     }
   } catch (error: unknown) {
     stopPolling();
@@ -162,6 +240,18 @@ async function pollRunStatus(runId: string): Promise<void> {
     } else {
       errorMessage.value = "Det gick inte att hämta körningsresultatet.";
     }
+  }
+}
+
+async function fetchSessionFiles(snapshotIdValue: string): Promise<void> {
+  try {
+    const response = await apiGet<SandboxSessionFilesResponse>(
+      `/api/v1/editor/tool-versions/${encodeURIComponent(props.versionId)}` +
+        `/session-files?snapshot_id=${encodeURIComponent(snapshotIdValue)}`,
+    );
+    sessionFiles.value = response.files;
+  } catch {
+    sessionFiles.value = [];
   }
 }
 
@@ -223,6 +313,12 @@ async function runSandbox(): Promise<void> {
   formData.append("snapshot", JSON.stringify(snapshotPayload));
   lastSentInputsJson.value = JSON.stringify(apiInputs, null, 2);
 
+  const resolvedSessionFilesMode = effectiveSessionFilesMode.value;
+  if (resolvedSessionFilesMode !== "none" && sessionFilesSnapshotId.value) {
+    formData.append("session_files_mode", resolvedSessionFilesMode);
+    formData.append("session_context", `sandbox:${sessionFilesSnapshotId.value}`);
+  }
+
   try {
     const response = await apiFetch<SandboxRunResponse>(
       `/api/v1/editor/tool-versions/${encodeURIComponent(props.versionId)}/run-sandbox`,
@@ -233,6 +329,11 @@ async function runSandbox(): Promise<void> {
     );
 
     snapshotId.value = response.snapshot_id;
+    sessionFilesSnapshotId.value = response.snapshot_id;
+
+    if (resolvedSessionFilesMode === "clear") {
+      sessionFilesMode.value = "none";
+    }
 
     // Capture state_rev if present (multi-step tools)
     if (response.state_rev !== null && response.state_rev !== undefined) {
@@ -354,11 +455,38 @@ watch(hasSettingsSchema, (next) => {
 });
 
 watch(
+  () => selectedFiles.value.length,
+  (count) => {
+    if (count > 0 && sessionFilesMode.value !== "none") {
+      sessionFilesMode.value = "none";
+    }
+  },
+);
+
+watch(
+  () => sessionFiles.value.length,
+  (count) => {
+    if (count === 0 && sessionFilesMode.value === "reuse") {
+      sessionFilesMode.value = "none";
+    }
+  },
+);
+
+watch(
   () => props.settingsSchemaError,
   (next) => {
     if (next) {
       isSettingsOpen.value = false;
     }
+  },
+);
+
+watch(
+  () => props.versionId,
+  () => {
+    sessionFiles.value = [];
+    sessionFilesSnapshotId.value = null;
+    sessionFilesMode.value = "none";
   },
 );
 </script>
@@ -378,7 +506,7 @@ watch(
       :file-label="fileLabel"
       :file-accept="fileAccept"
       :file-multiple="fileMultiple"
-      :file-error="fileError"
+      :file-error="effectiveFileError"
       :is-running="isRunning"
       :is-read-only="isReadOnly"
       :has-results="hasResults"
@@ -387,6 +515,14 @@ watch(
       @update:selected-files="updateSelectedFiles"
       @run="runSandbox"
       @clear="clearResult"
+    />
+
+    <SessionFilesPanel
+      v-model:mode="sessionFilesMode"
+      :files="sessionFiles"
+      :can-reuse="canReuseSessionFiles"
+      :can-clear="canClearSessionFiles"
+      :helper-text="sessionFilesHelperText"
     />
 
     <div

@@ -8,6 +8,14 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 const devHost = process.env.VITE_DEV_HOST ?? "127.0.0.1";
 const devPort = Number.parseInt(process.env.VITE_DEV_PORT ?? "5173", 10);
 const devProxyTarget = process.env.VITE_DEV_PROXY_TARGET ?? "http://127.0.0.1:8000";
+const usePolling = process.env.VITE_DEV_POLLING === "true";
+const pollingInterval = Number.parseInt(process.env.VITE_DEV_POLLING_INTERVAL ?? "", 10);
+const watch = usePolling
+  ? {
+      usePolling: true,
+      ...(Number.isNaN(pollingInterval) ? {} : { interval: pollingInterval }),
+    }
+  : undefined;
 
 export default defineConfig(({ command }) => ({
   plugins: [vue(), tailwindcss()],
@@ -26,6 +34,7 @@ export default defineConfig(({ command }) => ({
     fs: {
       allow: [path.resolve(dirname, "../../..")],
     },
+    watch,
     proxy: {
       "/api": devProxyTarget,
       // Proxy non-SPA static assets to backend; SPA assets served by Vite

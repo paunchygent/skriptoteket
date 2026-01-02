@@ -11,6 +11,10 @@ import pytest
 
 from skriptoteket.application.scripting.commands import RunSandboxResult
 from skriptoteket.application.scripting.interactive_sandbox import StartSandboxActionResult
+from skriptoteket.application.scripting.session_files import (
+    ListSandboxSessionFilesResult,
+    SessionFileInfo,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError
 from skriptoteket.domain.identity.models import Role
@@ -18,12 +22,14 @@ from skriptoteket.domain.scripting.input_files import InputManifest
 from skriptoteket.domain.scripting.models import RunContext, VersionState, start_tool_version_run
 from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.protocols.scripting import (
+    ListSandboxSessionFilesHandlerProtocol,
     RunSandboxHandlerProtocol,
     StartSandboxActionHandlerProtocol,
     ToolVersionRepositoryProtocol,
 )
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.web.api.v1 import editor
+from skriptoteket.web.api.v1.editor import sandbox as editor_sandbox
 from tests.unit.web.admin_scripting_test_support import _tool, _user, _version
 
 
@@ -130,6 +136,41 @@ async def test_get_sandbox_session_when_session_not_found_raises_domain_error() 
         )
 
     assert exc_info.value.code.value == "NOT_FOUND"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_list_sandbox_session_files_calls_handler() -> None:
+    handler = AsyncMock(spec=ListSandboxSessionFilesHandlerProtocol)
+    user = _user(role=Role.CONTRIBUTOR)
+    version_id = uuid4()
+    snapshot_id = uuid4()
+    tool_id = uuid4()
+
+    handler.handle.return_value = ListSandboxSessionFilesResult(
+        tool_id=tool_id,
+        version_id=version_id,
+        snapshot_id=snapshot_id,
+        files=[SessionFileInfo(name="input.txt", bytes=42)],
+    )
+
+    result = await _unwrap_dishka(editor_sandbox.list_sandbox_session_files)(
+        version_id=version_id,
+        handler=handler,
+        user=user,
+        snapshot_id=snapshot_id,
+    )
+
+    assert result.tool_id == tool_id
+    assert result.version_id == version_id
+    assert result.snapshot_id == snapshot_id
+    assert result.files[0].name == "input.txt"
+
+    handler.handle.assert_awaited_once()
+    handler_kwargs = handler.handle.call_args.kwargs
+    assert handler_kwargs["actor"] == user
+    assert handler_kwargs["query"].version_id == version_id
+    assert handler_kwargs["query"].snapshot_id == snapshot_id
 
 
 @pytest.mark.unit

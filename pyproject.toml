@@ -272,12 +272,15 @@ distribution = false
 [tool.pdm.scripts]
 # App runtime
 dev = "uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8000"
+dev-logs = "sh -c 'mkdir -p .artifacts && WATCHFILES_FORCE_POLLING=true WATCHFILES_POLL_DELAY_MS=300 pdm run dev 2>&1 | tee .artifacts/dev-backend.log'"
+dev-local = "sh -c 'pdm run dev-logs & pdm run fe-dev-logs & wait'"
 kill-dev = "pkill -f 'uvicorn.*skriptoteket'"
 dev-docker = "uvicorn --app-dir src skriptoteket.web.app:app --reload --host 0.0.0.0 --port 8000"
 serve = "uvicorn --app-dir src skriptoteket.web.app:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'"
 ui-smoke = "python -m scripts.playwright_ui_smoke"
 ui-editor-smoke = "python -m scripts.playwright_ui_editor_smoke"
 ui-runtime-smoke = "python -m scripts.playwright_ui_runtime_smoke"
+ui-hmr-probe = "python -m scripts.playwright_hmr_probe"
 openapi-export-v1 = "python -m scripts.export_openapi_v1"
 fe-gen-api-types = { composite = [
     "python -m scripts.export_openapi_v1",
@@ -290,6 +293,8 @@ fe-install.working_dir = "frontend"
 
 fe-dev.cmd = "pnpm --filter @skriptoteket/spa dev"
 fe-dev.working_dir = "frontend"
+fe-dev-logs.cmd = "sh -c 'mkdir -p ../.artifacts && pnpm --filter @skriptoteket/spa dev 2>&1 | tee ../.artifacts/dev-frontend.log'"
+fe-dev-logs.working_dir = "frontend"
 
 fe-build.cmd = "pnpm --filter @skriptoteket/spa build"
 fe-build.working_dir = "frontend"
@@ -358,6 +363,8 @@ dev-stop = "docker compose -f compose.yaml -f compose.dev.yaml down"
 dev-restart = "docker compose -f compose.yaml -f compose.dev.yaml restart"
 dev-recreate = "docker compose -f compose.yaml -f compose.dev.yaml up -d --force-recreate"
 dev-build-start = "docker compose -f compose.yaml -f compose.dev.yaml up -d --build"
+dev-rebuild = "docker compose -f compose.yaml -f compose.dev.yaml up -d --build --force-recreate"
+dev-containers-logs = "docker compose -f compose.yaml -f compose.dev.yaml logs -f web frontend"
 dev-build-start-clean = { composite = [
     "docker compose -f compose.yaml -f compose.dev.yaml build --no-cache",
     "docker compose -f compose.yaml -f compose.dev.yaml up -d --force-recreate",

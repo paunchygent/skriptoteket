@@ -8,6 +8,7 @@ import ToolInputForm from "../components/tool-run/ToolInputForm.vue";
 import ToolRunActions from "../components/tool-run/ToolRunActions.vue";
 import ToolRunArtifacts from "../components/tool-run/ToolRunArtifacts.vue";
 import ToolRunControlBar from "../components/tool-run/ToolRunControlBar.vue";
+import SessionFilesPanel from "../components/tool-run/SessionFilesPanel.vue";
 import UsageInstructions from "../components/tool-run/UsageInstructions.vue";
 import ToolRunSettingsPanel from "../components/tool-run/ToolRunSettingsPanel.vue";
 import ToolRunStepIndicator from "../components/tool-run/ToolRunStepIndicator.vue";
@@ -37,6 +38,9 @@ const {
   fileLabel,
   fileMultiple,
   fileError,
+  sessionFiles,
+  sessionFilesMode,
+  sessionFilesHelperText,
   currentRun,
   completedSteps,
   isLoadingTool,
@@ -48,6 +52,8 @@ const {
   hasNextActions,
   canSubmitActions,
   canSubmitRun,
+  canReuseSessionFiles,
+  canClearSessionFiles,
   loadTool,
   submitRun,
   submitAction,
@@ -242,6 +248,16 @@ watch(hasSettingsSchema, (hasSchema) => {
           @clear="onClear"
           @toggle-settings="onToggleSettings"
         />
+
+        <div class="mt-4">
+          <SessionFilesPanel
+            v-model:mode="sessionFilesMode"
+            :files="sessionFiles"
+            :can-reuse="canReuseSessionFiles"
+            :can-clear="canClearSessionFiles"
+            :helper-text="sessionFilesHelperText"
+          />
+        </div>
       </div>
 
       <div

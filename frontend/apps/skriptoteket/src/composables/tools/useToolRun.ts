@@ -12,6 +12,14 @@ type GetSessionStateResult = components["schemas"]["GetSessionStateResult"];
 type RunDetails = components["schemas"]["RunDetails"];
 type JsonValue = components["schemas"]["JsonValue"];
 
+type SessionFilesMode = "none" | "reuse" | "clear";
+type SessionFileInfo = { name: string; bytes: number };
+type SessionFilesResponse = {
+  tool_id: string;
+  context: string;
+  files: SessionFileInfo[];
+};
+
 export interface StepResult {
   id: string;
   stepNumber: number;
@@ -30,6 +38,8 @@ export function useToolRun({ slug }: UseToolRunOptions) {
   const currentRun = ref<RunDetails | null>(null);
   const completedSteps = ref<StepResult[]>([]);
   const stateRev = ref<number | null>(null);
+  const sessionFiles = ref<SessionFileInfo[]>([]);
+  const sessionFilesMode = ref<SessionFilesMode>("none");
 
   const inputSchema = computed(() => tool.value?.input_schema ?? null);
   const toolInputs = useToolInputs({ schema: inputSchema, selectedFiles });
@@ -43,16 +53,63 @@ export function useToolRun({ slug }: UseToolRunOptions) {
   let pollIntervalId: number | null = null;
 
   const hasFiles = computed(() => selectedFiles.value.length > 0);
+  const hasSessionFiles = computed(() => sessionFiles.value.length > 0);
+  const effectiveSessionFilesMode = computed<SessionFilesMode>(() => {
+    if (hasFiles.value) return "none";
+    if (sessionFilesMode.value === "reuse" && !hasSessionFiles.value) return "none";
+    return sessionFilesMode.value;
+  });
+  const effectiveFileError = computed<string | null>(() => {
+    const baseError = toolInputs.fileError.value;
+    if (!toolInputs.hasSchema.value) return baseError;
+
+    const fileField = toolInputs.fileField.value;
+    if (!fileField) return baseError;
+    if (hasFiles.value) return baseError;
+    if (effectiveSessionFilesMode.value !== "reuse") return baseError;
+
+    const count = sessionFiles.value.length;
+    const min = fileField.min;
+    const max = fileField.max;
+
+    if (count < min) {
+      return min === 1 ? "Välj minst en fil." : `Välj minst ${min} filer.`;
+    }
+    if (count > max) {
+      return max === 1 ? "Du kan välja max 1 fil." : `Du kan välja max ${max} filer.`;
+    }
+    return null;
+  });
+  const inputsValid = computed(() => {
+    return (
+      effectiveFileError.value === null &&
+      Object.keys(toolInputs.fieldErrors.value).length === 0
+    );
+  });
   const hasResults = computed(() => currentRun.value !== null);
   const isRunning = computed(() => currentRun.value?.status === "running");
-  const hasNextActions = computed(() => (currentRun.value?.ui_payload?.next_actions ?? []).length > 0);
+  const hasNextActions = computed(() => {
+    return (currentRun.value?.ui_payload?.next_actions ?? []).length > 0;
+  });
   const canSubmitActions = computed(() => stateRev.value !== null && hasNextActions.value);
+  const canReuseSessionFiles = computed(() => {
+    return !isSubmitting.value && !isRunning.value && !hasFiles.value && hasSessionFiles.value;
+  });
+  const canClearSessionFiles = computed(() => {
+    return !isSubmitting.value && !isRunning.value && !hasFiles.value && hasSessionFiles.value;
+  });
+  const sessionFilesHelperText = computed(() => {
+    if (hasFiles.value) {
+      return "Väljer du filer används de istället för sparade.";
+    }
+    return null;
+  });
   const canSubmitRun = computed(() => {
     if (!tool.value) return false;
     if (toolInputs.hasSchema.value) {
-      return toolInputs.isValid.value;
+      return inputsValid.value;
     }
-    return hasFiles.value;
+    return hasFiles.value || (effectiveSessionFilesMode.value === "reuse" && hasSessionFiles.value);
   });
 
   function isTerminalStatus(status: string): boolean {
@@ -72,6 +129,9 @@ export function useToolRun({ slug }: UseToolRunOptions) {
       tool.value = await apiGet<ToolMetadataResponse>(
         `/api/v1/tools/${encodeURIComponent(slug.value)}`,
       );
+      if (tool.value) {
+        await fetchSessionFiles(tool.value.id);
+      }
     } catch (error: unknown) {
       tool.value = null;
       if (isApiError(error)) {
@@ -98,6 +158,17 @@ export function useToolRun({ slug }: UseToolRunOptions) {
       `/api/v1/tools/${encodeURIComponent(toolId)}/sessions/default`,
     );
     stateRev.value = response.session_state.state_rev;
+  }
+
+  async function fetchSessionFiles(toolId: string): Promise<void> {
+    try {
+      const response = await apiGet<SessionFilesResponse>(
+        `/api/v1/tools/${encodeURIComponent(toolId)}/session-files?context=default`,
+      );
+      sessionFiles.value = response.files;
+    } catch {
+      sessionFiles.value = [];
+    }
   }
 
   function stopPolling(): void {
@@ -164,6 +235,12 @@ export function useToolRun({ slug }: UseToolRunOptions) {
     }
     formData.append("inputs", JSON.stringify(inputValues));
 
+    const resolvedSessionFilesMode = effectiveSessionFilesMode.value;
+    if (resolvedSessionFilesMode !== "none") {
+      formData.append("session_files_mode", resolvedSessionFilesMode);
+      formData.append("session_context", "default");
+    }
+
     try {
       const response = await apiFetch<StartToolRunResponse>(
         `/api/v1/tools/${encodeURIComponent(slug.value)}/run`,
@@ -172,6 +249,10 @@ export function useToolRun({ slug }: UseToolRunOptions) {
           body: formData,
         },
       );
+
+      if (resolvedSessionFilesMode === "clear") {
+        sessionFilesMode.value = "none";
+      }
 
       // Set placeholder run while waiting for full data
       currentRun.value = {
@@ -307,6 +388,26 @@ export function useToolRun({ slug }: UseToolRunOptions) {
     () => {
       selectedFiles.value = [];
       toolInputs.resetValues();
+      sessionFiles.value = [];
+      sessionFilesMode.value = "none";
+    },
+  );
+
+  watch(
+    () => selectedFiles.value.length,
+    (count) => {
+      if (count > 0 && sessionFilesMode.value !== "none") {
+        sessionFilesMode.value = "none";
+      }
+    },
+  );
+
+  watch(
+    () => sessionFiles.value.length,
+    (count) => {
+      if (count === 0 && sessionFilesMode.value === "reuse") {
+        sessionFilesMode.value = "none";
+      }
     },
   );
 
@@ -321,6 +422,9 @@ export function useToolRun({ slug }: UseToolRunOptions) {
           void fetchSessionState(currentRun.value.tool_id).catch(() => {
             stateRev.value = null;
           });
+        }
+        if (currentRun.value) {
+          void fetchSessionFiles(currentRun.value.tool_id);
         }
       }
     },
@@ -342,7 +446,10 @@ export function useToolRun({ slug }: UseToolRunOptions) {
     fileAccept: toolInputs.fileAccept,
     fileLabel: toolInputs.fileLabel,
     fileMultiple: toolInputs.fileMultiple,
-    fileError: toolInputs.fileError,
+    fileError: effectiveFileError,
+    sessionFiles,
+    sessionFilesMode,
+    sessionFilesHelperText,
     currentRun,
     completedSteps,
     stateRev,
@@ -363,6 +470,8 @@ export function useToolRun({ slug }: UseToolRunOptions) {
     isRunning,
     hasNextActions,
     canSubmitActions,
+    canReuseSessionFiles,
+    canClearSessionFiles,
 
     // Actions
     loadTool,

@@ -4,10 +4,12 @@ from skriptoteket.application.scripting.commands import (
     ExecuteToolVersionCommand,
     RunActiveToolCommand,
     RunActiveToolResult,
+    SessionFilesMode,
 )
 from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.models import RunContext, VersionState
+from skriptoteket.domain.scripting.tool_sessions import normalize_tool_session_context
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.scripting import (
@@ -18,8 +20,6 @@ from skriptoteket.protocols.scripting import (
 from skriptoteket.protocols.session_files import SessionFileStorageProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
-
-_DEFAULT_SESSION_CONTEXT = "default"
 
 
 class RunActiveToolHandler(RunActiveToolHandlerProtocol):
@@ -76,6 +76,22 @@ class RunActiveToolHandler(RunActiveToolHandlerProtocol):
             if version.state is not VersionState.ACTIVE:
                 raise not_found("Tool", command.tool_slug)
 
+        session_context = normalize_tool_session_context(context=command.session_context)
+        input_files = list(command.input_files)
+
+        if not input_files and command.session_files_mode is SessionFilesMode.REUSE:
+            input_files = await self._session_files.get_files(
+                tool_id=tool.id,
+                user_id=actor.id,
+                context=session_context,
+            )
+        elif not input_files and command.session_files_mode is SessionFilesMode.CLEAR:
+            await self._session_files.clear_session(
+                tool_id=tool.id,
+                user_id=actor.id,
+                context=session_context,
+            )
+
         # 5. Execute with PRODUCTION context (outside UoW - long-running)
         result = await self._execute.handle(
             actor=actor,
@@ -83,7 +99,7 @@ class RunActiveToolHandler(RunActiveToolHandlerProtocol):
                 tool_id=tool.id,
                 version_id=version.id,
                 context=RunContext.PRODUCTION,
-                input_files=command.input_files,
+                input_files=input_files,
                 input_values=command.input_values,
             ),
         )
@@ -93,7 +109,7 @@ class RunActiveToolHandler(RunActiveToolHandlerProtocol):
             await self._session_files.store_files(
                 tool_id=tool.id,
                 user_id=actor.id,
-                context=_DEFAULT_SESSION_CONTEXT,
+                context=session_context,
                 files=command.input_files,
             )
 
@@ -105,12 +121,12 @@ class RunActiveToolHandler(RunActiveToolHandlerProtocol):
                     session_id=self._id_generator.new_uuid(),
                     tool_id=tool.id,
                     user_id=actor.id,
-                    context=_DEFAULT_SESSION_CONTEXT,
+                    context=session_context,
                 )
                 await self._sessions.update_state(
                     tool_id=tool.id,
                     user_id=actor.id,
-                    context=_DEFAULT_SESSION_CONTEXT,
+                    context=session_context,
                     expected_state_rev=session.state_rev,
                     state=result.normalized_state,
                 )

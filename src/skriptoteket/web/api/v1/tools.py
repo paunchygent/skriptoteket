@@ -1,11 +1,15 @@
 import json
+from typing import Annotated
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from pydantic import BaseModel, ConfigDict, JsonValue
 
-from skriptoteket.application.scripting.commands import RunActiveToolCommand
+from skriptoteket.application.scripting.commands import (
+    RunActiveToolCommand,
+    SessionFilesMode,
+)
 from skriptoteket.application.scripting.tool_settings import (
     GetToolSettingsQuery,
     UpdateToolSettingsCommand,
@@ -38,6 +42,22 @@ from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_u
 from skriptoteket.web.uploads import read_upload_files
 
 router = APIRouter(prefix="/api/v1/tools", tags=["tools"])
+
+
+def _parse_session_files_mode(value: str | None) -> SessionFilesMode:
+    if value is None:
+        return SessionFilesMode.NONE
+    normalized = value.strip()
+    if not normalized:
+        return SessionFilesMode.NONE
+    try:
+        return SessionFilesMode(normalized)
+    except ValueError as exc:
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message="session_files_mode must be one of: none, reuse, clear",
+            details={"session_files_mode": normalized},
+        ) from exc
 
 
 class UploadConstraints(BaseModel):
@@ -194,8 +214,10 @@ async def start_tool_run(
     settings: FromDishka[Settings],
     user: User = Depends(require_user_api),
     _: None = Depends(require_csrf_token),
-    files: list[UploadFile] | None = File(None),
-    inputs: str | None = Form(None),
+    files: Annotated[list[UploadFile] | None, File()] = None,
+    inputs: Annotated[str | None, Form()] = None,
+    session_files_mode: Annotated[str | None, Form()] = None,
+    session_context: Annotated[str | None, Form()] = None,
 ) -> StartToolRunResponse:
     input_files: list[tuple[str, bytes]] = []
     if files:
@@ -222,12 +244,15 @@ async def start_tool_run(
             )
         input_values = parsed
 
+    context = session_context.strip() if session_context is not None else ""
     result = await handler.handle(
         actor=user,
         command=RunActiveToolCommand(
             tool_slug=slug,
             input_files=input_files,
             input_values=input_values,
+            session_context=context or "default",
+            session_files_mode=_parse_session_files_mode(session_files_mode),
         ),
     )
     return StartToolRunResponse(run_id=result.run.id)

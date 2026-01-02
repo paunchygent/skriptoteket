@@ -23,6 +23,9 @@ from skriptoteket.application.scripting.handlers.get_tool_settings import GetToo
 from skriptoteket.application.scripting.handlers.list_run_artifacts import (
     ListArtifactsHandler as ListInteractiveArtifactsHandler,
 )
+from skriptoteket.application.scripting.handlers.list_session_files import (
+    ListSessionFilesHandler,
+)
 from skriptoteket.application.scripting.handlers.run_active_tool import RunActiveToolHandler
 from skriptoteket.application.scripting.handlers.start_action import StartActionHandler
 from skriptoteket.application.scripting.handlers.update_tool_session_state import (
@@ -42,6 +45,7 @@ from skriptoteket.protocols.interactive_tools import (
     GetRunHandlerProtocol,
     GetSessionStateHandlerProtocol,
     ListArtifactsHandlerProtocol,
+    ListSessionFilesHandlerProtocol,
     StartActionHandlerProtocol,
 )
 from skriptoteket.protocols.runner import ToolRunnerProtocol
@@ -147,6 +151,21 @@ class ScriptingProvider(Provider):
         runs: ToolRunRepositoryProtocol,
     ) -> ListArtifactsHandlerProtocol:
         return ListInteractiveArtifactsHandler(uow=uow, runs=runs)
+
+    @provide(scope=Scope.REQUEST)
+    def list_session_files_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        curated_apps: CuratedAppRegistryProtocol,
+        session_files: SessionFileStorageProtocol,
+    ) -> ListSessionFilesHandlerProtocol:
+        return ListSessionFilesHandler(
+            uow=uow,
+            tools=tools,
+            curated_apps=curated_apps,
+            session_files=session_files,
+        )
 
     @provide(scope=Scope.REQUEST)
     def get_tool_session_state_handler(

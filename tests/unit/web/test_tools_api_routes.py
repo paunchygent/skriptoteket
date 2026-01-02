@@ -6,6 +6,10 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from skriptoteket.application.scripting.session_files import (
+    ListSessionFilesResult,
+    SessionFileInfo,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.models import VersionState
@@ -17,9 +21,11 @@ from skriptoteket.domain.scripting.tool_usage_instructions import (
 )
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.interactive_tools import ListSessionFilesHandlerProtocol
 from skriptoteket.protocols.scripting import ToolVersionRepositoryProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.web.api.v1 import tools as tools_api
+from skriptoteket.web.routes import interactive_tools as interactive_tools_routes
 from tests.fixtures.application_fixtures import FakeUow
 from tests.fixtures.identity_fixtures import make_user
 from tests.unit.web.admin_scripting_test_support import _tool, _version
@@ -233,3 +239,34 @@ async def test_mark_usage_instructions_seen_persists_hash_and_returns_state_rev(
     assert update_kwargs["context"] == USAGE_INSTRUCTIONS_SESSION_CONTEXT
     assert update_kwargs["expected_state_rev"] == 0
     assert update_kwargs["state"][USAGE_INSTRUCTIONS_SEEN_HASH_KEY] == usage_hash
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_list_session_files_calls_handler_with_context() -> None:
+    user = make_user(role=Role.USER, user_id=uuid4())
+    handler = AsyncMock(spec=ListSessionFilesHandlerProtocol)
+    tool_id = uuid4()
+
+    handler.handle.return_value = ListSessionFilesResult(
+        tool_id=tool_id,
+        context="custom",
+        files=[SessionFileInfo(name="input.txt", bytes=12)],
+    )
+
+    result = await _unwrap_dishka(interactive_tools_routes.list_session_files)(
+        tool_id=tool_id,
+        handler=handler,
+        user=user,
+        context="custom",
+    )
+
+    assert result.tool_id == tool_id
+    assert result.context == "custom"
+    assert result.files[0].name == "input.txt"
+
+    handler.handle.assert_awaited_once()
+    handler_kwargs = handler.handle.call_args.kwargs
+    assert handler_kwargs["actor"] == user
+    assert handler_kwargs["query"].tool_id == tool_id
+    assert handler_kwargs["query"].context == "custom"

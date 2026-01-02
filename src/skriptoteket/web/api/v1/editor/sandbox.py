@@ -1,15 +1,25 @@
 import json
+from typing import Annotated
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from pydantic import JsonValue, ValidationError
 
-from skriptoteket.application.scripting.commands import RunSandboxCommand, SandboxSnapshotPayload
+from skriptoteket.application.scripting.commands import (
+    RunSandboxCommand,
+    SandboxSnapshotPayload,
+    SessionFilesMode,
+)
+from skriptoteket.application.scripting.session_files import (
+    ListSandboxSessionFilesQuery,
+    ListSandboxSessionFilesResult,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.scripting import (
+    ListSandboxSessionFilesHandlerProtocol,
     RunSandboxHandlerProtocol,
     StartSandboxActionHandlerProtocol,
     ToolVersionRepositoryProtocol,
@@ -36,6 +46,22 @@ def _sandbox_context(context_id: UUID) -> str:
     return f"sandbox:{context_id}"
 
 
+def _parse_session_files_mode(value: str | None) -> SessionFilesMode:
+    if value is None:
+        return SessionFilesMode.NONE
+    normalized = value.strip()
+    if not normalized:
+        return SessionFilesMode.NONE
+    try:
+        return SessionFilesMode(normalized)
+    except ValueError as exc:
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message="session_files_mode must be one of: none, reuse, clear",
+            details={"session_files_mode": normalized},
+        ) from exc
+
+
 @router.post("/tool-versions/{version_id}/run-sandbox", response_model=SandboxRunResponse)
 @inject
 async def run_sandbox(
@@ -45,8 +71,10 @@ async def run_sandbox(
     settings: FromDishka[Settings],
     user: User = Depends(require_contributor_api),
     _: None = Depends(require_csrf_token),
-    files: list[UploadFile] | None = File(None),
-    inputs: str | None = Form(None),
+    files: Annotated[list[UploadFile] | None, File()] = None,
+    inputs: Annotated[str | None, Form()] = None,
+    session_files_mode: Annotated[str | None, Form()] = None,
+    session_context: Annotated[str | None, Form()] = None,
     snapshot: str = Form(...),
 ) -> SandboxRunResponse:
     version = await versions_repo.get_by_id(version_id=version_id)
@@ -95,6 +123,8 @@ async def run_sandbox(
             snapshot_payload=snapshot_payload,
             input_files=input_files,
             input_values=input_values,
+            session_context=session_context.strip() if session_context else None,
+            session_files_mode=_parse_session_files_mode(session_files_mode),
         ),
     )
     run = result.run
@@ -133,6 +163,26 @@ async def get_sandbox_session(
     return SandboxSessionResponse(
         state_rev=session.state_rev,
         state=session.state,
+    )
+
+
+@router.get(
+    "/tool-versions/{version_id}/session-files",
+    response_model=ListSandboxSessionFilesResult,
+)
+@inject
+async def list_sandbox_session_files(
+    version_id: UUID,
+    handler: FromDishka[ListSandboxSessionFilesHandlerProtocol],
+    user: User = Depends(require_contributor_api),
+    snapshot_id: UUID = Query(...),
+) -> ListSandboxSessionFilesResult:
+    return await handler.handle(
+        actor=user,
+        query=ListSandboxSessionFilesQuery(
+            version_id=version_id,
+            snapshot_id=snapshot_id,
+        ),
     )
 
 
