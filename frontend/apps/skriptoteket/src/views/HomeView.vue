@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 
-import { apiGet, isApiError } from "../api/client";
+import { apiGet, apiPost, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
 import FavoritesSection from "../components/home/FavoritesSection.vue";
 import RecentToolsSection from "../components/home/RecentToolsSection.vue";
 import SectionHeader from "../components/home/SectionHeader.vue";
+import CreateDraftToolModal from "../components/admin/CreateDraftToolModal.vue";
 import { IconArrow } from "../components/icons";
 import { useFavorites } from "../composables/useFavorites";
+import { useToast } from "../composables/useToast";
 import { useLoginModal } from "../composables/useLoginModal";
 import { useAuthStore } from "../stores/auth";
 import type { CatalogItem } from "../types/catalog";
@@ -17,10 +20,13 @@ type ListMyToolsResponse = components["schemas"]["ListMyToolsResponse"];
 type ListAdminToolsResponse = components["schemas"]["ListAdminToolsResponse"];
 type ListFavoritesResponse = components["schemas"]["ListFavoritesResponse"];
 type ListRecentToolsResponse = components["schemas"]["ListRecentToolsResponse"];
+type CreateDraftToolResponse = components["schemas"]["CreateDraftToolResponse"];
 
 const auth = useAuthStore();
 const loginModal = useLoginModal();
 const { toggleFavorite, isToggling } = useFavorites();
+const router = useRouter();
+const toast = useToast();
 
 const isAuthenticated = computed(() => auth.isAuthenticated);
 const canSeeContributor = computed(() => auth.hasAtLeastRole("contributor"));
@@ -52,9 +58,66 @@ const adminLoading = ref(false);
 
 const dashboardError = ref<string | null>(null);
 
+// Create tool modal state
+const isCreateModalOpen = ref(false);
+const createTitle = ref("");
+const createSummary = ref("");
+const createError = ref<string | null>(null);
+const isCreating = ref(false);
+
 // Favorites and recent tools
 const favorites = ref<CatalogItem[]>([]);
 const recentTools = ref<CatalogItem[]>([]);
+
+function normalizedOptionalString(value: string): string | null {
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
+function openCreateModal(): void {
+  createTitle.value = "";
+  createSummary.value = "";
+  createError.value = null;
+  isCreateModalOpen.value = true;
+}
+
+function closeCreateModal(): void {
+  isCreateModalOpen.value = false;
+}
+
+async function createDraftTool(): Promise<void> {
+  if (isCreating.value) return;
+
+  const title = createTitle.value.trim();
+  if (!title) {
+    createError.value = "Titel krävs.";
+    return;
+  }
+
+  isCreating.value = true;
+  createError.value = null;
+
+  try {
+    const response = await apiPost<CreateDraftToolResponse>("/api/v1/admin/tools", {
+      title,
+      summary: normalizedOptionalString(createSummary.value),
+    });
+
+    closeCreateModal();
+    toast.success("Verktyg skapat.");
+    await router.push(`/admin/tools/${response.tool.id}`);
+  } catch (error: unknown) {
+    if (isApiError(error)) {
+      createError.value = error.message;
+    } else if (error instanceof Error) {
+      createError.value = error.message;
+    } else {
+      createError.value = "Det gick inte att skapa verktyget.";
+    }
+  } finally {
+    isCreating.value = false;
+  }
+}
 
 async function loadUserDashboard(): Promise<void> {
   runsLoading.value = true;
@@ -323,7 +386,7 @@ onMounted(async () => {
                 />
               </div>
               <p class="card-description mt-4">
-                Bläddra i katalogen och kör det du behöver.
+                Sök och filtrera bland tillgängliga verktyg.
               </p>
             </RouterLink>
           </div>
@@ -434,44 +497,41 @@ onMounted(async () => {
               </p>
             </RouterLink>
 
-            <!-- Alla verktyg -->
-            <RouterLink
-              to="/admin/tools"
-              class="dashboard-card group"
+            <!-- Skapa nytt verktyg -->
+            <button
+              type="button"
+              class="dashboard-card group text-left w-full"
+              @click="openCreateModal"
             >
               <div class="card-header">
-                <span class="card-label">Alla verktyg</span>
+                <span class="card-label">Skapa nytt verktyg</span>
                 <IconArrow
                   :size="18"
                   class="card-arrow"
                 />
               </div>
-              <div class="card-stats">
-                <span
-                  v-if="adminLoading"
-                  class="text-navy/40"
-                >...</span>
-                <template v-else>
-                  <span class="stat-number">{{ adminToolsTotal }}</span>
-                  <span class="stat-label">
-                    totalt
-                    <span
-                      v-if="adminToolsPublished > 0"
-                      class="text-success"
-                    >
-                      ({{ adminToolsPublished }} publicerade)
-                    </span>
-                  </span>
-                </template>
-              </div>
-              <p class="card-description">
-                Administrera verktyg i systemet.
+              <p class="card-description mt-4">
+                Skapa ett nytt verktyg i systemet.
               </p>
-            </RouterLink>
+            </button>
           </div>
         </section>
       </div>
     </template>
+
+    <!-- Create tool modal -->
+    <CreateDraftToolModal
+      :is-open="isCreateModalOpen"
+      :title="createTitle"
+      :summary="createSummary"
+      :error="createError"
+      :is-submitting="isCreating"
+      @update:title="createTitle = $event"
+      @update:summary="createSummary = $event"
+      @update:error="createError = $event"
+      @close="closeCreateModal"
+      @submit="createDraftTool"
+    />
   </div>
 </template>
 
