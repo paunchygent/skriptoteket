@@ -1,0 +1,1417 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tool editor framework codemap (current vs target)</title>
+    <style>
+      :root {
+        --bg: #0b0c0f;
+        --panel: #11131a;
+        --panel-2: #0f1117;
+        --text: #e8eaf0;
+        --muted: #a7adbd;
+        --faint: #6c7283;
+        --border: rgba(255, 255, 255, 0.10);
+        --shadow: 0 12px 40px rgba(0, 0, 0, 0.40);
+        --radius: 14px;
+        --radius-sm: 10px;
+
+        --accent: #7aa2ff;
+        --accent-2: #78dce8;
+        --ok: #5fe1a6;
+        --warn: #ffcc66;
+        --bad: #ff6b6b;
+
+        --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+        --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+          Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      }
+
+      /* Base */
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family: var(--sans);
+        color: var(--text);
+        background: radial-gradient(
+            1200px 900px at 20% -10%,
+            rgba(122, 162, 255, 0.16),
+            transparent 55%
+          ),
+          radial-gradient(
+            1000px 800px at 110% 15%,
+            rgba(120, 220, 232, 0.14),
+            transparent 50%
+          ),
+          radial-gradient(
+            900px 700px at 50% 110%,
+            rgba(95, 225, 166, 0.10),
+            transparent 55%
+          ),
+          var(--bg);
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      code,
+      pre,
+      kbd {
+        font-family: var(--mono);
+      }
+
+      /* Layout */
+      .app {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 18px;
+        padding: 18px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+      @media (max-width: 1000px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 18px;
+        height: calc(100dvh - 36px);
+        overflow: auto;
+        border: 1px solid var(--border);
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.04),
+          rgba(255, 255, 255, 0.02)
+        );
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+      }
+      @media (max-width: 1000px) {
+        .sidebar {
+          position: relative;
+          height: auto;
+        }
+      }
+      .content {
+        min-width: 0;
+      }
+
+      /* Sidebar */
+      .side-head {
+        padding: 16px 16px 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      .title {
+        font-size: 16px;
+        margin: 0 0 8px;
+        letter-spacing: 0.2px;
+      }
+      .subtitle {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.35;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .chip {
+        font-size: 12px;
+        color: var(--text);
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.03);
+        padding: 6px 10px;
+        border-radius: 999px;
+      }
+      .chip strong {
+        font-weight: 600;
+        color: var(--muted);
+        margin-right: 6px;
+      }
+
+      .side-nav {
+        padding: 10px 10px 14px;
+      }
+      .nav-group {
+        margin: 10px 0 14px;
+      }
+      .nav-label {
+        color: var(--faint);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        padding: 6px 10px;
+      }
+      .nav-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .nav-list a {
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+        padding: 8px 10px;
+        border-radius: 10px;
+        color: var(--text);
+        text-decoration: none;
+        border: 1px solid transparent;
+      }
+      .nav-list a:hover {
+        background: rgba(122, 162, 255, 0.08);
+        border-color: rgba(122, 162, 255, 0.25);
+      }
+      .nav-list .hint {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      /* Content sections */
+      .hero {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.04),
+          rgba(255, 255, 255, 0.02)
+        );
+        box-shadow: var(--shadow);
+        padding: 18px;
+      }
+      .hero h1 {
+        margin: 0 0 10px;
+        font-size: 24px;
+        letter-spacing: 0.2px;
+      }
+      .hero p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+      }
+      .grid.two {
+        grid-template-columns: 1fr 1fr;
+      }
+      @media (max-width: 900px) {
+        .grid.two {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.03);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .card .card-h {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .card .card-h h2,
+      .card .card-h h3 {
+        margin: 0;
+        font-size: 14px;
+        letter-spacing: 0.2px;
+      }
+      .card .card-b {
+        padding: 14px 16px 16px;
+      }
+      .card p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .kpi {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.03);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--accent);
+      }
+      .dot.ok {
+        background: var(--ok);
+      }
+      .dot.warn {
+        background: var(--warn);
+      }
+      .dot.bad {
+        background: var(--bad);
+      }
+
+      .section {
+        margin-top: 14px;
+      }
+      .section > h2 {
+        margin: 18px 0 10px;
+        font-size: 16px;
+        letter-spacing: 0.2px;
+      }
+
+      /* Lists */
+      .path-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 8px;
+      }
+      .path-list li {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 10px 10px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: rgba(0, 0, 0, 0.18);
+      }
+      .path-list .tag {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--faint);
+        min-width: 86px;
+        padding-top: 2px;
+      }
+      .path-list code {
+        font-size: 12px;
+        color: var(--text);
+        white-space: normal;
+        word-break: break-word;
+      }
+
+      /* Code blocks */
+      pre {
+        margin: 0;
+        padding: 12px 12px;
+        border: 1px solid var(--border);
+        background: rgba(0, 0, 0, 0.28);
+        border-radius: var(--radius-sm);
+        overflow: auto;
+        line-height: 1.45;
+        font-size: 12px;
+        color: #e8eaf0;
+      }
+
+      /* Tables */
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        overflow: hidden;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        background: rgba(0, 0, 0, 0.18);
+      }
+      th,
+      td {
+        padding: 10px 10px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+        font-size: 13px;
+      }
+      th {
+        color: var(--muted);
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.03);
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      .mono {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text);
+      }
+
+      /* Callouts */
+      .callout {
+        border: 1px solid rgba(122, 162, 255, 0.28);
+        background: rgba(122, 162, 255, 0.08);
+        border-radius: var(--radius-sm);
+        padding: 12px 12px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .callout strong {
+        color: var(--text);
+      }
+
+      /* Diagram containers */
+      .diagram {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: rgba(0, 0, 0, 0.16);
+        overflow: hidden;
+      }
+      .diagram .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .diagram .legend .pill {
+        background: rgba(0, 0, 0, 0.16);
+      }
+
+      /* SVG styling */
+      svg {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .node {
+        fill: rgba(255, 255, 255, 0.05);
+        stroke: rgba(255, 255, 255, 0.16);
+        stroke-width: 1;
+      }
+      .node.accent {
+        stroke: rgba(122, 162, 255, 0.55);
+        fill: rgba(122, 162, 255, 0.10);
+      }
+      .node.ok {
+        stroke: rgba(95, 225, 166, 0.55);
+        fill: rgba(95, 225, 166, 0.10);
+      }
+      .node.warn {
+        stroke: rgba(255, 204, 102, 0.55);
+        fill: rgba(255, 204, 102, 0.10);
+      }
+      .node.bad {
+        stroke: rgba(255, 107, 107, 0.55);
+        fill: rgba(255, 107, 107, 0.10);
+      }
+      .node-title {
+        font-size: 12px;
+        fill: #e8eaf0;
+        font-weight: 600;
+      }
+      .node-text {
+        font-size: 11px;
+        fill: rgba(232, 234, 240, 0.80);
+      }
+      .arrow {
+        stroke: rgba(232, 234, 240, 0.52);
+        stroke-width: 1.4;
+        fill: none;
+      }
+      .arrow.accent {
+        stroke: rgba(122, 162, 255, 0.72);
+      }
+      .arrow.ok {
+        stroke: rgba(95, 225, 166, 0.72);
+      }
+      .arrow.warn {
+        stroke: rgba(255, 204, 102, 0.72);
+      }
+
+      /* Tree (contract index) */
+      .tree {
+        margin: 0;
+        padding: 0 0 0 18px;
+      }
+      .tree,
+      .tree ul {
+        list-style: none;
+      }
+      .tree li {
+        position: relative;
+        margin: 6px 0;
+        padding-left: 16px;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+      .tree li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 10px;
+        width: 12px;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.18);
+      }
+      .tree li::after {
+        content: "";
+        position: absolute;
+        left: 6px;
+        top: -10px;
+        width: 1px;
+        height: 26px;
+        background: rgba(255, 255, 255, 0.18);
+      }
+      .tree li:first-child::after {
+        top: 10px;
+        height: 6px;
+      }
+      .tree .k {
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      .tree .t {
+        color: var(--faint);
+        font-size: 12px;
+      }
+
+      /* Details */
+      details {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: rgba(0, 0, 0, 0.16);
+        overflow: hidden;
+      }
+      summary {
+        cursor: pointer;
+        padding: 12px 12px;
+        color: var(--text);
+        font-weight: 600;
+        font-size: 13px;
+        list-style: none;
+      }
+      summary::-webkit-details-marker {
+        display: none;
+      }
+      details[open] summary {
+        border-bottom: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .details-body {
+        padding: 12px 12px 14px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      /* Anchors */
+      .anchor {
+        scroll-margin-top: 18px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="side-head">
+          <h2 class="title">Tool editor framework codemap</h2>
+          <p class="subtitle">
+            Current vs target flow, contract v2 surface, UI capabilities, and
+            roadmap pointers.
+          </p>
+
+          <div class="chips">
+            <span class="chip"><strong>type</strong>reference</span>
+            <span class="chip"><strong>id</strong>REF-tool-editor-framework-codemap</span>
+            <span class="chip"><strong>status</strong>active</span>
+            <span class="chip"><strong>owners</strong>agents</span>
+            <span class="chip"><strong>updated</strong>2026-01-02</span>
+          </div>
+        </div>
+
+        <nav class="side-nav">
+          <div class="nav-group">
+            <div class="nav-label">Index</div>
+            <ul class="nav-list">
+              <li><a href="#purpose"><span>Purpose</span><span class="hint">what this is</span></a></li>
+              <li><a href="#quick-index"><span>Quick index</span><span class="hint">code + docs</span></a></li>
+              <li><a href="#flows"><span>Editor flows</span><span class="hint">current + target</span></a></li>
+              <li><a href="#contract"><span>UI contract v2</span><span class="hint">surface + render</span></a></li>
+              <li><a href="#behavior"><span>Current behavior</span><span class="hint">functional detail</span></a></li>
+              <li><a href="#roadmap"><span>Target state</span><span class="hint">stories + areas</span></a></li>
+              <li><a href="#appendix"><span>Appendix</span><span class="hint">ADRs + refs</span></a></li>
+            </ul>
+          </div>
+
+          <div class="nav-group">
+            <div class="nav-label">ADRs linked</div>
+            <ul class="nav-list">
+              <li><a href="#adr-0022"><span>ADR-0022</span><span class="hint">UI contract v2</span></a></li>
+              <li><a href="#adr-0024"><span>ADR-0024</span><span class="hint">payload + sessions</span></a></li>
+              <li><a href="#adr-0038"><span>ADR-0038</span><span class="hint">sandbox actions</span></a></li>
+              <li><a href="#adr-0039"><span>ADR-0039</span><span class="hint">session files</span></a></li>
+              <li><a href="#adr-0044"><span>ADR-0044</span><span class="hint">snapshots</span></a></li>
+              <li><a href="#adr-0045"><span>ADR-0045</span><span class="hint">settings isolation</span></a></li>
+              <li><a href="#adr-0046"><span>ADR-0046</span><span class="hint">draft locks</span></a></li>
+              <li><a href="#adr-0047"><span>ADR-0047</span><span class="hint">layout editor v1</span></a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- Main content -->
+      <main class="content">
+        <section class="hero">
+          <h1>Tool editor framework codemap (current vs target)</h1>
+          <p>
+            A developer-oriented map of the tool editor framework in Skriptoteket:
+            current editor flow (SPA + backend), Tool UI contract v2 surface
+            (inputs/actions/outputs/state), UI capability locations in the SPA,
+            and a target-state roadmap derived from ADRs and reference docs.
+          </p>
+        </section>
+
+        <!-- Purpose -->
+        <section id="purpose" class="section anchor">
+          <div class="card">
+            <div class="card-h">
+              <h2>Purpose</h2>
+              <div class="kpi">
+                <span class="pill"><span class="dot ok"></span>descriptive (not prescriptive)</span>
+                <span class="pill"><span class="dot"></span>SPA + API + domain</span>
+                <span class="pill"><span class="dot warn"></span>current vs planned</span>
+              </div>
+            </div>
+            <div class="card-b">
+              <p>
+                This document describes how the tool editor works today and what is
+                planned next. It does not introduce new behavior.
+              </p>
+              <div style="height: 12px"></div>
+              <div class="callout">
+                <strong>Reading tip:</strong> Start with the current flow diagram,
+                then jump to the contract surface and “Current editor behavior”.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Quick Index -->
+        <section id="quick-index" class="section anchor">
+          <h2>Quick index (code + docs)</h2>
+
+          <div class="grid two">
+            <div class="card">
+              <div class="card-h"><h3>Frontend (SPA)</h3></div>
+              <div class="card-b">
+                <ul class="path-list">
+                  <li><span class="tag">Entry</span><code>frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue</code></li>
+                  <li><span class="tag">Workspace</span><code>frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue</code></li>
+                  <li><span class="tag">Editor</span><code>frontend/apps/skriptoteket/src/components/editor/CodeMirrorEditor.vue</code></li>
+                  <li><span class="tag">Sandbox</span><code>frontend/apps/skriptoteket/src/components/editor/SandboxRunner.vue</code></li>
+                  <li><span class="tag">Actions</span><code>frontend/apps/skriptoteket/src/components/editor/SandboxRunnerActions.vue</code></li>
+                  <li><span class="tag">Lock</span><code>frontend/apps/skriptoteket/src/composables/editor/useDraftLock.ts</code></li>
+                  <li><span class="tag">Boot/save</span><code>frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.ts</code></li>
+                  <li><span class="tag">Schema</span><code>frontend/apps/skriptoteket/src/composables/editor/useEditorSchemaParsing.ts</code></li>
+                  <li><span class="tag">AI</span><code>frontend/apps/skriptoteket/src/composables/editor/skriptoteketIntelligence.ts</code></li>
+                  <li><span class="tag">Outputs</span><code>frontend/apps/skriptoteket/src/components/ui-outputs/*</code></li>
+                  <li><span class="tag">Action UI</span><code>frontend/apps/skriptoteket/src/components/ui-actions/*</code></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>Backend (API)</h3></div>
+              <div class="card-b">
+                <ul class="path-list">
+                  <li><span class="tag">Boot</span><code>src/skriptoteket/web/api/v1/editor/boot.py</code></li>
+                  <li><span class="tag">Drafts</span><code>src/skriptoteket/web/api/v1/editor/drafts.py</code></li>
+                  <li><span class="tag">Locks</span><code>src/skriptoteket/web/api/v1/editor/locks.py</code></li>
+                  <li><span class="tag">Workflow</span><code>src/skriptoteket/web/api/v1/editor/workflow.py</code></li>
+                  <li><span class="tag">Sandbox</span><code>src/skriptoteket/web/api/v1/editor/sandbox.py</code></li>
+                  <li><span class="tag">Sandbox cfg</span><code>src/skriptoteket/web/api/v1/editor/sandbox_settings.py</code></li>
+                  <li><span class="tag">Runs</span><code>src/skriptoteket/web/api/v1/editor/runs.py</code></li>
+                  <li><span class="tag">Models</span><code>src/skriptoteket/web/api/v1/editor/models.py</code></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>Domain + infra</h3></div>
+              <div class="card-b">
+                <ul class="path-list">
+                  <li><span class="tag">Contract</span><code>src/skriptoteket/domain/scripting/ui/contract_v2.py</code></li>
+                  <li><span class="tag">Policy</span><code>src/skriptoteket/domain/scripting/ui/policy.py</code></li>
+                  <li><span class="tag">Inputs</span><code>src/skriptoteket/domain/scripting/tool_inputs.py</code></li>
+                  <li><span class="tag">Settings</span><code>src/skriptoteket/domain/scripting/tool_settings.py</code></li>
+                  <li><span class="tag">Snapshots</span><code>src/skriptoteket/infrastructure/db/models/sandbox_snapshot.py</code></li>
+                  <li><span class="tag">Session files</span><code>src/skriptoteket/infrastructure/session_files/*</code></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>Reference docs (source of truth)</h3></div>
+              <div class="card-b">
+                <ul class="path-list">
+                  <li id="adr-0022"><span class="tag">ADR-0022</span><code>docs/adr/adr-0022-tool-ui-contract-v2.md</code></li>
+                  <li id="adr-0024"><span class="tag">ADR-0024</span><code>docs/adr/adr-0024-tool-sessions-and-ui-payload-persistence.md</code></li>
+                  <li id="adr-0038"><span class="tag">ADR-0038</span><code>docs/adr/adr-0038-editor-sandbox-interactive-actions.md</code></li>
+                  <li id="adr-0039"><span class="tag">ADR-0039</span><code>docs/adr/adr-0039-session-file-persistence.md</code></li>
+                  <li id="adr-0044"><span class="tag">ADR-0044</span><code>docs/adr/adr-0044-editor-sandbox-preview-snapshots.md</code></li>
+                  <li id="adr-0045"><span class="tag">ADR-0045</span><code>docs/adr/adr-0045-sandbox-settings-isolation.md</code></li>
+                  <li id="adr-0046"><span class="tag">ADR-0046</span><code>docs/adr/adr-0046-draft-head-locks.md</code></li>
+                  <li id="adr-0047"><span class="tag">ADR-0047</span><code>docs/adr/adr-0047-layout-editor-v1.md</code></li>
+                  <li><span class="tag">DX review</span><code>docs/reference/ref-tool-editor-dx-review-2025-12-29.md</code></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Flows -->
+        <section id="flows" class="section anchor">
+          <h2>Editor flows</h2>
+
+          <div class="grid two">
+            <!-- Current flow diagram -->
+            <div class="card">
+              <div class="card-h">
+                <h3>Current editor flow (rendered)</h3>
+                <div class="kpi">
+                  <span class="pill"><span class="dot"></span>boot</span>
+                  <span class="pill"><span class="dot ok"></span>lock</span>
+                  <span class="pill"><span class="dot warn"></span>sandbox</span>
+                </div>
+              </div>
+              <div class="card-b">
+                <div class="diagram">
+                  <div class="legend">
+                    <span class="pill"><span class="dot"></span>Core step</span>
+                    <span class="pill"><span class="dot ok"></span>Lock-gated</span>
+                    <span class="pill"><span class="dot warn"></span>Sandbox path</span>
+                  </div>
+
+                  <svg viewBox="0 0 980 860" role="img" aria-label="Current editor flow diagram">
+                    <defs>
+                      <marker id="arrowHead" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(232,234,240,0.52)"></path>
+                      </marker>
+                      <marker id="arrowHeadAccent" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(122,162,255,0.72)"></path>
+                      </marker>
+                      <marker id="arrowHeadOk" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(95,225,166,0.72)"></path>
+                      </marker>
+                      <marker id="arrowHeadWarn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,204,102,0.72)"></path>
+                      </marker>
+                    </defs>
+
+                    <!-- Nodes -->
+                    <rect class="node accent" x="36" y="36" rx="14" ry="14" width="420" height="90"></rect>
+                    <text class="node-title" x="56" y="64">AUTHOR (contributor/admin)</text>
+                    <text class="node-text" x="56" y="86">Route: /admin/tools/:toolId OR /admin/tool-versions/:versionId</text>
+
+                    <rect class="node" x="36" y="156" rx="14" ry="14" width="420" height="132"></rect>
+                    <text class="node-title" x="56" y="184">Editor boot</text>
+                    <text class="node-text" x="56" y="206">GET /api/v1/editor/tools/{tool_id}</text>
+                    <text class="node-text" x="56" y="226">GET /api/v1/editor/tool-versions/{version_id}</text>
+                    <text class="node-text" x="56" y="248">→ EditorBootResponse: tool+versions, entrypoint, source, schemas, instructions</text>
+                    <text class="node-text" x="56" y="268">save_mode, draft_head_id, draft_lock</text>
+
+                    <rect class="node ok" x="36" y="318" rx="14" ry="14" width="420" height="86"></rect>
+                    <text class="node-title" x="56" y="346">Draft lock heartbeat</text>
+                    <text class="node-text" x="56" y="368">POST /api/v1/editor/tools/{tool_id}/draft-lock (force? if admin)</text>
+
+                    <rect class="node" x="36" y="434" rx="14" ry="14" width="420" height="100"></rect>
+                    <text class="node-title" x="56" y="462">Edit in SPA</text>
+                    <text class="node-text" x="56" y="484">Code + schemas + usage instructions</text>
+                    <text class="node-text" x="56" y="504">Workspace + drawers (metadata/taxonomy/maintainers)</text>
+
+                    <rect class="node ok" x="36" y="566" rx="14" ry="14" width="420" height="156"></rect>
+                    <text class="node-title" x="56" y="594">Save</text>
+                    <text class="node-text" x="56" y="616">If save_mode = snapshot (draft):</text>
+                    <text class="node-text" x="76" y="636">POST /api/v1/editor/tool-versions/{version_id}/save</text>
+                    <text class="node-text" x="56" y="658">If save_mode = create_draft (non-draft):</text>
+                    <text class="node-text" x="76" y="678">POST /api/v1/editor/tools/{tool_id}/draft</text>
+                    <text class="node-text" x="56" y="700">→ redirect_url → reload editor</text>
+
+                    <!-- Right column: workflow + sandbox -->
+                    <rect class="node" x="508" y="318" rx="14" ry="14" width="436" height="132"></rect>
+                    <text class="node-title" x="528" y="346">Workflow actions</text>
+                    <text class="node-text" x="528" y="368">POST /submit-review | /publish | /request-changes | /rollback</text>
+                    <text class="node-text" x="528" y="390">→ redirect_url → reload editor</text>
+
+                    <rect class="node warn" x="508" y="478" rx="14" ry="14" width="436" height="264"></rect>
+                    <text class="node-title" x="528" y="506">Sandbox preview (snapshot-based)</text>
+                    <text class="node-text" x="528" y="528">POST /api/v1/editor/tool-versions/{version_id}/run-sandbox</text>
+                    <text class="node-text" x="548" y="548">form-data: files + inputs + snapshot payload</text>
+                    <text class="node-text" x="528" y="570">→ run_id + snapshot_id + state_rev</text>
+                    <text class="node-text" x="528" y="592">poll GET /api/v1/editor/tool-runs/{run_id}</text>
+                    <text class="node-text" x="528" y="614">render outputs + artifacts</text>
+                    <text class="node-text" x="528" y="642">If next_actions:</text>
+                    <text class="node-text" x="548" y="662">POST /start-action {snapshot_id, action_id, input, expected_state_rev}</text>
+                    <text class="node-text" x="548" y="684">poll run result (step history supported)</text>
+                    <text class="node-text" x="528" y="712">Optional session files:</text>
+                    <text class="node-text" x="548" y="732">GET /session-files?snapshot_id=...</text>
+
+                    <!-- Arrows -->
+                    <path class="arrow accent" marker-end="url(#arrowHeadAccent)" d="M 246 126 L 246 156"></path>
+                    <path class="arrow" marker-end="url(#arrowHead)" d="M 246 288 L 246 318"></path>
+                    <path class="arrow ok" marker-end="url(#arrowHeadOk)" d="M 246 404 L 246 434"></path>
+                    <path class="arrow" marker-end="url(#arrowHead)" d="M 246 534 L 246 566"></path>
+
+                    <path class="arrow ok" marker-end="url(#arrowHeadOk)" d="M 456 361 L 508 361"></path>
+                    <path class="arrow warn" marker-end="url(#arrowHeadWarn)" d="M 456 484 L 508 484"></path>
+
+                    <!-- Branch labels -->
+                    <text class="node-text" x="466" y="352" fill="rgba(232,234,240,0.75)">operate</text>
+                    <text class="node-text" x="466" y="476" fill="rgba(232,234,240,0.75)">preview</text>
+                  </svg>
+                </div>
+
+                <div style="height: 12px"></div>
+                <details>
+                  <summary>Original ASCII (current editor flow)</summary>
+                  <div class="details-body">
+                    <pre>AUTHOR (contributor/admin)
+  |
+  v
+/admin/tools/:toolId  OR  /admin/tool-versions/:versionId
+  |
+  v
+GET /api/v1/editor/tools/{tool_id}
+GET /api/v1/editor/tool-versions/{version_id}
+  -> EditorBootResponse
+     - tool + versions + selected_version
+     - entrypoint + source_code + schemas + usage_instructions
+     - save_mode (snapshot | create_draft)
+     - draft_head_id + draft_lock
+  |
+  v
+Draft lock heartbeat
+POST /api/v1/editor/tools/{tool_id}/draft-lock (force? if admin)
+  |
+  +--> Edit code + schemas + instructions (SPA)
+  |
+  +--> Save
+       - if save_mode = snapshot (draft):
+         POST /api/v1/editor/tool-versions/{version_id}/save
+       - if save_mode = create_draft (non-draft):
+         POST /api/v1/editor/tools/{tool_id}/draft
+       -> redirect_url => reload editor
+  |
+  +--> Workflow actions
+       POST /submit-review | /publish | /request-changes | /rollback
+       -> redirect_url => reload editor
+  |
+  +--> Sandbox preview (snapshot-based)
+       POST /api/v1/editor/tool-versions/{version_id}/run-sandbox
+         form-data: files + inputs + snapshot payload
+         -> run_id + snapshot_id + state_rev
+       poll GET /api/v1/editor/tool-runs/{run_id}
+       render ui_payload outputs + artifacts
+       if next_actions:
+         POST /api/v1/editor/tool-versions/{version_id}/start-action
+           { snapshot_id, action_id, input, expected_state_rev }
+         poll run result
+       session files (optional):
+         GET /api/v1/editor/tool-versions/{version_id}/session-files?snapshot_id=...</pre>
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <!-- Target flow diagram -->
+            <div class="card">
+              <div class="card-h">
+                <h3>Target-state editor flow (planned)</h3>
+                <div class="kpi">
+                  <span class="pill"><span class="dot"></span>schema editor v1</span>
+                  <span class="pill"><span class="dot warn"></span>debug panel</span>
+                  <span class="pill"><span class="dot ok"></span>diff/compare</span>
+                </div>
+              </div>
+              <div class="card-b">
+                <div class="diagram">
+                  <div class="legend">
+                    <span class="pill"><span class="dot"></span>Existing core</span>
+                    <span class="pill"><span class="dot ok"></span>Review tooling</span>
+                    <span class="pill"><span class="dot warn"></span>Debug/diagnostics</span>
+                  </div>
+
+                  <svg viewBox="0 0 980 860" role="img" aria-label="Target editor flow diagram">
+                    <defs>
+                      <marker id="arrowHead2" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(232,234,240,0.52)"></path>
+                      </marker>
+                    </defs>
+
+                    <!-- Spine -->
+                    <rect class="node accent" x="36" y="36" rx="14" ry="14" width="908" height="82"></rect>
+                    <text class="node-title" x="56" y="64">Editor boot + draft lock</text>
+                    <text class="node-text" x="56" y="88">Same as current: boot response + lock heartbeat gating saves/runs/settings</text>
+
+                    <!-- Branch grid -->
+                    <rect class="node" x="36" y="152" rx="14" ry="14" width="440" height="166"></rect>
+                    <text class="node-title" x="56" y="180">Schema editor v1</text>
+                    <text class="node-text" x="56" y="202">CodeMirror JSON surfaces</text>
+                    <text class="node-text" x="56" y="224">Prettify + example snippets</text>
+                    <text class="node-text" x="56" y="246">Structured validation via new endpoint</text>
+                    <text class="node-text" x="56" y="268">input_schema always explicit (no null)</text>
+
+                    <rect class="node warn" x="504" y="152" rx="14" ry="14" width="440" height="166"></rect>
+                    <text class="node-title" x="524" y="180">Sandbox preview improvements</text>
+                    <text class="node-text" x="524" y="202">Debug panel (stdout/stderr, gated)</text>
+                    <text class="node-text" x="524" y="224">Action-level diagnostics + copy bundle</text>
+                    <text class="node-text" x="524" y="246">Sticky action inputs / defaults (v2.x)</text>
+                    <text class="node-text" x="524" y="268">File references in actions (v2.x)</text>
+
+                    <rect class="node ok" x="36" y="348" rx="14" ry="14" width="440" height="142"></rect>
+                    <text class="node-title" x="56" y="376">Review + compare</text>
+                    <text class="node-text" x="56" y="398">Diff view (code + schemas + instructions)</text>
+                    <text class="node-text" x="56" y="420">Deep-linkable compare targets</text>
+
+                    <rect class="node" x="504" y="348" rx="14" ry="14" width="440" height="142"></rect>
+                    <text class="node-title" x="524" y="376">Pro mode (optional)</text>
+                    <text class="node-text" x="524" y="398">Combined bundle view: tool.py + schemas</text>
+                    <text class="node-text" x="524" y="420">Validation + recovery</text>
+
+                    <rect class="node accent" x="36" y="520" rx="14" ry="14" width="908" height="182"></rect>
+                    <text class="node-title" x="56" y="548">New output kind: layout_editor_v1</text>
+                    <text class="node-text" x="56" y="570">Platform-rendered interactive layout editor</text>
+                    <text class="node-text" x="56" y="592">Click-to-assign + apply action</text>
+                    <text class="node-text" x="56" y="614">Drag/drop enhancement + a11y polish</text>
+
+                    <!-- connectors -->
+                    <path class="arrow" marker-end="url(#arrowHead2)" d="M 490 118 L 490 152"></path>
+                    <path class="arrow" marker-end="url(#arrowHead2)" d="M 256 318 L 256 348"></path>
+                    <path class="arrow" marker-end="url(#arrowHead2)" d="M 724 318 L 724 348"></path>
+                    <path class="arrow" marker-end="url(#arrowHead2)" d="M 490 490 L 490 520"></path>
+                  </svg>
+                </div>
+
+                <div style="height: 12px"></div>
+                <details>
+                  <summary>Original ASCII (target-state editor flow)</summary>
+                  <div class="details-body">
+                    <pre>AUTHOR (contributor/admin)
+  |
+  v
+Editor boot + draft lock (same as current)
+  |
+  +--> Schema editor v1
+       - CodeMirror JSON surfaces
+       - Prettify + example snippets
+       - Structured validation via new endpoint
+       - input_schema always explicit (no null)
+  |
+  +--> Sandbox preview (same core flow)
+       - Debug panel (stdout/stderr, gated)
+       - Clear action-level diagnostics + copy bundle
+       - Sticky action inputs / defaults (contract v2.x)
+       - File references in actions (contract v2.x)
+  |
+  +--> Review + compare
+       - Diff view (code + schemas + instructions)
+       - Deep-linkable compare targets
+  |
+  +--> Pro mode (optional)
+       - Combined bundle view: tool.py + schemas
+  |
+  +--> New output kind: layout_editor_v1
+       - Platform-rendered interactive layout editor
+       - Click-to-assign + apply action
+       - Drag/drop enhancement + a11y polish
+       - a11y polish</pre>
+                  </div>
+                </details>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Contract -->
+        <section id="contract" class="section anchor">
+          <h2>Tool UI contract v2: schema index + UI capabilities</h2>
+
+          <div class="grid two">
+            <div class="card">
+              <div class="card-h"><h3>1) Contract v2 (raw vs stored)</h3></div>
+              <div class="card-b">
+                <p>
+                  Raw runner result is normalized into a stored <span class="mono">ui_payload</span>
+                  before rendering. Session <span class="mono">state</span> is persisted and gated by
+                  <span class="mono">state_rev</span>.
+                </p>
+
+                <div style="height: 12px"></div>
+
+                <div class="callout">
+                  <strong>Source:</strong> <span class="mono">src/skriptoteket/domain/scripting/ui/contract_v2.py</span><br />
+                  <strong>Notes:</strong> ui_payload normalized + stored (ADR-0024); state persisted in tool sessions and
+                  gated by state_rev (ADR-0024).
+                </div>
+
+                <div style="height: 12px"></div>
+
+                <ul class="tree">
+                  <li>
+                    <span class="k">ToolUiContractV2Result</span> <span class="t">(raw result.json)</span>
+                    <ul>
+                      <li><span class="k">contract_version</span>: <span class="t">2</span></li>
+                      <li><span class="k">status</span>: <span class="t">succeeded | failed | timed_out</span></li>
+                      <li><span class="k">error_summary</span>: <span class="t">string | null</span></li>
+                      <li><span class="k">outputs[]</span>: <span class="t">UiOutput</span></li>
+                      <li><span class="k">next_actions[]</span>: <span class="t">UiFormAction</span></li>
+                      <li><span class="k">state</span>: <span class="t">object | null</span></li>
+                      <li><span class="k">artifacts[]</span>: <span class="t">RunnerArtifact</span></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <span class="k">UiPayloadV2</span> <span class="t">(stored rendering source of truth)</span>
+                    <ul>
+                      <li><span class="k">contract_version</span>: <span class="t">2</span></li>
+                      <li><span class="k">outputs[]</span></li>
+                      <li><span class="k">next_actions[]</span></li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>2) Contract surface: actions, outputs, state</h3></div>
+              <div class="card-b">
+                <details open>
+                  <summary>Actions (interactive tools)</summary>
+                  <div class="details-body">
+                    <pre>UiFormAction
+├─ action_id: string
+├─ label: string
+├─ kind: "form"
+└─ fields[]: UiActionField</pre>
+                    <div style="height: 10px"></div>
+                    <p>
+                      Submitted via platform-owned forms:
+                      <span class="mono">POST /api/v1/start-action</span> (prod) and
+                      <span class="mono">POST /api/v1/editor/tool-versions/{version_id}/start-action</span> (sandbox).
+                      Each action increments <span class="mono">state_rev</span> and yields a new run (step).
+                    </p>
+                  </div>
+                </details>
+
+                <div style="height: 12px"></div>
+
+                <details>
+                  <summary>Outputs + artifacts</summary>
+                  <div class="details-body">
+                    <p><strong>Output kinds (current allowlist):</strong></p>
+                    <pre>notice (info|warning|error)
+markdown
+table
+json
+html_sandboxed
+vega_lite (curated-policy only today)</pre>
+                    <div style="height: 10px"></div>
+                    <p>
+                      Renderers live under <span class="mono">frontend/apps/skriptoteket/src/components/ui-outputs/*</span>.
+                      Unknown kinds fall back to <span class="mono">UiOutputUnknown.vue</span>.
+                      <span class="mono">html_sandboxed</span> renders inside a sandboxed iframe.
+                    </p>
+                    <div style="height: 10px"></div>
+                    <p>
+                      Artifacts are rendered via <span class="mono">ToolRunArtifacts.vue</span> and downloadable via:
+                      <span class="mono">/api/v1/editor/tool-runs/{run_id}/artifacts/{artifact_id}</span>.
+                    </p>
+                  </div>
+                </details>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid two" style="margin-top: 14px">
+            <div class="card">
+              <div class="card-h"><h3>3) Input schema (pre-run inputs)</h3></div>
+              <div class="card-b">
+                <p>
+                  <strong>Type:</strong>
+                  <span class="mono">ToolInputSchema = list[ToolInputField]</span>
+                  (<span class="mono">tool_inputs.py</span>)
+                </p>
+                <div style="height: 10px"></div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Field kind</th>
+                      <th>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="mono">string, text, integer, number, boolean</td>
+                      <td>Standard scalar fields.</td>
+                    </tr>
+                    <tr>
+                      <td class="mono">enum</td>
+                      <td>Requires <span class="mono">options[{value,label}]</span>.</td>
+                    </tr>
+                    <tr>
+                      <td class="mono">file</td>
+                      <td>Requires <span class="mono">min</span>, <span class="mono">max</span>, optional <span class="mono">accept[]</span>.</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div style="height: 12px"></div>
+
+                <div class="callout">
+                  <strong>Current semantics:</strong><br />
+                  <span class="mono">input_schema == null</span> → legacy “files required” flow<br />
+                  <span class="mono">input_schema == []</span> → schema exists with no fields (files optional)<br />
+                  Only one file field allowed (server enforced)
+                </div>
+
+                <div style="height: 12px"></div>
+
+                <p>
+                  <strong>UI renderers:</strong><br />
+                  Pre-run inputs: <span class="mono">ToolInputForm.vue</span> (via <span class="mono">useToolInputs.ts</span>)<br />
+                  Editor sandbox inputs: <span class="mono">SandboxInputPanel.vue</span>
+                </p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>4) Settings schema (per-user settings)</h3></div>
+              <div class="card-b">
+                <p>
+                  <strong>Type:</strong>
+                  <span class="mono">ToolSettingsSchema = list[UiActionField]</span>
+                </p>
+                <div style="height: 10px"></div>
+                <p><strong>Field kinds:</strong></p>
+                <pre>string, text, integer, number, boolean, enum, multi_enum</pre>
+
+                <div style="height: 12px"></div>
+
+                <p>
+                  <strong>UI renderers:</strong><br />
+                  Production: <span class="mono">ToolRunSettingsPanel.vue</span><br />
+                  Sandbox: same component via <span class="mono">useSandboxSettings.ts</span>
+                </p>
+
+                <div style="height: 12px"></div>
+
+                <div class="callout">
+                  <strong>Isolation:</strong><br />
+                  Production context: <span class="mono">settings:{schema_hash}</span><br />
+                  Sandbox context: <span class="mono">sandbox-settings:{draft_head_id + schema_hash}</span> (ADR-0045)
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 14px">
+            <div class="card-h"><h3>5) Policy budgets and caps (current)</h3></div>
+            <div class="card-b">
+              <p>
+                Defined in <span class="mono">src/skriptoteket/domain/scripting/ui/policy.py</span>.
+                Default policy applies to user-authored tools; curated policy increases caps and allows <span class="mono">vega_lite</span>.
+              </p>
+              <div style="height: 12px"></div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Cap</th>
+                    <th>Default</th>
+                    <th>Curated</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">state max</td>
+                    <td>64 KiB</td>
+                    <td>256 KiB</td>
+                    <td>Persisted session state, gated by state_rev (ADR-0024).</td>
+                  </tr>
+                  <tr>
+                    <td class="mono">ui_payload max</td>
+                    <td>256 KiB</td>
+                    <td>512 KiB</td>
+                    <td>Normalized and stored before rendering (ADR-0024).</td>
+                  </tr>
+                  <tr>
+                    <td class="mono">outputs</td>
+                    <td>50</td>
+                    <td>150</td>
+                    <td>Renderer allowlist + fallback unknown renderer.</td>
+                  </tr>
+                  <tr>
+                    <td class="mono">next_actions</td>
+                    <td>10</td>
+                    <td>25</td>
+                    <td>Interactive forms; each action advances state_rev.</td>
+                  </tr>
+                  <tr>
+                    <td class="mono">fields/action</td>
+                    <td>25</td>
+                    <td>60</td>
+                    <td>Controls max form complexity.</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style="height: 12px"></div>
+              <div class="callout">
+                See ADR-0024 for the full cap list.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Current behavior -->
+        <section id="behavior" class="section anchor">
+          <h2>Current editor behavior (functional detail)</h2>
+
+          <div class="grid two">
+            <div class="card">
+              <div class="card-h"><h3>Boot + save modes</h3></div>
+              <div class="card-b">
+                <p><strong>EditorBootResponse.save_mode</strong>:</p>
+                <pre>snapshot      → editing a draft version (save in-place)
+create_draft  → editing a non-draft version (save creates new draft)</pre>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>Draft locks</h3></div>
+              <div class="card-b">
+                <p>
+                  Locks are scoped to the <strong>draft head</strong> (ADR-0046). Save, sandbox run,
+                  and settings save are blocked without a lock. Lock auto-refresh is handled by
+                  <span class="mono">useDraftLock.ts</span> heartbeat.
+                </p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>Sandbox preview (snapshot + actions)</h3></div>
+              <div class="card-b">
+                <p>
+                  Sandbox run sends a snapshot payload (entrypoint + source + schemas + instructions).
+                  Backend persists a snapshot with TTL 24h (ADR-0044). <span class="mono">start-action</span>
+                  requires <span class="mono">snapshot_id</span> + <span class="mono">expected_state_rev</span> (ADR-0038).
+                  Session files can be reused/cleared per run (ADR-0039).
+                </p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>Workflow actions + drawers</h3></div>
+              <div class="card-b">
+                <p>
+                  Contributor: submit for review. Admin: publish/request changes. Superuser: rollback archived version.
+                </p>
+                <div style="height: 10px"></div>
+                <p>
+                  Metadata/taxonomy/maintainers live in drawers to keep the editor workspace focused:
+                  <span class="mono">/metadata</span>, <span class="mono">/slug</span>, <span class="mono">/taxonomy</span>, <span class="mono">/maintainers</span>.
+                </p>
+              </div>
+            </div>
+
+            <div class="card" style="grid-column: 1 / -1">
+              <div class="card-h"><h3>Editor intelligence + AI support</h3></div>
+              <div class="card-b">
+                <p>
+                  Inline completions: <span class="mono">POST /api/v1/editor/completions</span><br />
+                  Edit suggestions: <span class="mono">POST /api/v1/editor/edits</span><br />
+                  Local intelligence: <span class="mono">frontend/apps/skriptoteket/src/composables/editor/skriptoteketIntelligence.ts</span>
+                </p>
+                <div style="height: 10px"></div>
+                <div class="callout">
+                  See ADR-0035 + ST-08-10/11 for the rule surface.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Roadmap -->
+        <section id="roadmap" class="section anchor">
+          <h2>Target state (derived from ADRs + stories)</h2>
+
+          <div class="grid two">
+            <div class="card">
+              <div class="card-h">
+                <h3>Schema authoring (inputs + settings)</h3>
+                <span class="pill"><span class="dot"></span>ST-14-09..16</span>
+              </div>
+              <div class="card-b">
+                <ul style="margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.6">
+                  <li><span class="mono">ST-14-09</span>: remove legacy <span class="mono">input_schema == null</span>; explicit file behavior</li>
+                  <li><span class="mono">ST-14-10</span>: JSON QoL (prettify + example snippets)</li>
+                  <li><span class="mono">ST-14-13/14</span>: CodeMirror JSON editor + inline diagnostics</li>
+                  <li><span class="mono">ST-14-15/16</span>: backend validation endpoint + structured UI errors</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h">
+                <h3>Sandbox transparency + debugging</h3>
+                <span class="pill"><span class="dot warn"></span>ST-14-11..12</span>
+              </div>
+              <div class="card-b">
+                <ul style="margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.6">
+                  <li><span class="mono">ST-14-11</span>: debug details API (stdout/stderr, truncated, gated)</li>
+                  <li><span class="mono">ST-14-12</span>: debug panel + copyable diagnostics bundle</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h">
+                <h3>Review + compare</h3>
+                <span class="pill"><span class="dot ok"></span>ST-14-17..18</span>
+              </div>
+              <div class="card-b">
+                <ul style="margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.6">
+                  <li><span class="mono">ST-14-17</span>: diff view (code + schemas + instructions)</li>
+                  <li><span class="mono">ST-14-18</span>: compare navigation + deep links</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h">
+                <h3>Editor intelligence + tooling</h3>
+                <span class="pill"><span class="dot"></span>ST-14-20</span>
+              </div>
+              <div class="card-b">
+                <ul style="margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.6">
+                  <li><span class="mono">ST-14-20</span>: toolkit-aware completions/hover/lints</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h">
+                <h3>Pro mode editing</h3>
+                <span class="pill"><span class="dot"></span>ST-14-29</span>
+              </div>
+              <div class="card-b">
+                <ul style="margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.6">
+                  <li><span class="mono">ST-14-29</span>: combined bundle view (tool.py + schemas), validation + recovery</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h">
+                <h3>Contract expansion + interactive UI</h3>
+                <span class="pill"><span class="dot"></span>ST-14-25..28</span>
+              </div>
+              <div class="card-b">
+                <ul style="margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.6">
+                  <li><span class="mono">ST-14-25</span>: <span class="mono">layout_editor_v1</span> output kind + normalization</li>
+                  <li><span class="mono">ST-14-26</span>: layout editor renderer (click-to-assign + apply action)</li>
+                  <li><span class="mono">ST-14-27/28</span>: drag/drop + a11y polish + tests</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card" style="grid-column: 1 / -1">
+              <div class="card-h">
+                <h3>Contract v2.x enhancements (planned sprint)</h3>
+                <span class="pill"><span class="dot"></span>Sprint 2026-06-09</span>
+              </div>
+              <div class="card-b">
+                <p>
+                  Action defaults + file references in actions (contract v2.x):
+                  <span class="mono">docs/backlog/sprints/sprint-2026-06-09-tool-ui-contract-v2-action-defaults-and-file-refs.md</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Appendix -->
+        <section id="appendix" class="section anchor">
+          <h2>Appendix: reference map</h2>
+
+          <div class="grid two">
+            <div class="card">
+              <div class="card-h"><h3>ADRs</h3></div>
+              <div class="card-b">
+                <ul style="margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.7">
+                  <li>ADR-0022: Tool UI contract v2</li>
+                  <li>ADR-0024: UI payload persistence + sessions</li>
+                  <li>ADR-0038: Sandbox interactive actions</li>
+                  <li>ADR-0039: Session file persistence</li>
+                  <li>ADR-0044: Sandbox preview snapshots</li>
+                  <li>ADR-0045: Sandbox settings isolation</li>
+                  <li>ADR-0046: Draft head locks</li>
+                  <li>ADR-0047: Layout editor v1 (proposed)</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>Reference docs</h3></div>
+              <div class="card-b">
+                <ul style="margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.7">
+                  <li><span class="mono">docs/reference/ref-tool-editor-dx-review-2025-12-29.md</span></li>
+                  <li><span class="mono">docs/reference/ref-execution-architecture.md</span></li>
+                  <li><span class="mono">docs/reference/ref-codemirror-integration.md</span></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card" style="grid-column: 1 / -1">
+              <div class="card-h"><h3>Sprints (planned)</h3></div>
+              <div class="card-b">
+                <ul style="margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.8">
+                  <li><span class="mono">docs/backlog/sprints/sprint-2026-03-03-tool-editor-dx-quick-wins.md</span></li>
+                  <li><span class="mono">docs/backlog/sprints/sprint-2026-03-17-tool-editor-sandbox-debug-details.md</span></li>
+                  <li><span class="mono">docs/backlog/sprints/sprint-2026-03-31-tool-editor-schema-editor-v1.md</span></li>
+                  <li><span class="mono">docs/backlog/sprints/sprint-2026-04-14-tool-editor-schema-validation-v1.md</span></li>
+                  <li><span class="mono">docs/backlog/sprints/sprint-2026-04-28-tool-editor-version-diff-v1.md</span></li>
+                  <li><span class="mono">docs/backlog/sprints/sprint-2026-05-12-tool-editor-runner-toolkit-and-intelligence.md</span></li>
+                  <li><span class="mono">docs/backlog/sprints/sprint-2026-06-09-tool-ui-contract-v2-action-defaults-and-file-refs.md</span></li>
+                  <li><span class="mono">docs/backlog/sprints/sprint-2026-06-23-tool-layout-editor-v1-contract-and-renderer.md</span></li>
+                  <li><span class="mono">docs/backlog/sprints/sprint-2026-07-07-tool-layout-editor-v1-drag-and-drop.md</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
