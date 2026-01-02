@@ -40,6 +40,15 @@ def _markdown(md: str) -> dict[str, object]:
     return {"kind": "markdown", "markdown": md}
 
 
+def _shorten_for_table(message: str, *, max_chars: int = 200) -> str:
+    normalized = " ".join(message.split())
+    if len(normalized) <= max_chars:
+        return normalized
+    if max_chars <= 3:
+        return "..."
+    return normalized[: max_chars - 3] + "..."
+
+
 def _read_input_manifest_files() -> list[ManifestFile]:
     raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
     if not raw.strip():
@@ -314,6 +323,7 @@ def _handle_action(*, action_path: Path, output_dir: Path) -> dict[str, object]:
     used_pdf_names: set[str] = set()
     pdf_rows: list[dict[str, object]] = []
     chart_data: list[dict[str, object]] = []
+    error_log_lines: list[str] = []
 
     for html_path_str in html_file_paths:
         source = Path(html_path_str)
@@ -352,18 +362,21 @@ def _handle_action(*, action_path: Path, output_dir: Path) -> dict[str, object]:
                 errors.append(f"pypandoc: {exc}")
 
         if backend is None:
+            full_message = " | ".join(errors) if errors else "Okänt fel"
+            error_log_lines.append(f"{source.name}: {full_message}")
             pdf_rows.append(
                 {
                     "source": source.name,
                     "pdf": pdf_name,
                     "status": "fel",
                     "bytes": 0,
-                    "message": " | ".join(errors) if errors else "Okänt fel",
+                    "message": _shorten_for_table(full_message),
                 }
             )
             continue
 
         if not pdf_path.exists():
+            error_log_lines.append(f"{source.name}: Ingen PDF skapades")
             pdf_rows.append(
                 {
                     "source": source.name,
@@ -407,6 +420,18 @@ def _handle_action(*, action_path: Path, output_dir: Path) -> dict[str, object]:
             f"**Sidstorlek:** {page_size.upper()} | **Orientering:** {orient_label}"
         ),
     ]
+
+    if error_log_lines:
+        (output_dir / "conversion-errors.txt").write_text(
+            "\n".join(error_log_lines) + "\n",
+            encoding="utf-8",
+        )
+        outputs.append(
+            _markdown(
+                "Fullständiga felmeddelanden finns i artefakten `conversion-errors.txt`. "
+                "(Tabellen visar en kort sammanfattning.)"
+            )
+        )
 
     # Lägg till vega-lite diagram om vi har data
     if chart_data:

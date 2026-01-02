@@ -13,6 +13,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     pandoc \
+    librsvg2-bin \
     libcairo2 \
     libgdk-pixbuf-2.0-0 \
     libpango-1.0-0 \
@@ -44,6 +45,7 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     pandoc \
+    librsvg2-bin \
     libcairo2 \
     libgdk-pixbuf-2.0-0 \
     libpango-1.0-0 \
