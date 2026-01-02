@@ -74,10 +74,16 @@ def _normalize_optional_text(value: str | None) -> str | None:
     return normalized if normalized else None
 
 
-def _serialize_schema(schema: Sequence[BaseModel] | None) -> list[dict[str, object]] | None:
+def _serialize_schema(schema: Sequence[BaseModel]) -> list[dict[str, object]]:
+    return [item.model_dump(mode="json") for item in schema]
+
+
+def _serialize_optional_schema(
+    schema: Sequence[BaseModel] | None,
+) -> list[dict[str, object]] | None:
     if schema is None:
         return None
-    return [item.model_dump(mode="json") for item in schema]
+    return _serialize_schema(schema)
 
 
 def _snapshot_payload_bytes(
@@ -85,13 +91,13 @@ def _snapshot_payload_bytes(
     entrypoint: str,
     source_code: str,
     settings_schema: Sequence[BaseModel] | None,
-    input_schema: Sequence[BaseModel] | None,
+    input_schema: Sequence[BaseModel],
     usage_instructions: str | None,
 ) -> int:
     payload = {
         "entrypoint": entrypoint,
         "source_code": source_code,
-        "settings_schema": _serialize_schema(settings_schema),
+        "settings_schema": _serialize_optional_schema(settings_schema),
         "input_schema": _serialize_schema(input_schema),
         "usage_instructions": usage_instructions,
     }

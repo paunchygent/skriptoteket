@@ -42,6 +42,9 @@ Adresserna är semikolonseparerade och fungerar direkt i Outlook.""",
         profession_slugs=["larare"],
         category_slugs=["administration"],
         source_filename="ist_vh_mejl_bcc.py",
+        input_schema=[
+            ToolInputFileField(name="files", label="Filer", min=1, max=10),
+        ],
     ),
     ScriptBankEntry(
         slug="html-to-pdf",
@@ -75,6 +78,9 @@ Om din HTML-fil använder externa CSS-filer eller bilder:
         profession_slugs=["gemensamt"],
         category_slugs=["ovrigt"],
         source_filename="html_to_pdf.py",
+        input_schema=[
+            ToolInputFileField(name="files", label="Filer", min=1, max=10),
+        ],
     ),
     ScriptBankEntry(
         slug="demo-next-actions",
@@ -103,6 +109,9 @@ Det här är ett **demoverktyg** för att testa hur interaktiva verktyg fungerar
         profession_slugs=["gemensamt"],
         category_slugs=["ovrigt"],
         source_filename="demo_next_actions.py",
+        input_schema=[
+            ToolInputFileField(name="files", label="Filer", min=1, max=10),
+        ],
     ),
     ScriptBankEntry(
         slug="html-to-pdf-preview",
@@ -146,6 +155,9 @@ Det här verktyget visar alla Skriptoteket-funktioner:
         profession_slugs=["gemensamt"],
         category_slugs=["ovrigt"],
         source_filename="html_to_pdf_preview.py",
+        input_schema=[
+            ToolInputFileField(name="files", label="Filer", min=1, max=10),
+        ],
     ),
     ScriptBankEntry(
         slug="demo-regression-table",

@@ -4,7 +4,7 @@ from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, File, Form, UploadFile
-from pydantic import BaseModel, ConfigDict, JsonValue
+from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
 from skriptoteket.application.scripting.commands import (
     RunActiveToolCommand,
@@ -78,7 +78,7 @@ class ToolMetadataResponse(BaseModel):
     usage_instructions: str | None
     usage_instructions_seen: bool
     upload_constraints: UploadConstraints
-    input_schema: list[ToolInputField] | None = None
+    input_schema: list[ToolInputField] = Field(default_factory=list)
 
 
 class StartToolRunResponse(BaseModel):

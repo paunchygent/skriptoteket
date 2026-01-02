@@ -101,31 +101,20 @@ async def execute_tool_version_pipeline(
     normalized_input_files: list[tuple[str, bytes]] = []
     input_manifest = InputManifest()
 
-    if version.input_schema is None:
+    input_schema = normalize_tool_input_schema(input_schema=version.input_schema)
+    validate_input_files_count(
+        input_schema=input_schema,
+        files_count=_count_user_input_files(input_files=command.input_files),
+    )
+    normalized_input_values = normalize_tool_input_values(
+        input_schema=input_schema,
+        values=command.input_values,
+    )
+
+    if command.input_files:
         normalized_input_files, input_manifest = normalize_input_files(
             input_files=command.input_files
         )
-    else:
-        input_schema = normalize_tool_input_schema(input_schema=version.input_schema)
-        if input_schema is None:
-            raise DomainError(
-                code=ErrorCode.VALIDATION_ERROR,
-                message="Invalid input_schema (unexpected null)",
-            )
-
-        validate_input_files_count(
-            input_schema=input_schema,
-            files_count=_count_user_input_files(input_files=command.input_files),
-        )
-        normalized_input_values = normalize_tool_input_values(
-            input_schema=input_schema,
-            values=command.input_values,
-        )
-
-        if command.input_files:
-            normalized_input_files, input_manifest = normalize_input_files(
-                input_files=command.input_files
-            )
 
     primary_filename = normalized_input_files[0][0] if normalized_input_files else None
     total_size_bytes = sum(len(content) for _, content in normalized_input_files)

@@ -5,11 +5,10 @@ title: "Editor sandbox input_schema form preview (ToolInputForm parity)"
 status: done
 owners: "agents"
 created: 2025-12-27
-updated: 2025-12-29
+updated: 2026-01-02
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given a draft tool version has input_schema with non-file fields, when the editor sandbox is shown, then the sandbox renders those fields using the same ToolInputForm component as the user ToolRunView."
-  - "Given a draft tool version has no input_schema (legacy upload-first), when the editor sandbox is shown, then the sandbox shows the file picker (multi-file) and does not attempt schema-driven file constraints (parity with ToolRunView)."
   - "Given input_schema exists and includes a file field, when the editor sandbox is shown, then the sandbox shows the file picker and uses the schema’s label/accept/min/max behavior (parity with ToolRunView)."
   - "Given input_schema exists and has no file field, when the editor sandbox is shown, then the sandbox hides the file picker (tool does not accept files) (parity with ToolRunView)."
   - "Given input_schema is present but invalid JSON in the editor textarea, when viewing the sandbox section, then the UI shows an actionable parse error and does not crash."
@@ -53,7 +52,7 @@ Make the editor sandbox render the same pre-run form UI as the user run view, dr
 ### 1) Parse and pass `input_schema` from the editor panel
 
 - In `EditorWorkspacePanel.vue`, parse `inputSchemaText` into `parsedInputSchema`.
-- If parsing fails, surface a clear inline error (JSON parse + “must be an array”) and pass `null` to the sandbox.
+- If parsing fails, surface a clear inline error (JSON parse + “must be an array”) and pass `null` (parse error) to the sandbox.
 - Pass `parsedInputSchema` into `SandboxRunner.vue`.
 
 ### 2) Render ToolInputForm (non-file fields) + schema-driven file picker
@@ -68,8 +67,8 @@ In `SandboxRunner.vue`:
   - empty values dropped before API submission
   - file min/max validation + accept UI hint
 - Match the published run view logic for showing the file picker:
-  - show when `input_schema` is `null` (legacy upload-first), or when `input_schema` includes a file field
-  - hide when `input_schema` exists but has no file field (tool does not accept files)
+  - show when `input_schema` includes a file field
+  - hide when `input_schema` has no file field (tool does not accept files)
 
 ### 3) Allow sandbox preview runs with unsaved schema
 
@@ -90,12 +89,8 @@ missing lock ownership, or invalid JSON parse errors.
 
 ### Update (2026-01-02)
 
-This story shipped parity with the then-current runtime semantics where `input_schema == null` meant “legacy upload-first”
-(files required).
-
-We now plan to remove `input_schema == null` entirely (ST-14-09) and represent file uploads purely via `input_schema`
-`kind: "file"` fields (`min/max`). After that change, references to legacy upload-first behavior in this document are
-historical context only.
+ST-14-09 removed the legacy `input_schema == null` “upload-first” mode; file uploads are represented only via
+`{"kind":"file"}` fields (`min/max`) and “no inputs” is `[]`.
 
 ## Test plan
 

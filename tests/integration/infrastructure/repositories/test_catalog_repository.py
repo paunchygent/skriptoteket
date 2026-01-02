@@ -289,6 +289,7 @@ async def test_tool_repository_list_by_tags_and_updates(db_session: AsyncSession
             source_code="print('hi')",
             entrypoint="run_tool",
             content_hash="hash",
+            input_schema=[],
             derived_from_version_id=None,
             created_by_user_id=user_id,
             created_at=now,

@@ -21,8 +21,6 @@ vi.mock("../../api/client", () => ({
 }));
 
 type ToolInputsMock = {
-  hasSchema: ReturnType<typeof ref<boolean>>;
-  isValid: ReturnType<typeof ref<boolean>>;
   fileError: ReturnType<typeof ref<string | null>>;
   fieldErrors: ReturnType<typeof ref<Record<string, string>>>;
   values: ReturnType<typeof ref<Record<string, unknown>>>;
@@ -40,8 +38,6 @@ const mountedWrappers: Array<ReturnType<typeof mount>> = [];
 
 function createToolInputs(): ToolInputsMock {
   return {
-    hasSchema: ref(false),
-    isValid: ref(true),
     fileError: ref(null),
     fieldErrors: ref({}),
     values: ref({}),
@@ -105,8 +101,6 @@ describe("useToolRun", () => {
     const { toolRun } = mountToolRun();
 
     toolRun.tool.value = { id: "tool-1", title: "Tool", input_schema: [] } as never;
-    toolInputs.hasSchema.value = true;
-    toolInputs.isValid.value = false;
     toolInputs.fileError.value = "File error";
 
     await toolRun.submitRun();
@@ -118,7 +112,7 @@ describe("useToolRun", () => {
   it("submits a run with FormData and stores the resolved run", async () => {
     const { toolRun } = mountToolRun();
 
-    toolRun.tool.value = { id: "tool-1", title: "Tool", input_schema: null } as never;
+    toolRun.tool.value = { id: "tool-1", title: "Tool", input_schema: [] } as never;
     toolRun.selectFiles([new File(["test"], "test.txt")]);
 
     clientMocks.apiFetch.mockResolvedValue({ run_id: "run-1" });

@@ -56,7 +56,7 @@ class EditorBootResponse(BaseModel):
     entrypoint: str
     source_code: str
     settings_schema: list[UiActionField] | None = None
-    input_schema: list[ToolInputField] | None = None
+    input_schema: list[ToolInputField] = Field(default_factory=list)
     usage_instructions: str | None = None
 
 
@@ -82,7 +82,7 @@ class CreateDraftVersionRequest(BaseModel):
     entrypoint: str = DEFAULT_ENTRYPOINT
     source_code: str
     settings_schema: list[UiActionField] | None = None
-    input_schema: list[ToolInputField] | None = None
+    input_schema: list[ToolInputField] = Field(default_factory=list)
     usage_instructions: str | None = None
     change_summary: str | None = None
     derived_from_version_id: UUID | None = None
@@ -94,7 +94,7 @@ class SaveDraftVersionRequest(BaseModel):
     entrypoint: str = DEFAULT_ENTRYPOINT
     source_code: str
     settings_schema: list[UiActionField] | None = None
-    input_schema: list[ToolInputField] | None = None
+    input_schema: list[ToolInputField] = Field(default_factory=list)
     usage_instructions: str | None = None
     change_summary: str | None = None
     expected_parent_version_id: UUID

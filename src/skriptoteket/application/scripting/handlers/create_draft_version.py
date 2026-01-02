@@ -118,7 +118,7 @@ class CreateDraftVersionHandler(CreateDraftVersionHandlerProtocol):
             effective_input_schema = (
                 command.input_schema
                 if "input_schema" in command.model_fields_set
-                else (derived_from.input_schema if derived_from is not None else None)
+                else (derived_from.input_schema if derived_from is not None else [])
             )
             effective_usage_instructions = (
                 command.usage_instructions

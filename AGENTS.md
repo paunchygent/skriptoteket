@@ -30,6 +30,14 @@ Target Python is **3.13–3.14**.
 - **PDM/pyproject changes (incl. migration work)**: use `pdm-migration-specialist` for `pyproject.toml` dependency-group updates (generic skill; don’t import HuleEdu monorepo assumptions).
 - `docs/`: PRD/ADRs/backlog (start at `docs/index.md`); contract-enforced via `docs/_meta/docs-contract.yaml`
 - **Docs workflow (REQUIRED)**: follow `docs/reference/ref-sprint-planning-workflow.md` for PRD → ADR → epic → story → sprint planning.
+- **Docs index (REQUIRED)**: when adding new docs, update `docs/index.md` so the full index stays complete.
+- **Epic update workflow (REQUIRED)**: when you mark a story `done`, update its epic in `docs/backlog/epics/`:
+  - bump the epic frontmatter `updated` date
+  - add/refresh a short “Implementation Summary (as of YYYY-MM-DD)” noting what shipped (at minimum the story ID)
+- **Handoff workflow (REQUIRED)**: when you change any story/epic/sprint status (or scope/dependencies), update `.agent/handoff.md`:
+  - Keep `## Snapshot` fields current (Date, Branch, Current sprint, Production, Completed).
+  - Do **not** include commit SHAs in Snapshot (avoid churn); use `Branch: <name> + local changes`.
+  - Add the relevant verification commands/manual checks under `## Verification`.
 - **Review workflow (REQUIRED)**: all proposed EPICs/ADRs must be reviewed before implementation — see `docs/reference/ref-review-workflow.md` and `.agent/rules/096-review-workflow.md`
 - `frontend/`: pnpm workspace (Vue/Vite) — `apps/skriptoteket` (SPA), `packages/huleedu-ui` (component library)
 - `.agent/`: agent workflow helpers (`.agent/readme-first.md`, `.agent/handoff.md`, prompt template) + coding rules (`.agent/rules/`)
@@ -58,6 +66,12 @@ Target Python is **3.13–3.14**.
 - Docs: `pdm run docs-validate`
 - Session file ops (prod): `pdm run cleanup-session-files` (TTL cleanup) / `pdm run clear-all-session-files` (danger: deletes all)
 - Skills prompt: `pdm run skills-prompt` / `pdm run skills-validate`
+
+## SSH Defaults (hemma)
+
+- `ssh hemma` uses non-root user `paunchygent` (key: `~/.ssh/hemma-paunchygent_ed25519`).
+- Root access requires explicit approval; use `ssh hemma-root` when needed.
+- LAN aliases: `ssh hemma-local` (non-root), `ssh hemma-local-root` (root).
 
 ## Skill Usage (REQUIRED)
 

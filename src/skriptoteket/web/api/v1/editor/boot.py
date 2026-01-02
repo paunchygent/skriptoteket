@@ -90,13 +90,13 @@ def _resolve_editor_state(
     str,
     str,
     list[UiActionField] | None,
-    list[ToolInputField] | None,
+    list[ToolInputField],
     str | None,
     EditorSaveMode,
     UUID | None,
 ]:
     if selected_version is None:
-        return DEFAULT_ENTRYPOINT, STARTER_TEMPLATE, None, None, None, "create_draft", None
+        return DEFAULT_ENTRYPOINT, STARTER_TEMPLATE, None, [], None, "create_draft", None
 
     is_draft = selected_version.state is VersionState.DRAFT
     save_mode: EditorSaveMode = "snapshot" if is_draft else "create_draft"

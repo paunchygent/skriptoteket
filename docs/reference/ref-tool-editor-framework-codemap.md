@@ -203,12 +203,12 @@ Notes:
 
 **Current semantics:**
 
-- `input_schema == null` => legacy “files required” flow (no schema inputs)
-- `input_schema == []` => schema exists with no fields (files optional)
+- `input_schema` is always an array of fields (never `null`)
+- File picker is shown only when the schema includes a `file` field:
+  - `min=1` => files required
+  - `min=0` => files optional
+- `input_schema == []` => no pre-run inputs and no file picker
 - Only **one** file field is allowed, enforced server-side
-
-**Planned:** remove `input_schema == null` and make file behavior explicit
-via schema (ST-14-09).
 
 **UI renderers:**
 
@@ -344,7 +344,7 @@ Grouped by area. Story IDs link to backlog details.
 
 ### Schema authoring (inputs + settings)
 
-- **ST-14-09**: remove legacy `input_schema == null` and make file behavior explicit
+- **ST-14-09 (done)**: remove legacy `input_schema == null` and make file behavior explicit
 - **ST-14-10**: JSON QoL (prettify + example snippets)
 - **ST-14-13/14**: CodeMirror JSON editor + inline diagnostics
 - **ST-14-15/16**: backend validation endpoint + structured UI errors

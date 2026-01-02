@@ -5,7 +5,7 @@ from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.scripting.tool_inputs import (
@@ -38,7 +38,7 @@ class ToolVersion(BaseModel):
     entrypoint: str
     content_hash: str
     settings_schema: list[UiActionField] | None = None
-    input_schema: ToolInputSchema | None = None
+    input_schema: ToolInputSchema = Field(default_factory=list)
     usage_instructions: str | None = None
     derived_from_version_id: UUID | None = None
 
@@ -119,7 +119,7 @@ def create_draft_version(
     source_code: str,
     entrypoint: str,
     settings_schema: ToolSettingsSchema | None = None,
-    input_schema: ToolInputSchema | None = None,
+    input_schema: ToolInputSchema,
     usage_instructions: str | None = None,
     created_by_user_id: UUID,
     derived_from_version_id: UUID | None,
@@ -159,7 +159,7 @@ def save_draft_snapshot(
     source_code: str,
     entrypoint: str,
     settings_schema: ToolSettingsSchema | None = None,
-    input_schema: ToolInputSchema | None = None,
+    input_schema: ToolInputSchema,
     usage_instructions: str | None = None,
     saved_by_user_id: UUID,
     change_summary: str | None,

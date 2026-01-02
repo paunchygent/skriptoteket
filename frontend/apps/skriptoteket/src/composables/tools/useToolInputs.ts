@@ -35,18 +35,14 @@ function isNonFileField(field: ToolInputField): boolean {
 export function useToolInputs({ schema, selectedFiles }: UseToolInputsOptions) {
   const values = ref<ToolInputFormValues>({});
 
-  const hasSchema = computed(() => schema.value !== null && schema.value !== undefined);
+  const resolvedSchema = computed<ToolInputSchema>(() => (schema.value ?? []) as ToolInputSchema);
 
   const nonFileFields = computed<ToolInputField[]>(() => {
-    const s = schema.value;
-    if (!s) return [];
-    return s.filter(isNonFileField);
+    return resolvedSchema.value.filter(isNonFileField);
   });
 
   const fileField = computed<ToolInputFileField | null>(() => {
-    const s = schema.value;
-    if (!s) return null;
-    const field = s.find((candidate) => candidate.kind === "file") ?? null;
+    const field = resolvedSchema.value.find((candidate) => candidate.kind === "file") ?? null;
     return field as ToolInputFileField | null;
   });
 
@@ -58,16 +54,12 @@ export function useToolInputs({ schema, selectedFiles }: UseToolInputsOptions) {
 
   const fileLabel = computed(() => fileField.value?.label ?? "Filer");
   const fileMultiple = computed(() => {
-    // Legacy flow (no input_schema) uses the multi-file picker.
-    if (!hasSchema.value) return true;
     return (fileField.value?.max ?? 1) > 1;
   });
 
-  const showFilePicker = computed(() => !hasSchema.value || fileField.value !== null);
+  const showFilePicker = computed(() => fileField.value !== null);
 
   const fileError = computed<string | null>(() => {
-    if (!hasSchema.value) return null;
-
     if (fileField.value === null) {
       if (selectedFiles.value.length > 0) {
         return "Det här verktyget tar inte emot filer.";
@@ -90,7 +82,6 @@ export function useToolInputs({ schema, selectedFiles }: UseToolInputsOptions) {
 
   const fieldErrors = computed<Record<string, string>>(() => {
     const errors: Record<string, string> = {};
-    if (!hasSchema.value) return errors;
 
     for (const field of nonFileFields.value) {
       const raw = values.value[field.name] ?? defaultValueForKind(field.kind);
@@ -134,10 +125,6 @@ export function useToolInputs({ schema, selectedFiles }: UseToolInputsOptions) {
   });
 
   function resetValues(): void {
-    if (!hasSchema.value) {
-      values.value = {};
-      return;
-    }
     const next: ToolInputFormValues = {};
     for (const field of nonFileFields.value) {
       next[field.name] = defaultValueForKind(field.kind);
@@ -146,8 +133,6 @@ export function useToolInputs({ schema, selectedFiles }: UseToolInputsOptions) {
   }
 
   function buildApiValues(): Record<string, JsonValue> {
-    if (!hasSchema.value) return {};
-
     const apiValues: Record<string, JsonValue> = {};
 
     for (const field of nonFileFields.value) {
@@ -195,7 +180,6 @@ export function useToolInputs({ schema, selectedFiles }: UseToolInputsOptions) {
 
   return {
     values,
-    hasSchema,
     nonFileFields,
     fileField,
     fileAccept,

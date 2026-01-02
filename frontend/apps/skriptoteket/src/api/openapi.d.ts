@@ -1345,7 +1345,7 @@ export interface components {
              */
             entrypoint: string;
             /** Input Schema */
-            input_schema?: (components["schemas"]["ToolInputStringField"] | components["schemas"]["ToolInputTextField"] | components["schemas"]["ToolInputIntegerField"] | components["schemas"]["ToolInputNumberField"] | components["schemas"]["ToolInputBooleanField"] | components["schemas"]["ToolInputEnumField"] | components["schemas"]["ToolInputFileField"])[] | null;
+            input_schema?: (components["schemas"]["ToolInputStringField"] | components["schemas"]["ToolInputTextField"] | components["schemas"]["ToolInputIntegerField"] | components["schemas"]["ToolInputNumberField"] | components["schemas"]["ToolInputBooleanField"] | components["schemas"]["ToolInputEnumField"] | components["schemas"]["ToolInputFileField"])[];
             /** Settings Schema */
             settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
             /** Source Code */
@@ -1468,7 +1468,7 @@ export interface components {
             /** Entrypoint */
             entrypoint: string;
             /** Input Schema */
-            input_schema?: (components["schemas"]["ToolInputStringField"] | components["schemas"]["ToolInputTextField"] | components["schemas"]["ToolInputIntegerField"] | components["schemas"]["ToolInputNumberField"] | components["schemas"]["ToolInputBooleanField"] | components["schemas"]["ToolInputEnumField"] | components["schemas"]["ToolInputFileField"])[] | null;
+            input_schema?: (components["schemas"]["ToolInputStringField"] | components["schemas"]["ToolInputTextField"] | components["schemas"]["ToolInputIntegerField"] | components["schemas"]["ToolInputNumberField"] | components["schemas"]["ToolInputBooleanField"] | components["schemas"]["ToolInputEnumField"] | components["schemas"]["ToolInputFileField"])[];
             /**
              * Save Mode
              * @enum {string}
@@ -2223,7 +2223,7 @@ export interface components {
              */
             expected_parent_version_id: string;
             /** Input Schema */
-            input_schema?: (components["schemas"]["ToolInputStringField"] | components["schemas"]["ToolInputTextField"] | components["schemas"]["ToolInputIntegerField"] | components["schemas"]["ToolInputNumberField"] | components["schemas"]["ToolInputBooleanField"] | components["schemas"]["ToolInputEnumField"] | components["schemas"]["ToolInputFileField"])[] | null;
+            input_schema?: (components["schemas"]["ToolInputStringField"] | components["schemas"]["ToolInputTextField"] | components["schemas"]["ToolInputIntegerField"] | components["schemas"]["ToolInputNumberField"] | components["schemas"]["ToolInputBooleanField"] | components["schemas"]["ToolInputEnumField"] | components["schemas"]["ToolInputFileField"])[];
             /** Settings Schema */
             settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
             /** Source Code */
@@ -2599,7 +2599,7 @@ export interface components {
              */
             id: string;
             /** Input Schema */
-            input_schema?: (components["schemas"]["ToolInputStringField"] | components["schemas"]["ToolInputTextField"] | components["schemas"]["ToolInputIntegerField"] | components["schemas"]["ToolInputNumberField"] | components["schemas"]["ToolInputBooleanField"] | components["schemas"]["ToolInputEnumField"] | components["schemas"]["ToolInputFileField"])[] | null;
+            input_schema?: (components["schemas"]["ToolInputStringField"] | components["schemas"]["ToolInputTextField"] | components["schemas"]["ToolInputIntegerField"] | components["schemas"]["ToolInputNumberField"] | components["schemas"]["ToolInputBooleanField"] | components["schemas"]["ToolInputEnumField"] | components["schemas"]["ToolInputFileField"])[];
             /** Slug */
             slug: string;
             /** Summary */

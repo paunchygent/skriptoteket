@@ -166,7 +166,6 @@ async def test_execute_tool_version_commits_before_runner_execute(now: datetime)
             tool_id=tool_id,
             version_id=version.id,
             context=RunContext.SANDBOX,
-            input_files=[("input.txt", b"data")],
         ),
     )
 
@@ -234,7 +233,6 @@ async def test_execute_tool_version_marks_failed_on_capacity_error(now: datetime
                 tool_id=tool_id,
                 version_id=version.id,
                 context=RunContext.SANDBOX,
-                input_files=[("input.txt", b"data")],
             ),
         )
 
@@ -303,7 +301,6 @@ async def test_execute_tool_version_marks_failed_on_syntax_error_and_skips_runne
             tool_id=tool_id,
             version_id=version.id,
             context=RunContext.SANDBOX,
-            input_files=[("input.txt", b"data")],
         ),
     )
 

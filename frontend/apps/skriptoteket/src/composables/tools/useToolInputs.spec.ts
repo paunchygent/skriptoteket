@@ -3,40 +3,6 @@ import { ref, nextTick } from "vue";
 import { useToolInputs } from "./useToolInputs";
 
 describe("useToolInputs", () => {
-  describe("hasSchema", () => {
-    it("returns false when schema is null", () => {
-      const schema = ref(null);
-      const selectedFiles = ref<File[]>([]);
-      const { hasSchema } = useToolInputs({ schema, selectedFiles });
-
-      expect(hasSchema.value).toBe(false);
-    });
-
-    it("returns false when schema is undefined", () => {
-      const schema = ref(undefined);
-      const selectedFiles = ref<File[]>([]);
-      const { hasSchema } = useToolInputs({ schema, selectedFiles });
-
-      expect(hasSchema.value).toBe(false);
-    });
-
-    it("returns true when schema is empty array", () => {
-      const schema = ref([]);
-      const selectedFiles = ref<File[]>([]);
-      const { hasSchema } = useToolInputs({ schema, selectedFiles });
-
-      expect(hasSchema.value).toBe(true);
-    });
-
-    it("returns true when schema has fields", () => {
-      const schema = ref([{ name: "title", kind: "string" as const, label: "Title" }]);
-      const selectedFiles = ref<File[]>([]);
-      const { hasSchema } = useToolInputs({ schema, selectedFiles });
-
-      expect(hasSchema.value).toBe(true);
-    });
-  });
-
   describe("nonFileFields", () => {
     it("returns empty array when no schema", () => {
       const schema = ref(null);
@@ -132,12 +98,12 @@ describe("useToolInputs", () => {
   });
 
   describe("fileMultiple", () => {
-    it("returns true when no schema (legacy mode)", () => {
+    it("returns false when no file field exists", () => {
       const schema = ref(null);
       const selectedFiles = ref<File[]>([]);
       const { fileMultiple } = useToolInputs({ schema, selectedFiles });
 
-      expect(fileMultiple.value).toBe(true);
+      expect(fileMultiple.value).toBe(false);
     });
 
     it("returns false when max is 1", () => {
@@ -158,6 +124,26 @@ describe("useToolInputs", () => {
       const { fileMultiple } = useToolInputs({ schema, selectedFiles });
 
       expect(fileMultiple.value).toBe(true);
+    });
+  });
+
+  describe("showFilePicker", () => {
+    it("returns false when tool does not accept files", () => {
+      const schema = ref([{ name: "title", kind: "string" as const, label: "Title" }]);
+      const selectedFiles = ref<File[]>([]);
+      const { showFilePicker } = useToolInputs({ schema, selectedFiles });
+
+      expect(showFilePicker.value).toBe(false);
+    });
+
+    it("returns true when tool accepts files", () => {
+      const schema = ref([
+        { name: "files", kind: "file" as const, label: "Files", accept: [], min: 0, max: 1 },
+      ]);
+      const selectedFiles = ref<File[]>([]);
+      const { showFilePicker } = useToolInputs({ schema, selectedFiles });
+
+      expect(showFilePicker.value).toBe(true);
     });
   });
 

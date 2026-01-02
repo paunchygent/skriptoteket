@@ -9,7 +9,6 @@ type ToolInputField = ToolInputSchema[number];
 
 defineProps<{
   idBase: string;
-  hasSchema: boolean;
   inputFields: ToolInputField[];
   inputValues: ToolInputFormValues;
   inputFieldErrors: Record<string, string>;
@@ -48,7 +47,7 @@ function updateInputValues(value: ToolInputFormValues): void {
 
 <template>
   <div class="space-y-4">
-    <div v-if="hasSchema">
+    <div v-if="inputFields.length > 0">
       <ToolInputForm
         :id-base="idBase"
         :fields="inputFields"

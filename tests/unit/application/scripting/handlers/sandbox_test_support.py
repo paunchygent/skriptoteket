@@ -149,7 +149,7 @@ def make_snapshot_payload():
             "def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>ok</p>'\n"
         ),
         settings_schema=None,
-        input_schema=None,
+        input_schema=[],
         usage_instructions=None,
     )
 
@@ -188,7 +188,7 @@ def make_sandbox_snapshot(
             "def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>ok</p>'\n"
         ),
         settings_schema=None,
-        input_schema=None,
+        input_schema=[],
         usage_instructions=None,
         payload_bytes=100,
         created_at=now,

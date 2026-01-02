@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -30,7 +30,11 @@ class ToolVersionModel(Base):
     content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
 
     settings_schema: Mapped[list[dict[str, object]] | None] = mapped_column(JSONB, nullable=True)
-    input_schema: Mapped[list[dict[str, object]] | None] = mapped_column(JSONB, nullable=True)
+    input_schema: Mapped[list[dict[str, object]]] = mapped_column(
+        JSONB,
+        nullable=False,
+        server_default=text("'[]'::jsonb"),
+    )
     usage_instructions: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     derived_from_version_id: Mapped[UUID | None] = mapped_column(

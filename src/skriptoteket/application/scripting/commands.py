@@ -34,7 +34,7 @@ class SandboxSnapshotPayload(BaseModel):
     entrypoint: str = Field(..., min_length=1, max_length=128)
     source_code: str = Field(..., min_length=1)
     settings_schema: ToolSettingsSchema | None = None
-    input_schema: ToolInputSchema | None = None
+    input_schema: ToolInputSchema = Field(default_factory=list)
     usage_instructions: str | None = None
 
 
@@ -66,7 +66,7 @@ class CreateDraftVersionCommand(BaseModel):
     entrypoint: str = "run_tool"
     source_code: str
     settings_schema: ToolSettingsSchema | None = None
-    input_schema: ToolInputSchema | None = None
+    input_schema: ToolInputSchema = Field(default_factory=list)
     usage_instructions: str | None = None
     change_summary: str | None = None
 
@@ -84,7 +84,7 @@ class SaveDraftVersionCommand(BaseModel):
     entrypoint: str = "run_tool"
     source_code: str
     settings_schema: ToolSettingsSchema | None = None
-    input_schema: ToolInputSchema | None = None
+    input_schema: ToolInputSchema = Field(default_factory=list)
     usage_instructions: str | None = None
     change_summary: str | None = None
     expected_parent_version_id: UUID

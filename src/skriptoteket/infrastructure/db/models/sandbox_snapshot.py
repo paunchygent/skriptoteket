@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, String, Text, func
+from sqlalchemy import BigInteger, DateTime, ForeignKey, String, Text, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -38,7 +38,11 @@ class SandboxSnapshotModel(Base):
     entrypoint: Mapped[str] = mapped_column(String(128), nullable=False)
     source_code: Mapped[str] = mapped_column(Text, nullable=False)
     settings_schema: Mapped[list[dict[str, object]] | None] = mapped_column(JSONB, nullable=True)
-    input_schema: Mapped[list[dict[str, object]] | None] = mapped_column(JSONB, nullable=True)
+    input_schema: Mapped[list[dict[str, object]]] = mapped_column(
+        JSONB,
+        nullable=False,
+        server_default=text("'[]'::jsonb"),
+    )
     usage_instructions: Mapped[str | None] = mapped_column(Text, nullable=True)
     payload_bytes: Mapped[int] = mapped_column(BigInteger, nullable=False)
 

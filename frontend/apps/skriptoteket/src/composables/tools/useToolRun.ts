@@ -41,7 +41,7 @@ export function useToolRun({ slug }: UseToolRunOptions) {
   const sessionFiles = ref<SessionFileInfo[]>([]);
   const sessionFilesMode = ref<SessionFilesMode>("none");
 
-  const inputSchema = computed(() => tool.value?.input_schema ?? null);
+  const inputSchema = computed(() => tool.value?.input_schema ?? []);
   const toolInputs = useToolInputs({ schema: inputSchema, selectedFiles });
 
   const isLoadingTool = ref(true);
@@ -61,10 +61,13 @@ export function useToolRun({ slug }: UseToolRunOptions) {
   });
   const effectiveFileError = computed<string | null>(() => {
     const baseError = toolInputs.fileError.value;
-    if (!toolInputs.hasSchema.value) return baseError;
-
     const fileField = toolInputs.fileField.value;
-    if (!fileField) return baseError;
+    if (!fileField) {
+      if (effectiveSessionFilesMode.value === "reuse" && hasSessionFiles.value) {
+        return "Det här verktyget tar inte emot filer.";
+      }
+      return baseError;
+    }
     if (hasFiles.value) return baseError;
     if (effectiveSessionFilesMode.value !== "reuse") return baseError;
 
@@ -93,7 +96,13 @@ export function useToolRun({ slug }: UseToolRunOptions) {
   });
   const canSubmitActions = computed(() => stateRev.value !== null && hasNextActions.value);
   const canReuseSessionFiles = computed(() => {
-    return !isSubmitting.value && !isRunning.value && !hasFiles.value && hasSessionFiles.value;
+    return (
+      !isSubmitting.value &&
+      !isRunning.value &&
+      !hasFiles.value &&
+      hasSessionFiles.value &&
+      toolInputs.fileField.value !== null
+    );
   });
   const canClearSessionFiles = computed(() => {
     return !isSubmitting.value && !isRunning.value && !hasFiles.value && hasSessionFiles.value;
@@ -106,10 +115,7 @@ export function useToolRun({ slug }: UseToolRunOptions) {
   });
   const canSubmitRun = computed(() => {
     if (!tool.value) return false;
-    if (toolInputs.hasSchema.value) {
-      return inputsValid.value;
-    }
-    return hasFiles.value || (effectiveSessionFilesMode.value === "reuse" && hasSessionFiles.value);
+    return inputsValid.value;
   });
 
   function isTerminalStatus(status: string): boolean {
@@ -165,7 +171,7 @@ export function useToolRun({ slug }: UseToolRunOptions) {
       const response = await apiGet<SessionFilesResponse>(
         `/api/v1/tools/${encodeURIComponent(toolId)}/session-files?context=default`,
       );
-      sessionFiles.value = response.files;
+      sessionFiles.value = response.files ?? [];
     } catch {
       sessionFiles.value = [];
     }
@@ -195,16 +201,11 @@ export function useToolRun({ slug }: UseToolRunOptions) {
       errorMessage.value = "Verktyget är inte laddat.";
       return;
     }
-    if (toolInputs.hasSchema.value) {
-      if (!toolInputs.isValid.value) {
-        errorMessage.value =
-          toolInputs.fileError.value ??
-          Object.values(toolInputs.fieldErrors.value)[0] ??
-          "Kontrollera indata.";
-        return;
-      }
-    } else if (!hasFiles.value) {
-      errorMessage.value = "Välj minst en fil.";
+    if (!inputsValid.value) {
+      errorMessage.value =
+        effectiveFileError.value ??
+        Object.values(toolInputs.fieldErrors.value)[0] ??
+        "Kontrollera indata.";
       return;
     }
     if (isSubmitting.value) return;
@@ -220,18 +221,16 @@ export function useToolRun({ slug }: UseToolRunOptions) {
     }
 
     let inputValues: Record<string, JsonValue> = {};
-    if (toolInputs.hasSchema.value) {
-      try {
-        inputValues = toolInputs.buildApiValues();
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          errorMessage.value = error.message;
-        } else {
-          errorMessage.value = "Indata är ogiltig.";
-        }
-        isSubmitting.value = false;
-        return;
+    try {
+      inputValues = toolInputs.buildApiValues();
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        errorMessage.value = error.message;
+      } else {
+        errorMessage.value = "Indata är ogiltig.";
       }
+      isSubmitting.value = false;
+      return;
     }
     formData.append("inputs", JSON.stringify(inputValues));
 

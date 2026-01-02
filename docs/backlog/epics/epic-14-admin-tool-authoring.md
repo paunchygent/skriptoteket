@@ -5,7 +5,7 @@ title: "Admin tool authoring (draft-first workflow)"
 status: active
 owners: "agents"
 created: 2025-12-25
-updated: 2025-12-29
+updated: 2026-01-02
 outcome: "Admins can quickly create draft tools directly from /admin/tools, iterate without contributor-only hoops, and publish only when slug and taxonomy are finalized."
 ---
 
@@ -74,3 +74,7 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 - Existing editor + metadata/taxonomy panels:
   - ST-11-17 (metadata editor)
   - ST-11-20 (tool taxonomy editor)
+
+## Implementation Summary (as of 2026-01-02)
+
+- ST-14-09 shipped: `input_schema` is schema-only (never `null`); file picking is represented as a `{"kind":"file"}` field with `min/max`.

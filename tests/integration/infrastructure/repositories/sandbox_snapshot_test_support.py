@@ -70,6 +70,7 @@ async def create_tool_version(
             source_code="print('sandbox')",
             entrypoint="run_tool",
             content_hash="hash",
+            input_schema=[],
             derived_from_version_id=None,
             created_by_user_id=created_by_user_id,
             created_at=now,

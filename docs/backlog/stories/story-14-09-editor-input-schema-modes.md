@@ -2,7 +2,7 @@
 type: story
 id: ST-14-09
 title: "Editor: remove legacy input_schema=null (always schema-driven inputs)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-29
 updated: 2026-01-02
@@ -16,15 +16,14 @@ acceptance_criteria:
 dependencies:
   - "ADR-0027"
   - "ST-14-04"
-  - "ST-14-15"
 ui_impact: "Yes (tool editor schema panel)"
 data_impact: "Yes (migrate tool versions away from input_schema=null)"
 ---
 
 ## Context
 
-Today, the difference between `input_schema: null` and `input_schema: []` changes runtime behavior, but the editor UI
-makes it easy to accidentally produce `null` (empty textarea), creating surprising “files required” behavior.
+Before ST-14-09, the difference between `input_schema: null` and `input_schema: []` changed runtime behavior, but the
+editor UI made it easy to accidentally produce `null` (empty textarea), creating surprising “files required” behavior.
 
 ## Goal
 

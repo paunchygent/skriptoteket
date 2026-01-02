@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from skriptoteket.domain.scripting.tool_inputs import ToolInputSchema
 from skriptoteket.domain.scripting.tool_settings import ToolSettingsSchema
@@ -19,7 +19,7 @@ class SandboxSnapshot(BaseModel):
     entrypoint: str
     source_code: str
     settings_schema: ToolSettingsSchema | None = None
-    input_schema: ToolInputSchema | None = None
+    input_schema: ToolInputSchema = Field(default_factory=list)
     usage_instructions: str | None = None
     payload_bytes: int
     created_at: datetime

@@ -38,7 +38,7 @@ const props = defineProps<{
   entrypoint: string;
   sourceCode: string;
   usageInstructions: string;
-  inputSchema: ToolInputSchema | null;
+  inputSchema: ToolInputSchema;
   inputSchemaError: string | null;
   settingsSchema: ToolSettingsSchema | null;
   settingsSchemaError: string | null;
@@ -50,7 +50,6 @@ const toolInputs = useToolInputs({ schema: toRef(props, "inputSchema"), selected
 const inputValues = toolInputs.values;
 const inputFields = toolInputs.nonFileFields;
 const inputFieldErrors = toolInputs.fieldErrors;
-const hasSchema = toolInputs.hasSchema;
 const fileAccept = toolInputs.fileAccept;
 const fileLabel = toolInputs.fileLabel;
 const fileMultiple = toolInputs.fileMultiple;
@@ -101,9 +100,13 @@ const effectiveSessionFilesMode = computed<SessionFilesMode>(() => {
 });
 const effectiveFileError = computed<string | null>(() => {
   const baseError = fileError.value;
-  if (!hasSchema.value) return baseError;
   const field = toolInputs.fileField.value;
-  if (!field) return baseError;
+  if (!field) {
+    if (effectiveSessionFilesMode.value === "reuse" && hasSessionFiles.value) {
+      return "Det här verktyget tar inte emot filer.";
+    }
+    return baseError;
+  }
   if (hasFiles.value) return baseError;
   if (effectiveSessionFilesMode.value !== "reuse") return baseError;
 
@@ -140,10 +143,7 @@ const canSubmitActions = computed(() => {
 const canRun = computed(() => {
   if (props.isReadOnly || isRunning.value) return false;
   if (props.inputSchemaError || props.settingsSchemaError) return false;
-  if (hasSchema.value) {
-    return inputsValid.value;
-  }
-  return hasFiles.value || (effectiveSessionFilesMode.value === "reuse" && hasSessionFiles.value);
+  return inputsValid.value;
 });
 
 const canReuseSessionFiles = computed(() => {
@@ -152,7 +152,8 @@ const canReuseSessionFiles = computed(() => {
     !isRunning.value &&
     !isSubmitting.value &&
     !hasFiles.value &&
-    hasSessionFiles.value
+    hasSessionFiles.value &&
+    toolInputs.fileField.value !== null
   );
 });
 const canClearSessionFiles = computed(() => {
@@ -282,18 +283,16 @@ async function runSandbox(): Promise<void> {
   snapshotId.value = null;
 
   let apiInputs: Record<string, JsonValue> = {};
-  if (hasSchema.value) {
-    try {
-      apiInputs = toolInputs.buildApiValues();
-    } catch (error: unknown) {
-      isRunning.value = false;
-      if (error instanceof Error) {
-        errorMessage.value = error.message;
-      } else {
-        errorMessage.value = "Ogiltiga indata. Kontrollera fälten.";
-      }
-      return;
+  try {
+    apiInputs = toolInputs.buildApiValues();
+  } catch (error: unknown) {
+    isRunning.value = false;
+    if (error instanceof Error) {
+      errorMessage.value = error.message;
+    } else {
+      errorMessage.value = "Ogiltiga indata. Kontrollera fälten.";
     }
+    return;
   }
 
   const usageInstructions = props.usageInstructions.trim();
@@ -301,7 +300,7 @@ async function runSandbox(): Promise<void> {
     entrypoint,
     source_code: props.sourceCode,
     settings_schema: props.settingsSchema ?? null,
-    input_schema: props.inputSchema ?? null,
+    input_schema: props.inputSchema,
     usage_instructions: usageInstructions ? usageInstructions : null,
   };
 
@@ -495,7 +494,6 @@ watch(
   <div class="space-y-4">
     <SandboxInputPanel
       :id-base="`sandbox-${versionId}`"
-      :has-schema="hasSchema"
       :input-fields="inputFields"
       :input-values="inputValues"
       :input-field-errors="inputFieldErrors"

@@ -171,9 +171,9 @@ export function useScriptEditor({
     return parsed as SettingsSchema;
   }
 
-  function parseInputSchema(): InputSchema | null {
+  function parseInputSchema(): InputSchema {
     const raw = inputSchemaText.value.trim();
-    if (!raw) return null;
+    if (!raw) return [];
 
     let parsed: unknown;
     try {
@@ -279,7 +279,7 @@ export function useScriptEditor({
         return;
       }
 
-      let inputSchema: InputSchema | null = null;
+      let inputSchema: InputSchema;
       try {
         inputSchema = parseInputSchema();
       } catch (error: unknown) {

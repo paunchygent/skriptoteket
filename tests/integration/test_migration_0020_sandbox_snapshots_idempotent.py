@@ -55,7 +55,7 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
         assert columns["entrypoint"] == ("character varying", "NO")
         assert columns["source_code"] == ("text", "NO")
         assert columns["settings_schema"] == ("jsonb", "YES")
-        assert columns["input_schema"] == ("jsonb", "YES")
+        assert columns["input_schema"] == ("jsonb", "NO")
         assert columns["usage_instructions"] == ("text", "YES")
         assert columns["payload_bytes"] == ("bigint", "NO")
         assert columns["created_at"] == ("timestamp with time zone", "NO")
@@ -150,7 +150,7 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
                 "entrypoint": "main.py",
                 "source_code": "print('hi')",
                 "settings_schema": None,
-                "input_schema": None,
+                "input_schema": "[]",
                 "usage_instructions": None,
                 "payload_bytes": 123,
                 "expires_at": expires_at,

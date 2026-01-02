@@ -11,7 +11,7 @@ acceptance_criteria:
   - "Given a tool declares input_schema with one file field, when user opens run view, then SPA renders a file upload widget with accept/min/max constraints"
   - "Given inputs are invalid, when submitting, then user sees validation error and runner is not invoked"
   - "Given input_schema exists, when tool runs, then script receives form values via SKRIPTOTEKET_INPUTS env var"
-  - "Given no input_schema, when user opens run view, then legacy upload-required behavior applies (current multi-file picker + at least one file required)"
+  - "Given input_schema is an empty array ([]), when user opens run view, then the SPA shows no pre-run inputs and does not require file upload"
 ui_impact: "Reduces friction by allowing form-based inputs; file upload becomes optional for tools that don't need files."
 data_impact: "Adds input_schema JSONB column to tool_versions; adds structured input values to ToolRun metadata."
 dependencies: ["ST-11-13"]
@@ -66,13 +66,20 @@ input_schema = [
 
 ### UI behavior
 
-- If `input_schema` exists → render form with all declared fields
-- If no `input_schema` → legacy upload-required behavior (current multi-file picker + at least one file required)
+- `input_schema` is always an array of fields (never `null`)
+- If `input_schema` includes non-file fields → render a form with those fields
+- If `input_schema` includes a file field → show the file picker with schema label/accept/min/max behavior
+- If `input_schema` is empty (`[]`) → show no pre-run inputs and no file picker
 
 ### Editor UI
 
 `input_schema` is **version-level** content and is edited alongside code (same workflow as `settings_schema`), not in the
 tool metadata drawer.
+
+### Update (2026-01-02)
+
+ST-14-09 removed the legacy `input_schema == null` “upload-first” mode; file uploads are expressed only via
+`{"kind":"file"}` fields and “no inputs” is represented as `[]`.
 
 ## Implementation Phases
 

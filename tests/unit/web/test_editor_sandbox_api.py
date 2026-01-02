@@ -70,7 +70,7 @@ def _snapshot_payload_json(
             "entrypoint": entrypoint,
             "source_code": source_code,
             "settings_schema": None,
-            "input_schema": None,
+            "input_schema": [],
             "usage_instructions": None,
         }
     )

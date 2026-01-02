@@ -12,14 +12,15 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-01-01
-- Branch / commit: `main` (`e968eb0`) + local changes
-- Current sprint: `SPR-2026-01-05 Tool Editor Vertical Slice` (EPIC-14)
-- Production: Full Vue SPA (unchanged)
-- Completed: EPIC-14 Admin Tool Authoring (ST-14-01/14-02) done
+- Date: 2026-01-02
+- Branch: `main` + local changes
+- Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
+- Production: Full Vue SPA
+- Completed: ST-14-01/14-02 done; ST-14-09 done
 
-## Current Session (2026-01-01)
+## Current Session (2026-01-02)
 
+- ST-14-09: schema-only inputs (no `input_schema=null` legacy upload-first); DB `input_schema` columns now NOT NULL DEFAULT `[]` + backfill (SQL NULL + JSON `null`) in `migrations/versions/0023_input_schema_not_null.py`; script bank + SPA updated so file picker appears only when schema includes `{"kind":"file"}`.
 - Docs/backlog alignment: updated statuses (ST-14-01/02, ST-06-10, ST-11-01/02/07/08/09/15/16), EPIC-08 active, EPIC-16 active with ST-16-08 pending, added ST-15-02 stub, aligned sprint dates, moved ST-08-17 to `SPR-2026-05-12`, added EPIC-11 implementation summary, refreshed `.agent/readme-first.md`.
 - EPIC-14 story alignment (AI-ready foundations): updated ST-14-11/12/17/18/19/20 to support upcoming chat-first AI editing (explicit debug truncation flags + copy bundle, reusable diff viewer, field-aware compare deep links, AI-friendly toolkit conventions).
 - Drafted AI continuation stories for chat-first CRUD editing: ST-08-20 (chat drawer), ST-08-21 (structured CRUD edit ops protocol), ST-08-22 (diff preview + apply/undo); added to EPIC-08 and validated docs.
@@ -76,6 +77,10 @@ Keep this file updated so the next session can pick up work quickly.
 - Ops tooling: installed `ripgrep`/`yq`/`fd-find`/`bat`/`fzf` on `hemma` and `yq`/`fd`/`bat`/`tree`/`fzf` locally (Homebrew); documented recommended packages in `docs/runbooks/runbook-home-server.md`.
 - DX: added Playwright HMR probe `scripts/playwright_hmr_probe.py` + `pdm run ui-hmr-probe` (artifacts in `.artifacts/hmr-probe/`); documented in `AGENTS.md` and frontend specialist skill.
 - ST-12-07: added explicit session file reuse/clear + session file listing APIs; new SPA SessionFilesPanel wired in tool run + sandbox; new tests in `tests/unit/application/scripting/handlers/test_run_*_session_files.py`; OpenAPI regenerated.
+- Ops (hemma): network outage investigation (no crash/pstore/lockup logs; last log 2026-01-02 08:34:55 UTC); Wi-Fi disabled persistently via cloud-init (moved `/etc/netplan/50-cloud-init.yaml` → `.disabled` + `/etc/cloud/cloud.cfg.d/99-disable-network-config.cfg`); kernel auto-reboot on lockups enabled (`/etc/sysctl.d/99-watchdog.conf`); `ssh-watchdog` now restarts network/tailscaled + reboots after 3 consecutive failures (`/usr/local/bin/ssh-watchdog.sh`); smartmontools installed + `smartmontools.service` enabled with `/etc/smartd.conf`; SMART snapshots saved in `/root/logs/smart/` with cleanup timer (`/usr/local/bin/cleanup-smart-logs.sh`, `cleanup-smart-logs.timer`); heartbeat timer logs every minute (`heartbeat-log.timer`); non-root SSH key added for `paunchygent` (local key `~/.ssh/hemma-paunchygent_ed25519` + server `~/.ssh/authorized_keys`); raw 1-minute pre-hang log saved on server at `/root/logs/incident-20260102-083355-083455.log`.
+- Ops (hemma) follow-up: deeper watchdog probe (`dmesg`/`lspci`) found no watchdog/IPMI/BMC entries; `~/.ssh/config` now defaults `hemma`/`hemma-local` to `paunchygent` with `hemma-root`/`hemma-local-root` aliases; updated `AGENTS.md`, `docs/runbooks/runbook-home-server.md`, and `~/.codex/skills/skriptoteket-devops/SKILL.md` for non-root defaults + new host log paths/heartbeat/watchdog notes.
+- Docs (ops): trimmed `docs/runbooks/runbook-home-server.md` verbosity (moved CLI tools, architecture diagram, cleanup unit blocks to reference docs); added `docs/reference/ref-home-server-cli-tools.md`, `docs/reference/ref-home-server-architecture.md`, `docs/reference/ref-home-server-cleanup-timers.md`; moved observability stack lifecycle to `docs/runbooks/runbook-observability.md`; `pdm run docs-validate` passes.
+- Docs (ops) follow-up: moved SSH hardening + Fail2ban details into `docs/reference/ref-home-server-security-hardening.md`; moved nginx-proxy add-service + edge hardening into `docs/reference/ref-home-server-nginx-proxy.md`; updated `docs/runbooks/runbook-home-server.md` to link; added new docs to `docs/index.md`; `AGENTS.md` now requires adding new docs to the index; `pdm run docs-validate` passes.
 
 ## Verification
 
@@ -104,6 +109,9 @@ Keep this file updated so the next session can pick up work quickly.
 - UI (ST-06-11): `pdm run python -m scripts.playwright_st_06_11_quick_fix_actions_e2e` (pass; artifacts in `.artifacts/st-06-11-quick-fix-actions-e2e/`; Playwright required escalation on macOS)
 - UI (ST-06-12): `pdm run python -m scripts.playwright_st_06_12_lint_panel_navigation_e2e` (pass; artifacts in `.artifacts/st-06-12-lint-panel-navigation-e2e/`; Playwright required escalation on macOS)
 - UI (HMR probe): `pdm run ui-hmr-probe` (pass; artifacts in `.artifacts/hmr-probe/`; Playwright required escalation on macOS)
+- Backend tests (ST-14-09): `pdm run test` (pass; 543 passed)
+- Migrations (ST-14-09): `pdm run pytest -m docker --override-ini addopts=''` (pass; 20 passed)
+- UI (ST-14-09): `pdm run python -m scripts.playwright_st_14_09_input_schema_no_legacy_e2e --base-url http://127.0.0.1:5173` (pass; artifacts in `.artifacts/st-14-09-input-schema-no-legacy-e2e/`; Playwright required escalation on macOS)
 
 ## How to Run
 

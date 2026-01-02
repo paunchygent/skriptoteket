@@ -44,7 +44,7 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
         assert row is not None, "input_schema column should exist"
         data_type, is_nullable = row
         assert data_type == "jsonb", f"Expected jsonb, got {data_type}"
-        assert is_nullable == "YES", f"Expected nullable, got is_nullable={is_nullable}"
+        assert is_nullable == "NO", f"Expected NOT NULL, got is_nullable={is_nullable}"
 
 
 async def _smoke_schema_from_url(*, database_url: str) -> None:

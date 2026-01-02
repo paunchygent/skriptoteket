@@ -29,7 +29,6 @@ const slug = computed(() => {
 const {
   tool,
   selectedFiles,
-  inputSchema,
   inputValues,
   inputFields,
   inputFieldErrors,
@@ -222,7 +221,7 @@ watch(hasSettingsSchema, (hasSchema) => {
       <!-- Control bar section -->
       <div class="p-4 border-b border-navy/20">
         <ToolInputForm
-          v-if="inputSchema !== null"
+          v-if="inputFields.length > 0"
           :id-base="`${idBase}-prerun`"
           :fields="inputFields"
           :model-value="inputValues"
@@ -237,7 +236,7 @@ watch(hasSettingsSchema, (hasSchema) => {
           :has-results="hasResults"
           :has-settings="hasSettingsSchema"
           :is-settings-open="isSettingsOpen"
-          :show-file-picker="inputSchema === null || fileField !== null"
+          :show-file-picker="fileField !== null"
           :file-label="fileLabel"
           :file-accept="fileAccept"
           :file-multiple="fileMultiple"

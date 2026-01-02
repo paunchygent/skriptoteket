@@ -156,10 +156,7 @@ type ToolInputSchema = list[ToolInputField]
 type ToolInputValues = dict[str, JsonValue]
 
 
-def normalize_tool_input_schema(*, input_schema: ToolInputSchema | None) -> ToolInputSchema | None:
-    if input_schema is None:
-        return None
-
+def normalize_tool_input_schema(*, input_schema: ToolInputSchema) -> ToolInputSchema:
     seen_names: set[str] = set()
     duplicates: set[str] = set()
     file_field_count = 0

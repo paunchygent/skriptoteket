@@ -60,6 +60,11 @@ def _apply_version_override(
             settings_schema=override.settings_schema
         )
     if "input_schema" in fields_set:
+        if override.input_schema is None:
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="input_schema cannot be null",
+            )
         updated["input_schema"] = normalize_tool_input_schema(input_schema=override.input_schema)
     if "usage_instructions" in fields_set:
         updated["usage_instructions"] = override.usage_instructions

@@ -64,14 +64,12 @@ covering:
 
 Current runtime logic treats:
 
-- `input_schema == null` as “legacy upload-first” (files required to run)
-- `input_schema == []` as “schema exists but no fields” (can run without files)
+- `input_schema` as schema-only (never `null`)
+- file uploads as an explicit schema `file` field (`min/max`)
+- `input_schema == []` as “no inputs” (no pre-run form; no file picker)
 
-In the editor, an empty textarea becomes `null`, which silently maps to “files required”.
-
-**Update (2026-01-02)**: We plan to remove `input_schema == null` entirely (prototype stage; no user-generated tools in
-production yet). “Files required/optional” will be represented as schema via a `file` field (`min/max`), so the editor
-and runtime have one schema-driven input model.
+**Update (2026-01-02)**: ST-14-09 shipped and removed the legacy `input_schema == null` “upload-first” mode entirely,
+so the editor and runtime have one predictable schema-driven input model.
 
 ### 2) Schema authoring UX is the weakest part of the editor
 

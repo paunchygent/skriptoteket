@@ -91,7 +91,7 @@ Last updated: 2025-12-29
 ### ST-14-04 — Sandbox input_schema form preview parity
 
 - [x] Non-file fields render via ToolInputForm.
-- [x] No input_schema → show multi-file picker (upload-first parity).
+- [x] (Historical) `input_schema == null` showed multi-file picker (upload-first parity); removed by ST-14-09.
 - [x] input_schema includes file field → show picker with label/accept/min/max parity.
 - [x] input_schema exists with no file field → hide picker.
 - [x] Invalid input_schema JSON → actionable parse error; no crash.

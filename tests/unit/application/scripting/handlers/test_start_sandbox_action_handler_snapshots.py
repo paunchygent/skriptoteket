@@ -163,7 +163,7 @@ async def test_start_sandbox_action_passes_settings_context_override(
         entrypoint="run_tool",
         source_code="print('ok')",
         settings_schema=schema,
-        input_schema=None,
+        input_schema=[],
         usage_instructions=None,
         payload_bytes=100,
         created_at=now,

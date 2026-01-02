@@ -36,11 +36,7 @@ class PostgreSQLSandboxSnapshotRepository(SandboxSnapshotRepositoryProtocol):
             if snapshot.settings_schema is None
             else [field.model_dump(mode="json") for field in snapshot.settings_schema]
         )
-        input_schema = (
-            None
-            if snapshot.input_schema is None
-            else [field.model_dump(mode="json") for field in snapshot.input_schema]
-        )
+        input_schema = [field.model_dump(mode="json") for field in snapshot.input_schema]
         model = SandboxSnapshotModel(
             id=snapshot.id,
             tool_id=snapshot.tool_id,

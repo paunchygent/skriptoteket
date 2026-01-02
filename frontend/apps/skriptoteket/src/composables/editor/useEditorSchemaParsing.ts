@@ -11,10 +11,14 @@ type SchemaParseResult<T> = {
   error: string | null;
 };
 
-function parseSchemaArray<T>(text: string, label: string): SchemaParseResult<T[]> {
+function parseSchemaArray<T>(
+  text: string,
+  label: string,
+  emptyValue: T[] | null,
+): SchemaParseResult<T[]> {
   const trimmed = text.trim();
   if (!trimmed) {
-    return { value: null, error: null };
+    return { value: emptyValue, error: null };
   }
 
   try {
@@ -38,13 +42,13 @@ export function useEditorSchemaParsing({
   settingsSchemaText,
 }: UseEditorSchemaParsingOptions) {
   const inputSchemaResult = computed(() =>
-    parseSchemaArray<ToolInputSchema[number]>(inputSchemaText.value, "Indata-schemat")
+    parseSchemaArray<ToolInputSchema[number]>(inputSchemaText.value, "Indata-schemat", [])
   );
   const settingsSchemaResult = computed(() =>
-    parseSchemaArray<ToolSettingsSchema[number]>(settingsSchemaText.value, "Inställningsschemat")
+    parseSchemaArray<ToolSettingsSchema[number]>(settingsSchemaText.value, "Inställningsschemat", null)
   );
 
-  const inputSchema = computed(() => inputSchemaResult.value.value as ToolInputSchema | null);
+  const inputSchema = computed(() => (inputSchemaResult.value.value ?? []) as ToolInputSchema);
   const inputSchemaError = computed(() => inputSchemaResult.value.error);
 
   const settingsSchema = computed(
