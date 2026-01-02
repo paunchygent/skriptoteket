@@ -44,4 +44,29 @@ describe("SessionFilesPanel", () => {
 
     wrapper.unmount();
   });
+
+  it("disables controls when reuse/clear are unavailable", async () => {
+    const wrapper = mount(SessionFilesPanel, {
+      props: {
+        files: [],
+        mode: "none",
+        canReuse: false,
+        canClear: false,
+        helperText: "Help text",
+      },
+    });
+
+    const checkbox = wrapper.find('input[type="checkbox"]');
+    const button = wrapper.find("button");
+
+    expect(checkbox.attributes("disabled")).toBeDefined();
+    expect(button.attributes("disabled")).toBeDefined();
+    expect(wrapper.text()).toContain("Help text");
+
+    await checkbox.trigger("change");
+    await button.trigger("click");
+    expect(wrapper.emitted("update:mode")).toBeUndefined();
+
+    wrapper.unmount();
+  });
 });
