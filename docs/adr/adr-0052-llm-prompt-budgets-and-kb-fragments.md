@@ -6,7 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-31
-updated: 2026-01-01
+updated: 2026-01-02
 links: ["EPIC-08", "ADR-0043", "ST-08-18", "REF-ai-completion-architecture"]
 ---
 
@@ -19,6 +19,14 @@ window (llama.cpp default 4096), producing upstream 400 errors and backend 500s.
 
 We control the backend, so prompt size and truncation must be enforced deterministically and safely.
 We also need a stable, reviewable prompt surface that does not drift from Contract v2 or runner constraints.
+
+Update (2026-01-02): The roadmap includes chat-first AI editing (ADR-0051), which introduces:
+
+- multi-turn conversation context (bounded history / summary)
+- multi-document authoring context (virtual files: `tool.py`, `input_schema.json`, `settings_schema.json`)
+- longer outputs (structured edit operations + explanations)
+
+These increase the importance of explicit context-window coordination and output token budgets.
 
 ## Decision
 
@@ -33,6 +41,8 @@ We also need a stable, reviewable prompt surface that does not drift from Contra
    - instruction
    - selection
    - prefix/suffix
+   - conversation context (bounded turns or summary) for chat-first flows
+   - virtual file payloads (multiple logical documents)
    - expected completion tokens
    Truncate deterministically (keep selection intact; trim suffix/prefix first; reduce system prompt last if needed).
 

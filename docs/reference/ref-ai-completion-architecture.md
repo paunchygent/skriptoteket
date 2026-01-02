@@ -5,25 +5,26 @@ title: "AI Completion Architecture Technical Specification"
 status: active
 owners: "agents"
 created: 2025-12-26
-updated: 2025-12-30
+updated: 2026-01-02
 topic: "ai-completion"
 ---
 
-Technical architecture for AI-assisted code completions in the Skriptoteket script editor.
+Technical architecture for AI-assisted editor features in Skriptoteket: inline completions and chat-first editing.
 
 ---
 
 ## 1. Overview
 
-The AI completion system provides Copilot-style ghost text suggestions while users write scripts. It integrates with the
-CodeMirror 6 intelligence bundle and supports both self-hosted and API-based LLM providers.
+The AI editor system provides Copilot-style ghost text suggestions and a chat-first assistant for proposing safe edits.
+It integrates with the CodeMirror 6 intelligence bundle and supports both self-hosted and API-based LLM providers.
 
 **Capabilities:**
 
 | Capability | Story | Description |
 | ---------- | ----- | ----------- |
 | Inline completions (ghost text) | ST-08-14 | FIM-based code suggestions at cursor |
-| Chat/edit suggestions | ST-08-16 | Chat-based code modifications (separate protocol) |
+| Chat-first editing | ADR-0051 | Structured CRUD ops + diff preview + apply/undo |
+| Edit suggestions (legacy) | ST-08-16 | Selection-based replacement text (superseded by chat-first) |
 
 **Key features:**
 
@@ -31,9 +32,23 @@ CodeMirror 6 intelligence bundle and supports both self-hosted and API-based LLM
 - Manual trigger via Alt+\ keyboard shortcut
 - Tab to accept, Escape to dismiss
 - Knowledge base injection for Skriptoteket-specific patterns
+- Chat-first editing uses structured operations with diff preview + atomic apply/undo (ADR-0051)
+- Chat-first editing uses “virtual files” (e.g. `tool.py`, `input_schema.json`, `settings_schema.json`) to prevent
+  boundary violations while still allowing multi-document proposals
 - Works with self-hosted (Tabby/llama.cpp) and API providers
 
 ---
+
+## 1.1 Chat-first editing (virtual files + multi-turn)
+
+Chat-first editing is defined in ADR-0051 and implemented via stories ST-08-20/21/22.
+
+Key implications for architecture:
+
+- Requests may include bounded multi-turn context (last N turns or a summary).
+- Proposals must target an explicit virtual file to keep diffs and apply/undo reliable.
+- Output token budgets for proposals are expected to exceed inline completion defaults, and must be coordinated with the
+  provider context window and backend budgeting (ADR-0052).
 
 ## 2. FIM Token Interpolation
 
@@ -123,7 +138,7 @@ cause parsing errors. For KB injection, use the backend proxy or Tabby's chat en
 
 | Model | Architecture | VRAM | Context | Use Case |
 | ----- | ------------ | ---- | ------- | -------- |
-| **Qwen3-Coder-30B-A3B** | MoE (3.3B active) | ~18.5 GB | 262K | FIM completions (current) |
+| **Qwen3-Coder-30B-A3B** | MoE (3.3B active) | ~18.5 GB | model: 262K / runtime: configured | Inline completions + chat-first editing (current) |
 | **Kimi K2** | Open-source | Varies | - | Alternative for code |
 
 ### 4.2 API Providers
@@ -245,6 +260,10 @@ LIBRARIES: pandas, openpyxl, pypdf, python-docx, weasyprint, jinja2
 
 For both inline completions and edit suggestions, llama.cpp enforces that **prompt tokens + output tokens** fit within
 the configured context window (`n_ctx`). This means `max_tokens` reduces the available prompt budget.
+
+Chat-first editing proposals (ADR-0051) are expected to require larger outputs than inline completions. Increasing
+`max_tokens` without increasing the context window reduces available prompt budget; therefore, chat-first editing may
+require increasing the inference server `n_ctx` and aligning backend budgets (ADR-0052).
 
 Skriptoteket enforces a deterministic prompt budget in the backend:
 

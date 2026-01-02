@@ -88,6 +88,15 @@ missing lock ownership, or invalid JSON parse errors.
 - Reuse: `frontend/apps/skriptoteket/src/components/tool-run/ToolInputForm.vue`,
   `frontend/apps/skriptoteket/src/composables/tools/useToolInputs.ts`
 
+### Update (2026-01-02)
+
+This story shipped parity with the then-current runtime semantics where `input_schema == null` meant “legacy upload-first”
+(files required).
+
+We now plan to remove `input_schema == null` entirely (ST-14-09) and represent file uploads purely via `input_schema`
+`kind: "file"` fields (`min/max`). After that change, references to legacy upload-first behavior in this document are
+historical context only.
+
 ## Test plan
 
 - Live functional check (REQUIRED): run backend + SPA dev and verify in browser; record steps in `.agent/handoff.md`.

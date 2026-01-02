@@ -6,6 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-30
+updated: 2026-01-02
 supersedes: []
 ---
 
@@ -117,6 +118,24 @@ cmake -B build -DGGML_HIP=ON -DGGML_HIP_FA=OFF -DGGML_CURL=ON -DCMAKE_BUILD_TYPE
   `docs/runbooks/runbook-tabby-codemirror.md`
 - Systemd services auto-restart on failure
 - Health check: `curl http://localhost:8083/v1/health`
+
+## Update (2026-01-02): support chat-first AI editing
+
+We are moving toward a **chat-first** AI editing experience (ADR-0051) where the assistant can propose multi-step,
+auditable edits (structured CRUD ops + diff preview) and may need to see multiple logical documents (“virtual files”)
+such as `tool.py`, `input_schema.json`, and `settings_schema.json`.
+
+Implications for self-hosted infrastructure:
+
+- The self-hosted stack must reliably serve **OpenAI-compatible chat completions** with larger inputs and longer outputs
+  than inline completions.
+- The effective context window is constrained by the inference server configuration (llama.cpp `n_ctx`) and must be
+  coordinated with backend budgeting (ADR-0052).
+- Output token budgets for edit proposals are expected to exceed inline completion defaults (Tabby’s code completion
+  defaults are typically small, e.g. ~64 tokens; chat-first edit proposals may require substantially more).
+
+This ADR remains focused on the “what runs where” infrastructure decision; budgeting and prompt composition are handled
+in ADR-0052, and the chat-first UX/protocol is defined in ADR-0051.
 
 ## References
 

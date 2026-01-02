@@ -10,8 +10,10 @@ acceptance_criteria:
   - "Given an author has draft schema JSON, when calling the validation endpoint, then the backend validates JSON shape, Pydantic parsing, and domain normalization rules."
   - "Given validation fails, then the response includes structured errors suitable for UI display (including field paths where possible)."
   - "Given validation succeeds, then the endpoint returns a success response without creating/updating versions."
+  - "Given input_schema contains a file field, when validating, then the endpoint enforces file field invariants and rejects values that exceed server upload limits (e.g. max > UPLOAD_MAX_FILES)."
 dependencies:
   - "ST-14-04"
+  - "ST-14-09"
 ui_impact: "Indirect (enables UI feedback)"
 data_impact: "No (no persistence; new API only)"
 ---

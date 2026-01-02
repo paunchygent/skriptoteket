@@ -8,7 +8,7 @@ created: 2025-12-29
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given a tool author edits settings_schema/input_schema, when they click Prettify, then the JSON is formatted consistently (2-space indentation) and preserves semantics."
-  - "Given a tool author edits settings_schema/input_schema, when they click Insert example, then the editor inserts a minimal valid example for the current mode and explains how to adapt it."
+  - "Given a tool author edits settings_schema/input_schema, when they click Insert example, then the editor inserts a minimal valid example for the current selection (e.g. no inputs, optional files, required files) and explains how to adapt it."
   - "Given schemas are invalid JSON, when the author attempts to save or run sandbox, then the editor shows actionable errors and blocks the operation."
 dependencies:
   - "ADR-0027"

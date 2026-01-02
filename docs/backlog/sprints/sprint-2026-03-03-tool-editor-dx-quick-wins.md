@@ -28,8 +28,8 @@ Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
 **After**
 
-- Authors explicitly choose an input mode (legacy/files-required vs schema-driven vs no inputs), and the UI makes the
-  runtime behavior predictable.
+- Authors explicitly choose an input preset (no inputs vs optional files vs required files), and the UI makes the
+  runtime behavior predictable (schema-driven only).
 - Authors can quickly format and insert minimal valid examples for schemas, reducing setup friction.
 
 ## Scope (committed stories)
@@ -49,22 +49,23 @@ Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
 ## Risks / edge cases
 
-- Existing tools relying on legacy behavior (`input_schema == null`) must remain unaffected.
-- Editors may accidentally change `input_schema` from `null` to `[]` (behavior change); UX must make this explicit.
+- Script bank migration must preserve current runtime behavior by rewriting legacy tool versions to the schema-driven
+  file representation (i.e. update stored `input_schema` data; no long-lived legacy code paths in runtime/UI).
+- File schema constraints must remain consistent with server upload limits (`UPLOAD_MAX_FILES`).
 
 ## Execution plan (suggested)
 
 ## Pacing checklist (suggested)
 
-- [ ] Add explicit “Input mode” selector and map it to `input_schema` representation.
+- [ ] Add explicit “Input preset” selector and map it to schema representation (`[]` or `file` field with min/max).
 - [ ] Add schema helper actions: “Prettify JSON”, “Insert example”, “Reset”.
 - [ ] Ensure snapshot preview uses the resulting schema as-is (no implicit conversions).
 
 ## Demo checklist
 
-- Show switching `input_schema` mode between legacy/files-required and schema-driven.
+- Show switching `input_schema` preset between no inputs / optional files / required files.
 - Show prettify + insert example for both schemas.
-- Run a sandbox preview with each mode and verify behavior matches the selected mode.
+- Run a sandbox preview with each preset and verify behavior matches the selected preset.
 
 ## Verification checklist
 

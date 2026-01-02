@@ -6,6 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2026-01-01
+updated: 2026-01-02
 links: ["EPIC-08", "ST-08-20", "ST-08-21", "ST-08-22", "ADR-0043"]
 ---
 
@@ -59,12 +60,34 @@ Targets are intentionally limited in v1 to keep edits deterministic:
 
 If the model response is invalid, truncated, or over budget, the system must fail safely (no partial edits).
 
+### 2.1 Virtual files (multi-document context)
+
+To support tool authoring where “code + schemas” must be edited together without boundary violations, AI edit proposals
+are expressed against a small set of named **virtual files**:
+
+- `tool.py` (the main script)
+- `input_schema.json`
+- `settings_schema.json`
+
+The UI may render these as separate editors or as a combined “Pro mode” bundle view, but the AI protocol targets virtual
+files explicitly so:
+
+- diffs can be shown per file
+- apply/undo can be atomic across all targeted files
+- the assistant cannot accidentally mix JSON schema edits into Python (and vice versa)
+
 ### 3) Guardrails: diff preview + atomic apply + undo
 
 - The UI MUST render a diff preview of “current” vs “proposed” before applying any changes.
 - Applying a proposal MUST be a single atomic CodeMirror transaction so a single undo reverts the change.
 - If the underlying editor content changes after the proposal is generated, apply MUST be blocked and the user prompted
   to regenerate.
+
+### 3.1 Multi-turn conversation (client-side)
+
+Conversation history is stored client-side (local storage). When generating proposals, the backend may include a bounded
+conversation context (e.g. last N turns or a rolling summary) to support iterative refinement, but must always obey the
+prompt budgets and privacy constraints.
 
 ### 4) Observability + evaluation
 

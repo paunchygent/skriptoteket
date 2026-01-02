@@ -69,6 +69,10 @@ Current runtime logic treats:
 
 In the editor, an empty textarea becomes `null`, which silently maps to “files required”.
 
+**Update (2026-01-02)**: We plan to remove `input_schema == null` entirely (prototype stage; no user-generated tools in
+production yet). “Files required/optional” will be represented as schema via a `file` field (`min/max`), so the editor
+and runtime have one schema-driven input model.
+
 ### 2) Schema authoring UX is the weakest part of the editor
 
 `settings_schema` and `input_schema` are raw textareas with minimal validation (JSON array only), so author feedback is
@@ -106,6 +110,14 @@ All sprint skeletons below are drafted as ~2-work-day “vertical slice” incre
 Related ADR:
 
 - `docs/adr/adr-0047-layout-editor-v1.md`
+
+## Pro mode: combined bundle view (proposal)
+
+Some authors prefer a “single artifact” editing experience. A proposed Pro mode is a combined editor buffer that
+contains `tool.py`, `input_schema.json`, and `settings_schema.json` as delimited sections, while persistence remains
+separate fields.
+
+See: `docs/backlog/stories/story-14-29-editor-pro-mode-combined-bundle-view.md`
 
 ## Interactive “gap” triage (authoring + runtime)
 
