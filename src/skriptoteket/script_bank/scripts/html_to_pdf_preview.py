@@ -104,6 +104,77 @@ def _select_html_sources(*, input_files: list[ManifestFile]) -> list[Path]:
     return sorted(html_files, key=lambda path: path.name.lower())
 
 
+def _wrap_preview_html(*, html: str) -> str:
+    if 'id="__preview_outer"' in html or "id='__preview_outer'" in html:
+        return html
+
+    css = (
+        ":root { --preview-scale: 0.95; --preview-pad: clamp(10px, 2.2vh, 22px); }\n"
+        "html, body { margin: 0; padding: 0; }\n"
+        "body { overflow-x: hidden; }\n"
+        "#__preview_outer { box-sizing: border-box; padding: var(--preview-pad); }\n"
+        "#__preview_outer { padding-bottom: calc(var(--preview-pad) * 1.3); }\n"
+        "#__preview_inner { transform: scale(var(--preview-scale)); "
+        "transform-origin: top center; width: calc(100% / var(--preview-scale)); }\n"
+    )
+    style_tag = f"<style>{css}</style>"
+
+    head_close = html.lower().find("</head>")
+    if head_close != -1:
+        html = html[:head_close] + style_tag + html[head_close:]
+    else:
+        html = style_tag + html
+
+    body_open = re.search(r"(?is)<body\b[^>]*>", html)
+    if not body_open:
+        return f'<div id="__preview_outer"><div id="__preview_inner">{html}</div></div>'
+
+    body_close = re.search(r"(?is)</body>", html)
+    if not body_close or body_close.start() <= body_open.end():
+        return html
+
+    start = body_open.end()
+    end = body_close.start()
+    inner = html[start:end]
+    wrapped = f'<div id="__preview_outer"><div id="__preview_inner">{inner}</div></div>'
+    return html[:start] + wrapped + html[end:]
+
+
+def _wrap_pdf_html(*, html: str) -> str:
+    if 'id="__pdf_outer"' in html or "id='__pdf_outer'" in html:
+        return html
+
+    css = (
+        ":root { --pdf-scale: 0.95; --pdf-pad: clamp(3mm, 2vw, 7mm); }\n"
+        "html, body { margin: 0; padding: 0; }\n"
+        "#__pdf_outer { box-sizing: border-box; padding: var(--pdf-pad); }\n"
+        "#__pdf_outer { padding-bottom: calc(var(--pdf-pad) * 1.2); }\n"
+        "#__pdf_inner { transform: scale(var(--pdf-scale)); transform-origin: top center; "
+        "width: calc(100% / var(--pdf-scale)); }\n"
+    )
+    style_tag = f"<style>{css}</style>"
+
+    head_close = html.lower().find("</head>")
+    if head_close != -1:
+        html = html[:head_close] + style_tag + html[head_close:]
+    else:
+        html = style_tag + html
+
+    body_open = re.search(r"(?is)<body\b[^>]*>", html)
+    if not body_open:
+        return f'<div id="__pdf_outer"><div id="__pdf_inner">{html}</div></div>'
+
+    body_close = re.search(r"(?is)</body>", html)
+    if not body_close or body_close.start() <= body_open.end():
+        return html
+
+    start = body_open.end()
+    end = body_close.start()
+    inner = html[start:end]
+    wrapped = f'<div id="__pdf_outer"><div id="__pdf_inner">{inner}</div></div>'
+    return html[:start] + wrapped + html[end:]
+
+
 def _read_user_settings() -> dict[str, object]:
     memory_path = os.environ.get("SKRIPTOTEKET_MEMORY_PATH")
     if not memory_path:
@@ -357,6 +428,8 @@ def _try_weasyprint(
     def _render(*, html: str) -> None:
         HTML(string=html, base_url=base_url).write_pdf(str(pdf_path))
 
+    html_raw = _wrap_pdf_html(html=html_raw)
+
     size_css, is_tool_editor_doc = _select_print_css_for_document(
         html=html_raw,
         base_dir=base_dir,
@@ -467,6 +540,8 @@ def _handle_preview(*, input_files: list[ManifestFile]) -> dict[str, object]:
             html_content = html_content[:90_000] + "\n<!-- ... (trunkerad) -->"
     except OSError:
         html_content = "<p>Kunde inte läsa HTML-filen.</p>"
+
+    html_content = _wrap_preview_html(html=html_content)
 
     # Bygg outputs
     outputs: list[dict[str, object]] = [

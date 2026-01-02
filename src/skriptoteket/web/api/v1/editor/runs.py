@@ -65,7 +65,7 @@ def _resolve_artifact_path(
     return candidate_path, relative_path
 
 
-def _build_run_details(run: ToolRun) -> EditorRunDetails:
+def _build_run_details(*, run: ToolRun, settings: Settings) -> EditorRunDetails:
     manifest = ArtifactsManifest.model_validate(run.artifacts_manifest or {"artifacts": []})
     artifacts = [
         ArtifactEntry(
@@ -80,6 +80,22 @@ def _build_run_details(run: ToolRun) -> EditorRunDetails:
     if run.ui_payload is not None:
         ui_payload = run.ui_payload.model_dump(mode="json")
 
+    stdout_bytes = None
+    stdout_max_bytes = None
+    stdout_truncated = None
+    if run.stdout is not None:
+        stdout_bytes = len(run.stdout.encode("utf-8"))
+        stdout_max_bytes = settings.RUN_OUTPUT_MAX_STDOUT_BYTES
+        stdout_truncated = stdout_bytes >= stdout_max_bytes
+
+    stderr_bytes = None
+    stderr_max_bytes = None
+    stderr_truncated = None
+    if run.stderr is not None:
+        stderr_bytes = len(run.stderr.encode("utf-8"))
+        stderr_max_bytes = settings.RUN_OUTPUT_MAX_STDERR_BYTES
+        stderr_truncated = stderr_bytes >= stderr_max_bytes
+
     return EditorRunDetails(
         run_id=run.id,
         version_id=run.version_id,
@@ -88,6 +104,14 @@ def _build_run_details(run: ToolRun) -> EditorRunDetails:
         started_at=run.started_at,
         finished_at=run.finished_at,
         error_summary=run.error_summary,
+        stdout=run.stdout,
+        stderr=run.stderr,
+        stdout_bytes=stdout_bytes,
+        stderr_bytes=stderr_bytes,
+        stdout_max_bytes=stdout_max_bytes,
+        stderr_max_bytes=stderr_max_bytes,
+        stdout_truncated=stdout_truncated,
+        stderr_truncated=stderr_truncated,
         ui_payload=ui_payload,
         artifacts=artifacts,
     )
@@ -98,10 +122,11 @@ def _build_run_details(run: ToolRun) -> EditorRunDetails:
 async def get_run(
     run_id: UUID,
     runs: FromDishka[ToolRunRepositoryProtocol],
+    settings: FromDishka[Settings],
     user: User = Depends(require_contributor_api),
 ) -> EditorRunDetails:
     run = await _load_run_for_actor(runs=runs, run_id=run_id, actor=user)
-    return _build_run_details(run)
+    return _build_run_details(run=run, settings=settings)
 
 
 @router.get("/tool-runs/{run_id}/artifacts/{artifact_id}")

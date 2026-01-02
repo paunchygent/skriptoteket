@@ -1538,6 +1538,22 @@ export interface components {
              */
             started_at: string;
             status: components["schemas"]["RunStatus"];
+            /** Stderr */
+            stderr?: string | null;
+            /** Stderr Bytes */
+            stderr_bytes?: number | null;
+            /** Stderr Max Bytes */
+            stderr_max_bytes?: number | null;
+            /** Stderr Truncated */
+            stderr_truncated?: boolean | null;
+            /** Stdout */
+            stdout?: string | null;
+            /** Stdout Bytes */
+            stdout_bytes?: number | null;
+            /** Stdout Max Bytes */
+            stdout_max_bytes?: number | null;
+            /** Stdout Truncated */
+            stdout_truncated?: boolean | null;
             /** Ui Payload */
             ui_payload: {
                 [key: string]: unknown;

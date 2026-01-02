@@ -183,6 +183,50 @@ def test_select_print_css_uses_tool_editor_overrides_when_detected(tmp_path: Pat
 
 
 @pytest.mark.unit
+def test_wrap_preview_html_injects_wrappers_and_css() -> None:
+    html = "<html><head><title>x</title></head><body><div>y</div></body></html>"
+    wrapped = html_to_pdf_preview._wrap_preview_html(html=html)
+    assert 'id="__preview_outer"' in wrapped
+    assert 'id="__preview_inner"' in wrapped
+    assert "--preview-scale" in wrapped
+    assert "clamp(" in wrapped
+    assert "transform: scale(var(--preview-scale))" in wrapped
+
+
+@pytest.mark.unit
+def test_wrap_preview_html_is_idempotent() -> None:
+    html = (
+        "<html><head><title>x</title></head>"
+        '<body><div id="__preview_outer"><div id="__preview_inner">y</div></div></body>'
+        "</html>"
+    )
+    wrapped = html_to_pdf_preview._wrap_preview_html(html=html)
+    assert wrapped == html
+
+
+@pytest.mark.unit
+def test_wrap_pdf_html_injects_wrappers_and_css() -> None:
+    html = "<html><head><title>x</title></head><body><div>y</div></body></html>"
+    wrapped = html_to_pdf_preview._wrap_pdf_html(html=html)
+    assert 'id="__pdf_outer"' in wrapped
+    assert 'id="__pdf_inner"' in wrapped
+    assert "--pdf-scale" in wrapped
+    assert "clamp(" in wrapped
+    assert "transform: scale(var(--pdf-scale))" in wrapped
+
+
+@pytest.mark.unit
+def test_wrap_pdf_html_is_idempotent() -> None:
+    html = (
+        "<html><head><title>x</title></head>"
+        '<body><div id="__pdf_outer"><div id="__pdf_inner">y</div></div></body>'
+        "</html>"
+    )
+    wrapped = html_to_pdf_preview._wrap_pdf_html(html=html)
+    assert wrapped == html
+
+
+@pytest.mark.unit
 def test_handle_action_writes_error_artifact_and_short_table_message(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

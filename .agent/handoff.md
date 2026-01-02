@@ -20,6 +20,10 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Current Session (2026-01-02)
 
+- ST-14-11: editor run details now include stdout/stderr + byte counts/caps + truncation flags (API only).
+  - Backend: `src/skriptoteket/web/api/v1/editor/models.py`, `src/skriptoteket/web/api/v1/editor/runs.py`
+  - Tests: `tests/unit/web/test_editor_runs_api.py`
+  - OpenAPI regen: `frontend/apps/skriptoteket/openapi.json`, `frontend/apps/skriptoteket/src/api/openapi.d.ts`
 - ST-14-10: schema JSON guardrails only (shared parsing helper + save blocking); schema editor UI actions deferred to ST-14-14.
   - Shared helper: `frontend/apps/skriptoteket/src/composables/editor/schemaJsonHelpers.ts` (JSON array parsing with more actionable errors)
   - Refactors: `useEditorSchemaParsing.ts`, `useScriptEditor.ts` (save uses helper, no drift)
@@ -88,6 +92,17 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Verification
 
+- API tests: `pdm run test tests/unit/web/test_editor_runs_api.py` (pass; includes truncation=true case)
+- DB: `docker compose up -d db` (ok)
+- DB: `pdm run db-upgrade` (ok)
+- Format: `pdm run format` (pass)
+- Lint: `pdm run lint` (pass)
+- Typecheck: `pdm run typecheck` (pass)
+- Tests: `pdm run test` (pass; 563 passed)
+- Integration/migrations: `pdm run pytest -m docker --override-ini addopts=''` (pass; 20 passed)
+- OpenAPI types: `pdm run fe-gen-api-types` (pass)
+- Live check (dev): `PYTHONPATH=src pdm run python - <<'PY'` (login via bootstrap superuser + `GET /api/v1/editor/tool-runs/<latest>`; stdout/stderr metadata present, no content logged)
+- Live check (dev): scripted sandbox run (bootstrap superuser + draft lock) printed 50k/150k/210k stdout; results: 50k/150k not truncated, 210k truncated to 200k cap (no stdout content logged).
 - Docs: `pdm run docs-validate` (pass; fixed `REF-*` id mismatch in `docs/reference/reports/ref-security-perimeter-vpn-gating-ssh-and-observability.md`)
 - ST-08-02 tests: `pdm run test tests/unit/application/identity/test_register_user_handler.py` (pass)
 - ST-08-02 health/api tests: `pdm run test tests/unit/observability/test_health_smtp.py tests/unit/web/test_register_api_routes.py` (pass)

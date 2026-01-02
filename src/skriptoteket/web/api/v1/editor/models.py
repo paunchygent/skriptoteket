@@ -198,6 +198,14 @@ class EditorRunDetails(BaseModel):
     started_at: datetime
     finished_at: datetime | None
     error_summary: str | None
+    stdout: str | None = None
+    stderr: str | None = None
+    stdout_bytes: int | None = None
+    stderr_bytes: int | None = None
+    stdout_max_bytes: int | None = None
+    stderr_max_bytes: int | None = None
+    stdout_truncated: bool | None = None
+    stderr_truncated: bool | None = None
     ui_payload: dict | None
     artifacts: list[ArtifactEntry]
 
