@@ -221,7 +221,7 @@ Added `top: var(--huleedu-header-height)` to `.huleedu-mobile-nav` in `component
 }
 ```
 
-### Verification (Puppeteer 375x667 mobile viewport)
+### Verification (375x667 mobile viewport)
 - Nav top (65px) matches header bottom (65px) - properly positioned below header
 - Nav overlays main content without compressing it
 - "KATALOG" fully visible (left edge 17px, within viewport)

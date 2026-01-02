@@ -68,19 +68,30 @@ Keep this file updated so the next session can pick up work quickly.
 - ST-08-02: robust email verification — registration email send is transactional with retry/backoff + new `EMAIL_SEND_FAILED` error code; SMTP health check runs on startup and is optionally included in `/healthz` via `HEALTHZ_SMTP_CHECK_ENABLED`.
 - ST-08-03: email verification frontend route confirmed implemented; story marked `done`.
 - Healthz SMTP strict mode: default `HEALTHZ_SMTP_CHECK_ENABLED=true` (and set in `compose.prod.yaml` + `.env.example*`) so `/healthz` includes SMTP when `EMAIL_PROVIDER=smtp`.
+- Ops note: documented SMTP-down => `/healthz` 503 troubleshooting in `docs/runbooks/runbook-observability-metrics.md`.
+- Promtail (hemma): fixed crash-looping config; nginx-proxy access logs are now labeled in Loki (`vhost`, `client_ip`, `method`, `status`) via `observability/promtail/promtail-config.yaml` (promtail recreated).
+- Security (hemma): added Fail2ban `nginx-proxy-probe` jail (polling, `usedns=no`) + provisioned Grafana dashboard `skriptoteket-nginx-proxy-security`.
+- Env examples: aligned `.env.example` + `.env.example.prod` with current local `.env` and `hemma:~/apps/skriptoteket/.env` keys (email/LLM/observability); local `ARTIFACTS_ROOT` now points to `/tmp/skriptoteket/artifacts`; deduped `hemma:~/apps/skriptoteket/.env` (keep last values) and added `HEALTHZ_SMTP_CHECK_ENABLED=true` once; on `hemma` docker requires `sudo` and `compose.prod.yaml` was patched+backed up to pass `HEALTHZ_SMTP_CHECK_ENABLED` into the container (web recreated).
+- Devops docs/skills: updated `docs/runbooks/runbook-home-server.md` + `AGENTS.md` to reflect `sudo docker` on `hemma`; updated and synced `skriptoteket-devops` skill (repo + `~/.codex/skills`).
+- Ops tooling: installed `ripgrep`/`yq`/`fd-find`/`bat`/`fzf` on `hemma` and `yq`/`fd`/`bat`/`tree`/`fzf` locally (Homebrew); documented recommended packages in `docs/runbooks/runbook-home-server.md`.
+- DX: added Playwright HMR probe `scripts/playwright_hmr_probe.py` + `pdm run ui-hmr-probe` (artifacts in `.artifacts/hmr-probe/`); documented in `AGENTS.md` and frontend specialist skill.
+- ST-12-07: added explicit session file reuse/clear + session file listing APIs; new SPA SessionFilesPanel wired in tool run + sandbox; new tests in `tests/unit/application/scripting/handlers/test_run_*_session_files.py`; OpenAPI regenerated.
 
 ## Verification
 
-- Docs: `pdm run docs-validate` (pass; rerun after backlog alignment)
+- Docs: `pdm run docs-validate` (pass; fixed `REF-*` id mismatch in `docs/reference/reports/ref-security-perimeter-vpn-gating-ssh-and-observability.md`)
 - ST-08-02 tests: `pdm run test tests/unit/application/identity/test_register_user_handler.py` (pass)
 - ST-08-02 health/api tests: `pdm run test tests/unit/observability/test_health_smtp.py tests/unit/web/test_register_api_routes.py` (pass)
 - Typecheck: `pdm run typecheck` (pass)
 - Lint: `pdm run lint` (pass)
-- Live check: `pdm run dev` started; `curl -s http://127.0.0.1:8000/healthz | python -m json.tool` returns healthy
+- Live check (dev): `pdm run dev`; `curl -sS http://127.0.0.1:8000/healthz | python -m json.tool` => `healthy` with `smtp` dependency
+- Live check (forced SMTP failure): start temp server `EMAIL_SMTP_HOST=127.0.0.1 EMAIL_SMTP_PORT=1 ... pdm run uvicorn ... --port 8001`; `/healthz` => 503 degraded; `POST /api/v1/auth/register` => 503 `EMAIL_SEND_FAILED` after ~1.6s (backoff 0.5s + 1.0s), repeat with same email still 503 (rollback); temp server stopped
 - SPA typecheck: `pnpm -C frontend --filter @skriptoteket/spa typecheck` (pass)
 - SPA lint: `pnpm -C frontend --filter @skriptoteket/spa lint` (pass)
 - Frontend tests: `pdm run fe-test` (pass)
 - OpenAPI types: `pdm run fe-gen-api-types` (pass)
+- Backend tests (ST-12-07): `pdm run pytest tests/unit/application/scripting/handlers/test_run_active_tool_session_files.py tests/unit/application/scripting/handlers/test_run_sandbox_session_files.py` (pass)
+- Live check (dev): `pdm run dev-local` (left running) + `curl -sSf http://127.0.0.1:5173/ | head -n 5` (SPA HTML served)
 - SPA build: not rerun after ST-08-16 changes
 - UI (editor smoke): `pdm run ui-editor-smoke` (pass; artifacts in `.artifacts/ui-editor-smoke/`; Playwright required escalation on macOS)
 - UI (ST-08-14): `pdm run python -m scripts.playwright_st_08_14_ai_inline_completions_e2e` (pass; artifacts in `.artifacts/st-08-14-ai-inline-completions-e2e/`; Playwright required escalation on macOS)
@@ -92,6 +103,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Backend tests (ST-08-18): `pdm run test tests/unit/application/test_ai_prompt_system_v1.py tests/unit/application/test_editor_inline_completion_handler.py tests/unit/application/test_editor_edit_suggestion_handler.py` (pass)
 - UI (ST-06-11): `pdm run python -m scripts.playwright_st_06_11_quick_fix_actions_e2e` (pass; artifacts in `.artifacts/st-06-11-quick-fix-actions-e2e/`; Playwright required escalation on macOS)
 - UI (ST-06-12): `pdm run python -m scripts.playwright_st_06_12_lint_panel_navigation_e2e` (pass; artifacts in `.artifacts/st-06-12-lint-panel-navigation-e2e/`; Playwright required escalation on macOS)
+- UI (HMR probe): `pdm run ui-hmr-probe` (pass; artifacts in `.artifacts/hmr-probe/`; Playwright required escalation on macOS)
 
 ## How to Run
 

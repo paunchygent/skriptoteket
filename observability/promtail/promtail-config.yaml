@@ -42,9 +42,29 @@ scrape_configs:
       # Parse Docker JSON log format
       - docker: {}
 
+      # nginx-proxy access logs: parse into query-friendly labels (avoid labeling full paths)
+      - match:
+          selector: '{container="nginx-proxy"} |~ "\"(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|PROPFIND|CONNECT|TRACE) "'
+          stages:
+            # Strip the forego prefix ("nginx.1 |") and keep only the actual access log line
+            - regex:
+                # Also strips ANSI color codes emitted by forego (e.g. "\x1b[0m") right after the pipe.
+                expression: '.*\|\s*(?:\x1b\[[0-9;]*m)*(?P<msg>.*)$'
+            - output:
+                source: msg
+            # Parse nginx-proxy vhost log format:
+            # $host $remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" "$upstream_addr"
+            - regex:
+                expression: '^(?P<vhost>\S+) (?P<client_ip>\S+) - (?P<remote_user>\S+) \[(?P<ts>[^\]]+)\] "(?P<method>\S+) (?P<path>\S+) (?P<proto>[^"]+)" (?P<status>[0-9]{3}) (?P<bytes>\S+) "(?P<ref>[^"]*)" "(?P<ua>[^"]*)" "(?P<upstream>[^"]*)"$'
+            - labels:
+                vhost:
+                client_ip:
+                method:
+                status:
+
       # Try to parse JSON logs (for structured logging)
       - match:
-          selector: '{container=~".+"}'
+          selector: '{container!="nginx-proxy"}'
           stages:
             - json:
                 expressions:

@@ -16,11 +16,29 @@ Operations guide for the home server hosting Skriptoteket and future HuleEdu ser
 ### Server Access (SSH)
 
 ```bash
-# Remote access (via dynamic DNS)
+# Remote admin access (VPN-gated; Tailscale)
 ssh hemma
 
-# Local network access
+# Local network break-glass (LAN)
 ssh hemma-local
+```
+
+Notes:
+
+- SSH is intentionally **not exposed on the public internet** (no router port-forward for `22/tcp`).
+- UFW allows SSH only:
+  - On `tailscale0` (VPN), and
+  - From the LAN break-glass subnet `192.168.0.0/24`.
+- If `ssh hemma` still points at `hemma.hule.education`, update your `~/.ssh/config` so `ssh hemma` uses MagicDNS:
+
+```text
+Host hemma
+  HostName hemma.tail730aa2.ts.net
+  User root
+
+Host hemma-local
+  HostName 192.168.0.9
+  User root
 ```
 
 ### SSH Hardening (Checklist)
@@ -68,6 +86,57 @@ sudo fail2ban-client get sshd banip
 sudo fail2ban-client set sshd unbanip <ip>
 ```
 
+#### Recidive jail (3 strikes → permaban)
+
+This enforces a "repeat offenders get permabanned" policy based on Fail2ban's own log (including rotated logs).
+
+```bash
+sudo nano /etc/fail2ban/jail.d/recidive.local
+```
+
+```text
+[recidive]
+enabled = true
+logpath = /var/log/fail2ban.log*
+banaction = nftables[type=allports]
+
+# 3 strikes within 7 days => permaban
+findtime = 7d
+maxretry = 3
+bantime = -1
+```
+
+```bash
+sudo systemctl restart fail2ban
+sudo fail2ban-client status recidive
+```
+
+#### nginx-proxy probe jail (HTTP scanners)
+
+Ban repeat HTTP scanners hitting `nginx-proxy` (e.g. paths dropped with `444`, repeated `401/403` auth probes).
+
+Files (hemma):
+
+- Filter: `/etc/fail2ban/filter.d/nginx-proxy-probe.conf`
+- Jail: `/etc/fail2ban/jail.d/nginx-proxy-probe.local`
+
+Key settings:
+
+- `backend = polling` (avoid `systemd` backend without precise `journalmatch`)
+- `logpath = /var/snap/docker/common/var-lib-docker/containers/*/*-json.log` (snap docker)
+- `usedns = no` (logs include both vhost and client IP; only ban client IP)
+- `banaction = nftables[type=allports]` (cuts off multi-port probing)
+
+Restart and verify:
+
+```bash
+sudo systemctl restart fail2ban
+sudo fail2ban-client status nginx-proxy-probe
+sudo fail2ban-client get nginx-proxy-probe logpath
+sudo fail2ban-client get nginx-proxy-probe banip
+sudo fail2ban-client set nginx-proxy-probe unbanip <ip>
+```
+
 ### SSH/Network Watchdog (Logs Only)
 
 Runs every 2 minutes and logs if SSH or network health degrades (no changes applied).
@@ -110,14 +179,34 @@ systemctl status ddclient -> active
 
 **Critical**: Production uses `compose.prod.yaml`, NOT `compose.yaml`.
 
+### Recommended CLI Tools (hemma)
+
+```bash
+# Core helpers
+ssh hemma "sudo apt-get update && sudo apt-get install -y ripgrep fd-find bat fzf jq tree"
+
+# Make the commands match common expectations (Ubuntu names them batcat/fdfind)
+ssh hemma "sudo ln -sf /usr/bin/batcat /usr/local/bin/bat && sudo ln -sf /usr/bin/fdfind /usr/local/bin/fd"
+
+# Install mikefarah/yq v4 (apt 'yq' is not v4)
+ssh hemma "sudo curl -fsSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && sudo chmod +x /usr/local/bin/yq"
+```
+
+Notes:
+
+- `ripgrep` provides `rg`
+- `fd-find` provides `fdfind` (symlinked to `fd`)
+- `bat` provides `batcat` (symlinked to `bat`)
+- `yq` is installed to `/usr/local/bin/yq` so it wins over `/usr/bin/yq`
+
 ### Command Patterns (Use These)
 
 ```bash
 # 1) Compose commands (from repo root)
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml <command>"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml <command>"
 
 # 2) Run CLI inside web container (compose)
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli <command>"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli <command>"
 
 # 3) Direct docker exec (used by systemd timers)
 ssh hemma "/snap/bin/docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli <command>"
@@ -176,6 +265,26 @@ expose:
 Then add a DNS A record for `myservice.hemma` pointing to `83.252.61.217` (or your current IP).
 The acme-companion will automatically generate SSL certificates.
 
+### nginx-proxy edge hardening (drop probes / unknown hosts)
+
+We proactively drop common scanner traffic at the reverse proxy so the app layer never sees it.
+
+Key settings/files:
+
+- `DEFAULT_HOST=skriptoteket.hule.education` in `~/infrastructure/docker-compose.yml` (nginx-proxy) to avoid a generated `server_name _` that returns `503`.
+- vhost snippets live in the nginx-proxy volume at `/etc/nginx/vhost.d/`:
+  - `global-hardening.conf`: blocks common probes (e.g. `/.env`, `/.git`, `wp-*`, `*.php`, `cgi-bin`, WebDAV methods) with `444`.
+  - `default`: includes `global-hardening.conf` (applies to all vhosts).
+  - `skriptoteket.hule.education`: includes `global-hardening.conf` and drops unexpected `Host` headers on the default server.
+
+Inspect/reload:
+
+```bash
+ssh hemma "sudo docker exec nginx-proxy ls -la /etc/nginx/vhost.d"
+ssh hemma "sudo docker exec nginx-proxy sed -n '1,200p' /etc/nginx/vhost.d/global-hardening.conf"
+ssh hemma "sudo docker exec nginx-proxy nginx -s reload"
+```
+
 ### Infrastructure Layout
 
 ```text
@@ -208,10 +317,10 @@ The acme-companion will automatically generate SSL certificates.
 
 ```bash
 # All containers
-ssh hemma "docker ps"
+ssh hemma "sudo docker ps"
 
 # Skriptoteket + core services
-ssh hemma "docker ps | grep -E 'skriptoteket|nginx|postgres'"
+ssh hemma "sudo docker ps | grep -E 'skriptoteket|nginx|postgres'"
 ```
 
 
@@ -219,13 +328,13 @@ ssh hemma "docker ps | grep -E 'skriptoteket|nginx|postgres'"
 
 ```bash
 # Web application logs
-ssh hemma "docker logs -f skriptoteket-web"
+ssh hemma "sudo docker logs -f skriptoteket-web"
 
 # Nginx access logs
-ssh hemma "docker logs -f nginx-proxy"
+ssh hemma "sudo docker logs -f nginx-proxy"
 
 # Database logs (check for query errors)
-ssh hemma "docker logs -f shared-postgres"
+ssh hemma "sudo docker logs -f shared-postgres"
 ```
 
 **Tip**: Skriptoteket logs are structured (JSON in production) and support `X-Correlation-ID` for cross-request
@@ -235,12 +344,18 @@ debugging. See [runbook-observability.md](runbook-observability.md).
 
 ```bash
 # Restart Skriptoteket (preserves network connections)
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml restart"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml restart"
 
 # Restart observability stack
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.observability.yaml restart"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observability.yaml restart"
 
 # nginx-proxy auto-reloads when containers change (no manual reload needed)
+```
+
+Note: `docker compose restart` does **not** re-read `.env`. For env var changes use a recreate:
+
+```bash
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --no-deps --force-recreate web"
 ```
 
 ### Disk Space / Session Cleanup
@@ -368,14 +483,14 @@ ssh hemma "sudo systemctl start skriptoteket-login-events-cleanup.service"
 Check expiry:
 
 ```bash
-ssh hemma "docker exec nginx-proxy cat /etc/nginx/certs/live/skriptoteket.hule.education/fullchain.pem | openssl x509 -noout -dates"
+ssh hemma "sudo docker exec nginx-proxy cat /etc/nginx/certs/live/skriptoteket.hule.education/fullchain.pem | openssl x509 -noout -dates"
 ```
 
 Renew:
 
 ```bash
-ssh hemma "cd ~/infrastructure && docker compose run --rm certbot renew"
-ssh hemma "docker exec nginx-proxy nginx -s reload"
+ssh hemma "cd ~/infrastructure && sudo docker compose run --rm certbot renew"
+ssh hemma "sudo docker exec nginx-proxy nginx -s reload"
 ```
 
 ## Deploy
@@ -383,13 +498,13 @@ ssh hemma "docker exec nginx-proxy nginx -s reload"
 ### Standard Deploy (Code Changes)
 
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"
+ssh hemma "cd ~/apps/skriptoteket && git pull && sudo docker compose -f compose.prod.yaml up -d --build"
 ```
 
 If migrations are needed:
 
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml exec web pdm run db-upgrade"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec web pdm run db-upgrade"
 ```
 
 ### Deploy with Force Recreate
@@ -397,7 +512,7 @@ ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml exec we
 Use when `compose.prod.yaml` changes (networks, volumes, environment).
 
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml up -d --force-recreate"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --force-recreate"
 ```
 
 ### Rollback
@@ -410,7 +525,7 @@ ssh hemma "cd ~/apps/skriptoteket && git log --oneline -10"
 ssh hemma "cd ~/apps/skriptoteket && git checkout <commit-hash>"
 
 # Rebuild and restart
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml up -d --build"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --build"
 ```
 
 ## Data
@@ -420,25 +535,25 @@ Production uses `shared-postgres` (external container on `hule-network`).
 ### Connect to Database
 
 ```bash
-ssh hemma "docker exec -it shared-postgres psql -U postgres -d skriptoteket"
+ssh hemma "sudo docker exec -it shared-postgres psql -U postgres -d skriptoteket"
 ```
 
 ### Backup Database
 
 ```bash
-ssh hemma "docker exec shared-postgres pg_dump -U postgres skriptoteket > ~/backups/skriptoteket-\$(date +%Y%m%d).sql"
+ssh hemma "sudo docker exec shared-postgres pg_dump -U postgres skriptoteket > ~/backups/skriptoteket-\$(date +%Y%m%d).sql"
 ```
 
 ### Restore Database
 
 ```bash
-ssh hemma "docker exec -i shared-postgres psql -U postgres -d skriptoteket < ~/backups/skriptoteket-YYYYMMDD.sql"
+ssh hemma "sudo docker exec -i shared-postgres psql -U postgres -d skriptoteket < ~/backups/skriptoteket-YYYYMMDD.sql"
 ```
 
 ### Run Migrations
 
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml exec web pdm run db-upgrade"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec web pdm run db-upgrade"
 ```
 
 ### Full Database Reset (DANGER)
@@ -446,17 +561,17 @@ ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml exec we
 This destroys all data. Only use for fresh installations. `shared-postgres` is external and not managed by this compose.
 
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml down"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml down"
 
 # Connect to shared-postgres and drop/recreate database
-ssh hemma "docker exec -it shared-postgres psql -U postgres -c 'DROP DATABASE IF EXISTS skriptoteket;'"
-ssh hemma "docker exec -it shared-postgres psql -U postgres -c 'CREATE DATABASE skriptoteket;'"
+ssh hemma "sudo docker exec -it shared-postgres psql -U postgres -c 'DROP DATABASE IF EXISTS skriptoteket;'"
+ssh hemma "sudo docker exec -it shared-postgres psql -U postgres -c 'CREATE DATABASE skriptoteket;'"
 
 # Restart and run migrations
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml up -d"
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml exec web pdm run db-upgrade"
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli bootstrap-superuser --email admin@hule.education --password 'CHANGE_THIS_PASSWORD'"
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli seed-script-bank --actor-email admin@hule.education --actor-password 'CHANGE_THIS_PASSWORD'"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec web pdm run db-upgrade"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli bootstrap-superuser --email admin@hule.education --password 'CHANGE_THIS_PASSWORD'"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli seed-script-bank --actor-email admin@hule.education --actor-password 'CHANGE_THIS_PASSWORD'"
 ```
 
 ### User Management
@@ -465,10 +580,10 @@ See [runbook-user-management.md](runbook-user-management.md) for details.
 
 ```bash
 # Bootstrap superuser (first-time setup only)
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli bootstrap-superuser --email 'admin@example.com' --password 'SECURE_PASSWORD'"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli bootstrap-superuser --email 'admin@example.com' --password 'SECURE_PASSWORD'"
 
 # Provision additional user
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli provision-user --actor-email 'admin@example.com' --actor-password 'ADMIN_PASSWORD' --email 'user@example.com' --password 'USER_PASSWORD' --role user"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli provision-user --actor-email 'admin@example.com' --actor-password 'ADMIN_PASSWORD' --email 'user@example.com' --password 'USER_PASSWORD' --role user"
 ```
 
 ### Script Bank Seeding
@@ -477,10 +592,10 @@ See [runbook-script-bank-seeding-home-server.md](runbook-script-bank-seeding-hom
 
 ```bash
 # Seed all scripts from repository
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli seed-script-bank --actor-email admin@hule.education --actor-password 'PASSWORD'"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli seed-script-bank --actor-email admin@hule.education --actor-password 'PASSWORD'"
 
 # Sync code changes from repo to existing tools
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli seed-script-bank --actor-email admin@hule.education --actor-password 'PASSWORD' --sync-code"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli seed-script-bank --actor-email admin@hule.education --actor-password 'PASSWORD' --sync-code"
 ```
 
 ## Observability
@@ -491,13 +606,13 @@ The observability stack runs independently via `compose.observability.yaml`.
 
 ```bash
 # Start observability stack
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.observability.yaml up -d"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observability.yaml up -d"
 
 # Stop observability stack
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.observability.yaml down"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observability.yaml down"
 
 # Restart (e.g., after config changes)
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.observability.yaml restart"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observability.yaml restart"
 ```
 
 ### Components
@@ -515,10 +630,10 @@ Prometheus and Jaeger are protected by basic auth; see `docs/runbooks/runbook-ob
 ### View Observability Logs
 
 ```bash
-ssh hemma "docker logs -f grafana"
-ssh hemma "docker logs -f prometheus"
-ssh hemma "docker logs -f jaeger"
-ssh hemma "docker logs -f loki"
+ssh hemma "sudo docker logs -f grafana"
+ssh hemma "sudo docker logs -f prometheus"
+ssh hemma "sudo docker logs -f jaeger"
+ssh hemma "sudo docker logs -f loki"
 ```
 
 ### Metrics
@@ -560,13 +675,13 @@ ssh hemma "journalctl -t ssh-watchdog --since '2 hours ago'"
 **Fix**:
 ```bash
 # Verify network membership
-ssh hemma "docker network inspect hule-network --format '{{json .Containers}}' | python3 -m json.tool | grep skriptoteket"
+ssh hemma "sudo docker network inspect hule-network --format '{{json .Containers}}' | python3 -m json.tool | grep skriptoteket"
 
 # If missing, reconnect manually (temporary fix)
-ssh hemma "docker network connect hule-network skriptoteket-web"
+ssh hemma "sudo docker network connect hule-network skriptoteket-web"
 
 # Permanent fix: redeploy with compose.prod.yaml
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml up -d --force-recreate"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --force-recreate"
 ```
 
 ### 307 Redirect to HTTP Instead of HTTPS
@@ -594,12 +709,12 @@ proxy_set_header X-Forwarded-Proto $scheme;
 **Diagnosis**:
 ```bash
 # Check web container logs for "relation does not exist" errors
-ssh hemma "docker logs skriptoteket-web --tail 50"
+ssh hemma "sudo docker logs skriptoteket-web --tail 50"
 ```
 
 **Fix**:
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml exec web pdm run db-upgrade"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec web pdm run db-upgrade"
 ```
 
 ### CLI Commands Fail with "No module named 'skriptoteket'"
@@ -608,14 +723,14 @@ ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml exec we
 
 **Fix**: Always include `-e PYTHONPATH=/app/src` when running CLI commands:
 ```bash
-docker compose exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli <command>
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli <command>"
 ```
 
 ### Container Won't Start
 
 ```bash
 # Check logs for errors
-ssh hemma "docker logs skriptoteket-web 2>&1 | tail -50"
+ssh hemma "sudo docker logs skriptoteket-web 2>&1 | tail -50"
 
 # Check if port is in use
 ssh hemma "lsof -i :8000"
@@ -644,11 +759,11 @@ dig +short skriptoteket.hule.education @pdns1.registrar-servers.com
 ssh hemma "df -h"
 
 # Docker disk usage
-ssh hemma "docker system df"
+ssh hemma "sudo docker system df"
 
 # Clean up unused Docker resources
-ssh hemma "docker system prune -f"
+ssh hemma "sudo docker system prune -f"
 
 # Prune old artifact directories
-ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli prune-artifacts"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli prune-artifacts"
 ```

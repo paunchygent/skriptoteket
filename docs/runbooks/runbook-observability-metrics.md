@@ -5,7 +5,7 @@ title: "Runbook: Observability Metrics (Prometheus)"
 status: active
 owners: "olof"
 created: 2025-12-29
-updated: 2025-12-29
+updated: 2026-01-01
 system: "skriptoteket"
 ---
 
@@ -47,6 +47,35 @@ Production example:
 
 ```bash
 ssh hemma "curl -s https://skriptoteket.hule.education/healthz" | jq
+```
+
+### SMTP down => `/healthz` 503 (prod readiness)
+
+In production we run with `EMAIL_PROVIDER=smtp` and `HEALTHZ_SMTP_CHECK_ENABLED=true` (strict readiness).
+If the SMTP provider is unreachable (or credentials are wrong), `/healthz` reports `status: degraded` and returns `503`
+with a `dependencies.smtp` error (and the Docker healthcheck in `compose.prod.yaml` fails too).
+
+Quick troubleshooting (from `hemma`):
+
+```bash
+# 1) Confirm SMTP is the reason
+curl -s https://skriptoteket.hule.education/healthz | jq '.status, .dependencies.smtp'
+
+# 2) Check non-secret SMTP config (do NOT print EMAIL_SMTP_PASSWORD)
+rg -n '^(EMAIL_PROVIDER|EMAIL_SMTP_HOST|EMAIL_SMTP_PORT|EMAIL_SMTP_USE_TLS|EMAIL_SMTP_TIMEOUT|HEALTHZ_SMTP_CHECK_ENABLED)=' \
+  ~/apps/skriptoteket/.env
+
+# 3) TCP reachability (does not log in)
+set -a; source ~/apps/skriptoteket/.env; python3 - <<'PY'
+import os, socket
+host = os.environ["EMAIL_SMTP_HOST"]
+port = int(os.environ.get("EMAIL_SMTP_PORT", "587"))
+socket.create_connection((host, port), timeout=5).close()
+print("smtp tcp ok", host, port)
+PY
+
+# 4) App logs (startup warning + failed sends)
+sudo docker logs --since 10m skriptoteket-web | rg -n 'SMTP health check failed|Health check: smtp|Failed to send email|EMAIL_SEND_FAILED'
 ```
 
 ## Prometheus Metrics Endpoint

@@ -16,7 +16,7 @@ All Kafka messages **MUST** use the EventEnvelope wrapper:
 ```python
 from pydantic import BaseModel
 from uuid import UUID
-from datetime import datetime
+from datetime import UTC, datetime
 
 class EventEnvelope[T](BaseModel):
     event_id: UUID
@@ -33,7 +33,7 @@ envelope = EventEnvelope[UserCreatedV1](
     event_id=uuid4(),
     event_type="user.created.v1",
     entity_id=str(user.id),
-    timestamp=datetime.utcnow(),
+    timestamp=datetime.now(UTC),
     correlation_id=correlation_id,
     causation_id=None,
     schema_version="1.0.0",
@@ -95,7 +95,7 @@ class OutboxPublisher(EventPublisherProtocol):
             event_id=uuid4(),
             event_type=event_type,
             entity_id=entity_id,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
             correlation_id=correlation_id,
             schema_version="1.0.0",
             payload=event,
@@ -107,7 +107,7 @@ class OutboxPublisher(EventPublisherProtocol):
                 event_type=event_type,
                 payload=envelope.model_dump_json(),
                 topic=self._get_topic(event_type),
-                created_at=datetime.utcnow(),
+                created_at=datetime.now(UTC),
             )
             session.add(outbox_entry)
             # Commit happens with domain transaction
@@ -124,7 +124,7 @@ async def relay_outbox_events():
             entries = await get_pending_outbox_entries(session, limit=100)
             for entry in entries:
                 await kafka_producer.send(entry.topic, entry.payload)
-                entry.delivered_at = datetime.utcnow()
+                entry.delivered_at = datetime.now(UTC)
             await session.commit()
         await asyncio.sleep(1)
 ```

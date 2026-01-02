@@ -24,7 +24,7 @@ outcome: "Automated tests provide high confidence in critical flows; overall cov
 - ST-06-05: Improve test coverage for remaining web page routers (admin tools, scripting runs, suggestions)
 - ST-06-06: Test warnings hygiene (TemplateResponse deprecation + dependency warning filtering)
 - ST-06-07: Integrate toast notifications into admin workflows (completes ST-05-06)
-- ST-06-08: Fix script editor UI issues (file input, CodeMirror scroll)
+- ST-06-08: Fix script editor UI issues (file input, CodeMirror scroll) (superseded by SPA cutover; track editor UX in EPIC-14)
 - ST-06-09: Playwright test isolation: prevent source code pollution
 - ST-06-10: Context-Rule linter architecture foundation
 - ST-06-11: Editor quick fixes (CodeMirror diagnostic actions)

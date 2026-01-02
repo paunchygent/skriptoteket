@@ -5,7 +5,7 @@ title: "Runbook: Observability Grafana"
 status: active
 owners: "olof"
 created: 2025-12-29
-updated: 2025-12-29
+updated: 2026-01-01
 system: "skriptoteket"
 ---
 
@@ -51,6 +51,7 @@ Known dashboards:
 - `skriptoteket-session-files.json`
 - `skriptoteket-user-activity.json`
 - `skriptoteket-http-metrics.json`
+- `skriptoteket-nginx-proxy-security.json`
 
 ## Panel Patterns
 

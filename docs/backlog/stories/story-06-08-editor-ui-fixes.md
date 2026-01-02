@@ -2,7 +2,7 @@
 type: story
 id: ST-06-08
 title: "Fix script editor UI issues (file input, CodeMirror scroll)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-17
 epic: "EPIC-06"
@@ -14,6 +14,12 @@ acceptance_criteria:
   - "Toolbar (Välj fil, Testkör, version badges) stays visible at bottom of code card"
   - "Other pages (Katalog, Mina verktyg, etc.) retain normal scroll behavior"
 ---
+
+## Resolution (superseded)
+
+ST-11-13 completed the SPA cutover and removed the legacy HTMX/Jinja editor templates referenced here. The admin
+editor now lives in the Vue SPA, so these issues must be re-scoped for the SPA and tracked under EPIC-14 (Admin
+tool authoring). Closing this story as superseded by the SPA migration.
 
 ## Context
 

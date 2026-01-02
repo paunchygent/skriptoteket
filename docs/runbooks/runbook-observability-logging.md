@@ -5,7 +5,7 @@ title: "Runbook: Observability Logging"
 status: active
 owners: "olof"
 created: 2025-12-16
-updated: 2025-12-29
+updated: 2026-01-01
 system: "skriptoteket"
 ---
 
@@ -71,10 +71,41 @@ docker logs -f skriptoteket_web
 Home server:
 
 ```bash
-ssh hemma "docker logs -f skriptoteket-web"
+ssh hemma "sudo docker logs -f skriptoteket-web"
 ```
 
 Grafana + Loki: see `docs/runbooks/runbook-observability-grafana.md`.
+
+## nginx-proxy bot/probe analysis (Loki)
+
+`nginx-proxy` access logs are shipped to Loki via Promtail. We label only low-cardinality fields:
+
+- `vhost` (Host header / vhost)
+- `client_ip` (nginx `$remote_addr`)
+- `method`, `status`
+
+Grafana dashboard (provisioned):
+
+- `Skriptoteket nginx-proxy Security` (`observability/grafana/provisioning/dashboards/skriptoteket-nginx-proxy-security.json`)
+
+Examples (LogQL metrics):
+
+```logql
+# Top probed vhosts (24h)
+topk(10, sum by (vhost) (count_over_time({container="nginx-proxy",method=~".+"}[24h])))
+
+# Top client IPs (24h)
+topk(10, sum by (client_ip) (count_over_time({container="nginx-proxy",method=~".+"}[24h])))
+
+# Scanner/probe patterns (24h)
+sum(count_over_time({container="nginx-proxy",method=~".+"} |= "/.env" [24h]))
+sum(count_over_time({container="nginx-proxy",method=~".+"} |~ "\\.git" [24h]))
+sum(count_over_time({container="nginx-proxy",method=~".+"} |~ "(?i)wp-" [24h]))
+sum(count_over_time({container="nginx-proxy",method=~".+"} |~ "\\.php" [24h]))
+sum(count_over_time({container="nginx-proxy",method="PROPFIND"}[24h]))
+```
+
+Avoid labeling full paths (high cardinality). Use query-time filters (`|=` / `|~`) instead.
 
 ## Sensitive Data Policy
 

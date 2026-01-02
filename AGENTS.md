@@ -27,6 +27,7 @@ Target Python is **3.13–3.14**.
 
 - `src/skriptoteket/`: production code (DDD/Clean layers + DI + web)
 - `migrations/`, `alembic.ini`: DB migrations (Alembic)
+- **PDM/pyproject changes (incl. migration work)**: use `pdm-migration-specialist` for `pyproject.toml` dependency-group updates (generic skill; don’t import HuleEdu monorepo assumptions).
 - `docs/`: PRD/ADRs/backlog (start at `docs/index.md`); contract-enforced via `docs/_meta/docs-contract.yaml`
 - **Docs workflow (REQUIRED)**: follow `docs/reference/ref-sprint-planning-workflow.md` for PRD → ADR → epic → story → sprint planning.
 - **Review workflow (REQUIRED)**: all proposed EPICs/ADRs must be reviewed before implementation — see `docs/reference/ref-review-workflow.md` and `.agent/rules/096-review-workflow.md`
@@ -42,17 +43,26 @@ Target Python is **3.13–3.14**.
 - DB (dev): `docker compose up -d db` then `pdm run db-upgrade`
 - Bootstrap first superuser: `pdm run bootstrap-superuser`
 - Run: `pdm run dev`
+- Run (local + log piping): `pdm run dev-logs` (writes `.artifacts/dev-backend.log`)
+- Run (local combo): `pdm run dev-local` (backend + SPA with log piping)
 - Dev logs: when using Vite (`pdm run fe-dev`), API calls proxy to `127.0.0.1:8000` → check the **host** `pdm run dev` terminal for backend errors (container logs only apply if you point the UI at the container port).
 - Frontend deps: `pdm run fe-install` (or `pnpm -C frontend install`)
 - SPA dev: `pdm run fe-dev` (or `pnpm -C frontend --filter @skriptoteket/spa dev`)
+- SPA dev (local + log piping): `pdm run fe-dev-logs` (writes `.artifacts/dev-frontend.log`)
 - SPA build: `pdm run fe-build` (or `pnpm -C frontend --filter @skriptoteket/spa build`)
 - SPA tests (Vitest): `pdm run fe-test` / `pdm run fe-test-watch` / `pdm run fe-test-coverage`
 - **Dev services are long-running**: do not stop `pdm run dev` or `docker compose up -d db` unless explicitly requested.
-- Docker dev workflow: `pdm run dev-start` / `pdm run dev-stop` / `pdm run dev-build-start` / `pdm run dev-build-start-clean` / `pdm run dev-db-reset`
+- Docker dev workflow: `pdm run dev-start` / `pdm run dev-stop` / `pdm run dev-build-start` / `pdm run dev-build-start-clean` / `pdm run dev-rebuild` / `pdm run dev-db-reset`
+- Docker dev logs (web + frontend): `pdm run dev-containers-logs`
 - Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test` (lint runs Ruff + agent-doc budgets + docs contract)
 - Docs: `pdm run docs-validate`
 - Session file ops (prod): `pdm run cleanup-session-files` (TTL cleanup) / `pdm run clear-all-session-files` (danger: deletes all)
-- Skills prompt: `pdm run skills-prompt` / `pdm run skills-validate` (scans `.claude/skills/`)
+- Skills prompt: `pdm run skills-prompt` / `pdm run skills-validate`
+
+## Skill Usage (REQUIRED)
+
+- Skills are provided at session start from `$CODEX_HOME/skills` (typically `~/.codex/skills/*/SKILL.md`) and repo-local `.claude/skills/*/SKILL.md`.
+- Always load: `skriptoteket-devops` for Hemma/deploy/compose/env; `skriptoteket-frontend-specialist` (and `brutalist-academic-ui` for styling) for SPA work; and the relevant observability skill for Grafana/Prometheus/Loki/Jaeger/structlog.
 
 ## Tool Execution (Local Dev Only)
 
@@ -80,6 +90,8 @@ The default `ARTIFACTS_ROOT=/var/lib/skriptoteket/artifacts` doesn't exist local
 Playwright is the default for new browser automation (see `.agent/rules/075-browser-automation.md`).
 Run smokes with `pdm run ui-smoke` / `pdm run ui-editor-smoke` / `pdm run ui-runtime-smoke`, or ad-hoc scripts via
 `pdm run python -m scripts.<module>`.
+HMR probe (Playwright; may need escalation on macOS): `pdm run ui-hmr-probe` (artifacts in `.artifacts/hmr-probe/`).
+Prefer Playwright for browser automation and screenshots; do not use Puppeteer.
 
 - **Do not create new superusers for UI checks**: reuse the existing local dev bootstrap account in `.env`
   (`BOOTSTRAP_SUPERUSER_EMAIL` / `BOOTSTRAP_SUPERUSER_PASSWORD`). Creating new accounts bloats the dev DB.
@@ -110,7 +122,8 @@ Public URLs (credentials in `~/apps/skriptoteket/.env` on server):
 - https://grafana.hemma.hule.education (admin / `GRAFANA_ADMIN_PASSWORD`)
 - https://prometheus.hemma.hule.education (admin / `PROMETHEUS_BASIC_AUTH_PASSWORD`)
 
-Reset Grafana password: `ssh hemma "docker exec grafana grafana cli admin reset-admin-password '<pw>'"` (env var only works on first startup).
+Reset Grafana password: `ssh hemma "sudo docker exec grafana grafana cli admin reset-admin-password '<pw>'"` (env var only works on first startup).
+Use the appropriate observability skill when troubleshooting (metrics/logs/traces/structured logging).
 
 ## AI Inference Infrastructure
 
@@ -126,71 +139,3 @@ Runbooks: `docs/runbooks/runbook-gpu-ai-workloads.md`, `docs/runbooks/runbook-ta
 ## Security
 
 - Never commit secrets (API keys/tokens); use env vars / `.env` locally
-
-<available_skills>
-  <skill>
-    <name>brutalist-academic-ui</name>
-    <description>Opinionated frontend design for brutalist and academic interfaces. Grid-based layouts, systematic typography, monospace/serif pairings, high-contrast schemes. HTML, CSS, Tailwind, vanilla JS.</description>
-    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/brutalist-academic-ui/SKILL.md</location>
-  </skill>
-  <skill>
-    <name>claude-hooks-developer</name>
-    <description>Create, configure, and manage Claude Code hooks for workflow automation, validation, and security. Guides hook implementation, configuration patterns, and best practices.</description>
-    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/hooks/SKILL.md</location>
-  </skill>
-  <skill>
-    <name>distributed-tracing-specialist</name>
-    <description>Configure and use OpenTelemetry distributed tracing with Jaeger in HuleEdu services. Guides tracer initialization, span creation, W3C trace propagation, and correlation with logs/metrics. Integrates with Context7 for latest OpenTelemetry documentation.</description>
-    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/distributed-tracing/SKILL.md</location>
-  </skill>
-  <skill>
-    <name>jaeger-tracing-specialist</name>
-    <description>Jaeger/OpenTelemetry patterns plus Skriptoteket tracing conventions (async context propagation, correlation, debugging).</description>
-    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/jaeger-tracing/SKILL.md</location>
-  </skill>
-  <skill>
-    <name>loki-logql-query-specialist</name>
-    <description>Query and analyze logs using Loki and LogQL. Provides patterns for correlation ID tracing, error investigation, and service debugging using HuleEdu's structured logging. Integrates with Context7 for latest Loki documentation.</description>
-    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/loki-logql/SKILL.md</location>
-  </skill>
-  <skill>
-    <name>pdm-migration-specialist</name>
-    <description>Migrate pyproject.toml from pre-PDM 2.0 syntax to modern PEP-compliant format. Focuses on dev-dependencies to dependency-groups conversion and PEP 621 project metadata. Integrates with Context7 for latest PDM documentation.</description>
-    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/pdm/SKILL.md</location>
-  </skill>
-  <skill>
-    <name>playwright-testing</name>
-    <description>Browser automation with Playwright for Python. Recommended for visual testing. (project)</description>
-    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/playwright-testing/SKILL.md</location>
-  </skill>
-  <skill>
-    <name>prometheus-metrics-specialist</name>
-    <description>Instrument services with Prometheus metrics and write PromQL queries. Guides HuleEdu naming conventions, metrics middleware setup, and business vs operational metrics. Integrates with Context7 for latest Prometheus documentation.</description>
-    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/prometheus-metrics/SKILL.md</location>
-  </skill>
-  <skill>
-    <name>puppeteer-visual-testing</name>
-    <description>Screenshot capture and visual testing with Puppeteer v24.x for Vue frontend. (project)</description>
-    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/puppeteer-visual-testing/SKILL.md</location>
-  </skill>
-  <skill>
-    <name>repomix-package-builder</name>
-    <description>Create targeted repomix XML packages for AI code analysis. Suggests templates (metadata-flow, code-review, architecture, context) and file patterns based on task objectives. See reference.md for detailed workflows and patterns.</description>
-    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/repomix/SKILL.md</location>
-  </skill>
-  <skill>
-    <name>selenium-testing</name>
-    <description>Browser automation with Selenium WebDriver for Python. (project)</description>
-    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/selenium-testing/SKILL.md</location>
-  </skill>
-  <skill>
-    <name>skriptoteket-devops</name>
-    <description>DevOps and server management for Skriptoteket on home server (hemma.hule.education). Branched skill covering deploy, database, users, CLI, security, network, DNS, and troubleshooting.</description>
-    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/skriptoteket-devops/SKILL.md</location>
-  </skill>
-  <skill>
-    <name>structlog-logging-specialist</name>
-    <description>Configure and use Structlog for structured logging in HuleEdu services. Guides correlation context propagation, async-safe logging, and integration with error handling. Integrates with Context7 for latest Structlog documentation.</description>
-    <location>/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.claude/skills/structlog-logging/SKILL.md</location>
-  </skill>
-</available_skills>

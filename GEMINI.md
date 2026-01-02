@@ -147,7 +147,7 @@ Read `.agent/rules/000-rule-index.md` for the complete rulebook. Key points:
 
 ### Browser Automation
 
-Playwright (recommended), Selenium, Puppeteer available. Run via `pdm run python -m scripts.<module>`.
+Playwright (recommended) and Selenium available. Run via `pdm run python -m scripts.<module>`.
 
 - **Credentials**: `superuser@local.dev` / `superuser-password`
 - **HTMX caveat**: Avoid `waitForNavigation()` - use explicit URL waits
