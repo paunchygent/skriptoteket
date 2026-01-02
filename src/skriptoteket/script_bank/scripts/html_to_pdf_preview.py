@@ -15,12 +15,17 @@ Entrypoint: run_tool(input_dir: str, output_dir: str) -> dict
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import re
+import traceback
 from contextlib import contextmanager
 from datetime import datetime, timezone
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import TypedDict
+from urllib.parse import unquote, urlparse
 
 
 class ManifestFile(TypedDict):
@@ -126,22 +131,273 @@ def _chdir(path: Path):
 # ─── PDF-KONVERTERING ───
 
 
+def _build_page_css(*, page_size: str, orientation: str) -> str:
+    orient = "landscape" if orientation == "landscape" else "portrait"
+    normalized_page_size = str(page_size).strip().lower()
+    size_token = "A4" if normalized_page_size == "a4" else "Letter"
+
+    max_svg_height = "240mm" if orient == "portrait" else "175mm"
+    return (
+        f"@page {{ size: {size_token} {orient}; margin: 0; }}\n"
+        ".app { display: block !important; max-width: none !important; "
+        "padding: 0 !important; }\n"
+        ".sidebar { display: none !important; }\n"
+        "details > :not(summary) { display: block !important; }\n"
+        "details { overflow: visible !important; }\n"
+        ".card, .diagram { overflow: visible !important; }\n"
+        f".diagram svg {{ max-height: {max_svg_height}; "
+        "max-width: 100%; height: auto; }}\n"
+    )
+
+
+def _build_generic_page_css(*, page_size: str, orientation: str) -> str:
+    orient = "landscape" if orientation == "landscape" else "portrait"
+    normalized_page_size = str(page_size).strip().lower()
+    size_token = "A4" if normalized_page_size == "a4" else "Letter"
+    return f"@page {{ size: {size_token} {orient}; }}\n"
+
+
+def _build_page_css_fallback(*, page_size: str, orientation: str) -> str:
+    orient = "landscape" if orientation == "landscape" else "portrait"
+    normalized_page_size = str(page_size).strip().lower()
+    size_token = "A4" if normalized_page_size == "a4" else "Letter"
+
+    max_svg_height = "200mm" if orient == "portrait" else "140mm"
+    return (
+        f"@page {{ size: {size_token} {orient}; margin: 0; }}\n"
+        ".app { display: block !important; max-width: none !important; "
+        "padding: 0 !important; }\n"
+        ".sidebar { display: none !important; }\n"
+        "details > :not(summary) { display: block !important; }\n"
+        "details { overflow: visible !important; }\n"
+        ".card, .diagram { overflow: visible !important; }\n"
+        f".diagram svg {{ max-height: {max_svg_height} !important; "
+        "max-width: 100% !important; height: auto !important; }}\n"
+    )
+
+
+def _inject_author_css(*, html: str, css: str) -> str:
+    style_tag = f"<style>{css}</style>"
+    if "</head>" in html:
+        return html.replace("</head>", f"{style_tag}</head>", 1)
+    if "<html" in html:
+        return f"{html}{style_tag}"
+    return f"<html><head>{style_tag}</head><body>{html}</body></html>"
+
+
+def _force_details_open(*, html: str) -> str:
+    return re.sub(r"<details(?![^>]*\\bopen\\b)", "<details open", html)
+
+
+def _rewrite_details_to_divs(*, html: str) -> str:
+    html = re.sub(r"(?i)<details\b[^>]*>", '<div class="pdf-details">', html)
+    html = re.sub(r"(?i)</details>", "</div>", html)
+    html = re.sub(r"(?i)<summary\b[^>]*>", '<div class="pdf-summary">', html)
+    html = re.sub(r"(?i)</summary>", "</div>", html)
+    return html
+
+
+def _extract_style_blocks(*, html: str) -> str:
+    blocks = re.findall(r"(?is)<style\b[^>]*>(.*?)</style>", html)
+    return "\n".join(blocks).strip()
+
+
+class _StylesheetLinkCollector(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.hrefs: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag.lower() != "link":
+            return
+        attr_map = {k.lower(): (v or "") for k, v in attrs}
+        rel = attr_map.get("rel", "").lower()
+        if "stylesheet" not in rel:
+            return
+        href = attr_map.get("href", "").strip()
+        if not href:
+            return
+        self.hrefs.append(href)
+
+
+def _extract_linked_stylesheets(*, html: str) -> list[str]:
+    parser = _StylesheetLinkCollector()
+    parser.feed(html)
+    return parser.hrefs
+
+
+def _resolve_local_href(*, base_dir: Path, href: str) -> Path | None:
+    parsed = urlparse(href)
+    if parsed.scheme not in ("", "file"):
+        return None
+
+    if parsed.scheme == "file":
+        candidate = Path(unquote(parsed.path))
+    else:
+        if href.startswith("//"):
+            return None
+        if href.startswith("/"):
+            return None
+        candidate = (base_dir / unquote(href)).resolve()
+
+    base_resolved = base_dir.resolve()
+    try:
+        if not candidate.resolve().is_relative_to(base_resolved):
+            return None
+    except AttributeError:
+        # Python < 3.9 not relevant, but keep defensive
+        if not str(candidate.resolve()).startswith(str(base_resolved)):
+            return None
+
+    if not candidate.is_file():
+        return None
+    return candidate
+
+
+_IMPORT_RE = re.compile(r"(?im)@import\s+(?:url\()?\s*['\"]?([^'\"\)\s;]+)['\"]?\s*\)?[^;]*;")
+
+
+def _read_css_with_imports(*, base_dir: Path, path: Path, seen: set[Path]) -> str:
+    resolved = path.resolve()
+    if resolved in seen:
+        return ""
+    seen.add(resolved)
+
+    try:
+        css = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+
+    def _replace(match: re.Match[str]) -> str:
+        href = match.group(1)
+        imported = _resolve_local_href(base_dir=base_dir, href=href)
+        if imported is None:
+            return ""
+        return _read_css_with_imports(base_dir=base_dir, path=imported, seen=seen)
+
+    return _IMPORT_RE.sub(_replace, css)
+
+
+def _extract_all_css(*, html: str, base_dir: Path) -> str:
+    inline = _extract_style_blocks(html=html)
+    linked_parts: list[str] = []
+    seen: set[Path] = set()
+    for href in _extract_linked_stylesheets(html=html):
+        css_path = _resolve_local_href(base_dir=base_dir, href=href)
+        if css_path is None:
+            continue
+        linked_parts.append(_read_css_with_imports(base_dir=base_dir, path=css_path, seen=seen))
+
+    combined = "\n".join([p for p in [*linked_parts, inline] if p.strip()]).strip()
+    return combined
+
+
+def _document_defines_at_page(*, css: str) -> bool:
+    return bool(re.search(r"(?is)@page\b", css))
+
+
+def _looks_like_tool_editor_doc(*, html: str) -> bool:
+    return bool(
+        re.search(r"(?i)class=\"[^\"]*\bapp\b", html)
+        and re.search(r"(?i)class=\"[^\"]*\bsidebar\b", html)
+    )
+
+
+def _select_print_css_for_document(
+    *,
+    html: str,
+    base_dir: Path,
+    page_size: str,
+    orientation: str,
+) -> tuple[str, bool]:
+    is_tool_editor = _looks_like_tool_editor_doc(html=html)
+    if is_tool_editor:
+        return _build_page_css(page_size=page_size, orientation=orientation), True
+
+    doc_css = _extract_all_css(html=html, base_dir=base_dir)
+    if _document_defines_at_page(css=doc_css):
+        return "", False
+
+    return _build_generic_page_css(page_size=page_size, orientation=orientation), False
+
+
+def _inline_css_into_svgs(*, html: str, base_dir: Path) -> str:
+    css = _extract_all_css(html=html, base_dir=base_dir)
+    if not css:
+        return html
+    svg_style = f'<style type="text/css"><![CDATA[\n{css}\n]]></style>'
+    return re.sub(
+        r"(?i)(<svg\b[^>]*>)(?!\s*<style\b)",
+        rf"\1{svg_style}",
+        html,
+    )
+
+
+def _normalize_html_for_weasyprint(*, html: str, base_dir: Path, print_css: str) -> str:
+    normalized = _force_details_open(html=html)
+    normalized = _rewrite_details_to_divs(html=normalized)
+    normalized = _inline_css_into_svgs(html=normalized, base_dir=base_dir)
+    if not print_css.strip():
+        return normalized
+    return _inject_author_css(html=normalized, css=print_css)
+
+
 def _try_weasyprint(
     *, source: Path, pdf_path: Path, page_size: str, orientation: str
 ) -> str | None:
     try:
-        from weasyprint import CSS, HTML  # type: ignore
+        from weasyprint import HTML  # type: ignore
     except Exception:
         return None
 
-    # Bygg CSS för sidstorlek och orientering
-    orient = "landscape" if orientation == "landscape" else "portrait"
-    size_css = f"@page {{ size: {page_size} {orient}; }}"
+    html_raw = source.read_text(encoding="utf-8", errors="replace")
+    base_dir = source.parent.resolve()
+    base_url = source.parent.resolve().as_uri() + "/"
 
-    HTML(filename=str(source), base_url=str(source.parent.resolve())).write_pdf(
-        str(pdf_path),
-        stylesheets=[CSS(string=size_css)],
+    def _render(*, html: str) -> None:
+        HTML(string=html, base_url=base_url).write_pdf(str(pdf_path))
+
+    size_css, is_tool_editor_doc = _select_print_css_for_document(
+        html=html_raw,
+        base_dir=base_dir,
+        page_size=page_size,
+        orientation=orientation,
     )
+
+    try:
+        html_content = _normalize_html_for_weasyprint(
+            html=html_raw,
+            base_dir=base_dir,
+            print_css=size_css,
+        )
+        _render(html=html_content)
+    except AttributeError as exc:
+        exc_text = str(exc)
+        is_grid_crash = (
+            "advancements" in exc_text
+            or exc_text.strip() == "'NoneType' object has no attribute 'get'"
+        )
+        if not is_grid_crash:
+            raise
+        html_no_grid = html_raw.replace("display: grid", "display: block").replace(
+            "display:grid", "display:block"
+        )
+        html_no_grid = _normalize_html_for_weasyprint(
+            html=html_no_grid,
+            base_dir=base_dir,
+            print_css=size_css,
+        )
+        _render(html=html_no_grid)
+    except AssertionError:
+        if not is_tool_editor_doc:
+            raise
+        size_css = _build_page_css_fallback(page_size=page_size, orientation=orientation)
+        html_content = _normalize_html_for_weasyprint(
+            html=html_raw,
+            base_dir=base_dir,
+            print_css=size_css,
+        )
+        _render(html=html_content)
     return "weasyprint"
 
 
@@ -306,6 +562,8 @@ def _handle_action(*, action_path: Path, output_dir: Path) -> dict[str, object]:
     # Hämta konverteringsinställningar
     page_size = str(input_data.get("page_size", "a4"))
     orientation = str(input_data.get("orientation", "portrait"))
+    page_css = _build_page_css(page_size=page_size, orientation=orientation)
+    pdf_css_fingerprint = hashlib.sha256(page_css.encode("utf-8")).hexdigest()[:8]
 
     # Hämta filinfo från state
     html_file_paths = state.get("html_files", [])
@@ -345,6 +603,7 @@ def _handle_action(*, action_path: Path, output_dir: Path) -> dict[str, object]:
         # Försök konvertera
         backend: str | None = None
         errors: list[str] = []
+        weasyprint_traceback: str | None = None
 
         try:
             backend = _try_weasyprint(
@@ -352,18 +611,14 @@ def _handle_action(*, action_path: Path, output_dir: Path) -> dict[str, object]:
             )
         except Exception as exc:  # noqa: BLE001
             errors.append(f"WeasyPrint: {exc}")
-
-        if backend is None:
-            try:
-                backend = _try_pypandoc(
-                    source=source, pdf_path=pdf_path, page_size=page_size, orientation=orientation
-                )
-            except Exception as exc:  # noqa: BLE001
-                errors.append(f"pypandoc: {exc}")
+            weasyprint_traceback = traceback.format_exc()
 
         if backend is None:
             full_message = " | ".join(errors) if errors else "Okänt fel"
-            error_log_lines.append(f"{source.name}: {full_message}")
+            log_entry = f"{source.name}: {full_message}"
+            if weasyprint_traceback:
+                log_entry += "\n" + weasyprint_traceback.rstrip()
+            error_log_lines.append(log_entry)
             pdf_rows.append(
                 {
                     "source": source.name,
@@ -417,7 +672,8 @@ def _handle_action(*, action_path: Path, output_dir: Path) -> dict[str, object]:
         _notice(level, f"{ok_count} PDF skapades{error_suffix}"),
         _markdown(
             f"**Konverterat:** {timestamp}\n\n"
-            f"**Sidstorlek:** {page_size.upper()} | **Orientering:** {orient_label}"
+            f"**Sidstorlek:** {page_size.upper()} | **Orientering:** {orient_label}\n\n"
+            f"**PDF CSS:** `{pdf_css_fingerprint}`"
         ),
     ]
 

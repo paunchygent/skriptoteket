@@ -142,7 +142,7 @@ const { inputSchema, inputSchemaError, settingsSchema, settingsSchemaError } =
           <div class="flex items-center gap-2">
             <button
               type="button"
-              :disabled="isSaving || isReadOnly"
+              :disabled="isSaving || isReadOnly || Boolean(inputSchemaError) || Boolean(settingsSchemaError)"
               class="btn-primary min-w-[80px]"
               @click="emit('save')"
             >

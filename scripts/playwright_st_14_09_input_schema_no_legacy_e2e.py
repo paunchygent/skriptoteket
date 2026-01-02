@@ -183,10 +183,21 @@ def main() -> None:
 
         save_button = page.get_by_role("button", name=re.compile(r"^Spara$", re.IGNORECASE)).first
         expect(save_button).to_be_visible(timeout=30_000)
+        expect(save_button).to_be_enabled(timeout=30_000)
 
         page.screenshot(path=str(artifacts_dir / "editor-before-clear.png"), full_page=True)
 
+        input_schema_editor.fill("[")
+        expect(save_button).to_be_disabled(timeout=30_000)
+        input_schema_error = input_schema_editor.locator("xpath=following-sibling::p[1]")
+        expect(input_schema_error).to_be_visible(timeout=30_000)
+        expect(input_schema_error).to_contain_text(re.compile(r"giltig\s+JSON", re.IGNORECASE))
+        page.screenshot(
+            path=str(artifacts_dir / "editor-invalid-json-blocks-save.png"), full_page=True
+        )
+
         input_schema_editor.fill("")
+        expect(save_button).to_be_enabled(timeout=30_000)
 
         save_button.click()
         expect(input_schema_editor).to_have_value("[]", timeout=30_000)

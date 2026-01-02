@@ -4,6 +4,7 @@ import type { RouteLocationNormalizedLoaded, Router } from "vue-router";
 import { apiFetch, apiGet, apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import type { UiNotifier } from "../notify";
+import { parseSchemaJsonArrayText } from "./schemaJsonHelpers";
 
 type EditorBootResponse = components["schemas"]["EditorBootResponse"];
 type EditorToolMetadataResponse = components["schemas"]["EditorToolMetadataResponse"];
@@ -153,42 +154,6 @@ export function useScriptEditor({
     metadataSlug.value = suggestion;
   }
 
-  function parseSettingsSchema(): SettingsSchema | null {
-    const raw = settingsSchemaText.value.trim();
-    if (!raw) return null;
-
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(raw);
-    } catch {
-      throw new Error("Settings schema måste vara giltig JSON.");
-    }
-
-    if (!Array.isArray(parsed)) {
-      throw new Error("Settings schema måste vara en JSON-lista (array).");
-    }
-
-    return parsed as SettingsSchema;
-  }
-
-  function parseInputSchema(): InputSchema {
-    const raw = inputSchemaText.value.trim();
-    if (!raw) return [];
-
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(raw);
-    } catch {
-      throw new Error("Input schema måste vara giltig JSON.");
-    }
-
-    if (!Array.isArray(parsed)) {
-      throw new Error("Input schema måste vara en JSON-lista (array).");
-    }
-
-    return parsed as InputSchema;
-  }
-
   async function loadEditorFromPath(
     path: string,
     options: { soft?: boolean } = {},
@@ -267,29 +232,28 @@ export function useScriptEditor({
 
     try {
       const summaryValue = normalizedOptionalString(changeSummary.value);
-      let settingsSchema: SettingsSchema | null = null;
-      try {
-        settingsSchema = parseSettingsSchema();
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          errorMessage.value = error.message;
-        } else {
-          errorMessage.value = "Settings schema är ogiltig.";
-        }
-        return;
-      }
 
-      let inputSchema: InputSchema;
-      try {
-        inputSchema = parseInputSchema();
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          errorMessage.value = error.message;
-        } else {
-          errorMessage.value = "Input schema är ogiltig.";
-        }
+      const settingsSchemaResult = parseSchemaJsonArrayText<SettingsSchema[number]>(
+        settingsSchemaText.value,
+        "Inställningsschemat",
+        null,
+      );
+      if (settingsSchemaResult.error) {
+        errorMessage.value = settingsSchemaResult.error;
         return;
       }
+      const settingsSchema = settingsSchemaResult.value as SettingsSchema | null;
+
+      const inputSchemaResult = parseSchemaJsonArrayText<InputSchema[number]>(
+        inputSchemaText.value,
+        "Indata-schemat",
+        [],
+      );
+      if (inputSchemaResult.error) {
+        errorMessage.value = inputSchemaResult.error;
+        return;
+      }
+      const inputSchema = (inputSchemaResult.value ?? []) as InputSchema;
 
       if (editor.value.save_mode === "snapshot") {
         const version = selectedVersion.value;

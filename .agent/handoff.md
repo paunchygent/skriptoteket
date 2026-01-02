@@ -16,10 +16,14 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
-- Completed: ST-14-01/14-02 done; ST-14-09 done
+- Completed: ST-14-01/14-02 done; ST-14-09 done; ST-14-10 done
 
 ## Current Session (2026-01-02)
 
+- ST-14-10: schema JSON guardrails only (shared parsing helper + save blocking); schema editor UI actions deferred to ST-14-14.
+  - Shared helper: `frontend/apps/skriptoteket/src/composables/editor/schemaJsonHelpers.ts` (JSON array parsing with more actionable errors)
+  - Refactors: `useEditorSchemaParsing.ts`, `useScriptEditor.ts` (save uses helper, no drift)
+  - Save blocked when schema JSON invalid: `EditorWorkspacePanel.vue` (disabled Save button) + save handler shows parse error
 - ST-14-09: schema-only inputs (no `input_schema=null` legacy upload-first); DB `input_schema` columns now NOT NULL DEFAULT `[]` + backfill (SQL NULL + JSON `null`) in `migrations/versions/0023_input_schema_not_null.py`; script bank + SPA updated so file picker appears only when schema includes `{"kind":"file"}`.
 - Docs/backlog alignment: updated statuses (ST-14-01/02, ST-06-10, ST-11-01/02/07/08/09/15/16), EPIC-08 active, EPIC-16 active with ST-16-08 pending, added ST-15-02 stub, aligned sprint dates, moved ST-08-17 to `SPR-2026-05-12`, added EPIC-11 implementation summary, refreshed `.agent/readme-first.md`.
 - EPIC-14 story alignment (AI-ready foundations): updated ST-14-11/12/17/18/19/20 to support upcoming chat-first AI editing (explicit debug truncation flags + copy bundle, reusable diff viewer, field-aware compare deep links, AI-friendly toolkit conventions).
@@ -112,6 +116,8 @@ Keep this file updated so the next session can pick up work quickly.
 - Backend tests (ST-14-09): `pdm run test` (pass; 543 passed)
 - Migrations (ST-14-09): `pdm run pytest -m docker --override-ini addopts=''` (pass; 20 passed)
 - UI (ST-14-09): `pdm run python -m scripts.playwright_st_14_09_input_schema_no_legacy_e2e --base-url http://127.0.0.1:5173` (pass; artifacts in `.artifacts/st-14-09-input-schema-no-legacy-e2e/`; Playwright required escalation on macOS)
+- UI (ST-14-10): `pdm run dev-local` (running) + `pdm run python -m scripts.playwright_st_14_09_input_schema_no_legacy_e2e --base-url http://127.0.0.1:5173` (updated to assert invalid JSON blocks Save; screenshot `editor-invalid-json-blocks-save.png`)
+- Gate: `pdm run precommit-run` (pass)
 
 ## How to Run
 

@@ -28,11 +28,11 @@ Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
 **After**
 
-- Authors can quickly format and insert minimal valid examples for schemas, reducing setup friction.
+- Authors get earlier feedback and can’t accidentally save invalid schema JSON.
 
 ## Scope (committed stories)
 
-- [ST-14-10: Editor schema JSON QoL (prettify + examples + guidance)](../stories/story-14-10-editor-schema-json-qol.md)
+- [ST-14-10: Editor schema JSON guardrails (shared parsing + save blocking)](../stories/story-14-10-editor-schema-json-qol.md)
 
 ## Out of scope
 
@@ -46,23 +46,24 @@ Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
 ## Risks / edge cases
 
-- File schema constraints must remain consistent with server upload limits (`UPLOAD_MAX_FILES`).
+- Keep schema parsing consistent between inline validation and save (avoid “drift”).
 
 ## Execution plan (suggested)
 
 ### Update (2026-01-02)
 
 ST-14-09 shipped early (schema-only `input_schema`, no legacy `null` semantics). This sprint now focuses on ST-14-10.
+ST-14-10 was later narrowed to “foundation-only” (shared parsing + save blocking), with schema editor UI actions deferred
+to ST-14-14.
 
 ## Pacing checklist (suggested)
 
-- [ ] Add schema helper actions: “Prettify JSON”, “Insert example”, “Reset”.
-- [ ] Ensure snapshot preview uses the resulting schema as-is (no implicit conversions).
+- [ ] Refactor schema parsing into a shared helper (no drift vs save).
+- [ ] Block Save (and sandbox-run) on schema JSON errors with actionable messages.
 
 ## Demo checklist
 
-- Show prettify + insert example for both schemas.
-- Run a sandbox preview using the inserted example schema and verify the behavior matches the schema.
+- Verify invalid schema JSON blocks Save and sandbox-run and shows actionable errors.
 
 ## Verification checklist
 

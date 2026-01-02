@@ -39,7 +39,7 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 - [ST-14-07: Editor draft head locks](../stories/story-14-07-editor-draft-head-locks.md)
 - [ST-14-08: Editor sandbox settings isolation](../stories/story-14-08-editor-sandbox-settings-isolation.md)
 - [ST-14-09: Editor input_schema modes (remove null vs [] footgun)](../stories/story-14-09-editor-input-schema-modes.md)
-- [ST-14-10: Editor schema JSON QoL (prettify + examples + guidance)](../stories/story-14-10-editor-schema-json-qol.md)
+- [ST-14-10: Editor schema JSON guardrails (shared parsing + save blocking)](../stories/story-14-10-editor-schema-json-qol.md)
 - [ST-14-11: Editor sandbox run debug details API (stdout/stderr, gated)](../stories/story-14-11-editor-sandbox-run-debug-details-api.md)
 - [ST-14-12: Editor sandbox debug panel UX (copyable diagnostics)](../stories/story-14-12-editor-sandbox-debug-panel.md)
 - [ST-14-13: CodeMirror JSON editor for tool schemas](../stories/story-14-13-editor-schema-editor-json-codemirror.md)
@@ -78,3 +78,4 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 ## Implementation Summary (as of 2026-01-02)
 
 - ST-14-09 shipped: `input_schema` is schema-only (never `null`); file picking is represented as a `{"kind":"file"}` field with `min/max`.
+- ST-14-10 shipped (foundation-only): shared schema JSON parsing helper + save blocking on invalid schema JSON; schema editor UI actions (prettify/snippets) deferred to ST-14-14.

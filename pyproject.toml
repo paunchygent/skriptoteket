@@ -326,6 +326,7 @@ fe-test-coverage.working_dir = "frontend"
 # Code quality
 format = "ruff format --force-exclude ."
 lint = { composite = [
+    "ruff format --check --diff --force-exclude .",
     "ruff check --force-exclude .",
     "python -m scripts.check_agent_doc_budgets",
     "python -m scripts.validate_docs",
