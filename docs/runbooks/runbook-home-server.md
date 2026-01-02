@@ -5,7 +5,7 @@ title: "Runbook: Home Server Operations"
 status: active
 owners: "olof"
 created: 2025-12-16
-updated: 2026-01-01
+updated: 2026-01-02
 system: "hemma.hule.education"
 ---
 
@@ -17,15 +17,18 @@ Operations guide for the home server hosting Skriptoteket and future HuleEdu ser
 
 ```bash
 # Remote admin access (VPN-gated; Tailscale)
-ssh hemma
+ssh hemma           # paunchygent (non-root default)
+ssh hemma-root      # root (use only with explicit approval)
 
 # Local network break-glass (LAN)
 ssh hemma-local
+ssh hemma-local-root
 ```
 
 Notes:
 
 - SSH is intentionally **not exposed on the public internet** (no router port-forward for `22/tcp`).
+- Default user is non-root (`paunchygent`); use `ssh hemma-root` only with explicit approval.
 - UFW allows SSH only:
   - On `tailscale0` (VPN), and
   - From the LAN break-glass subnet `192.168.0.0/24`.
@@ -34,120 +37,52 @@ Notes:
 ```text
 Host hemma
   HostName hemma.tail730aa2.ts.net
+  User paunchygent
+  IdentityFile ~/.ssh/hemma-paunchygent_ed25519
+
+Host hemma-root
+  HostName hemma.tail730aa2.ts.net
   User root
 
 Host hemma-local
   HostName 192.168.0.9
+  User paunchygent
+  IdentityFile ~/.ssh/hemma-paunchygent_ed25519
+
+Host hemma-local-root
+  HostName 192.168.0.9
   User root
 ```
 
-### SSH Hardening (Checklist)
+### SSH Hardening + Fail2ban
 
-```bash
-sudo nano /etc/ssh/sshd_config.d/99-hardening.conf
-```
+Security hardening (sshd settings, Fail2ban jails, nginx-proxy probe jail) is documented in
+[ref-home-server-security-hardening.md](../reference/ref-home-server-security-hardening.md).
 
-```text
-PasswordAuthentication no
-KbdInteractiveAuthentication no
-PubkeyAuthentication yes
-PermitRootLogin prohibit-password
-AllowUsers root paunchygent
-```
+### SSH/Network Watchdog (Active Remediation)
 
-```bash
-sudo sshd -t
-sudo systemctl reload ssh
-sudo install -d -m 700 /root/.ssh
-sudo tee -a /root/.ssh/authorized_keys
-sudo chmod 600 /root/.ssh/authorized_keys
-```
+Runs every 2 minutes and remediates SSH/network drift. It restarts `systemd-networkd`,
+`systemd-resolved`, and `tailscaled` if route/ping checks fail, and reboots after 3
+consecutive failures.
 
-### Fail2ban (Checklist)
-
-```bash
-sudo apt install fail2ban
-sudo nano /etc/fail2ban/jail.d/sshd.local
-```
-
-```text
-[sshd]
-enabled = true
-backend = systemd
-maxretry = 5
-findtime = 10m
-bantime = 1h
-```
-
-```bash
-sudo systemctl enable --now fail2ban
-sudo fail2ban-client status sshd
-sudo fail2ban-client get sshd banip
-sudo fail2ban-client set sshd unbanip <ip>
-```
-
-#### Recidive jail (3 strikes → permaban)
-
-This enforces a "repeat offenders get permabanned" policy based on Fail2ban's own log (including rotated logs).
-
-```bash
-sudo nano /etc/fail2ban/jail.d/recidive.local
-```
-
-```text
-[recidive]
-enabled = true
-logpath = /var/log/fail2ban.log*
-banaction = nftables[type=allports]
-
-# 3 strikes within 7 days => permaban
-findtime = 7d
-maxretry = 3
-bantime = -1
-```
-
-```bash
-sudo systemctl restart fail2ban
-sudo fail2ban-client status recidive
-```
-
-#### nginx-proxy probe jail (HTTP scanners)
-
-Ban repeat HTTP scanners hitting `nginx-proxy` (e.g. paths dropped with `444`, repeated `401/403` auth probes).
-
-Files (hemma):
-
-- Filter: `/etc/fail2ban/filter.d/nginx-proxy-probe.conf`
-- Jail: `/etc/fail2ban/jail.d/nginx-proxy-probe.local`
-
-Key settings:
-
-- `backend = polling` (avoid `systemd` backend without precise `journalmatch`)
-- `logpath = /var/snap/docker/common/var-lib-docker/containers/*/*-json.log` (snap docker)
-- `usedns = no` (logs include both vhost and client IP; only ban client IP)
-- `banaction = nftables[type=allports]` (cuts off multi-port probing)
-
-Restart and verify:
-
-```bash
-sudo systemctl restart fail2ban
-sudo fail2ban-client status nginx-proxy-probe
-sudo fail2ban-client get nginx-proxy-probe logpath
-sudo fail2ban-client get nginx-proxy-probe banip
-sudo fail2ban-client set nginx-proxy-probe unbanip <ip>
-```
-
-### SSH/Network Watchdog (Logs Only)
-
-Runs every 2 minutes and logs if SSH or network health degrades (no changes applied).
+Script: `/usr/local/bin/ssh-watchdog.sh`
 
 ```bash
 sudo systemctl status ssh-watchdog.timer --no-pager
-journalctl -t ssh-watchdog --since "1 hour ago"
+sudo journalctl -t ssh-watchdog --since "1 hour ago"
 sudo systemctl disable --now ssh-watchdog.timer
 ```
 
-### Current Network + DDNS Settings (as of 2026-01-01)
+### Heartbeat Log (Hang Correlation)
+
+Logs a simple heartbeat every minute to make hang windows obvious.
+
+```bash
+sudo systemctl status heartbeat-log.timer --no-pager
+sudo journalctl -t heartbeat --since "2 hours ago"
+```
+
+### Current Network + DDNS Settings (as of 2026-01-02)
 
 ```text
 # Network (ethernet only; Wi‑Fi disabled)
@@ -156,6 +91,9 @@ sudo systemctl disable --now ssh-watchdog.timer
 
 /etc/netplan/01-netcfg.yaml
   enp7s0: dhcp4=true, dhcp6=false, optional=true
+
+/etc/netplan/50-cloud-init.yaml.disabled
+/etc/netplan/50-cloud-init.yaml.bak
 
 systemctl status wpa_supplicant@wlp5s0.service -> inactive (disabled)
 ```
@@ -170,6 +108,23 @@ systemctl status ddclient -> active
   host=hemma
 ```
 
+### Host Logs + Disk Health (hemma)
+
+Log paths (root):
+
+- `/root/logs/incident-YYYYMMDD-HHMMSS-HHMMSS.log` (incident windows)
+- `/root/logs/smart/` (SMART snapshots)
+
+SMART monitoring:
+
+- Service: `smartmontools.service`
+- Config: `/etc/smartd.conf`
+
+Cleanup (30-day retention):
+
+- Script: `/usr/local/bin/cleanup-smart-logs.sh`
+- Timer: `cleanup-smart-logs.timer`
+
 ### Repo + Compose Layout (Production)
 
 - App repo: `~/apps/skriptoteket/`
@@ -179,25 +134,7 @@ systemctl status ddclient -> active
 
 **Critical**: Production uses `compose.prod.yaml`, NOT `compose.yaml`.
 
-### Recommended CLI Tools (hemma)
-
-```bash
-# Core helpers
-ssh hemma "sudo apt-get update && sudo apt-get install -y ripgrep fd-find bat fzf jq tree"
-
-# Make the commands match common expectations (Ubuntu names them batcat/fdfind)
-ssh hemma "sudo ln -sf /usr/bin/batcat /usr/local/bin/bat && sudo ln -sf /usr/bin/fdfind /usr/local/bin/fd"
-
-# Install mikefarah/yq v4 (apt 'yq' is not v4)
-ssh hemma "sudo curl -fsSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && sudo chmod +x /usr/local/bin/yq"
-```
-
-Notes:
-
-- `ripgrep` provides `rg`
-- `fd-find` provides `fdfind` (symlinked to `fd`)
-- `bat` provides `batcat` (symlinked to `bat`)
-- `yq` is installed to `/usr/local/bin/yq` so it wins over `/usr/bin/yq`
+Recommended CLI tools + install steps: see [ref-home-server-cli-tools.md](../reference/ref-home-server-cli-tools.md).
 
 ### Command Patterns (Use These)
 
@@ -212,104 +149,12 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml ex
 ssh hemma "/snap/bin/docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli <command>"
 ```
 
-### Architecture Overview
+Architecture overview diagram: see [ref-home-server-architecture.md](../reference/ref-home-server-architecture.md).
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                        Internet                              │
-└────────────────────────────┬────────────────────────────────┘
-                             │ :80/:443 (HTTP/HTTPS)
-┌────────────────────────────▼────────────────────────────────┐
-│  nginx-proxy (nginxproxy/nginx-proxy:1.6)                    │
-│  - Auto-discovers containers via VIRTUAL_HOST env var        │
-│  - SSL termination (certs from acme-companion)               │
-│  - Routes: skriptoteket.hule.education → skriptoteket-web   │
-│            grafana.hemma.hule.education → grafana           │
-│            prometheus.hemma.hule.education → prometheus     │
-├──────────────────────────────────────────────────────────────┤
-│  acme-companion (nginxproxy/acme-companion:2.4)              │
-│  - Auto-generates Let's Encrypt certificates                 │
-│  - Listens for LETSENCRYPT_HOST env vars on containers       │
-│  - Auto-renews before expiry                                 │
-└────────────────────────────┬────────────────────────────────┘
-                             │
-    ┌────────────────────────┼────────────────────────┐
-    │                        │                        │
-    ▼                        ▼                        ▼
-┌─────────────┐      ┌─────────────┐         ┌─────────────┐
-│ skriptoteket │      │   grafana   │         │ prometheus  │
-│     :8000    │      │    :3000    │         │    :9090    │
-└─────────────┘      └─────────────┘         └─────────────┘
-        │
-        ▼
-┌─────────────────────────────────────────────────────────────┐
-│  shared-postgres (hule-network)                              │
-│  - PostgreSQL 16 (shared across services)                   │
-│  - Data in persistent volume                                │
-└─────────────────────────────────────────────────────────────┘
-```
+### nginx-proxy (service routing + hardening)
 
-### Add a New Service to nginx-proxy
-
-Add these env vars to the service and expose its internal port:
-
-```yaml
-environment:
-  - VIRTUAL_HOST=myservice.hemma.hule.education
-  - VIRTUAL_PORT=8080  # Internal port the service listens on
-  - LETSENCRYPT_HOST=myservice.hemma.hule.education
-expose:
-  - "8080"
-```
-
-Then add a DNS A record for `myservice.hemma` pointing to `83.252.61.217` (or your current IP).
-The acme-companion will automatically generate SSL certificates.
-
-### nginx-proxy edge hardening (drop probes / unknown hosts)
-
-We proactively drop common scanner traffic at the reverse proxy so the app layer never sees it.
-
-Key settings/files:
-
-- `DEFAULT_HOST=skriptoteket.hule.education` in `~/infrastructure/docker-compose.yml` (nginx-proxy) to avoid a generated `server_name _` that returns `503`.
-- vhost snippets live in the nginx-proxy volume at `/etc/nginx/vhost.d/`:
-  - `global-hardening.conf`: blocks common probes (e.g. `/.env`, `/.git`, `wp-*`, `*.php`, `cgi-bin`, WebDAV methods) with `444`.
-  - `default`: includes `global-hardening.conf` (applies to all vhosts).
-  - `skriptoteket.hule.education`: includes `global-hardening.conf` and drops unexpected `Host` headers on the default server.
-
-Inspect/reload:
-
-```bash
-ssh hemma "sudo docker exec nginx-proxy ls -la /etc/nginx/vhost.d"
-ssh hemma "sudo docker exec nginx-proxy sed -n '1,200p' /etc/nginx/vhost.d/global-hardening.conf"
-ssh hemma "sudo docker exec nginx-proxy nginx -s reload"
-```
-
-### Infrastructure Layout
-
-```text
-~/apps/skriptoteket/           # Application repository
-  compose.prod.yaml            # Production compose (uses shared-postgres)
-  compose.yaml                 # Development compose (local postgres)
-  compose.observability.yaml   # Observability stack (independent lifecycle)
-  Dockerfile                   # Web app image
-  Dockerfile.runner            # Script runner image
-  .env                         # Local environment (never commit)
-
-~/infrastructure/              # Shared infrastructure (nginx-proxy + acme-companion + postgres)
-  docker-compose.yml           # nginx-proxy, acme-companion, shared-postgres
-  .env                         # POSTGRES_ADMIN_PASSWORD, LETSENCRYPT_EMAIL
-  postgres/
-    init/                      # DB init scripts (create databases/users)
-```
-
-### Infrastructure Compose Services
-
-| Service | Image | Purpose |
-|---------|-------|---------|
-| `nginx-proxy` | `nginxproxy/nginx-proxy:1.6` | Auto-configuring reverse proxy |
-| `acme-companion` | `nginxproxy/acme-companion:2.4` | Auto SSL certificate management |
-| `shared-postgres` | `postgres:16-alpine` | Shared PostgreSQL for all services |
+Details for adding new services and edge hardening live in
+[ref-home-server-nginx-proxy.md](../reference/ref-home-server-nginx-proxy.md).
 
 ## Daily Ops
 
@@ -337,8 +182,7 @@ ssh hemma "sudo docker logs -f nginx-proxy"
 ssh hemma "sudo docker logs -f shared-postgres"
 ```
 
-**Tip**: Skriptoteket logs are structured (JSON in production) and support `X-Correlation-ID` for cross-request
-debugging. See [runbook-observability.md](runbook-observability.md).
+Structured logs + correlation IDs: see [runbook-observability-logging.md](runbook-observability-logging.md).
 
 ### Restart Services
 
@@ -365,10 +209,10 @@ runs TTL cleanup automatically.
 
 ```bash
 # Check timer status
-ssh hemma "systemctl list-timers | grep skriptoteket"
+ssh hemma "sudo systemctl list-timers | grep skriptoteket"
 
 # View cleanup logs
-ssh hemma "journalctl -u skriptoteket-session-files-cleanup.service -n 50 --no-pager"
+ssh hemma "sudo journalctl -u skriptoteket-session-files-cleanup.service -n 50 --no-pager"
 
 # Manual trigger (if needed)
 ssh hemma "sudo systemctl start skriptoteket-session-files-cleanup.service"
@@ -388,40 +232,16 @@ ssh hemma "/snap/bin/docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run
 
 Sandbox preview snapshots are stored in PostgreSQL with a TTL (24h). Cleanup is scheduled server-side via systemd.
 
-Unit files:
-
-```ini
-# /etc/systemd/system/skriptoteket-sandbox-snapshots-cleanup.service
-[Unit]
-Description=Skriptoteket sandbox snapshot cleanup
-Requires=snap.docker.dockerd.service
-After=snap.docker.dockerd.service
-
-[Service]
-Type=oneshot
-ExecStart=/snap/bin/docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli cleanup-sandbox-snapshots
-```
-
-```ini
-# /etc/systemd/system/skriptoteket-sandbox-snapshots-cleanup.timer
-[Unit]
-Description=Run sandbox snapshot cleanup hourly
-
-[Timer]
-OnCalendar=hourly
-Persistent=true
-
-[Install]
-WantedBy=timers.target
-```
+Unit file definitions are in [ref-home-server-cleanup-timers.md](../reference/ref-home-server-cleanup-timers.md) (or inspect on host with
+`sudo systemctl cat skriptoteket-sandbox-snapshots-cleanup.service`).
 
 Enable and verify:
 
 ```bash
 ssh hemma "sudo systemctl daemon-reload"
 ssh hemma "sudo systemctl enable --now skriptoteket-sandbox-snapshots-cleanup.timer"
-ssh hemma "systemctl list-timers | grep skriptoteket-sandbox-snapshots"
-ssh hemma "journalctl -u skriptoteket-sandbox-snapshots-cleanup.service -n 50 --no-pager"
+ssh hemma "sudo systemctl list-timers | grep skriptoteket-sandbox-snapshots"
+ssh hemma "sudo journalctl -u skriptoteket-sandbox-snapshots-cleanup.service -n 50 --no-pager"
 ```
 
 Live note (hemma): timer is enabled and runs hourly; see `systemctl status skriptoteket-sandbox-snapshots-cleanup.timer`.
@@ -436,40 +256,16 @@ ssh hemma "sudo systemctl start skriptoteket-sandbox-snapshots-cleanup.service"
 
 Login event audit rows are retained for 90 days. Cleanup is scheduled server-side via systemd.
 
-Unit files:
-
-```ini
-# /etc/systemd/system/skriptoteket-login-events-cleanup.service
-[Unit]
-Description=Skriptoteket login events cleanup
-Requires=snap.docker.dockerd.service
-After=snap.docker.dockerd.service
-
-[Service]
-Type=oneshot
-ExecStart=/snap/bin/docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli cleanup-login-events
-```
-
-```ini
-# /etc/systemd/system/skriptoteket-login-events-cleanup.timer
-[Unit]
-Description=Run login events cleanup daily
-
-[Timer]
-OnCalendar=daily
-Persistent=true
-
-[Install]
-WantedBy=timers.target
-```
+Unit file definitions are in [ref-home-server-cleanup-timers.md](../reference/ref-home-server-cleanup-timers.md) (or inspect on host with
+`sudo systemctl cat skriptoteket-login-events-cleanup.service`).
 
 Enable and verify:
 
 ```bash
 ssh hemma "sudo systemctl daemon-reload"
 ssh hemma "sudo systemctl enable --now skriptoteket-login-events-cleanup.timer"
-ssh hemma "systemctl list-timers | grep skriptoteket-login-events"
-ssh hemma "journalctl -u skriptoteket-login-events-cleanup.service -n 50 --no-pager"
+ssh hemma "sudo systemctl list-timers | grep skriptoteket-login-events"
+ssh hemma "sudo journalctl -u skriptoteket-login-events-cleanup.service -n 50 --no-pager"
 ```
 
 Manual trigger:
@@ -600,52 +396,12 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml ex
 
 ## Observability
 
-The observability stack runs independently via `compose.observability.yaml`.
+Observability operations are documented in the dedicated runbooks:
 
-### Start/Stop
-
-```bash
-# Start observability stack
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observability.yaml up -d"
-
-# Stop observability stack
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observability.yaml down"
-
-# Restart (e.g., after config changes)
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observability.yaml restart"
-```
-
-### Components
-
-| Service | Port | URL | Purpose |
-|---------|------|-----|---------|
-| Grafana | 3000 | https://grafana.hemma.hule.education | Dashboards |
-| Prometheus | 9090 | https://prometheus.hemma.hule.education | Metrics |
-| Jaeger | 16686 | https://jaeger.hemma.hule.education | Tracing |
-| Loki | 3100 | - | Log aggregation |
-| Promtail | - | - | Log collection |
-
-Prometheus and Jaeger are protected by basic auth; see `docs/runbooks/runbook-observability.md` for access notes.
-
-### View Observability Logs
-
-```bash
-ssh hemma "sudo docker logs -f grafana"
-ssh hemma "sudo docker logs -f prometheus"
-ssh hemma "sudo docker logs -f jaeger"
-ssh hemma "sudo docker logs -f loki"
-```
-
-### Metrics
-
-```bash
-# Via metrics endpoint
-ssh hemma "curl -s https://skriptoteket.hule.education/metrics | grep skriptoteket_session_files"
-
-# Example output:
-# skriptoteket_session_files_bytes_total 12345.0
-# skriptoteket_session_files_count 42.0
-```
+- Overview + access: `docs/runbooks/runbook-observability.md`
+- Logs: `docs/runbooks/runbook-observability-logging.md`
+- Metrics: `docs/runbooks/runbook-observability-metrics.md`
+- Tracing: `docs/runbooks/runbook-observability-tracing.md`
 
 ## Troubleshooting
 
@@ -662,8 +418,12 @@ ssh hemma "curl -s https://skriptoteket.hule.education/metrics | grep skriptotek
 ssh hemma "ip -4 addr show enp7s0"
 ssh hemma "ip route | head -n 5"
 
-# If needed, check watchdog logs for evidence:
-ssh hemma "journalctl -t ssh-watchdog --since '2 hours ago'"
+# If needed, check watchdog + heartbeat logs for evidence:
+ssh hemma "sudo journalctl -t ssh-watchdog --since '2 hours ago'"
+ssh hemma "sudo journalctl -t heartbeat --since '2 hours ago'"
+
+# Incident log captures (if taken):
+ssh hemma "sudo ls -1 /root/logs/incident-*.log | tail -n 5"
 ```
 
 ### 502 Bad Gateway
@@ -740,7 +500,7 @@ ssh hemma "lsof -i :8000"
 
 ```bash
 # Check DDNS status
-ssh hemma "systemctl status ddclient"
+ssh hemma "sudo systemctl status ddclient"
 
 # Force DDNS update
 ssh hemma "ddclient -force"

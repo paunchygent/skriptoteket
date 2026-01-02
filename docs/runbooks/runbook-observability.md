@@ -5,7 +5,7 @@ title: "Runbook: Observability Overview"
 status: active
 owners: "olof"
 created: 2025-12-29
-updated: 2025-12-29
+updated: 2026-01-02
 system: "skriptoteket"
 ---
 
@@ -22,7 +22,28 @@ Reference: `docs/reference/reports/ref-external-observability-integration.md`.
 | Prometheus | https://prometheus.hemma.hule.education | Basic auth password in `~/apps/skriptoteket/.env` |
 | Jaeger | https://jaeger.hemma.hule.education | Basic auth (user `admin`, password `JAEGER_BASIC_AUTH_PASSWORD`) |
 
-For container lifecycle (start/stop/restart), see `docs/runbooks/runbook-home-server.md`.
+Components (ports):
+
+- Grafana: 3000
+- Prometheus: 9090
+- Jaeger: 16686
+- Loki: 3100
+- Promtail: agent (no UI)
+
+## Home Server Lifecycle (Observability Stack)
+
+The observability stack runs independently via `compose.observability.yaml`.
+
+```bash
+# Start observability stack
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observability.yaml up -d"
+
+# Stop observability stack
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observability.yaml down"
+
+# Restart (e.g., after config changes)
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observability.yaml restart"
+```
 
 ## Triage Flow (Fast Path)
 

@@ -26,6 +26,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 ## Full index
 
 ### ADRs
+
 - `docs/adr/adr-0001-ui-server-driven-htmx.md`
 - `docs/adr/adr-0002-backend-fastapi.md`
 - `docs/adr/adr-0003-script-taxonomy-professions-and-categories.md`
@@ -82,6 +83,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0053-production-security-perimeter-and-vpn-gating.md`
 
 ### PRDs
+
 - `docs/prd/prd-editor-sandbox-v0.1.md`
 - `docs/prd/prd-script-hub-v0.1.md`
 - `docs/prd/prd-script-hub-v0.2.md`
@@ -89,9 +91,11 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/prd/prd-tool-authoring-v0.1.md`
 
 ### Releases
+
 - `docs/releases/release-script-hub-v0.1.md`
 
 ### Backlog Epics
+
 - `docs/backlog/epics/epic-01-tool-catalog-and-browsing.md`
 - `docs/backlog/epics/epic-02-identity-and-access-control.md`
 - `docs/backlog/epics/epic-03-script-governance-workflow.md`
@@ -111,6 +115,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-17-observability-visualization-and-operations.md`
 
 ### Backlog Reviews
+
 - `docs/backlog/reviews/review-epic-06-linter-architecture-refactor.md`
 - `docs/backlog/reviews/review-epic-08-ai-completion.md`
 - `docs/backlog/reviews/review-epic-09-security-hardening.md`
@@ -119,6 +124,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-17-observability-visualization.md`
 
 ### Backlog Sprints
+
 - `docs/backlog/sprints/sprint-2025-12-21-spa-migration-foundations.md`
 - `docs/backlog/sprints/sprint-2025-12-22-ui-contract-and-curated-apps.md`
 - `docs/backlog/sprints/sprint-2026-01-05-tool-editor-vertical-slice.md`
@@ -138,6 +144,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/sprints/sprint-2026-07-07-tool-layout-editor-v1-drag-and-drop.md`
 
 ### Backlog Stories
+
 - `docs/backlog/stories/story-01-01-profession-category-navigation.md`
 - `docs/backlog/stories/story-02-01-user-model-and-identity-service.md`
 - `docs/backlog/stories/story-02-02-admin-nomination-and-superuser-approval.md`
@@ -306,6 +313,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-17-07-login-events-audit-trail.md`
 
 ### Reference
+
 - `docs/reference/ref-ai-completion-architecture.md`
 - `docs/reference/ref-ai-script-generation-kb-llm.md`
 - `docs/reference/ref-ai-script-generation-kb.md`
@@ -315,6 +323,11 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/ref-editor-sandbox-preview-plan.md`
 - `docs/reference/ref-execution-architecture.md`
 - `docs/reference/ref-frontend-test-gaps-2025-12-29.md`
+- `docs/reference/ref-home-server-architecture.md`
+- `docs/reference/ref-home-server-cleanup-timers.md`
+- `docs/reference/ref-home-server-cli-tools.md`
+- `docs/reference/ref-home-server-nginx-proxy.md`
+- `docs/reference/ref-home-server-security-hardening.md`
 - `docs/reference/ref-implementation-map-script-hub-v0-2.md`
 - `docs/reference/ref-linter-architecture.md`
 - `docs/reference/ref-review-workflow.md`
@@ -326,6 +339,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/ref-tool-editor-framework-codemap.md`
 
 ### Reference Reports
+
 - `docs/reference/reports/ref-ai-edit-suggestions-kb-context-budget-blocker.md`
 - `docs/reference/reports/ref-architectural-review-epic-04.md`
 - `docs/reference/reports/ref-devops-skill-research.md`
@@ -339,6 +353,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/reports/ref-vue-spa-migration-roadmap.md`
 
 ### Runbooks
+
 - `docs/runbooks/runbook-gpu-ai-workloads.md`
 - `docs/runbooks/runbook-home-server.md`
 - `docs/runbooks/runbook-huleedu-integration.md`
@@ -355,6 +370,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/runbooks/runbook-user-management.md`
 
 ### Templates
+
 - `docs/templates/template-adr.md`
 - `docs/templates/template-epic.md`
 - `docs/templates/template-prd.md`
@@ -366,6 +382,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/templates/template-story.md`
 
 ### Meta
+
 - `docs/_meta/README.md`
 
 ## Agent support
