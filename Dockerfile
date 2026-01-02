@@ -80,7 +80,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-dejavu-core \
     fonts-freefont-ttf \
     fonts-noto-core \
+    curl \
+    jq \
+    ripgrep \
+    fd-find \
+    bat \
+    fzf \
+    tree \
     && rm -rf /var/lib/apt/lists/*
+
+# DevOps DX parity tools (see skriptoteket-devops skill/runbook)
+RUN ln -sf /usr/bin/fdfind /usr/local/bin/fd \
+    && ln -sf /usr/bin/batcat /usr/local/bin/bat \
+    && curl -fsSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq \
+    && chmod +x /usr/local/bin/yq
 
 RUN pip install --no-cache-dir pdm==2.26.2
 
