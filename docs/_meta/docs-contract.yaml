@@ -84,7 +84,7 @@ types:
     folder: docs/backlog/stories
     filename_regex: "^story-\\d{2}-\\d{2}-[a-z0-9-]+\\.md$"
     id_regex: "^ST-\\d{2}-\\d{2}$"
-    status_allowed: ["ready", "in_progress", "done", "blocked"]
+    status_allowed: ["ready", "in_progress", "done", "blocked", "canceled"]
     required: ["epic", "acceptance_criteria"]
     optional: ["ui_impact", "data_impact", "risks", "dependencies"]
 

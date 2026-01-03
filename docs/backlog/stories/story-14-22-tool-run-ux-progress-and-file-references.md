@@ -5,12 +5,14 @@ title: "Tool run UX: conventions for progress + input file references"
 status: ready
 owners: "agents"
 created: 2025-12-29
+updated: 2026-01-03
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given a tool sets progress metadata in state using a documented convention, when the UI renders the run, then it shows a compact progress indicator (e.g. step X of Y, optional label)."
   - "Given progress metadata is absent or invalid, when the UI renders the run, then it does not show a progress UI and does not error."
-  - "Given a run has uploaded input files, when the UI renders actions, then it exposes a 'Files available' view (names + copyable runner paths) so authors/users can reference them in subsequent steps."
-  - "Given the conventions are implemented, then they are documented for tool authors (including how to store file selections in state and how to resolve paths in the runner)."
+  - "Given a run has uploaded input files, when the UI renders actions, then it exposes a 'Files available' view (names + copyable references) so authors/users can reference them in subsequent steps."
+  - "Given the 'Files available' view is shown, then it must not expose filesystem paths; only file names/references are shown."
+  - "Given the conventions are implemented, then they are documented for tool authors (including how to store file selections in state and how the runner/toolkit resolves references to paths)."
 dependencies:
   - "ST-14-19"
 ui_impact: "Yes (runtime/tool-run + editor sandbox runner)"
@@ -30,5 +32,9 @@ contract breaking change.
 Support multi-step tools with a progress indicator and a clear way to reference previously uploaded files.
 
 ## Notes
+
+Do not show or copy internal runner filesystem paths. Keeping “files available” as names/references keeps the UX
+compatible with future “user file library” concepts (personal reusable files per account) without leaking implementation
+details.
 
 Reference: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`

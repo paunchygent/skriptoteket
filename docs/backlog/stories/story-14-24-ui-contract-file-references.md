@@ -5,6 +5,7 @@ title: "UI contract v2.x: first-class file references"
 status: ready
 owners: "agents"
 created: 2025-12-29
+updated: 2026-01-03
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given a run has uploaded input files, when a tool emits next_actions that accept file references, then the UI can present selectable file options without exposing runner filesystem paths."
@@ -28,5 +29,9 @@ Add a first-class, stable “file reference” concept to the UI contract so too
 current run/session without hard-coding paths.
 
 ## Notes
+
+File references are identifiers (not paths). The UI must only present names/labels and never leak internal filesystem
+paths; this keeps the contract compatible with future file sources (e.g. per-user reusable file libraries) without
+breaking UX.
 
 Reference: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`

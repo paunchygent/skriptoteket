@@ -111,11 +111,10 @@ def _wrap_preview_html(*, html: str) -> str:
     css = (
         ":root { --preview-scale: 0.95; --preview-pad: clamp(10px, 2.2vh, 22px); }\n"
         "html, body { margin: 0; padding: 0; }\n"
-        "body { overflow-x: hidden; }\n"
         "#__preview_outer { box-sizing: border-box; padding: var(--preview-pad); }\n"
         "#__preview_outer { padding-bottom: calc(var(--preview-pad) * 1.3); }\n"
         "#__preview_inner { transform: scale(var(--preview-scale)); "
-        "transform-origin: top center; width: calc(100% / var(--preview-scale)); }\n"
+        "transform-origin: top center; }\n"
     )
     style_tag = f"<style>{css}</style>"
 
@@ -144,14 +143,7 @@ def _wrap_pdf_html(*, html: str) -> str:
     if 'id="__pdf_outer"' in html or "id='__pdf_outer'" in html:
         return html
 
-    css = (
-        ":root { --pdf-scale: 0.95; --pdf-pad: clamp(3mm, 2vw, 7mm); }\n"
-        "html, body { margin: 0; padding: 0; }\n"
-        "#__pdf_outer { box-sizing: border-box; padding: var(--pdf-pad); }\n"
-        "#__pdf_outer { padding-bottom: calc(var(--pdf-pad) * 1.2); }\n"
-        "#__pdf_inner { transform: scale(var(--pdf-scale)); transform-origin: top center; "
-        "width: calc(100% / var(--pdf-scale)); }\n"
-    )
+    css = "html, body { margin: 0; }\n#__pdf_outer { box-sizing: border-box; }\n"
     style_tag = f"<style>{css}</style>"
 
     head_close = html.lower().find("</head>")
@@ -207,9 +199,21 @@ def _build_page_css(*, page_size: str, orientation: str) -> str:
     normalized_page_size = str(page_size).strip().lower()
     size_token = "A4" if normalized_page_size == "a4" else "Letter"
 
+    pad_tb, pad_lr = _page_margins_for_scale(
+        page_size=normalized_page_size,
+        orientation=orient,
+        scale=0.95,
+    )
+
     max_svg_height = "240mm" if orient == "portrait" else "175mm"
     return (
         f"@page {{ size: {size_token} {orient}; margin: 0; }}\n"
+        "html, body { height: auto !important; }\n"
+        f"#__pdf_outer {{ padding: {pad_tb}mm {pad_lr}mm; box-decoration-break: clone; "
+        "-webkit-box-decoration-break: clone; }}\n"
+        "pre, .card, .card-h, .card-b, .diagram, details, .details-body, .pdf-details { "
+        "box-decoration-break: clone; -webkit-box-decoration-break: clone; }\n"
+        "pre { overflow: visible !important; }\n"
         ".app { display: block !important; max-width: none !important; "
         "padding: 0 !important; }\n"
         ".sidebar { display: none !important; }\n"
@@ -225,7 +229,21 @@ def _build_generic_page_css(*, page_size: str, orientation: str) -> str:
     orient = "landscape" if orientation == "landscape" else "portrait"
     normalized_page_size = str(page_size).strip().lower()
     size_token = "A4" if normalized_page_size == "a4" else "Letter"
-    return f"@page {{ size: {size_token} {orient}; }}\n"
+
+    pad_tb, pad_lr = _page_margins_for_scale(
+        page_size=normalized_page_size,
+        orientation=orient,
+        scale=0.95,
+    )
+    return (
+        f"@page {{ size: {size_token} {orient}; margin: 0; }}\n"
+        "html, body { height: auto !important; }\n"
+        f"#__pdf_outer {{ padding: {pad_tb}mm {pad_lr}mm; box-decoration-break: clone; "
+        "-webkit-box-decoration-break: clone; }}\n"
+        "pre, blockquote, table { box-decoration-break: clone; "
+        "-webkit-box-decoration-break: clone; }\n"
+        "pre { overflow: visible !important; }\n"
+    )
 
 
 def _build_page_css_fallback(*, page_size: str, orientation: str) -> str:
@@ -233,9 +251,21 @@ def _build_page_css_fallback(*, page_size: str, orientation: str) -> str:
     normalized_page_size = str(page_size).strip().lower()
     size_token = "A4" if normalized_page_size == "a4" else "Letter"
 
+    pad_tb, pad_lr = _page_margins_for_scale(
+        page_size=normalized_page_size,
+        orientation=orient,
+        scale=0.95,
+    )
+
     max_svg_height = "200mm" if orient == "portrait" else "140mm"
     return (
         f"@page {{ size: {size_token} {orient}; margin: 0; }}\n"
+        "html, body { height: auto !important; }\n"
+        f"#__pdf_outer {{ padding: {pad_tb}mm {pad_lr}mm; box-decoration-break: clone; "
+        "-webkit-box-decoration-break: clone; }}\n"
+        "pre, .card, .card-h, .card-b, .diagram, details, .details-body, .pdf-details { "
+        "box-decoration-break: clone; -webkit-box-decoration-break: clone; }\n"
+        "pre { overflow: visible !important; }\n"
         ".app { display: block !important; max-width: none !important; "
         "padding: 0 !important; }\n"
         ".sidebar { display: none !important; }\n"
@@ -245,6 +275,24 @@ def _build_page_css_fallback(*, page_size: str, orientation: str) -> str:
         f".diagram svg {{ max-height: {max_svg_height} !important; "
         "max-width: 100% !important; height: auto !important; }}\n"
     )
+
+
+def _page_margins_for_scale(
+    *, page_size: str, orientation: str, scale: float
+) -> tuple[float, float]:
+    if page_size == "a4":
+        width_mm, height_mm = 210.0, 297.0
+    else:
+        width_mm, height_mm = 215.9, 279.4
+
+    if orientation == "landscape":
+        width_mm, height_mm = height_mm, width_mm
+
+    margin_lr = round((width_mm * (1.0 - scale)) / 2.0, 1)
+    margin_tb = round((height_mm * (1.0 - scale)) / 2.0, 1)
+    margin_lr = max(margin_lr, 0.0)
+    margin_tb = max(margin_tb, 0.0)
+    return margin_tb, margin_lr
 
 
 def _inject_author_css(*, html: str, css: str) -> str:

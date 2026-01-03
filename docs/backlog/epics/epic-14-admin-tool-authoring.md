@@ -5,7 +5,7 @@ title: "Admin tool authoring (draft-first workflow)"
 status: active
 owners: "agents"
 created: 2025-12-25
-updated: 2026-01-02
+updated: 2026-01-03
 outcome: "Admins can quickly create draft tools directly from /admin/tools, iterate without contributor-only hoops, and publish only when slug and taxonomy are finalized."
 ---
 
@@ -50,7 +50,7 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 - [ST-14-18: Reviewer navigation improvements (compare targets + deep links)](../stories/story-14-18-editor-review-navigation-and-compare.md)
 - [ST-14-19: Runner toolkit helper module (inputs/settings/actions)](../stories/story-14-19-runner-toolkit-helper-module.md)
 - [ST-14-20: Editor intelligence updates for toolkit (completions/hover/lints)](../stories/story-14-20-editor-intelligence-toolkit-support.md)
-- [ST-14-21: Tool run actions remember prior inputs (sticky action forms)](../stories/story-14-21-tool-run-actions-sticky-inputs.md)
+- [ST-14-21: Tool run actions remember prior inputs (sticky action forms)](../stories/story-14-21-tool-run-actions-sticky-inputs.md) (canceled; superseded by ST-14-23)
 - [ST-14-22: Tool run UX conventions for progress + input file references](../stories/story-14-22-tool-run-ux-progress-and-file-references.md)
 - [ST-14-23: UI contract v2.x: action defaults/prefill](../stories/story-14-23-ui-contract-action-defaults-prefill.md)
 - [ST-14-24: UI contract v2.x: first-class file references](../stories/story-14-24-ui-contract-file-references.md)

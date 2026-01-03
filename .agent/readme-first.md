@@ -115,3 +115,9 @@ Most EPIC-02 stories are complete (self-registration, profiles, lockout). ST-02-
 - ST-07-04: `docs/backlog/stories/story-07-04-logging-redaction-and-policy.md`
 - ST-05-12: `docs/backlog/stories/story-05-12-mobile-editor-ux.md`
 - ST-04-04: `docs/backlog/stories/story-04-04-governance-audit-rollback.md`
+
+### Recent context links (from handoff compression)
+- EPIC-14 admin tool authoring: `docs/backlog/epics/epic-14-admin-tool-authoring.md`
+- EPIC-08 AI editor features: `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md`
+- AI infra runbooks: `docs/runbooks/runbook-gpu-ai-workloads.md`, `docs/runbooks/runbook-tabby-codemirror.md`
+- Ops runbooks: `docs/runbooks/runbook-home-server.md`, `docs/runbooks/runbook-observability.md`

@@ -27,6 +27,9 @@ def test_build_page_css_sets_margin_zero_and_normalizes_page_size() -> None:
     )
     assert "size: A4 portrait" in css_a4
     assert "margin: 0" in css_a4
+    assert "html, body { height: auto" in css_a4
+    assert "#__pdf_outer { padding:" in css_a4
+    assert "box-decoration-break: clone" in css_a4
     assert "details > :not(summary)" in css_a4
     assert ".sidebar { display: none" in css_a4
     assert "overflow: visible" in css_a4
@@ -161,7 +164,8 @@ def test_select_print_css_injects_size_only_when_no_at_page(tmp_path: Path) -> N
     )
     assert "@page" in css
     assert "size: A4 portrait" in css
-    assert "margin:" not in css
+    assert "margin: 0" in css
+    assert "#__pdf_outer { padding:" in css
     assert is_tool_editor is False
 
 
@@ -178,6 +182,7 @@ def test_select_print_css_uses_tool_editor_overrides_when_detected(tmp_path: Pat
         orientation="portrait",
     )
     assert "margin: 0" in css
+    assert "#__pdf_outer { padding:" in css
     assert ".sidebar { display: none" in css
     assert is_tool_editor is True
 
@@ -191,6 +196,8 @@ def test_wrap_preview_html_injects_wrappers_and_css() -> None:
     assert "--preview-scale" in wrapped
     assert "clamp(" in wrapped
     assert "transform: scale(var(--preview-scale))" in wrapped
+    assert "width: calc" not in wrapped
+    assert "overflow-x: hidden" not in wrapped
 
 
 @pytest.mark.unit
@@ -210,9 +217,7 @@ def test_wrap_pdf_html_injects_wrappers_and_css() -> None:
     wrapped = html_to_pdf_preview._wrap_pdf_html(html=html)
     assert 'id="__pdf_outer"' in wrapped
     assert 'id="__pdf_inner"' in wrapped
-    assert "--pdf-scale" in wrapped
-    assert "clamp(" in wrapped
-    assert "transform: scale(var(--pdf-scale))" in wrapped
+    assert "#__pdf_outer" in wrapped
 
 
 @pytest.mark.unit

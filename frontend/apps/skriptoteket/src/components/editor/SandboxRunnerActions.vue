@@ -1,7 +1,13 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 
 import type { components } from "../../api/openapi";
+import {
+  buildSandboxDebugBundle,
+  buildSandboxDebugJson,
+  buildSandboxDebugText,
+  getSandboxDebugState,
+} from "../../composables/editor/sandboxDebugHelpers";
 import { UiOutputRenderer } from "../ui-outputs";
 import ToolRunActions from "../tool-run/ToolRunActions.vue";
 import ToolRunArtifacts from "../tool-run/ToolRunArtifacts.vue";
@@ -58,6 +64,39 @@ const actionError = computed({
   set: (value) => emit("update:actionErrorMessage", value),
 });
 
+const isDebugOpen = ref(false);
+
+const debugBundle = computed(() => {
+  if (!displayedRun.value) return null;
+  return buildSandboxDebugBundle(displayedRun.value);
+});
+
+const debugState = computed(() => {
+  if (!displayedRun.value) {
+    return { hasMissingDetails: true, hasNoOutput: false };
+  }
+  return getSandboxDebugState(displayedRun.value);
+});
+
+const debugJson = computed(() => (displayedRun.value ? buildSandboxDebugJson(displayedRun.value) : ""));
+const debugText = computed(() => (displayedRun.value ? buildSandboxDebugText(displayedRun.value) : ""));
+
+const stdoutValue = computed(() => debugBundle.value?.stdout ?? "null");
+const stderrValue = computed(() => debugBundle.value?.stderr ?? "null");
+
+const stdoutMeta = computed(() =>
+  formatByteMeta(debugBundle.value?.stdout_bytes ?? null, debugBundle.value?.stdout_max_bytes ?? null),
+);
+const stderrMeta = computed(() =>
+  formatByteMeta(debugBundle.value?.stderr_bytes ?? null, debugBundle.value?.stderr_max_bytes ?? null),
+);
+const stdoutTruncated = computed(() => debugBundle.value?.stdout_truncated === true);
+const stderrTruncated = computed(() => debugBundle.value?.stderr_truncated === true);
+
+watch(displayedRun, () => {
+  isDebugOpen.value = false;
+});
+
 function statusLabel(status: RunStatus): string {
   const labels: Record<RunStatus, string> = {
     running: "Kör...",
@@ -66,6 +105,40 @@ function statusLabel(status: RunStatus): string {
     timed_out: "Tidsgräns",
   };
   return labels[status];
+}
+
+function formatByteMeta(bytes: number | null, maxBytes: number | null): string | null {
+  if (bytes === null && maxBytes === null) return null;
+  if (bytes === null && maxBytes !== null) return `Max ${maxBytes} bytes`;
+  if (bytes !== null && maxBytes === null) return `${bytes} bytes`;
+  return `${bytes} / ${maxBytes} bytes`;
+}
+
+async function copyToClipboard(text: string): Promise<void> {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "true");
+  textarea.style.position = "absolute";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textarea);
+}
+
+async function copyDebugJson(): Promise<void> {
+  if (!displayedRun.value) return;
+  await copyToClipboard(debugJson.value);
+}
+
+async function copyDebugText(): Promise<void> {
+  if (!displayedRun.value) return;
+  await copyToClipboard(debugText.value);
 }
 </script>
 
@@ -134,6 +207,117 @@ function statusLabel(status: RunStatus): string {
       >
         <p class="font-semibold">Ett fel uppstod</p>
         <pre class="mt-1 whitespace-pre-wrap font-mono text-xs">{{ displayedRun.error_summary }}</pre>
+      </div>
+
+      <!-- Debug panel -->
+      <div
+        v-if="displayedRun"
+        class="border border-navy bg-white shadow-brutal-sm"
+      >
+        <div class="flex flex-wrap items-center justify-between gap-3 px-3 py-2 border-b border-navy/20">
+          <div>
+            <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+              Debug
+            </h2>
+            <p class="text-xs text-navy/60">
+              Diagnostik för sandbox-körningen.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              class="btn-primary"
+              @click="copyDebugJson"
+            >
+              Kopiera debug (JSON)
+            </button>
+            <button
+              type="button"
+              class="btn-ghost"
+              @click="copyDebugText"
+            >
+              Kopiera debug (text)
+            </button>
+            <button
+              type="button"
+              class="btn-ghost"
+              @click="isDebugOpen = !isDebugOpen"
+            >
+              {{ isDebugOpen ? "Dölj" : "Visa" }}
+            </button>
+          </div>
+        </div>
+
+        <div
+          v-if="isDebugOpen"
+          class="border-t border-navy/20 bg-canvas/30 px-3 py-3 space-y-3"
+        >
+          <p
+            v-if="debugState.hasMissingDetails"
+            class="text-sm text-navy/70"
+          >
+            Debug-detaljer saknas för den här körningen.
+          </p>
+          <p
+            v-else-if="debugState.hasNoOutput"
+            class="text-sm text-navy/70 italic"
+          >
+            Ingen stdout/stderr för den här körningen.
+          </p>
+          <div
+            v-else
+            class="space-y-3"
+          >
+            <section class="space-y-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+                  Stdout
+                </h3>
+                <span
+                  v-if="stdoutMeta"
+                  class="text-xs font-mono text-navy/60"
+                >
+                  {{ stdoutMeta }}
+                </span>
+                <span
+                  v-if="stdoutTruncated"
+                  class="px-2 py-0.5 text-xs font-semibold uppercase tracking-wide border border-warning text-warning"
+                >
+                  Trunkerad
+                </span>
+              </div>
+              <pre
+                class="border border-navy/20 bg-white p-2 text-xs font-mono whitespace-pre-wrap break-words"
+                v-text="stdoutValue"
+              />
+            </section>
+
+            <section class="space-y-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+                  Stderr
+                </h3>
+                <span
+                  v-if="stderrMeta"
+                  class="text-xs font-mono text-navy/60"
+                >
+                  {{ stderrMeta }}
+                </span>
+                <span
+                  v-if="stderrTruncated"
+                  class="px-2 py-0.5 text-xs font-semibold uppercase tracking-wide border border-warning text-warning"
+                >
+                  Trunkerad
+                </span>
+              </div>
+              <pre
+                class="border border-navy/20 bg-white p-2 text-xs font-mono whitespace-pre-wrap break-words"
+                v-text="stderrValue"
+              />
+            </section>
+          </div>
+        </div>
       </div>
 
       <!-- Outputs -->

@@ -2,29 +2,21 @@
 type: story
 id: ST-14-21
 title: "Tool run actions: remember prior inputs (sticky action forms)"
-status: ready
+status: canceled
 owners: "agents"
 created: 2025-12-29
+updated: 2026-01-03
 epic: "EPIC-14"
 acceptance_criteria:
-  - "Given a user submits a next_action, when the same action is rendered again for the same tool version, then the form pre-fills matching fields with the last submitted values."
-  - "Given a user reloads the page during an interactive session, when the next_action form is rendered again, then remembered values still pre-fill (at least within the same browser tab/session)."
-  - "Given an action field is a file upload, when remembering inputs, then the UI does not attempt to persist file contents and leaves file fields empty."
-  - "Given a user wants a clean slate, when choosing a reset/clear option, then remembered values are cleared for that tool+action."
-dependencies:
-  - "ST-14-03"
-ui_impact: "Yes (ToolRunActions / action form UX)"
-data_impact: "No"
+  - "Canceled: superseded by ST-14-23 (tool-provided action defaults / prefill)."
 ---
 
-## Context
+## Status
 
-Interactive tools often require repeated submissions of the same action while iterating. Today, the action form resets on
-each render, forcing users (and tool authors in sandbox) to repeatedly retype the same values.
+This story is canceled as of 2026-01-03.
 
-## Goal
-
-Make next_action forms “sticky” by default (or via a small toggle), so repeated steps feel fast and predictable.
+Rationale: we want a single, explicit prefill mechanism controlled by the tool (ST-14-23) instead of a separate
+client-side “remember last values” behavior that can confuse authors and users.
 
 ## Notes
 
