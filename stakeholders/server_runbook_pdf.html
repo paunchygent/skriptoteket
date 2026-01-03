@@ -1,0 +1,889 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Runbook: Home Server Operations (RUN-home-server)</title>
+  <style>
+    :root{
+      --bg: #0b1020;
+      --panel: #0f1730;
+      --paper: #0e1430;
+      --text: #e8ecff;
+      --muted: #b8c0e6;
+      --faint: #8a94c7;
+
+      --border: rgba(232,236,255,0.12);
+      --border-strong: rgba(232,236,255,0.18);
+      --shadow: 0 12px 40px rgba(0,0,0,0.35);
+
+      --accent: #6aa6ff;
+      --accent-2: #8cf0d6;
+
+      --ok: #27d17f;
+      --warn: #ffcc66;
+      --danger: #ff6b7a;
+      --info: #7dd3fc;
+
+      --code-bg: rgba(255,255,255,0.04);
+      --code-border: rgba(255,255,255,0.10);
+
+      --radius: 14px;
+      --radius-sm: 10px;
+
+      --maxw: 1000px;
+    }
+
+    /* Base */
+    html, body { height: 100%; }
+    body{
+      margin:0;
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(106,166,255,0.22), transparent 60%),
+        radial-gradient(900px 650px at 85% 0%, rgba(140,240,214,0.14), transparent 60%),
+        linear-gradient(180deg, var(--bg), #050714 70%);
+      color: var(--text);
+      font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      letter-spacing: 0.1px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    a{
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover{ text-decoration: underline; }
+
+    code, pre, kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .wrap{
+      max-width: var(--maxw);
+      margin: 42px auto;
+      padding: 0 18px 70px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+    }
+
+    .kicker{
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+
+    h1{
+      margin: 0;
+      font-size: 34px;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle{
+      margin-top: 8px;
+      color: var(--muted);
+      max-width: 70ch;
+    }
+
+    .badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 8px;
+      justify-content:flex-end;
+      align-items:flex-start;
+    }
+    .badge{
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .badge strong{
+      color: var(--text);
+      font-weight: 600;
+    }
+    .badge.ok{ border-color: rgba(39,209,127,0.35); }
+    .badge.ok strong{ color: var(--ok); }
+    .badge.info{ border-color: rgba(125,211,252,0.35); }
+    .badge.info strong{ color: var(--info); }
+
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.02));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .panel-inner{ padding: 18px 18px; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    @media(min-width: 980px){
+      .grid{
+        grid-template-columns: 320px 1fr;
+        align-items:start;
+      }
+    }
+
+    .toc{
+      position: sticky;
+      top: 18px;
+    }
+    .toc h2{
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--faint);
+      margin: 0 0 10px 0;
+    }
+    .toc .panel-inner{ padding: 16px; }
+    .toc ol{
+      margin: 0;
+      padding-left: 18px;
+    }
+    .toc li{
+      margin: 6px 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .toc a{ color: var(--text); }
+    .toc a:hover{ color: var(--accent); text-decoration: none; }
+
+    .meta{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    @media(min-width: 700px){
+      .meta{
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .meta-card{
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      border-radius: var(--radius-sm);
+      padding: 14px 14px;
+    }
+    .meta-card h3{
+      margin: 0 0 6px 0;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--faint);
+    }
+    .meta-card .value{
+      font-size: 15px;
+      color: var(--text);
+      font-weight: 600;
+    }
+    .meta-card .value small{
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    /* Content */
+    main{
+      padding: 18px;
+    }
+    section{
+      border-top: 1px solid var(--border);
+      padding-top: 22px;
+      margin-top: 18px;
+    }
+    section:first-child{
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+
+    h2{
+      margin: 0 0 10px 0;
+      font-size: 22px;
+      letter-spacing: -0.01em;
+    }
+    h3{
+      margin: 18px 0 10px 0;
+      font-size: 17px;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+    p{
+      margin: 10px 0;
+      color: var(--muted);
+    }
+
+    ul{
+      margin: 10px 0 10px 18px;
+      color: var(--muted);
+    }
+    li{ margin: 6px 0; }
+
+    hr.sep{
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 18px 0;
+    }
+
+    /* Code blocks */
+    pre{
+      margin: 10px 0 14px;
+      padding: 14px 14px;
+      background: var(--code-bg);
+      border: 1px solid var(--code-border);
+      border-radius: var(--radius-sm);
+      overflow:auto;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+    pre code{
+      color: var(--text);
+      font-size: 13.5px;
+      line-height: 1.45;
+      display:block;
+      white-space: pre;
+    }
+    p code, li code{
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.10);
+      padding: 2px 6px;
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.95em;
+    }
+
+    /* Callouts */
+    .callout{
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      padding: 12px 14px;
+      margin: 12px 0 14px;
+    }
+    .callout .title{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 6px;
+      color: var(--text);
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+    .callout .title .dot{
+      width: 10px; height: 10px;
+      border-radius: 999px;
+      background: var(--info);
+      box-shadow: 0 0 0 3px rgba(125,211,252,0.12);
+      flex: 0 0 auto;
+    }
+    .callout p{ margin: 6px 0; color: var(--muted); }
+
+    .callout.note .title .dot{ background: var(--info); box-shadow: 0 0 0 3px rgba(125,211,252,0.12); }
+    .callout.warn{ border-color: rgba(255,204,102,0.30); }
+    .callout.warn .title .dot{ background: var(--warn); box-shadow: 0 0 0 3px rgba(255,204,102,0.12); }
+    .callout.danger{ border-color: rgba(255,107,122,0.35); }
+    .callout.danger .title .dot{ background: var(--danger); box-shadow: 0 0 0 3px rgba(255,107,122,0.12); }
+    .callout.critical{ border-color: rgba(140,240,214,0.30); }
+    .callout.critical .title .dot{ background: var(--accent-2); box-shadow: 0 0 0 3px rgba(140,240,214,0.12); }
+
+    /* Mini labels */
+    .label{
+      display:inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.03);
+      vertical-align: middle;
+      margin-left: 8px;
+    }
+    .label.critical{ border-color: rgba(140,240,214,0.30); color: var(--accent-2); }
+    .label.danger{ border-color: rgba(255,107,122,0.35); color: var(--danger); }
+
+    footer{
+      margin-top: 24px;
+      color: var(--faint);
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+    }
+
+    /* Print / PDF conversion */
+    @media print{
+      body{
+        background: #ffffff !important;
+        color: #111827 !important;
+      }
+      a{ color: #1d4ed8 !important; text-decoration: none !important; }
+      .wrap{ margin: 0; max-width: none; padding: 0; }
+      .panel{ box-shadow: none; border-color: #e5e7eb; }
+      .panel-inner, main{ padding: 16px; }
+      .toc{ display:none; } /* keep PDF cleaner; remove if you want TOC printed */
+      .badge{ border-color: #e5e7eb; background: #f9fafb; color: #374151; }
+      .badge.ok strong{ color: #047857 !important; }
+      .badge.info strong{ color: #0369a1 !important; }
+      p, li{ color: #374151 !important; }
+      h1, h2, h3{ color: #111827 !important; }
+      pre{
+        background: #f9fafb !important;
+        border-color: #e5e7eb !important;
+      }
+      pre code{ color: #111827 !important; }
+      p code, li code{
+        background: #f3f4f6 !important;
+        border-color: #e5e7eb !important;
+        color: #111827 !important;
+      }
+      .callout{
+        background: #f9fafb !important;
+        border-color: #e5e7eb !important;
+      }
+      .label{ background: #f3f4f6 !important; border-color: #e5e7eb !important; }
+      section{ break-inside: avoid; }
+      h2{ break-after: avoid; }
+      @page { margin: 18mm; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="kicker">Runbook</div>
+        <h1>Home Server Operations</h1>
+        <div class="subtitle">
+          Operations guide for the home server hosting Skriptoteket and future HuleEdu services.
+        </div>
+      </div>
+      <div class="badges" aria-label="document metadata badges">
+        <div class="badge ok"><strong>Status:</strong> Active</div>
+        <div class="badge info"><strong>System:</strong> hemma.hule.education</div>
+        <div class="badge"><strong>ID:</strong> RUN-home-server</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-inner">
+        <div class="meta" aria-label="document metadata">
+          <div class="meta-card">
+            <h3>Owners</h3>
+            <div class="value">olof</div>
+          </div>
+          <div class="meta-card">
+            <h3>Lifecycle</h3>
+            <div class="value">
+              Created <small>2025-12-16</small><br />
+              Updated <small>2026-01-02</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <aside class="toc">
+          <div class="panel">
+            <div class="panel-inner">
+              <h2>Contents</h2>
+              <ol>
+                <li><a href="#setup">Setup</a></li>
+                <li><a href="#daily-ops">Daily Ops</a></li>
+                <li><a href="#deploy">Deploy</a></li>
+                <li><a href="#data">Data</a></li>
+                <li><a href="#observability">Observability</a></li>
+                <li><a href="#troubleshooting">Troubleshooting</a></li>
+              </ol>
+            </div>
+          </div>
+        </aside>
+
+        <main>
+          <section id="setup">
+            <h2>Setup</h2>
+
+            <h3 id="server-access">Server Access (SSH)</h3>
+            <pre><code class="language-bash"># Remote admin access (VPN-gated; Tailscale)
+ssh hemma           # paunchygent (non-root default)
+ssh hemma-root      # root (use only with explicit approval)
+
+# Local network break-glass (LAN)
+ssh hemma-local
+ssh hemma-local-root</code></pre>
+
+            <div class="callout note">
+              <div class="title"><span class="dot"></span>Notes</div>
+              <ul>
+                <li>SSH is intentionally <strong>not exposed on the public internet</strong> (no router port-forward for <code>22/tcp</code>).</li>
+                <li>Default user is non-root (<code>paunchygent</code>); use <code>ssh hemma-root</code> only with explicit approval.</li>
+                <li>UFW allows SSH only:
+                  <ul>
+                    <li>On <code>tailscale0</code> (VPN), and</li>
+                    <li>From the LAN break-glass subnet <code>192.168.0.0/24</code>.</li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+
+            <p>
+              If <code>ssh hemma</code> still points at <code>hemma.hule.education</code>, update your <code>~/.ssh/config</code> so
+              <code>ssh hemma</code> uses MagicDNS:
+            </p>
+
+            <pre><code class="language-text">Host hemma
+  HostName hemma.tail730aa2.ts.net
+  User paunchygent
+  IdentityFile ~/.ssh/hemma-paunchygent_ed25519
+
+Host hemma-root
+  HostName hemma.tail730aa2.ts.net
+  User root
+
+Host hemma-local
+  HostName 192.168.0.9
+  User paunchygent
+  IdentityFile ~/.ssh/hemma-paunchygent_ed25519
+
+Host hemma-local-root
+  HostName 192.168.0.9
+  User root</code></pre>
+
+            <h3 id="ssh-hardening">SSH Hardening + Fail2ban</h3>
+            <p>
+              Security hardening (sshd settings, Fail2ban jails, nginx-proxy probe jail) is documented in
+              <a href="../reference/ref-home-server-security-hardening.md">ref-home-server-security-hardening.md</a>.
+            </p>
+
+            <h3 id="watchdog">SSH/Network Watchdog (Active Remediation)</h3>
+            <p>
+              Runs every 2 minutes and remediates SSH/network drift. It restarts <code>systemd-networkd</code>,
+              <code>systemd-resolved</code>, and <code>tailscaled</code> if route/ping checks fail, and reboots after 3
+              consecutive failures.
+            </p>
+            <p><strong>Script:</strong> <code>/usr/local/bin/ssh-watchdog.sh</code></p>
+
+            <pre><code class="language-bash">sudo systemctl status ssh-watchdog.timer --no-pager
+sudo journalctl -t ssh-watchdog --since "1 hour ago"
+sudo systemctl disable --now ssh-watchdog.timer</code></pre>
+
+            <h3 id="heartbeat">Heartbeat Log (Hang Correlation)</h3>
+            <p>Logs a simple heartbeat every minute to make hang windows obvious.</p>
+
+            <pre><code class="language-bash">sudo systemctl status heartbeat-log.timer --no-pager
+sudo journalctl -t heartbeat --since "2 hours ago"</code></pre>
+
+            <h3 id="network-ddns">Current Network + DDNS Settings (as of 2026-01-02)</h3>
+
+            <pre><code class="language-text"># Network (ethernet only; Wi-Fi disabled)
+/etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
+  network: {config: disabled}
+
+/etc/netplan/01-netcfg.yaml
+  enp7s0: dhcp4=true, dhcp6=false, optional=true
+
+/etc/netplan/50-cloud-init.yaml.disabled
+/etc/netplan/50-cloud-init.yaml.bak
+
+systemctl status wpa_supplicant@wlp5s0.service -> inactive (disabled)</code></pre>
+
+            <pre><code class="language-text"># DDNS (Namecheap)
+systemctl status ddclient -> active
+/etc/ddclient.conf
+  protocol=namecheap
+  server=dynamicdns.park-your-domain.com
+  login=hule.education
+  host=hemma</code></pre>
+
+            <h3 id="logs-disk-health">Host Logs + Disk Health (hemma)</h3>
+            <p><strong>Log paths (root):</strong></p>
+            <ul>
+              <li><code>/root/logs/incident-YYYYMMDD-HHMMSS-HHMMSS.log</code> (incident windows)</li>
+              <li><code>/root/logs/smart/</code> (SMART snapshots)</li>
+            </ul>
+
+            <p><strong>SMART monitoring:</strong></p>
+            <ul>
+              <li>Service: <code>smartmontools.service</code></li>
+              <li>Config: <code>/etc/smartd.conf</code></li>
+            </ul>
+
+            <p><strong>Cleanup (30-day retention):</strong></p>
+            <ul>
+              <li>Script: <code>/usr/local/bin/cleanup-smart-logs.sh</code></li>
+              <li>Timer: <code>cleanup-smart-logs.timer</code></li>
+            </ul>
+
+            <h3 id="repo-compose">Repo + Compose Layout (Production)</h3>
+            <ul>
+              <li>App repo: <code>~/apps/skriptoteket/</code></li>
+              <li>Production compose: <code>compose.prod.yaml</code> (uses <code>shared-postgres</code> on <code>hule-network</code>)</li>
+              <li>Observability stack: <code>compose.observability.yaml</code></li>
+              <li>Development compose: <code>compose.yaml</code> (local postgres only)</li>
+            </ul>
+
+            <div class="callout critical">
+              <div class="title"><span class="dot"></span>Critical</div>
+              <p><strong>Production uses <code>compose.prod.yaml</code>, not <code>compose.yaml</code>.</strong></p>
+            </div>
+
+            <p>
+              Recommended CLI tools + install steps: see
+              <a href="../reference/ref-home-server-cli-tools.md">ref-home-server-cli-tools.md</a>.
+            </p>
+
+            <h3 id="command-patterns">Command Patterns (Use These)</h3>
+            <pre><code class="language-bash"># 1) Compose commands (from repo root)
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml &lt;command&gt;"
+
+# 2) Run CLI inside web container (compose)
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli &lt;command&gt;"
+
+# 3) Direct docker exec (used by systemd timers)
+ssh hemma "/snap/bin/docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli &lt;command&gt;"</code></pre>
+
+            <p>
+              Architecture overview diagram: see
+              <a href="../reference/ref-home-server-architecture.md">ref-home-server-architecture.md</a>.
+            </p>
+
+            <h3 id="nginx-proxy">nginx-proxy (service routing + hardening)</h3>
+            <p>
+              Details for adding new services and edge hardening live in
+              <a href="../reference/ref-home-server-nginx-proxy.md">ref-home-server-nginx-proxy.md</a>.
+            </p>
+          </section>
+
+          <section id="daily-ops">
+            <h2>Daily Ops</h2>
+
+            <h3 id="quick-status">Quick Status Check</h3>
+            <pre><code class="language-bash"># All containers
+ssh hemma "sudo docker ps"
+
+# Skriptoteket + core services
+ssh hemma "sudo docker ps | grep -E 'skriptoteket|nginx|postgres'"</code></pre>
+
+            <h3 id="view-logs">View Logs</h3>
+            <pre><code class="language-bash"># Web application logs
+ssh hemma "sudo docker logs -f skriptoteket-web"
+
+# Nginx access logs
+ssh hemma "sudo docker logs -f nginx-proxy"
+
+# Database logs (check for query errors)
+ssh hemma "sudo docker logs -f shared-postgres"</code></pre>
+
+            <p>
+              Structured logs + correlation IDs: see
+              <a href="runbook-observability-logging.md">runbook-observability-logging.md</a>.
+            </p>
+
+            <h3 id="restart-services">Restart Services</h3>
+            <pre><code class="language-bash"># Restart Skriptoteket (preserves network connections)
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml restart"
+
+# Restart observability stack
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observability.yaml restart"
+
+# nginx-proxy auto-reloads when containers change (no manual reload needed)</code></pre>
+
+            <div class="callout warn">
+              <div class="title"><span class="dot"></span>Note</div>
+              <p><code>docker compose restart</code> does <strong>not</strong> re-read <code>.env</code>. For env var changes use a recreate:</p>
+            </div>
+
+            <pre><code class="language-bash">ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --no-deps --force-recreate web"</code></pre>
+
+            <h3 id="disk-space-session-cleanup">Disk Space / Session Cleanup</h3>
+            <p>
+              Session files are stored in <code>ARTIFACTS_ROOT/sessions/</code> (prod: <code>/app/.artifacts/sessions/</code>).
+              An hourly systemd timer runs TTL cleanup automatically.
+            </p>
+
+            <pre><code class="language-bash"># Check timer status
+ssh hemma "sudo systemctl list-timers | grep skriptoteket"
+
+# View cleanup logs
+ssh hemma "sudo journalctl -u skriptoteket-session-files-cleanup.service -n 50 --no-pager"
+
+# Manual trigger (if needed)
+ssh hemma "sudo systemctl start skriptoteket-session-files-cleanup.service"</code></pre>
+
+            <p><strong>Manual cleanup commands:</strong></p>
+            <pre><code class="language-bash"># TTL-based cleanup (same as timer runs)
+ssh hemma "/snap/bin/docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli cleanup-session-files"
+
+# DANGER: Delete ALL session files (requires --yes)
+ssh hemma "/snap/bin/docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli clear-all-session-files --yes"</code></pre>
+
+            <h3 id="sandbox-snapshots">Sandbox Snapshot Cleanup (DB)</h3>
+            <p>
+              Sandbox preview snapshots are stored in PostgreSQL with a TTL (24h). Cleanup is scheduled server-side via systemd.
+            </p>
+            <p>
+              Unit file definitions are in
+              <a href="../reference/ref-home-server-cleanup-timers.md">ref-home-server-cleanup-timers.md</a>
+              (or inspect on host with <code>sudo systemctl cat skriptoteket-sandbox-snapshots-cleanup.service</code>).
+            </p>
+
+            <p><strong>Enable and verify:</strong></p>
+            <pre><code class="language-bash">ssh hemma "sudo systemctl daemon-reload"
+ssh hemma "sudo systemctl enable --now skriptoteket-sandbox-snapshots-cleanup.timer"
+ssh hemma "sudo systemctl list-timers | grep skriptoteket-sandbox-snapshots"
+ssh hemma "sudo journalctl -u skriptoteket-sandbox-snapshots-cleanup.service -n 50 --no-pager"</code></pre>
+
+            <div class="callout note">
+              <div class="title"><span class="dot"></span>Live note (hemma)</div>
+              <p>Timer is enabled and runs hourly; see <code>systemctl status skriptoteket-sandbox-snapshots-cleanup.timer</code>.</p>
+            </div>
+
+            <p><strong>Manual trigger:</strong></p>
+            <pre><code class="language-bash">ssh hemma "sudo systemctl start skriptoteket-sandbox-snapshots-cleanup.service"</code></pre>
+
+            <h3 id="login-events-cleanup">Login Events Cleanup (DB)</h3>
+            <p>Login event audit rows are retained for 90 days. Cleanup is scheduled server-side via systemd.</p>
+            <p>
+              Unit file definitions are in
+              <a href="../reference/ref-home-server-cleanup-timers.md">ref-home-server-cleanup-timers.md</a>
+              (or inspect on host with <code>sudo systemctl cat skriptoteket-login-events-cleanup.service</code>).
+            </p>
+
+            <p><strong>Enable and verify:</strong></p>
+            <pre><code class="language-bash">ssh hemma "sudo systemctl daemon-reload"
+ssh hemma "sudo systemctl enable --now skriptoteket-login-events-cleanup.timer"
+ssh hemma "sudo systemctl list-timers | grep skriptoteket-login-events"
+ssh hemma "sudo journalctl -u skriptoteket-login-events-cleanup.service -n 50 --no-pager"</code></pre>
+
+            <p><strong>Manual trigger:</strong></p>
+            <pre><code class="language-bash">ssh hemma "sudo systemctl start skriptoteket-login-events-cleanup.service"</code></pre>
+
+            <h3 id="ssl-certificate">SSL Certificate</h3>
+            <p><strong>Check expiry:</strong></p>
+            <pre><code class="language-bash">ssh hemma "sudo docker exec nginx-proxy cat /etc/nginx/certs/live/skriptoteket.hule.education/fullchain.pem | openssl x509 -noout -dates"</code></pre>
+
+            <p><strong>Renew:</strong></p>
+            <pre><code class="language-bash">ssh hemma "cd ~/infrastructure && sudo docker compose run --rm certbot renew"
+ssh hemma "sudo docker exec nginx-proxy nginx -s reload"</code></pre>
+          </section>
+
+          <section id="deploy">
+            <h2>Deploy</h2>
+
+            <h3 id="standard-deploy">Standard Deploy (Code Changes)</h3>
+            <pre><code class="language-bash">ssh hemma "cd ~/apps/skriptoteket && git pull && sudo docker compose -f compose.prod.yaml up -d --build"</code></pre>
+
+            <p>If migrations are needed:</p>
+            <pre><code class="language-bash">ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec web pdm run db-upgrade"</code></pre>
+
+            <h3 id="deploy-force-recreate">Deploy with Force Recreate</h3>
+            <p>Use when <code>compose.prod.yaml</code> changes (networks, volumes, environment).</p>
+            <pre><code class="language-bash">ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --force-recreate"</code></pre>
+
+            <h3 id="rollback">Rollback</h3>
+            <pre><code class="language-bash"># Check available commits
+ssh hemma "cd ~/apps/skriptoteket && git log --oneline -10"
+
+# Checkout previous version
+ssh hemma "cd ~/apps/skriptoteket && git checkout &lt;commit-hash&gt;"
+
+# Rebuild and restart
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --build"</code></pre>
+          </section>
+
+          <section id="data">
+            <h2>Data</h2>
+            <p>Production uses <code>shared-postgres</code> (external container on <code>hule-network</code>).</p>
+
+            <h3 id="connect-db">Connect to Database</h3>
+            <pre><code class="language-bash">ssh hemma "sudo docker exec -it shared-postgres psql -U postgres -d skriptoteket"</code></pre>
+
+            <h3 id="backup-db">Backup Database</h3>
+            <pre><code class="language-bash">ssh hemma "sudo docker exec shared-postgres pg_dump -U postgres skriptoteket &gt; ~/backups/skriptoteket-\$(date +%Y%m%d).sql"</code></pre>
+
+            <h3 id="restore-db">Restore Database</h3>
+            <pre><code class="language-bash">ssh hemma "sudo docker exec -i shared-postgres psql -U postgres -d skriptoteket &lt; ~/backups/skriptoteket-YYYYMMDD.sql"</code></pre>
+
+            <h3 id="run-migrations">Run Migrations</h3>
+            <pre><code class="language-bash">ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec web pdm run db-upgrade"</code></pre>
+
+            <h3 id="full-reset">Full Database Reset <span class="label danger">DANGER</span></h3>
+            <div class="callout danger">
+              <div class="title"><span class="dot"></span>DANGER</div>
+              <p>
+                This destroys all data. Only use for fresh installations. <code>shared-postgres</code> is external and not managed by this compose.
+              </p>
+            </div>
+
+            <pre><code class="language-bash">ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml down"
+
+# Connect to shared-postgres and drop/recreate database
+ssh hemma "sudo docker exec -it shared-postgres psql -U postgres -c 'DROP DATABASE IF EXISTS skriptoteket;'"
+ssh hemma "sudo docker exec -it shared-postgres psql -U postgres -c 'CREATE DATABASE skriptoteket;'"
+
+# Restart and run migrations
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec web pdm run db-upgrade"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli bootstrap-superuser --email admin@hule.education --password 'CHANGE_THIS_PASSWORD'"
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli seed-script-bank --actor-email admin@hule.education --actor-password 'CHANGE_THIS_PASSWORD'"</code></pre>
+
+            <h3 id="user-management">User Management</h3>
+            <p>See <a href="runbook-user-management.md">runbook-user-management.md</a> for details.</p>
+
+            <pre><code class="language-bash"># Bootstrap superuser (first-time setup only)
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli bootstrap-superuser --email 'admin@example.com' --password 'SECURE_PASSWORD'"
+
+# Provision additional user
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli provision-user --actor-email 'admin@example.com' --actor-password 'ADMIN_PASSWORD' --email 'user@example.com' --password 'USER_PASSWORD' --role user"</code></pre>
+
+            <h3 id="script-bank-seeding">Script Bank Seeding</h3>
+            <p>See <a href="runbook-script-bank-seeding-home-server.md">runbook-script-bank-seeding-home-server.md</a>.</p>
+
+            <pre><code class="language-bash"># Seed all scripts from repository
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli seed-script-bank --actor-email admin@hule.education --actor-password 'PASSWORD'"
+
+# Sync code changes from repo to existing tools
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli seed-script-bank --actor-email admin@hule.education --actor-password 'PASSWORD' --sync-code"</code></pre>
+          </section>
+
+          <section id="observability">
+            <h2>Observability</h2>
+            <p>Observability operations are documented in the dedicated runbooks:</p>
+            <ul>
+              <li>Overview + access: <code>docs/runbooks/runbook-observability.md</code></li>
+              <li>Logs: <code>docs/runbooks/runbook-observability-logging.md</code></li>
+              <li>Metrics: <code>docs/runbooks/runbook-observability-metrics.md</code></li>
+              <li>Tracing: <code>docs/runbooks/runbook-observability-tracing.md</code></li>
+            </ul>
+          </section>
+
+          <section id="troubleshooting">
+            <h2>Troubleshooting</h2>
+
+            <h3 id="ssh-unreachable">SSH Unreachable After Reboot</h3>
+            <p><strong>Symptom:</strong> <code>ssh hemma</code> times out even though the server is powered on.</p>
+            <p><strong>Common cause:</strong> Network instability or DHCP churn (Wi-Fi flapping / multiple default routes).</p>
+
+            <p><strong>Fix:</strong></p>
+            <pre><code class="language-bash"># Server should use ethernet only; Wi-Fi disabled via netplan override.
+# Confirm on the server:
+ssh hemma "ip -4 addr show enp7s0"
+ssh hemma "ip route | head -n 5"
+
+# If needed, check watchdog + heartbeat logs for evidence:
+ssh hemma "sudo journalctl -t ssh-watchdog --since '2 hours ago'"
+ssh hemma "sudo journalctl -t heartbeat --since '2 hours ago'"
+
+# Incident log captures (if taken):
+ssh hemma "sudo ls -1 /root/logs/incident-*.log | tail -n 5"</code></pre>
+
+            <h3 id="502">502 Bad Gateway</h3>
+            <p><strong>Symptom:</strong> nginx returns 502 after container restart.</p>
+            <p><strong>Cause:</strong> Web container not connected to <code>hule-network</code>.</p>
+            <p><strong>Fix:</strong></p>
+            <pre><code class="language-bash"># Verify network membership
+ssh hemma "sudo docker network inspect hule-network --format '{{json .Containers}}' | python3 -m json.tool | grep skriptoteket"
+
+# If missing, reconnect manually (temporary fix)
+ssh hemma "sudo docker network connect hule-network skriptoteket-web"
+
+# Permanent fix: redeploy with compose.prod.yaml
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --force-recreate"</code></pre>
+
+            <h3 id="307">307 Redirect to HTTP Instead of HTTPS</h3>
+            <p><strong>Symptom:</strong> Clicking links redirects to <code>http://</code> URL, breaking the site.</p>
+            <p><strong>Cause:</strong> Uvicorn doesn't know original scheme was HTTPS.</p>
+
+            <p><strong>Fix:</strong> Ensure <code>pyproject.toml</code> serve command includes proxy headers:</p>
+            <pre><code class="language-toml">serve = "uvicorn ... --proxy-headers --forwarded-allow-ips='*'"</code></pre>
+
+            <p>And nginx sets the header:</p>
+            <pre><code class="language-nginx">proxy_set_header X-Forwarded-Proto $scheme;</code></pre>
+
+            <h3 id="500">500 Internal Server Error on All Routes</h3>
+            <p><strong>Symptom:</strong> Every page returns 500 error.</p>
+            <p><strong>Cause:</strong> Usually database tables missing (migrations not run).</p>
+
+            <p><strong>Diagnosis:</strong></p>
+            <pre><code class="language-bash"># Check web container logs for "relation does not exist" errors
+ssh hemma "sudo docker logs skriptoteket-web --tail 50"</code></pre>
+
+            <p><strong>Fix:</strong></p>
+            <pre><code class="language-bash">ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec web pdm run db-upgrade"</code></pre>
+
+            <h3 id="no-module">CLI Commands Fail with "No module named 'skriptoteket'"</h3>
+            <p><strong>Cause:</strong> <code>PYTHONPATH</code> not set for PEP 582 mode.</p>
+            <p><strong>Fix:</strong> Always include <code>-e PYTHONPATH=/app/src</code> when running CLI commands:</p>
+            <pre><code class="language-bash">ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli &lt;command&gt;"</code></pre>
+
+            <h3 id="container-wont-start">Container Won't Start</h3>
+            <pre><code class="language-bash"># Check logs for errors
+ssh hemma "sudo docker logs skriptoteket-web 2>&1 | tail -50"
+
+# Check if port is in use
+ssh hemma "lsof -i :8000"</code></pre>
+
+            <h3 id="dns-not-resolving">DNS Not Resolving</h3>
+            <pre><code class="language-bash"># Check DDNS status
+ssh hemma "sudo systemctl status ddclient"
+
+# Force DDNS update
+ssh hemma "ddclient -force"
+
+# Check external IP
+ssh hemma "curl -s ifconfig.me"
+
+# Verify DNS at nameserver
+dig +short skriptoteket.hule.education @pdns1.registrar-servers.com</code></pre>
+
+            <h3 id="disk-space">Disk Space</h3>
+            <pre><code class="language-bash"># Check disk usage
+ssh hemma "df -h"
+
+# Docker disk usage
+ssh hemma "sudo docker system df"
+
+# Clean up unused Docker resources
+ssh hemma "sudo docker system prune -f"
+
+# Prune old artifact directories
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli prune-artifacts"</code></pre>
+          </section>
+
+          <footer>
+            <div>
+              Document: <strong>RUN-home-server</strong> — “Runbook: Home Server Operations” — Updated <strong>2026-01-02</strong>.
+            </div>
+            <div style="margin-top:6px;">
+              Styling is self-contained (inline CSS) and intended for clean HTML-to-PDF conversion.
+            </div>
+          </footer>
+        </main>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
