@@ -1,0 +1,31 @@
+SUMMARY:
+The code provides a utility for extracting ZIP files with basic functionality and includes tests. The implementation handles directory creation and file extraction but lacks some robustness and security checks.
+
+SCORECARD:
+correctness: 4 - The function works for basic cases but has potential issues with path traversal.
+security: 2 - No protection against malicious ZIP files with path traversal attacks.
+performance: 3 - Efficient for small files but could be optimized for larger files.
+maintainability: 3 - Code is readable but lacks type hints for all parameters and error handling.
+tests: 3 - Tests cover basic functionality but miss edge cases like path traversal.
+
+FINDINGS:
+1) high - archive_utils.py - Missing path traversal protection
+   Evidence: No validation of `name` in `extract_zip` before creating target paths.
+   Impact: Vulnerable to ZIP slip attacks where files can be written outside the destination directory.
+   Fix: Normalize and validate paths to ensure they are within the destination directory.
+
+2) medium - archive_utils.py - Inconsistent type hints
+   Evidence: `zip_path` and `dest_dir` use `str | Path` but internal conversions to `str` may cause issues.
+   Impact: Potential type-related bugs if `Path` objects are used in certain contexts.
+   Fix: Use `Path` consistently throughout the function and avoid converting to `str`.
+
+3) low - test_archive_utils.py - Missing edge case tests
+   Evidence: No tests for path traversal or malformed ZIP files.
+   Impact: Reduced confidence in the robustness of the implementation.
+   Fix: Add tests for path traversal attempts and malformed ZIP files.
+
+FIX PLAN:
+- [ ] Add path traversal protection by normalizing and validating paths in `extract_zip`.
+- [ ] Update type hints to use `Path` consistently and remove unnecessary `str` conversions.
+- [ ] Add tests for path traversal attempts and malformed ZIP files.
+- [ ] Add error handling for cases like corrupted ZIP files or permission issues.

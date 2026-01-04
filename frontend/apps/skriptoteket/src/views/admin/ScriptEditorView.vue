@@ -5,11 +5,12 @@ import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import type { components } from "../../api/openapi";
 import DraftLockBanner from "../../components/editor/DraftLockBanner.vue";
 import EditorWorkspacePanel from "../../components/editor/EditorWorkspacePanel.vue";
-import InlineEditableText from "../../components/editor/InlineEditableText.vue";
+import ScriptEditorHeaderPanel from "../../components/editor/ScriptEditorHeaderPanel.vue";
 import SystemMessage from "../../components/ui/SystemMessage.vue";
 import WorkflowActionModal from "../../components/editor/WorkflowActionModal.vue";
-import WorkflowContextButtons from "../../components/editor/WorkflowContextButtons.vue";
 import { useEditorEditSuggestions } from "../../composables/editor/useEditorEditSuggestions";
+import { useEditorSchemaParsing } from "../../composables/editor/useEditorSchemaParsing";
+import { useEditorSchemaValidation } from "../../composables/editor/useEditorSchemaValidation";
 import { useEditorWorkflowActions } from "../../composables/editor/useEditorWorkflowActions";
 import { useDraftLock } from "../../composables/editor/useDraftLock";
 import { useScriptEditor } from "../../composables/editor/useScriptEditor";
@@ -23,14 +24,12 @@ const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
 const toast = useToast();
-
 const notify: UiNotifier = {
   info: (message: string) => toast.info(message),
   success: (message: string) => toast.success(message),
   warning: (message: string) => toast.warning(message),
   failure: (message: string) => toast.failure(message),
 };
-
 const toolId = computed(() => {
   const param = route.params.toolId;
   return typeof param === "string" ? param : "";
@@ -71,8 +70,12 @@ const {
   toolId,
   versionId,
   route,
-  router,
-  notify,
+	  router,
+	  notify,
+	});
+const { inputSchema, inputSchemaError, settingsSchema, settingsSchemaError } = useEditorSchemaParsing({
+  inputSchemaText,
+  settingsSchemaText,
 });
 const draftHeadId = computed(() => editor.value?.draft_head_id ?? null);
 const initialDraftLock = computed(() => editor.value?.draft_lock ?? null);
@@ -89,6 +92,20 @@ const {
   toolId: editorToolId,
   draftHeadId,
   initialLock: initialDraftLock,
+});
+const {
+  issuesBySchema: schemaIssuesBySchema,
+  hasBlockingIssues: hasBlockingSchemaIssues,
+  isValidating: isSchemaValidating,
+  validationError: schemaValidationError,
+  validateNow: validateSchemasNow,
+} = useEditorSchemaValidation({
+  toolId: editorToolId,
+  inputSchema,
+  settingsSchema,
+  inputSchemaError,
+  settingsSchemaError,
+  isReadOnly,
 });
 const canEditSlug = computed(() => auth.hasAtLeastRole("admin") && editor.value?.tool.is_published === false);
 const {
@@ -162,7 +179,6 @@ const {
 const isSavingAllMetadata = computed(
   () => isMetadataSaving.value || isTaxonomySaving.value || isSlugSaving.value,
 );
-
 async function saveAllMetadata(): Promise<void> {
   if (canEditSlug.value) {
     await saveToolSlug();
@@ -175,6 +191,10 @@ async function saveAllMetadata(): Promise<void> {
 
 const isTitleSaving = ref(false);
 const isSummarySaving = ref(false);
+
+async function handleSave(): Promise<void> {
+  await save({ validateSchemasNow, schemaValidationError });
+}
 
 async function saveTitle(): Promise<void> {
   isTitleSaving.value = true;
@@ -238,14 +258,6 @@ function handleHistorySelect(versionIdValue: string): void {
       version: versionIdValue,
     },
   });
-}
-
-function updateProfessionIds(value: string[]): void {
-  selectedProfessionIds.value = value;
-}
-
-function updateCategoryIds(value: string[]): void {
-  selectedCategoryIds.value = value;
 }
 
 const confirmButtonClass = computed(() => {
@@ -366,50 +378,24 @@ watch(
     <!-- Main content -->
     <template v-else>
       <!-- PANEL 1: Title + Workflow -->
-      <div class="border border-navy bg-white shadow-brutal-sm p-5 space-y-4">
-        <!-- Title and summary section -->
-        <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div class="space-y-2 flex-1">
-            <InlineEditableText
-              v-model="metadataTitle"
-              tag="h1"
-              display-class="text-2xl font-semibold text-navy"
-              input-class="text-2xl font-semibold"
-              placeholder="Verktygets titel"
-              :saving="isTitleSaving"
-              @commit="saveTitle"
-            />
-            <p class="text-sm text-navy/70">
-              URL-namn: <span class="font-mono">{{ editor.tool.slug }}</span>
-            </p>
-            <InlineEditableText
-              v-model="metadataSummary"
-              tag="p"
-              display-class="text-sm text-navy/70"
-              input-class="text-sm"
-              placeholder="Lägg till en sammanfattning..."
-              :saving="isSummarySaving"
-              @commit="saveSummary"
-            />
-          </div>
-
-          <div class="text-sm font-medium text-navy/70 shrink-0">
-            {{ statusLine }}
-          </div>
-        </div>
-
-        <!-- Workflow context buttons -->
-        <div class="border-t border-navy/20 pt-4">
-          <WorkflowContextButtons
-            :can-submit-review="canSubmitReview"
-            :can-publish="canPublish"
-            :can-request-changes="canRequestChanges"
-            :can-rollback="canRollback"
-            :is-submitting="isWorkflowSubmitting"
-            @action="openWorkflowAction"
-          />
-        </div>
-      </div>
+      <ScriptEditorHeaderPanel
+        :metadata-title="metadataTitle"
+        :metadata-summary="metadataSummary"
+        :tool-slug="editor.tool.slug"
+        :status-line="statusLine"
+        :is-title-saving="isTitleSaving"
+        :is-summary-saving="isSummarySaving"
+        :can-submit-review="canSubmitReview"
+        :can-publish="canPublish"
+        :can-request-changes="canRequestChanges"
+        :can-rollback="canRollback"
+        :is-workflow-submitting="isWorkflowSubmitting"
+        @update:metadata-title="metadataTitle = $event"
+        @update:metadata-summary="metadataSummary = $event"
+        @commit-title="saveTitle"
+        @commit-summary="saveSummary"
+        @action="openWorkflowAction"
+      />
 
       <!-- PANEL 2: Editor + Test -->
       <div class="space-y-3">
@@ -426,21 +412,31 @@ watch(
           v-model:slug-error="slugError"
           v-model:taxonomy-error="taxonomyError"
           v-model:maintainers-error="maintainersError"
+          v-model:change-summary="changeSummary"
+          v-model:entrypoint="entrypoint"
+          v-model:source-code="sourceCode"
+          v-model:settings-schema-text="settingsSchemaText"
+          v-model:input-schema-text="inputSchemaText"
+          v-model:usage-instructions="usageInstructions"
+          v-model:metadata-title="metadataTitle"
+          v-model:metadata-slug="metadataSlug"
+          v-model:metadata-summary="metadataSummary"
+          v-model:selected-profession-ids="selectedProfessionIds"
+          v-model:selected-category-ids="selectedCategoryIds"
+          v-model:edit-instruction="editInstruction"
           :tool-id="editor.tool.id"
           :versions="editor.versions"
           :selected-version="selectedVersion"
           :entrypoint-options="entrypointOptions"
-          :change-summary="changeSummary"
-          :entrypoint="entrypoint"
-          :source-code="sourceCode"
-          :settings-schema-text="settingsSchemaText"
-          :input-schema-text="inputSchemaText"
-          :usage-instructions="usageInstructions"
-          :metadata-title="metadataTitle"
-          :metadata-slug="metadataSlug"
-          :metadata-summary="metadataSummary"
-          :selected-profession-ids="selectedProfessionIds"
-          :selected-category-ids="selectedCategoryIds"
+          :settings-schema="settingsSchema"
+          :settings-schema-error="settingsSchemaError"
+          :input-schema="inputSchema"
+          :input-schema-error="inputSchemaError"
+          :schema-issues-by-schema="schemaIssuesBySchema"
+          :has-blocking-schema-issues="hasBlockingSchemaIssues"
+          :is-schema-validating="isSchemaValidating"
+          :schema-validation-error="schemaValidationError"
+          :validate-schemas-now="validateSchemasNow"
           :can-edit-taxonomy="canEditTaxonomy"
           :can-edit-maintainers="canEditMaintainers"
           :can-edit-slug="canEditSlug"
@@ -454,7 +450,6 @@ watch(
           :is-metadata-drawer-open="isMetadataDrawerOpen"
           :is-maintainers-drawer-open="isMaintainersDrawerOpen"
           :is-instructions-drawer-open="isInstructionsDrawerOpen"
-          :edit-instruction="editInstruction"
           :edit-suggestion="editSuggestion"
           :edit-is-loading="isEditLoading"
           :edit-error="editError"
@@ -467,7 +462,7 @@ watch(
           :owner-user-id="ownerUserId"
           :is-maintainers-loading="isMaintainersLoading"
           :is-maintainers-saving="isMaintainersSaving"
-          @save="save"
+          @save="handleSave"
           @open-history-drawer="openHistoryDrawer"
           @open-metadata-drawer="openMetadataDrawer"
           @open-maintainers-drawer="openMaintainersDrawer"
@@ -483,18 +478,6 @@ watch(
           @request-edit-suggestion="requestEditSuggestion"
           @apply-edit-suggestion="applyEditSuggestion"
           @clear-edit-suggestion="clearEditSuggestion"
-          @update:change-summary="changeSummary = $event"
-          @update:entrypoint="entrypoint = $event"
-          @update:source-code="sourceCode = $event"
-          @update:settings-schema-text="settingsSchemaText = $event"
-          @update:input-schema-text="inputSchemaText = $event"
-          @update:usage-instructions="usageInstructions = $event"
-          @update:metadata-title="metadataTitle = $event"
-          @update:metadata-slug="metadataSlug = $event"
-          @update:metadata-summary="metadataSummary = $event"
-          @update:edit-instruction="editInstruction = $event"
-          @update:selected-profession-ids="updateProfessionIds"
-          @update:selected-category-ids="updateCategoryIds"
         />
       </div>
     </template>

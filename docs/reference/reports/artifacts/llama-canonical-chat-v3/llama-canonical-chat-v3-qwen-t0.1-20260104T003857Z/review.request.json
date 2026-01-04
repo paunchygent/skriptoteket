@@ -1,0 +1,21 @@
+{
+  "model": "qwen3-coder-30b-a3b-q4_k_m.gguf",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a senior Python engineer. Follow instructions exactly. Never use markdown code fences (no triple backticks)."
+    },
+    {
+      "role": "user",
+      "content": "CANONICAL BENCHMARK v3 - STEP 1 (CODE REVIEW)\n\nYou are reviewing 2 Python files.\n\nOutput rules (STRICT):\n- Plain text only.\n- The VERY FIRST characters of your output must be: SUMMARY:\n- Do not output any code blocks or triple backticks.\n- Do not invent files or tests that are not present.\n- For Evidence, copy-paste 1–2 exact lines from the code shown below.\n\nOutput format (follow exactly):\nSUMMARY:\n<2–4 sentences>\n\nSCORECARD:\ncorrectness: <0-5> - <1 sentence>\nsecurity: <0-5> - <1 sentence>\nperformance: <0-5> - <1 sentence>\nmaintainability: <0-5> - <1 sentence>\ntests: <0-5> - <1 sentence>\n\nFINDINGS:\n1) <critical|high|medium|low> - <file> - <title>\n   Evidence: <1–2 exact lines>\n   Impact: <1 sentence>\n   Fix: <1 sentence>\n2) ...\n\nFIX PLAN:\n- [ ] <step 1>\n- [ ] <step 2>\n- [ ] ...\n\nFILES:\n\nFILE: archive_utils.py\nimport os\nimport zipfile\nfrom pathlib import Path\n\n\ndef extract_zip(zip_path: str | Path, dest_dir: str | Path) -> None:\n    \"\"\"Extract all files from a zip into dest_dir.\"\"\"\n    dest_dir = str(dest_dir)\n    with zipfile.ZipFile(zip_path) as zf:\n        for name in zf.namelist():\n            if name.endswith(\"/\"):\n                continue\n\n            target_path = os.path.join(dest_dir, name)\n            os.makedirs(os.path.dirname(target_path), exist_ok=True)\n\n            # NOTE: read() is fine here because files are usually small.\n            with zf.open(name) as src:\n                data = src.read()\n            with open(target_path, \"wb\") as dst:\n                dst.write(data)\n\n\nFILE: test_archive_utils.py\nimport io\nimport zipfile\nfrom pathlib import Path\n\nfrom archive_utils import extract_zip\n\n\ndef _make_zip_bytes(entries: dict[str, bytes]) -> bytes:\n    buf = io.BytesIO()\n    with zipfile.ZipFile(buf, \"w\") as zf:\n        for name, data in entries.items():\n            zf.writestr(name, data)\n    return buf.getvalue()\n\n\ndef test_extract_basic(tmp_path: Path) -> None:\n    zdata = _make_zip_bytes({\n        \"a.txt\": b\"hello\",\n        \"dir/b.txt\": b\"world\",\n    })\n    zpath = tmp_path / \"t.zip\"\n    zpath.write_bytes(zdata)\n\n    out = tmp_path / \"out\"\n    out.mkdir()\n\n    extract_zip(zpath, out)\n\n    assert (out / \"a.txt\").read_bytes() == b\"hello\"\n    assert (out / \"dir\" / \"b.txt\").read_bytes() == b\"world\"\n"
+    }
+  ],
+  "max_tokens": 512,
+  "temperature": 0.1,
+  "min_p": 0.01,
+  "top_p": 0.8,
+  "stream": false,
+  "seed": 42,
+  "top_k": 20,
+  "repeat_penalty": 1.05
+}

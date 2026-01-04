@@ -1,0 +1,82 @@
+CANONICAL BENCHMARK v3 - STEP 2 (PATCH)
+
+Task: produce a patch as a unified diff.
+
+Strict output rules:
+- Output ONLY a unified diff. No prose. No preamble. No explanations.
+- Do not output any triple backticks.
+- The FIRST line of your output MUST be exactly:
+  diff --git a/archive_utils.py b/archive_utils.py
+- If you cannot comply, output exactly: CANNOT_COMPLY
+
+Patch requirements:
+- Fix Zip Slip / path traversal: no zip entry may write outside dest_dir.
+- For unsafe entries (absolute paths OR paths that escape dest_dir), SKIP them and continue.
+- Do not read entire files into memory; stream copy.
+- Keep behavior: directory entries in the zip should be ignored.
+- Add 2 tests:
+  1) A "../evil.txt" entry is blocked (should NOT create tmp_path/evil.txt).
+  2) An absolute-path entry is blocked using a path under tmp_path but OUTSIDE the out/ dir:
+     outside = tmp_path / "outside.txt"; zip entry name should be str(outside).
+
+Diff headers must use these file names:
+- a/archive_utils.py b/archive_utils.py
+- a/test_archive_utils.py b/test_archive_utils.py
+
+Original files:
+
+FILE: archive_utils.py
+import os
+import zipfile
+from pathlib import Path
+
+
+def extract_zip(zip_path: str | Path, dest_dir: str | Path) -> None:
+    """Extract all files from a zip into dest_dir."""
+    dest_dir = str(dest_dir)
+    with zipfile.ZipFile(zip_path) as zf:
+        for name in zf.namelist():
+            if name.endswith("/"):
+                continue
+
+            target_path = os.path.join(dest_dir, name)
+            os.makedirs(os.path.dirname(target_path), exist_ok=True)
+
+            # NOTE: read() is fine here because files are usually small.
+            with zf.open(name) as src:
+                data = src.read()
+            with open(target_path, "wb") as dst:
+                dst.write(data)
+
+
+FILE: test_archive_utils.py
+import io
+import zipfile
+from pathlib import Path
+
+from archive_utils import extract_zip
+
+
+def _make_zip_bytes(entries: dict[str, bytes]) -> bytes:
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        for name, data in entries.items():
+            zf.writestr(name, data)
+    return buf.getvalue()
+
+
+def test_extract_basic(tmp_path: Path) -> None:
+    zdata = _make_zip_bytes({
+        "a.txt": b"hello",
+        "dir/b.txt": b"world",
+    })
+    zpath = tmp_path / "t.zip"
+    zpath.write_bytes(zdata)
+
+    out = tmp_path / "out"
+    out.mkdir()
+
+    extract_zip(zpath, out)
+
+    assert (out / "a.txt").read_bytes() == b"hello"
+    assert (out / "dir" / "b.txt").read_bytes() == b"world"

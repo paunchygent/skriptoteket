@@ -1,0 +1,117 @@
+diff --git a/archive_utils.py b/archive_utils.py
+index 0000000..1111111 100644
+--- a/archive_utils.py
++++ b/archive_utils.py
+@@ -1,15 +1,25 @@
+ import os
+ import zipfile
+ from pathlib import Path
+
+
+ def extract_zip(zip_path: str | Path, dest_dir: str | Path) -> None:
+     """Extract all files from a zip into dest_dir."""
+-    dest_dir = str(dest_dir)
++    dest_dir = Path(dest_dir).resolve()
+     with zipfile.ZipFile(zip_path) as zf:
+         for name in zf.namelist():
+             if name.endswith("/"):
+                 continue
+
++            # Check for Zip Slip vulnerability
++            target_path = Path(name).resolve()
++            if target_path.is_absolute() or target_path.parts[0] == '..':
++                continue
++
++            # Ensure the target path is within dest_dir
++            try:
++                target_path.relative_to(dest_dir)
++            except ValueError:
++                continue
++
+             target_path = os.path.join(dest_dir, name)
+             os.makedirs(os.path.dirname(target_path), exist_ok=True)
+
+             # NOTE: read() is fine here because files are usually small.
+-            with zf.open(name) as src:
+-                data = src.read()
+-            with open(target_path, "wb") as dst:
+-                dst.write(data)
++            with zf.open(name) as src:
++                with open(target_path, "wb") as dst:
++                    while True:
++                        chunk = src.read(8192)
++                        if not chunk:
++                            break
++                        dst.write(chunk)
+
+
+diff --git a/test_archive_utils.py b/test_archive_utils.py
+index 0000000..1111111 100644
+--- a/test_archive_utils.py
++++ b/test_archive_utils.py
+@@ -1,12 +1,35 @@
+ import io
+ import zipfile
+ from pathlib import Path
+
+ from archive_utils import extract_zip
+
+
+ def _make_zip_bytes(entries: dict[str, bytes]) -> bytes:
+     buf = io.BytesIO()
+     with zipfile.ZipFile(buf, "w") as zf:
+         for name, data in entries.items():
+             zf.writestr(name, data)
+     return buf.getvalue()
+
+
+ def test_extract_basic(tmp_path: Path) -> None:
+     zdata = _make_zip_bytes({
+         "a.txt": b"hello",
+         "dir/b.txt": b"world",
+     })
+     zpath = tmp_path / "t.zip"
+     zpath.write_bytes(zdata)
+
+     out = tmp_path / "out"
+     out.mkdir()
+
+     extract_zip(zpath, out)
+
+     assert (out / "a.txt").read_bytes() == b"hello"
+     assert (out / "dir" / "b.txt").read_bytes() == b"world"
+
+
++def test_extract_zip_slip(tmp_path: Path) -> None:
++    # Test that ../evil.txt is blocked
++    zdata = _make_zip_bytes({
++        "../evil.txt": b"evil content",
++    })
++    zpath = tmp_path / "t.zip"
++    zpath.write_bytes(zdata)
++
++    out = tmp_path / "out"
++    out.mkdir()
++
++    extract_zip(zpath, out)
++
++    assert not (out / "evil.txt").exists()
++
++
++def test_extract_absolute_path(tmp_path: Path) -> None:
++    # Test that absolute path entries outside dest_dir are blocked
++    outside = tmp_path / "outside.txt"
++    outside.write_text("outside content")
++
++    zdata = _make_zip_bytes({
++        str(outside): b"should not be written",
++    })
++    zpath = tmp_path / "t.zip"
++    zpath.write_bytes(zdata)
++
++    out = tmp_path / "out"
++    out.mkdir()
++
++    extract_zip(zpath, out)
++
++    assert not (out / "outside.txt").exists()
