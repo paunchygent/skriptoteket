@@ -34,6 +34,7 @@ data_impact: "No (client-side persistence only)"
 
 - Storage:
   - Use IndexedDB via `idb`.
+  - Implement a small shared IndexedDB helper for editor persistence so other editor surfaces can reuse it (e.g. chat history in ST-08-20).
   - **Decided keying:** scope all editor working-copy persistence by `{user_id, tool_id}` (never by `version_id`).
   - Store `base_version_id` as metadata inside the persisted payload (not in the key) so saving/new versions do not “lose” the working copy.
   - Persist only the 5 editor fields: `source_code`, `entrypoint`, `settings_schema`, `input_schema`, `usage_instructions`.
