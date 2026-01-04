@@ -8,7 +8,7 @@ created: 2026-01-01
 epic: "EPIC-08"
 acceptance_criteria:
   - "Given the user requests an edit in chat, when the frontend calls `POST /api/v1/editor/edit-ops`, then the backend requests a response in a strict, schema-validated edit-ops format (JSON only; no markdown)."
-  - "Given the LLM returns a valid response, when the backend parses it, then it returns `{ enabled: true, assistant_message: string, ops: [...] }` where each op supports insert/replace/delete against one of: whole document, selection, or cursor, and each op targets an explicit virtual file (e.g. tool.py, input_schema.json, settings_schema.json)."
+  - "Given the LLM returns a valid response, when the backend parses it, then it returns `{ enabled: true, assistant_message: string, ops: [...] }` where each op supports insert/replace/delete against one of: whole document, selection, or cursor, and each op targets an explicit virtual file from the canonical editor file map: tool.py, entrypoint.txt, settings_schema.json, input_schema.json, usage_instructions.md."
   - "Given the backend returns an edit-ops proposal, then the response includes `base_fingerprints` per virtual file so the frontend can detect stale proposals reliably (ST-08-22)."
   - "Given edit-ops is disabled by server config, when the frontend calls `POST /api/v1/editor/edit-ops`, then the backend returns `enabled=false` with an empty operation list and a user-actionable message (no 500, no provider details)."
   - "Given the LLM returns invalid JSON or violates the schema, when the backend processes the response, then it fails safely with an empty operation list and a user-actionable message (no 500)."
@@ -37,6 +37,7 @@ LLM to return structured operations that can be validated, previewed, and applie
 - This story assumes the editor provides the LLM with a set of named **virtual files** (separate logical documents) so
   the assistant can “see both” code + schemas while respecting boundaries. The UI may still present a combined “Pro mode”
   buffer, but edit operations should target virtual files explicitly to keep edits safe and predictable.
+  - Canonical names match the diff viewer map in ST-14-17 to keep preview/apply consistent.
 
 - Response envelope should include both `assistant_message` (for the chat transcript) and `ops[]` (for preview/apply).
 - Safe-fail rule: invalid JSON/schema, truncation (`finish_reason=length`), or over-budget responses must return

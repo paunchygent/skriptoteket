@@ -29,3 +29,6 @@ explicitly, and be able to undo reliably.
 
 This story intentionally reuses the version diff viewer work (ST-14-17) as the diff UI primitive so we don’t build two
 diff implementations.
+
+- **Decided:** the diff preview must use the same canonical virtual-file map as ST-14-17/08-21 (tool.py, entrypoint.txt, settings_schema.json, input_schema.json, usage_instructions.md), rendered as a list of diff items (tabs) with shared download/patch behavior.
+- Checkpoint safety: when working-copy persistence/checkpoints exist (ST-14-30), “Apply” must create a labeled checkpoint immediately before applying (e.g. “Before AI apply”) so users can roll back even if the ST-08-22 Undo is no longer applicable after subsequent edits.

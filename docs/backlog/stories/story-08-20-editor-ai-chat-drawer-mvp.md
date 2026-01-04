@@ -13,7 +13,7 @@ acceptance_criteria:
   - "Given the conversation history is long, when the user sends a new message, then the UI only sends a bounded conversation context (e.g. last N turns and/or a rolling summary) to the backend."
   - "Given AI chat is disabled by server config, when a message is sent, then the UI shows a clear 'not enabled' response without crashing and without exposing provider details."
   - "Given AI chat is enabled, when a message is sent, then the backend streams an assistant reply over SSE and the UI renders the streamed content as a single assistant message in the conversation."
-  - "Given the page is reloaded, when the user returns to the same tool/version, then the conversation history is restored from local storage (no server-side persistence)."
+  - "Given the page is reloaded, when the user returns to the same tool (any version), then the conversation history is restored from local storage (no server-side persistence)."
   - "Given a message is sent, then the backend logs metadata only (template id, lengths, outcome) and never logs message text, prompts, or code."
 dependencies:
   - "ST-08-18"
@@ -35,3 +35,4 @@ This story delivers the chat drawer UI + conversation state plumbing.
 - Uses the streaming chat endpoint `POST /api/v1/editor/chat` (SSE) (implemented in ST-08-23).
 - Non-goal: change inline completions (ghost text) behavior or prompt profiles (`POST /api/v1/editor/completions`).
 - Structured edit operations, diff preview, and apply/undo are handled in follow-up stories (ST-08-21/22).
+- **Decided persistence keying:** conversation history is keyed by `{user_id, tool_id}`; store `base_version_id` as metadata inside the stored payload (not in the key) so editor saves/new versions do not reset the chat.

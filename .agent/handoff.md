@@ -47,6 +47,11 @@ Keep this file updated so the next session can pick up work quickly.
   - Updated: `docs/backlog/stories/story-08-20-editor-ai-chat-drawer-mvp.md`, `docs/backlog/stories/story-08-21-ai-structured-crud-edit-ops-protocol-v1.md`, `docs/backlog/stories/story-08-22-editor-ai-diff-preview-apply-undo.md`
   - Added: `docs/backlog/stories/story-08-23-ai-chat-streaming-proxy-and-config.md`
   - Updated index: `docs/index.md`, `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md`
+- Epic 14 planning: updated diff/compare specs and added a working-copy persistence story (IndexedDB) to support diff + AI workflows.
+  - Updated: `docs/backlog/stories/story-14-17-editor-version-diff-view.md`, `docs/backlog/stories/story-14-18-editor-review-navigation-and-compare.md`
+  - Added: `docs/backlog/stories/story-14-30-editor-working-copy-persistence-indexeddb.md`
+  - Added: `docs/backlog/stories/story-14-31-editor-focus-mode-collapse-sidebar.md`
+  - Updated: `docs/backlog/epics/epic-14-admin-tool-authoring.md`, `docs/index.md`
 
 ## Verification
 
@@ -93,5 +98,7 @@ pdm run ui-editor-smoke
 
 ## Next Steps
 
-- ST-14-13+ schema editor work (out of scope here) per `docs/backlog/epics/epic-14-admin-tool-authoring.md`.
-- Re-run `pdm run fe-build` after recent editor UI changes.
+- ST-14-17/18: implement full-width compare + diff viewer primitive (incl before/after + unified patch downloads, and correct default compare targets).
+- ST-14-31: implement Focus mode (collapse left sidebar) to maximize editor/diff width on desktop.
+- ST-14-30: implement IndexedDB working copy persistence + rolling checkpoints + restore UX.
+- Follow-up (EPIC-08): key chat history by tool id (not version id) so saves don’t silently reset conversations.

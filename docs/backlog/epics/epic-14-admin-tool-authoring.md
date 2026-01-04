@@ -48,6 +48,7 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 - [ST-14-16: Editor UX for structured schema validation errors](../stories/story-14-16-editor-schema-validation-errors-ux.md)
 - [ST-14-17: Editor version compare/diff view (code + schemas + instructions)](../stories/story-14-17-editor-version-diff-view.md)
 - [ST-14-18: Reviewer navigation improvements (compare targets + deep links)](../stories/story-14-18-editor-review-navigation-and-compare.md)
+- [ST-14-31: Editor: Focus mode (collapse left sidebar)](../stories/story-14-31-editor-focus-mode-collapse-sidebar.md)
 - [ST-14-19: Runner toolkit helper module (inputs/settings/actions)](../stories/story-14-19-runner-toolkit-helper-module.md)
 - [ST-14-20: Editor intelligence updates for toolkit (completions/hover/lints)](../stories/story-14-20-editor-intelligence-toolkit-support.md)
 - [ST-14-21: Tool run actions remember prior inputs (sticky action forms)](../stories/story-14-21-tool-run-actions-sticky-inputs.md) (canceled; superseded by ST-14-23)
@@ -58,6 +59,8 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 - [ST-14-26: UI renderer: layout editor v1 (click-to-assign + apply)](../stories/story-14-26-ui-renderer-layout-editor-v1-click-assign.md)
 - [ST-14-27: Layout editor v1: drag/drop interactions (library-based)](../stories/story-14-27-layout-editor-v1-drag-drop.md)
 - [ST-14-28: Layout editor v1: UX polish + accessibility + tests](../stories/story-14-28-layout-editor-v1-ux-polish-and-a11y.md)
+- [ST-14-29: Editor: Pro mode combined bundle view (tool.py + schemas)](../stories/story-14-29-editor-pro-mode-combined-bundle-view.md)
+- [ST-14-30: Editor: working copy persistence (IndexedDB) + checkpoints + restore](../stories/story-14-30-editor-working-copy-persistence-indexeddb.md)
 
 ## References
 

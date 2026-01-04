@@ -295,6 +295,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-14-27-layout-editor-v1-drag-drop.md`
 - `docs/backlog/stories/story-14-28-layout-editor-v1-ux-polish-and-a11y.md`
 - `docs/backlog/stories/story-14-29-editor-pro-mode-combined-bundle-view.md`
+- `docs/backlog/stories/story-14-30-editor-working-copy-persistence-indexeddb.md`
+- `docs/backlog/stories/story-14-31-editor-focus-mode-collapse-sidebar.md`
 - `docs/backlog/stories/story-15-01-user-profile-redesign.md`
 - `docs/backlog/stories/story-15-02-avatar-upload.md`
 - `docs/backlog/stories/story-16-01-favorites-domain-and-database.md`
