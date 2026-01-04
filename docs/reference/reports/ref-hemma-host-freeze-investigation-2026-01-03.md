@@ -9,8 +9,6 @@ updated: 2026-01-04
 topic: "devops"
 ---
 
-# Investigation: hemma host hard hangs (Jan 2026)
-
 This report summarizes what we know so far about two **host-level hard hangs** on the hemma server that required
 physical intervention.
 
@@ -153,6 +151,24 @@ During boot `-1` (the one that later hard-hung at 17:54 UTC), `llama-server` pro
 
 We did not find a definitive GPU reset / kernel crash line right before the hang, but GPU/ROCm load remains a plausible
 candidate for “host wedges without clean logs”.
+
+## Automated incident capture (as of 2026-01-04)
+
+To preserve crash-adjacent context (system + kernel logs + GPU state), we now capture rolling incident snapshots on the
+host:
+
+- Script: `/usr/local/bin/skriptoteket-incident-capture.sh`
+- Systemd: `skriptoteket-incident-capture.service` + `skriptoteket-incident-capture.timer`
+- Output: `/root/logs/incident-*.log`
+- Defaults: every 5 minutes, 10-minute window, 7-day retention
+- Captures: system + kernel logs, llama/tabby service logs, GPU runtime state, `rocm-smi` power/temps/clocks, and
+  `/sys/class/hwmon` snapshot (uses `sensors` if installed).
+- Threshold warnings are logged in each capture and can be tuned via env:
+  `INCIDENT_GPU_EDGE_WARN_C`, `INCIDENT_GPU_JUNCTION_WARN_C`, `INCIDENT_GPU_MEM_WARN_C`,
+  `INCIDENT_GPU_PPT_WARN_W`, `INCIDENT_CPU_TCTL_WARN_C`.
+
+This is intended to retain the last few minutes of activity even if the kernel ring buffer or journald does not flush
+cleanly during a hard hang.
 
 ## GPU load check (ROCm SMI snapshot)
 
@@ -426,11 +442,12 @@ large memory migration is a plausible trigger for the “silent wedge”.
 
 To reduce the chance of runtime suspend, we force:
 
-- `/sys/class/drm/card1/device/power/control=on`
+- `/sys/bus/pci/devices/0000:0b:00.0/power/control=on`
 
 and made it reboot-safe with a oneshot unit:
 
-- Service: `/etc/systemd/system/amdgpu-force-active.service` (targets `card1`, the discrete `0000:0b:00.0` GPU)
+- Service: `/etc/systemd/system/amdgpu-force-active.service` (targets the PCI path
+  `0000:0b:00.0` to avoid card index ambiguity)
 
 Applied and enabled at **2026-01-03 22:38:41 UTC**.
 
@@ -438,14 +455,14 @@ Verification commands:
 
 ```bash
 ssh hemma "sudo systemctl status --no-pager amdgpu-force-active.service"
-ssh hemma "sudo sh -c 'cat /sys/class/drm/card1/device/power/control; cat /sys/class/drm/card1/device/power/runtime_status'"
+ssh hemma "sudo sh -c 'cat /sys/bus/pci/devices/0000:0b:00.0/power/control; cat /sys/bus/pci/devices/0000:0b:00.0/power/runtime_status'"
 ```
 
 Rollback:
 
 ```bash
 ssh hemma "sudo systemctl disable --now amdgpu-force-active.service"
-ssh hemma "sudo sh -c 'echo auto > /sys/class/drm/card1/device/power/control'"
+ssh hemma "sudo sh -c 'echo auto > /sys/bus/pci/devices/0000:0b:00.0/power/control'"
 ```
 
 Notes:
@@ -516,7 +533,7 @@ tests, strict diff formatting).
 
 Runs: 2026-01-04T00:32Z (UTC) and 2026-01-04T00:38Z (UTC)
 
-1) “Recommended sampler” run (temperature=0.7)
+1 “Recommended sampler” run (temperature=0.7)
 
 - Outputs:
   - `docs/reference/reports/artifacts/llama-canonical-chat-v3/llama-canonical-chat-v3-qwen-20260104T003257Z/review.text`
@@ -525,7 +542,7 @@ Runs: 2026-01-04T00:32Z (UTC) and 2026-01-04T00:38Z (UTC)
   - `docs/reference/reports/artifacts/llama-canonical-chat-v3/llama-canonical-chat-v3-qwen-20260104T003257Z/review.request.json`
   - `docs/reference/reports/artifacts/llama-canonical-chat-v3/llama-canonical-chat-v3-qwen-20260104T003257Z/diff.request.json`
 
-2) Deterministic rerun (temperature=0.1)
+2 Deterministic rerun (temperature=0.1)
 
 - Outputs:
   - `docs/reference/reports/artifacts/llama-canonical-chat-v3/llama-canonical-chat-v3-qwen-t0.1-20260104T003857Z/review.text`

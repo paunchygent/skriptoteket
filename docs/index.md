@@ -351,6 +351,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/reports/ref-hemma-host-freeze-investigation-2026-01-03.md`
 - `docs/reference/reports/ref-hemma-host-freeze-stack-alignment-2026-01-03.md`
 - `docs/reference/reports/ref-hemma-incident-log-2026-01-02-083355-083455.md`
+- `docs/reference/reports/ref-hemma-incident-log-2026-01-04-153900-154030.md`
 - `docs/reference/reports/ref-hemma-bios-update-guide-2026-01-03.md`
 - `docs/reference/reports/ref-htmx-ux-enhancement-plan.md`
 - `docs/reference/reports/ref-lead-architect-suggestions-post-mvp.md`

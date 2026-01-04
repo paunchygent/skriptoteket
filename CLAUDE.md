@@ -190,13 +190,18 @@ ssh hemma-local        # Via 192.168.0.9 (local network, faster)
 ### Standard Deploy
 
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"
+# Build runner image (required for tool/editor sandbox runs)
+ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml --profile build-only build runner"
+
+# Deploy web (app container)
+ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml up -d --build"
 ```
 
 ### Deploy with Migrations
 
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"
+ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml --profile build-only build runner"
+ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml up -d --build"
 ssh hemma "docker exec skriptoteket-web pdm run db-upgrade"
 ```
 

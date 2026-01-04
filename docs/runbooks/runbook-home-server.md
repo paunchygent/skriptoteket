@@ -237,7 +237,6 @@ ssh hemma "sudo docker ps"
 ssh hemma "sudo docker ps | grep -E 'skriptoteket|nginx|postgres'"
 ```
 
-
 ### View Logs
 
 ```bash
@@ -363,7 +362,11 @@ ssh hemma "sudo docker exec nginx-proxy nginx -s reload"
 ### Standard Deploy (Code Changes)
 
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && git pull && sudo docker compose -f compose.prod.yaml up -d --build"
+# Build runner image (required for tool/editor sandbox runs)
+ssh hemma "cd ~/apps/skriptoteket && git pull && sudo docker compose -f compose.prod.yaml --profile build-only build runner"
+
+# Deploy web (app container)
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --build"
 ```
 
 If migrations are needed:
@@ -481,6 +484,7 @@ Observability operations are documented in the dedicated runbooks:
 **Common cause**: Network instability or DHCP churn (Wi‑Fi flapping / multiple default routes).
 
 **Fix**:
+
 ```bash
 # Server should use ethernet only; Wi‑Fi disabled via netplan override.
 # Confirm on the server:
@@ -495,6 +499,26 @@ ssh hemma "sudo journalctl -t heartbeat --since '2 hours ago'"
 ssh hemma "sudo ls -1 /root/logs/incident-*.log | tail -n 5"
 ```
 
+### Incident Log Capture (Periodic)
+
+Skriptoteket runs a lightweight periodic capture to preserve the last few minutes of logs plus GPU state.
+
+- Script: `/usr/local/bin/skriptoteket-incident-capture.sh`
+- Logs: `/root/logs/incident-*.log`
+- Systemd: `skriptoteket-incident-capture.service` + `skriptoteket-incident-capture.timer`
+- Defaults: every 5 minutes, 10-minute window, 7-day retention
+- Includes: system + kernel logs, llama/tabby service logs, GPU runtime state, `rocm-smi` power/temps/clocks, and
+  `/sys/class/hwmon` snapshot (uses `sensors` if installed).
+- Alert thresholds (override via env): `INCIDENT_GPU_EDGE_WARN_C`, `INCIDENT_GPU_JUNCTION_WARN_C`,
+  `INCIDENT_GPU_MEM_WARN_C`, `INCIDENT_GPU_PPT_WARN_W`, `INCIDENT_CPU_TCTL_WARN_C`.
+
+Check status:
+
+```bash
+ssh hemma "sudo systemctl status --no-pager skriptoteket-incident-capture.timer"
+ssh hemma "sudo ls -1 /root/logs/incident-*.log | tail -n 5"
+```
+
 ### 502 Bad Gateway
 
 **Symptom**: nginx returns 502 after container restart.
@@ -502,6 +526,7 @@ ssh hemma "sudo ls -1 /root/logs/incident-*.log | tail -n 5"
 **Cause**: Web container not connected to `hule-network`.
 
 **Fix**:
+
 ```bash
 # Verify network membership
 ssh hemma "sudo docker network inspect hule-network --format '{{json .Containers}}' | python3 -m json.tool | grep skriptoteket"
@@ -520,11 +545,13 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up
 **Cause**: Uvicorn doesn't know original scheme was HTTPS.
 
 **Fix**: Ensure `pyproject.toml` serve command includes proxy headers:
+
 ```toml
 serve = "uvicorn ... --proxy-headers --forwarded-allow-ips='*'"
 ```
 
 And nginx sets the header:
+
 ```nginx
 proxy_set_header X-Forwarded-Proto $scheme;
 ```
@@ -536,12 +563,14 @@ proxy_set_header X-Forwarded-Proto $scheme;
 **Cause**: Usually database tables missing (migrations not run).
 
 **Diagnosis**:
+
 ```bash
 # Check web container logs for "relation does not exist" errors
 ssh hemma "sudo docker logs skriptoteket-web --tail 50"
 ```
 
 **Fix**:
+
 ```bash
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec web pdm run db-upgrade"
 ```
@@ -551,6 +580,7 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml ex
 **Cause**: PYTHONPATH not set for PEP 582 mode.
 
 **Fix**: Always include `-e PYTHONPATH=/app/src` when running CLI commands:
+
 ```bash
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli <command>"
 ```
