@@ -332,42 +332,6 @@
       border-top: 1px solid var(--border);
       padding-top: 14px;
     }
-
-    /* Print / PDF conversion */
-    @media print{
-      body{
-        background: #ffffff !important;
-        color: #111827 !important;
-      }
-      a{ color: #1d4ed8 !important; text-decoration: none !important; }
-      .wrap{ margin: 0; max-width: none; padding: 0; }
-      .panel{ box-shadow: none; border-color: #e5e7eb; }
-      .panel-inner, main{ padding: 16px; }
-      .toc{ display:none; } /* keep PDF cleaner; remove if you want TOC printed */
-      .badge{ border-color: #e5e7eb; background: #f9fafb; color: #374151; }
-      .badge.ok strong{ color: #047857 !important; }
-      .badge.info strong{ color: #0369a1 !important; }
-      p, li{ color: #374151 !important; }
-      h1, h2, h3{ color: #111827 !important; }
-      pre{
-        background: #f9fafb !important;
-        border-color: #e5e7eb !important;
-      }
-      pre code{ color: #111827 !important; }
-      p code, li code{
-        background: #f3f4f6 !important;
-        border-color: #e5e7eb !important;
-        color: #111827 !important;
-      }
-      .callout{
-        background: #f9fafb !important;
-        border-color: #e5e7eb !important;
-      }
-      .label{ background: #f3f4f6 !important; border-color: #e5e7eb !important; }
-      section{ break-inside: avoid; }
-      h2{ break-after: avoid; }
-      @page { margin: 18mm; }
-    }
   </style>
 </head>
 

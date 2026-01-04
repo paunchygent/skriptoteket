@@ -43,10 +43,14 @@ const props = withDefaults(
     modelValue: string;
     extensions?: Extension[];
     readOnly?: boolean;
+    language?: Extension | null;
+    tabSize?: number;
   }>(),
   {
     extensions: () => [],
     readOnly: false,
+    language: null,
+    tabSize: 4,
   },
 );
 const emit = defineEmits<{
@@ -61,6 +65,8 @@ let suppressEmit = false;
 
 const externalExtensions = new Compartment();
 const readOnlyExtension = new Compartment();
+const languageExtension = new Compartment();
+const tabSizeExtension = new Compartment();
 
 const editorLayoutTheme = EditorView.theme(
   {
@@ -117,8 +123,8 @@ onMounted(() => {
           ...foldKeymap,
           ...completionKeymap,
         ]),
-        python(),
-        EditorState.tabSize.of(4),
+        languageExtension.of(props.language ?? python()),
+        tabSizeExtension.of(EditorState.tabSize.of(props.tabSize)),
         editorLayoutTheme,
         externalExtensions.of(props.extensions),
         readOnlyExtension.of([
@@ -155,6 +161,26 @@ watch(
     if (!view) return;
     view.dispatch({
       effects: externalExtensions.reconfigure(extensions),
+    });
+  },
+);
+
+watch(
+  () => props.language,
+  (language) => {
+    if (!view) return;
+    view.dispatch({
+      effects: languageExtension.reconfigure(language ?? python()),
+    });
+  },
+);
+
+watch(
+  () => props.tabSize,
+  (tabSize) => {
+    if (!view) return;
+    view.dispatch({
+      effects: tabSizeExtension.reconfigure(EditorState.tabSize.of(tabSize)),
     });
   },
 );

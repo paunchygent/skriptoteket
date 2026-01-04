@@ -11,6 +11,7 @@ from skriptoteket.domain.scripting.tool_inputs import (
     normalize_tool_input_schema,
     normalize_tool_input_values,
     validate_input_files_count,
+    validate_input_schema_upload_limits,
 )
 
 
@@ -60,6 +61,25 @@ def test_validate_input_files_count_enforces_min_max() -> None:
 
     with pytest.raises(DomainError):
         validate_input_files_count(input_schema=schema, files_count=4)
+
+
+def test_validate_input_schema_upload_limits_allows_when_no_file_field() -> None:
+    schema: list[ToolInputField] = [ToolInputStringField(name="title", label="Title")]
+
+    validate_input_schema_upload_limits(input_schema=schema, upload_max_files=10)
+
+
+def test_validate_input_schema_upload_limits_rejects_when_file_max_exceeds_upload_limit() -> None:
+    schema: list[ToolInputField] = [
+        ToolInputFileField(name="documents", label="Documents", min=0, max=11)
+    ]
+
+    with pytest.raises(DomainError) as exc_info:
+        validate_input_schema_upload_limits(input_schema=schema, upload_max_files=10)
+
+    assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+    assert exc_info.value.details["field"] == "documents"
+    assert exc_info.value.details["violations"] == ["max"]
 
 
 def test_normalize_tool_input_values_rejects_unknown_keys() -> None:

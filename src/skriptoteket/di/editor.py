@@ -31,6 +31,9 @@ from skriptoteket.application.scripting.handlers.start_sandbox_action import (
     StartSandboxActionHandler,
 )
 from skriptoteket.application.scripting.handlers.submit_for_review import SubmitForReviewHandler
+from skriptoteket.application.scripting.handlers.validate_tool_schemas import (
+    ValidateToolSchemasHandler,
+)
 from skriptoteket.application.scripting.tool_settings_service import ToolSettingsService
 from skriptoteket.config import Settings
 from skriptoteket.protocols.catalog import (
@@ -57,6 +60,7 @@ from skriptoteket.protocols.scripting import (
     StartSandboxActionHandlerProtocol,
     SubmitForReviewHandlerProtocol,
     ToolVersionRepositoryProtocol,
+    ValidateToolSchemasHandlerProtocol,
 )
 from skriptoteket.protocols.session_files import SessionFileStorageProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
@@ -111,6 +115,21 @@ class EditorProvider(Provider):
             locks=locks,
             clock=clock,
             id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def validate_tool_schemas_handler(
+        self,
+        settings: Settings,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
+    ) -> ValidateToolSchemasHandlerProtocol:
+        return ValidateToolSchemasHandler(
+            settings=settings,
+            uow=uow,
+            tools=tools,
+            maintainers=maintainers,
         )
 
     @provide(scope=Scope.REQUEST)

@@ -18,6 +18,20 @@ class SessionFilesMode(StrEnum):
     CLEAR = "clear"
 
 
+class SchemaName(StrEnum):
+    SETTINGS_SCHEMA = "settings_schema"
+    INPUT_SCHEMA = "input_schema"
+
+
+class SchemaValidationIssue(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    schema_name: SchemaName = Field(alias="schema")
+    path: str | None = None
+    message: str
+    details: dict[str, JsonValue] | None = None
+
+
 class ToolVersionOverride(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -189,3 +203,18 @@ class RollbackVersionResult(BaseModel):
 
     new_active_version: ToolVersion
     archived_previous_active_version: ToolVersion | None = None
+
+
+class ValidateToolSchemasCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    settings_schema: JsonValue | None = None
+    input_schema: JsonValue | None = None
+
+
+class ValidateToolSchemasResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    valid: bool
+    issues: list[SchemaValidationIssue] = Field(default_factory=list)

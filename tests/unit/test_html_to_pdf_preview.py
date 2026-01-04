@@ -232,6 +232,15 @@ def test_wrap_pdf_html_is_idempotent() -> None:
 
 
 @pytest.mark.unit
+def test_build_weasyprint_recovery_css_relaxes_break_rules() -> None:
+    css = html_to_pdf_preview._build_weasyprint_recovery_css()
+    assert "height: auto" in css
+    assert "break-inside: auto" in css
+    assert "page-break-inside: auto" in css
+    assert "break-after: auto" in css
+
+
+@pytest.mark.unit
 def test_handle_action_writes_error_artifact_and_short_table_message(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

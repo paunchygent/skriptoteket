@@ -2,7 +2,7 @@
 type: story
 id: ST-14-14
 title: "Editor: schema editor snippets + inline diagnostics"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-29
 updated: 2026-01-03

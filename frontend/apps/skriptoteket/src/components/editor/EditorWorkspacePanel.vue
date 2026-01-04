@@ -1,24 +1,24 @@
 <script setup lang="ts">
 import type { EditorView } from "@codemirror/view";
-import { computed, defineAsyncComponent, toRef } from "vue";
+import { computed } from "vue";
 import type { components } from "../../api/openapi";
 
-import { useEditorSchemaParsing } from "../../composables/editor/useEditorSchemaParsing";
-import { useSkriptoteketIntelligenceExtensions } from "../../composables/editor/useSkriptoteketIntelligenceExtensions";
+import type { SchemaIssuesBySchema } from "../../composables/editor/useEditorSchemaValidation";
 import EditorEditSuggestionPanel from "./EditorEditSuggestionPanel.vue";
-import EntrypointDropdown from "./EntrypointDropdown.vue";
-import InstructionsDrawer from "./InstructionsDrawer.vue";
-import MaintainersDrawer from "./MaintainersDrawer.vue";
-import MetadataDrawer from "./MetadataDrawer.vue";
-import VersionHistoryDrawer from "./VersionHistoryDrawer.vue";
-
-const CodeMirrorEditor = defineAsyncComponent(() => import("./CodeMirrorEditor.vue"));
-const SandboxRunner = defineAsyncComponent(() => import("./SandboxRunner.vue"));
+import EditorInputSchemaPanel from "./EditorInputSchemaPanel.vue";
+import EditorSandboxPanel from "./EditorSandboxPanel.vue";
+import EditorSettingsSchemaPanel from "./EditorSettingsSchemaPanel.vue";
+import EditorSourceCodePanel from "./EditorSourceCodePanel.vue";
+import EditorWorkspaceDrawers from "./EditorWorkspaceDrawers.vue";
+import EditorWorkspaceToolbar from "./EditorWorkspaceToolbar.vue";
 
 type EditorVersionSummary = components["schemas"]["EditorVersionSummary"];
 type ProfessionItem = components["schemas"]["ProfessionItem"];
 type CategoryItem = components["schemas"]["CategoryItem"];
 type MaintainerSummary = components["schemas"]["MaintainerSummary"];
+type CreateDraftVersionRequest = components["schemas"]["CreateDraftVersionRequest"];
+type ToolInputSchema = NonNullable<CreateDraftVersionRequest["input_schema"]>;
+type ToolSettingsSchema = NonNullable<CreateDraftVersionRequest["settings_schema"]>;
 
 type EditorWorkspacePanelProps = {
   toolId: string;
@@ -31,6 +31,15 @@ type EditorWorkspacePanelProps = {
   sourceCode: string;
   settingsSchemaText: string;
   inputSchemaText: string;
+  settingsSchema: ToolSettingsSchema | null;
+  settingsSchemaError: string | null;
+  inputSchema: ToolInputSchema;
+  inputSchemaError: string | null;
+  schemaIssuesBySchema: SchemaIssuesBySchema;
+  hasBlockingSchemaIssues: boolean;
+  isSchemaValidating: boolean;
+  schemaValidationError: string | null;
+  validateSchemasNow: () => Promise<boolean>;
   usageInstructions: string;
 
   metadataTitle: string;
@@ -112,330 +121,138 @@ const emit = defineEmits<{
   (event: "update:editInstruction", value: string): void;
 }>();
 
-const entrypointName = computed(() => props.entrypoint);
-const ghostTextEnabled = computed(() => !props.isReadOnly);
-const ghostTextAutoTrigger = computed(() => true);
-const ghostTextDebounceMs = computed(() => 1500);
-const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtensions({
-  entrypointName,
-  ghostText: {
-    enabled: ghostTextEnabled,
-    autoTrigger: ghostTextAutoTrigger,
-    debounceMs: ghostTextDebounceMs,
-  },
-});
-
-const { inputSchema, inputSchemaError, settingsSchema, settingsSchemaError } =
-  useEditorSchemaParsing({
-    inputSchemaText: toRef(props, "inputSchemaText"),
-    settingsSchemaText: toRef(props, "settingsSchemaText"),
-  });
+const activeVersionId = computed(() => props.selectedVersion?.id ?? null);
 </script>
 
 <template>
   <div class="border border-navy bg-white shadow-brutal-sm">
-    <!-- Control row -->
-    <div class="p-4 border-b border-navy/20">
-      <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <!-- Save group: Spara + Osparat + Ändringssammanfattning -->
-        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
-          <div class="flex items-center gap-2">
-            <button
-              type="button"
-              :disabled="isSaving || isReadOnly || Boolean(inputSchemaError) || Boolean(settingsSchemaError)"
-              class="btn-primary min-w-[80px]"
-              @click="emit('save')"
-            >
-              <span
-                v-if="isSaving"
-                class="inline-block w-3 h-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
-              />
-              <span v-else>Spara</span>
-            </button>
-            <span
-              v-if="hasDirtyChanges"
-              class="text-xs text-burgundy font-semibold uppercase tracking-wide"
-            >
-              Osparat
-            </span>
-          </div>
-
-          <div class="min-w-[180px] max-w-xs space-y-1">
-            <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-              Ändringssammanfattning
-            </label>
-            <input
-              :value="changeSummary"
-              class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
-              placeholder="T.ex. fixade bugg..."
-              :disabled="isReadOnly"
-              @input="emit('update:changeSummary', ($event.target as HTMLInputElement).value)"
-            >
-          </div>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-            @click="emit('openHistoryDrawer')"
-          >
-            Öppna sparade
-          </button>
-          <button
-            v-if="canEditTaxonomy"
-            type="button"
-            class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-            @click="emit('openMetadataDrawer')"
-          >
-            Metadata
-          </button>
-          <button
-            v-if="canEditMaintainers"
-            type="button"
-            class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-            @click="emit('openMaintainersDrawer')"
-          >
-            Redigeringsbehörigheter
-          </button>
-          <button
-            type="button"
-            class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-            @click="emit('openInstructionsDrawer')"
-          >
-            Instruktioner
-          </button>
-        </div>
-      </div>
-    </div>
+    <EditorWorkspaceToolbar
+      :is-saving="props.isSaving"
+      :is-read-only="props.isReadOnly"
+      :has-dirty-changes="props.hasDirtyChanges"
+      :change-summary="props.changeSummary"
+      :input-schema-error="props.inputSchemaError"
+      :settings-schema-error="props.settingsSchemaError"
+      :has-blocking-schema-issues="props.hasBlockingSchemaIssues"
+      :can-edit-taxonomy="props.canEditTaxonomy"
+      :can-edit-maintainers="props.canEditMaintainers"
+      @save="emit('save')"
+      @open-history-drawer="emit('openHistoryDrawer')"
+      @open-metadata-drawer="emit('openMetadataDrawer')"
+      @open-maintainers-drawer="emit('openMaintainersDrawer')"
+      @open-instructions-drawer="emit('openInstructionsDrawer')"
+      @update:change-summary="emit('update:changeSummary', $event)"
+    />
 
     <div
       :class="[
         'grid',
-        isDrawerOpen ? 'md:grid-cols-[minmax(0,1fr)_400px]' : 'md:grid-cols-[minmax(0,1fr)]',
+        props.isDrawerOpen ? 'md:grid-cols-[minmax(0,1fr)_400px]' : 'md:grid-cols-[minmax(0,1fr)]',
       ]"
     >
       <div class="p-4 space-y-4 min-w-0">
-        <!-- Source code -->
-        <div class="space-y-3">
-          <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
-            Källkod
-          </h2>
-          <div class="h-[420px] border border-navy bg-canvas shadow-brutal-sm overflow-hidden">
-            <Suspense>
-              <template #default>
-                <CodeMirrorEditor
-                  :model-value="sourceCode"
-                  :extensions="intelligenceExtensions"
-                  :read-only="isReadOnly"
-                  @view-ready="emit('editorViewReady', $event)"
-                  @update:model-value="emit('update:sourceCode', $event)"
-                />
-              </template>
-              <template #fallback>
-                <div class="h-full w-full flex items-center justify-center gap-3 text-sm text-navy/70">
-                  <span
-                    class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin"
-                  />
-                  <span>Laddar kodredigerare...</span>
-                </div>
-              </template>
-            </Suspense>
-          </div>
-        </div>
+        <EditorSourceCodePanel
+          :entrypoint="props.entrypoint"
+          :source-code="props.sourceCode"
+          :is-read-only="props.isReadOnly"
+          @update:source-code="emit('update:sourceCode', $event)"
+          @editor-view-ready="emit('editorViewReady', $event)"
+        />
 
         <EditorEditSuggestionPanel
-          :instruction="editInstruction"
-          :suggestion="editSuggestion"
-          :is-loading="editIsLoading"
-          :error="editError"
-          :is-read-only="isReadOnly"
-          :can-apply="canApplyEdit"
+          :instruction="props.editInstruction"
+          :suggestion="props.editSuggestion"
+          :is-loading="props.editIsLoading"
+          :error="props.editError"
+          :is-read-only="props.isReadOnly"
+          :can-apply="props.canApplyEdit"
           @update:instruction="emit('update:editInstruction', $event)"
           @request="emit('requestEditSuggestion')"
           @apply="emit('applyEditSuggestion')"
           @clear="emit('clearEditSuggestion')"
         />
 
-        <div class="border-t border-navy/20 pt-4 space-y-3">
-          <div class="space-y-1">
-            <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
-              Inställningar (schema)
-            </h2>
-            <p class="text-sm text-navy/60">
-              Valfritt. Ange en JSON-array av fält (samma typer som UI Actions: string, text,
-              integer, number, boolean, enum, multi_enum).
-            </p>
-          </div>
+        <EditorSettingsSchemaPanel
+          :settings-schema-text="props.settingsSchemaText"
+          :settings-schema-error="props.settingsSchemaError"
+          :schema-issues="props.schemaIssuesBySchema.settings_schema"
+          :is-read-only="props.isReadOnly"
+          @update:settings-schema-text="emit('update:settingsSchemaText', $event)"
+        />
 
-          <label
-            for="tool-settings-schema"
-            class="text-xs font-semibold uppercase tracking-wide text-navy/70"
-          >
-            Schema (JSON)
-          </label>
-          <textarea
-            id="tool-settings-schema"
-            :value="settingsSchemaText"
-            rows="10"
-            class="w-full border border-navy bg-white px-3 py-2 text-sm font-mono text-navy shadow-brutal-sm"
-            placeholder="[{&quot;name&quot;:&quot;theme_color&quot;,&quot;label&quot;:&quot;Färgtema&quot;,&quot;kind&quot;:&quot;string&quot;}]"
-            :disabled="isReadOnly"
-            @input="emit('update:settingsSchemaText', ($event.target as HTMLTextAreaElement).value)"
-          />
-          <p
-            v-if="settingsSchemaError"
-            class="text-xs font-semibold text-burgundy"
-          >
-            {{ settingsSchemaError }}
-          </p>
-        </div>
+        <EditorInputSchemaPanel
+          :input-schema-text="props.inputSchemaText"
+          :input-schema-error="props.inputSchemaError"
+          :schema-issues="props.schemaIssuesBySchema.input_schema"
+          :is-read-only="props.isReadOnly"
+          @update:input-schema-text="emit('update:inputSchemaText', $event)"
+        />
 
-        <div class="border-t border-navy/20 pt-4 space-y-3">
-          <div class="space-y-1">
-            <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
-              Indata (input_schema)
-            </h2>
-            <p class="text-sm text-navy/60">
-              Valfritt. Ange en JSON-array av fält som visas innan körning (string, text, integer,
-              number, boolean, enum, file). V1: max 1 file-fält och file-fält kräver min/max.
-            </p>
-          </div>
-
-          <label
-            for="tool-input-schema"
-            class="text-xs font-semibold uppercase tracking-wide text-navy/70"
-          >
-            Schema (JSON)
-          </label>
-          <textarea
-            id="tool-input-schema"
-            :value="inputSchemaText"
-            rows="10"
-            class="w-full border border-navy bg-white px-3 py-2 text-sm font-mono text-navy shadow-brutal-sm"
-            placeholder="[{&quot;name&quot;:&quot;title&quot;,&quot;label&quot;:&quot;Titel&quot;,&quot;kind&quot;:&quot;string&quot;}]"
-            :disabled="isReadOnly"
-            @input="emit('update:inputSchemaText', ($event.target as HTMLTextAreaElement).value)"
-          />
-          <p
-            v-if="inputSchemaError"
-            class="text-xs font-semibold text-burgundy"
-          >
-            {{ inputSchemaError }}
-          </p>
-        </div>
-
-        <!-- Test section -->
-        <div class="border-t border-navy/20 pt-4 space-y-3">
-          <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
-            Testkör kod
-          </h2>
-
-          <!-- Entrypoint + file picker + run button -->
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-            <EntrypointDropdown
-              :model-value="entrypoint"
-              :options="entrypointOptions"
-              :disabled="isReadOnly"
-              @update:model-value="emit('update:entrypoint', $event)"
-            />
-          </div>
-
-          <Suspense v-if="selectedVersion">
-            <template #default>
-              <SandboxRunner
-                :version-id="selectedVersion.id"
-                :tool-id="toolId"
-                :is-read-only="isReadOnly"
-                :entrypoint="entrypoint"
-                :source-code="sourceCode"
-                :settings-schema="settingsSchema"
-                :settings-schema-error="settingsSchemaError"
-                :input-schema="inputSchema"
-                :input-schema-error="inputSchemaError"
-                :usage-instructions="usageInstructions"
-              />
-            </template>
-            <template #fallback>
-              <div class="flex items-center gap-3 p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70">
-                <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
-                <span>Laddar testkörning...</span>
-              </div>
-            </template>
-          </Suspense>
-          <p
-            v-else
-            class="text-sm text-navy/60"
-          >
-            Spara ett utkast för att kunna testa.
-          </p>
-        </div>
+        <EditorSandboxPanel
+          :tool-id="props.toolId"
+          :selected-version="props.selectedVersion"
+          :entrypoint-options="props.entrypointOptions"
+          :entrypoint="props.entrypoint"
+          :is-read-only="props.isReadOnly"
+          :source-code="props.sourceCode"
+          :usage-instructions="props.usageInstructions"
+          :settings-schema="props.settingsSchema"
+          :settings-schema-error="props.settingsSchemaError"
+          :input-schema="props.inputSchema"
+          :input-schema-error="props.inputSchemaError"
+          :has-blocking-schema-issues="props.hasBlockingSchemaIssues"
+          :schema-validation-error="props.schemaValidationError"
+          :validate-schemas-now="props.validateSchemasNow"
+          @update:entrypoint="emit('update:entrypoint', $event)"
+        />
       </div>
 
-      <!-- Drawers -->
-      <VersionHistoryDrawer
-        v-if="isHistoryDrawerOpen"
-        :is-open="isHistoryDrawerOpen"
-        :versions="versions"
-        :active-version-id="selectedVersion?.id"
-        :can-rollback="canRollbackVersions"
-        :is-submitting="isWorkflowSubmitting"
+      <EditorWorkspaceDrawers
+        :is-history-drawer-open="props.isHistoryDrawerOpen"
+        :is-metadata-drawer-open="props.isMetadataDrawerOpen"
+        :is-maintainers-drawer-open="props.isMaintainersDrawerOpen"
+        :is-instructions-drawer-open="props.isInstructionsDrawerOpen"
+        :versions="props.versions"
+        :active-version-id="activeVersionId"
+        :can-rollback-versions="props.canRollbackVersions"
+        :is-workflow-submitting="props.isWorkflowSubmitting"
+        :metadata-title="props.metadataTitle"
+        :metadata-slug="props.metadataSlug"
+        :metadata-summary="props.metadataSummary"
+        :can-edit-slug="props.canEditSlug"
+        :slug-error="props.slugError"
+        :professions="props.professions"
+        :categories="props.categories"
+        :selected-profession-ids="props.selectedProfessionIds"
+        :selected-category-ids="props.selectedCategoryIds"
+        :taxonomy-error="props.taxonomyError"
+        :is-taxonomy-loading="props.isTaxonomyLoading"
+        :is-saving-all-metadata="props.isSavingAllMetadata"
+        :maintainers="props.maintainers"
+        :owner-user-id="props.ownerUserId"
+        :is-maintainers-loading="props.isMaintainersLoading"
+        :is-maintainers-saving="props.isMaintainersSaving"
+        :maintainers-error="props.maintainersError"
+        :usage-instructions="props.usageInstructions"
+        :is-saving="props.isSaving"
+        :is-read-only="props.isReadOnly"
         @close="emit('closeDrawer')"
-        @select="emit('selectHistoryVersion', $event)"
-        @rollback="emit('rollbackVersion', $event)"
-      />
-
-      <MetadataDrawer
-        v-if="isMetadataDrawerOpen"
-        :is-open="isMetadataDrawerOpen"
-        :metadata-title="metadataTitle"
-        :metadata-slug="metadataSlug"
-        :metadata-summary="metadataSummary"
-        :can-edit-slug="canEditSlug"
-        :slug-error="slugError"
-        :professions="professions"
-        :categories="categories"
-        :selected-profession-ids="selectedProfessionIds"
-        :selected-category-ids="selectedCategoryIds"
-        :taxonomy-error="taxonomyError"
-        :is-loading="isTaxonomyLoading"
-        :is-saving="isSavingAllMetadata"
-        @close="emit('closeDrawer')"
-        @save="emit('saveAllMetadata')"
+        @select-history-version="emit('selectHistoryVersion', $event)"
+        @rollback-version="emit('rollbackVersion', $event)"
+        @save-all-metadata="emit('saveAllMetadata')"
+        @suggest-slug-from-title="emit('suggestSlugFromTitle')"
+        @add-maintainer="emit('addMaintainer', $event)"
+        @remove-maintainer="emit('removeMaintainer', $event)"
+        @save="emit('save')"
+        @update:usage-instructions="emit('update:usageInstructions', $event)"
         @update:metadata-title="emit('update:metadataTitle', $event)"
         @update:metadata-slug="emit('update:metadataSlug', $event)"
         @update:metadata-summary="emit('update:metadataSummary', $event)"
         @update:slug-error="emit('update:slugError', $event)"
-        @suggest-slug-from-title="emit('suggestSlugFromTitle')"
+        @update:taxonomy-error="emit('update:taxonomyError', $event)"
+        @update:maintainers-error="emit('update:maintainersError', $event)"
         @update:selected-profession-ids="emit('update:selectedProfessionIds', $event)"
         @update:selected-category-ids="emit('update:selectedCategoryIds', $event)"
-        @update:taxonomy-error="emit('update:taxonomyError', $event)"
-      />
-
-      <MaintainersDrawer
-        v-if="isMaintainersDrawerOpen"
-        :is-open="isMaintainersDrawerOpen"
-        :maintainers="maintainers"
-        :owner-user-id="ownerUserId"
-        :is-superuser="canRollbackVersions"
-        :is-loading="isMaintainersLoading"
-        :is-saving="isMaintainersSaving"
-        :error="maintainersError"
-        @close="emit('closeDrawer')"
-        @add="emit('addMaintainer', $event)"
-        @remove="emit('removeMaintainer', $event)"
-        @update:error="emit('update:maintainersError', $event)"
-      />
-
-      <InstructionsDrawer
-        v-if="isInstructionsDrawerOpen"
-        :is-open="isInstructionsDrawerOpen"
-        :usage-instructions="usageInstructions"
-        :is-saving="isSaving"
-        :is-read-only="isReadOnly"
-        @close="emit('closeDrawer')"
-        @save="emit('save')"
-        @update:usage-instructions="emit('update:usageInstructions', $event)"
       />
     </div>
   </div>

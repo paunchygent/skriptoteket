@@ -20,6 +20,11 @@ type UseScriptEditorOptions = {
   notify: UiNotifier;
 };
 
+type SaveOptions = {
+  validateSchemasNow?: () => Promise<boolean>;
+  schemaValidationError?: Readonly<Ref<string | null>>;
+};
+
 export function useScriptEditor({
   toolId,
   versionId,
@@ -218,7 +223,7 @@ export function useScriptEditor({
     await router.push(path);
   }
 
-  async function save(): Promise<void> {
+  async function save(options: SaveOptions = {}): Promise<void> {
     if (!editor.value || isSaving.value) return;
 
     const entrypointValue = entrypoint.value.trim();
@@ -254,6 +259,16 @@ export function useScriptEditor({
         return;
       }
       const inputSchema = (inputSchemaResult.value ?? []) as InputSchema;
+
+      if (options.validateSchemasNow) {
+        const valid = await options.validateSchemasNow();
+        if (!valid) {
+          errorMessage.value =
+            options.schemaValidationError?.value ??
+            "Schemat innehåller valideringsfel. Åtgärda felen innan du sparar.";
+          return;
+        }
+      }
 
       if (editor.value.save_mode === "snapshot") {
         const version = selectedVersion.value;

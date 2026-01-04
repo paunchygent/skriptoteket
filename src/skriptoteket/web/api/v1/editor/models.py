@@ -4,6 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
+from skriptoteket.application.scripting.commands import SchemaValidationIssue
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.models import RunStatus, VersionState
 from skriptoteket.domain.scripting.tool_inputs import ToolInputField
@@ -310,3 +311,17 @@ class StartSandboxActionResponse(BaseModel):
 
     run_id: UUID
     state_rev: int
+
+
+class ValidateToolSchemasRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    settings_schema: JsonValue | None = None
+    input_schema: JsonValue | None = None
+
+
+class ValidateToolSchemasResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    valid: bool
+    issues: list[SchemaValidationIssue] = Field(default_factory=list)

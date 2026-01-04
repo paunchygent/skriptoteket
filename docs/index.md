@@ -216,6 +216,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-08-20-editor-ai-chat-drawer-mvp.md`
 - `docs/backlog/stories/story-08-21-ai-structured-crud-edit-ops-protocol-v1.md`
 - `docs/backlog/stories/story-08-22-editor-ai-diff-preview-apply-undo.md`
+- `docs/backlog/stories/story-08-23-ai-chat-streaming-proxy-and-config.md`
 - `docs/backlog/stories/story-09-01-http-security-headers.md`
 - `docs/backlog/stories/story-09-02-content-security-policy.md`
 - `docs/backlog/stories/story-09-03-firewall-audit.md`
@@ -345,6 +346,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/reports/ref-devops-skill-research.md`
 - `docs/reference/reports/ref-external-observability-integration.md`
 - `docs/reference/reports/ref-frontend-expert-review-epic-05.md`
+- `docs/reference/reports/ref-hemma-host-freeze-investigation-2026-01-03.md`
+- `docs/reference/reports/ref-hemma-host-freeze-stack-alignment-2026-01-03.md`
+- `docs/reference/reports/ref-hemma-incident-log-2026-01-02-083355-083455.md`
+- `docs/reference/reports/ref-hemma-bios-update-guide-2026-01-03.md`
 - `docs/reference/reports/ref-htmx-ux-enhancement-plan.md`
 - `docs/reference/reports/ref-lead-architect-suggestions-post-mvp.md`
 - `docs/reference/reports/ref-lead-developer-assessment-epic-04.md`

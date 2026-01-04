@@ -1,31 +1,17 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, toRef, watch } from "vue";
+import { computed, ref, toRef } from "vue";
 
-import { apiFetch, apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
+import { useEditorSandboxActions } from "../../composables/editor/useEditorSandboxActions";
+import { useEditorSandboxRunExecution } from "../../composables/editor/useEditorSandboxRunExecution";
+import { useEditorSandboxSessionFiles } from "../../composables/editor/useEditorSandboxSessionFiles";
 import { useSandboxSettings } from "../../composables/editor/useSandboxSettings";
 import { useToolInputs, type ToolInputFormValues } from "../../composables/tools/useToolInputs";
-import type { SettingsFormValues } from "../../composables/tools/toolSettingsHelpers";
 import SessionFilesPanel from "../tool-run/SessionFilesPanel.vue";
-import ToolRunSettingsPanel from "../tool-run/ToolRunSettingsPanel.vue";
 import SystemMessage from "../ui/SystemMessage.vue";
 import SandboxInputPanel from "./SandboxInputPanel.vue";
+import SandboxSettingsCard from "./SandboxSettingsCard.vue";
 import SandboxRunnerActions from "./SandboxRunnerActions.vue";
-
-type SandboxRunResponse = components["schemas"]["SandboxRunResponse"];
-type StartSandboxActionResponse = components["schemas"]["StartSandboxActionResponse"];
-type EditorRunDetails = components["schemas"]["EditorRunDetails"];
-type RunStatus = components["schemas"]["RunStatus"];
-type JsonValue = components["schemas"]["JsonValue"];
-
-type SessionFilesMode = "none" | "reuse" | "clear";
-type SessionFileInfo = { name: string; bytes: number };
-type SandboxSessionFilesResponse = {
-  tool_id: string;
-  version_id: string;
-  snapshot_id: string;
-  files: SessionFileInfo[];
-};
 
 type CreateDraftVersionRequest = components["schemas"]["CreateDraftVersionRequest"];
 type ToolInputSchema = NonNullable<CreateDraftVersionRequest["input_schema"]>;
@@ -42,6 +28,9 @@ const props = defineProps<{
   inputSchemaError: string | null;
   settingsSchema: ToolSettingsSchema | null;
   settingsSchemaError: string | null;
+  hasBlockingSchemaIssues: boolean;
+  schemaValidationError: string | null;
+  validateSchemasNow: () => Promise<boolean>;
 }>();
 
 const selectedFiles = ref<File[]>([]);
@@ -56,10 +45,6 @@ const fileMultiple = toolInputs.fileMultiple;
 const fileError = toolInputs.fileError;
 const showFilePicker = toolInputs.showFilePicker;
 
-const sessionFiles = ref<SessionFileInfo[]>([]);
-const sessionFilesMode = ref<SessionFilesMode>("none");
-const sessionFilesSnapshotId = ref<string | null>(null);
-
 const sandboxSettings = useSandboxSettings({
   versionId: toRef(props, "versionId"),
   settingsSchema: toRef(props, "settingsSchema"),
@@ -71,108 +56,85 @@ const isLoadingSettings = sandboxSettings.isLoading;
 const isSavingSettings = sandboxSettings.isSaving;
 const hasSettingsSchema = sandboxSettings.hasSchema;
 
-const isSettingsOpen = ref(false);
-const isSettingsSaveDisabled = computed(
-  () => props.isReadOnly || Boolean(props.settingsSchemaError),
-);
-
 const isRunning = ref(false);
-const runResult = ref<EditorRunDetails | null>(null);
-const errorMessage = ref<string | null>(null);
-const pollingIntervalId = ref<number | null>(null);
-
-// Multi-step action state (ADR-0038)
-const stateRev = ref<number | null>(null);
 const isSubmitting = ref(false);
-const actionErrorMessage = ref<string | null>(null);
-const completedSteps = ref<EditorRunDetails[]>([]);
-const selectedStepIndex = ref<number | null>(null);
 
-const snapshotId = ref<string | null>(null);
-const lastSentInputsJson = ref<string>("{}");
-
-const hasFiles = computed(() => selectedFiles.value.length > 0);
-const hasSessionFiles = computed(() => sessionFiles.value.length > 0);
-const effectiveSessionFilesMode = computed<SessionFilesMode>(() => {
-  if (hasFiles.value) return "none";
-  if (sessionFilesMode.value === "reuse" && !hasSessionFiles.value) return "none";
-  return sessionFilesMode.value;
+const {
+  sessionFiles,
+  sessionFilesMode,
+  sessionFilesSnapshotId,
+  effectiveSessionFilesMode,
+  effectiveFileError,
+  canReuseSessionFiles,
+  canClearSessionFiles,
+  helperText: sessionFilesHelperText,
+  fetchSessionFiles,
+} = useEditorSandboxSessionFiles({
+  versionId: toRef(props, "versionId"),
+  isReadOnly: toRef(props, "isReadOnly"),
+  isRunning,
+  isSubmitting,
+  selectedFiles,
+  fileError,
+  fileField: toolInputs.fileField,
 });
-const effectiveFileError = computed<string | null>(() => {
-  const baseError = fileError.value;
-  const field = toolInputs.fileField.value;
-  if (!field) {
-    if (effectiveSessionFilesMode.value === "reuse" && hasSessionFiles.value) {
-      return "Det här verktyget tar inte emot filer.";
-    }
-    return baseError;
-  }
-  if (hasFiles.value) return baseError;
-  if (effectiveSessionFilesMode.value !== "reuse") return baseError;
 
-  const count = sessionFiles.value.length;
-  const min = field.min;
-  const max = field.max;
-
-  if (count < min) {
-    return min === 1 ? "Välj minst en fil." : `Välj minst ${min} filer.`;
-  }
-  if (count > max) {
-    return max === 1 ? "Du kan välja max 1 fil." : `Du kan välja max ${max} filer.`;
-  }
-  return null;
+const runExec = useEditorSandboxRunExecution({
+  versionId: toRef(props, "versionId"),
+  isReadOnly: toRef(props, "isReadOnly"),
+  isRunning,
+  entrypoint: toRef(props, "entrypoint"),
+  sourceCode: toRef(props, "sourceCode"),
+  usageInstructions: toRef(props, "usageInstructions"),
+  settingsSchema: toRef(props, "settingsSchema"),
+  inputSchema: toRef(props, "inputSchema"),
+  inputSchemaError: toRef(props, "inputSchemaError"),
+  settingsSchemaError: toRef(props, "settingsSchemaError"),
+  hasBlockingSchemaIssues: toRef(props, "hasBlockingSchemaIssues"),
+  schemaValidationError: toRef(props, "schemaValidationError"),
+  validateSchemasNow: props.validateSchemasNow,
+  buildApiInputs: () => toolInputs.buildApiValues(),
+  selectedFiles,
+  effectiveSessionFilesMode,
+  sessionFilesSnapshotId,
+  sessionFilesMode,
+  fetchSessionFiles,
 });
+
+const actions = useEditorSandboxActions({
+  versionId: toRef(props, "versionId"),
+  isReadOnly: toRef(props, "isReadOnly"),
+  runResult: runExec.runResult,
+  snapshotId: runExec.snapshotId,
+  isRunning,
+  isSubmitting,
+  stateRev: runExec.stateRev,
+  startPolling: runExec.startPolling,
+  stopPolling: runExec.stopPolling,
+});
+
+const runResult = runExec.runResult;
+const errorMessage = runExec.errorMessage;
+const inputsPreview = computed(() => runExec.lastSentInputsJson.value);
+const hasResults = computed(() => runResult.value !== null || errorMessage.value !== null);
+
+const actionErrorMessage = actions.actionErrorMessage;
+const completedSteps = actions.completedSteps;
+const selectedStepIndex = actions.selectedStepIndex;
+const canSubmitActions = actions.canSubmitActions;
+
 const inputsValid = computed(() => {
   return (
     effectiveFileError.value === null &&
     Object.keys(inputFieldErrors.value).length === 0
   );
 });
-const inputsPreview = computed(() => lastSentInputsJson.value);
-const hasResults = computed(() => runResult.value !== null || errorMessage.value !== null);
-
-const canSubmitActions = computed(() => {
-  return (
-    stateRev.value !== null &&
-    !isRunning.value &&
-    !isSubmitting.value &&
-    !props.isReadOnly
-  );
-});
 
 const canRun = computed(() => {
   if (props.isReadOnly || isRunning.value) return false;
   if (props.inputSchemaError || props.settingsSchemaError) return false;
+  if (props.hasBlockingSchemaIssues) return false;
   return inputsValid.value;
-});
-
-const canReuseSessionFiles = computed(() => {
-  return (
-    !props.isReadOnly &&
-    !isRunning.value &&
-    !isSubmitting.value &&
-    !hasFiles.value &&
-    hasSessionFiles.value &&
-    toolInputs.fileField.value !== null
-  );
-});
-const canClearSessionFiles = computed(() => {
-  return (
-    !props.isReadOnly &&
-    !isRunning.value &&
-    !isSubmitting.value &&
-    !hasFiles.value &&
-    hasSessionFiles.value
-  );
-});
-const sessionFilesHelperText = computed(() => {
-  if (props.isReadOnly) {
-    return "Du saknar redigeringslåset. Sparade filer kan inte användas.";
-  }
-  if (hasFiles.value) {
-    return "Väljer du filer används de istället för sparade.";
-  }
-  return null;
 });
 
 function updateInputValues(values: ToolInputFormValues): void {
@@ -183,311 +145,18 @@ function updateSelectedFiles(files: File[]): void {
   selectedFiles.value = files;
 }
 
-function updateSettingsValues(values: SettingsFormValues): void {
-  settingsValues.value = values;
-}
-
-function toggleSettings(): void {
-  isSettingsOpen.value = !isSettingsOpen.value;
+async function runSandbox(): Promise<void> {
+  actions.resetActions();
+  await runExec.runSandbox();
 }
 
 function clearResult(): void {
-  runResult.value = null;
-  errorMessage.value = null;
-  snapshotId.value = null;
-  // Clear multi-step state
-  stateRev.value = null;
-  actionErrorMessage.value = null;
-  completedSteps.value = [];
-  selectedStepIndex.value = null;
+  runExec.clearResult();
+  actions.resetActions();
 }
 
-function stopPolling(): void {
-  if (pollingIntervalId.value !== null) {
-    window.clearInterval(pollingIntervalId.value);
-    pollingIntervalId.value = null;
-  }
-}
+const onSubmitAction = actions.onSubmitAction;
 
-function isTerminalStatus(status: RunStatus): boolean {
-  return status !== "running";
-}
-
-async function pollRunStatus(runId: string): Promise<void> {
-  try {
-    const result = await apiGet<EditorRunDetails>(
-      `/api/v1/editor/tool-runs/${encodeURIComponent(runId)}`,
-    );
-    runResult.value = result;
-    if (result.snapshot_id) {
-      snapshotId.value = result.snapshot_id;
-      sessionFilesSnapshotId.value = result.snapshot_id;
-    }
-
-    if (isTerminalStatus(result.status)) {
-      stopPolling();
-      isRunning.value = false;
-      if (result.snapshot_id) {
-        void fetchSessionFiles(result.snapshot_id);
-      }
-    }
-  } catch (error: unknown) {
-    stopPolling();
-    isRunning.value = false;
-    if (isApiError(error)) {
-      errorMessage.value = error.message;
-    } else if (error instanceof Error) {
-      errorMessage.value = error.message;
-    } else {
-      errorMessage.value = "Det gick inte att hämta körningsresultatet.";
-    }
-  }
-}
-
-async function fetchSessionFiles(snapshotIdValue: string): Promise<void> {
-  try {
-    const response = await apiGet<SandboxSessionFilesResponse>(
-      `/api/v1/editor/tool-versions/${encodeURIComponent(props.versionId)}` +
-        `/session-files?snapshot_id=${encodeURIComponent(snapshotIdValue)}`,
-    );
-    sessionFiles.value = response.files;
-  } catch {
-    sessionFiles.value = [];
-  }
-}
-
-async function runSandbox(): Promise<void> {
-  if (isRunning.value) return;
-  if (!canRun.value) return;
-  if (props.isReadOnly) {
-    errorMessage.value = "Du saknar redigeringslåset. Testkörning är spärrad.";
-    return;
-  }
-
-  const entrypoint = props.entrypoint.trim();
-  if (!entrypoint) {
-    errorMessage.value = "Entrypoint saknas. Ange en giltig entrypoint.";
-    return;
-  }
-
-  isRunning.value = true;
-  errorMessage.value = null;
-  runResult.value = null;
-  stopPolling();
-
-  // Reset multi-step state for fresh run
-  stateRev.value = null;
-  actionErrorMessage.value = null;
-  completedSteps.value = [];
-  selectedStepIndex.value = null;
-  snapshotId.value = null;
-
-  let apiInputs: Record<string, JsonValue> = {};
-  try {
-    apiInputs = toolInputs.buildApiValues();
-  } catch (error: unknown) {
-    isRunning.value = false;
-    if (error instanceof Error) {
-      errorMessage.value = error.message;
-    } else {
-      errorMessage.value = "Ogiltiga indata. Kontrollera fälten.";
-    }
-    return;
-  }
-
-  const usageInstructions = props.usageInstructions.trim();
-  const snapshotPayload = {
-    entrypoint,
-    source_code: props.sourceCode,
-    settings_schema: props.settingsSchema ?? null,
-    input_schema: props.inputSchema,
-    usage_instructions: usageInstructions ? usageInstructions : null,
-  };
-
-  const formData = new FormData();
-  for (const file of selectedFiles.value) {
-    formData.append("files", file);
-  }
-  formData.append("inputs", JSON.stringify(apiInputs));
-  formData.append("snapshot", JSON.stringify(snapshotPayload));
-  lastSentInputsJson.value = JSON.stringify(apiInputs, null, 2);
-
-  const resolvedSessionFilesMode = effectiveSessionFilesMode.value;
-  if (resolvedSessionFilesMode !== "none" && sessionFilesSnapshotId.value) {
-    formData.append("session_files_mode", resolvedSessionFilesMode);
-    formData.append("session_context", `sandbox:${sessionFilesSnapshotId.value}`);
-  }
-
-  try {
-    const response = await apiFetch<SandboxRunResponse>(
-      `/api/v1/editor/tool-versions/${encodeURIComponent(props.versionId)}/run-sandbox`,
-      {
-        method: "POST",
-        body: formData,
-      },
-    );
-
-    snapshotId.value = response.snapshot_id;
-    sessionFilesSnapshotId.value = response.snapshot_id;
-
-    if (resolvedSessionFilesMode === "clear") {
-      sessionFilesMode.value = "none";
-    }
-
-    // Capture state_rev if present (multi-step tools)
-    if (response.state_rev !== null && response.state_rev !== undefined) {
-      stateRev.value = response.state_rev;
-    }
-
-    runResult.value = {
-      run_id: response.run_id,
-      version_id: props.versionId,
-      snapshot_id: response.snapshot_id,
-      status: response.status,
-      started_at: response.started_at,
-      finished_at: null,
-      error_summary: null,
-      ui_payload: null,
-      artifacts: [],
-    };
-
-    if (isTerminalStatus(response.status)) {
-      await pollRunStatus(response.run_id);
-    } else {
-      pollingIntervalId.value = window.setInterval(() => {
-        void pollRunStatus(response.run_id);
-      }, 1500);
-    }
-  } catch (error: unknown) {
-    isRunning.value = false;
-    if (isApiError(error)) {
-      errorMessage.value = error.message;
-    } else if (error instanceof Error) {
-      errorMessage.value = error.message;
-    } else {
-      errorMessage.value = "Det gick inte att starta testkörningen.";
-    }
-  }
-}
-
-async function onSubmitAction(payload: {
-  actionId: string;
-  input: Record<string, JsonValue>;
-}): Promise<void> {
-  if (!canSubmitActions.value || !runResult.value) return;
-  if (props.isReadOnly) {
-    actionErrorMessage.value = "Du saknar redigeringslåset. Åtgärden kan inte köras.";
-    return;
-  }
-  if (!snapshotId.value) {
-    actionErrorMessage.value = "Ingen snapshot tillgänglig. Testkör igen.";
-    return;
-  }
-
-  isSubmitting.value = true;
-  actionErrorMessage.value = null;
-  stopPolling();
-
-  // Save current run to history before starting new action
-  completedSteps.value.push(runResult.value);
-  selectedStepIndex.value = null;
-
-  try {
-    const response = await apiFetch<StartSandboxActionResponse>(
-      `/api/v1/editor/tool-versions/${encodeURIComponent(props.versionId)}/start-action`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          snapshot_id: snapshotId.value,
-          action_id: payload.actionId,
-          input: payload.input,
-          expected_state_rev: stateRev.value,
-        }),
-        headers: { "Content-Type": "application/json" },
-      },
-    );
-
-    // Update state_rev from response
-    stateRev.value = response.state_rev;
-
-    // Create placeholder and start polling
-    runResult.value = {
-      run_id: response.run_id,
-      version_id: props.versionId,
-      snapshot_id: snapshotId.value,
-      status: "running",
-      started_at: new Date().toISOString(),
-      finished_at: null,
-      error_summary: null,
-      ui_payload: null,
-      artifacts: [],
-    };
-
-    isRunning.value = true;
-    pollingIntervalId.value = window.setInterval(() => {
-      void pollRunStatus(response.run_id);
-    }, 1500);
-  } catch (error: unknown) {
-    // Revert step history on error
-    completedSteps.value.pop();
-
-    if (isApiError(error) && error.status === 409) {
-      actionErrorMessage.value = "Din session har ändrats. Uppdatera och försök igen.";
-    } else if (error instanceof Error) {
-      actionErrorMessage.value = error.message;
-    } else {
-      actionErrorMessage.value = "Det gick inte att köra åtgärden just nu.";
-    }
-  } finally {
-    isSubmitting.value = false;
-  }
-}
-
-onBeforeUnmount(() => {
-  stopPolling();
-});
-
-watch(hasSettingsSchema, (next) => {
-  if (!next) {
-    isSettingsOpen.value = false;
-  }
-});
-
-watch(
-  () => selectedFiles.value.length,
-  (count) => {
-    if (count > 0 && sessionFilesMode.value !== "none") {
-      sessionFilesMode.value = "none";
-    }
-  },
-);
-
-watch(
-  () => sessionFiles.value.length,
-  (count) => {
-    if (count === 0 && sessionFilesMode.value === "reuse") {
-      sessionFilesMode.value = "none";
-    }
-  },
-);
-
-watch(
-  () => props.settingsSchemaError,
-  (next) => {
-    if (next) {
-      isSettingsOpen.value = false;
-    }
-  },
-);
-
-watch(
-  () => props.versionId,
-  () => {
-    sessionFiles.value = [];
-    sessionFilesSnapshotId.value = null;
-    sessionFilesMode.value = "none";
-  },
-);
 </script>
 
 <template>
@@ -523,54 +192,20 @@ watch(
       :helper-text="sessionFilesHelperText"
     />
 
-    <div
-      v-if="hasSettingsSchema || settingsSchemaError"
-      class="border border-navy bg-white shadow-brutal-sm"
-    >
-      <div class="flex items-center justify-between gap-3 px-3 py-2 border-b border-navy/20">
-        <div>
-          <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-            Inställningar
-          </h2>
-          <p class="text-xs text-navy/60">
-            Sparas för din sandbox.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-          :disabled="!hasSettingsSchema"
-          @click="toggleSettings"
-        >
-          {{ isSettingsOpen ? "Dölj" : "Visa" }}
-        </button>
-      </div>
-
-      <p
-        v-if="settingsSchemaError"
-        class="px-3 py-2 text-xs font-semibold text-burgundy"
-      >
-        {{ settingsSchemaError }}
-      </p>
-
-      <div
-        v-if="isSettingsOpen && hasSettingsSchema && settingsSchema"
-        class="px-3 py-4 border-t border-navy/20 bg-canvas/30"
-      >
-        <ToolRunSettingsPanel
-          v-model:error-message="settingsErrorMessage"
-          :id-base="`sandbox-${versionId}`"
-          :schema="settingsSchema"
-          :model-value="settingsValues"
-          :is-loading="isLoadingSettings"
-          :is-saving="isSavingSettings"
-          :is-save-disabled="isSettingsSaveDisabled"
-          @update:model-value="updateSettingsValues"
-          @save="sandboxSettings.saveSettings"
-        />
-      </div>
-    </div>
+    <SandboxSettingsCard
+      :version-id="versionId"
+      :is-read-only="isReadOnly"
+      :has-settings-schema="hasSettingsSchema"
+      :settings-schema="settingsSchema"
+      :settings-schema-error="settingsSchemaError"
+      :settings-values="settingsValues"
+      :settings-error-message="settingsErrorMessage"
+      :is-loading-settings="isLoadingSettings"
+      :is-saving-settings="isSavingSettings"
+      :save-settings="sandboxSettings.saveSettings"
+      @update:settings-values="settingsValues = $event"
+      @update:settings-error-message="settingsErrorMessage = $event"
+    />
 
     <SystemMessage
       v-model="errorMessage"

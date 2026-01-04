@@ -1,217 +1,156 @@
-# GEMINI.md
+# Repository Guidelines
 
-This file provides guidance to Gemini-based coding agents when working with code in this repository.
+This repository hosts **Skriptoteket**, a teacher-first Script Hub with a FastAPI backend and PostgreSQL.
+UI is a **Vue/Vite SPA** (see `docs/adr/adr-0027-full-vue-vite-spa.md`); legacy SSR/Jinja/HTMX has been removed after cutover.
+Target Python is **3.13–3.14**.
 
-## Project Overview
+## Product Overview
 
-**Skriptoteket** (Script Hub) is a teacher-first platform for running curated, upload-based tools. Built with FastAPI (Python 3.13+) and PostgreSQL, using DDD/Clean Architecture with Dishka DI.
-UI direction: migrate to a full Vue/Vite SPA (see `docs/adr/adr-0027-full-vue-vite-spa.md`); legacy SSR/Jinja/HTMX remains until cutover.
-
-Roles hierarchy: **user → contributor → admin → superuser**. Tools are tagged by profession and category. Future: HuleEdu SSO via identity federation (identity external; roles remain local).
-
-## Commands
-
-```bash
-# Setup
-pdm install -G monorepo-tools
-pdm run precommit-install        # REQUIRED: install git hooks
-
-# Database
-docker compose up -d db
-pdm run db-upgrade              # Apply Alembic migrations
-pdm run bootstrap-superuser     # Create first superuser
-pdm run provision-user          # Create additional users
-
-# Development
-pdm run dev                     # Local server at http://127.0.0.1:8000
-pdm run dev-docker              # Server bound to 0.0.0.0 (for Docker)
-
-# Frontend (SPA)
-pdm run fe-install              # Install pnpm deps (frontend/)
-pdm run fe-dev                  # Vite dev server (SPA)
-pdm run fe-build                # SPA production build
-
-# Tool execution (local dev only)
-# Add to .env: ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts
-mkdir -p /tmp/skriptoteket/artifacts
-
-# Docker compose workflow
-pdm run dev-start               # Start with dev overrides
-pdm run dev-stop                # Stop containers
-pdm run dev-build-start         # Rebuild and start
-pdm run dev-build-start-clean   # Full rebuild (no cache)
-pdm run dev-db-reset            # Reset database volumes
-
-# Code quality
-pdm run format                  # Ruff format
-pdm run lint                    # Ruff check + agent-doc budgets + docs contract
-pdm run lint-fix                # Auto-fix lint issues
-pdm run typecheck               # Mypy
-pdm run precommit-run           # REQUIRED: run full pre-commit suite before push
-
-# Testing
-pdm run test                    # Run tests (excludes financial/slow/docker)
-pdm run test-parallel           # Parallel execution
-pytest -k "test_name"           # Single test
-pytest tests/unit/              # Unit tests only
-pytest tests/integration/       # Integration tests
-pytest -m docker                # Docker-dependent tests
-
-# Documentation
-pdm run docs-validate           # Validate docs contract
-```
-
-## Architecture
-
-### Layer Structure (`src/skriptoteket/`)
-
-```text
-src/skriptoteket/
-├── config.py              # Pydantic Settings
-├── di.py                  # Dishka container setup
-├── protocols/             # ALL Protocol definitions
-├── domain/                # Pure business logic (no framework deps)
-│   ├── identity/          # User/session models, role guards
-│   ├── catalog/           # Tool browsing domain
-│   ├── suggestions/       # Script suggestion workflow
-│   └── scripting/         # Tool execution domain
-├── application/           # Commands/queries + handlers
-│   ├── identity/          # Auth handlers
-│   ├── catalog/           # Tool listing handlers
-│   ├── suggestions/       # Suggestion handlers
-│   └── scripting/         # Script execution handlers
-├── infrastructure/        # External integrations
-│   ├── db/                # SQLAlchemy models, base, UoW
-│   ├── repositories/      # PostgreSQL implementations
-│   ├── runner/            # Docker script execution
-│   └── security/          # Password hashing
-├── web/                   # FastAPI (thin layer)
-│   ├── app.py             # Application factory
-│   ├── pages/             # HTML routes
-│   ├── partials/          # HTMX fragments
-│   └── templates/         # Jinja2 templates
-└── cli/                   # Typer CLI commands
-```
-
-### Dependency Flow
-
-```text
-web/ ──depends on──▶ application/ ──depends on──▶ domain/
-         │                 │                         ▲
-         └─────── protocols/ ◀── infrastructure/ ────┘
-```
-
-- **Domain**: Zero external dependencies (pure Python + Pydantic)
-- **Application**: Depends on protocols, orchestrates use-cases
-- **Infrastructure**: Implements protocols (repositories, runners)
-- **Web**: Thin routing + template rendering only
-
-### Key Patterns
-
-1. **Protocol-first DI**: All dependencies as `typing.Protocol`; implementations in infrastructure
-2. **Unit of Work**: UoW owns commit/rollback; repositories never commit
-3. **Command/Query handlers**: One handler per use-case with Pydantic input/output
-4. **HTMX partials**: Server-rendered HTML fragments for dynamic UI
+- Roles: **users → contributors → admins → superuser**
+- Findability: tools are tagged by **profession** and **category**; a tool can belong to multiple professions/categories
+- Future: HuleEdu SSO is planned via identity federation (identity external; **roles remain local**)
 
 ## Engineering Rules (Non-Negotiable)
 
-Read `.agent/rules/000-rule-index.md` for the complete rulebook. Key points:
-
-- **No vibe-coding**: Follow established patterns; no makeshift solutions
-- **No legacy support**: Full refactor; delete old paths instead of shims
-- **Protocol dependencies**: Never depend on concrete implementations
-- **Layer boundaries**: Domain is pure; web/api are thin; infrastructure implements protocols
+- **No legacy support / workarounds**: do the full refactor; delete old paths instead of shims
+- **No vibe-coding**: follow established patterns and rules in `.agent/rules/000-rule-index.md`
+- **No unapproved reverts**: do not revert/restore changes you did not personally make without explicit user guidance (assume they may be user-added)
+- **Session rule (REQUIRED)**: for any UI/route change, do a live functional check (run the backend and/or Vite as appropriate; verify it renders) and record how you verified it in `.agent/handoff.md`
+- **Protocol-first DI**: depend on `typing.Protocol`, not concrete implementations
+- **Layer boundaries**: domain is pure; web/api are thin; infrastructure implements protocols
 - **Transactions**: Unit of Work owns commit/rollback; repositories never commit
-- **Errors**: Raise `DomainError` in domain; map to HTTP in web layer
-- **File size**: <400-500 LOC per file (including tests)
-- **Pydantic for boundaries**: Use Pydantic models for cross-boundary data; dataclasses only for internal domain structures
+- **Errors**: raise `DomainError` (no HTTP); map to HTTP in the web layer
+- **Testing**: mock protocols; avoid `@patch` or implementation details - use DI and focus on behavior; keep test files <400–500 LOC
+- **New agent/dev message**: when asked for a handoff message to a new developer/agent, generate it by filling `.agent/next-session-instruction-prompt-template.md` (address the recipient as “you”)
 
-## Git Workflow (Non-Negotiable)
+## Project Structure
 
-- **Never use `git commit --amend`**: Always create fresh commits for fixes discovered after the initial commit
-- **Never force push**: If you need to fix something, make a new commit
-- This prevents sync issues between local, remote, and deployed servers
+- `src/skriptoteket/`: production code (DDD/Clean layers + DI + web)
+- `migrations/`, `alembic.ini`: DB migrations (Alembic)
+- **PDM/pyproject changes (incl. migration work)**: use `pdm-migration-specialist` for `pyproject.toml` dependency-group updates (generic skill; don’t import HuleEdu monorepo assumptions).
+- `docs/`: PRD/ADRs/backlog (start at `docs/index.md`); contract-enforced via `docs/_meta/docs-contract.yaml`
+- **Docs workflow (REQUIRED)**: follow `docs/reference/ref-sprint-planning-workflow.md` for PRD → ADR → epic → story → sprint planning.
+- **Docs index (REQUIRED)**: when adding new docs, update `docs/index.md` so the full index stays complete.
+- **Epic update workflow (REQUIRED)**: when you mark a story `done`, update its epic in `docs/backlog/epics/`:
+  - bump the epic frontmatter `updated` date
+  - add/refresh a short “Implementation Summary (as of YYYY-MM-DD)” noting what shipped (at minimum the story ID)
+- **Handoff workflow (REQUIRED)**: when you change any story/epic/sprint status (or scope/dependencies), update `.agent/handoff.md`:
+  - Keep `## Snapshot` fields current (Date, Branch, Current sprint, Production, Completed).
+  - Do **not** include commit SHAs in Snapshot (avoid churn); use `Branch: <name> + local changes`.
+  - Add the relevant verification commands/manual checks under `## Verification`.
+- **Review workflow (REQUIRED)**: all proposed EPICs/ADRs must be reviewed before implementation — see `docs/reference/ref-review-workflow.md` and `.agent/rules/096-review-workflow.md`
+- `frontend/`: pnpm workspace (Vue/Vite) — `apps/skriptoteket` (SPA), `packages/huleedu-ui` (component library)
+- `.agent/`: agent workflow helpers (`.agent/readme-first.md`, `.agent/handoff.md`, prompt template) + coding rules (`.agent/rules/`)
+- `.claude/skills/`: repo-local agent skills (workflow playbooks + helpers)
+- `scripts/`: repo tooling (e.g., `scripts/validate_docs.py`)
 
-## Agent Docs Budgets (Enforced)
+## Key Commands
 
-- Keep `.agent/readme-first.md` ≤ 300 lines and `.agent/handoff.md` ≤ 200 lines (enforced by pre-commit).
-- `.agent/handoff.md` should only keep current sprint-critical backend/frontend info; keep older/completed details in
-  `.agent/readme-first.md` (links only) + `docs/`.
+- Setup: `pdm install -G monorepo-tools`
+- Pre-commit (REQUIRED): `pdm run precommit-install` then `pdm run precommit-run`
+- DB (dev): `docker compose up -d db` then `pdm run db-upgrade`
+- Bootstrap first superuser: `pdm run bootstrap-superuser`
+- Run: `pdm run dev`
+- Run (local + log piping): `pdm run dev-logs` (writes `.artifacts/dev-backend.log`)
+- Run (local combo): `pdm run dev-local` (backend + SPA with log piping)
+- Dev logs: when using Vite (`pdm run fe-dev`), API calls proxy to `127.0.0.1:8000` → check the **host** `pdm run dev` terminal for backend errors (container logs only apply if you point the UI at the container port).
+- Frontend deps: `pdm run fe-install` (or `pnpm -C frontend install`)
+- SPA dev: `pdm run fe-dev` (or `pnpm -C frontend --filter @skriptoteket/spa dev`)
+- SPA dev (local + log piping): `pdm run fe-dev-logs` (writes `.artifacts/dev-frontend.log`)
+- SPA build: `pdm run fe-build` (or `pnpm -C frontend --filter @skriptoteket/spa build`)
+- SPA tests (Vitest): `pdm run fe-test` / `pdm run fe-test-watch` / `pdm run fe-test-coverage`
+- **Dev services are long-running**: do not stop `pdm run dev` or `docker compose up -d db` unless explicitly requested.
+- Docker dev workflow: `pdm run dev-start` / `pdm run dev-stop` / `pdm run dev-build-start` / `pdm run dev-build-start-clean` / `pdm run dev-rebuild` / `pdm run dev-db-reset`
+- Docker dev logs (web + frontend): `pdm run dev-containers-logs`
+- Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test` (lint runs Ruff + agent-doc budgets + docs contract)
+- Docs: `pdm run docs-validate`
+- Session file ops (prod): `pdm run cleanup-session-files` (TTL cleanup) / `pdm run clear-all-session-files` (danger: deletes all)
+- Skills prompt: `pdm run skills-prompt` / `pdm run skills-validate`
 
-## Testing
+## SSH Defaults (hemma)
 
-- **Protocol mocking**: Mock protocols, not implementations
-- **Explicit fixtures**: Import from `tests/fixtures/`; no conftest magic
-- **Testcontainers**: PostgreSQL integration tests use testcontainers
-- **Markers**: `@pytest.mark.unit`, `@pytest.mark.integration`, `@pytest.mark.docker`, `@pytest.mark.slow`, `@pytest.mark.financial`
+- `ssh hemma` uses non-root user `paunchygent` (key: `~/.ssh/hemma-paunchygent_ed25519`).
+- Root access requires explicit approval; use `ssh hemma-root` when needed.
+- LAN aliases: `ssh hemma-local` (non-root), `ssh hemma-local-root` (root).
+
+## Skill Usage (REQUIRED)
+
+- Skills are provided at session start from `$CODEX_HOME/skills` (typically `~/.codex/skills/*/SKILL.md`) and repo-local `.claude/skills/*/SKILL.md`.
+- Always load: `skriptoteket-devops` for Hemma/deploy/compose/env; `skriptoteket-frontend-specialist` (and `brutalist-academic-ui` for styling) for SPA work; and the relevant observability skill for Grafana/Prometheus/Loki/Jaeger/structlog.
+
+## Tool Execution (Local Dev Only)
+
+Before running tool execution locally:
+
+```bash
+# Add to .env
+ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts
+
+# Create directory
+mkdir -p /tmp/skriptoteket/artifacts
+```
+
+The default `ARTIFACTS_ROOT=/var/lib/skriptoteket/artifacts` doesn't exist locally and will cause 500 errors on tool execution.
+
+## Coding & Testing Rules
+
+- Follow `.agent/rules/000-rule-index.md` (protocol-first DI, UoW-owned transactions, no business logic in web layer)
+- Keep files small (<400–500 LOC); Ruff format + lint (100 chars)
+- Use Pydantic for cross-boundary models; `dataclasses` only inside a single domain
+- Frontend unit/integration tests use Vitest: `frontend/apps/skriptoteket/vitest.config.ts`, tests in `frontend/apps/skriptoteket/src/**/*.spec.ts`
 
 ### Browser Automation
 
-Playwright (recommended) and Selenium available. Run via `pdm run python -m scripts.<module>`.
+Playwright is the default for new browser automation (see `.agent/rules/075-browser-automation.md`).
+Run smokes with `pdm run ui-smoke` / `pdm run ui-editor-smoke` / `pdm run ui-runtime-smoke`, or ad-hoc scripts via
+`pdm run python -m scripts.<module>`.
+HMR probe (Playwright; may need escalation on macOS): `pdm run ui-hmr-probe` (artifacts in `.artifacts/hmr-probe/`).
+Prefer Playwright for browser automation and screenshots; do not use Puppeteer.
 
-- **Credentials**: `superuser@local.dev` / `superuser-password`
-- **HTMX caveat**: Avoid `waitForNavigation()` - use explicit URL waits
+- **Do not create new superusers for UI checks**: reuse the existing local dev bootstrap account in `.env`
+  (`BOOTSTRAP_SUPERUSER_EMAIL` / `BOOTSTRAP_SUPERUSER_PASSWORD`). Creating new accounts bloats the dev DB.
+- **Do not create ad hoc demo tools/scripts for Playwright**: if a browser automation script needs a specific tool by
+  slug, add it to the repo script bank (`src/skriptoteket/script_bank/`) and run `pdm run seed-script-bank --slug <slug>`
+  (optionally `--sync-code`) before running Playwright. This avoids polluting the dev DB (see `.agent/rules/075-browser-automation.md`).
+- **Prod smoke tests (recommended)**: keep `BOOTSTRAP_SUPERUSER_*` for provisioning/local dev; store prod UI smoke
+  credentials in a gitignored `.env.prod-smoke` (`BASE_URL`, `PLAYWRIGHT_EMAIL`, `PLAYWRIGHT_PASSWORD`) and run
+  `pdm run ui-smoke --dotenv .env.prod-smoke` (same for `ui-editor-smoke` / `ui-runtime-smoke`).
 
-## Documentation Contract
+## Git Workflow
 
-- Contract: `docs/_meta/docs-contract.yaml`
-- Templates: `docs/templates/`
-- Planning workflow (REQUIRED): `docs/reference/ref-sprint-planning-workflow.md`
-- Run `pdm run docs-validate` before committing doc changes
-- Agent helpers: `.agent/readme-first.md`, `.agent/handoff.md`
+- **Never use `git commit --amend`**: always create fresh commits for fixes discovered after the initial commit
+- **Never force push**: if you need to fix something, make a new commit
+- Runbooks in `docs/runbooks/` are first-class, versioned docs; commit updates (no local-only runbook edits)
+- Include what/why + how to test in commit messages
+- Run `pdm run docs-validate` for doc changes
 
-## Tech Stack
+## Agent docs size budgets (enforced)
 
-- **Frontend**: Vue 3, Vite, Vue Router, Pinia (ADR-0027)
-- **Runtime**: Python 3.13+, FastAPI, Uvicorn
-- **Database**: PostgreSQL (asyncpg), SQLAlchemy 2.x (async), Alembic
-- **DI**: Dishka (protocol-first)
-- **Security**: Argon2 password hashing
-- **Testing**: pytest, pytest-asyncio, testcontainers, httpx
-- **Quality**: Ruff (100 char lines), Mypy
+- Keep `.agent/readme-first.md` ≤ 300 lines and `.agent/handoff.md` ≤ 200 lines (enforced by pre-commit).
+- `.agent/handoff.md` should only keep current sprint-critical backend/frontend info; move completed story detail to
+  `.agent/readme-first.md` (links only) + `docs/`.
 
-## Home Server Deployment
+## Observability Stack
 
-**CRITICAL**: Production deployments use `compose.prod.yaml`, NOT `compose.yaml`.
+Public URLs (credentials in `~/apps/skriptoteket/.env` on server):
 
-### SSH Access
+- <https://grafana.hemma.hule.education> (admin / `GRAFANA_ADMIN_PASSWORD`)
+- <https://prometheus.hemma.hule.education> (admin / `PROMETHEUS_BASIC_AUTH_PASSWORD`)
 
-```bash
-ssh hemma              # Via hemma.hule.education (works everywhere)
-ssh hemma-local        # Via 192.168.0.9 (local network, faster)
-```
+Reset Grafana password: `ssh hemma "sudo docker exec grafana grafana cli admin reset-admin-password '<pw>'"` (env var only works on first startup).
+Use the appropriate observability skill when troubleshooting (metrics/logs/traces/structured logging).
 
-### Standard Deploy
+## AI Inference Infrastructure
 
-```bash
-ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"
-```
+| Service      | Port | Purpose                                  |
+|--------------|------|------------------------------------------|
+| llama-server | 8082 | ROCm GPU inference (Qwen3-Coder-30B-A3B) |
+| tabby        | 8083 | Code completion API (`/v1/completions`)  |
 
-### Deploy with Migrations
+Health check: `ssh hemma "curl -s http://localhost:8083/v1/health | jq .model"`
 
-```bash
-ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"
-ssh hemma "docker exec skriptoteket-web pdm run db-upgrade"
-```
+Runbooks: `docs/runbooks/runbook-gpu-ai-workloads.md`, `docs/runbooks/runbook-tabby-codemirror.md`
 
-### CLI Commands in Container
+## Security
 
-Always use `-e PYTHONPATH=/app/src` for CLI commands:
-
-```bash
-ssh hemma "docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli <command>"
-```
-
-### Key Differences: compose.yaml vs compose.prod.yaml
-
-| Feature | compose.yaml (dev) | compose.prod.yaml (prod) |
-|---------|-------------------|--------------------------|
-| Database | Local `skriptoteket-db-1` | Shared `shared-postgres` |
-| Docker socket | Not mounted | Mounted (for runner) |
-| Artifacts | Not mounted | Persistent volume |
-| Network | `skriptoteket_default` | `hule-network` |
-| Proxy headers | Manual | Built-in |
-
-### Runbooks
-
-See `docs/runbooks/runbook-home-server.md` for detailed operations.
+- Never commit secrets (API keys/tokens); use env vars / `.env` locally

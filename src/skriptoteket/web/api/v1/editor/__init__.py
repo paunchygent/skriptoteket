@@ -11,6 +11,7 @@ from . import (
     runs,
     sandbox,
     sandbox_settings,
+    schema_validation,
     taxonomy,
     workflow,
 )
@@ -59,11 +60,14 @@ from .models import (
     SubmitReviewRequest,
     ToolTaxonomyRequest,
     ToolTaxonomyResponse,
+    ValidateToolSchemasRequest,
+    ValidateToolSchemasResponse,
     WorkflowActionResponse,
 )
 from .runs import download_artifact, get_run
 from .sandbox import get_sandbox_session, run_sandbox, start_sandbox_action
 from .sandbox_settings import resolve_sandbox_settings, save_sandbox_settings
+from .schema_validation import validate_schemas
 from .taxonomy import get_tool_taxonomy, update_tool_taxonomy
 from .workflow import publish_version, request_changes, rollback_version, submit_review
 
@@ -77,6 +81,7 @@ router.include_router(drafts.router)
 router.include_router(workflow.router)
 router.include_router(sandbox.router)
 router.include_router(sandbox_settings.router)
+router.include_router(schema_validation.router)
 router.include_router(runs.router)
 router.include_router(completions.router)
 router.include_router(edits.router)
@@ -115,6 +120,8 @@ __all__ = [
     "SubmitReviewRequest",
     "ToolTaxonomyRequest",
     "ToolTaxonomyResponse",
+    "ValidateToolSchemasRequest",
+    "ValidateToolSchemasResponse",
     "WorkflowActionResponse",
     "acquire_draft_lock",
     "assign_tool_maintainer",
@@ -139,6 +146,7 @@ __all__ = [
     "save_sandbox_settings",
     "start_sandbox_action",
     "submit_review",
+    "validate_schemas",
     "update_tool_metadata",
     "update_tool_slug",
     "update_tool_taxonomy",

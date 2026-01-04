@@ -1,6 +1,14 @@
 type SchemaJsonArrayParseResult<T> = {
   value: T[] | null;
   error: string | null;
+  errorDetails: SchemaJsonErrorDetails | null;
+};
+
+type SchemaJsonErrorDetails = {
+  offset: number;
+  line: number;
+  column: number;
+  message: string;
 };
 
 function lineAndColumnFromOffset(text: string, offset: number): { line: number; column: number } {
@@ -22,28 +30,55 @@ function lineAndColumnFromOffset(text: string, offset: number): { line: number; 
   return { line, column };
 }
 
-function describeJsonParseError(error: unknown, text: string): string {
+function describeJsonParseError(
+  error: unknown,
+  text: string,
+): { message: string; details: SchemaJsonErrorDetails | null } {
   if (!(error instanceof Error)) {
-    return "Okänt JSON-fel.";
+    return { message: "Okänt JSON-fel.", details: null };
   }
 
   const message = error.message.trim();
   if (!message) {
-    return "Okänt JSON-fel.";
+    return { message: "Okänt JSON-fel.", details: null };
   }
 
   const match = message.match(/position\s+(?<position>\d+)/);
   if (!match?.groups?.position) {
-    return message;
+    return {
+      message,
+      details: {
+        offset: 0,
+        line: 1,
+        column: 1,
+        message,
+      },
+    };
   }
 
   const offset = Number.parseInt(match.groups.position, 10);
   if (Number.isNaN(offset)) {
-    return message;
+    return {
+      message,
+      details: {
+        offset: 0,
+        line: 1,
+        column: 1,
+        message,
+      },
+    };
   }
 
   const { line, column } = lineAndColumnFromOffset(text, offset);
-  return `Rad ${line}, kolumn ${column}: ${message}`;
+  return {
+    message: `Rad ${line}, kolumn ${column}: ${message}`,
+    details: {
+      offset,
+      line,
+      column,
+      message,
+    },
+  };
 }
 
 export function parseSchemaJsonArrayText<T>(
@@ -53,17 +88,31 @@ export function parseSchemaJsonArrayText<T>(
 ): SchemaJsonArrayParseResult<T> {
   const trimmed = text.trim();
   if (!trimmed) {
-    return { value: emptyValue, error: null };
+    return { value: emptyValue, error: null, errorDetails: null };
   }
 
   try {
     const parsed = JSON.parse(text);
     if (!Array.isArray(parsed)) {
-      return { value: null, error: `${label} måste vara en JSON-array.` };
+      const error = `${label} måste vara en JSON-array.`;
+      return {
+        value: null,
+        error,
+        errorDetails: {
+          offset: 0,
+          line: 1,
+          column: 1,
+          message: error,
+        },
+      };
     }
-    return { value: parsed as T[], error: null };
+    return { value: parsed as T[], error: null, errorDetails: null };
   } catch (error: unknown) {
     const details = describeJsonParseError(error, text);
-    return { value: null, error: `${label} måste vara giltig JSON. ${details}` };
+    return {
+      value: null,
+      error: `${label} måste vara giltig JSON. ${details.message}`,
+      errorDetails: details.details,
+    };
   }
 }

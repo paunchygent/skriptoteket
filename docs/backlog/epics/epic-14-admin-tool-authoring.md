@@ -5,7 +5,7 @@ title: "Admin tool authoring (draft-first workflow)"
 status: active
 owners: "agents"
 created: 2025-12-25
-updated: 2026-01-03
+updated: 2026-01-04
 outcome: "Admins can quickly create draft tools directly from /admin/tools, iterate without contributor-only hoops, and publish only when slug and taxonomy are finalized."
 ---
 
@@ -75,7 +75,9 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
   - ST-11-17 (metadata editor)
   - ST-11-20 (tool taxonomy editor)
 
-## Implementation Summary (as of 2026-01-02)
+## Implementation Summary (as of 2026-01-04)
 
 - ST-14-09 shipped: `input_schema` is schema-only (never `null`); file picking is represented as a `{"kind":"file"}` field with `min/max`.
 - ST-14-10 shipped (foundation-only): shared schema JSON parsing helper + save blocking on invalid schema JSON; schema editor UI actions (prettify/snippets) deferred to ST-14-14.
+- ST-14-13/14 shipped: CodeMirror JSON editors for `settings_schema`/`input_schema` with inline parse diagnostics + preset guidance + prettify + snippet insertion.
+- ST-14-16 shipped: debounced backend schema validation UI; shows structured issues per schema and blocks Save + sandbox run when schemas are parseable but backend-invalid.

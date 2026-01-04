@@ -2,9 +2,10 @@
 type: story
 id: ST-14-13
 title: "Editor: CodeMirror JSON editor for tool schemas"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-29
+updated: 2026-01-03
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given a tool author edits settings_schema/input_schema, when using the editor, then schemas are edited in a JSON-aware CodeMirror surface with syntax highlighting."

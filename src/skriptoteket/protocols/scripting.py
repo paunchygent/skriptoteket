@@ -28,6 +28,8 @@ from skriptoteket.application.scripting.commands import (
     SaveDraftVersionResult,
     SubmitForReviewCommand,
     SubmitForReviewResult,
+    ValidateToolSchemasCommand,
+    ValidateToolSchemasResult,
 )
 from skriptoteket.application.scripting.interactive_sandbox import (
     StartSandboxActionCommand,
@@ -223,3 +225,12 @@ class ListSandboxSessionFilesHandlerProtocol(Protocol):
         actor: User,
         query: ListSandboxSessionFilesQuery,
     ) -> ListSandboxSessionFilesResult: ...
+
+
+class ValidateToolSchemasHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: ValidateToolSchemasCommand,
+    ) -> ValidateToolSchemasResult: ...

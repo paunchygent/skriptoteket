@@ -120,4 +120,5 @@ Most EPIC-02 stories are complete (self-registration, profiles, lockout). ST-02-
 - EPIC-14 admin tool authoring: `docs/backlog/epics/epic-14-admin-tool-authoring.md`
 - EPIC-08 AI editor features: `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md`
 - AI infra runbooks: `docs/runbooks/runbook-gpu-ai-workloads.md`, `docs/runbooks/runbook-tabby-codemirror.md`
+- LLM ops note: `llama-server-hip` disabled; `llama-server-vulkan` enabled for A/B testing (see `.agent/handoff.md`).
 - Ops runbooks: `docs/runbooks/runbook-home-server.md`, `docs/runbooks/runbook-observability.md`

@@ -198,6 +198,48 @@ def get_file_field(*, input_schema: ToolInputSchema) -> ToolInputFileField | Non
     return None
 
 
+def validate_input_schema_upload_limits(
+    *,
+    input_schema: ToolInputSchema,
+    upload_max_files: int,
+) -> None:
+    if upload_max_files < 1:
+        raise validation_error(
+            "upload_max_files must be >= 1",
+            details={"upload_max_files": upload_max_files},
+        )
+
+    for index, field in enumerate(input_schema):
+        if field.kind is not ToolInputFieldKind.FILE:
+            continue
+        if not isinstance(field, ToolInputFileField):
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="Invalid input_schema (file field mismatch)",
+                details={"field": field.name, "kind": field.kind.value},
+            )
+
+        violations: list[str] = []
+        if field.min > upload_max_files:
+            violations.append("min")
+        if field.max > upload_max_files:
+            violations.append("max")
+
+        if violations:
+            raise validation_error(
+                "File field min/max exceeds server upload limit",
+                details={
+                    "index": index,
+                    "field": field.name,
+                    "min": field.min,
+                    "max": field.max,
+                    "upload_max_files": upload_max_files,
+                    "violations": violations,
+                },
+            )
+        return
+
+
 def validate_input_files_count(*, input_schema: ToolInputSchema, files_count: int) -> None:
     if files_count < 0:
         raise validation_error("files_count must be >= 0", details={"files_count": files_count})

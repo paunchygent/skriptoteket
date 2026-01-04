@@ -34,6 +34,10 @@ Keep this file updated so the next session can pick up work quickly.
   - `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue` -> extracted panels/toolbars/drawers
   - `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue` -> header extracted + reduced prop wiring via `v-model:*`
   - `frontend/apps/skriptoteket/src/components/editor/SandboxRunner.vue` -> session-files composable + settings card component
+- Editor SRP refactor (continued): extracted drawers/guards + sandbox runner logic into composables (reduce view/component to wiring).
+  - New: `frontend/apps/skriptoteket/src/composables/editor/useUnsavedChangesGuards.ts`, `frontend/apps/skriptoteket/src/composables/editor/useScriptEditorDrawers.ts`
+  - New: `frontend/apps/skriptoteket/src/composables/editor/useEditorSandboxRunExecution.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorSandboxActions.ts`
+  - Wire-up: `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`, `frontend/apps/skriptoteket/src/components/editor/SandboxRunner.vue`
 - ST-14-13/14 (done): CodeMirror JSON editors for `settings_schema` + `input_schema` with JSON lint markers + summary, preset guidance, prettify, and snippet insertion.
   - UI: `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`
   - Editor config: `frontend/apps/skriptoteket/src/composables/editor/schemaJsonEditor.ts`
@@ -53,9 +57,8 @@ Keep this file updated so the next session can pick up work quickly.
 - Frontend build: `pdm run fe-build` (pass)
 - Docs validate: `pdm run docs-validate` (pass)
 - Live check (dev containers): `curl -sSf http://127.0.0.1:5173/ | head -n 5` (SPA HTML served)
-- Live check (dev containers): `curl -sSf http://127.0.0.1:8000/healthz`
-- Live check (Playwright, escalated): `BASE_URL=http://127.0.0.1:5173 pdm run python - <<'PY'` (schema editor check; artifacts: `.artifacts/schema-editor-check/schema-editor-check.png`)
-- Live check (Playwright, escalated): `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_14_16_editor_schema_validation_errors_ux_e2e` (ST-14-16; artifacts: `.artifacts/st-14-16-editor-schema-validation-errors-ux-e2e/*.png`)
+- Live check (dev backend): `curl -sSf http://127.0.0.1:8000/healthz`
+- Live check (Playwright, escalated): `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_14_16_editor_schema_validation_errors_ux_e2e` (pass; artifacts: `.artifacts/st-14-16-editor-schema-validation-errors-ux-e2e/`)
 - Hemma: `ssh hemma "sudo systemctl status --no-pager amdgpu-force-active.service"` (active/exited; SUCCESS)
 - Hemma: `ssh hemma "sudo sh -c 'cat /sys/class/drm/card1/device/power/control; cat /sys/class/drm/card1/device/power/runtime_status'"` (`on` / `active`)
 - Hemma: `ssh hemma "curl -s http://127.0.0.1:8082/v1/models | jq -r '.data[0].id'"` (confirm served model)

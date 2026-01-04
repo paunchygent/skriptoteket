@@ -246,6 +246,18 @@ def _build_generic_page_css(*, page_size: str, orientation: str) -> str:
     )
 
 
+def _build_weasyprint_recovery_css() -> str:
+    return (
+        "html, body { height: auto !important; }\n"
+        "section { break-inside: auto !important; page-break-inside: auto !important; }\n"
+        "pre { overflow: visible !important; }\n"
+        "pre, blockquote, table { break-inside: auto !important; "
+        "page-break-inside: auto !important; }\n"
+        "h1, h2, h3 { break-after: auto !important; page-break-after: auto !important; }\n"
+        "details { break-inside: auto !important; page-break-inside: auto !important; }\n"
+    )
+
+
 def _build_page_css_fallback(*, page_size: str, orientation: str) -> str:
     orient = "landscape" if orientation == "landscape" else "portrait"
     normalized_page_size = str(page_size).strip().lower()
@@ -510,15 +522,28 @@ def _try_weasyprint(
         )
         _render(html=html_no_grid)
     except AssertionError:
-        if not is_tool_editor_doc:
-            raise
-        size_css = _build_page_css_fallback(page_size=page_size, orientation=orientation)
-        html_content = _normalize_html_for_weasyprint(
-            html=html_raw,
-            base_dir=base_dir,
-            print_css=size_css,
-        )
-        _render(html=html_content)
+        recovery_css = _build_weasyprint_recovery_css()
+        normalized_html = locals().get("html_content")
+        if not isinstance(normalized_html, str) or not normalized_html.strip():
+            normalized_html = _normalize_html_for_weasyprint(
+                html=html_raw,
+                base_dir=base_dir,
+                print_css=size_css,
+            )
+        html_recovery = _inject_author_css(html=normalized_html, css=recovery_css)
+        try:
+            _render(html=html_recovery)
+        except AssertionError:
+            if not is_tool_editor_doc:
+                raise
+            size_css = _build_page_css_fallback(page_size=page_size, orientation=orientation)
+            html_content = _normalize_html_for_weasyprint(
+                html=html_raw,
+                base_dir=base_dir,
+                print_css=size_css,
+            )
+            html_recovery = _inject_author_css(html=html_content, css=recovery_css)
+            _render(html=html_recovery)
     return "weasyprint"
 
 

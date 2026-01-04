@@ -809,6 +809,23 @@ export interface paths {
         patch: operations["update_tool_taxonomy_api_v1_editor_tools__tool_id__taxonomy_patch"];
         trace?: never;
     };
+    "/api/v1/editor/tools/{tool_id}/validate-schemas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validate Schemas */
+        post: operations["validate_schemas_api_v1_editor_tools__tool_id__validate_schemas_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/favorites": {
         parameters: {
             query?: never;
@@ -2257,6 +2274,23 @@ export interface components {
              */
             version_id: string;
         };
+        /**
+         * SchemaName
+         * @enum {string}
+         */
+        SchemaName: "settings_schema" | "input_schema";
+        /** SchemaValidationIssue */
+        SchemaValidationIssue: {
+            /** Details */
+            details?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /** Message */
+            message: string;
+            /** Path */
+            path?: string | null;
+            schema: components["schemas"]["SchemaName"];
+        };
         /** SessionFileInfo */
         SessionFileInfo: {
             /** Bytes */
@@ -2981,6 +3015,18 @@ export interface components {
              * Format: uuid
              */
             user_id: string;
+        };
+        /** ValidateToolSchemasRequest */
+        ValidateToolSchemasRequest: {
+            input_schema?: components["schemas"]["JsonValue"] | null;
+            settings_schema?: components["schemas"]["JsonValue"] | null;
+        };
+        /** ValidateToolSchemasResponse */
+        ValidateToolSchemasResponse: {
+            /** Issues */
+            issues?: components["schemas"]["SchemaValidationIssue"][];
+            /** Valid */
+            valid: boolean;
         };
         /** ValidationError */
         ValidationError: {
@@ -4629,6 +4675,43 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ToolTaxonomyResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    validate_schemas_api_v1_editor_tools__tool_id__validate_schemas_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                tool_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ValidateToolSchemasRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidateToolSchemasResponse"];
                 };
             };
             /** @description Validation Error */

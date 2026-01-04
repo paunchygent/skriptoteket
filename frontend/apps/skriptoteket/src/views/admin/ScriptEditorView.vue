@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { EditorView } from "@codemirror/view";
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
-import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
+import { computed, ref, shallowRef } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import type { components } from "../../api/openapi";
 import DraftLockBanner from "../../components/editor/DraftLockBanner.vue";
 import EditorWorkspacePanel from "../../components/editor/EditorWorkspacePanel.vue";
@@ -13,9 +13,11 @@ import { useEditorSchemaParsing } from "../../composables/editor/useEditorSchema
 import { useEditorSchemaValidation } from "../../composables/editor/useEditorSchemaValidation";
 import { useEditorWorkflowActions } from "../../composables/editor/useEditorWorkflowActions";
 import { useDraftLock } from "../../composables/editor/useDraftLock";
+import { useScriptEditorDrawers } from "../../composables/editor/useScriptEditorDrawers";
 import { useScriptEditor } from "../../composables/editor/useScriptEditor";
 import { useToolMaintainers } from "../../composables/editor/useToolMaintainers";
 import { useToolTaxonomy } from "../../composables/editor/useToolTaxonomy";
+import { useUnsavedChangesGuards } from "../../composables/editor/useUnsavedChangesGuards";
 import type { UiNotifier } from "../../composables/notify";
 import { useToast } from "../../composables/useToast";
 import { useAuthStore } from "../../stores/auth";
@@ -160,7 +162,6 @@ const {
   notify,
 });
 const entrypointOptions = ["run_tool"];
-const activeDrawer = ref<"history" | "metadata" | "maintainers" | "instructions" | null>(null);
 const editorView = shallowRef<EditorView | null>(null);
 const {
   instruction: editInstruction,
@@ -213,52 +214,30 @@ async function saveSummary(): Promise<void> {
     isSummarySaving.value = false;
   }
 }
-const isHistoryDrawerOpen = computed(() => activeDrawer.value === "history");
-const isMetadataDrawerOpen = computed(() => activeDrawer.value === "metadata");
-const isMaintainersDrawerOpen = computed(() => activeDrawer.value === "maintainers");
-const isInstructionsDrawerOpen = computed(() => activeDrawer.value === "instructions");
-const isDrawerOpen = computed(() => activeDrawer.value !== null);
 
-function openHistoryDrawer(): void {
-  activeDrawer.value = activeDrawer.value === "history" ? null : "history";
-}
-
-function openMetadataDrawer(): void {
-  if (!canEditTaxonomy.value) return;
-  activeDrawer.value = activeDrawer.value === "metadata" ? null : "metadata";
-}
-
-function openMaintainersDrawer(): void {
-  if (!canEditMaintainers.value) return;
-  const next = activeDrawer.value === "maintainers" ? null : "maintainers";
-  activeDrawer.value = next;
-  if (next === "maintainers" && editorToolId.value) {
-    void loadMaintainers(editorToolId.value);
-  }
-}
-
-function openInstructionsDrawer(): void {
-  activeDrawer.value = activeDrawer.value === "instructions" ? null : "instructions";
-}
-
-function closeDrawer(): void {
-  activeDrawer.value = null;
-}
-
-function handleHistorySelect(versionIdValue: string): void {
-  if (hasDirtyChanges.value && !isSaving.value) {
-    const confirmed = window.confirm("Du har osparade ändringar. Vill du byta version?");
-    if (!confirmed) {
-      return;
-    }
-  }
-  void router.replace({
-    query: {
-      ...route.query,
-      version: versionIdValue,
-    },
-  });
-}
+const { confirmDiscardChanges } = useUnsavedChangesGuards({ hasDirtyChanges, isSaving });
+const drawers = useScriptEditorDrawers({
+  route,
+  router,
+  editorToolId,
+  canEditTaxonomy,
+  canEditMaintainers,
+  loadMaintainers,
+  confirmDiscardChanges,
+});
+const {
+  isDrawerOpen,
+  isHistoryDrawerOpen,
+  isMetadataDrawerOpen,
+  isMaintainersDrawerOpen,
+  isInstructionsDrawerOpen,
+  toggleHistoryDrawer,
+  toggleMetadataDrawer,
+  toggleMaintainersDrawer,
+  toggleInstructionsDrawer,
+  closeDrawer,
+  selectHistoryVersion,
+} = drawers;
 
 const confirmButtonClass = computed(() => {
   switch (activeWorkflowAction.value) {
@@ -293,50 +272,6 @@ const statusLine = computed(() => {
     : "Nytt utkast";
   return `${publication} · ${versionSegment}`;
 });
-
-const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
-  if (!hasDirtyChanges.value || isSaving.value) return;
-  event.preventDefault();
-  event.returnValue = "";
-};
-
-function handleKeydown(event: KeyboardEvent): void {
-  if (event.key === "Escape" && isDrawerOpen.value) {
-    closeDrawer();
-  }
-}
-
-onBeforeRouteLeave((_to, _from, next) => {
-  if (!hasDirtyChanges.value || isSaving.value) {
-    next();
-    return;
-  }
-
-  if (window.confirm("Du har osparade ändringar. Vill du lämna sidan?")) {
-    next();
-  } else {
-    next(false);
-  }
-});
-
-onMounted(() => {
-  window.addEventListener("beforeunload", beforeUnloadHandler);
-  window.addEventListener("keydown", handleKeydown);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener("beforeunload", beforeUnloadHandler);
-  window.removeEventListener("keydown", handleKeydown);
-});
-
-watch(
-  () => route.fullPath,
-  () => {
-    if (activeDrawer.value && activeDrawer.value !== "history") {
-      closeDrawer();
-    }
-  },
-);
 </script>
 
 <template>
@@ -463,12 +398,12 @@ watch(
           :is-maintainers-loading="isMaintainersLoading"
           :is-maintainers-saving="isMaintainersSaving"
           @save="handleSave"
-          @open-history-drawer="openHistoryDrawer"
-          @open-metadata-drawer="openMetadataDrawer"
-          @open-maintainers-drawer="openMaintainersDrawer"
-          @open-instructions-drawer="openInstructionsDrawer"
+          @open-history-drawer="toggleHistoryDrawer"
+          @open-metadata-drawer="toggleMetadataDrawer"
+          @open-maintainers-drawer="toggleMaintainersDrawer"
+          @open-instructions-drawer="toggleInstructionsDrawer"
           @close-drawer="closeDrawer"
-          @select-history-version="handleHistorySelect"
+          @select-history-version="selectHistoryVersion"
           @rollback-version="openRollbackForVersion"
           @save-all-metadata="saveAllMetadata"
           @suggest-slug-from-title="applySlugSuggestionFromTitle"

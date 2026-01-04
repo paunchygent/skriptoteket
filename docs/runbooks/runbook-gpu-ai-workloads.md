@@ -5,7 +5,7 @@ title: "Runbook: GPU AI Workloads (AMD Radeon AI PRO R9700)"
 status: active
 owners: "olof"
 created: 2025-12-30
-updated: 2025-12-31
+updated: 2026-01-03
 system: "hemma.hule.education"
 ---
 
@@ -128,6 +128,43 @@ ssh hemma "~/llama.cpp/llama-cli --version"
 
 # Run inference (example)
 ssh hemma "cd ~/llama.cpp && ./llama-cli -m models/model.gguf -p 'Hello' -n 50 --gpu-layers 99"
+```
+
+Notes:
+
+- The HIP/ROCm backend uses the kernel compute stack (KFD). You can see active ROCm processes via:
+
+```bash
+ssh hemma "rocm-smi --showpids details"
+```
+
+- If you are A/B testing stability due to host hangs, prefer the Vulkan backend + `llama-server-vulkan.service` (below)
+  and keep the HIP service disabled.
+
+### llama.cpp with Vulkan (recommended for stability testing)
+
+This avoids the HIP/KFD compute path while still using the GPU via Vulkan.
+
+```bash
+# Build (CMake)
+ssh hemma "cd ~/llama.cpp && cmake -B build-vulkan -DGGML_VULKAN=1 -DCMAKE_BUILD_TYPE=Release && cmake --build build-vulkan -j$(nproc)"
+
+# Run server (example, direct)
+ssh hemma "cd ~/llama.cpp && ./build-vulkan/bin/llama-server --model models/model.gguf --port 8082 --device Vulkan0"
+```
+
+If you are using the host systemd units on hemma, switch services like this:
+
+```bash
+# Disable HIP service and enable Vulkan service (only one should be enabled; both use :8082)
+ssh hemma "sudo systemctl disable --now llama-server-hip.service"
+ssh hemma "sudo systemctl enable --now llama-server-vulkan.service"
+
+# Verify server health
+ssh hemma "curl -s http://127.0.0.1:8082/health"
+
+# Verify HIP/KFD is not in use (expected: \"No KFD PIDs currently running\")
+ssh hemma "rocm-smi --showpids details"
 ```
 
 ### Ollama with ROCm
@@ -423,6 +460,8 @@ brew install autossh
 
 Install `~/bin/hemma-gpu-tunnel` for easy tunnel management:
 
+Note: status checks use `nc` on the local port to avoid noisy `pgrep`/`sysmond` failures on macOS.
+
 ```bash
 #!/bin/bash
 # SSH tunnels to hemma GPU services (llama-server + Tabby)
@@ -430,38 +469,61 @@ Install `~/bin/hemma-gpu-tunnel` for easy tunnel management:
 LLAMA_PORT=8082
 TABBY_PORT=8083
 HOST=hemma
+PID_DIR="${HOME}/.cache/hemma-gpu-tunnel"
+
+mkdir -p "$PID_DIR"
 
 start_tunnel() {
     local port=$1
     local name=$2
-    if pgrep -f "ssh.*-L ${port}:localhost:${port}.*${HOST}" > /dev/null; then
-        echo "✓ ${name} tunnel already running (port ${port})"
-    else
-        autossh -M 0 -f -N \
-            -o "ServerAliveInterval=30" \
-            -o "ServerAliveCountMax=3" \
-            -L ${port}:localhost:${port} ${HOST}
-        echo "▶ Started ${name} tunnel (port ${port})"
+    local pid_file="${PID_DIR}/tunnel-${port}.pid"
+    if [[ -f "$pid_file" ]]; then
+        local pid
+        pid=$(cat "$pid_file" 2>/dev/null || true)
+        if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+            echo "✓ ${name} tunnel already running (port ${port})"
+            return
+        fi
     fi
+
+    autossh -M 0 -N \
+        -o "ServerAliveInterval=30" \
+        -o "ServerAliveCountMax=3" \
+        -o "ExitOnForwardFailure=yes" \
+        -L ${port}:localhost:${port} ${HOST} >/dev/null 2>&1 &
+    echo $! > "$pid_file"
+    echo "▶ Started ${name} tunnel (port ${port})"
 }
 
 stop_tunnel() {
     local port=$1
     local name=$2
-    pkill -f "ssh.*-L ${port}:localhost:${port}.*${HOST}" 2>/dev/null && \
-        echo "■ Stopped ${name} tunnel" || \
-        echo "  ${name} tunnel not running"
+    local pid_file="${PID_DIR}/tunnel-${port}.pid"
+    local pid=""
+    if [[ -f "$pid_file" ]]; then
+        pid=$(cat "$pid_file" 2>/dev/null || true)
+    fi
+
+    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+        kill "$pid" 2>/dev/null || true
+        rm -f "$pid_file"
+        echo "■ Stopped ${name} tunnel"
+        return
+    fi
+
+    rm -f "$pid_file"
+    echo "  ${name} tunnel not running"
 }
 
 status() {
     echo "=== Hemma GPU Tunnels ==="
     for port in $LLAMA_PORT $TABBY_PORT; do
-        if pgrep -f "ssh.*-L ${port}:localhost:${port}.*${HOST}" > /dev/null; then
+        if nc -z -w 1 localhost ${port} 2>/dev/null; then
             if curl -s --connect-timeout 2 http://localhost:${port}/health > /dev/null 2>&1 || \
                curl -s --connect-timeout 2 http://localhost:${port}/v1/health > /dev/null 2>&1; then
                 echo "✓ Port ${port}: connected"
             else
-                echo "? Port ${port}: tunnel up, service unreachable"
+                echo "? Port ${port}: port open, service unreachable"
             fi
         else
             echo "✗ Port ${port}: not running"
@@ -473,6 +535,18 @@ case "${1:-start}" in
     start)
         start_tunnel $LLAMA_PORT "llama-server"
         start_tunnel $TABBY_PORT "tabby"
+        ;;
+    start-llama)
+        start_tunnel $LLAMA_PORT "llama-server"
+        ;;
+    start-tabby)
+        start_tunnel $TABBY_PORT "tabby"
+        ;;
+    stop-llama)
+        stop_tunnel $LLAMA_PORT "llama-server"
+        ;;
+    stop-tabby)
+        stop_tunnel $TABBY_PORT "tabby"
         ;;
     stop)
         stop_tunnel $LLAMA_PORT "llama-server"
@@ -487,7 +561,7 @@ case "${1:-start}" in
         status
         ;;
     *)
-        echo "Usage: $(basename $0) {start|stop|restart|status}"
+        echo "Usage: $(basename $0) {start|start-llama|start-tabby|stop|stop-llama|stop-tabby|restart|status}"
         exit 1
         ;;
 esac
@@ -496,10 +570,14 @@ esac
 Usage:
 
 ```bash
-hemma-gpu-tunnel start    # Start tunnels
-hemma-gpu-tunnel stop     # Stop tunnels
-hemma-gpu-tunnel restart  # Restart
-hemma-gpu-tunnel status   # Check status
+hemma-gpu-tunnel start        # start tunnels
+hemma-gpu-tunnel start-llama  # start only llama tunnel (:8082)
+hemma-gpu-tunnel start-tabby  # start only tabby tunnel (:8083)
+hemma-gpu-tunnel stop         # stop tunnels
+hemma-gpu-tunnel stop-llama   # stop only llama tunnel (:8082)
+hemma-gpu-tunnel stop-tabby   # stop only tabby tunnel (:8083)
+hemma-gpu-tunnel restart      # restart tunnels
+hemma-gpu-tunnel status       # check status
 ```
 
 ### Auto-Start on Login (LaunchAgent)
@@ -516,12 +594,10 @@ Create `~/Library/LaunchAgents/com.hemma.gpu-tunnel.plist`:
     <key>ProgramArguments</key>
     <array>
         <string>/Users/YOUR_USERNAME/bin/hemma-gpu-tunnel</string>
-        <string>start</string>
+        <string>start-llama</string>
     </array>
     <key>RunAtLoad</key>
     <true/>
-    <key>StartInterval</key>
-    <integer>300</integer>
     <key>StandardOutPath</key>
     <string>/tmp/hemma-gpu-tunnel.log</string>
     <key>StandardErrorPath</key>

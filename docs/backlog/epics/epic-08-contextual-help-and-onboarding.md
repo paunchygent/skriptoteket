@@ -5,6 +5,7 @@ title: "Contextual help (Hjälp) and onboarding"
 status: active
 owners: "agents"
 created: 2025-12-17
+updated: 2026-01-03
 outcome: "Users understand what they can do on each page via concise, Swedish, context-aware help without external documentation."
 ---
 
@@ -49,6 +50,7 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - [ST-08-20: Editor AI chat drawer MVP (beginner-friendly assistant UI)](../stories/story-08-20-editor-ai-chat-drawer-mvp.md)
 - [ST-08-21: AI structured CRUD edit ops protocol v1 (insert/replace/delete)](../stories/story-08-21-ai-structured-crud-edit-ops-protocol-v1.md)
 - [ST-08-22: Editor AI proposed changes diff preview + apply/undo](../stories/story-08-22-editor-ai-diff-preview-apply-undo.md)
+- [ST-08-23: AI editor chat streaming proxy + LLM_CHAT_* config](../stories/story-08-23-ai-chat-streaming-proxy-and-config.md)
 
 ## Implementation Summary (as of 2026-01-01)
 
@@ -58,7 +60,7 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - Live prompt evaluation harness exists with metadata-only artifacts under `.artifacts/ai-prompt-eval/` (ST-08-19).
 - Remaining work:
   - Tabby provider switch + prompt A/B evaluation for edit suggestions (ST-08-17).
-  - Chat-first editor AI UX (drawer + structured CRUD edits + diff preview + apply/undo) (ST-08-20/21/22).
+  - Chat-first editor AI UX (drawer + chat streaming + structured CRUD edits + diff preview + apply/undo) (ST-08-20/21/22/23).
 
 ## Risks
 

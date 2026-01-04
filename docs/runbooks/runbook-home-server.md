@@ -5,7 +5,7 @@ title: "Runbook: Home Server Operations"
 status: active
 owners: "olof"
 created: 2025-12-16
-updated: 2026-01-02
+updated: 2026-01-03
 system: "hemma.hule.education"
 ---
 
@@ -107,6 +107,75 @@ systemctl status ddclient -> active
   login=hule.education
   host=hemma
 ```
+
+### GPU Tunnels (local workstation)
+
+Use the local helper script to tunnel GPU services to localhost:
+
+```bash
+~/bin/hemma-gpu-tunnel start        # start llama + tabby tunnels
+~/bin/hemma-gpu-tunnel start-llama  # start only llama tunnel (:8082)
+~/bin/hemma-gpu-tunnel start-tabby  # start only tabby tunnel (:8083)
+~/bin/hemma-gpu-tunnel stop         # stop both tunnels
+~/bin/hemma-gpu-tunnel stop-llama   # stop only llama tunnel (:8082)
+~/bin/hemma-gpu-tunnel stop-tabby   # stop only tabby tunnel (:8083)
+~/bin/hemma-gpu-tunnel status       # show tunnel status
+```
+
+### Host GPU AI Services (systemd)
+
+On `hemma`, the AI services run on the host (not in Docker) as systemd units:
+
+- `llama-server-vulkan.service` (llama.cpp Vulkan backend, port `8082`)
+- `llama-server-hip.service` (llama.cpp ROCm/HIP backend, port `8082`)
+- `tabby.service` (Tabby, port `8083`)
+
+Only one llama.cpp service should be enabled at a time (both bind `:8082`).
+
+```bash
+# Status
+ssh hemma "sudo systemctl status --no-pager llama-server-vulkan.service"
+ssh hemma "sudo systemctl status --no-pager llama-server-hip.service"
+ssh hemma "sudo systemctl status --no-pager tabby.service"
+
+# Health checks
+ssh hemma "curl -s http://127.0.0.1:8082/health"
+ssh hemma "curl -s http://127.0.0.1:8083/v1/health"
+
+# Verify whether HIP/KFD is in use (expected in Vulkan mode: \"No KFD PIDs currently running\")
+ssh hemma "rocm-smi --showpids details"
+```
+
+Switch between HIP and Vulkan:
+
+```bash
+# Vulkan (preferred for stability testing)
+ssh hemma "sudo systemctl disable --now llama-server-hip.service"
+ssh hemma "sudo systemctl enable --now llama-server-vulkan.service"
+
+# HIP/ROCm
+ssh hemma "sudo systemctl disable --now llama-server-vulkan.service"
+ssh hemma "sudo systemctl enable --now llama-server-hip.service"
+```
+
+### AMDGPU Release Watch (hemma)
+
+Daily check for new AMDGPU releases (alerts when 30.30.x or Radeon Software 25.40 notes appear).
+
+```bash
+# Run once
+ssh hemma "sudo systemctl start amdgpu-release-watch.service"
+
+# Status + logs
+ssh hemma "sudo systemctl status --no-pager amdgpu-release-watch.timer"
+ssh hemma "sudo journalctl -t amdgpu-release-watch --since '7 days ago' --no-pager"
+```
+
+Files:
+
+- Script: `/usr/local/bin/amdgpu-release-watch.sh`
+- Unit: `/etc/systemd/system/amdgpu-release-watch.service`
+- Timer: `/etc/systemd/system/amdgpu-release-watch.timer`
 
 ### Host Logs + Disk Health (hemma)
 

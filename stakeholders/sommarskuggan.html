@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sommarskuggan – trycksak A4</title>
+
+  <style>
+    /* =========================
+       PRINT
+       ========================= */
+    @page { size: A4; margin: 14mm 14mm 16mm 14mm; }
+
+    :root{
+      --ink:#0b0b0e;
+      --paper:#ffffff;
+      --muted:#4b4b55;
+      --rule:#d6d6de;
+      --tint:#f6f6fb;
+
+      /* “KP-ish” accent */
+      --acid:#f2d200;    /* eyes yellow */
+      --acid-dark:#c7ab00;
+
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --serif: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 10.9pt/1.55 var(--serif);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    @media screen{
+      body{ background:#e8e8ee; padding: 18px 0; }
+      .page{
+        width:210mm; min-height:297mm; margin:0 auto 18px;
+        background: var(--paper);
+        box-shadow: 0 10px 40px rgba(0,0,0,.14);
+      }
+    }
+    @media print{
+      .page{ width:auto; min-height:auto; margin:0; box-shadow:none; }
+    }
+
+    /* =========================
+       GLOBAL TYPE
+       ========================= */
+    h1,h2,h3{
+      font-family: var(--sans);
+      margin:0;
+      letter-spacing: -0.01em;
+    }
+    h1{
+      font-size: 30pt;
+      line-height: 1.02;
+      color: #fff;
+    }
+    .dek{
+      font-family: var(--sans);
+      color: rgba(255,255,255,.90);
+      font-size: 12pt;
+      line-height: 1.35;
+      margin: 3mm 0 0 0;
+      max-width: 150mm;
+    }
+    h2{
+      font-size: 14.6pt;
+      line-height: 1.18;
+      margin: 0 0 2mm 0;
+    }
+    h3{
+      font-size: 12pt;
+      line-height: 1.22;
+      margin: 0 0 1.6mm 0;
+    }
+    p{ margin: 0 0 3mm 0; }
+    ul{ margin: 0 0 3mm 0; padding-left: 0; list-style:none; }
+    .small{ font-family: var(--sans); font-size: 9.2pt; color: var(--muted); }
+
+    /* Custom bullet: yellow dot + tight indent */
+    .bullets li{
+      position: relative;
+      padding-left: 6mm;
+      margin: 0 0 1.7mm 0;
+    }
+    .bullets li::before{
+      content:"";
+      position:absolute;
+      left:0;
+      top:.55em;
+      width:2.2mm; height:2.2mm;
+      background: var(--acid);
+      outline: 0.25mm solid rgba(0,0,0,.12);
+    }
+
+    /* Drop cap for first paragraph in article */
+    .dropcap::first-letter{
+      float:left;
+      font-family: var(--sans);
+      font-weight: 900;
+      font-size: 34pt;
+      line-height: .92;
+      padding: 2mm 2.6mm 0 0;
+      color: var(--ink);
+    }
+
+    /* =========================
+       HEADER / BRAND STRIP
+       ========================= */
+    header{
+      position: relative;
+      background: #0b0b0e;
+      padding: 10mm 10mm 9mm 10mm;
+      overflow:hidden;
+    }
+    /* Diagonal brand stripe */
+    header::before{
+      content:"";
+      position:absolute;
+      inset:-30mm;
+      background:
+        repeating-linear-gradient(
+          135deg,
+          rgba(242,210,0,.0) 0,
+          rgba(242,210,0,.0) 10px,
+          rgba(242,210,0,.06) 10px,
+          rgba(242,210,0,.06) 16px
+        );
+      transform: rotate(0.0001deg);
+      pointer-events:none;
+      opacity:.95;
+    }
+    /* Big “eye” watermark on the right */
+    .eye-mark{
+      position:absolute;
+      right: 6mm;
+      top: 7mm;
+      width: 56mm;
+      height: 28mm;
+      opacity: .95;
+      pointer-events:none;
+    }
+    .topline{
+      position: relative;
+      z-index: 1;
+      display:flex;
+      justify-content: space-between;
+      gap: 8mm;
+      align-items: baseline;
+      margin-bottom: 4mm;
+    }
+    .label{
+      font-family: var(--sans);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      font-size: 9pt;
+      color: rgba(255,255,255,.78);
+    }
+    .tag{
+      font-family: var(--sans);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-size: 9pt;
+      color: rgba(255,255,255,.78);
+    }
+    .titleblock{
+      position: relative;
+      z-index: 1;
+    }
+    /* Accent rule under title */
+    .accent-rule{
+      height: 1.5mm;
+      width: 52mm;
+      background: var(--acid);
+      margin-top: 5mm;
+    }
+
+    /* =========================
+       MAIN GRID (editorial)
+       ========================= */
+    .wrap{ padding: 7mm 0 0 0; }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.60fr 1fr; /* article + sidebar */
+      gap: 9mm;
+      align-items:start;
+    }
+
+    /* Article columns */
+    .article{
+      column-count: 2;
+      column-gap: 7mm;
+    }
+    .article > *{
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .span-all{ column-span: all; }
+
+    /* Section separators (print-y) */
+    .section-rule{
+      height:1px;
+      background: var(--rule);
+      margin: 4.5mm 0 5mm 0;
+    }
+
+    /* =========================
+       SIDEBAR MODULES (no UI cards)
+       ========================= */
+    aside{ display:flex; flex-direction: column; gap: 6mm; }
+    .module{
+      padding: 0;
+      border-top: 3px solid var(--ink);
+    }
+    .module .head{
+      font-family: var(--sans);
+      font-weight: 900;
+      letter-spacing: .02em;
+      margin: 3mm 0 2mm 0;
+      font-size: 12.5pt;
+    }
+    .module .body{
+      padding: 0;
+    }
+
+    /* Fact list in sidebar */
+    .facts{
+      display:grid;
+      grid-template-columns: 34mm 1fr;
+      gap: 1.8mm 4mm;
+      font-family: var(--sans);
+      font-size: 10.1pt;
+      line-height: 1.35;
+    }
+    .facts .k{ color: var(--muted); font-weight: 800; }
+    .facts .v{ color: var(--ink); }
+
+    /* Contents list */
+    .contents{
+      font-family: var(--sans);
+      font-size: 10.1pt;
+      line-height: 1.35;
+      color: var(--muted);
+      margin:0;
+      padding-left: 0;
+      list-style:none;
+    }
+    .contents li{
+      display:flex;
+      gap: 3mm;
+      margin: 0 0 1.6mm 0;
+    }
+    .contents li::before{
+      content:"";
+      width: 2.2mm; height: 2.2mm;
+      background: var(--acid);
+      margin-top: .55em;
+      flex: 0 0 auto;
+      outline: 0.25mm solid rgba(0,0,0,.12);
+    }
+
+    /* Pull quote (editorial) */
+    .pull{
+      border-left: 4px solid var(--acid);
+      padding: 3mm 0 3mm 4mm;
+      margin: 3mm 0 3mm 0;
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 11pt;
+      line-height: 1.3;
+      color: var(--ink);
+    }
+
+    /* Table */
+    .tablewrap{
+      border-top: 3px solid var(--ink);
+      margin-top: 2mm;
+    }
+    table{
+      width:100%;
+      border-collapse: collapse;
+      font-family: var(--sans);
+      font-size: 10.1pt;
+      line-height: 1.35;
+      margin-top: 2mm;
+    }
+    thead th{
+      text-align:left;
+      padding: 2.2mm 2.2mm;
+      border-bottom: 1px solid var(--rule);
+      background: var(--tint);
+      font-weight: 900;
+    }
+    tbody td{
+      padding: 2.2mm 2.2mm;
+      border-bottom: 1px solid var(--rule);
+      vertical-align: top;
+    }
+
+    /* =========================
+       “Visste du att” – magazine module
+       ========================= */
+    .didyouknow{
+      column-span: all;
+      margin-top: 4mm;
+      border-top: 4px solid var(--acid);
+      background: var(--tint);
+      padding: 5mm 5mm;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Decorative dot is BACKGROUND, cannot overlap text */
+    .didyouknow::before{
+      content:"";
+      position:absolute;
+      right: -10mm;
+      top: -10mm;
+      width: 26mm; height: 26mm;
+      background: radial-gradient(circle at 35% 35%, #ffe86a, var(--acid));
+      opacity: .95;
+    }
+    .didyouknow h2{
+      display:flex;
+      align-items: baseline;
+      gap: 3mm;
+      margin-bottom: 2.6mm;
+    }
+    .didyouknow h2 span{
+      font-family: var(--sans);
+      font-size: 9.2pt;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .didyouknow .cols{
+      columns: 2;
+      column-gap: 7mm;
+    }
+    .didyouknow .cols > *{ break-inside: avoid; }
+
+    /* Footer */
+    footer{
+      margin-top: 7mm;
+      padding-top: 3.5mm;
+      border-top: 1px solid var(--rule);
+      display:flex;
+      justify-content: space-between;
+      gap: 8mm;
+      flex-wrap: wrap;
+      font-family: var(--sans);
+      font-size: 9.2pt;
+      color: var(--muted);
+    }
+
+    /* Page break helper */
+    .pagebreak{ break-before: page; page-break-before: always; }
+
+    /* Keep headings with content */
+    h2, h3{ break-after: avoid; page-break-after: avoid; }
+    .didyouknow, .tablewrap{ break-inside: avoid; page-break-inside: avoid; }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <svg class="eye-mark" viewBox="0 0 560 280" aria-hidden="true">
+        <!-- Simple twin-eye icon -->
+        <path d="M70,150 C140,60 240,55 300,150 C240,220 140,235 70,150 Z" fill="#0b0b0e"/>
+        <path d="M110,150 C150,105 220,103 260,150 C220,190 150,195 110,150 Z" fill="rgba(242,210,0,.95)"/>
+        <circle cx="190" cy="150" r="12" fill="#0b0b0e"/>
+        <path d="M300,150 C370,60 470,55 530,150 C470,220 370,235 300,150 Z" fill="#0b0b0e"/>
+        <path d="M340,150 C380,105 450,103 490,150 C450,190 380,195 340,150 Z" fill="rgba(242,210,0,.95)"/>
+        <circle cx="420" cy="150" r="12" fill="#0b0b0e"/>
+      </svg>
+
+      <div class="topline">
+        <div class="label">Faktablad • A4</div>
+        <div class="tag">Sommarlov / SVT</div>
+      </div>
+
+      <div class="titleblock">
+        <h1>Sommarskuggan</h1>
+        <p class="dek">
+          Fakta, berättelsevärld och sammanhang: bus, mysterier, skuggslem – och vem som gömmer sig i dräkten.
+        </p>
+        <div class="accent-rule" aria-hidden="true"></div>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <div class="grid">
+
+        <!-- =====================
+             ARTICLE (two columns)
+             ===================== -->
+        <main class="article" aria-label="Artikel">
+
+          <section class="span-all">
+            <h2>Inledning</h2>
+            <p class="dropcap">
+              <strong>Sommarskuggan</strong> är en återkommande, maskerad busfigur i SVT:s barnprogram <strong>Sommarlov</strong>.
+              Figuren fungerar som ett årligt mysterium: varje säsong gömmer sig en ny person i dräkten, och identiteten hålls hemlig
+              fram till säsongens slut.
+            </p>
+            <p>
+              Sommarskuggan har även byggts ut till en större berättelsevärld genom fristående tv-avsnitt/serier på SVT Play och genom
+              en rad böcker och pysselböcker.
+            </p>
+
+            <div class="pull">Kärnidén: bus + ledtrådar + avslöjande i finalen.</div>
+            <div class="section-rule" aria-hidden="true"></div>
+          </section>
+
+          <section>
+            <h2>Bakgrund</h2>
+            <p>
+              Sommarskuggan introducerades som en del av Sommarlovs återkommande inslag och har sedan dess blivit en årlig tradition.
+              Grundidén är att kombinera slapstick-bus och spänning med ett detektivmysterium där både programledare och publik (barnen)
+              försöker lista ut vem som döljer sig bakom dräkten.
+            </p>
+          </section>
+
+          <section>
+            <h2>Karaktärsdrag och estetik</h2>
+            <p>
+              Figuren beskrivs ofta som en stor, svart och lurig “skugggestalt” som älskar att ställa till problem, men i en ton som
+              ska vara kittlande snarare än skrämmande för målgruppen. I praktiken kommunicerar Sommarskuggan mycket genom gester, minspel
+              och fysiska upptåg.
+            </p>
+            <p>
+              Ett återkommande motiv är <strong>skuggslem</strong> (svart “slem” som används som spår/effekt och som del av busen),
+              samt att dräkten och dess “hemligheter” kopplas till en större mytologi: <strong>skuggdräkten</strong>, <strong>skuggkistan</strong>
+              och idén om en “utvald person” som dräkten söker efter.
+            </p>
+          </section>
+
+          <section>
+            <h2>Koncept och berättande</h2>
+            <h3>Hemlig identitet</h3>
+            <p>
+              En central del av Sommarskuggan-formatet är att <strong>en ny person spelar figuren varje år</strong>, medan identiteten
+              hålls hemlig fram till säsongsavslutningen.
+            </p>
+
+            <h3>Skuggjägare och jakt</h3>
+            <p>
+              I flera av berättelsebågarna förekommer rollen <strong>skuggjägare</strong> – en figur som ska stoppa Sommarskuggan och/eller
+              hindra att dräkten hamnar hos “fel” person. I SVT Plays beskrivningar nämns exempelvis <strong>Angelika Prick</strong> som
+              “förste skuggjägare”.
+            </p>
+          </section>
+
+          <section>
+            <h2>TV och media</h2>
+
+            <h3>Sommarlov</h3>
+            <p>
+              I Sommarlov fungerar Sommarskuggan som ett återkommande mysterium med ledtrådar och businslag, där avslöjandet brukar ske
+              i säsongsavslutningen.
+            </p>
+
+            <h3>TV-serien på SVT Play</h3>
+            <p>
+              Utöver Sommarlov finns <strong>Sommarskuggan</strong> också som egen samlingssida/serie på SVT Play, där berättelsen
+              organiseras i olika “nummer” och uppdrag/äventyr.
+            </p>
+            <p>
+              SVT Play beskriver till exempel att <strong>Sommarskuggan (nr 4)</strong> återvänder och ställer till det för Sommarlov,
+              bland annat genom en “skuggtromb” som hotar Sommarlovsplatsen, och att jakten leds av skuggjägare.
+            </p>
+            <p>SVT Play listar även flera namngivna bågar/serier, bland annat:</p>
+            <ul class="bullets">
+              <li><strong>Sommarskuggan nr 4: Skuggornas hemlighet</strong></li>
+              <li><strong>Sommarskuggan nr 5: Vinterskuggans uppdrag</strong></li>
+              <li>
+                <strong>Sommarskuggan nr 6: Skuggornas dal</strong>
+                (där berättelsen bland annat involverar Vinterskuggan, Kapten Doris och nya “skuggor” som Lavaskuggan)
+              </li>
+            </ul>
+            <p>
+              SVT Play har också samlat särskilda Sommarlov-relaterade avsnitt under rubriken <strong>”Sommarlov: Sommarskuggan”</strong>,
+              med fokus på en sammanhållen historia kopplad till Sommarlovs säsong.
+            </p>
+
+            <h3>Framträdanden utanför Sommarlov</h3>
+            <p>
+              Sommarskuggan förekommer ibland även i andra SVT-sammanhang och publika aktiviteter. Exempelvis har SVT Nyheter beskrivit att
+              besökare kunnat träffa Sommarskuggan (tillsammans med andra SVT-figurer) vid <strong>Mellofest i Rådhusparken i Jönköping</strong>
+              i samband med Melodifestivalen.
+            </p>
+            <p>
+              Figuren har också uppmärksammats i samband med <strong>Musikhjälpen</strong>, där Sveriges Radio bland annat nämner att
+              Sommarskuggan och Bolibompadraken besöker Barnradions sändning från Kärlekens torg.
+            </p>
+          </section>
+
+          <section class="span-all">
+            <div class="section-rule" aria-hidden="true"></div>
+            <h2>Personer bakom dräkten</h2>
+            <p>
+              I SVT:s upplägg är identiteten hemlig fram till säsongsavslutningen och byts vanligtvis varje år.
+            </p>
+
+            <div class="tablewrap" aria-label="Tabell: personer bakom dräkten">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:16mm;">År</th>
+                    <th>Person bakom dräkten</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>2016</td><td>Den fiktiva chefen på SVT Barn (spelad av <strong>Jonas Karlström Hay</strong>)</td></tr>
+                  <tr><td>2017</td><td><strong>Malin Olsson</strong></td></tr>
+                  <tr><td>2018</td><td><strong>Caroline Hermansson</strong></td></tr>
+                  <tr><td>2019</td><td><strong>Hasse Andersson</strong></td></tr>
+                  <tr><td>2020</td><td><strong>David Sundin</strong></td></tr>
+                  <tr><td>2021</td><td><strong>Kapten Doris</strong> (spelad av <strong>Marianne Mörck</strong>)</td></tr>
+                  <tr><td>2022</td><td><strong>Tusse</strong></td></tr>
+                  <tr><td>2023</td><td><strong>Alex Hermansson</strong></td></tr>
+                  <tr><td>2024</td><td><strong>Tomu</strong> (Tom Karlsson)</td></tr>
+                  <tr><td>2025</td><td><strong>Joel Adolphson</strong></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section>
+            <h2>Litteratur</h2>
+            <p>
+              Sommarskuggan har adapterats till en rad böcker och pysselböcker utgivna av Rabén &amp; Sjögren.
+              I förlagets presentation beskrivs Sommarskuggan som en återkommande busfigur från Sommarlov, och flera böcker knyter an
+              till mytologin om den magiska dräkten och jakten på en “utvald person”.
+            </p>
+            <p>Exempel på titlar som listas av förlaget:</p>
+            <ul class="bullets">
+              <li><strong>Sommarskuggan och camping-buset</strong></li>
+              <li><strong>Sommarskuggan och slottsbuset</strong></li>
+              <li><strong>Sommarskuggan och kalasbuset</strong></li>
+              <li><strong>Sommarskuggan och halloween-buset</strong></li>
+              <li><strong>Sommarskuggan och vattenbuset</strong></li>
+              <li><strong>Sommarskuggan och julbuset</strong></li>
+              <li><strong>Sommarskuggan pysselbok</strong></li>
+              <li><strong>Sommarskuggan julpyssel</strong></li>
+              <li><strong>Sommarskuggan: Det mystiska sällskapet</strong></li>
+              <li><strong>Sommarskuggan – Skuggpyssel i skuggornas värld</strong></li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Utmärkelser</h2>
+            <p>
+              TV4:s sammanställning av nomineringar till <strong>Kristallen 2020</strong> listar
+              <strong>“Sommarskuggan – Vinterskuggans uppdrag”</strong> som nominerad i kategorin <strong>Årets barnprogram</strong>.
+            </p>
+          </section>
+
+          <section>
+            <h2>Mottagande och genomslag</h2>
+            <p>
+              Sommarskuggan beskrivs av förlaget som en av SVT Barns mest populära karaktärer, och formatet har fortsatt utvecklas med
+              återkommande sommarinslag, egna berättelsebågar samt bokutgivning.
+            </p>
+          </section>
+
+          <section class="didyouknow span-all" aria-label="Visste du att">
+            <h2>Visste du att…? <span>Fakta som brukar överraska</span></h2>
+            <div class="cols">
+              <ul class="bullets">
+                <li><strong>Hemlig identitet</strong> – När Sommarskuggan spelas in inför live-publik i Malmö uppmanas barnen som tittar att hålla identiteten hemlig tills avsnittet sänts. Den unga publiken brukar lojalt hålla på hemligheten, så att inget avslöjas i förväg!</li>
+                <li><strong>Olika färger</strong> – Det finns <strong>flera skuggdräkter</strong>: Sommarskuggan är svart, <strong>Vinterskuggan</strong> är vit, <strong>Lavaskuggan</strong> är röd som lava, och <strong>Guldskuggan</strong> är gyllene. (Det finns till och med gosedjur att köpa av alla skuggorna.)</li>
+                <li><strong>Kristallen-nominering</strong> – Sommarskuggans TV-serie blev år 2020 nominerad till det stora TV-priset Kristallen för bästa barnprogram. Det är ovanligt att en barnserie med en kostymerad figur får en sådan nominering.</li>
+                <li><strong>Live på evenemang</strong> – Sommarskuggan har uppträtt live på stora evenemang. Bland annat deltog den i Melodifestivalens turné 2025 och dök upp på Musikhjälpens scen för att krama barn och samla in pengar.</li>
+                <li><strong>Hög och mäktig</strong> – Visste du att Sommarskuggan är <strong>hela 2,4 meter lång</strong>? Dräkten är mycket stor – betydligt längre än en genomsnittlig människa. Det gör Sommarskuggan extra skrämmande och imponerande när den dyker upp!</li>
+              </ul>
+            </div>
+          </section>
+
+          <section class="span-all">
+            <div class="section-rule" aria-hidden="true"></div>
+            <h2>Se även</h2>
+            <ul class="bullets">
+              <li><strong>Sommarlov</strong> (SVT)</li>
+              <li><strong>Sommarskuggan</strong> på SVT Play</li>
+            </ul>
+
+            <h2>Externa länkar</h2>
+            <ul class="bullets">
+              <li>SVT Play: <strong>Sommarskuggan</strong></li>
+              <li>Rabén &amp; Sjögren: <strong>Sommarskuggan</strong> (böcker och pyssel)</li>
+            </ul>
+          </section>
+
+        </main>
+
+        <!-- =====================
+             SIDEBAR
+             ===================== -->
+        <aside aria-label="Sidospalt">
+
+          <section class="module" aria-label="Snabbfakta">
+            <div class="head">Snabbfakta</div>
+            <div class="body">
+              <div class="facts">
+                <div class="k">Typ</div><div class="v">Fiktiv figur/”maskot” i barn-tv</div>
+                <div class="k">Första året</div><div class="v">2016</div>
+                <div class="k">Kännetecken</div><div class="v">Bus, skuggslem, kroppsspråk</div>
+                <div class="k">Årlig twist</div><div class="v">Ny person i dräkten</div>
+                <div class="k">Miljö</div><div class="v">Sommarlov + SVT Play</div>
+              </div>
+              <p class="small" style="margin-top:3mm;">Identiteten avslöjas i slutet av säsongen.</p>
+            </div>
+          </section>
+
+          <section class="module" aria-label="Innehåll">
+            <div class="head">Innehåll</div>
+            <div class="body">
+              <ul class="contents">
+                <li><span>Inledning</span></li>
+                <li><span>Bakgrund</span></li>
+                <li><span>Karaktärsdrag och estetik</span></li>
+                <li><span>Koncept och berättande</span></li>
+                <li><span>TV och media</span></li>
+                <li><span>Personer bakom dräkten</span></li>
+                <li><span>Litteratur</span></li>
+                <li><span>Utmärkelser</span></li>
+                <li><span>Mottagande och genomslag</span></li>
+                <li><span>Se även & externa länkar</span></li>
+              </ul>
+            </div>
+          </section>
+
+          <section class="module" aria-label="Formel">
+            <div class="head">Varför funkar det?</div>
+            <div class="body">
+              <p style="margin:0;">
+                Formatet är extremt tydligt: <strong>bus</strong> (som syns), <strong>spår</strong> (skuggslem), <strong>ledtrådar</strong>
+                (mysteriet) och <strong>avslöjandet</strong> (finalen).
+              </p>
+            </div>
+          </section>
+
+        </aside>
+
+      </div>
+
+      <footer>
+        <div><strong>Sommarskuggan</strong> • A4-trycksak</div>
+        <div>Utskrift: A4, 100% skala. Slå på bakgrundsgrafik om du vill behålla gul ton.</div>
+      </footer>
+    </div>
+  </div>
+</body>
+</html>
