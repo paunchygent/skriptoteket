@@ -308,10 +308,31 @@ const {
 });
 
 function handleRestoreServerVersion(): void {
-  if (!confirmDiscardChanges("Återställ till serverversion och rensa lokalt?")) {
+  if (pinnedCheckpointCount.value > 0) {
+    const message =
+      hasDirtyChanges.value
+        ? `Återställ till serverversion och rensa lokalt? Dina osparade ändringar försvinner och ${pinnedCheckpointCount.value} manuella återställningspunkter tas bort.`
+        : `Rensa lokalt arbetsexemplar? ${pinnedCheckpointCount.value} manuella återställningspunkter tas bort.`;
+
+    if (!window.confirm(message)) {
+      return;
+    }
+    void restoreServerVersion();
     return;
   }
+
+  if (!confirmDiscardChanges("Återställ till serverversion och rensa lokalt?")) return;
   void restoreServerVersion();
+}
+
+function handleDiscardWorkingCopy(): void {
+  if (pinnedCheckpointCount.value > 0) {
+    const message = `Kasta lokalt arbetsexemplar? Det här tar bort lokalt arbetsexemplar och ${pinnedCheckpointCount.value} manuella återställningspunkter. Serverversionen påverkas inte.`;
+    if (!window.confirm(message)) {
+      return;
+    }
+  }
+  void discardWorkingCopy();
 }
 
 const confirmButtonClass = computed(() => {
@@ -415,7 +436,7 @@ const statusLine = computed(() => {
           :diff-items="restoreDiffItems"
           :updated-at="workingCopyUpdatedAt"
           @restore="restoreWorkingCopy"
-          @discard="discardWorkingCopy"
+          @discard="handleDiscardWorkingCopy"
         />
 
         <DraftLockBanner

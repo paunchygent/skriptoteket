@@ -41,6 +41,13 @@ export type CheckpointRecord = {
 
 type WorkingCopyKey = [string, string];
 type CheckpointKey = [string, string, string];
+type ChatThreadKey = [string, string];
+
+export type ChatThreadRecord = {
+  user_id: string;
+  tool_id: string;
+  updated_at: number;
+};
 
 type EditorPersistenceDb = DBSchema & {
   working_copy_heads: {
@@ -57,13 +64,14 @@ type EditorPersistenceDb = DBSchema & {
     };
   };
   chat_threads: {
-    key: string;
-    value: { thread_id: string; updated_at: number };
+    key: ChatThreadKey;
+    value: ChatThreadRecord;
+    indexes: { by_updated_at: number };
   };
 };
 
 const DB_NAME = "skriptoteket_editor";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export const WORKING_COPY_HEAD_TTL_DAYS = 30;
 export const AUTO_CHECKPOINT_TTL_DAYS = 7;
@@ -97,7 +105,12 @@ function getDb(): Promise<IDBPDatabase<EditorPersistenceDb>> {
         }
 
         if (!db.objectStoreNames.contains("chat_threads")) {
-          db.createObjectStore("chat_threads", { keyPath: "thread_id" });
+          const store = db.createObjectStore("chat_threads", { keyPath: ["user_id", "tool_id"] });
+          store.createIndex("by_updated_at", "updated_at");
+        } else {
+          db.deleteObjectStore("chat_threads");
+          const store = db.createObjectStore("chat_threads", { keyPath: ["user_id", "tool_id"] });
+          store.createIndex("by_updated_at", "updated_at");
         }
       },
     });

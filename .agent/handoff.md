@@ -29,6 +29,7 @@ Keep this file updated so the next session can pick up work quickly.
   - Tests: `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkingCopy.spec.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorCompareData.spec.ts`
   - Dependency: added `idb` to `frontend/apps/skriptoteket/package.json` + `frontend/pnpm-lock.yaml`
   - Decision log: Discard clears head + all checkpoints (B2); local history lives in VersionHistoryDrawer; schemas persisted as raw text.
+  - Hardening: stash restore-candidate into local history on first edit (prevents silent overwrite), confirm before clearing pinned checkpoints, warn-once toasts for persistence failures, IndexedDB schema bump to v2 for `chat_threads` keying.
 - ST-14-17 (Phase 5): added Vitest coverage for virtual file canon, unified patch invariants, and minimal compare-state query handling.
   - Tests: `frontend/apps/skriptoteket/src/composables/editor/virtualFiles.spec.ts`, `frontend/apps/skriptoteket/src/composables/editor/diff/unifiedPatch.spec.ts`
   - Tests: `frontend/apps/skriptoteket/src/composables/editor/editorRouteKey.spec.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorCompareState.spec.ts`
@@ -82,6 +83,8 @@ Keep this file updated so the next session can pick up work quickly.
 - Backend unit tests (ST-14-15): `pdm run pytest tests/unit/application/scripting/handlers/test_validate_tool_schemas_handler.py -q` (pass)
 - Live check (dev containers): `curl -sSf http://127.0.0.1:5173/ | head -n 5` (SPA HTML served)
 - Live check (dev backend): `curl -sSf http://127.0.0.1:8000/healthz`
+- Playwright (ui-editor-smoke): `pdm run ui-editor-smoke` (fails on macOS without escalation: MachPort permission denied)
+- Playwright (ui-editor-smoke, escalated): `pdm run ui-editor-smoke` (pass; artifacts: `.artifacts/ui-editor-smoke/`)
 - Script run (yrkesgenerator PDF): `pdm run python -c "import json,os,sys,tempfile; from importlib.util import module_from_spec,spec_from_file_location; from pathlib import Path; sys.path.insert(0,'runner'); spec=spec_from_file_location('yrkesgenerator','src/skriptoteket/script_bank/scripts/yrkesgenerator.py'); module=module_from_spec(spec); spec.loader.exec_module(module); tmp=tempfile.TemporaryDirectory(); input_dir=Path(tmp.name)/'input'; output_dir=Path(tmp.name)/'output'; input_dir.mkdir(parents=True, exist_ok=True); (input_dir/'action.json').write_text(json.dumps({'action_id':'pdf','input':{},'state':{}})); os.environ['SKRIPTOTEKET_INPUTS']=json.dumps({'full_name':'Test Person'}); module.run_tool(str(input_dir), str(output_dir)); print([p.name for p in output_dir.glob('*.pdf')]); tmp.cleanup()"` (generated `yrkesdiplom_Test_Person.pdf`; fontconfig cache warnings)
 - Live check (Playwright, escalated): `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_14_16_editor_schema_validation_errors_ux_e2e` (pass; artifacts: `.artifacts/st-14-16-editor-schema-validation-errors-ux-e2e/`)
 - Hemma: `ssh hemma "sudo systemctl status --no-pager amdgpu-force-active.service"` (active/exited; SUCCESS)

@@ -91,6 +91,8 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
   let headSaveTimer: ReturnType<typeof setTimeout> | null = null;
   let autoCheckpointTimer: ReturnType<typeof setInterval> | null = null;
   let lastAutoCheckpointFingerprint = "";
+  let hasWarnedHeadSaveFailure = false;
+  let hasWarnedCheckpointFailure = false;
 
   const canPersist = computed(() => Boolean(userId.value) && Boolean(toolId.value));
 
@@ -151,6 +153,40 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
     fields.usageInstructions.value = nextFields.usageInstructions;
   }
 
+  async function stashRestoreCandidate(candidate: WorkingCopyHeadRecord): Promise<boolean> {
+    if (!canPersist.value || !userId.value || !toolId.value) return false;
+
+    const candidateFields = workingCopyFieldsFromRecord(candidate);
+    const fingerprint = fieldsFingerprint(candidateFields);
+
+    try {
+      await createCheckpoint({
+        userId: userId.value,
+        toolId: toolId.value,
+        baseVersionId: candidate.base_version_id ?? baseVersionId.value,
+        fields: candidateFields,
+        kind: "auto",
+        label: "Tidigare lokalt arbetsexemplar",
+        expiresAt: Date.now() + AUTO_CHECKPOINT_TTL_DAYS * 24 * 60 * 60 * 1000,
+      });
+      lastAutoCheckpointFingerprint = fingerprint;
+      await trimAutoCheckpoints({
+        userId: userId.value,
+        toolId: toolId.value,
+        cap: AUTO_CHECKPOINT_CAP,
+      });
+      await refreshCheckpoints();
+      notify.success("Tidigare lokalt arbetsexemplar sparat i lokal historik.");
+      return true;
+    } catch {
+      if (!hasWarnedCheckpointFailure) {
+        hasWarnedCheckpointFailure = true;
+        notify.warning("Kunde inte spara tidigare lokalt arbetsexemplar i lokal historik.");
+      }
+      return false;
+    }
+  }
+
   async function persistHeadNow(params: {
     force?: boolean;
     fields?: EditorWorkingCopyFields;
@@ -169,13 +205,17 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
       });
       workingCopyHead.value = record;
     } catch {
-      notify.warning("Kunde inte spara arbetsexemplar lokalt.");
+      if (!hasWarnedHeadSaveFailure) {
+        hasWarnedHeadSaveFailure = true;
+        notify.warning("Kunde inte spara arbetsexemplar lokalt.");
+      }
     }
   }
 
   function scheduleHeadSave(): void {
     if (!canPersist.value || !hasDirtyChanges.value) return;
     if (!baselineFields.value) return;
+    if (isRestorePromptOpen.value && restoreCandidate.value) return;
 
     if (headSaveTimer) {
       clearTimeout(headSaveTimer);
@@ -269,7 +309,10 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
       });
       await refreshCheckpoints();
     } catch {
-      notify.warning("Kunde inte skapa automatisk återställningspunkt.");
+      if (!hasWarnedCheckpointFailure) {
+        hasWarnedCheckpointFailure = true;
+        notify.warning("Kunde inte skapa automatisk återställningspunkt.");
+      }
     }
   }
 
@@ -434,15 +477,28 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
 
   watch(
     () => hasDirtyChanges.value,
-    (dirty) => {
+    async (dirty) => {
       if (dirty && canPersist.value) {
         startAutoCheckpointInterval();
       } else {
         stopAutoCheckpointInterval();
       }
-      if (dirty && isRestorePromptOpen.value) {
+
+      if (dirty && isRestorePromptOpen.value && restoreCandidate.value) {
+        if (headSaveTimer) {
+          clearTimeout(headSaveTimer);
+          headSaveTimer = null;
+        }
+
+        const candidate = restoreCandidate.value;
+        const stashed = await stashRestoreCandidate(candidate);
+        if (stashed) {
+          isRestorePromptOpen.value = false;
+          restoreCandidate.value = null;
+          scheduleHeadSave();
+        }
+      } else if (dirty && isRestorePromptOpen.value) {
         isRestorePromptOpen.value = false;
-        restoreCandidate.value = null;
       }
       if (!dirty && headSaveTimer) {
         clearTimeout(headSaveTimer);
