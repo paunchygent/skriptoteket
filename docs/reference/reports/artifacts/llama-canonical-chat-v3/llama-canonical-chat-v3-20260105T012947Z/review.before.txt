@@ -1,0 +1,8 @@
+ts=2026-01-05T01:30:17+00:00
+power.control=on
+power.runtime_status=active
+vram_used=27393548288
+gtt_used=762372096
+               total        used        free      shared  buff/cache   available
+Mem:            31Gi       2.8Gi       3.6Gi        16Mi        25Gi        28Gi
+Swap:          8.0Gi          0B       8.0Gi

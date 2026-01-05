@@ -1,0 +1,36 @@
+SUMMARY:
+The code extracts files from a ZIP archive into a destination directory. The implementation handles nested directories and small file sizes. Tests cover basic extraction scenarios.
+
+SCORECARD:
+correctness: 4 - Handles basic extraction but lacks error handling for invalid inputs.
+security: 3 - No path traversal protection or zip bomb checks.
+performance: 3 - Reads entire files into memory, which may not scale for large files.
+maintainability: 4 - Well-structured but lacks type hints for all parameters.
+tests: 3 - Covers basic cases but missing edge cases like empty archives or malformed ZIPs.
+
+FINDINGS:
+1) medium - archive_utils.py - Missing path sanitization
+   Evidence: `target_path = os.path.join(dest_dir, name)`
+   Impact: Vulnerable to path traversal attacks if `name` contains `../`.
+   Fix: Sanitize `name` to prevent directory traversal.
+
+2) medium - archive_utils.py - No zip bomb protection
+   Evidence: `data = src.read()`
+   Impact: Could exhaust memory with maliciously large files.
+   Fix: Add size limits or streaming extraction.
+
+3) low - archive_utils.py - Inconsistent type hints
+   Evidence: `dest_dir: str | Path` but no return type hint for helper functions.
+   Impact: Reduces IDE support and readability.
+   Fix: Add return type hints for all functions.
+
+4) low - test_archive_utils.py - Missing edge case tests
+   Evidence: Only tests basic extraction.
+   Impact: May miss bugs in error handling.
+   Fix: Add tests for empty archives, malformed ZIPs, and path traversal attempts.
+
+FIX PLAN:
+- [ ] Add path sanitization to prevent directory traversal.
+- [ ] Implement zip bomb protection with size limits.
+- [ ] Add consistent type hints for all functions.
+- [ ] Expand test coverage for edge cases.

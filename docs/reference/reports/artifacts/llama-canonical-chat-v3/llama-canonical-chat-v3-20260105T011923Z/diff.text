@@ -1,0 +1,68 @@
+diff --git a/archive_utils.py b/archive_utils.py
+--- a/archive_utils.py
++++ b/archive_utils.py
+@@ -1,19 +1,28 @@
+ import os
+ import zipfile
+ from pathlib import Path
+
++def _is_safe_path(dest_dir: str, target_path: str) -> bool:
++    """Check if target_path is safe to write within dest_dir."""
++    dest_dir = os.path.abspath(dest_dir)
++    target_path = os.path.abspath(target_path)
++    return os.path.commonpath([dest_dir]) == os.path.commonpath([dest_dir, target_path])
++
+ def extract_zip(zip_path: str | Path, dest_dir: str | Path) -> None:
+     """Extract all files from a zip into dest_dir."""
+     dest_dir = str(dest_dir)
+     with zipfile.ZipFile(zip_path) as zf:
+         for name in zf.namelist():
+             if name.endswith("/"):
+                 continue
+
+             target_path = os.path.join(dest_dir, name)
++            if not _is_safe_path(dest_dir, target_path):
++                continue
++
+             os.makedirs(os.path.dirname(target_path), exist_ok=True)
+
+-            # NOTE: read() is fine here because files are usually small.
+-            with zf.open(name) as src:
+-                data = src.read()
+-            with open(target_path, "wb") as dst:
+-                dst.write(data)
++            with zf.open(name) as src, open(target_path, "wb") as dst:
++                while chunk := src.read(8192):
++                    dst.write(chunk)
+diff --git a/test_archive_utils.py b/test_archive_utils.py
+--- a/test_archive_utils.py
++++ b/test_archive_utils.py
+@@ -25,3 +25,21 @@ def test_extract_basic(tmp_path: Path) -> None:
+     assert (out / "a.txt").read_bytes() == b"hello"
+     assert (out / "dir" / "b.txt").read_bytes() == b"world"
+
++def test_extract_zip_slip_blocked(tmp_path: Path) -> None:
++    zdata = _make_zip_bytes({
++        "a.txt": b"hello",
++        "../evil.txt": b"bad",
++    })
++    zpath = tmp_path / "t.zip"
++    zpath.write_bytes(zdata)
++
++    out = tmp_path / "out"
++    out.mkdir()
++
++    extract_zip(zpath, out)
++
++    assert (out / "a.txt").read_bytes() == b"hello"
++    assert not (tmp_path / "evil.txt").exists()
++
++def test_extract_absolute_path_blocked(tmp_path: Path) -> None:
++    outside = tmp_path / "outside.txt"
++    zdata = _make_zip_bytes({str(outside): b"bad"})
++    zpath = tmp_path / "t.zip"
++    zpath.write_bytes(zdata)
++    out = tmp_path / "out"
++    out.mkdir()
++    extract_zip(zpath, out)
++    assert not outside.exists()
