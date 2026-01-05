@@ -12,11 +12,11 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-01-04
+- Date: 2026-01-05
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
-- Completed: ST-14-01/14-02 done; ST-14-09 done; ST-14-10 done; ST-14-13/14 done; ST-14-16 done
+- Completed: ST-14-01/14-02 done; ST-14-09 done; ST-14-10 done; ST-14-13/14 done; ST-14-15 done; ST-14-16 done
 
 ## Current Session (2026-01-04)
 
@@ -52,6 +52,7 @@ Keep this file updated so the next session can pick up work quickly.
   - Added: `docs/backlog/stories/story-14-30-editor-working-copy-persistence-indexeddb.md`
   - Added: `docs/backlog/stories/story-14-31-editor-focus-mode-collapse-sidebar.md`
   - Updated: `docs/backlog/epics/epic-14-admin-tool-authoring.md`, `docs/index.md`
+- ST-14-15: reviewed implementation (endpoint + handler + tests) and marked story done.
 
 ## Verification
 
@@ -61,6 +62,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Frontend typecheck: `pdm run fe-type-check` (pass)
 - Frontend build: `pdm run fe-build` (pass)
 - Docs validate: `pdm run docs-validate` (pass)
+- Backend unit tests (ST-14-15): `pdm run pytest tests/unit/application/scripting/handlers/test_validate_tool_schemas_handler.py -q` (pass)
 - Live check (dev containers): `curl -sSf http://127.0.0.1:5173/ | head -n 5` (SPA HTML served)
 - Live check (dev backend): `curl -sSf http://127.0.0.1:8000/healthz`
 - Live check (Playwright, escalated): `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_14_16_editor_schema_validation_errors_ux_e2e` (pass; artifacts: `.artifacts/st-14-16-editor-schema-validation-errors-ux-e2e/`)

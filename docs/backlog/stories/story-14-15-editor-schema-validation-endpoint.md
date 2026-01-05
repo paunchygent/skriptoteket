@@ -2,10 +2,10 @@
 type: story
 id: ST-14-15
 title: "Editor: schema validation endpoint (settings_schema/input_schema)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-29
-updated: 2026-01-03
+updated: 2026-01-05
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given an author has draft schema JSON, when calling the validation endpoint, then the backend validates JSON shape, Pydantic parsing, and domain normalization rules."
