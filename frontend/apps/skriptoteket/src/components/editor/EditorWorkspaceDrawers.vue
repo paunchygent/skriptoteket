@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { components } from "../../api/openapi";
+import type { EditorWorkingCopyCheckpointSummary } from "../../composables/editor/useEditorWorkingCopy";
 
 import InstructionsDrawer from "./InstructionsDrawer.vue";
 import MaintainersDrawer from "./MaintainersDrawer.vue";
@@ -22,6 +23,10 @@ type EditorWorkspaceDrawersProps = {
 
   canRollbackVersions: boolean;
   isWorkflowSubmitting: boolean;
+  checkpoints: EditorWorkingCopyCheckpointSummary[];
+  pinnedCheckpointCount: number;
+  pinnedCheckpointLimit: number;
+  isCheckpointBusy: boolean;
 
   metadataTitle: string;
   metadataSlug: string;
@@ -60,6 +65,10 @@ const emit = defineEmits<{
   (event: "addMaintainer", email: string): void;
   (event: "removeMaintainer", userId: string): void;
   (event: "save"): void;
+  (event: "createCheckpoint", label: string): void;
+  (event: "restoreCheckpoint", checkpointId: string): void;
+  (event: "removeCheckpoint", checkpointId: string): void;
+  (event: "restoreServerVersion"): void;
   (event: "update:usageInstructions", value: string): void;
   (event: "update:metadataTitle", value: string): void;
   (event: "update:metadataSlug", value: string): void;
@@ -80,10 +89,18 @@ const emit = defineEmits<{
     :active-version-id="props.activeVersionId"
     :can-rollback="props.canRollbackVersions"
     :is-submitting="props.isWorkflowSubmitting"
+    :checkpoints="props.checkpoints"
+    :pinned-checkpoint-count="props.pinnedCheckpointCount"
+    :pinned-checkpoint-limit="props.pinnedCheckpointLimit"
+    :is-checkpoint-busy="props.isCheckpointBusy"
     @close="emit('close')"
     @select="emit('selectHistoryVersion', $event)"
     @compare="emit('compareVersion', $event)"
     @rollback="emit('rollbackVersion', $event)"
+    @create-checkpoint="emit('createCheckpoint', $event)"
+    @restore-checkpoint="emit('restoreCheckpoint', $event)"
+    @remove-checkpoint="emit('removeCheckpoint', $event)"
+    @restore-server-version="emit('restoreServerVersion')"
   />
 
   <MetadataDrawer

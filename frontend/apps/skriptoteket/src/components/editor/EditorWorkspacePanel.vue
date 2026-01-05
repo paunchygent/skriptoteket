@@ -4,6 +4,8 @@ import { computed } from "vue";
 import type { components } from "../../api/openapi";
 
 import type { EditorCompareTarget } from "../../composables/editor/useEditorCompareState";
+import type { WorkingCopyProvider } from "../../composables/editor/useEditorCompareData";
+import type { EditorWorkingCopyCheckpointSummary } from "../../composables/editor/useEditorWorkingCopy";
 import type { SchemaIssuesBySchema } from "../../composables/editor/useEditorSchemaValidation";
 import type { VirtualFileId } from "../../composables/editor/virtualFiles";
 import { virtualFileTextFromEditorFields } from "../../composables/editor/virtualFiles";
@@ -90,6 +92,11 @@ type EditorWorkspacePanelProps = {
 
   compareTarget: EditorCompareTarget | null;
   compareActiveFileId: VirtualFileId | null;
+  workingCopyProvider?: WorkingCopyProvider | null;
+  localCheckpoints: EditorWorkingCopyCheckpointSummary[];
+  pinnedCheckpointCount: number;
+  pinnedCheckpointLimit: number;
+  isCheckpointBusy: boolean;
 };
 
 const props = defineProps<EditorWorkspacePanelProps>();
@@ -130,6 +137,10 @@ const emit = defineEmits<{
   (event: "closeCompare"): void;
   (event: "update:compareTarget", value: EditorCompareTarget | null): void;
   (event: "update:compareActiveFileId", value: VirtualFileId): void;
+  (event: "createCheckpoint", label: string): void;
+  (event: "restoreCheckpoint", checkpointId: string): void;
+  (event: "removeCheckpoint", checkpointId: string): void;
+  (event: "restoreServerVersion"): void;
 }>();
 
 const activeVersionId = computed(() => props.selectedVersion?.id ?? null);
@@ -182,6 +193,7 @@ const isCompareMode = computed(() => props.compareTarget !== null);
           :compare-target="props.compareTarget"
           :active-file-id="props.compareActiveFileId"
           :base-is-dirty="props.hasDirtyChanges"
+          :working-copy-provider="props.workingCopyProvider"
           @close="emit('closeCompare')"
           @update-compare-version-id="emit('update:compareTarget', { kind: 'version', versionId: $event })"
           @update-active-file-id="emit('update:compareActiveFileId', $event)"
@@ -274,10 +286,18 @@ const isCompareMode = computed(() => props.compareTarget !== null);
         :usage-instructions="props.usageInstructions"
         :is-saving="props.isSaving"
         :is-read-only="props.isReadOnly"
+        :checkpoints="props.localCheckpoints"
+        :pinned-checkpoint-count="props.pinnedCheckpointCount"
+        :pinned-checkpoint-limit="props.pinnedCheckpointLimit"
+        :is-checkpoint-busy="props.isCheckpointBusy"
         @close="emit('closeDrawer')"
         @select-history-version="emit('selectHistoryVersion', $event)"
         @compare-version="emit('compareVersion', $event)"
         @rollback-version="emit('rollbackVersion', $event)"
+        @create-checkpoint="emit('createCheckpoint', $event)"
+        @restore-checkpoint="emit('restoreCheckpoint', $event)"
+        @remove-checkpoint="emit('removeCheckpoint', $event)"
+        @restore-server-version="emit('restoreServerVersion')"
         @save-all-metadata="emit('saveAllMetadata')"
         @suggest-slug-from-title="emit('suggestSlugFromTitle')"
         @add-maintainer="emit('addMaintainer', $event)"

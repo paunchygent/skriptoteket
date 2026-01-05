@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import type { components } from "../../api/openapi";
+import type { EditorWorkingCopyCheckpointSummary } from "../../composables/editor/useEditorWorkingCopy";
 
 type EditorVersionSummary = components["schemas"]["EditorVersionSummary"];
 type VersionState = components["schemas"]["VersionState"];
@@ -10,6 +12,10 @@ type VersionHistoryDrawerProps = {
   activeVersionId?: string | null;
   canRollback?: boolean;
   isSubmitting?: boolean;
+  checkpoints: EditorWorkingCopyCheckpointSummary[];
+  pinnedCheckpointCount: number;
+  pinnedCheckpointLimit: number;
+  isCheckpointBusy: boolean;
 };
 
 withDefaults(defineProps<VersionHistoryDrawerProps>(), {
@@ -23,7 +29,13 @@ const emit = defineEmits<{
   (event: "select", versionId: string): void;
   (event: "compare", versionId: string): void;
   (event: "rollback", versionId: string): void;
+  (event: "createCheckpoint", label: string): void;
+  (event: "restoreCheckpoint", checkpointId: string): void;
+  (event: "removeCheckpoint", checkpointId: string): void;
+  (event: "restoreServerVersion"): void;
 }>();
+
+const checkpointLabel = ref("");
 
 function versionLabel(state: VersionState): string {
   const labels: Record<VersionState, string> = {
@@ -35,10 +47,10 @@ function versionLabel(state: VersionState): string {
   return labels[state] ?? state;
 }
 
-function formatDateTime(value: string): string {
+function formatDateTime(value: string | number): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return value;
+    return String(value);
   }
   return date.toLocaleString("sv-SE", { dateStyle: "medium", timeStyle: "short" });
 }
@@ -53,6 +65,19 @@ function handleRollback(versionId: string): void {
 
 function handleCompare(versionId: string): void {
   emit("compare", versionId);
+}
+
+function formatCheckpointLabel(label: string): string {
+  return label || "Återställningspunkt";
+}
+
+function checkpointKindLabel(kind: EditorWorkingCopyCheckpointSummary["kind"]): string {
+  return kind === "pinned" ? "Manuell" : "Auto";
+}
+
+function handleCreateCheckpoint(): void {
+  emit("createCheckpoint", checkpointLabel.value.trim());
+  checkpointLabel.value = "";
 }
 </script>
 
@@ -168,6 +193,106 @@ function handleCompare(versionId: string): void {
           </div>
         </li>
       </ul>
+
+      <div class="border-t border-navy/20 pt-4 mt-4 space-y-3">
+        <div class="space-y-1">
+          <h3 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+            Lokal historik
+          </h3>
+          <p class="text-sm text-navy/60">
+            Återställningspunkter sparas lokalt i webbläsaren.
+          </p>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+            Ny återställningspunkt (manuell)
+          </label>
+          <div class="flex flex-wrap gap-2">
+            <input
+              v-model="checkpointLabel"
+              type="text"
+              class="flex-1 min-w-[160px] border border-navy bg-white px-3 py-2 text-xs text-navy shadow-brutal-sm"
+              placeholder="Etikett (valfri)"
+            >
+            <button
+              type="button"
+              class="btn-primary px-3 py-2 text-xs font-semibold tracking-wide"
+              :disabled="
+                isCheckpointBusy || pinnedCheckpointCount >= pinnedCheckpointLimit || isSubmitting
+              "
+              @click="handleCreateCheckpoint"
+            >
+              Skapa återställningspunkt
+            </button>
+          </div>
+          <p
+            v-if="pinnedCheckpointCount >= pinnedCheckpointLimit"
+            class="text-xs text-burgundy"
+          >
+            Du har nått maxgränsen för manuella återställningspunkter ({{ pinnedCheckpointLimit }}).
+          </p>
+        </div>
+
+        <p
+          v-if="checkpoints.length === 0"
+          class="text-sm text-navy/60"
+        >
+          Inga lokala återställningspunkter ännu.
+        </p>
+
+        <ul
+          v-else
+          class="space-y-2"
+        >
+          <li
+            v-for="checkpoint in checkpoints"
+            :key="checkpoint.id"
+            class="border border-navy/30 bg-white shadow-brutal-sm px-3 py-2"
+          >
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div class="text-sm font-semibold text-navy">
+                  {{ formatCheckpointLabel(checkpoint.label) }}
+                </div>
+                <div class="text-xs text-navy/60">
+                  {{ formatDateTime(checkpoint.createdAt) }}
+                  · {{ checkpointKindLabel(checkpoint.kind) }}
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
+                  :disabled="isSubmitting"
+                  @click="emit('restoreCheckpoint', checkpoint.id)"
+                >
+                  Återställ
+                </button>
+                <button
+                  v-if="checkpoint.kind === 'pinned'"
+                  type="button"
+                  class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
+                  :disabled="isSubmitting"
+                  @click="emit('removeCheckpoint', checkpoint.id)"
+                >
+                  Ta bort
+                </button>
+              </div>
+            </div>
+          </li>
+        </ul>
+
+        <button
+          type="button"
+          class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
+          :disabled="isSubmitting"
+          @click="emit('restoreServerVersion')"
+        >
+          Återställ till serverversion (rensa lokalt)
+        </button>
+      </div>
     </div>
   </aside>
 </template>

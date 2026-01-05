@@ -26,6 +26,14 @@ type SaveOptions = {
   schemaValidationError?: Readonly<Ref<string | null>>;
 };
 
+export type EditorBaselineSnapshot = {
+  entrypoint: string;
+  sourceCode: string;
+  settingsSchemaText: string;
+  inputSchemaText: string;
+  usageInstructions: string;
+};
+
 export function useScriptEditor({
   toolId,
   versionId,
@@ -51,13 +59,7 @@ export function useScriptEditor({
   const isMetadataSaving = ref(false);
   const errorMessage = ref<string | null>(null);
 
-  const initialSnapshot = ref<{
-    entrypoint: string;
-    sourceCode: string;
-    settingsSchemaText: string;
-    inputSchemaText: string;
-    usageInstructions: string;
-  } | null>(null);
+  const initialSnapshot = ref<EditorBaselineSnapshot | null>(null);
 
   const selectedVersion = computed(() => editor.value?.selected_version ?? null);
   const editorToolId = computed(() => editor.value?.tool.id ?? "");
@@ -457,6 +459,7 @@ export function useScriptEditor({
     settingsSchemaText,
     inputSchemaText,
     usageInstructions,
+    initialSnapshot,
     changeSummary,
     isLoading,
     isSaving,

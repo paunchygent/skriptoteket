@@ -20,6 +20,15 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Current Session (2026-01-05)
 
+- ST-14-30 (in progress): added IndexedDB-backed working copy persistence + checkpoints + restore UX wiring in SPA.
+  - New persistence module + composable: `frontend/apps/skriptoteket/src/composables/editor/editorPersistence.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkingCopy.ts`
+  - Restore prompt + diff modal: `frontend/apps/skriptoteket/src/components/editor/WorkingCopyRestorePrompt.vue`
+  - Local history UI in version drawer: `frontend/apps/skriptoteket/src/components/editor/VersionHistoryDrawer.vue` + wiring in `EditorWorkspaceDrawers.vue`, `EditorWorkspacePanel.vue`, `ScriptEditorView.vue`
+  - Compare=working support: `frontend/apps/skriptoteket/src/composables/editor/useEditorCompareData.ts`, `EditorComparePanel.vue`
+  - Autosave + checkpoints: debounced head save, auto cadence + pagehide/visibility safety, before-save + before-AI-apply hooks
+  - Tests: `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkingCopy.spec.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorCompareData.spec.ts`
+  - Dependency: added `idb` to `frontend/apps/skriptoteket/package.json` + `frontend/pnpm-lock.yaml`
+  - Decision log: Discard clears head + all checkpoints (B2); local history lives in VersionHistoryDrawer; schemas persisted as raw text.
 - ST-14-17 (Phase 5): added Vitest coverage for virtual file canon, unified patch invariants, and minimal compare-state query handling.
   - Tests: `frontend/apps/skriptoteket/src/composables/editor/virtualFiles.spec.ts`, `frontend/apps/skriptoteket/src/composables/editor/diff/unifiedPatch.spec.ts`
   - Tests: `frontend/apps/skriptoteket/src/composables/editor/editorRouteKey.spec.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorCompareState.spec.ts`
@@ -59,13 +68,15 @@ Keep this file updated so the next session can pick up work quickly.
   - Added: `docs/backlog/stories/story-14-31-editor-focus-mode-collapse-sidebar.md`
   - Updated: `docs/backlog/epics/epic-14-admin-tool-authoring.md`, `docs/index.md`
 - ST-14-15: reviewed implementation (endpoint + handler + tests) and marked story done.
+- Repo housekeeping: moved `docs/guide-teacher-developers.md` to `stakeholders/guide-teacher-developers.md` (per user request).
 
 ## Verification
 
-- Frontend OpenAPI types: `pdm run fe-gen-api-types` (pass)
 - Frontend tests: `pdm run fe-test` (pass)
-- Frontend lint: `pdm run fe-lint` (pass)
 - Frontend typecheck: `pdm run fe-type-check` (pass)
+- Frontend lint: `pdm run fe-lint` (pass)
+- Live check (fe-dev): `pdm run fe-dev` (running; do not stop) + `curl -sSf http://127.0.0.1:5173/ | head -n 5`
+- Frontend OpenAPI types: `pdm run fe-gen-api-types` (pass)
 - Frontend build: `pdm run fe-build` (pass)
 - Docs validate: `pdm run docs-validate` (pass)
 - Backend unit tests (ST-14-15): `pdm run pytest tests/unit/application/scripting/handlers/test_validate_tool_schemas_handler.py -q` (pass)

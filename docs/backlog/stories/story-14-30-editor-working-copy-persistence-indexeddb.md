@@ -2,7 +2,7 @@
 type: story
 id: ST-14-30
 title: "Editor: working copy persistence (IndexedDB) + checkpoints + restore"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2026-01-04
 updated: 2026-01-04

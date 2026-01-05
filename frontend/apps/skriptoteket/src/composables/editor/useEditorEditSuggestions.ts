@@ -16,6 +16,7 @@ type SelectionSnapshot = {
 type UseEditorEditSuggestionsOptions = {
   editorView: Readonly<Ref<EditorView | null>>;
   isReadOnly: Readonly<Ref<boolean>>;
+  beforeApply?: () => Promise<void> | void;
 };
 
 const MAX_PREFIX_CHARS = 4000;
@@ -50,6 +51,7 @@ function buildSelectionSnapshot(view: EditorView): {
 export function useEditorEditSuggestions({
   editorView,
   isReadOnly,
+  beforeApply,
 }: UseEditorEditSuggestionsOptions) {
   const instruction = ref("");
   const suggestion = ref("");
@@ -121,7 +123,7 @@ export function useEditorEditSuggestions({
     }
   }
 
-  function applySuggestion(): void {
+  async function applySuggestion(): Promise<void> {
     error.value = null;
 
     const view = editorView.value;
@@ -139,6 +141,10 @@ export function useEditorEditSuggestions({
     if (!view.state.doc.eq(snapshot.doc)) {
       error.value = "Koden har ändrats. Begär ett nytt förslag.";
       return;
+    }
+
+    if (beforeApply) {
+      await beforeApply();
     }
 
     view.dispatch({

@@ -8,10 +8,12 @@ import EditorWorkspacePanel from "../../components/editor/EditorWorkspacePanel.v
 import ScriptEditorHeaderPanel from "../../components/editor/ScriptEditorHeaderPanel.vue";
 import SystemMessage from "../../components/ui/SystemMessage.vue";
 import WorkflowActionModal from "../../components/editor/WorkflowActionModal.vue";
+import WorkingCopyRestorePrompt from "../../components/editor/WorkingCopyRestorePrompt.vue";
 import { useEditorEditSuggestions } from "../../composables/editor/useEditorEditSuggestions";
 import { useEditorCompareState, type EditorCompareTarget } from "../../composables/editor/useEditorCompareState";
 import { useEditorSchemaParsing } from "../../composables/editor/useEditorSchemaParsing";
 import { useEditorSchemaValidation } from "../../composables/editor/useEditorSchemaValidation";
+import { useEditorWorkingCopy } from "../../composables/editor/useEditorWorkingCopy";
 import { useEditorWorkflowActions } from "../../composables/editor/useEditorWorkflowActions";
 import { useDraftLock } from "../../composables/editor/useDraftLock";
 import { useScriptEditorDrawers } from "../../composables/editor/useScriptEditorDrawers";
@@ -45,6 +47,7 @@ const versionId = computed(() => {
 const canEditTaxonomy = computed(() => auth.hasAtLeastRole("admin"));
 const canEditMaintainers = computed(() => auth.hasAtLeastRole("admin"));
 const canRollbackVersions = computed(() => auth.hasAtLeastRole("superuser"));
+const currentUserId = computed(() => auth.user?.id ?? null);
 const {
   editor,
   entrypoint,
@@ -52,6 +55,7 @@ const {
   settingsSchemaText,
   inputSchemaText,
   usageInstructions,
+  initialSnapshot,
   changeSummary,
   metadataTitle,
   metadataSummary,
@@ -165,19 +169,6 @@ const {
 });
 const entrypointOptions = ["run_tool"];
 const editorView = shallowRef<EditorView | null>(null);
-const {
-  instruction: editInstruction,
-  suggestion: editSuggestion,
-  isLoading: isEditLoading,
-  error: editError,
-  canApply: canApplyEdit,
-  requestSuggestion: requestEditSuggestion,
-  applySuggestion: applyEditSuggestion,
-  clearSuggestion: clearEditSuggestion,
-} = useEditorEditSuggestions({
-  editorView,
-  isReadOnly,
-});
 
 const isSavingAllMetadata = computed(
   () => isMetadataSaving.value || isTaxonomySaving.value || isSlugSaving.value,
@@ -196,6 +187,7 @@ const isTitleSaving = ref(false);
 const isSummarySaving = ref(false);
 
 async function handleSave(): Promise<void> {
+  await createBeforeSaveCheckpoint();
   await save({ validateSchemasNow, schemaValidationError });
 }
 
@@ -263,6 +255,63 @@ async function handleCompareActiveFileIdUpdate(fileId: unknown): Promise<void> {
 
 async function handleCloseCompare(): Promise<void> {
   await compare.closeCompare();
+}
+
+const workingCopy = useEditorWorkingCopy({
+  userId: currentUserId,
+  toolId: editorToolId,
+  baseVersionId: computed(() => selectedVersion.value?.id ?? null),
+  hasDirtyChanges,
+  initialSnapshot,
+  fields: {
+    entrypoint,
+    sourceCode,
+    settingsSchemaText,
+    inputSchemaText,
+    usageInstructions,
+  },
+  notify,
+});
+
+const {
+  isRestorePromptOpen,
+  restoreDiffItems,
+  workingCopyUpdatedAt,
+  checkpointSummaries,
+  pinnedCheckpointCount,
+  pinnedCheckpointLimit,
+  isCheckpointBusy,
+  restoreWorkingCopy,
+  discardWorkingCopy,
+  restoreServerVersion,
+  createBeforeSaveCheckpoint,
+  createBeforeAiApplyCheckpoint,
+  createPinnedCheckpoint,
+  restoreCheckpoint,
+  removeCheckpoint,
+  workingCopyProvider,
+} = workingCopy;
+
+const {
+  instruction: editInstruction,
+  suggestion: editSuggestion,
+  isLoading: isEditLoading,
+  error: editError,
+  canApply: canApplyEdit,
+  requestSuggestion: requestEditSuggestion,
+  applySuggestion: applyEditSuggestion,
+  clearSuggestion: clearEditSuggestion,
+} = useEditorEditSuggestions({
+  editorView,
+  isReadOnly,
+  beforeApply: createBeforeAiApplyCheckpoint,
+});
+
+function handleRestoreServerVersion(): void {
+  if (!confirmDiscardChanges("Återställ till serverversion och rensa lokalt?")) {
+    return;
+  }
+  void restoreServerVersion();
 }
 
 const confirmButtonClass = computed(() => {
@@ -360,6 +409,15 @@ const statusLine = computed(() => {
 
       <!-- PANEL 2: Editor + Test -->
       <div class="space-y-3">
+        <WorkingCopyRestorePrompt
+          v-if="isRestorePromptOpen"
+          :is-open="isRestorePromptOpen"
+          :diff-items="restoreDiffItems"
+          :updated-at="workingCopyUpdatedAt"
+          @restore="restoreWorkingCopy"
+          @discard="discardWorkingCopy"
+        />
+
         <DraftLockBanner
           :state="draftLockState"
           :message="draftLockStatus"
@@ -413,6 +471,11 @@ const statusLine = computed(() => {
           :is-instructions-drawer-open="isInstructionsDrawerOpen"
           :compare-target="compareTarget"
           :compare-active-file-id="compareActiveFileId"
+          :working-copy-provider="workingCopyProvider"
+          :local-checkpoints="checkpointSummaries"
+          :pinned-checkpoint-count="pinnedCheckpointCount"
+          :pinned-checkpoint-limit="pinnedCheckpointLimit"
+          :is-checkpoint-busy="isCheckpointBusy"
           :edit-suggestion="editSuggestion"
           :edit-is-loading="isEditLoading"
           :edit-error="editError"
@@ -445,6 +508,10 @@ const statusLine = computed(() => {
           @close-compare="handleCloseCompare"
           @update:compare-target="handleCompareTargetUpdate($event)"
           @update:compare-active-file-id="handleCompareActiveFileIdUpdate($event)"
+          @create-checkpoint="createPinnedCheckpoint"
+          @restore-checkpoint="restoreCheckpoint"
+          @remove-checkpoint="removeCheckpoint"
+          @restore-server-version="handleRestoreServerVersion"
         />
       </div>
     </template>
