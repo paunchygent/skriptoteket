@@ -1,6 +1,8 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch, type Ref } from "vue";
 import type { RouteLocationNormalizedLoaded, Router } from "vue-router";
 
+import { editorBaseRouteKey } from "./editorRouteKey";
+
 type DrawerKey = "history" | "metadata" | "maintainers" | "instructions";
 
 type UseScriptEditorDrawersOptions = {
@@ -65,6 +67,17 @@ export function useScriptEditorDrawers({
       return;
     }
 
+    const pathVersionId = typeof route.params.versionId === "string" ? route.params.versionId : "";
+    if (pathVersionId) {
+      const nextQuery = { ...route.query } as Record<string, string | string[] | null | undefined>;
+      delete nextQuery.version;
+      void router.replace({
+        path: `/admin/tool-versions/${encodeURIComponent(versionId)}`,
+        query: nextQuery,
+      });
+      return;
+    }
+
     void router.replace({
       query: {
         ...route.query,
@@ -88,7 +101,7 @@ export function useScriptEditorDrawers({
   });
 
   watch(
-    () => route.fullPath,
+    () => editorBaseRouteKey(route),
     () => {
       if (activeDrawer.value && activeDrawer.value !== "history") {
         closeDrawer();

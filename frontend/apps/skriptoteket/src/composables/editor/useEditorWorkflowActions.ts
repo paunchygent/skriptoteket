@@ -5,6 +5,7 @@ import { apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import { useAuthStore } from "../../stores/auth";
 import type { UiNotifier } from "../notify";
+import { editorBaseRouteKey } from "./editorRouteKey";
 
 type EditorVersionSummary = components["schemas"]["EditorVersionSummary"];
 type WorkflowActionResponse = components["schemas"]["WorkflowActionResponse"];
@@ -230,7 +231,7 @@ export function useEditorWorkflowActions({
   }
 
   watch(
-    () => route.fullPath,
+    () => editorBaseRouteKey(route),
     () => {
       workflowError.value = null;
       closeAction();

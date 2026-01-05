@@ -24,6 +24,7 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
+from time import perf_counter
 from typing import TypedDict
 from urllib.parse import unquote, urlparse
 
@@ -52,6 +53,38 @@ def _shorten_for_table(message: str, *, max_chars: int = 200) -> str:
     if max_chars <= 3:
         return "..."
     return normalized[: max_chars - 3] + "..."
+
+
+def _perf_record(
+    perf: list[dict[str, object]] | None,
+    *,
+    source: str,
+    label: str,
+    start: float,
+    extra: dict[str, object] | None = None,
+) -> None:
+    if perf is None:
+        return
+    duration_ms = round((perf_counter() - start) * 1000.0, 2)
+    entry: dict[str, object] = {"source": source, "label": label, "ms": duration_ms}
+    if extra:
+        entry.update(extra)
+    perf.append(entry)
+
+
+def _perf_event(
+    perf: list[dict[str, object]] | None,
+    *,
+    source: str,
+    label: str,
+    extra: dict[str, object] | None = None,
+) -> None:
+    if perf is None:
+        return
+    entry: dict[str, object] = {"source": source, "label": label, "ms": 0.0}
+    if extra:
+        entry.update(extra)
+    perf.append(entry)
 
 
 def _read_input_manifest_files() -> list[ManifestFile]:
@@ -249,6 +282,10 @@ def _build_generic_page_css(*, page_size: str, orientation: str) -> str:
 def _build_weasyprint_recovery_css() -> str:
     return (
         "html, body { height: auto !important; }\n"
+        ".dropcap::first-letter { float: none !important; }\n"
+        ".article, .cols, .columns { column-count: 1 !important; column-gap: 0 !important; }\n"
+        ".span-all { column-span: none !important; }\n"
+        ".grid, *[class*='grid'] { display: block !important; }\n"
         "section { break-inside: auto !important; page-break-inside: auto !important; }\n"
         "pre { overflow: visible !important; }\n"
         "pre, blockquote, table { break-inside: auto !important; "
@@ -386,6 +423,8 @@ def _resolve_local_href(*, base_dir: Path, href: str) -> Path | None:
 
 
 _IMPORT_RE = re.compile(r"(?im)@import\s+(?:url\()?\s*['\"]?([^'\"\)\s;]+)['\"]?\s*\)?[^;]*;")
+_DETAILS_RE = re.compile(r"(?i)<details\b|<summary\b")
+_SVG_RE = re.compile(r"(?i)<svg\b")
 
 
 def _read_css_with_imports(*, base_dir: Path, path: Path, seen: set[Path]) -> str:
@@ -440,20 +479,23 @@ def _select_print_css_for_document(
     base_dir: Path,
     page_size: str,
     orientation: str,
+    doc_css: str | None = None,
 ) -> tuple[str, bool]:
     is_tool_editor = _looks_like_tool_editor_doc(html=html)
     if is_tool_editor:
         return _build_page_css(page_size=page_size, orientation=orientation), True
 
-    doc_css = _extract_all_css(html=html, base_dir=base_dir)
+    if doc_css is None:
+        doc_css = _extract_all_css(html=html, base_dir=base_dir)
     if _document_defines_at_page(css=doc_css):
         return "", False
 
     return _build_generic_page_css(page_size=page_size, orientation=orientation), False
 
 
-def _inline_css_into_svgs(*, html: str, base_dir: Path) -> str:
-    css = _extract_all_css(html=html, base_dir=base_dir)
+def _inline_css_into_svgs(*, html: str, base_dir: Path, css: str | None = None) -> str:
+    if css is None:
+        css = _extract_all_css(html=html, base_dir=base_dir)
     if not css:
         return html
     svg_style = f'<style type="text/css"><![CDATA[\n{css}\n]]></style>'
@@ -464,46 +506,115 @@ def _inline_css_into_svgs(*, html: str, base_dir: Path) -> str:
     )
 
 
-def _normalize_html_for_weasyprint(*, html: str, base_dir: Path, print_css: str) -> str:
-    normalized = _force_details_open(html=html)
-    normalized = _rewrite_details_to_divs(html=normalized)
-    normalized = _inline_css_into_svgs(html=normalized, base_dir=base_dir)
+def _normalize_html_for_weasyprint(
+    *,
+    html: str,
+    base_dir: Path,
+    print_css: str,
+    doc_css: str | None = None,
+    perf_log: list[dict[str, object]] | None = None,
+    perf_source: str = "",
+    perf_label: str = "normalize",
+) -> str:
+    total_start = perf_counter()
+    if _DETAILS_RE.search(html):
+        normalized = _force_details_open(html=html)
+        normalized = _rewrite_details_to_divs(html=normalized)
+    else:
+        normalized = html
+    inline_start = perf_counter()
+    if _SVG_RE.search(normalized):
+        normalized = _inline_css_into_svgs(html=normalized, base_dir=base_dir, css=doc_css)
+        _perf_record(
+            perf_log,
+            source=perf_source,
+            label=f"{perf_label}:inline_svg",
+            start=inline_start,
+        )
+    else:
+        _perf_event(
+            perf_log,
+            source=perf_source,
+            label=f"{perf_label}:inline_svg",
+            extra={"skipped": True},
+        )
     if not print_css.strip():
+        _perf_record(
+            perf_log,
+            source=perf_source,
+            label=f"{perf_label}:total",
+            start=total_start,
+        )
         return normalized
-    return _inject_author_css(html=normalized, css=print_css)
+    normalized = _inject_author_css(html=normalized, css=print_css)
+    _perf_record(
+        perf_log,
+        source=perf_source,
+        label=f"{perf_label}:total",
+        start=total_start,
+    )
+    return normalized
 
 
 def _try_weasyprint(
-    *, source: Path, pdf_path: Path, page_size: str, orientation: str
+    *,
+    source: Path,
+    pdf_path: Path,
+    page_size: str,
+    orientation: str,
+    perf_log: list[dict[str, object]] | None = None,
 ) -> str | None:
     try:
-        from weasyprint import HTML  # type: ignore
+        from weasyprint import DEFAULT_OPTIONS, HTML  # type: ignore
     except Exception:
         return None
 
+    source_name = source.name
     html_raw = source.read_text(encoding="utf-8", errors="replace")
     base_dir = source.parent.resolve()
     base_url = source.parent.resolve().as_uri() + "/"
+    render_options: dict[str, object] = {}
+    cache: dict[str, object] = {}
+    if "cache" in DEFAULT_OPTIONS:
+        render_options["cache"] = cache
+    elif "image_cache" in DEFAULT_OPTIONS:
+        render_options["image_cache"] = cache
 
     def _render(*, html: str) -> None:
-        HTML(string=html, base_url=base_url).write_pdf(str(pdf_path))
+        HTML(string=html, base_url=base_url).write_pdf(str(pdf_path), **render_options)
+
+    def _render_timed(*, html: str, label: str) -> None:
+        start = perf_counter()
+        _render(html=html)
+        _perf_record(perf_log, source=source_name, label=label, start=start)
 
     html_raw = _wrap_pdf_html(html=html_raw)
 
+    css_start = perf_counter()
+    doc_css = _extract_all_css(html=html_raw, base_dir=base_dir)
+    _perf_record(perf_log, source=source_name, label="css:extract", start=css_start)
+
+    select_start = perf_counter()
     size_css, is_tool_editor_doc = _select_print_css_for_document(
         html=html_raw,
         base_dir=base_dir,
         page_size=page_size,
         orientation=orientation,
+        doc_css=doc_css,
     )
+    _perf_record(perf_log, source=source_name, label="css:select_print", start=select_start)
 
     try:
         html_content = _normalize_html_for_weasyprint(
             html=html_raw,
             base_dir=base_dir,
             print_css=size_css,
+            doc_css=doc_css,
+            perf_log=perf_log,
+            perf_source=source_name,
+            perf_label="normalize:initial",
         )
-        _render(html=html_content)
+        _render_timed(html=html_content, label="render:initial")
     except AttributeError as exc:
         exc_text = str(exc)
         is_grid_crash = (
@@ -512,6 +623,7 @@ def _try_weasyprint(
         )
         if not is_grid_crash:
             raise
+        _perf_event(perf_log, source=source_name, label="fallback:grid")
         html_no_grid = html_raw.replace("display: grid", "display: block").replace(
             "display:grid", "display:block"
         )
@@ -519,9 +631,14 @@ def _try_weasyprint(
             html=html_no_grid,
             base_dir=base_dir,
             print_css=size_css,
+            doc_css=doc_css,
+            perf_log=perf_log,
+            perf_source=source_name,
+            perf_label="normalize:grid_fallback",
         )
-        _render(html=html_no_grid)
+        _render_timed(html=html_no_grid, label="render:grid_fallback")
     except AssertionError:
+        _perf_event(perf_log, source=source_name, label="fallback:assert")
         recovery_css = _build_weasyprint_recovery_css()
         normalized_html = locals().get("html_content")
         if not isinstance(normalized_html, str) or not normalized_html.strip():
@@ -529,21 +646,31 @@ def _try_weasyprint(
                 html=html_raw,
                 base_dir=base_dir,
                 print_css=size_css,
+                doc_css=doc_css,
+                perf_log=perf_log,
+                perf_source=source_name,
+                perf_label="normalize:assert_retry",
             )
+        normalized_html = re.sub(r"display\s*:\s*grid", "display: block", normalized_html)
         html_recovery = _inject_author_css(html=normalized_html, css=recovery_css)
         try:
-            _render(html=html_recovery)
+            _render_timed(html=html_recovery, label="render:assert_recovery")
         except AssertionError:
             if not is_tool_editor_doc:
                 raise
+            _perf_event(perf_log, source=source_name, label="fallback:tool_editor")
             size_css = _build_page_css_fallback(page_size=page_size, orientation=orientation)
             html_content = _normalize_html_for_weasyprint(
                 html=html_raw,
                 base_dir=base_dir,
                 print_css=size_css,
+                doc_css=doc_css,
+                perf_log=perf_log,
+                perf_source=source_name,
+                perf_label="normalize:tool_editor_fallback",
             )
             html_recovery = _inject_author_css(html=html_content, css=recovery_css)
-            _render(html=html_recovery)
+            _render_timed(html=html_recovery, label="render:tool_editor_fallback")
     return "weasyprint"
 
 
@@ -730,6 +857,7 @@ def _handle_action(*, action_path: Path, output_dir: Path) -> dict[str, object]:
     pdf_rows: list[dict[str, object]] = []
     chart_data: list[dict[str, object]] = []
     error_log_lines: list[str] = []
+    perf_entries: list[dict[str, object]] = []
 
     for html_path_str in html_file_paths:
         source = Path(html_path_str)
@@ -755,7 +883,11 @@ def _handle_action(*, action_path: Path, output_dir: Path) -> dict[str, object]:
 
         try:
             backend = _try_weasyprint(
-                source=source, pdf_path=pdf_path, page_size=page_size, orientation=orientation
+                source=source,
+                pdf_path=pdf_path,
+                page_size=page_size,
+                orientation=orientation,
+                perf_log=perf_entries,
             )
         except Exception as exc:  # noqa: BLE001
             errors.append(f"WeasyPrint: {exc}")
@@ -834,6 +966,18 @@ def _handle_action(*, action_path: Path, output_dir: Path) -> dict[str, object]:
             _markdown(
                 "Fullständiga felmeddelanden finns i artefakten `conversion-errors.txt`. "
                 "(Tabellen visar en kort sammanfattning.)"
+            )
+        )
+
+    if perf_entries:
+        (output_dir / "conversion-perf.json").write_text(
+            json.dumps(perf_entries, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        outputs.append(
+            _markdown(
+                "Prestandalogg finns i artefakten `conversion-perf.json` "
+                "(tider per steg/återförsök)."
             )
         )
 

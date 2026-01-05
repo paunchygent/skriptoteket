@@ -4,6 +4,7 @@ import type { RouteLocationNormalizedLoaded, Router } from "vue-router";
 import { apiFetch, apiGet, apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import type { UiNotifier } from "../notify";
+import { editorBaseRouteKey } from "./editorRouteKey";
 import { parseSchemaJsonArrayText } from "./schemaJsonHelpers";
 
 type EditorBootResponse = components["schemas"]["EditorBootResponse"];
@@ -83,8 +84,9 @@ export function useScriptEditor({
   }
 
   function resolveEditorPath(): { path: string | null; soft: boolean } {
+    const pathVersionId = versionId.value;
     const queryVersion =
-      typeof route.query.version === "string" ? route.query.version.trim() : "";
+      !pathVersionId && typeof route.query.version === "string" ? route.query.version.trim() : "";
     if (queryVersion) {
       return {
         path: `/api/v1/editor/tool-versions/${encodeURIComponent(queryVersion)}`,
@@ -98,13 +100,22 @@ export function useScriptEditor({
         soft: false,
       };
     }
-    if (versionId.value !== "") {
+    if (pathVersionId !== "") {
       return {
-        path: `/api/v1/editor/tool-versions/${encodeURIComponent(versionId.value)}`,
+        path: `/api/v1/editor/tool-versions/${encodeURIComponent(pathVersionId)}`,
         soft: false,
       };
     }
     return { path: null, soft: false };
+  }
+
+  function stripVersionQueryWhenPathVersionSelected(): void {
+    if (!versionId.value) return;
+    if (route.query.version === undefined) return;
+
+    const nextQuery = { ...route.query } as Record<string, string | string[] | null | undefined>;
+    delete nextQuery.version;
+    void router.replace({ query: nextQuery });
   }
 
   function applyEditorResponse(response: EditorBootResponse): void {
@@ -427,12 +438,14 @@ export function useScriptEditor({
   }
 
   onMounted(() => {
+    stripVersionQueryWhenPathVersionSelected();
     void loadEditor();
   });
 
   watch(
-    () => route.fullPath,
+    () => editorBaseRouteKey(route),
     () => {
+      stripVersionQueryWhenPathVersionSelected();
       void loadEditor();
     },
   );

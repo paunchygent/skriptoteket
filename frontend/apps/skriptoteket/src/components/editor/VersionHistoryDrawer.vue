@@ -21,6 +21,7 @@ withDefaults(defineProps<VersionHistoryDrawerProps>(), {
 const emit = defineEmits<{
   (event: "close"): void;
   (event: "select", versionId: string): void;
+  (event: "compare", versionId: string): void;
   (event: "rollback", versionId: string): void;
 }>();
 
@@ -48,6 +49,10 @@ function handleSelect(versionId: string): void {
 
 function handleRollback(versionId: string): void {
   emit("rollback", versionId);
+}
+
+function handleCompare(versionId: string): void {
+  emit("compare", versionId);
 }
 </script>
 
@@ -138,15 +143,28 @@ function handleRollback(versionId: string): void {
                 {{ versionLabel(version.state) }}
               </span>
             </button>
-            <button
-              v-if="canRollback && version.state === 'archived'"
-              type="button"
-              class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-              :disabled="isSubmitting"
-              @click="handleRollback(version.id)"
-            >
-              Återställ
-            </button>
+
+            <div class="flex flex-wrap items-center justify-end gap-2">
+              <button
+                v-if="version.id !== activeVersionId"
+                type="button"
+                class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
+                :disabled="isSubmitting"
+                @click.stop="handleCompare(version.id)"
+              >
+                Jämför
+              </button>
+
+              <button
+                v-if="canRollback && version.state === 'archived'"
+                type="button"
+                class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
+                :disabled="isSubmitting"
+                @click.stop="handleRollback(version.id)"
+              >
+                Återställ
+              </button>
+            </div>
           </div>
         </li>
       </ul>

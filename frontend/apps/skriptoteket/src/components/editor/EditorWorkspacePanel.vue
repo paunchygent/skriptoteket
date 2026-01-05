@@ -3,7 +3,11 @@ import type { EditorView } from "@codemirror/view";
 import { computed } from "vue";
 import type { components } from "../../api/openapi";
 
+import type { EditorCompareTarget } from "../../composables/editor/useEditorCompareState";
 import type { SchemaIssuesBySchema } from "../../composables/editor/useEditorSchemaValidation";
+import type { VirtualFileId } from "../../composables/editor/virtualFiles";
+import { virtualFileTextFromEditorFields } from "../../composables/editor/virtualFiles";
+import EditorComparePanel from "./EditorComparePanel.vue";
 import EditorEditSuggestionPanel from "./EditorEditSuggestionPanel.vue";
 import EditorInputSchemaPanel from "./EditorInputSchemaPanel.vue";
 import EditorSandboxPanel from "./EditorSandboxPanel.vue";
@@ -83,6 +87,9 @@ type EditorWorkspacePanelProps = {
   isMaintainersLoading: boolean;
   isMaintainersSaving: boolean;
   maintainersError: string | null;
+
+  compareTarget: EditorCompareTarget | null;
+  compareActiveFileId: VirtualFileId | null;
 };
 
 const props = defineProps<EditorWorkspacePanelProps>();
@@ -95,6 +102,7 @@ const emit = defineEmits<{
   (event: "openInstructionsDrawer"): void;
   (event: "closeDrawer"): void;
   (event: "selectHistoryVersion", versionId: string): void;
+  (event: "compareVersion", versionId: string): void;
   (event: "rollbackVersion", versionId: string): void;
   (event: "saveAllMetadata"): void;
   (event: "suggestSlugFromTitle"): void;
@@ -119,9 +127,24 @@ const emit = defineEmits<{
   (event: "applyEditSuggestion"): void;
   (event: "clearEditSuggestion"): void;
   (event: "update:editInstruction", value: string): void;
+  (event: "closeCompare"): void;
+  (event: "update:compareTarget", value: EditorCompareTarget | null): void;
+  (event: "update:compareActiveFileId", value: VirtualFileId): void;
 }>();
 
 const activeVersionId = computed(() => props.selectedVersion?.id ?? null);
+
+const baseFiles = computed(() =>
+  virtualFileTextFromEditorFields({
+    entrypoint: props.entrypoint,
+    sourceCode: props.sourceCode,
+    settingsSchemaText: props.settingsSchemaText,
+    inputSchemaText: props.inputSchemaText,
+    usageInstructions: props.usageInstructions,
+  }),
+);
+
+const isCompareMode = computed(() => props.compareTarget !== null);
 </script>
 
 <template>
@@ -151,60 +174,75 @@ const activeVersionId = computed(() => props.selectedVersion?.id ?? null);
       ]"
     >
       <div class="p-4 space-y-4 min-w-0">
-        <EditorSourceCodePanel
-          :entrypoint="props.entrypoint"
-          :source-code="props.sourceCode"
-          :is-read-only="props.isReadOnly"
-          @update:source-code="emit('update:sourceCode', $event)"
-          @editor-view-ready="emit('editorViewReady', $event)"
+        <EditorComparePanel
+          v-if="isCompareMode && props.compareTarget"
+          :versions="props.versions"
+          :base-version="props.selectedVersion"
+          :base-files="baseFiles"
+          :compare-target="props.compareTarget"
+          :active-file-id="props.compareActiveFileId"
+          :base-is-dirty="props.hasDirtyChanges"
+          @close="emit('closeCompare')"
+          @update-compare-version-id="emit('update:compareTarget', { kind: 'version', versionId: $event })"
+          @update-active-file-id="emit('update:compareActiveFileId', $event)"
         />
 
-        <EditorEditSuggestionPanel
-          :instruction="props.editInstruction"
-          :suggestion="props.editSuggestion"
-          :is-loading="props.editIsLoading"
-          :error="props.editError"
-          :is-read-only="props.isReadOnly"
-          :can-apply="props.canApplyEdit"
-          @update:instruction="emit('update:editInstruction', $event)"
-          @request="emit('requestEditSuggestion')"
-          @apply="emit('applyEditSuggestion')"
-          @clear="emit('clearEditSuggestion')"
-        />
+        <template v-else>
+          <EditorSourceCodePanel
+            :entrypoint="props.entrypoint"
+            :source-code="props.sourceCode"
+            :is-read-only="props.isReadOnly"
+            @update:source-code="emit('update:sourceCode', $event)"
+            @editor-view-ready="emit('editorViewReady', $event)"
+          />
 
-        <EditorSettingsSchemaPanel
-          :settings-schema-text="props.settingsSchemaText"
-          :settings-schema-error="props.settingsSchemaError"
-          :schema-issues="props.schemaIssuesBySchema.settings_schema"
-          :is-read-only="props.isReadOnly"
-          @update:settings-schema-text="emit('update:settingsSchemaText', $event)"
-        />
+          <EditorEditSuggestionPanel
+            :instruction="props.editInstruction"
+            :suggestion="props.editSuggestion"
+            :is-loading="props.editIsLoading"
+            :error="props.editError"
+            :is-read-only="props.isReadOnly"
+            :can-apply="props.canApplyEdit"
+            @update:instruction="emit('update:editInstruction', $event)"
+            @request="emit('requestEditSuggestion')"
+            @apply="emit('applyEditSuggestion')"
+            @clear="emit('clearEditSuggestion')"
+          />
 
-        <EditorInputSchemaPanel
-          :input-schema-text="props.inputSchemaText"
-          :input-schema-error="props.inputSchemaError"
-          :schema-issues="props.schemaIssuesBySchema.input_schema"
-          :is-read-only="props.isReadOnly"
-          @update:input-schema-text="emit('update:inputSchemaText', $event)"
-        />
+          <EditorSettingsSchemaPanel
+            :settings-schema-text="props.settingsSchemaText"
+            :settings-schema-error="props.settingsSchemaError"
+            :schema-issues="props.schemaIssuesBySchema.settings_schema"
+            :is-read-only="props.isReadOnly"
+            @update:settings-schema-text="emit('update:settingsSchemaText', $event)"
+          />
 
-        <EditorSandboxPanel
-          :tool-id="props.toolId"
-          :selected-version="props.selectedVersion"
-          :entrypoint-options="props.entrypointOptions"
-          :entrypoint="props.entrypoint"
-          :is-read-only="props.isReadOnly"
-          :source-code="props.sourceCode"
-          :usage-instructions="props.usageInstructions"
-          :settings-schema="props.settingsSchema"
-          :settings-schema-error="props.settingsSchemaError"
-          :input-schema="props.inputSchema"
-          :input-schema-error="props.inputSchemaError"
-          :has-blocking-schema-issues="props.hasBlockingSchemaIssues"
-          :schema-validation-error="props.schemaValidationError"
-          :validate-schemas-now="props.validateSchemasNow"
-          @update:entrypoint="emit('update:entrypoint', $event)"
-        />
+          <EditorInputSchemaPanel
+            :input-schema-text="props.inputSchemaText"
+            :input-schema-error="props.inputSchemaError"
+            :schema-issues="props.schemaIssuesBySchema.input_schema"
+            :is-read-only="props.isReadOnly"
+            @update:input-schema-text="emit('update:inputSchemaText', $event)"
+          />
+
+          <EditorSandboxPanel
+            :tool-id="props.toolId"
+            :selected-version="props.selectedVersion"
+            :entrypoint-options="props.entrypointOptions"
+            :entrypoint="props.entrypoint"
+            :is-read-only="props.isReadOnly"
+            :source-code="props.sourceCode"
+            :usage-instructions="props.usageInstructions"
+            :settings-schema="props.settingsSchema"
+            :settings-schema-error="props.settingsSchemaError"
+            :input-schema="props.inputSchema"
+            :input-schema-error="props.inputSchemaError"
+            :has-blocking-schema-issues="props.hasBlockingSchemaIssues"
+            :schema-validation-error="props.schemaValidationError"
+            :validate-schemas-now="props.validateSchemasNow"
+            @update:entrypoint="emit('update:entrypoint', $event)"
+          />
+        </template>
       </div>
 
       <EditorWorkspaceDrawers
@@ -238,6 +276,7 @@ const activeVersionId = computed(() => props.selectedVersion?.id ?? null);
         :is-read-only="props.isReadOnly"
         @close="emit('closeDrawer')"
         @select-history-version="emit('selectHistoryVersion', $event)"
+        @compare-version="emit('compareVersion', $event)"
         @rollback-version="emit('rollbackVersion', $event)"
         @save-all-metadata="emit('saveAllMetadata')"
         @suggest-slug-from-title="emit('suggestSlugFromTitle')"

@@ -350,6 +350,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/reports/ref-frontend-expert-review-epic-05.md`
 - `docs/reference/reports/ref-hemma-host-freeze-investigation-2026-01-03.md`
 - `docs/reference/reports/ref-hemma-host-freeze-stack-alignment-2026-01-03.md`
+- `docs/reference/reports/ref-hemma-gpu-compatibility-notes-2026-01-05.md`
+- `docs/reference/reports/ref-hemma-runpm0-before-after-2026-01-05.md`
+- `docs/reference/reports/ref-hemma-perflevel-auto-vs-high-2026-01-05.md`
+- `docs/reference/reports/ref-hemma-canonical-chat-v3-run-2026-01-05.md`
 - `docs/reference/reports/ref-hemma-incident-log-2026-01-02-083355-083455.md`
 - `docs/reference/reports/ref-hemma-incident-log-2026-01-04-153900-154030.md`
 - `docs/reference/reports/ref-hemma-bios-update-guide-2026-01-03.md`

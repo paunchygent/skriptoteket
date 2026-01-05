@@ -52,6 +52,7 @@ function createWorkflow(selectedVersion: ReturnType<typeof ref>) {
   const route = reactive({
     path: "/admin/tools/1",
     fullPath: "/admin/tools/1",
+    params: {},
     query: {},
   });
   const router = {

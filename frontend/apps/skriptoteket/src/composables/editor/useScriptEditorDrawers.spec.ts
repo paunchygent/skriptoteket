@@ -88,7 +88,7 @@ describe("useScriptEditorDrawers", () => {
     await flushPromises();
     expect(vm.activeDrawer).toBe("metadata");
 
-    await router.push({ path: "/editor", query: { foo: "bar", q: "1" } });
+    await router.push({ path: "/editor", query: { foo: "bar", version: "ver-1" } });
     await flushPromises();
     expect(vm.activeDrawer).toBeNull();
 
@@ -96,7 +96,7 @@ describe("useScriptEditorDrawers", () => {
     await flushPromises();
     expect(vm.activeDrawer).toBe("history");
 
-    await router.push({ path: "/editor", query: { foo: "bar", q: "2" } });
+    await router.push({ path: "/editor", query: { foo: "bar", version: "ver-2" } });
     await flushPromises();
     expect(vm.activeDrawer).toBe("history");
 

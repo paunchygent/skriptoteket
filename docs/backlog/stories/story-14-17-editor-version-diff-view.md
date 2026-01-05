@@ -2,10 +2,10 @@
 type: story
 id: ST-14-17
 title: "Editor: version diff view (code + schemas + instructions)"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2025-12-29
-updated: 2026-01-04
+updated: 2026-01-05
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given two visible tool versions, when a reviewer opens the diff view, then they can compare source_code, entrypoint, settings_schema, input_schema, and usage_instructions."

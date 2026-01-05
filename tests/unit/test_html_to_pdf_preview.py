@@ -339,6 +339,7 @@ def test_handle_action_success_does_not_write_error_artifact(
         pdf_path: Path,
         page_size: str,
         orientation: str,
+        perf_log: list[dict[str, object]] | None = None,  # noqa: ARG001
     ) -> str | None:  # noqa: ARG001
         pdf_path.parent.mkdir(parents=True, exist_ok=True)
         pdf_path.write_bytes(b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n")

@@ -53,6 +53,7 @@ const props = defineProps<EditorWorkspaceDrawersProps>();
 const emit = defineEmits<{
   (event: "close"): void;
   (event: "selectHistoryVersion", versionId: string): void;
+  (event: "compareVersion", versionId: string): void;
   (event: "rollbackVersion", versionId: string): void;
   (event: "saveAllMetadata"): void;
   (event: "suggestSlugFromTitle"): void;
@@ -81,6 +82,7 @@ const emit = defineEmits<{
     :is-submitting="props.isWorkflowSubmitting"
     @close="emit('close')"
     @select="emit('selectHistoryVersion', $event)"
+    @compare="emit('compareVersion', $event)"
     @rollback="emit('rollbackVersion', $event)"
   />
 

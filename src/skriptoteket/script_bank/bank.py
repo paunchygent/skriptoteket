@@ -215,4 +215,21 @@ Det här verktyget visar alla Skriptoteket-funktioner:
             ),
         ],
     ),
+    ScriptBankEntry(
+        slug="yrkesgeneratorn",
+        title="Yrkesgeneratorn",
+        summary=(
+            "Skriv in ditt för- och efternamn så berättar verktyget vad du ska bli när du "
+            "blir stor."
+        ),
+        profession_slugs=["gemensamt"],
+        category_slugs=["ovrigt"],
+        source_filename="yrkesgenerator.py",
+        input_schema=[
+            ToolInputStringField(
+                name="full_name",
+                label="Skriv in ditt för- och efternamn",
+            ),
+        ],
+    ),
 ]

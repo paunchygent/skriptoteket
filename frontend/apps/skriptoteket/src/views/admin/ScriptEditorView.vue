@@ -9,6 +9,7 @@ import ScriptEditorHeaderPanel from "../../components/editor/ScriptEditorHeaderP
 import SystemMessage from "../../components/ui/SystemMessage.vue";
 import WorkflowActionModal from "../../components/editor/WorkflowActionModal.vue";
 import { useEditorEditSuggestions } from "../../composables/editor/useEditorEditSuggestions";
+import { useEditorCompareState, type EditorCompareTarget } from "../../composables/editor/useEditorCompareState";
 import { useEditorSchemaParsing } from "../../composables/editor/useEditorSchemaParsing";
 import { useEditorSchemaValidation } from "../../composables/editor/useEditorSchemaValidation";
 import { useEditorWorkflowActions } from "../../composables/editor/useEditorWorkflowActions";
@@ -18,6 +19,7 @@ import { useScriptEditor } from "../../composables/editor/useScriptEditor";
 import { useToolMaintainers } from "../../composables/editor/useToolMaintainers";
 import { useToolTaxonomy } from "../../composables/editor/useToolTaxonomy";
 import { useUnsavedChangesGuards } from "../../composables/editor/useUnsavedChangesGuards";
+import { isVirtualFileId } from "../../composables/editor/virtualFiles";
 import type { UiNotifier } from "../../composables/notify";
 import { useToast } from "../../composables/useToast";
 import { useAuthStore } from "../../stores/auth";
@@ -239,6 +241,30 @@ const {
   selectHistoryVersion,
 } = drawers;
 
+const compare = useEditorCompareState({ route, router });
+const compareTarget = compare.compareTarget;
+const compareActiveFileId = compare.activeFileId;
+
+async function handleCompareVersion(versionId: string): Promise<void> {
+  await compare.toggleCompareVersionId(versionId);
+  closeDrawer();
+}
+
+async function handleCompareTargetUpdate(target: EditorCompareTarget | null): Promise<void> {
+  await compare.setCompareTarget(target);
+}
+
+async function handleCompareActiveFileIdUpdate(fileId: unknown): Promise<void> {
+  if (!isVirtualFileId(fileId)) {
+    return;
+  }
+  await compare.setActiveFileId(fileId);
+}
+
+async function handleCloseCompare(): Promise<void> {
+  await compare.closeCompare();
+}
+
 const confirmButtonClass = computed(() => {
   switch (activeWorkflowAction.value) {
     case "publish":
@@ -385,6 +411,8 @@ const statusLine = computed(() => {
           :is-metadata-drawer-open="isMetadataDrawerOpen"
           :is-maintainers-drawer-open="isMaintainersDrawerOpen"
           :is-instructions-drawer-open="isInstructionsDrawerOpen"
+          :compare-target="compareTarget"
+          :compare-active-file-id="compareActiveFileId"
           :edit-suggestion="editSuggestion"
           :edit-is-loading="isEditLoading"
           :edit-error="editError"
@@ -404,6 +432,7 @@ const statusLine = computed(() => {
           @open-instructions-drawer="toggleInstructionsDrawer"
           @close-drawer="closeDrawer"
           @select-history-version="selectHistoryVersion"
+          @compare-version="handleCompareVersion"
           @rollback-version="openRollbackForVersion"
           @save-all-metadata="saveAllMetadata"
           @suggest-slug-from-title="applySlugSuggestionFromTitle"
@@ -413,6 +442,9 @@ const statusLine = computed(() => {
           @request-edit-suggestion="requestEditSuggestion"
           @apply-edit-suggestion="applyEditSuggestion"
           @clear-edit-suggestion="clearEditSuggestion"
+          @close-compare="handleCloseCompare"
+          @update:compare-target="handleCompareTargetUpdate($event)"
+          @update:compare-active-file-id="handleCompareActiveFileIdUpdate($event)"
         />
       </div>
     </template>

@@ -18,8 +18,14 @@ Keep this file updated so the next session can pick up work quickly.
 - Production: Full Vue SPA
 - Completed: ST-14-01/14-02 done; ST-14-09 done; ST-14-10 done; ST-14-13/14 done; ST-14-15 done; ST-14-16 done
 
-## Current Session (2026-01-04)
+## Current Session (2026-01-05)
 
+- ST-14-17 (Phase 5): added Vitest coverage for virtual file canon, unified patch invariants, and minimal compare-state query handling.
+  - Tests: `frontend/apps/skriptoteket/src/composables/editor/virtualFiles.spec.ts`, `frontend/apps/skriptoteket/src/composables/editor/diff/unifiedPatch.spec.ts`
+  - Tests: `frontend/apps/skriptoteket/src/composables/editor/editorRouteKey.spec.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorCompareState.spec.ts`
+  - Test harness fixes: add `params: {}` to mocked routes in `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkflowActions.spec.ts` and `frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.spec.ts`.
+  - Adjusted `frontend/apps/skriptoteket/src/composables/editor/useScriptEditorDrawers.spec.ts` to assert close-on-version navigation (align with `editorBaseRouteKey`).
+  - Lint cleanup (no behavior change): removed unused eslint-disable directives in `frontend/apps/skriptoteket/src/composables/editor/useEditorCompareState.ts`, `frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.ts`, `frontend/apps/skriptoteket/src/composables/editor/useScriptEditorDrawers.ts`.
 - DevOps: investigated recurrent host hard hangs on `hemma` (RDNA4 R9700 + kernel/ROCm/amdgpu) and applied mitigations for the “silent wedge” pattern.
   - Disabled Tabby for Vulkan-only isolation (Tabby `Wants=llama-server.service` can start ROCm/KFD llama on boot).
   - Added boot-persistent runtime-PM clamp: `/etc/systemd/system/amdgpu-force-active.service` (forces `/sys/class/drm/card1/device/power/control=on`).
@@ -65,6 +71,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Backend unit tests (ST-14-15): `pdm run pytest tests/unit/application/scripting/handlers/test_validate_tool_schemas_handler.py -q` (pass)
 - Live check (dev containers): `curl -sSf http://127.0.0.1:5173/ | head -n 5` (SPA HTML served)
 - Live check (dev backend): `curl -sSf http://127.0.0.1:8000/healthz`
+- Script run (yrkesgenerator PDF): `pdm run python -c "import json,os,sys,tempfile; from importlib.util import module_from_spec,spec_from_file_location; from pathlib import Path; sys.path.insert(0,'runner'); spec=spec_from_file_location('yrkesgenerator','src/skriptoteket/script_bank/scripts/yrkesgenerator.py'); module=module_from_spec(spec); spec.loader.exec_module(module); tmp=tempfile.TemporaryDirectory(); input_dir=Path(tmp.name)/'input'; output_dir=Path(tmp.name)/'output'; input_dir.mkdir(parents=True, exist_ok=True); (input_dir/'action.json').write_text(json.dumps({'action_id':'pdf','input':{},'state':{}})); os.environ['SKRIPTOTEKET_INPUTS']=json.dumps({'full_name':'Test Person'}); module.run_tool(str(input_dir), str(output_dir)); print([p.name for p in output_dir.glob('*.pdf')]); tmp.cleanup()"` (generated `yrkesdiplom_Test_Person.pdf`; fontconfig cache warnings)
 - Live check (Playwright, escalated): `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_14_16_editor_schema_validation_errors_ux_e2e` (pass; artifacts: `.artifacts/st-14-16-editor-schema-validation-errors-ux-e2e/`)
 - Hemma: `ssh hemma "sudo systemctl status --no-pager amdgpu-force-active.service"` (active/exited; SUCCESS)
 - Hemma: `ssh hemma "sudo sh -c 'cat /sys/class/drm/card1/device/power/control; cat /sys/class/drm/card1/device/power/runtime_status'"` (`on` / `active`)

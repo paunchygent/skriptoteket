@@ -72,6 +72,7 @@ async function mountEditor({
   const route = reactive({
     path: routePath,
     fullPath: routePath,
+    params: {},
     query: {},
   });
   const router = {
