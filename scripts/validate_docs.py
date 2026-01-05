@@ -146,6 +146,9 @@ def expected_id_from_filename(doc_type: str, filename: str) -> str | None:
     if doc_type == "story":
         match = re.match(r"^story-(\d{2})-(\d{2})-[a-z0-9-]+\.md$", filename)
         return f"ST-{match.group(1)}-{match.group(2)}" if match else None
+    if doc_type == "pr":
+        match = re.match(r"^pr-(\d{4})-[a-z0-9-]+\.md$", filename)
+        return f"PR-{match.group(1)}" if match else None
     if doc_type == "runbook":
         match = re.match(r"^runbook-([a-z0-9-]+)\.md$", filename)
         return f"RUN-{match.group(1)}" if match else None

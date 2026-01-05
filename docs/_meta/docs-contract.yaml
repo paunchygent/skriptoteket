@@ -88,6 +88,14 @@ types:
     required: ["epic", "acceptance_criteria"]
     optional: ["ui_impact", "data_impact", "risks", "dependencies"]
 
+  pr:
+    folder: docs/backlog/prs
+    filename_regex: "^pr-\\d{4}-[a-z0-9-]+\\.md$"
+    id_regex: "^PR-\\d{4}$"
+    status_allowed: ["ready", "in_progress", "done", "blocked", "canceled"]
+    required: ["stories", "acceptance_criteria"]
+    optional: ["adrs", "scope", "risks", "dependencies"]
+
   runbook:
     folder: docs/runbooks
     filename_regex: "^runbook-[a-z0-9-]+\\.md$"

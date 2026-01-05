@@ -143,6 +143,11 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/sprints/sprint-2026-06-23-tool-layout-editor-v1-contract-and-renderer.md`
 - `docs/backlog/sprints/sprint-2026-07-07-tool-layout-editor-v1-drag-and-drop.md`
 
+### Backlog PRs
+
+- `docs/backlog/prs/pr-0001-editor-working-copy-composable-srp-modularization.md`
+- `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
+
 ### Backlog Stories
 
 - `docs/backlog/stories/story-01-01-profession-category-navigation.md`
@@ -385,6 +390,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 
 - `docs/templates/template-adr.md`
 - `docs/templates/template-epic.md`
+- `docs/templates/template-pr.md`
 - `docs/templates/template-prd.md`
 - `docs/templates/template-reference.md`
 - `docs/templates/template-release-notes.md`

@@ -29,6 +29,7 @@ Target Python is **3.13–3.14**.
 - `migrations/`, `alembic.ini`: DB migrations (Alembic)
 - **PDM/pyproject changes (incl. migration work)**: use `pdm-migration-specialist` for `pyproject.toml` dependency-group updates (generic skill; don’t import HuleEdu monorepo assumptions).
 - `docs/`: PRD/ADRs/backlog (start at `docs/index.md`); contract-enforced via `docs/_meta/docs-contract.yaml`
+- `docs/backlog/prs/`: technical PR tasks (refactors/structure work) connected to stories; use `docs/templates/template-pr.md`; validated by the docs contract like other doc types.
 - **Docs workflow (REQUIRED)**: follow `docs/reference/ref-sprint-planning-workflow.md` for PRD → ADR → epic → story → sprint planning.
 - **Docs index (REQUIRED)**: when adding new docs, update `docs/index.md` so the full index stays complete.
 - **Epic update workflow (REQUIRED)**: when you mark a story `done`, update its epic in `docs/backlog/epics/`:
