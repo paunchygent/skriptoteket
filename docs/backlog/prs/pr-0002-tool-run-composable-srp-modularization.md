@@ -2,7 +2,7 @@
 type: pr
 id: PR-0002
 title: "Refactor: split useToolRun into focused modules (SRP)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-05
 updated: 2026-01-05

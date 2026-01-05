@@ -1,8 +1,10 @@
-import { computed, onBeforeUnmount, ref, watch, type Ref } from "vue";
+import { computed, ref, watch, type Ref } from "vue";
 
 import { apiFetch, apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import { useToolInputs } from "./useToolInputs";
+import { useToolRunPolling } from "./useToolRunPolling";
+import { useToolSessionFiles } from "./useToolSessionFiles";
 
 type ToolMetadataResponse = components["schemas"]["ToolMetadataResponse"];
 type GetRunResult = components["schemas"]["GetRunResult"];
@@ -11,14 +13,6 @@ type StartActionResult = components["schemas"]["StartActionResult"];
 type GetSessionStateResult = components["schemas"]["GetSessionStateResult"];
 type RunDetails = components["schemas"]["RunDetails"];
 type JsonValue = components["schemas"]["JsonValue"];
-
-type SessionFilesMode = "none" | "reuse" | "clear";
-type SessionFileInfo = { name: string; bytes: number };
-type SessionFilesResponse = {
-  tool_id: string;
-  context: string;
-  files: SessionFileInfo[];
-};
 
 export interface StepResult {
   id: string;
@@ -38,80 +32,47 @@ export function useToolRun({ slug }: UseToolRunOptions) {
   const currentRun = ref<RunDetails | null>(null);
   const completedSteps = ref<StepResult[]>([]);
   const stateRev = ref<number | null>(null);
-  const sessionFiles = ref<SessionFileInfo[]>([]);
-  const sessionFilesMode = ref<SessionFilesMode>("none");
 
   const inputSchema = computed(() => tool.value?.input_schema ?? []);
   const toolInputs = useToolInputs({ schema: inputSchema, selectedFiles });
 
   const isLoadingTool = ref(true);
   const isSubmitting = ref(false);
-  const isPolling = ref(false);
   const errorMessage = ref<string | null>(null);
   const actionErrorMessage = ref<string | null>(null);
 
-  let pollIntervalId: number | null = null;
-
   const hasFiles = computed(() => selectedFiles.value.length > 0);
-  const hasSessionFiles = computed(() => sessionFiles.value.length > 0);
-  const effectiveSessionFilesMode = computed<SessionFilesMode>(() => {
-    if (hasFiles.value) return "none";
-    if (sessionFilesMode.value === "reuse" && !hasSessionFiles.value) return "none";
-    return sessionFilesMode.value;
-  });
-  const effectiveFileError = computed<string | null>(() => {
-    const baseError = toolInputs.fileError.value;
-    const fileField = toolInputs.fileField.value;
-    if (!fileField) {
-      if (effectiveSessionFilesMode.value === "reuse" && hasSessionFiles.value) {
-        return "Det här verktyget tar inte emot filer.";
-      }
-      return baseError;
-    }
-    if (hasFiles.value) return baseError;
-    if (effectiveSessionFilesMode.value !== "reuse") return baseError;
-
-    const count = sessionFiles.value.length;
-    const min = fileField.min;
-    const max = fileField.max;
-
-    if (count < min) {
-      return min === 1 ? "Välj minst en fil." : `Välj minst ${min} filer.`;
-    }
-    if (count > max) {
-      return max === 1 ? "Du kan välja max 1 fil." : `Du kan välja max ${max} filer.`;
-    }
-    return null;
-  });
-  const inputsValid = computed(() => {
-    return (
-      effectiveFileError.value === null &&
-      Object.keys(toolInputs.fieldErrors.value).length === 0
-    );
-  });
   const hasResults = computed(() => currentRun.value !== null);
   const isRunning = computed(() => currentRun.value?.status === "running");
   const hasNextActions = computed(() => {
     return (currentRun.value?.ui_payload?.next_actions ?? []).length > 0;
   });
   const canSubmitActions = computed(() => stateRev.value !== null && hasNextActions.value);
-  const canReuseSessionFiles = computed(() => {
+
+  const sessionFilesState = useToolSessionFiles({
+    selectedFiles,
+    fileField: toolInputs.fileField,
+    fileError: toolInputs.fileError,
+    isSubmitting,
+    isRunning,
+  });
+  const {
+    sessionFiles,
+    sessionFilesMode,
+    effectiveSessionFilesMode,
+    effectiveFileError,
+    sessionFilesHelperText,
+    canReuseSessionFiles,
+    canClearSessionFiles,
+    fetchSessionFiles,
+    resetSessionFiles,
+  } = sessionFilesState;
+
+  const inputsValid = computed(() => {
     return (
-      !isSubmitting.value &&
-      !isRunning.value &&
-      !hasFiles.value &&
-      hasSessionFiles.value &&
-      toolInputs.fileField.value !== null
+      effectiveFileError.value === null &&
+      Object.keys(toolInputs.fieldErrors.value).length === 0
     );
-  });
-  const canClearSessionFiles = computed(() => {
-    return !isSubmitting.value && !isRunning.value && !hasFiles.value && hasSessionFiles.value;
-  });
-  const sessionFilesHelperText = computed(() => {
-    if (hasFiles.value) {
-      return "Väljer du filer används de istället för sparade.";
-    }
-    return null;
   });
   const canSubmitRun = computed(() => {
     if (!tool.value) return false;
@@ -166,35 +127,9 @@ export function useToolRun({ slug }: UseToolRunOptions) {
     stateRev.value = response.session_state.state_rev;
   }
 
-  async function fetchSessionFiles(toolId: string): Promise<void> {
-    try {
-      const response = await apiGet<SessionFilesResponse>(
-        `/api/v1/tools/${encodeURIComponent(toolId)}/session-files?context=default`,
-      );
-      sessionFiles.value = response.files ?? [];
-    } catch {
-      sessionFiles.value = [];
-    }
-  }
-
-  function stopPolling(): void {
-    if (pollIntervalId !== null) {
-      window.clearInterval(pollIntervalId);
-      pollIntervalId = null;
-      isPolling.value = false;
-    }
-  }
-
-  function startPolling(runId: string): void {
-    if (pollIntervalId !== null) return;
-
-    isPolling.value = true;
-    pollIntervalId = window.setInterval(() => {
-      void fetchRun(runId).catch(() => {
-        // Silent polling failure; main error handling happens elsewhere.
-      });
-    }, 2000);
-  }
+  const { isPolling, startPolling, stopPolling } = useToolRunPolling({
+    poll: (runId) => fetchRun(runId),
+  });
 
   async function submitRun(): Promise<void> {
     if (!slug.value || !tool.value) {
@@ -387,26 +322,7 @@ export function useToolRun({ slug }: UseToolRunOptions) {
     () => {
       selectedFiles.value = [];
       toolInputs.resetValues();
-      sessionFiles.value = [];
-      sessionFilesMode.value = "none";
-    },
-  );
-
-  watch(
-    () => selectedFiles.value.length,
-    (count) => {
-      if (count > 0 && sessionFilesMode.value !== "none") {
-        sessionFilesMode.value = "none";
-      }
-    },
-  );
-
-  watch(
-    () => sessionFiles.value.length,
-    (count) => {
-      if (count === 0 && sessionFilesMode.value === "reuse") {
-        sessionFilesMode.value = "none";
-      }
+      resetSessionFiles();
     },
   );
 
@@ -428,10 +344,6 @@ export function useToolRun({ slug }: UseToolRunOptions) {
       }
     },
   );
-
-  onBeforeUnmount(() => {
-    stopPolling();
-  });
 
   return {
     // State
