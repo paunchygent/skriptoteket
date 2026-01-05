@@ -8,21 +8,15 @@ created: 2025-12-29
 updated: 2026-01-04
 epic: "EPIC-14"
 acceptance_criteria:
-  - "Given two visible tool versions, when a reviewer opens the diff view,
-then they can compare source_code, entrypoint, settings_schema, input_schema,
-and usage_instructions."
-  - "Given the reviewer lacks access to a version, then they cannot diff it
-and the UI is explicit about the restriction."
-  - "Given diffs are large, then the UI remains usable and supports copy +
-download of compared content (before.txt, after.txt, and a unified patch)."
-  - "Given a user downloads a unified patch, then it uses stable pseudo-paths
-derived from the canonical virtual file ids (e.g. a/tool.py → b/tool.py)."
-  - "Given the diff viewer will be reused for AI 'proposed changes' previews,
-when implementing the diff view, then diff rendering is built as a reusable
-component that can compare arbitrary before/after text blobs (not hard-coded
-to version IDs)."
+  - "Given two visible tool versions, when a reviewer opens the diff view, then they can compare source_code, entrypoint, settings_schema, input_schema, and usage_instructions."
+  - "Given the reviewer lacks access to a version, then they cannot diff it and the UI is explicit about the restriction."
+  - "Given diffs are large, then the UI remains usable and supports copy + download of compared content (before.txt, after.txt, and a unified patch)."
+  - "Given a user downloads a unified patch, then it uses stable pseudo-paths derived from the canonical virtual file ids (e.g. a/tool.py → b/tool.py)."
+  - "Given the diff viewer will be reused for AI 'proposed changes' previews, when implementing the diff view, then diff rendering is built as a reusable component that can compare arbitrary before/after text blobs (not hard-coded to version IDs)."
+
 dependencies:
   - "ADR-0027"
+
 ui_impact: "Yes"
 data_impact: "No (read-only view)"
 ---

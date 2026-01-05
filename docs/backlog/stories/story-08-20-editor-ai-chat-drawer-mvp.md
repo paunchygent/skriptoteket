@@ -8,35 +8,17 @@ created: 2026-01-01
 updated: 2026-01-04
 epic: "EPIC-08"
 acceptance_criteria:
-  - "Given a tool author is in the script editor, when they open the AI
-drawer, then a chat UI is shown without navigating away from the editor."
-  - "Given the user writes a message and presses Send, when the request is in
-flight, then the UI prevents duplicate sends and shows a clear streaming
-state."
-  - "Given an assistant reply is streaming, when the user clicks Cancel, then
-the stream stops immediately and the UI does not get stuck in a loading
-state."
-  - "Given the conversation history is long, when the user sends a new
-message, then the UI sends a bounded conversation context to the backend (at
-most the last 12 messages; older context may be summarized, but any summary
-must be strictly bounded)."
-  - "Given AI chat is disabled by server config, when a message is sent, then
-the UI shows a clear 'not enabled' response without crashing and without
-exposing provider details."
-  - "Given AI chat is enabled, when a message is sent, then the backend
-streams an assistant reply over SSE and the UI renders the streamed content as
-a single assistant message in the conversation."
-  - "Given the page is reloaded, when the user returns to the same tool (any
-version), then the conversation history is restored from IndexedDB (no server-
-side persistence)."
-  - "Given the conversation history is long, then chat persistence is bounded
-(keep at most the most recent 200 messages and/or 1MB of UTF-8 text per
-{user_id, tool_id}; evict oldest first)."
-  - "Given chat history is persisted, then full transcripts MUST NOT be stored
-in localStorage (localStorage is allowed only for small UI preferences such as
-Focus mode)."
-  - "Given a message is sent, then the backend logs metadata only (template
-id, lengths, outcome) and never logs message text, prompts, or code."
+  - "Given a tool author is in the script editor, when they open the AI chat drawer, then a chat UI is shown without navigating away from the editor."
+  - "Given the user writes a message and presses Send, when the request is in flight, then the UI prevents duplicate sends and shows a clear streaming state."
+  - "Given an assistant reply is streaming, when the user clicks Cancel, then the stream stops immediately and the UI does not get stuck in a loading state."
+  - "Given the conversation history is long, when the user sends a new message, then the UI sends a bounded conversation context to the backend (at most the last 12 messages; older context may be summarized, but any summary must be strictly bounded)."
+  - "Given AI chat is disabled by server config, when a message is sent, then the UI shows a clear 'not enabled' response without crashing and without exposing provider details."
+  - "Given AI chat is enabled, when a message is sent, then the backend streams an assistant reply over SSE and the UI renders the streamed content as a single assistant message in the conversation."
+  - "Given the page is reloaded, when the user returns to the same tool (any version), then the conversation history is restored from IndexedDB (no server-side persistence)."
+  - "Given the conversation history is long, then chat persistence is bounded (keep at most the most recent 200 messages and/or 1MB of UTF-8 text per {user_id, tool_id}; evict oldest first)."
+  - "Given chat history is persisted, then full transcripts MUST NOT be stored in localStorage (localStorage is allowed only for small UI preferences such as Focus mode)."
+  - "Given a message is sent, then the backend logs metadata only (template id, lengths, outcome) and never logs message text, prompts, or code."
+
 dependencies:
   - "ST-08-18"
   - "ST-08-23"

@@ -8,21 +8,15 @@ created: 2026-01-04
 updated: 2026-01-04
 epic: "EPIC-14"
 acceptance_criteria:
-  - "Given a tool author is in the editor, when they toggle Focus mode, then
-the left navigation sidebar is collapsed to maximize editor/diff width on
-desktop."
-  - "Given Focus mode is enabled, then the setting persists across reloads
-(local storage)."
-  - "Given Focus mode is enabled, when the user navigates to other
-authenticated pages, then the layout remains in the same mode (global state),
-but the editor remains the primary entry point for the toggle."
-  - "Given Focus mode is enabled, then a clearly visible control exists to
-exit Focus mode so the user is never trapped."
-  - "Given a user logs out and a different user logs in on the same device,
-then Focus mode does not leak across accounts (persistence is keyed by
-user_id)."
+  - "Given a tool author is in the editor, when they toggle Focus mode, then the left navigation sidebar is collapsed to maximize editor/diff width on desktop."
+  - "Given Focus mode is enabled, then the setting persists across reloads (local storage)."
+  - "Given Focus mode is enabled, when the user navigates to other authenticated pages, then the layout remains in the same mode (global state), but the editor remains the primary entry point for the toggle."
+  - "Given Focus mode is enabled, then a clearly visible control exists to exit Focus mode so the user is never trapped."
+  - "Given a user logs out and a different user logs in on the same device, then Focus mode does not leak across accounts (persistence is keyed by user_id)."
+
 dependencies:
   - "ST-14-18"
+
 ui_impact: "Yes"
 data_impact: "No"
 ---

@@ -8,34 +8,19 @@ created: 2025-12-29
 updated: 2026-01-04
 epic: "EPIC-14"
 acceptance_criteria:
-  - "Given a reviewer is in an in_review version, when opening compare, then
-the UI selects a sensible default target: (1) current published (active)
-version if the tool is published, else (2) most recent rejected review
-(archived + reviewed_at set + published_at null) if available, else (3)
-parent_version_id if present, else (4) previous visible version."
-  - "Given an author is in a draft version, when opening compare, then the UI
-selects the immediate parent version (parent_version_id) if present, else the
-previous visible version."
-  - "Given the reviewer shares a link, then compare state can be deep-linked
-via query params without leaking access."
-  - "Given the compare view will be used as a safe preview surface for
-multiple workflows (review now, AI later), when compare state is deep-linked,
-then the URL also captures which virtual file is being compared via field=
-(tool.py, entrypoint.txt, settings_schema.json, input_schema.json,
-usage_instructions.md)."
-  - "Given there are unsaved changes, then switching base versions prompts for
-confirmation, but switching only compare target/field does not."
-  - "Given the editor has a working copy (unsaved buffers), then compare can
-target the working copy head (compare=working), and deep-links do not leak
-access (missing working copy is handled explicitly)."
-  - "Given the URL changes only compare/field, then the editor does not
-refetch boot data and does not reset any unsaved buffers."
-  - "Given saving always creates a new version (draft snapshot), then the
-primary save CTA label is explicit about whether it creates a new draft
-version or creates a new draft from a non-draft version."
+  - "Given a reviewer is in an in_review version, when opening compare, then the UI selects a sensible default target: (1) current published (active) version if the tool is published, else (2) most recent rejected review (archived + reviewed_at set + published_at null) if available, else (3) parent_version_id if present, else (4) previous visible version."
+  - "Given an author is in a draft version, when opening compare, then the UI selects the immediate parent version (parent_version_id) if present, else the previous visible version."
+  - "Given the reviewer shares a link, then compare state can be deep-linked via query params without leaking access."
+  - "Given the compare view will be used as a safe preview surface for multiple workflows (review now, AI later), when compare state is deep-linked, then the URL also captures which virtual file is being compared via field=tool.py, entrypoint.txt, settings_schema.json, input_schema.json, usage_instructions.md."
+  - "Given there are unsaved changes, then switching base versions prompts for confirmation, but switching only compare target/field does not."
+  - "Given the editor has a working copy (unsaved buffers), then compare can target the working copy head (compare=working), and deep-links do not leak access (missing working copy is handled explicitly)."
+  - "Given the URL changes only compare/field, then the editor does not refetch boot data and does not reset any unsaved buffers."
+  - "Given saving always creates a new version (draft snapshot), then the primary save CTA label is explicit about whether it creates a new draft version or creates a new draft from a non-draft version."
+
 dependencies:
   - "ST-14-17"
   - "ST-14-30"
+
 ui_impact: "Yes"
 data_impact: "No"
 ---

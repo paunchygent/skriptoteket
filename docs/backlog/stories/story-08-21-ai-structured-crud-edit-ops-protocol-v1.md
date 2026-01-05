@@ -8,47 +8,23 @@ created: 2026-01-01
 updated: 2026-01-04
 epic: "EPIC-08"
 acceptance_criteria:
-  - "Given the user requests an edit in chat, when the frontend calls `POST /
-api/v1/editor/edit-ops`, then the backend requests a response in a strict,
-schema-validated edit-ops format (JSON only; no markdown)."
-  - "Given an edit-ops request is sent, then the request includes the
-canonical virtual_files payload (tool.py, entrypoint.txt,
-settings_schema.json, input_schema.json, usage_instructions.md) and a bounded
-conversation context so proposals are deterministic and previewable."
-  - "Given the LLM returns a valid response, when the backend parses it, then
-it returns `{ enabled: true, assistant_message: string, ops: [...] }` where
-each op supports insert/replace/delete against one of: whole document,
-selection, or cursor, and each op targets an explicit virtual file from the
-canonical editor file map: tool.py, entrypoint.txt, settings_schema.json,
-input_schema.json, usage_instructions.md."
-  - "Given the backend returns an edit-ops proposal, then the response
-includes `base_fingerprints` per virtual file so the frontend can detect stale
-proposals reliably (ST-08-22)."
-  - "Given base_fingerprints are returned, then each fingerprint is
-`sha256:<hex>` computed over the exact UTF-8 content of the corresponding
-virtual file used as the base (no normalization)."
-  - "Given edit-ops is disabled by server config, when the frontend calls
-`POST /api/v1/editor/edit-ops`, then the backend returns `enabled=false` with
-an empty operation list and a user-actionable message (no 500, no provider
-details)."
-  - "Given the LLM returns invalid JSON or violates the schema, when the
-backend processes the response, then it fails safely with an empty operation
-list and a user-actionable message (no 500)."
-  - "Given the upstream provider indicates truncation (finish_reason=length),
-when an edit is requested, then the backend returns an empty operation list
-(no partial edits)."
-  - "Given the request is over budget, when an edit is requested, then the
-backend returns an empty operation list and exposes eval-only metadata
-(template id + outcome) when eval mode is enabled."
-  - "Given an edit is requested, then the backend logs metadata only (no
-prompts, no code, no model output text)."
-  - "Given edit-ops is configured, then it uses a dedicated `LLM_CHAT_OPS_*`
-profile (does not reuse `LLM_COMPLETION_*` and does not reuse the legacy
-`LLM_EDIT_*` prompts)."
+  - "Given the user requests an edit in chat, when the frontend calls `POST /api/v1/editor/edit-ops`, then the backend requests a response in a strict, schema-validated edit-ops format (JSON only; no markdown)."
+  - "Given an edit-ops request is sent, then the request includes the canonical virtual_files payload (tool.py, entrypoint.txt, settings_schema.json, input_schema.json, usage_instructions.md) and a bounded conversation context so proposals are deterministic and previewable."
+  - "Given the LLM returns a valid response, when the backend parses it, then it returns `{ enabled: true, assistant_message: string, ops: [...] }` where each op supports insert/replace/delete against one of: whole document, selection, or cursor, and each op targets an explicit virtual file from the canonical editor file map: tool.py, entrypoint.txt, settings_schema.json, input_schema.json, usage_instructions.md."
+  - "Given the backend returns an edit-ops proposal, then the response includes `base_fingerprints` per virtual file so the frontend can detect stale proposals reliably (ST-08-22)."
+  - "Given base_fingerprints are returned, then each fingerprint is `sha256:<hex>` computed over the exact UTF-8 content of the corresponding virtual file used as the base (no normalization)."
+  - "Given edit-ops is disabled by server config, when the frontend calls `POST /api/v1/editor/edit-ops`, then the backend returns `enabled=false` with an empty operation list and a user-actionable message (no 500, no provider details)."
+  - "Given the LLM returns invalid JSON or violates the schema, when the backend processes the response, then it fails safely with an empty operation list and a user-actionable message (no 500)."
+  - "Given the upstream provider indicates truncation (finish_reason=length), when an edit is requested, then the backend returns an empty operation list (no partial edits)."
+  - "Given the request is over budget, when an edit is requested, then the backend returns an empty operation list and exposes eval-only metadata (template id + outcome) when eval mode is enabled."
+  - "Given an edit is requested, then the backend logs metadata only (no prompts, no code, no model output text)."
+  - "Given edit-ops is configured, then it uses a dedicated `LLM_CHAT_OPS_*` profile (does not reuse `LLM_COMPLETION_*` and does not reuse the legacy `LLM_EDIT_*` prompts)."
+
 dependencies:
   - "ST-08-18"
   - "ST-08-20"
   - "ST-14-17"
+
 ui_impact: "Yes (enables chat-driven edit proposals)"
 data_impact: "No (stateless requests)"
 ---

@@ -8,22 +8,13 @@ created: 2026-01-03
 updated: 2026-01-04
 epic: "EPIC-08"
 acceptance_criteria:
-  - "Given LLM chat is enabled, when a contributor calls `POST /api/v1/editor/
-chat`, then the backend streams assistant text via SSE and the client can
-render it incrementally."
-  - "Given the client cancels a streaming request (disconnects), when an
-upstream LLM request is in flight, then the backend stops streaming
-immediately and cancels the upstream call when possible."
-  - "Given LLM chat is disabled or misconfigured, when `POST /api/v1/editor/
-chat` is called, then the backend responds without a 500 and without exposing
-provider details."
-  - "Given a chat request is handled, then the backend logs metadata only
-(template id, lengths, outcome, latency) and never logs prompts, code,
-conversation text, or model output."
-  - "Given chat is configured, then it uses a dedicated `LLM_CHAT_*` profile
-and prompt template ID (does not reuse `LLM_COMPLETION_*` or `LLM_EDIT_*`)."
-  - "Given the endpoint is implemented, then the SSE event types and payload
-format are explicitly defined and stable to avoid frontend/backend drift."
+  - "Given LLM chat is enabled, when a contributor calls `POST /api/v1/editor/chat`, then the backend streams assistant text via SSE and the client can render it incrementally."
+  - "Given the client cancels a streaming request (disconnects), when an upstream LLM request is in flight, then the backend stops streaming immediately and cancels the upstream call when possible."
+  - "Given LLM chat is disabled or misconfigured, when `POST /api/v1/editor/chat` is called, then the backend responds without a 500 and without exposing provider details."
+  - "Given a chat request is handled, then the backend logs metadata only (template id, lengths, outcome, latency) and never logs prompts, code, conversation text, or model output."
+  - "Given chat is configured, then it uses a dedicated `LLM_CHAT_*` profile and prompt template ID (does not reuse `LLM_COMPLETION_*` or `LLM_EDIT_*`)."
+  - "Given the endpoint is implemented, then the SSE event types and payload format are explicitly defined and stable to avoid frontend/backend drift."
+
 dependencies:
   - "ST-08-18"
   - "ADR-0051"

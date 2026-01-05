@@ -8,34 +8,20 @@ created: 2026-01-04
 updated: 2026-01-04
 epic: "EPIC-14"
 acceptance_criteria:
-  - "Given a tool author has unsaved changes, when the browser is reloaded or
-reopened, then the editor can restore a local working copy for the same user +
-tool."
-  - "Given a local working copy exists and differs from the server-loaded
-version, then the UI shows a restore prompt with: View diff, Restore working
-copy, and Discard."
-  - "Given the working copy is being edited, then the editor autosaves the
-working copy head to IndexedDB (debounced) and the head expires after 30
-days."
-  - "Given the working copy is dirty, then the editor creates rolling
-checkpoints (max 20) approximately every 60s while dirty, and also on key
-events (before server Save, before applying an AI proposal, and best-effort on
-navigation/reload)."
+  - "Given a tool author has unsaved changes, when the browser is reloaded or reopened, then the editor can restore a local working copy for the same user + tool."
+  - "Given a local working copy exists and differs from the server-loaded version, then the UI shows a restore prompt with: View diff, Restore working copy, and Discard."
+  - "Given the working copy is being edited, then the editor autosaves the working copy head to IndexedDB (debounced) and the head expires after 30 days."
+  - "Given the working copy is dirty, then the editor creates rolling checkpoints (max 20) approximately every 60s while dirty, and also on key events (before server Save, before applying an AI proposal, and best-effort on navigation/reload)."
   - "Given auto checkpoints exist, then they expire after 7 days."
-  - "Given the user explicitly creates a checkpoint (\"Skapa
-återställningspunkt\"), then it is pinned and does not expire."
-  - "Given pinned checkpoints exist, then they are user-deletable and capped
-(e.g. max 20 pinned per {user_id, tool_id}) so IndexedDB growth remains
-bounded."
-  - "Given checkpoints exist, then the user can restore an older/newer
-checkpoint (undo/redo across browser reloads) without affecting server
-versions until they Save."
-  - "Given the user restores to the current server version, then the local
-working copy head and all checkpoints are cleared and the editor buffers match
-the server-loaded version."
+  - "Given the user explicitly creates a checkpoint (\"Skapa återställningspunkt\"), then it is pinned and does not expire."
+  - "Given pinned checkpoints exist, then they are user-deletable and capped (e.g. max 20 pinned per {user_id, tool_id}) so IndexedDB growth remains bounded."
+  - "Given checkpoints exist, then the user can restore an older/newer checkpoint (undo/redo across browser reloads) without affecting server versions until they Save."
+  - "Given the user restores to the current server version, then the local working copy head and all checkpoints are cleared and the editor buffers match the server-loaded version."
+
 dependencies:
   - "ADR-0027"
   - "ST-14-17"
+
 ui_impact: "Yes"
 data_impact: "No (client-side persistence only)"
 ---
