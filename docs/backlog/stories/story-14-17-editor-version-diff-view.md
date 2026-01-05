@@ -2,7 +2,7 @@
 type: story
 id: ST-14-17
 title: "Editor: version diff view (code + schemas + instructions)"
-status: in_progress
+status: done
 owners: "agents"
 created: 2025-12-29
 updated: 2026-01-05

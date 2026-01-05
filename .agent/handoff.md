@@ -32,7 +32,8 @@ Keep this file updated so the next session can pick up work quickly.
   - Dependency: added `idb` to `frontend/apps/skriptoteket/package.json` + `frontend/pnpm-lock.yaml`
   - Decision log: Discard clears head + all checkpoints (B2); local history lives in VersionHistoryDrawer; schemas persisted as raw text.
   - Hardening: stash restore-candidate into local history on first edit (prevents silent overwrite), confirm before clearing pinned checkpoints, warn-once toasts for persistence failures, IndexedDB schema bump to v2 for `chat_threads` keying.
-- ST-14-17 (Phase 5): added Vitest coverage for virtual file canon, unified patch invariants, and minimal compare-state query handling.
+- ST-14-17 (done): version diff viewer shipped (virtual file tabs, unified patch/downloads, access-aware compare errors).
+- PR-0002 (done): refactored `useToolRun` into polling + session-files composables (API unchanged).
   - Tests: `frontend/apps/skriptoteket/src/composables/editor/virtualFiles.spec.ts`, `frontend/apps/skriptoteket/src/composables/editor/diff/unifiedPatch.spec.ts`
   - Tests: `frontend/apps/skriptoteket/src/composables/editor/editorRouteKey.spec.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorCompareState.spec.ts`
   - Test harness fixes: add `params: {}` to mocked routes in `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkflowActions.spec.ts` and `frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.spec.ts`.
@@ -123,7 +124,7 @@ pdm run ui-editor-smoke
 
 ## Next Steps
 
-- ST-14-17/18: implement full-width compare + diff viewer primitive (incl before/after + unified patch downloads, and correct default compare targets).
+- ST-14-18: reviewer navigation improvements (compare targets + deep links, defaults).
 - ST-14-31: implement Focus mode (collapse left sidebar) to maximize editor/diff width on desktop.
 - PR-0002: SRP modularize `frontend/apps/skriptoteket/src/composables/tools/useToolRun.ts` (keep API stable).
 - Follow-up (EPIC-08): key chat history by tool id (not version id) so saves don’t silently reset conversations.
