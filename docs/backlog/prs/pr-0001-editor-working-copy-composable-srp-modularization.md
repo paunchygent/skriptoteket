@@ -2,7 +2,7 @@
 type: pr
 id: PR-0001
 title: "Refactor: split useEditorWorkingCopy into focused modules (SRP)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-05
 updated: 2026-01-05
@@ -75,6 +75,19 @@ Extract cohesive modules to restore SRP boundaries while keeping the public comp
 - `pdm run fe-test`
 - `pdm run fe-type-check`
 - Optional (recommended): `pdm run ui-editor-smoke` (may require escalation on macOS; store artifacts under `.artifacts/`).
+
+## Implementation (done)
+
+- Extracted fingerprint helpers: `frontend/apps/skriptoteket/src/composables/editor/editorWorkingCopyFingerprint.ts`
+- Extracted checkpoint management: `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkingCopyCheckpoints.ts`
+- Slimmed orchestrator (kept API stable; <500 LOC): `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkingCopy.ts`
+
+## Verification (done)
+
+- `pdm run fe-test` (pass)
+- `pdm run fe-type-check` (pass)
+- `pdm run fe-lint` (pass)
+- Live check (Vite): `pdm run fe-dev` + `curl -sSf http://127.0.0.1:5173/ | head -n 5` (served SPA HTML)
 
 ## Rollback plan
 

@@ -22,6 +22,8 @@ Keep this file updated so the next session can pick up work quickly.
 
 - ST-14-30 (in progress): added IndexedDB-backed working copy persistence + checkpoints + restore UX wiring in SPA.
   - New persistence module + composable: `frontend/apps/skriptoteket/src/composables/editor/editorPersistence.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkingCopy.ts`
+  - PR-0001 (done): SRP modularization of `useEditorWorkingCopy.ts` into small editor-focused modules (API stable).
+    - New: `frontend/apps/skriptoteket/src/composables/editor/editorWorkingCopyFingerprint.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkingCopyCheckpoints.ts`
   - Restore prompt + diff modal: `frontend/apps/skriptoteket/src/components/editor/WorkingCopyRestorePrompt.vue`
   - Local history UI in version drawer: `frontend/apps/skriptoteket/src/components/editor/VersionHistoryDrawer.vue` + wiring in `EditorWorkspaceDrawers.vue`, `EditorWorkspacePanel.vue`, `ScriptEditorView.vue`
   - Compare=working support: `frontend/apps/skriptoteket/src/composables/editor/useEditorCompareData.ts`, `EditorComparePanel.vue`
@@ -76,7 +78,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Frontend tests: `pdm run fe-test` (pass)
 - Frontend typecheck: `pdm run fe-type-check` (pass)
 - Frontend lint: `pdm run fe-lint` (pass)
-- Live check (fe-dev): `pdm run fe-dev` (running; do not stop) + `curl -sSf http://127.0.0.1:5173/ | head -n 5`
+- Live check (fe-dev): `pdm run fe-dev` + `curl -sSf http://127.0.0.1:5173/ | head -n 5` (SPA HTML served)
 - Frontend OpenAPI types: `pdm run fe-gen-api-types` (pass)
 - Frontend build: `pdm run fe-build` (pass)
 - Docs validate: `pdm run docs-validate` (pass)
@@ -123,5 +125,5 @@ pdm run ui-editor-smoke
 
 - ST-14-17/18: implement full-width compare + diff viewer primitive (incl before/after + unified patch downloads, and correct default compare targets).
 - ST-14-31: implement Focus mode (collapse left sidebar) to maximize editor/diff width on desktop.
-- ST-14-30: implement IndexedDB working copy persistence + rolling checkpoints + restore UX.
+- PR-0002: SRP modularize `frontend/apps/skriptoteket/src/composables/tools/useToolRun.ts` (keep API stable).
 - Follow-up (EPIC-08): key chat history by tool id (not version id) so saves don’t silently reset conversations.

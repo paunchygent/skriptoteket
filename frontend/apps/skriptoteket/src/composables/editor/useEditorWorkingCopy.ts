@@ -2,23 +2,17 @@ import { computed, onScopeDispose, ref, watch, type Ref } from "vue";
 
 import type { UiNotifier } from "../notify";
 import {
-  AUTO_CHECKPOINT_CAP,
-  AUTO_CHECKPOINT_TTL_DAYS,
   PINNED_CHECKPOINT_CAP,
   clearWorkingCopyData,
-  checkpointFieldsFromRecord,
-  createCheckpoint,
-  deleteCheckpoint,
   getWorkingCopyHead,
-  listCheckpoints,
   saveWorkingCopyHead,
-  trimAutoCheckpoints,
   workingCopyFieldsFromRecord,
   type CheckpointKind,
-  type CheckpointRecord,
   type EditorWorkingCopyFields,
   type WorkingCopyHeadRecord,
 } from "./editorPersistence";
+import { areFieldsEqual } from "./editorWorkingCopyFingerprint";
+import { useEditorWorkingCopyCheckpoints } from "./useEditorWorkingCopyCheckpoints";
 import { VIRTUAL_FILE_IDS, virtualFileTextFromEditorFields } from "./virtualFiles";
 
 export type EditorWorkingCopyCheckpointSummary = {
@@ -55,20 +49,6 @@ type UseEditorWorkingCopyOptions = {
 const HEAD_SAVE_DEBOUNCE_MS = 1200;
 const AUTO_CHECKPOINT_INTERVAL_MS = 60_000;
 
-function fieldsFingerprint(fields: EditorWorkingCopyFields): string {
-  return [
-    fields.entrypoint,
-    fields.sourceCode,
-    fields.settingsSchemaText,
-    fields.inputSchemaText,
-    fields.usageInstructions,
-  ].join("\u0000");
-}
-
-function areFieldsEqual(a: EditorWorkingCopyFields, b: EditorWorkingCopyFields): boolean {
-  return fieldsFingerprint(a) === fieldsFingerprint(b);
-}
-
 export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
   const {
     userId,
@@ -85,14 +65,9 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
   const isRestorePromptOpen = ref(false);
   const isLoading = ref(false);
 
-  const checkpoints = ref<CheckpointRecord[]>([]);
-  const isCheckpointBusy = ref(false);
-
   let headSaveTimer: ReturnType<typeof setTimeout> | null = null;
   let autoCheckpointTimer: ReturnType<typeof setInterval> | null = null;
-  let lastAutoCheckpointFingerprint = "";
   let hasWarnedHeadSaveFailure = false;
-  let hasWarnedCheckpointFailure = false;
 
   const canPersist = computed(() => Boolean(userId.value) && Boolean(toolId.value));
 
@@ -132,59 +107,12 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
     }));
   });
 
-  const checkpointSummaries = computed<EditorWorkingCopyCheckpointSummary[]>(() =>
-    checkpoints.value.map((checkpoint) => ({
-      id: checkpoint.checkpoint_id,
-      kind: checkpoint.kind,
-      label: checkpoint.label?.trim() || "Återställningspunkt",
-      createdAt: checkpoint.created_at,
-    })),
-  );
-
-  const pinnedCheckpointCount = computed(
-    () => checkpoints.value.filter((checkpoint) => checkpoint.kind === "pinned").length,
-  );
-
   function applyFields(nextFields: EditorWorkingCopyFields): void {
     fields.entrypoint.value = nextFields.entrypoint;
     fields.sourceCode.value = nextFields.sourceCode;
     fields.settingsSchemaText.value = nextFields.settingsSchemaText;
     fields.inputSchemaText.value = nextFields.inputSchemaText;
     fields.usageInstructions.value = nextFields.usageInstructions;
-  }
-
-  async function stashRestoreCandidate(candidate: WorkingCopyHeadRecord): Promise<boolean> {
-    if (!canPersist.value || !userId.value || !toolId.value) return false;
-
-    const candidateFields = workingCopyFieldsFromRecord(candidate);
-    const fingerprint = fieldsFingerprint(candidateFields);
-
-    try {
-      await createCheckpoint({
-        userId: userId.value,
-        toolId: toolId.value,
-        baseVersionId: candidate.base_version_id ?? baseVersionId.value,
-        fields: candidateFields,
-        kind: "auto",
-        label: "Tidigare lokalt arbetsexemplar",
-        expiresAt: Date.now() + AUTO_CHECKPOINT_TTL_DAYS * 24 * 60 * 60 * 1000,
-      });
-      lastAutoCheckpointFingerprint = fingerprint;
-      await trimAutoCheckpoints({
-        userId: userId.value,
-        toolId: toolId.value,
-        cap: AUTO_CHECKPOINT_CAP,
-      });
-      await refreshCheckpoints();
-      notify.success("Tidigare lokalt arbetsexemplar sparat i lokal historik.");
-      return true;
-    } catch {
-      if (!hasWarnedCheckpointFailure) {
-        hasWarnedCheckpointFailure = true;
-        notify.warning("Kunde inte spara tidigare lokalt arbetsexemplar i lokal historik.");
-      }
-      return false;
-    }
   }
 
   async function persistHeadNow(params: {
@@ -227,22 +155,37 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
     }, HEAD_SAVE_DEBOUNCE_MS);
   }
 
-  async function refreshCheckpoints(): Promise<void> {
-    if (!canPersist.value || !userId.value || !toolId.value) {
-      checkpoints.value = [];
-      return;
-    }
+  const {
+    checkpoints,
+    pinnedCheckpointCount,
+    isCheckpointBusy,
+    refreshCheckpoints,
+    createAutoCheckpoint,
+    createPinnedCheckpoint,
+    restoreCheckpoint,
+    removeCheckpoint,
+    stashRestoreCandidate,
+  } = useEditorWorkingCopyCheckpoints({
+    canPersist,
+    userId,
+    toolId,
+    baseVersionId,
+    hasDirtyChanges,
+    baselineFields,
+    currentFields,
+    notify,
+    applyFields,
+    persistHeadNow,
+  });
 
-    try {
-      checkpoints.value = await listCheckpoints({
-        userId: userId.value,
-        toolId: toolId.value,
-      });
-    } catch {
-      checkpoints.value = [];
-      notify.warning("Kunde inte ladda lokala återställningspunkter.");
-    }
-  }
+  const checkpointSummaries = computed<EditorWorkingCopyCheckpointSummary[]>(() =>
+    checkpoints.value.map((checkpoint) => ({
+      id: checkpoint.checkpoint_id,
+      kind: checkpoint.kind,
+      label: checkpoint.label?.trim() || "Återställningspunkt",
+      createdAt: checkpoint.created_at,
+    })),
+  );
 
   async function loadWorkingCopy(): Promise<void> {
     if (!canPersist.value || !userId.value || !toolId.value || !baselineFields.value) {
@@ -278,106 +221,6 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
     }
 
     await refreshCheckpoints();
-  }
-
-  async function createAutoCheckpoint(label: string, options: { force?: boolean } = {}): Promise<void> {
-    if (!canPersist.value || !userId.value || !toolId.value) return;
-    if (!hasDirtyChanges.value && !options.force) return;
-    if (!baselineFields.value && !options.force) return;
-
-    const snapshot = currentFields.value;
-    const fingerprint = fieldsFingerprint(snapshot);
-    if (!options.force && fingerprint === lastAutoCheckpointFingerprint) {
-      return;
-    }
-
-    try {
-      await createCheckpoint({
-        userId: userId.value,
-        toolId: toolId.value,
-        baseVersionId: baseVersionId.value,
-        fields: snapshot,
-        kind: "auto",
-        label,
-        expiresAt: Date.now() + AUTO_CHECKPOINT_TTL_DAYS * 24 * 60 * 60 * 1000,
-      });
-      lastAutoCheckpointFingerprint = fingerprint;
-      await trimAutoCheckpoints({
-        userId: userId.value,
-        toolId: toolId.value,
-        cap: AUTO_CHECKPOINT_CAP,
-      });
-      await refreshCheckpoints();
-    } catch {
-      if (!hasWarnedCheckpointFailure) {
-        hasWarnedCheckpointFailure = true;
-        notify.warning("Kunde inte skapa automatisk återställningspunkt.");
-      }
-    }
-  }
-
-  async function createPinnedCheckpoint(label: string): Promise<void> {
-    if (!canPersist.value || !userId.value || !toolId.value) return;
-    if (pinnedCheckpointCount.value >= PINNED_CHECKPOINT_CAP) {
-      notify.warning(`Du har redan ${PINNED_CHECKPOINT_CAP} sparade punkter.`);
-      return;
-    }
-
-    if (baselineFields.value && !hasDirtyChanges.value) {
-      notify.info("Inga osparade ändringar att spara.");
-      return;
-    }
-
-    isCheckpointBusy.value = true;
-    try {
-      await createCheckpoint({
-        userId: userId.value,
-        toolId: toolId.value,
-        baseVersionId: baseVersionId.value,
-        fields: currentFields.value,
-        kind: "pinned",
-        label: label.trim() || "Manuell återställningspunkt",
-        expiresAt: null,
-      });
-      await refreshCheckpoints();
-      notify.success("Återställningspunkt sparad.");
-    } catch {
-      notify.warning("Kunde inte skapa återställningspunkt.");
-    } finally {
-      isCheckpointBusy.value = false;
-    }
-  }
-
-  async function restoreCheckpoint(checkpointId: string): Promise<void> {
-    const checkpoint =
-      checkpoints.value.find((item) => item.checkpoint_id === checkpointId) ?? null;
-    if (!checkpoint) {
-      notify.warning("Återställningspunkten hittades inte.");
-      return;
-    }
-
-    const restoredFields = checkpointFieldsFromRecord(checkpoint);
-    applyFields(restoredFields);
-    await persistHeadNow({
-      force: true,
-      fields: restoredFields,
-      baseVersionId: checkpoint.base_version_id ?? baseVersionId.value,
-    });
-  }
-
-  async function removeCheckpoint(checkpointId: string): Promise<void> {
-    if (!canPersist.value || !userId.value || !toolId.value) return;
-    try {
-      await deleteCheckpoint({
-        userId: userId.value,
-        toolId: toolId.value,
-        checkpointId,
-      });
-      await refreshCheckpoints();
-      notify.success("Återställningspunkten togs bort.");
-    } catch {
-      notify.warning("Kunde inte ta bort återställningspunkten.");
-    }
   }
 
   async function restoreWorkingCopy(): Promise<void> {
