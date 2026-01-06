@@ -18,6 +18,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Tool editor framework codemap: `docs/reference/ref-tool-editor-framework-codemap.md`
 - Migration roadmap (SPA): `docs/reference/reports/ref-vue-spa-migration-roadmap.md`
 - Toasts + system messages (SPA): `docs/reference/ref-toast-system-messages.md`
+- Hemma critical paths + ops inventory: `docs/reference/ref-hemma-critical-paths-2026-01-06.md`
 - Active sprint: `docs/backlog/sprints/sprint-2026-01-05-tool-editor-vertical-slice.md`
 - Release notes: `docs/releases/`
 - ADRs: `docs/adr/`
@@ -340,6 +341,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/ref-home-server-cli-tools.md`
 - `docs/reference/ref-home-server-nginx-proxy.md`
 - `docs/reference/ref-home-server-security-hardening.md`
+- `docs/reference/ref-hemma-critical-paths-2026-01-06.md`
 - `docs/reference/ref-implementation-map-script-hub-v0-2.md`
 - `docs/reference/ref-linter-architecture.md`
 - `docs/reference/ref-review-workflow.md`

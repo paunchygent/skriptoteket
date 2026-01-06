@@ -5,7 +5,7 @@ title: "Runbook: GPU AI Workloads (AMD Radeon AI PRO R9700)"
 status: active
 owners: "olof"
 created: 2025-12-30
-updated: 2026-01-03
+updated: 2026-01-06
 system: "hemma.hule.education"
 ---
 
@@ -138,6 +138,10 @@ Notes:
 ssh hemma "rocm-smi --showpids details"
 ```
 
+- Current default on hemma (as of 2026-01-06):
+  - Service: `llama-server-hip.service` (enabled)
+  - Model: `/home/paunchygent/models/Devstral-Small-2-24B-Instruct-2512-Q8_0.gguf`
+  - Vulkan service: `llama-server-vulkan.service` (disabled)
 - If you are A/B testing stability due to host hangs, prefer the Vulkan backend + `llama-server-vulkan.service` (below)
   and keep the HIP service disabled.
 

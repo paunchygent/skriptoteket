@@ -61,6 +61,7 @@ type EditorWorkspacePanelProps = {
   canEditSlug: boolean;
   canRollbackVersions: boolean;
   isWorkflowSubmitting: boolean;
+  isFocusMode: boolean;
 
   isSaving: boolean;
   saveLabel: string;
@@ -148,6 +149,7 @@ const emit = defineEmits<{
   (event: "restoreCheckpoint", checkpointId: string): void;
   (event: "removeCheckpoint", checkpointId: string): void;
   (event: "restoreServerVersion"): void;
+  (event: "toggleFocusMode"): void;
 }>();
 
 const activeVersionId = computed(() => props.selectedVersion?.id ?? null);
@@ -181,12 +183,14 @@ const isCompareMode = computed(() => props.compareTarget !== null);
       :has-blocking-schema-issues="props.hasBlockingSchemaIssues"
       :can-edit-taxonomy="props.canEditTaxonomy"
       :can-edit-maintainers="props.canEditMaintainers"
+      :is-focus-mode="props.isFocusMode"
       @save="emit('save')"
       @open-compare="emit('openCompare')"
       @open-history-drawer="emit('openHistoryDrawer')"
       @open-metadata-drawer="emit('openMetadataDrawer')"
       @open-maintainers-drawer="emit('openMaintainersDrawer')"
       @open-instructions-drawer="emit('openInstructionsDrawer')"
+      @toggle-focus-mode="emit('toggleFocusMode')"
       @update:change-summary="emit('update:changeSummary', $event)"
     />
 

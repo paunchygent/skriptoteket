@@ -13,6 +13,7 @@ type EditorWorkspaceToolbarProps = {
   hasBlockingSchemaIssues: boolean;
   canEditTaxonomy: boolean;
   canEditMaintainers: boolean;
+  isFocusMode: boolean;
 };
 
 const props = defineProps<EditorWorkspaceToolbarProps>();
@@ -25,6 +26,7 @@ const emit = defineEmits<{
   (event: "openMaintainersDrawer"): void;
   (event: "openInstructionsDrawer"): void;
   (event: "update:changeSummary", value: string): void;
+  (event: "toggleFocusMode"): void;
 }>();
 </script>
 
@@ -76,6 +78,14 @@ const emit = defineEmits<{
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          class="btn-ghost hidden md:inline-flex"
+          :aria-pressed="props.isFocusMode"
+          @click="emit('toggleFocusMode')"
+        >
+          {{ props.isFocusMode ? "Avsluta fokusläge" : "Aktivera fokusläge" }}
+        </button>
         <button
           v-if="props.canOpenCompare"
           type="button"

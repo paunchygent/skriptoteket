@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { EditorView } from "@codemirror/view";
 import { computed, ref, shallowRef } from "vue";
+import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import type { components } from "../../api/openapi";
 import DraftLockBanner from "../../components/editor/DraftLockBanner.vue";
@@ -29,13 +30,16 @@ import { isVirtualFileId } from "../../composables/editor/virtualFiles";
 import type { UiNotifier } from "../../composables/notify";
 import { useToast } from "../../composables/useToast";
 import { useAuthStore } from "../../stores/auth";
+import { useLayoutStore } from "../../stores/layout";
 import { useHelp } from "../../components/help/useHelp";
 type VersionState = components["schemas"]["VersionState"];
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
+const layout = useLayoutStore();
 const toast = useToast();
 const help = useHelp();
+const { focusMode } = storeToRefs(layout);
 const notify: UiNotifier = {
   info: (message: string) => toast.info(message),
   success: (message: string) => toast.success(message),
@@ -413,6 +417,16 @@ function openEditorHelp(): void {
   closeWorkflowModal();
 }
 
+function handleToggleFocusMode(): void {
+  if (!focusMode.value) {
+    layout.enable();
+    toast.info("Fokusläge aktiverat");
+    return;
+  }
+
+  layout.disable();
+}
+
 function versionLabel(state: VersionState): string {
   const labels: Record<VersionState, string> = {
     draft: "Arbetsversion",
@@ -546,6 +560,7 @@ const statusLine = computed(() => {
           :can-edit-slug="canEditSlug"
           :can-rollback-versions="canRollbackVersions"
           :is-workflow-submitting="isWorkflowSubmitting"
+          :is-focus-mode="focusMode"
           :is-saving="isSaving"
           :save-label="saveButtonLabel"
           :save-title="saveButtonTitle"
@@ -585,6 +600,7 @@ const statusLine = computed(() => {
           @open-metadata-drawer="toggleMetadataDrawer"
           @open-maintainers-drawer="toggleMaintainersDrawer"
           @open-instructions-drawer="toggleInstructionsDrawer"
+          @toggle-focus-mode="handleToggleFocusMode"
           @close-drawer="closeDrawer"
           @select-history-version="selectHistoryVersion"
           @compare-version="handleCompareVersion"

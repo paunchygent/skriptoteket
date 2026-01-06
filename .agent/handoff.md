@@ -13,13 +13,20 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2026-01-06
-- Branch: `main`
+- Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
-- Completed: ST-14-01/14-02 done; ST-14-09 done; ST-14-10 done; ST-14-13/14 done; ST-14-15 done; ST-14-16 done; ST-14-17 done; ST-14-18 done; ST-14-30 done
+- Completed: ST-14-01/14-02 done; ST-14-09 done; ST-14-10 done; ST-14-13/14 done; ST-14-15 done; ST-14-16 done; ST-14-17 done; ST-14-18 done; ST-14-30 done; ST-14-31 done
 
 ## Current Session (2026-01-06)
 
+- ST-14-31 (done): focus mode toggle hides desktop sidebar and removes layout margin; persisted per-user with localStorage.
+  - Store + tests: `frontend/apps/skriptoteket/src/stores/layout.ts`, `frontend/apps/skriptoteket/src/stores/layout.spec.ts`.
+  - Layout wiring: `frontend/apps/skriptoteket/src/components/layout/AuthLayout.vue`, `AuthSidebar.vue`, `AuthTopBar.vue`.
+  - Editor toggle + toast: `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceToolbar.vue`,
+    `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`,
+    `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
+  - Playwright check (not run): `scripts/playwright_st_14_31_editor_focus_mode_e2e.py`.
 - PR-0003 (done): gate submit-review on slug/taxonomy + add help surfaces (hover + blocked modal + help modal copy).
   - Backend guard shared with publish: `src/skriptoteket/application/catalog/publish_requirements.py`,
     wired in `src/skriptoteket/application/scripting/handlers/submit_for_review.py` and
@@ -89,6 +96,13 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Verification
 
+- Frontend tests (ST-14-31): `pdm run fe-test -- src/stores/layout.spec.ts` (pass), `pdm run fe-test` (pass)
+- Frontend typecheck/lint/build (ST-14-31): `pdm run fe-type-check` (pass), `pdm run fe-lint` (pass), `pdm run fe-build` (pass)
+- Docs validate (ST-14-31): `pdm run docs-validate` (pass)
+- Playwright (ST-14-31, escalated): `pdm run python -m scripts.playwright_st_14_31_editor_focus_mode_e2e` (pass; artifacts: `.artifacts/st-14-31-editor-focus-mode-e2e/`)
+- Live check (ST-14-31): `pdm run dev` (running), `pdm run fe-dev` (running),
+  `curl -sSf http://127.0.0.1:5173/ | head -n 5` (SPA HTML served),
+  `curl -sSf http://127.0.0.1:8000/healthz` (503; SMTP check degraded) — focus-mode UI not manually exercised in CLI.
 - Backend unit tests (PR-0003): `pdm run pytest tests/unit/application/scripting/handlers/test_submit_for_review_handler.py -q` (pass)
 - Frontend tests (PR-0003): `pdm run fe-test -- src/composables/editor/useEditorWorkflowActions.spec.ts` (pass)
 - Live check (fe-dev): `curl -sSf http://127.0.0.1:5173/admin/tools | head -n 5` (SPA HTML served)
@@ -145,6 +159,5 @@ pdm run ui-editor-smoke
 
 ## Next Steps
 
-- ST-14-31: implement Focus mode (collapse left sidebar) to maximize editor/diff width on desktop.
 - PR-0002: SRP modularize `frontend/apps/skriptoteket/src/composables/tools/useToolRun.ts` (keep API stable).
 - Follow-up (EPIC-08): key chat history by tool id (not version id) so saves don’t silently reset conversations.

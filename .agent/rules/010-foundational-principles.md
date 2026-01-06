@@ -14,7 +14,9 @@ This application follows:
 - **DDD**: Domain-Driven Design with clear bounded contexts
 - **Clean Architecture**: Dependencies point inward (domain has no external dependencies)
 - **SOLID**: Single responsibility, dependency inversion, interface segregation
-- **YAGNI**: No speculative abstractions; solve today's problems
+- **YAGNI / Abstractions**: Avoid speculative abstractions; solve today's problems with existing patterns.
+  Introduce a new abstraction only when it removes duplication across multiple call sites or materially
+  improves correctness/testability, and propose it first.
 
 ## 2. Zero Tolerance for "Vibe Coding"
 

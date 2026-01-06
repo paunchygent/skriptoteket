@@ -2,10 +2,10 @@
 type: story
 id: ST-14-31
 title: "Editor: Focus mode (collapse left sidebar)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-04
-updated: 2026-01-04
+updated: 2026-01-06
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given a tool author is in the editor, when they toggle Focus mode, then the left navigation sidebar is collapsed to maximize editor/diff width on desktop."
@@ -50,5 +50,6 @@ user’s value.
 - When collapsed:
   - Hide the desktop sidebar and remove the desktop `margin-left` reserved
 space.
-  - Keep a persistent, obvious “Show menu” control (e.g., in the top bar) so
-the user can always exit Focus mode.
+  - Keep a persistent, obvious exit control (“Avsluta fokusläge”) in the top
+    bar so the user can always exit Focus mode.
+  - Show a toast on enable: “Fokusläge aktiverat”.

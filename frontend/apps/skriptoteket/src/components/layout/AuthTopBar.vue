@@ -4,14 +4,20 @@ import HelpButton from "../help/HelpButton.vue";
 defineProps<{
   user: { email: string; role: string } | null;
   logoutInProgress: boolean;
+  isFocusMode: boolean;
 }>();
 
 const emit = defineEmits<{
   logout: [];
+  exitFocusMode: [];
 }>();
 
 function onLogout(): void {
   emit("logout");
+}
+
+function onExitFocusMode(): void {
+  emit("exitFocusMode");
 }
 </script>
 
@@ -24,6 +30,14 @@ function onLogout(): void {
       </span>
     </div>
     <div class="top-user-bar-right">
+      <button
+        v-if="isFocusMode"
+        type="button"
+        class="btn-ghost"
+        @click="onExitFocusMode"
+      >
+        Avsluta fokusläge
+      </button>
       <HelpButton />
       <span class="user-separator">|</span>
       <button

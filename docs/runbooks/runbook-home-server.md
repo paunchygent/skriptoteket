@@ -5,7 +5,7 @@ title: "Runbook: Home Server Operations"
 status: active
 owners: "olof"
 created: 2025-12-16
-updated: 2026-01-03
+updated: 2026-01-06
 system: "hemma.hule.education"
 ---
 
@@ -132,6 +132,12 @@ On `hemma`, the AI services run on the host (not in Docker) as systemd units:
 
 Only one llama.cpp service should be enabled at a time (both bind `:8082`).
 
+Current default (as of 2026-01-06):
+
+- **Primary stack:** `llama-server-hip.service` (enabled)
+- **Vulkan fallback:** `llama-server-vulkan.service` (disabled)
+- **Model:** `/home/paunchygent/models/Devstral-Small-2-24B-Instruct-2512-Q8_0.gguf`
+
 ```bash
 # Status
 ssh hemma "sudo systemctl status --no-pager llama-server-vulkan.service"
@@ -149,11 +155,11 @@ ssh hemma "rocm-smi --showpids details"
 Switch between HIP and Vulkan:
 
 ```bash
-# Vulkan (preferred for stability testing)
+# Vulkan (fallback for stability testing)
 ssh hemma "sudo systemctl disable --now llama-server-hip.service"
 ssh hemma "sudo systemctl enable --now llama-server-vulkan.service"
 
-# HIP/ROCm
+# HIP/ROCm (default)
 ssh hemma "sudo systemctl disable --now llama-server-vulkan.service"
 ssh hemma "sudo systemctl enable --now llama-server-hip.service"
 ```
@@ -183,6 +189,34 @@ Log paths (root):
 
 - `/root/logs/incident-YYYYMMDD-HHMMSS-HHMMSS.log` (incident windows)
 - `/root/logs/smart/` (SMART snapshots)
+- `/sys/fs/pstore` (kernel crash logs; empty until a crash occurs)
+- `/var/lib/systemd/pstore` (archived pstore logs via systemd-pstore)
+
+pstore notes:
+
+- Backend: `efi_pstore` (loaded via `/etc/modules-load.d/pstore.conf`).
+- Service: `systemd-pstore.service` (archives pstore files into
+  `/var/lib/systemd/pstore`).
+- An empty directory is normal before the first crash.
+
+Quick checks:
+
+```bash
+ssh hemma "sudo ls -la /sys/fs/pstore"
+ssh hemma "sudo ls -la /var/lib/systemd/pstore"
+ssh hemma "sudo systemctl status --no-pager systemd-pstore"
+```
+
+Reboot log retrieval (persistent journal):
+
+```bash
+# Boot timeline
+ssh hemma "journalctl --list-boots | tail -n 10"
+
+# Current and previous boot logs
+ssh hemma "journalctl -b 0 --no-pager"
+ssh hemma "journalctl -b -1 --no-pager"
+```
 
 SMART monitoring:
 

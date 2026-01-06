@@ -4,6 +4,7 @@ import { useHelp } from "../help/useHelp";
 
 defineProps<{
   isOpen: boolean;
+  isFocusMode: boolean;
   user: { email: string } | null;
   canSeeContributor: boolean;
   canSeeAdmin: boolean;
@@ -35,7 +36,7 @@ function onHelp(): void {
 <template>
   <aside
     class="sidebar"
-    :class="{ 'is-open': isOpen }"
+    :class="{ 'is-open': isOpen, 'is-focus-mode': isFocusMode }"
   >
     <div class="sidebar-content">
       <RouterLink
@@ -175,6 +176,10 @@ function onHelp(): void {
     border-right: var(--huleedu-border-width) solid var(--huleedu-navy);
     transform: none;
     z-index: var(--huleedu-z-overlay);
+  }
+
+  .sidebar.is-focus-mode {
+    display: none;
   }
 }
 

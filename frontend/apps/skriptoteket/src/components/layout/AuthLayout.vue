@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { RouterLink } from "vue-router";
+import { storeToRefs } from "pinia";
 
 import BrandLogo from "../brand/BrandLogo.vue";
 import AuthSidebar from "./AuthSidebar.vue";
 import AuthTopBar from "./AuthTopBar.vue";
+import { useLayoutStore } from "../../stores/layout";
 
-defineProps<{
-  user: { email: string; role: string } | null;
+const props = defineProps<{
+  user: { id: string; email: string; role: string } | null;
   canSeeContributor: boolean;
   canSeeAdmin: boolean;
   canSeeSuperuser: boolean;
@@ -18,6 +20,9 @@ defineProps<{
 const emit = defineEmits<{
   logout: [];
 }>();
+
+const layout = useLayoutStore();
+const { focusMode } = storeToRefs(layout);
 
 const sidebarOpen = ref(false);
 
@@ -32,6 +37,18 @@ function closeSidebar(): void {
 function onLogout(): void {
   emit("logout");
 }
+
+function exitFocusMode(): void {
+  layout.disable();
+}
+
+watch(
+  () => props.user?.id ?? null,
+  (userId) => {
+    layout.hydrateForUser(userId);
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -67,6 +84,7 @@ function onLogout(): void {
   <!-- Sidebar (authenticated) -->
   <AuthSidebar
     :is-open="sidebarOpen"
+    :is-focus-mode="focusMode"
     :user="user"
     :can-see-contributor="canSeeContributor"
     :can-see-admin="canSeeAdmin"
@@ -77,11 +95,16 @@ function onLogout(): void {
   />
 
   <!-- Main content wrapper with top user bar -->
-  <div class="auth-main-wrapper">
+  <div
+    class="auth-main-wrapper"
+    :class="{ 'is-focus-mode': focusMode }"
+  >
     <!-- Top user bar -->
     <AuthTopBar
       :user="user"
       :logout-in-progress="logoutInProgress"
+      :is-focus-mode="focusMode"
+      @exit-focus-mode="exitFocusMode"
       @logout="onLogout"
     />
 
@@ -135,6 +158,10 @@ function onLogout(): void {
 @media (min-width: 768px) {
   .auth-main-wrapper {
     margin-left: var(--huleedu-sidebar-width);
+  }
+
+  .auth-main-wrapper.is-focus-mode {
+    margin-left: 0;
   }
 }
 

@@ -88,3 +88,4 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 - ST-14-17 shipped: version diff viewer (virtual file tabs) with copy/download + unified patch support and access-aware errors.
 - ST-14-18 shipped: compare defaults + deep links (compare + field), clarified boot contract (`parent_version_id` + `create_draft_from_version_id` + version reviewed/published metadata), and save CTA copy (“arbetsversion”).
 - ST-14-30 shipped: IndexedDB-backed working copy persistence with restore prompt, rolling/manual checkpoints, local history drawer, and compare-against-working support.
+- ST-14-31 shipped: focus mode toggle hides the desktop sidebar and persists per user, with editor + top-bar controls.

@@ -248,6 +248,157 @@ after disabling `amdgpu-force-active.service`, `rocm-perf.service`, and removing
 - **Not observed in 10:xx logs:** `amdgpu-force-active` I/O error, AMD-Vi
   `INVALID_DEVICE_REQUEST`, MCE hardware errors, or OOM killer events.
 
+### Post-firmware reboot check (2026-01-06 11:10 UTC)
+
+After upgrading `linux-firmware` and rebooting, verified kernel/module stack
+and boot logs.
+
+- **Platform:** Ubuntu 24.04.3 LTS (Noble), kernel `6.14.0-37-generic`.
+- **Driver:** `amdgpu` DKMS module `6.16.6` loaded (kernel tainted by
+  `amdkcl: module verification failed`).
+- **ROCm:** `rocminfo` reports ROCk module 6.16.6; `rocm-smi` reports the GPU
+  healthy (perf auto).
+- **Persisting:** `amdgpu [drm] REG_WAIT timeout ... optc401_disable_crtc` at
+  2026-01-06 11:10:54.
+- **Persisting:** `amdgpu: SMU driver if version not matched` and `[drm] Cannot
+  find any crtc or sizes` (headless display core).
+- **Not observed:** `amdgpu-force-active` I/O errors, AMD-Vi
+  `INVALID_DEVICE_REQUEST`, or MCE hardware errors (only
+  `MCE: In-kernel MCE decoding enabled`).
+- **Other boot notes:** `tsc: Fast TSC calibration failed` and normal IOMMU
+  group initialization.
+
+### Stack version mapping (AMDGPU 30.20.1 ↔ Radeon Software 25.30.1)
+
+Installed package versions use the **30.20.1** numbering scheme even though the
+release notes refer to **Radeon Software for Linux 25.30.1**. The host is
+aligned to the 25.30.1/ROCm 7.1.1 bundle, but the Debian package versions and
+repo paths are labeled differently:
+
+- **Installed on host:** `amdgpu-install` `30.20.1.0.30200100-2255209.24.04`,
+  `amdgpu-dkms` `1:6.16.6.30200100-2255209.24.04`, and the repos
+  `https://repo.radeon.com/amdgpu/30.20.1/ubuntu` +
+  `https://repo.radeon.com/graphics/7.1.1/ubuntu` +
+  `https://repo.radeon.com/rocm/apt/7.1.1`.
+- **Release notes label:** AMD’s release notes refer to **Radeon Software for
+  Linux 25.30.1** (ROCm 7.1.1), which appears to correspond to the above
+  **30.20.1** package line. Treat this as AMD’s internal packaging/version
+  scheme rather than a mismatch in the installed stack.
+
+### One-time 6.8 kernel boot attempt (2026-01-06 11:46 UTC)
+
+Attempted a one-time boot into the GA kernel (`6.8.0-90-generic`) to approximate
+the strict release-notes alignment without reimaging.
+
+- **Booted kernel:** `6.8.0-90-generic` (GRUB one-time entry).
+- **AMDGPU DKMS:** loaded (`6.16.6`), built for 6.8 via `dkms autoinstall`.
+- **Failure:** `amdgpu: Fatal error during GPU init` and
+  `amdgpu: probe of 0000:0b:00.0 failed with error -22`.
+- **Impact:** `rocm-smi` showed no device in the concise GPU table.
+- **Conclusion:** 6.8 kernel is not viable for the AI PRO R9700 with the
+  current AMD DKMS stack; revert to the HWE kernel for GPU availability.
+
+### Return to HWE kernel (2026-01-06 11:52 UTC)
+
+Rebooted back to the default HWE kernel after the 6.8 failure.
+
+- **Booted kernel:** `6.14.0-37-generic`.
+- **ROCm/AMDGPU:** DKMS `6.16.6` loaded; `rocm-smi` shows the GPU.
+- **Persisting boot messages:** `SMU driver if version not matched` and headless
+  `[drm] Cannot find any crtc or sizes`.
+
+## GPU stability progress (current session)
+
+### Decisions and actions taken
+
+- **Strict release-notes alignment target:** Ubuntu **24.04.2** is the only OS
+  listed without the “AMD Radeon series graphics products only” limitation for
+  the AI PRO R9700. That makes a **24.04.2 reimage** the strictest alignment.
+- **Pin/hold attempt (no reimage):** tried booting the GA kernel (6.8.0-90) with
+  AMD DKMS. **Result:** GPU init failed (`amdgpu: Fatal error ... error -22`),
+  so the GA kernel is **not viable** for this GPU stack.
+- **Outcome:** revert to HWE kernel and proceed with reimage plan.
+
+### Backup + reinstall preparation
+
+- **Storage decision:** system SSDs are LVM‑spanned; do not split. Use HDD for
+  backup + seed.
+- **HDD repurpose:** wiped `/dev/sdd`, created two partitions:
+  - `/dev/sdd1` FAT32 **CIDATA** (2GiB) mounted at `/mnt/seed` for autoinstall
+    seed.
+  - `/dev/sdd2` ext4 **BACKUP** mounted at `/mnt/backup`.
+- **Autoinstall seed:** `/mnt/seed/user-data` + `/mnt/seed/meta-data` created
+  with **all authorized SSH keys** (root + paunchygent) to ensure SSH access
+  during install.
+- **Full snapshot:** `/mnt/backup/hemma-root-20260106/` (~110G). Includes
+  `dpkg-selections.txt`, `unit-files.txt`, `authorized_keys.txt`.
+- **HWE holds:** `linux-generic-hwe-24.04`, `linux-image-generic-hwe-24.04`,
+  `linux-headers-generic-hwe-24.04` are held to avoid drift while reimage is
+  prepared.
+- **SSH access without Tailscale:** UFW now allows `22/tcp` from Anywhere
+  (IPv4 + IPv6) so SSH access does not depend on Tailscale during reimage.
+- **Services paused:** All Docker containers (app + observability) stopped and
+  left down until the reimage is complete.
+- **Install USB prepared:** Ubuntu 24.04.2 live-server ISO written to
+  `/dev/sde` (label: `Ubuntu-Server 24.04.2 LTS amd64`).
+
+### Current plan (strict alignment)
+
+1) **Reimage to Ubuntu 24.04.2 LTS** (headless autoinstall).
+2) **Install AMD 25.30.1 + ROCm 7.1.1** using AMD’s Noble installer commands.
+3) **Verify** GPU health and boot logs (amdgpu/IOMMU/MCE/reg_wait).
+4) **Restore** configs + services from the backup snapshot.
+
+### Restore progress (2026-01-06, ongoing)
+
+- **Reimage complete:** Ubuntu 24.04.2 LTS installed, kernel `6.8.0-90-generic`,
+  hostname `paunchygentserver`.
+- **Backup/seed mounted:** `/mnt/seed` (CIDATA) + `/mnt/backup` (BACKUP) restored
+  configs, scripts, and repo state from `/mnt/backup/hemma-root-20260106/`.
+- **SSH/Tailscale:** Tailscale state restored; MagicDNS access works. UFW now
+  allows `22/tcp` only on `tailscale0` (no public/LAN SSH).
+- **System services:** Restored systemd units + enabled timers
+  (`ssh-watchdog`, `heartbeat-log`, `skriptoteket-incident-capture`,
+  cleanup timers, `amdgpu-release-watch`).
+- **Docker + core stacks:** Docker (snap) installed; infrastructure stack
+  (nginx-proxy, acme-companion, shared-postgres) running; observability stack
+  up (grafana/prometheus/jaeger/loki/promtail healthy).
+- **ROCm install:** completed (installer rerun after hang + reboot). DKMS
+  `amdgpu` version `6.16.6` loaded; `/opt/rocm/.info/version` reports `7.1.1`.
+  `rocm-smi` + `rocminfo` both work after adding `paunchygent` to `render`.
+- **Crash logs:** enabled pstore backend (`efi_pstore`) via
+  `/etc/modules-load.d/pstore.conf`; `systemd-pstore` enabled (pstore mount
+  present, currently empty).
+- **Hostname + cron cleanup:** set hostname to `paunchygent-server` and
+  defined `EXTRA_OPTS=` for `cron` to silence boot warnings.
+- **llama.cpp (HIP default):** `llama-server-hip.service` enabled on boot with
+  `Devstral-Small-2-24B-Instruct-2512-Q8_0.gguf`; `llama-server-vulkan.service`
+  disabled.
+- **Remaining:** start Skriptoteket `compose.prod.yaml`.
+
+### Autoinstall boot instructions (headless)
+
+1) Boot the **Ubuntu 24.04.2 Server ISO** via USB or console.
+2) At GRUB, press `e` and append one of:
+
+```
+autoinstall ds=nocloud
+```
+
+or (explicit seed device):
+
+```
+autoinstall ds=nocloud;s=/dev/disk/by-label/CIDATA/
+```
+
+This forces cloud-init to load the autoinstall seed from `/dev/sdd1` (label
+`CIDATA`) and enables SSH immediately.
+
+## Supporting reference
+
+- `docs/reference/ref-hemma-critical-paths-2026-01-06.md` (critical paths,
+  firewall, SSH, tailscale, app locations, and package inventory sources).
+
 ## Implementation plan
 
 1) Keep this PR as the consolidated source for the Jan 4–6 incident findings.
