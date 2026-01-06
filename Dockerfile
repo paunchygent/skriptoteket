@@ -1,5 +1,8 @@
 # syntax=docker/dockerfile:1
 
+ARG PANDOC_VERSION=3.8.3
+ARG PANDOC_SHA256=d7fac78b58b8c8da39254955eff321233ab97d74e8b2d461c0f0719a1fb5f357
+
 # Stage 1: Build frontend assets (full SPA)
 FROM node:22-slim AS frontend-builder
 
@@ -26,6 +29,9 @@ RUN pnpm --filter @skriptoteket/spa build
 # Stage 2: Build Python dependencies
 FROM python:3.13-slim AS builder
 
+ARG PANDOC_VERSION
+ARG PANDOC_SHA256
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PDM_CHECK_UPDATE=false
@@ -38,7 +44,8 @@ WORKDIR /app
 # - Fonts: for PDF generation fidelity
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    pandoc \
+    curl \
+    ca-certificates \
     libcairo2 \
     libgdk-pixbuf-2.0-0 \
     libpango-1.0-0 \
@@ -50,6 +57,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-dejavu-core \
     fonts-freefont-ttf \
     fonts-noto-core \
+    && PANDOC_DEB="pandoc-${PANDOC_VERSION}-1-amd64.deb" \
+    && curl -fsSL -o "/tmp/${PANDOC_DEB}" "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/${PANDOC_DEB}" \
+    && echo "${PANDOC_SHA256}  /tmp/${PANDOC_DEB}" | sha256sum -c - \
+    && dpkg -i "/tmp/${PANDOC_DEB}" \
+    && apt-get -y -f install \
+    && rm -f "/tmp/${PANDOC_DEB}" \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir pdm==2.26.2
@@ -61,6 +74,9 @@ RUN pdm config python.use_venv false \
 
 FROM python:3.13-slim AS production
 
+ARG PANDOC_VERSION
+ARG PANDOC_SHA256
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PDM_CHECK_UPDATE=false
@@ -68,7 +84,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    pandoc \
     libcairo2 \
     libgdk-pixbuf-2.0-0 \
     libpango-1.0-0 \
@@ -81,12 +96,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-freefont-ttf \
     fonts-noto-core \
     curl \
+    ca-certificates \
     jq \
     ripgrep \
     fd-find \
     bat \
     fzf \
     tree \
+    && PANDOC_DEB="pandoc-${PANDOC_VERSION}-1-amd64.deb" \
+    && curl -fsSL -o "/tmp/${PANDOC_DEB}" "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/${PANDOC_DEB}" \
+    && echo "${PANDOC_SHA256}  /tmp/${PANDOC_DEB}" | sha256sum -c - \
+    && dpkg -i "/tmp/${PANDOC_DEB}" \
+    && apt-get -y -f install \
+    && rm -f "/tmp/${PANDOC_DEB}" \
     && rm -rf /var/lib/apt/lists/*
 
 # DevOps DX parity tools (see skriptoteket-devops skill/runbook)

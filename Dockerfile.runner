@@ -1,6 +1,12 @@
 # syntax=docker/dockerfile:1
 
+ARG PANDOC_VERSION=3.8.3
+ARG PANDOC_SHA256=d7fac78b58b8c8da39254955eff321233ab97d74e8b2d461c0f0719a1fb5f357
+
 FROM python:3.13-slim AS builder
+
+ARG PANDOC_VERSION
+ARG PANDOC_SHA256
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -12,7 +18,8 @@ WORKDIR /app
 # Fonts included for PDF generation fidelity.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    pandoc \
+    curl \
+    ca-certificates \
     librsvg2-bin \
     libcairo2 \
     libgdk-pixbuf-2.0-0 \
@@ -25,6 +32,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-dejavu-core \
     fonts-freefont-ttf \
     fonts-noto-core \
+    && PANDOC_DEB="pandoc-${PANDOC_VERSION}-1-amd64.deb" \
+    && curl -fsSL -o "/tmp/${PANDOC_DEB}" "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/${PANDOC_DEB}" \
+    && echo "${PANDOC_SHA256}  /tmp/${PANDOC_DEB}" | sha256sum -c - \
+    && dpkg -i "/tmp/${PANDOC_DEB}" \
+    && apt-get -y -f install \
+    && rm -f "/tmp/${PANDOC_DEB}" \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir pdm==2.26.2
@@ -37,6 +50,9 @@ RUN pdm config python.use_venv true \
 
 FROM python:3.13-slim AS runner
 
+ARG PANDOC_VERSION
+ARG PANDOC_SHA256
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PDM_CHECK_UPDATE=false
@@ -44,7 +60,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    pandoc \
+    curl \
+    ca-certificates \
     librsvg2-bin \
     libcairo2 \
     libgdk-pixbuf-2.0-0 \
@@ -57,6 +74,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-dejavu-core \
     fonts-freefont-ttf \
     fonts-noto-core \
+    && PANDOC_DEB="pandoc-${PANDOC_VERSION}-1-amd64.deb" \
+    && curl -fsSL -o "/tmp/${PANDOC_DEB}" "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/${PANDOC_DEB}" \
+    && echo "${PANDOC_SHA256}  /tmp/${PANDOC_DEB}" | sha256sum -c - \
+    && dpkg -i "/tmp/${PANDOC_DEB}" \
+    && apt-get -y -f install \
+    && rm -f "/tmp/${PANDOC_DEB}" \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/.venv /app/.venv
