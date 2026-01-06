@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from skriptoteket.domain.scripting.tool_inputs import (
+    ToolInputBooleanField,
     ToolInputEnumField,
     ToolInputEnumOption,
     ToolInputFileField,
@@ -80,6 +81,89 @@ Om din HTML-fil använder externa CSS-filer eller bilder:
         source_filename="html_to_pdf.py",
         input_schema=[
             ToolInputFileField(name="files", label="Filer", min=1, max=10),
+        ],
+    ),
+    ScriptBankEntry(
+        slug="filkonverterare-markdown-md-till-word-docx",
+        title="Filkonverterare: Markdown (.md) till Word (.docx)",
+        summary=(
+            "Konverterar 1–10 uppladdade Markdown-filer (.md) till Word-dokument (.docx) "
+            "med valbar formateringsprofil."
+        ),
+        usage_instructions="""\
+## Så här använder du verktyget
+
+1. Ladda upp en eller flera Markdown-filer (`.md` eller `.markdown`).
+2. Välj **Formateringsmall**:
+   - **Standard** (modern standardstil),
+   - **Print (svartvit)** (utan färgaccenter),
+   - **Print (färg)** (diskreta färgaccenter).
+3. Valfritt: slå på **Jämförelse** om du vill få en extra variant.
+   - Välj **Jämförelseprofil** (t.ex. Print svartvit).
+   - Välj **Jämförelseomfattning**: endast första filen eller alla filer.
+4. Klicka **Kör**.
+
+## Resultat
+
+- Du får en `.docx` per fil och per profil.
+- Filnamn får ett suffix som visar profilen, t.ex. `__standard` eller `__print_bw`.
+- Resultattabellen visar status och filstorlek.
+
+## Tips
+
+- Vid stora batcher: välj **Endast första filen** för jämförelse om du vill spara tid.
+- Om du behöver två varianter för utskrift, använd **Jämförelse** med en annan profil.
+""",
+        profession_slugs=["gemensamt"],
+        category_slugs=["administration", "ovrigt"],
+        source_filename="markdown_to_docx.py",
+        input_schema=[
+            ToolInputFileField(
+                name="markdown_files",
+                label="Markdown-filer (.md)",
+                accept=[".md", ".markdown"],
+                min=1,
+                max=10,
+            ),
+            ToolInputEnumField(
+                name="profile",
+                label="Formateringsmall",
+                options=[
+                    ToolInputEnumOption(
+                        value="standard",
+                        label="Standard – modern standardstil med tydliga rubriker",
+                    ),
+                    ToolInputEnumOption(
+                        value="print_bw",
+                        label="Print (svartvit) – utskriftsvänlig typografi utan färgaccenter",
+                    ),
+                    ToolInputEnumOption(
+                        value="print_color",
+                        label="Print (färg) – utskriftsvänlig typografi med diskreta färgaccenter",
+                    ),
+                ],
+            ),
+            ToolInputBooleanField(
+                name="make_comparison",
+                label="Jämförelse (generera även en alternativ profil)",
+            ),
+            ToolInputEnumField(
+                name="comparison_profile",
+                label="Jämförelseprofil",
+                options=[
+                    ToolInputEnumOption(value="standard", label="Standard"),
+                    ToolInputEnumOption(value="print_bw", label="Print (svartvit)"),
+                    ToolInputEnumOption(value="print_color", label="Print (färg)"),
+                ],
+            ),
+            ToolInputEnumField(
+                name="comparison_scope",
+                label="Jämförelseomfattning",
+                options=[
+                    ToolInputEnumOption(value="first", label="Endast första filen"),
+                    ToolInputEnumOption(value="all", label="Alla filer"),
+                ],
+            ),
         ],
     ),
     ScriptBankEntry(
