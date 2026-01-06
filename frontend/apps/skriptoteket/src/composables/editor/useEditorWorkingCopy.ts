@@ -363,6 +363,7 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
     isLoading,
     isRestorePromptOpen,
     hasRestoreCandidate,
+    hasWorkingCopyHead: computed(() => workingCopyHead.value !== null),
     restoreDiffItems,
     workingCopyUpdatedAt: computed(() => restoreCandidate.value?.updated_at ?? null),
     restoreWorkingCopy,

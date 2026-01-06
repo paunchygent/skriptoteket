@@ -97,7 +97,10 @@ def _open_metadata_drawer(page: object) -> object:
 
 
 def _publish_active_version(page: object, artifacts_dir: Path) -> None:
-    page.get_by_role("button", name="Spara", exact=True).click()
+    page.get_by_role(
+        "button",
+        name=re.compile(r"^(Spara|Skapa ny) arbetsversion$", re.IGNORECASE),
+    ).click()
     page.wait_for_url("**/admin/tool-versions/**", wait_until="domcontentloaded")
     page.screenshot(path=str(artifacts_dir / "draft-version-created.png"), full_page=True)
 

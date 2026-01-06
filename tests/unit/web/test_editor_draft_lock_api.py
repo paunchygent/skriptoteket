@@ -127,6 +127,69 @@ async def test_editor_boot_includes_draft_lock_metadata() -> None:
 
     assert isinstance(result, editor.EditorBootResponse)
     assert result.draft_head_id == draft.id
+    assert result.save_mode == "snapshot"
+    assert result.parent_version_id is None
+    assert result.create_draft_from_version_id is None
+    assert result.selected_version is not None
+    assert result.selected_version.reviewed_at is None
+    assert result.selected_version.published_at is None
+    assert result.versions[0].reviewed_at is None
+    assert result.versions[0].published_at is None
     assert result.draft_lock is not None
     assert result.draft_lock.tool_id == tool.id
     assert result.draft_lock.is_owner is True
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_editor_boot_includes_parent_and_create_draft_ids_for_non_draft() -> None:
+    tools = AsyncMock()
+    maintainers = AsyncMock()
+    versions = AsyncMock(spec=ToolVersionRepositoryProtocol)
+    locks = AsyncMock(spec=DraftLockRepositoryProtocol)
+    clock = Mock(spec=ClockProtocol)
+
+    user = _user(role=Role.ADMIN)
+    now = datetime.now(timezone.utc)
+
+    tool = _tool().model_copy(update={"is_published": True})
+    previous = _version(
+        tool_id=tool.id,
+        created_by_user_id=user.id,
+        state=VersionState.ARCHIVED,
+        version_number=1,
+    ).model_copy(update={"reviewed_at": now})
+    active = _version(
+        tool_id=tool.id,
+        created_by_user_id=user.id,
+        state=VersionState.ACTIVE,
+        version_number=2,
+    ).model_copy(update={"derived_from_version_id": previous.id, "published_at": now})
+    tool = tool.model_copy(update={"active_version_id": active.id})
+
+    versions.list_for_tool.return_value = [active, previous]
+    tools.get_by_id.return_value = tool
+    clock.now.return_value = now
+    locks.get_for_tool.return_value = None
+
+    result = await _unwrap_dishka(editor.get_editor_for_tool)(
+        tool_id=tool.id,
+        tools=tools,
+        maintainers=maintainers,
+        versions_repo=versions,
+        locks=locks,
+        clock=clock,
+        user=user,
+    )
+
+    assert isinstance(result, editor.EditorBootResponse)
+    assert result.save_mode == "create_draft"
+    assert result.parent_version_id == previous.id
+    assert result.create_draft_from_version_id == active.id
+    assert result.selected_version is not None
+    assert result.selected_version.published_at == now
+    assert result.selected_version.reviewed_at is None
+    assert result.versions[0].id == active.id
+    assert result.versions[0].published_at == now
+    assert result.versions[1].id == previous.id
+    assert result.versions[1].reviewed_at == now

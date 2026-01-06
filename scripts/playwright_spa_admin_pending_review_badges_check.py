@@ -146,9 +146,9 @@ def main() -> None:
                 f"min_width={min(cta_widths)}, max_width={max(cta_widths)}"
             )
 
-        # Dev status badges: left edge aligned (Utkast vs Granskas).
+        # Dev status badges: left edge aligned (Arbetsversion vs Granskas).
         dev_status_badges = page.locator("main span").filter(
-            has_text=re.compile(r"^(Utkast|Granskas)$", re.IGNORECASE)
+            has_text=re.compile(r"^(Arbetsversion|Granskas)$", re.IGNORECASE)
         )
         dev_lefts = dev_status_badges.evaluate_all(
             "els => els.map(el => Math.round(el.getBoundingClientRect().left))"

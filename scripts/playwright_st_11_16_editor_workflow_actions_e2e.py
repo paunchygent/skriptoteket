@@ -119,9 +119,14 @@ def _ensure_draft(page: object) -> None:
     if _action_available(page, "Begär publicering"):
         return
 
-    create_button = page.get_by_role("button", name=re.compile(r"Spara", re.IGNORECASE))
+    create_button = page.get_by_role(
+        "button",
+        name=re.compile(r"^(Spara|Skapa ny) arbetsversion$", re.IGNORECASE),
+    )
     if create_button.count() == 0 or not create_button.is_visible():
-        raise RuntimeError("Unable to create draft: no 'Spara' button found.")
+        raise RuntimeError(
+            "Unable to create draft: no 'Spara arbetsversion'/'Skapa ny arbetsversion' button found."
+        )
 
     create_button.click()
     page.wait_for_url("**/admin/tool-versions/**", wait_until="domcontentloaded")

@@ -96,9 +96,12 @@ def _get_editor_boot(context: object, *, base_url: str, tool_id: str) -> dict:
 
 
 def _ensure_selected_version(page: object) -> None:
-    missing_version = page.get_by_text("Spara ett utkast för att kunna testa.")
+    missing_version = page.get_by_text("Spara en arbetsversion för att kunna testa.")
     if missing_version.count() > 0 and missing_version.is_visible():
-        save_button = page.get_by_role("button", name=re.compile(r"^Spara$", re.IGNORECASE)).first
+        save_button = page.get_by_role(
+            "button",
+            name=re.compile(r"^(Spara|Skapa ny) arbetsversion$", re.IGNORECASE),
+        ).first
         expect(save_button).to_be_visible()
         save_button.click()
 
@@ -117,7 +120,10 @@ def _set_codemirror_value(page: object, source_code: str) -> None:
 
 
 def _save_source(page: object) -> None:
-    save_button = page.get_by_role("button", name=re.compile(r"^Spara$", re.IGNORECASE)).first
+    save_button = page.get_by_role(
+        "button",
+        name=re.compile(r"^(Spara|Skapa ny) arbetsversion$", re.IGNORECASE),
+    ).first
     expect(save_button).to_be_visible()
     with page.expect_response(
         re.compile(r"/api/v1/editor/(tool-versions/.+/save|tools/.+/draft)$")

@@ -63,6 +63,10 @@ type EditorWorkspacePanelProps = {
   isWorkflowSubmitting: boolean;
 
   isSaving: boolean;
+  saveLabel: string;
+  saveTitle: string;
+  canOpenCompare: boolean;
+  openCompareTitle: string;
   hasDirtyChanges: boolean;
   isReadOnly: boolean;
 
@@ -71,6 +75,7 @@ type EditorWorkspacePanelProps = {
   isMetadataDrawerOpen: boolean;
   isMaintainersDrawerOpen: boolean;
   isInstructionsDrawerOpen: boolean;
+  canCompareVersions: boolean;
 
   editInstruction: string;
   editSuggestion: string;
@@ -92,6 +97,7 @@ type EditorWorkspacePanelProps = {
 
   compareTarget: EditorCompareTarget | null;
   compareActiveFileId: VirtualFileId | null;
+  canCompareWorkingCopy: boolean;
   workingCopyProvider?: WorkingCopyProvider | null;
   localCheckpoints: EditorWorkingCopyCheckpointSummary[];
   pinnedCheckpointCount: number;
@@ -103,6 +109,7 @@ const props = defineProps<EditorWorkspacePanelProps>();
 
 const emit = defineEmits<{
   (event: "save"): void;
+  (event: "openCompare"): void;
   (event: "openHistoryDrawer"): void;
   (event: "openMetadataDrawer"): void;
   (event: "openMaintainersDrawer"): void;
@@ -164,6 +171,10 @@ const isCompareMode = computed(() => props.compareTarget !== null);
       :is-saving="props.isSaving"
       :is-read-only="props.isReadOnly"
       :has-dirty-changes="props.hasDirtyChanges"
+      :save-label="props.saveLabel"
+      :save-title="props.saveTitle"
+      :can-open-compare="props.canOpenCompare"
+      :open-compare-title="props.openCompareTitle"
       :change-summary="props.changeSummary"
       :input-schema-error="props.inputSchemaError"
       :settings-schema-error="props.settingsSchemaError"
@@ -171,6 +182,7 @@ const isCompareMode = computed(() => props.compareTarget !== null);
       :can-edit-taxonomy="props.canEditTaxonomy"
       :can-edit-maintainers="props.canEditMaintainers"
       @save="emit('save')"
+      @open-compare="emit('openCompare')"
       @open-history-drawer="emit('openHistoryDrawer')"
       @open-metadata-drawer="emit('openMetadataDrawer')"
       @open-maintainers-drawer="emit('openMaintainersDrawer')"
@@ -193,9 +205,15 @@ const isCompareMode = computed(() => props.compareTarget !== null);
           :compare-target="props.compareTarget"
           :active-file-id="props.compareActiveFileId"
           :base-is-dirty="props.hasDirtyChanges"
+          :can-compare-working-copy="props.canCompareWorkingCopy"
           :working-copy-provider="props.workingCopyProvider"
           @close="emit('closeCompare')"
-          @update-compare-version-id="emit('update:compareTarget', { kind: 'version', versionId: $event })"
+          @update-compare-target-value="
+            emit(
+              'update:compareTarget',
+              $event === 'working' ? { kind: 'working' } : { kind: 'version', versionId: $event },
+            )
+          "
           @update-active-file-id="emit('update:compareActiveFileId', $event)"
         />
 
@@ -264,6 +282,7 @@ const isCompareMode = computed(() => props.compareTarget !== null);
         :is-instructions-drawer-open="props.isInstructionsDrawerOpen"
         :versions="props.versions"
         :active-version-id="activeVersionId"
+        :can-compare-versions="props.canCompareVersions"
         :can-rollback-versions="props.canRollbackVersions"
         :is-workflow-submitting="props.isWorkflowSubmitting"
         :metadata-title="props.metadataTitle"

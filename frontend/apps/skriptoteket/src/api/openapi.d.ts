@@ -1477,8 +1477,8 @@ export interface components {
         };
         /** EditorBootResponse */
         EditorBootResponse: {
-            /** Derived From Version Id */
-            derived_from_version_id: string | null;
+            /** Create Draft From Version Id */
+            create_draft_from_version_id: string | null;
             /** Draft Head Id */
             draft_head_id: string | null;
             draft_lock: components["schemas"]["DraftLockResponse"] | null;
@@ -1486,6 +1486,8 @@ export interface components {
             entrypoint: string;
             /** Input Schema */
             input_schema?: (components["schemas"]["ToolInputStringField"] | components["schemas"]["ToolInputTextField"] | components["schemas"]["ToolInputIntegerField"] | components["schemas"]["ToolInputNumberField"] | components["schemas"]["ToolInputBooleanField"] | components["schemas"]["ToolInputEnumField"] | components["schemas"]["ToolInputFileField"])[];
+            /** Parent Version Id */
+            parent_version_id: string | null;
             /**
              * Save Mode
              * @enum {string}
@@ -1634,6 +1636,10 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /** Published At */
+            published_at: string | null;
+            /** Reviewed At */
+            reviewed_at: string | null;
             state: components["schemas"]["VersionState"];
             /** Version Number */
             version_number: number;

@@ -105,7 +105,8 @@ def _ensure_draft_for_tool(
                 "input_schema": boot_payload.get("input_schema"),
                 "usage_instructions": boot_payload.get("usage_instructions"),
                 "change_summary": "playwright e2e: st-14-16 schema validation errors ux",
-                "derived_from_version_id": boot_payload.get("derived_from_version_id"),
+                "derived_from_version_id": boot_payload.get("create_draft_from_version_id")
+                or boot_payload.get("parent_version_id"),
             }
         ),
     )
@@ -145,7 +146,10 @@ def main() -> None:
         _login(page, base_url=base_url, email=config.email, password=config.password)
         _ensure_draft_for_tool(context, page, base_url=base_url, tool_slug="demo-inputs-file")
 
-        save_button = page.get_by_role("button", name=re.compile(r"^Spara$", re.IGNORECASE)).first
+        save_button = page.get_by_role(
+            "button",
+            name=re.compile(r"^(Spara|Skapa ny) arbetsversion$", re.IGNORECASE),
+        ).first
         run_button = page.get_by_role(
             "button", name=re.compile(r"^Testkör kod$", re.IGNORECASE)
         ).first

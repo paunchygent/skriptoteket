@@ -65,8 +65,16 @@ export function useScriptEditor({
   const editorToolId = computed(() => editor.value?.tool.id ?? "");
 
   const saveButtonLabel = computed(() => {
-    if (isSaving.value) return "Sparar...";
-    return "Spara";
+    if (!editor.value) return "Spara arbetsversion";
+    return editor.value.save_mode === "snapshot" ? "Spara arbetsversion" : "Skapa ny arbetsversion";
+  });
+
+  const saveButtonTitle = computed(() => {
+    if (!editor.value) return "";
+    if (editor.value.save_mode === "snapshot") {
+      return "Skapar en ny arbetsversion på servern.";
+    }
+    return "Skapar en ny arbetsversion på servern baserad på nuvarande tillstånd och öppnar den.";
   });
 
   const hasDirtyChanges = computed(() => {
@@ -317,11 +325,11 @@ export function useScriptEditor({
           input_schema: inputSchema,
           usage_instructions: normalizedOptionalString(usageInstructions.value),
           change_summary: summaryValue,
-          derived_from_version_id: editor.value.derived_from_version_id,
+          derived_from_version_id: editor.value.create_draft_from_version_id,
         },
       );
 
-      notify.success("Utkast skapat.");
+      notify.success("Ny arbetsversion skapad.");
       await navigateAfterSave(response.redirect_url);
     } catch (error: unknown) {
       if (isApiError(error)) {
@@ -468,6 +476,7 @@ export function useScriptEditor({
     selectedVersion,
     editorToolId,
     saveButtonLabel,
+    saveButtonTitle,
     hasDirtyChanges,
     loadEditor,
     loadEditorForVersion,

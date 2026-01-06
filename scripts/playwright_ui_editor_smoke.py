@@ -143,9 +143,14 @@ def main() -> None:
 
         sandbox_section_label = page.get_by_text("Testfiler")
         if sandbox_section_label.count() == 0:
-            save_button = page.get_by_role("button", name=re.compile(r"^Spara$", re.IGNORECASE))
+            save_button = page.get_by_role(
+                "button",
+                name=re.compile(r"^(Spara|Skapa ny) arbetsversion$", re.IGNORECASE),
+            )
             if save_button.count() == 0:
-                raise RuntimeError("Sandbox runner missing and no 'Spara' button found.")
+                raise RuntimeError(
+                    "Sandbox runner missing and no 'Spara arbetsversion'/'Skapa ny arbetsversion' button found."
+                )
             save_button.first.click()
             page.wait_for_url("**/admin/tool-versions/**", wait_until="domcontentloaded")
 

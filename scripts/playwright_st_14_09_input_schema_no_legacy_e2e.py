@@ -124,7 +124,8 @@ def _ensure_draft_for_tool(
                 "input_schema": boot_payload.get("input_schema"),
                 "usage_instructions": boot_payload.get("usage_instructions"),
                 "change_summary": "playwright e2e: st-14-09 input schema no legacy null",
-                "derived_from_version_id": boot_payload.get("derived_from_version_id"),
+                "derived_from_version_id": boot_payload.get("create_draft_from_version_id")
+                or boot_payload.get("parent_version_id"),
             }
         ),
     )
@@ -181,7 +182,10 @@ def main() -> None:
         input_schema_editor = page.locator("#tool-input-schema")
         expect(input_schema_editor).to_be_visible(timeout=30_000)
 
-        save_button = page.get_by_role("button", name=re.compile(r"^Spara$", re.IGNORECASE)).first
+        save_button = page.get_by_role(
+            "button",
+            name=re.compile(r"^(Spara|Skapa ny) arbetsversion$", re.IGNORECASE),
+        ).first
         expect(save_button).to_be_visible(timeout=30_000)
         expect(save_button).to_be_enabled(timeout=30_000)
 

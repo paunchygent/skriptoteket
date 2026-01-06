@@ -18,6 +18,7 @@ type EditorComparePanelProps = {
   compareTarget: EditorCompareTarget | null;
   activeFileId: VirtualFileId | null;
   baseIsDirty: boolean;
+  canCompareWorkingCopy: boolean;
   workingCopyProvider?: WorkingCopyProvider | null;
 };
 
@@ -25,7 +26,7 @@ const props = defineProps<EditorComparePanelProps>();
 
 const emit = defineEmits<{
   (event: "close"): void;
-  (event: "updateCompareVersionId", versionId: string): void;
+  (event: "updateCompareTargetValue", value: string): void;
   (event: "updateActiveFileId", fileId: VirtualFileId): void;
 }>();
 
@@ -36,7 +37,7 @@ const { compareEditor, compareFiles, isLoading, errorMessage } = useEditorCompar
 
 function versionLabel(state: VersionState): string {
   const labels: Record<VersionState, string> = {
-    draft: "Utkast",
+    draft: "Arbetsversion",
     in_review: "Granskning",
     active: "Publicerad",
     archived: "Arkiverad",
@@ -62,10 +63,10 @@ const compareLabel = computed(() => {
   return shortVersionLabel(version, "Jämförelse");
 });
 
-const compareVersionId = computed(() => {
+const compareTargetValue = computed(() => {
   const target = props.compareTarget;
-  if (target?.kind !== "version") return "";
-  return target.versionId;
+  if (!target) return "";
+  return target.kind === "working" ? "working" : target.versionId;
 });
 
 const selectableCompareVersions = computed(() =>
@@ -73,6 +74,12 @@ const selectableCompareVersions = computed(() =>
 );
 
 const isWorkingCompare = computed(() => props.compareTarget?.kind === "working");
+const showWorkingCompareOption = computed(
+  () => isWorkingCompare.value || props.canCompareWorkingCopy,
+);
+const workingCompareLabel = computed(() =>
+  props.canCompareWorkingCopy ? "Lokalt arbetsexemplar" : "Lokalt arbetsexemplar (saknas)",
+);
 
 const diffItems = computed(() => {
   if (!compareFiles.value) return [];
@@ -97,35 +104,29 @@ const diffItems = computed(() => {
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <template v-if="isWorkingCompare">
-          <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-            Lokalt arbetsexemplar
-          </span>
-        </template>
-        <template v-else>
-          <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-            Jämför med
-          </label>
-          <select
-            class="border border-navy bg-white px-3 py-2 text-xs text-navy shadow-brutal-sm"
-            :value="compareVersionId"
-            @change="emit('updateCompareVersionId', ($event.target as HTMLSelectElement).value)"
+        <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+          Jämför med
+        </label>
+        <select
+          class="border border-navy bg-white px-3 py-2 text-xs text-navy shadow-brutal-sm"
+          :value="compareTargetValue"
+          @change="emit('updateCompareTargetValue', ($event.target as HTMLSelectElement).value)"
+        >
+          <option
+            v-if="showWorkingCompareOption"
+            value="working"
+            :disabled="!props.canCompareWorkingCopy"
           >
-            <option
-              value=""
-              disabled
-            >
-              Välj version...
-            </option>
-            <option
-              v-for="version in selectableCompareVersions"
-              :key="version.id"
-              :value="version.id"
-            >
-              v{{ version.version_number }} · {{ versionLabel(version.state) }}
-            </option>
-          </select>
-        </template>
+            {{ workingCompareLabel }}
+          </option>
+          <option
+            v-for="version in selectableCompareVersions"
+            :key="version.id"
+            :value="version.id"
+          >
+            v{{ version.version_number }} · {{ versionLabel(version.state) }}
+          </option>
+        </select>
 
         <button
           type="button"

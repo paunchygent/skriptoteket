@@ -10,6 +10,10 @@ import SystemMessage from "../../components/ui/SystemMessage.vue";
 import WorkflowActionModal from "../../components/editor/WorkflowActionModal.vue";
 import WorkingCopyRestorePrompt from "../../components/editor/WorkingCopyRestorePrompt.vue";
 import { useEditorEditSuggestions } from "../../composables/editor/useEditorEditSuggestions";
+import {
+  resolveDefaultCompareTarget,
+  resolveMostRecentRejectedReviewVersionId,
+} from "../../composables/editor/editorCompareDefaults";
 import { useEditorCompareState, type EditorCompareTarget } from "../../composables/editor/useEditorCompareState";
 import { useEditorSchemaParsing } from "../../composables/editor/useEditorSchemaParsing";
 import { useEditorSchemaValidation } from "../../composables/editor/useEditorSchemaValidation";
@@ -70,6 +74,8 @@ const {
   slugError,
   selectedVersion,
   editorToolId,
+  saveButtonLabel,
+  saveButtonTitle,
   hasDirtyChanges,
   save,
   saveToolMetadata,
@@ -80,9 +86,9 @@ const {
   toolId,
   versionId,
   route,
-	  router,
-	  notify,
-	});
+  router,
+  notify,
+});
 const { inputSchema, inputSchemaError, settingsSchema, settingsSchemaError } = useEditorSchemaParsing({
   inputSchemaText,
   settingsSchemaText,
@@ -244,9 +250,45 @@ const compare = useEditorCompareState({ route, router });
 const compareTarget = compare.compareTarget;
 const compareActiveFileId = compare.activeFileId;
 
+const rejectedReviewVersionId = computed(() => {
+  if (!editor.value) return null;
+  return resolveMostRecentRejectedReviewVersionId(editor.value.versions);
+});
+
+const defaultCompareTarget = computed(() => {
+  if (!editor.value) {
+    return { target: null, reason: null } as const;
+  }
+  return resolveDefaultCompareTarget({
+    baseVersion: selectedVersion.value,
+    toolIsPublished: editor.value.tool.is_published,
+    activeVersionId: editor.value.tool.active_version_id ?? null,
+    versions: editor.value.versions,
+    parentVersionId: editor.value.parent_version_id ?? null,
+  });
+});
+
+const canOpenCompare = computed(
+  () => compareTarget.value === null && defaultCompareTarget.value.target !== null,
+);
+const openCompareTitle = computed(() => defaultCompareTarget.value.reason ?? "");
+
+const canCompareVersions = computed(() => {
+  if (!editor.value) return true;
+  if (selectedVersion.value?.state !== "in_review") return true;
+  if (editor.value.tool.is_published) return true;
+  return rejectedReviewVersionId.value !== null;
+});
+
 async function handleCompareVersion(versionId: string): Promise<void> {
   await compare.toggleCompareVersionId(versionId);
   closeDrawer();
+}
+
+async function handleOpenCompare(): Promise<void> {
+  const target = defaultCompareTarget.value.target;
+  if (!target) return;
+  await compare.setCompareTarget(target);
 }
 
 async function handleCompareTargetUpdate(target: EditorCompareTarget | null): Promise<void> {
@@ -282,6 +324,7 @@ const workingCopy = useEditorWorkingCopy({
 
 const {
   isRestorePromptOpen,
+  hasWorkingCopyHead,
   restoreDiffItems,
   workingCopyUpdatedAt,
   checkpointSummaries,
@@ -372,7 +415,7 @@ function openEditorHelp(): void {
 
 function versionLabel(state: VersionState): string {
   const labels: Record<VersionState, string> = {
-    draft: "Utkast",
+    draft: "Arbetsversion",
     in_review: "Granskning",
     active: "Publicerad",
     archived: "Arkiverad",
@@ -385,7 +428,7 @@ const statusLine = computed(() => {
   const publication = editor.value.tool.is_published ? "Publicerad" : "Ej publicerad";
   const versionSegment = selectedVersion.value
     ? `v${selectedVersion.value.version_number} · ${versionLabel(selectedVersion.value.state)}`
-    : "Nytt utkast";
+    : "Ny arbetsversion";
   return `${publication} · ${versionSegment}`;
 });
 </script>
@@ -504,6 +547,10 @@ const statusLine = computed(() => {
           :can-rollback-versions="canRollbackVersions"
           :is-workflow-submitting="isWorkflowSubmitting"
           :is-saving="isSaving"
+          :save-label="saveButtonLabel"
+          :save-title="saveButtonTitle"
+          :can-open-compare="canOpenCompare"
+          :open-compare-title="openCompareTitle"
           :has-dirty-changes="hasDirtyChanges"
           :is-read-only="isReadOnly"
           :is-drawer-open="isDrawerOpen"
@@ -511,8 +558,10 @@ const statusLine = computed(() => {
           :is-metadata-drawer-open="isMetadataDrawerOpen"
           :is-maintainers-drawer-open="isMaintainersDrawerOpen"
           :is-instructions-drawer-open="isInstructionsDrawerOpen"
+          :can-compare-versions="canCompareVersions"
           :compare-target="compareTarget"
           :compare-active-file-id="compareActiveFileId"
+          :can-compare-working-copy="hasWorkingCopyHead"
           :working-copy-provider="workingCopyProvider"
           :local-checkpoints="checkpointSummaries"
           :pinned-checkpoint-count="pinnedCheckpointCount"
@@ -531,6 +580,7 @@ const statusLine = computed(() => {
           :is-maintainers-loading="isMaintainersLoading"
           :is-maintainers-saving="isMaintainersSaving"
           @save="handleSave"
+          @open-compare="handleOpenCompare"
           @open-history-drawer="toggleHistoryDrawer"
           @open-metadata-drawer="toggleMetadataDrawer"
           @open-maintainers-drawer="toggleMaintainersDrawer"

@@ -3,6 +3,10 @@ type EditorWorkspaceToolbarProps = {
   isSaving: boolean;
   isReadOnly: boolean;
   hasDirtyChanges: boolean;
+  saveLabel: string;
+  saveTitle: string;
+  canOpenCompare: boolean;
+  openCompareTitle: string;
   changeSummary: string;
   inputSchemaError: string | null;
   settingsSchemaError: string | null;
@@ -15,6 +19,7 @@ const props = defineProps<EditorWorkspaceToolbarProps>();
 
 const emit = defineEmits<{
   (event: "save"): void;
+  (event: "openCompare"): void;
   (event: "openHistoryDrawer"): void;
   (event: "openMetadataDrawer"): void;
   (event: "openMaintainersDrawer"): void;
@@ -38,6 +43,7 @@ const emit = defineEmits<{
                 Boolean(props.settingsSchemaError) ||
                 props.hasBlockingSchemaIssues
             "
+            :title="props.saveTitle || undefined"
             class="btn-primary min-w-[80px]"
             @click="emit('save')"
           >
@@ -45,7 +51,7 @@ const emit = defineEmits<{
               v-if="props.isSaving"
               class="inline-block w-3 h-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
             />
-            <span v-else>Spara</span>
+            <span v-else>{{ props.saveLabel }}</span>
           </button>
           <span
             v-if="props.hasDirtyChanges"
@@ -70,6 +76,15 @@ const emit = defineEmits<{
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
+        <button
+          v-if="props.canOpenCompare"
+          type="button"
+          class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
+          :title="props.openCompareTitle || undefined"
+          @click="emit('openCompare')"
+        >
+          Öppna jämförelse
+        </button>
         <button
           type="button"
           class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"

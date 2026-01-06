@@ -72,7 +72,7 @@ function actionClass(tool: AdminToolItem): string {
 function getDevStatus(tool: AdminToolItem): string {
   if (tool.version_count === 0) return "Ingen kod";
   if (tool.has_pending_review) return "Granskas";
-  if (tool.latest_version_state === "draft") return "Utkast";
+  if (tool.latest_version_state === "draft") return "Arbetsversion";
   return "";
 }
 

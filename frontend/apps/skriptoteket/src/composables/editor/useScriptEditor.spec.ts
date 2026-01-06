@@ -52,10 +52,13 @@ function createEditorResponse(overrides: Record<string, unknown> = {}) {
       title: "Tool",
       summary: null,
       slug: "tool",
+      is_published: false,
+      active_version_id: null,
     },
     save_mode: "snapshot",
     selected_version: { id: "ver-1" },
-    derived_from_version_id: null,
+    parent_version_id: null,
+    create_draft_from_version_id: null,
     ...overrides,
   };
 }
@@ -135,7 +138,10 @@ describe("useScriptEditor", () => {
 
   it("surfaces conflicts for draft saves", async () => {
     const { wrapper, notify } = await mountEditor({
-      editorResponse: createEditorResponse({ save_mode: "draft" }),
+      editorResponse: createEditorResponse({
+        save_mode: "create_draft",
+        create_draft_from_version_id: "ver-1",
+      }),
     });
 
     const conflictError = { status: 409, message: "Conflict" };
@@ -147,7 +153,7 @@ describe("useScriptEditor", () => {
 
     expect(clientMocks.apiPost).toHaveBeenCalledWith(
       "/api/v1/editor/tools/tool-1/draft",
-      expect.objectContaining({ entrypoint: "run_tool" }),
+      expect.objectContaining({ entrypoint: "run_tool", derived_from_version_id: "ver-1" }),
     );
     expect(notify.warning).toHaveBeenCalledWith("Conflict");
 

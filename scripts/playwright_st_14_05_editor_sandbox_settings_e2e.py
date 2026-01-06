@@ -115,7 +115,8 @@ def _ensure_draft_for_tool(
                 "input_schema": boot_payload.get("input_schema"),
                 "usage_instructions": boot_payload.get("usage_instructions"),
                 "change_summary": "playwright e2e: editor sandbox settings panel",
-                "derived_from_version_id": boot_payload.get("derived_from_version_id"),
+                "derived_from_version_id": boot_payload.get("create_draft_from_version_id")
+                or boot_payload.get("parent_version_id"),
             }
         ),
     )

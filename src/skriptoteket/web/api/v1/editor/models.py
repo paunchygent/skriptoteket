@@ -32,6 +32,8 @@ class EditorVersionSummary(BaseModel):
     version_number: int
     state: VersionState
     created_at: datetime
+    reviewed_at: datetime | None
+    published_at: datetime | None
 
 
 class DraftLockResponse(BaseModel):
@@ -53,7 +55,8 @@ class EditorBootResponse(BaseModel):
     draft_head_id: UUID | None
     draft_lock: DraftLockResponse | None
     save_mode: EditorSaveMode
-    derived_from_version_id: UUID | None
+    parent_version_id: UUID | None
+    create_draft_from_version_id: UUID | None
     entrypoint: str
     source_code: str
     settings_schema: list[UiActionField] | None = None

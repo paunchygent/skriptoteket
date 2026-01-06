@@ -52,6 +52,8 @@ def _to_version_summary(version: ToolVersion) -> EditorVersionSummary:
         version_number=version.version_number,
         state=version.state,
         created_at=version.created_at,
+        reviewed_at=version.reviewed_at,
+        published_at=version.published_at,
     )
 
 
@@ -94,13 +96,15 @@ def _resolve_editor_state(
     str | None,
     EditorSaveMode,
     UUID | None,
+    UUID | None,
 ]:
     if selected_version is None:
-        return DEFAULT_ENTRYPOINT, STARTER_TEMPLATE, None, [], None, "create_draft", None
+        return DEFAULT_ENTRYPOINT, STARTER_TEMPLATE, None, [], None, "create_draft", None, None
 
     is_draft = selected_version.state is VersionState.DRAFT
     save_mode: EditorSaveMode = "snapshot" if is_draft else "create_draft"
-    derived_from_version_id = None if is_draft else selected_version.id
+    parent_version_id = selected_version.derived_from_version_id
+    create_draft_from_version_id = None if is_draft else selected_version.id
     return (
         selected_version.entrypoint,
         selected_version.source_code,
@@ -108,7 +112,8 @@ def _resolve_editor_state(
         selected_version.input_schema,
         selected_version.usage_instructions,
         save_mode,
-        derived_from_version_id,
+        parent_version_id,
+        create_draft_from_version_id,
     )
 
 
@@ -127,7 +132,8 @@ def _build_editor_response(
         input_schema,
         usage_instructions,
         save_mode,
-        derived_from_version_id,
+        parent_version_id,
+        create_draft_from_version_id,
     ) = _resolve_editor_state(selected_version)
 
     return EditorBootResponse(
@@ -137,7 +143,8 @@ def _build_editor_response(
         draft_head_id=draft_head_id,
         draft_lock=draft_lock,
         save_mode=save_mode,
-        derived_from_version_id=derived_from_version_id,
+        parent_version_id=parent_version_id,
+        create_draft_from_version_id=create_draft_from_version_id,
         entrypoint=entrypoint,
         source_code=source_code,
         settings_schema=settings_schema,

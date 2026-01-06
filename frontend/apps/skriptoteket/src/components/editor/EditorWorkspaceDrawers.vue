@@ -20,6 +20,7 @@ type EditorWorkspaceDrawersProps = {
 
   versions: EditorVersionSummary[];
   activeVersionId: string | null;
+  canCompareVersions: boolean;
 
   canRollbackVersions: boolean;
   isWorkflowSubmitting: boolean;
@@ -87,6 +88,7 @@ const emit = defineEmits<{
     :is-open="props.isHistoryDrawerOpen"
     :versions="props.versions"
     :active-version-id="props.activeVersionId"
+    :can-compare="props.canCompareVersions"
     :can-rollback="props.canRollbackVersions"
     :is-submitting="props.isWorkflowSubmitting"
     :checkpoints="props.checkpoints"

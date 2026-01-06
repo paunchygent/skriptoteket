@@ -5,7 +5,7 @@ title: "Admin tool authoring (draft-first workflow)"
 status: active
 owners: "agents"
 created: 2025-12-25
-updated: 2026-01-05
+updated: 2026-01-06
 outcome: "Admins can quickly create draft tools directly from /admin/tools, iterate without contributor-only hoops, and publish only when slug and taxonomy are finalized."
 ---
 
@@ -78,7 +78,7 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
   - ST-11-17 (metadata editor)
   - ST-11-20 (tool taxonomy editor)
 
-## Implementation Summary (as of 2026-01-05)
+## Implementation Summary (as of 2026-01-06)
 
 - ST-14-09 shipped: `input_schema` is schema-only (never `null`); file picking is represented as a `{"kind":"file"}` field with `min/max`.
 - ST-14-10 shipped (foundation-only): shared schema JSON parsing helper + save blocking on invalid schema JSON; schema editor UI actions (prettify/snippets) deferred to ST-14-14.
@@ -86,4 +86,5 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 - ST-14-15 shipped: backend schema validation endpoint (`POST /api/v1/editor/tools/{tool_id}/validate-schemas`) returns `{valid, issues[]}` and enforces upload limits (`UPLOAD_MAX_FILES`).
 - ST-14-16 shipped: debounced backend schema validation UI; shows structured issues per schema and blocks Save + sandbox run when schemas are parseable but backend-invalid.
 - ST-14-17 shipped: version diff viewer (virtual file tabs) with copy/download + unified patch support and access-aware errors.
+- ST-14-18 shipped: compare defaults + deep links (compare + field), clarified boot contract (`parent_version_id` + `create_draft_from_version_id` + version reviewed/published metadata), and save CTA copy (“arbetsversion”).
 - ST-14-30 shipped: IndexedDB-backed working copy persistence with restore prompt, rolling/manual checkpoints, local history drawer, and compare-against-working support.

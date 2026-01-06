@@ -16,7 +16,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
-- Completed: ST-14-01/14-02 done; ST-14-09 done; ST-14-10 done; ST-14-13/14 done; ST-14-15 done; ST-14-16 done; ST-14-17 done; ST-14-30 done
+- Completed: ST-14-01/14-02 done; ST-14-09 done; ST-14-10 done; ST-14-13/14 done; ST-14-15 done; ST-14-16 done; ST-14-17 done; ST-14-18 done; ST-14-30 done
 
 ## Current Session (2026-01-06)
 
@@ -28,6 +28,7 @@ Keep this file updated so the next session can pick up work quickly.
     `frontend/apps/skriptoteket/src/components/editor/WorkflowContextButtons.vue`,
     `frontend/apps/skriptoteket/src/components/editor/WorkflowActionModal.vue`,
     `frontend/apps/skriptoteket/src/components/help/HelpPanel.vue`.
+- Pandoc pinned to upstream 3.8.3 via official .deb in `Dockerfile` and `Dockerfile.runner` (sha256 verified).
 - ST-14-30 (done): added IndexedDB-backed working copy persistence + checkpoints + restore UX wiring in SPA.
   - New persistence module + composable: `frontend/apps/skriptoteket/src/composables/editor/editorPersistence.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkingCopy.ts`
   - PR-0001 (done): SRP modularization of `useEditorWorkingCopy.ts` into small editor-focused modules (API stable).
@@ -40,6 +41,10 @@ Keep this file updated so the next session can pick up work quickly.
   - Dependency: added `idb` to `frontend/apps/skriptoteket/package.json` + `frontend/pnpm-lock.yaml`
   - Decision log: Discard clears head + all checkpoints (B2); local history lives in VersionHistoryDrawer; schemas persisted as raw text.
   - Hardening: stash restore-candidate into local history on first edit (prevents silent overwrite), confirm before clearing pinned checkpoints, warn-once toasts for persistence failures, IndexedDB schema bump to v2 for `chat_threads` keying.
+- ST-14-18 (done): reviewer navigation improvements (compare defaults + deep links) + clarified editor boot contract.
+  - Backend boot contract: `src/skriptoteket/web/api/v1/editor/models.py`, `src/skriptoteket/web/api/v1/editor/boot.py` (+ unit tests in `tests/unit/web/test_editor_draft_lock_api.py`).
+  - Frontend compare defaults + deep links: `frontend/apps/skriptoteket/src/composables/editor/editorCompareDefaults.ts` (+ spec) and `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
+  - Save CTA copy: `frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.ts` and toolbar wiring in `EditorWorkspaceToolbar.vue`.
 - ST-14-17 (done): version diff viewer shipped (virtual file tabs, unified patch/downloads, access-aware compare errors).
 - PR-0002 (done): refactored `useToolRun` into polling + session-files composables (API unchanged).
   - Tests: `frontend/apps/skriptoteket/src/composables/editor/virtualFiles.spec.ts`, `frontend/apps/skriptoteket/src/composables/editor/diff/unifiedPatch.spec.ts`
@@ -103,6 +108,9 @@ Keep this file updated so the next session can pick up work quickly.
 - Script run (yrkesgenerator PDF): `pdm run python -c "import json,os,sys,tempfile; from importlib.util import module_from_spec,spec_from_file_location; from pathlib import Path; sys.path.insert(0,'runner'); spec=spec_from_file_location('yrkesgenerator','src/skriptoteket/script_bank/scripts/yrkesgenerator.py'); module=module_from_spec(spec); spec.loader.exec_module(module); tmp=tempfile.TemporaryDirectory(); input_dir=Path(tmp.name)/'input'; output_dir=Path(tmp.name)/'output'; input_dir.mkdir(parents=True, exist_ok=True); (input_dir/'action.json').write_text(json.dumps({'action_id':'pdf','input':{},'state':{}})); os.environ['SKRIPTOTEKET_INPUTS']=json.dumps({'full_name':'Test Person'}); module.run_tool(str(input_dir), str(output_dir)); print([p.name for p in output_dir.glob('*.pdf')]); tmp.cleanup()"` (generated `yrkesdiplom_Test_Person.pdf`; fontconfig cache warnings)
 - Live check (Playwright, escalated): `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_14_16_editor_schema_validation_errors_ux_e2e` (pass; artifacts: `.artifacts/st-14-16-editor-schema-validation-errors-ux-e2e/`)
 - Live check (Playwright, escalated): `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_14_30_editor_working_copy_persistence_e2e` (pass; artifacts: `.artifacts/st-14-30-editor-working-copy-persistence-e2e/`)
+- Backend unit tests (ST-14-18): `pdm run pytest tests/unit/web/test_editor_draft_lock_api.py -q` (pass)
+- Frontend lint/build (ST-14-18): `pdm run fe-lint` (pass), `pdm run fe-build` (pass)
+- Live check (Playwright, escalated): `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_14_18_editor_compare_deeplink_e2e` (pass; artifacts: `.artifacts/st-14-18-editor-compare-deeplink-e2e/`)
 - Hemma: `ssh hemma "sudo systemctl status --no-pager amdgpu-force-active.service"` (active/exited; SUCCESS)
 - Hemma: `ssh hemma "sudo sh -c 'cat /sys/class/drm/card1/device/power/control; cat /sys/class/drm/card1/device/power/runtime_status'"` (`on` / `active`)
 - Hemma: `ssh hemma "curl -s http://127.0.0.1:8082/v1/models | jq -r '.data[0].id'"` (confirm served model)
@@ -137,7 +145,6 @@ pdm run ui-editor-smoke
 
 ## Next Steps
 
-- ST-14-18: reviewer navigation improvements (compare targets + deep links, defaults).
 - ST-14-31: implement Focus mode (collapse left sidebar) to maximize editor/diff width on desktop.
 - PR-0002: SRP modularize `frontend/apps/skriptoteket/src/composables/tools/useToolRun.ts` (keep API stable).
 - Follow-up (EPIC-08): key chat history by tool id (not version id) so saves don’t silently reset conversations.

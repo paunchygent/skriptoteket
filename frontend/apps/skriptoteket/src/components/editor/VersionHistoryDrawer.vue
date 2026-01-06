@@ -10,6 +10,7 @@ type VersionHistoryDrawerProps = {
   isOpen: boolean;
   versions: EditorVersionSummary[];
   activeVersionId?: string | null;
+  canCompare?: boolean;
   canRollback?: boolean;
   isSubmitting?: boolean;
   checkpoints: EditorWorkingCopyCheckpointSummary[];
@@ -20,6 +21,7 @@ type VersionHistoryDrawerProps = {
 
 withDefaults(defineProps<VersionHistoryDrawerProps>(), {
   activeVersionId: null,
+  canCompare: true,
   canRollback: false,
   isSubmitting: false,
 });
@@ -39,7 +41,7 @@ const checkpointLabel = ref("");
 
 function versionLabel(state: VersionState): string {
   const labels: Record<VersionState, string> = {
-    draft: "Utkast",
+    draft: "Arbetsversion",
     in_review: "Granskning",
     active: "Publicerad",
     archived: "Arkiverad",
@@ -171,7 +173,7 @@ function handleCreateCheckpoint(): void {
 
             <div class="flex flex-wrap items-center justify-end gap-2">
               <button
-                v-if="version.id !== activeVersionId"
+                v-if="canCompare && version.id !== activeVersionId"
                 type="button"
                 class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
                 :disabled="isSubmitting"
