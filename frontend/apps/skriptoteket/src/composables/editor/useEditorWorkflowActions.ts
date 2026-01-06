@@ -56,8 +56,27 @@ const ACTION_META: Record<WorkflowAction, WorkflowActionMeta> = {
   },
 };
 
+type SubmitReviewBlockerId = "slug_placeholder" | "slug_invalid" | "taxonomy_missing";
+
+type SubmitReviewBlocker = {
+  id: SubmitReviewBlockerId;
+  message: string;
+};
+
+export type SubmitReviewTooltip = {
+  title: string;
+  description?: string;
+  items?: string[];
+};
+
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const SLUG_MAX_LENGTH = 128;
+
 type UseEditorWorkflowActionsOptions = {
   selectedVersion: Readonly<Ref<EditorVersionSummary | null>>;
+  toolSlug: Readonly<Ref<string>>;
+  selectedProfessionIds: Readonly<Ref<string[]>>;
+  selectedCategoryIds: Readonly<Ref<string[]>>;
   route: RouteLocationNormalizedLoaded;
   router: Router;
   reloadEditor: () => Promise<void>;
@@ -72,6 +91,9 @@ type ActionItem = {
 
 export function useEditorWorkflowActions({
   selectedVersion,
+  toolSlug,
+  selectedProfessionIds,
+  selectedCategoryIds,
   route,
   router,
   reloadEditor,
@@ -85,13 +107,72 @@ export function useEditorWorkflowActions({
   const workflowError = ref<string | null>(null);
   const isSubmitting = ref(false);
 
-  const canSubmitReview = computed(() => {
+  const isSubmitReviewEligible = computed(() => {
     const version = selectedVersion.value;
     return (
       Boolean(version) &&
       version?.state === "draft" &&
       auth.hasAtLeastRole("contributor")
     );
+  });
+
+  const submitReviewBlockers = computed<SubmitReviewBlocker[]>(() => {
+    const blockers: SubmitReviewBlocker[] = [];
+    const slugValue = toolSlug.value.trim();
+    if (!slugValue) {
+      blockers.push({
+        id: "slug_invalid",
+        message: "URL-namnet saknas.",
+      });
+    } else {
+      const normalized = slugValue.toLowerCase();
+      if (normalized.startsWith("draft-")) {
+        blockers.push({
+          id: "slug_placeholder",
+          message: "Byt URL-namn (får inte börja med \"draft-\").",
+        });
+      } else {
+        const isValid =
+          normalized.length > 0 &&
+          normalized.length <= SLUG_MAX_LENGTH &&
+          SLUG_PATTERN.test(normalized);
+        if (!isValid || normalized !== slugValue) {
+          blockers.push({
+            id: "slug_invalid",
+            message: "URL-namnet måste använda a–z, 0–9 och bindestreck (1–128 tecken).",
+          });
+        }
+      }
+    }
+
+    if (selectedProfessionIds.value.length === 0 || selectedCategoryIds.value.length === 0) {
+      blockers.push({
+        id: "taxonomy_missing",
+        message: "Välj minst ett yrke och minst en kategori.",
+      });
+    }
+
+    return blockers;
+  });
+
+  const submitReviewTooltip = computed<SubmitReviewTooltip | null>(() => {
+    if (!isSubmitReviewEligible.value) {
+      return null;
+    }
+    if (submitReviewBlockers.value.length === 0) {
+      return {
+        title: "Begär publicering",
+        description: "Skickar utkastet till granskning. Du kan lämna en notis till granskaren.",
+      };
+    }
+    return {
+      title: "Krav för publicering",
+      items: submitReviewBlockers.value.map((blocker) => blocker.message),
+    };
+  });
+
+  const canSubmitReview = computed(() => {
+    return isSubmitReviewEligible.value;
   });
 
   const canPublish = computed(() => {
@@ -178,6 +259,10 @@ export function useEditorWorkflowActions({
       return;
     }
 
+    if (action === "submit_review" && submitReviewBlockers.value.length > 0) {
+      return;
+    }
+
     isSubmitting.value = true;
     workflowError.value = null;
 
@@ -251,6 +336,8 @@ export function useEditorWorkflowActions({
     workflowError,
     isSubmitting,
     canSubmitReview,
+    submitReviewBlockers,
+    submitReviewTooltip,
     canPublish,
     canRequestChanges,
     canRollback,

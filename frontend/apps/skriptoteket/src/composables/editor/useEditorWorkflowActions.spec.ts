@@ -48,7 +48,18 @@ function createAuth(overrides: Partial<AuthMock> = {}): AuthMock {
   };
 }
 
-function createWorkflow(selectedVersion: ReturnType<typeof ref>) {
+function createWorkflow(
+  selectedVersion: ReturnType<typeof ref>,
+  {
+    toolSlug = "demo-tool",
+    selectedProfessionIds = ["profession-1"],
+    selectedCategoryIds = ["category-1"],
+  }: {
+    toolSlug?: string;
+    selectedProfessionIds?: string[];
+    selectedCategoryIds?: string[];
+  } = {},
+) {
   const route = reactive({
     path: "/admin/tools/1",
     fullPath: "/admin/tools/1",
@@ -66,6 +77,9 @@ function createWorkflow(selectedVersion: ReturnType<typeof ref>) {
   scope.run(() => {
     workflow = useEditorWorkflowActions({
       selectedVersion: selectedVersion as never,
+      toolSlug: ref(toolSlug) as never,
+      selectedProfessionIds: ref(selectedProfessionIds) as never,
+      selectedCategoryIds: ref(selectedCategoryIds) as never,
       route: route as never,
       router: router as never,
       reloadEditor,
@@ -131,6 +145,50 @@ describe("useEditorWorkflowActions", () => {
 
     expect(workflow.workflowError.value).toBe("Boom");
     expect(workflow.isSubmitting.value).toBe(false);
+
+    scope.stop();
+  });
+
+  it("blocks submit-review when requirements are missing", () => {
+    authState.value = createAuth({ hasAtLeastRole: vi.fn().mockReturnValue(true) });
+    const selectedVersion = ref({ id: "ver-1", state: "draft" } as never);
+    const { scope, workflow } = createWorkflow(selectedVersion, {
+      toolSlug: "draft-123",
+      selectedProfessionIds: [],
+      selectedCategoryIds: [],
+    });
+
+    expect(workflow.canSubmitReview.value).toBe(true);
+    expect(workflow.submitReviewBlockers.value.length).toBeGreaterThan(0);
+    expect(workflow.submitReviewTooltip.value?.items?.length).toBeGreaterThan(0);
+
+    scope.stop();
+  });
+
+  it("shows a tooltip description when submit-review is allowed", () => {
+    authState.value = createAuth({ hasAtLeastRole: vi.fn().mockReturnValue(true) });
+    const selectedVersion = ref({ id: "ver-1", state: "draft" } as never);
+    const { scope, workflow } = createWorkflow(selectedVersion);
+
+    expect(workflow.submitReviewBlockers.value.length).toBe(0);
+    expect(workflow.submitReviewTooltip.value?.description).toBeTruthy();
+
+    scope.stop();
+  });
+
+  it("does not submit when submit-review is blocked", async () => {
+    authState.value = createAuth({ hasAtLeastRole: vi.fn().mockReturnValue(true) });
+    const selectedVersion = ref({ id: "ver-1", state: "draft" } as never);
+    const { scope, workflow } = createWorkflow(selectedVersion, {
+      toolSlug: "draft-123",
+      selectedProfessionIds: [],
+      selectedCategoryIds: [],
+    });
+
+    workflow.openAction("submit_review");
+    await workflow.submitAction();
+
+    expect(clientMocks.apiPost).not.toHaveBeenCalled();
 
     scope.stop();
   });

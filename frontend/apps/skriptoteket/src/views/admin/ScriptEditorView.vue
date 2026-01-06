@@ -25,11 +25,13 @@ import { isVirtualFileId } from "../../composables/editor/virtualFiles";
 import type { UiNotifier } from "../../composables/notify";
 import { useToast } from "../../composables/useToast";
 import { useAuthStore } from "../../stores/auth";
+import { useHelp } from "../../components/help/useHelp";
 type VersionState = components["schemas"]["VersionState"];
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
 const toast = useToast();
+const help = useHelp();
 const notify: UiNotifier = {
   info: (message: string) => toast.info(message),
   success: (message: string) => toast.success(message),
@@ -117,29 +119,6 @@ const {
 });
 const canEditSlug = computed(() => auth.hasAtLeastRole("admin") && editor.value?.tool.is_published === false);
 const {
-  isModalOpen: isWorkflowModalOpen,
-  activeAction: activeWorkflowAction,
-  actionMeta: workflowActionMeta,
-  showNoteField: showWorkflowNoteField,
-  note: workflowNote,
-  workflowError,
-  isSubmitting: isWorkflowSubmitting,
-  canSubmitReview,
-  canPublish,
-  canRequestChanges,
-  canRollback,
-  openRollbackForVersion,
-  openAction: openWorkflowAction,
-  closeAction: closeWorkflowModal,
-  submitAction: submitWorkflowAction,
-} = useEditorWorkflowActions({
-  selectedVersion,
-  route,
-  router,
-  reloadEditor: loadEditor,
-  notify,
-});
-const {
   professions,
   categories,
   selectedProfessionIds,
@@ -151,6 +130,34 @@ const {
 } = useToolTaxonomy({
   toolId: editorToolId,
   canEdit: canEditTaxonomy,
+  notify,
+});
+const {
+  isModalOpen: isWorkflowModalOpen,
+  activeAction: activeWorkflowAction,
+  actionMeta: workflowActionMeta,
+  showNoteField: showWorkflowNoteField,
+  note: workflowNote,
+  workflowError,
+  isSubmitting: isWorkflowSubmitting,
+  canSubmitReview,
+  submitReviewBlockers,
+  submitReviewTooltip,
+  canPublish,
+  canRequestChanges,
+  canRollback,
+  openRollbackForVersion,
+  openAction: openWorkflowAction,
+  closeAction: closeWorkflowModal,
+  submitAction: submitWorkflowAction,
+} = useEditorWorkflowActions({
+  selectedVersion,
+  toolSlug: metadataSlug,
+  selectedProfessionIds,
+  selectedCategoryIds,
+  route,
+  router,
+  reloadEditor: loadEditor,
   notify,
 });
 const {
@@ -350,6 +357,19 @@ const confirmButtonClass = computed(() => {
   }
 });
 
+const submitReviewBlockedItems = computed(() => {
+  if (activeWorkflowAction.value !== "submit_review") {
+    return [];
+  }
+  return submitReviewBlockers.value.map((blocker) => blocker.message);
+});
+
+function openEditorHelp(): void {
+  help.showTopic("admin_editor");
+  help.open();
+  closeWorkflowModal();
+}
+
 function versionLabel(state: VersionState): string {
   const labels: Record<VersionState, string> = {
     draft: "Utkast",
@@ -417,6 +437,7 @@ const statusLine = computed(() => {
         :is-title-saving="isTitleSaving"
         :is-summary-saving="isSummarySaving"
         :can-submit-review="canSubmitReview"
+        :submit-review-tooltip="submitReviewTooltip"
         :can-publish="canPublish"
         :can-request-changes="canRequestChanges"
         :can-rollback="canRollback"
@@ -544,9 +565,13 @@ const statusLine = computed(() => {
     :note="workflowNote"
     :show-note-field="showWorkflowNoteField"
     :error="workflowError"
+    :blocked-items="submitReviewBlockedItems"
+    blocked-intro="Följande behöver vara klart innan du kan begära publicering:"
+    blocked-help-label="Öppna hjälp"
     :is-submitting="isWorkflowSubmitting"
     :confirm-button-class="confirmButtonClass"
     @close="closeWorkflowModal"
+    @help="openEditorHelp"
     @submit="submitWorkflowAction"
     @update:error="workflowError = $event"
     @update:note="workflowNote = $event"

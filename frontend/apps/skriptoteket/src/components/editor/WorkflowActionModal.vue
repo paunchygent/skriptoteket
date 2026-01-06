@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 import SystemMessage from "../ui/SystemMessage.vue";
 
 type WorkflowActionMeta = {
@@ -15,18 +17,24 @@ type WorkflowActionModalProps = {
   note: string;
   showNoteField: boolean;
   error: string | null;
+  blockedItems: string[];
+  blockedIntro: string;
+  blockedHelpLabel: string;
   isSubmitting: boolean;
   confirmButtonClass: string;
 };
 
-defineProps<WorkflowActionModalProps>();
+const props = defineProps<WorkflowActionModalProps>();
 
 const emit = defineEmits<{
   (event: "close"): void;
+  (event: "help"): void;
   (event: "submit"): void;
   (event: "update:note", value: string): void;
   (event: "update:error", value: string | null): void;
 }>();
+
+const isBlocked = computed(() => props.blockedItems.length > 0);
 </script>
 
 <template>
@@ -58,13 +66,14 @@ const emit = defineEmits<{
           </h2>
 
           <p
-            v-if="actionMeta.description"
+            v-if="actionMeta.description && !isBlocked"
             class="mt-2 text-sm text-navy/70"
           >
             {{ actionMeta.description }}
           </p>
 
           <SystemMessage
+            v-if="!isBlocked"
             id="workflow-modal-error"
             class="mt-4"
             :model-value="error"
@@ -72,7 +81,42 @@ const emit = defineEmits<{
             @update:model-value="emit('update:error', $event)"
           />
 
+          <div
+            v-if="isBlocked"
+            class="mt-4 space-y-4 text-sm text-navy"
+          >
+            <p class="text-sm text-navy/70">
+              {{ blockedIntro }}
+            </p>
+            <ul class="space-y-1 text-navy/70">
+              <li
+                v-for="item in blockedItems"
+                :key="item"
+                class="leading-snug"
+              >
+                - {{ item }}
+              </li>
+            </ul>
+            <div class="flex flex-wrap gap-3">
+              <button
+                type="button"
+                class="btn-ghost"
+                @click="emit('close')"
+              >
+                Stäng
+              </button>
+              <button
+                type="button"
+                class="btn-primary"
+                @click="emit('help')"
+              >
+                {{ blockedHelpLabel }}
+              </button>
+            </div>
+          </div>
+
           <form
+            v-else
             class="mt-5 space-y-4"
             @submit.prevent="emit('submit')"
           >

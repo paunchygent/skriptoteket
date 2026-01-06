@@ -530,6 +530,14 @@ watch(
               <ul class="list-disc pl-5 space-y-2 text-sm text-navy">
                 <li>Spara som utkast, testkör och granska resultatet.</li>
                 <li>När du är nöjd: skicka för granskning och publicera.</li>
+                <li>
+                  <strong>Krav för begäran</strong>: URL-namnet får inte börja med
+                  <span class="font-mono">draft-</span> och minst ett yrke + en kategori
+                  måste vara valda.
+                </li>
+                <li>
+                  Ändra URL-namn och taxonomi under <strong>Metadata</strong>-panelen.
+                </li>
               </ul>
               <p class="text-sm text-navy/60">Mer hjälp kommer snart.</p>
             </section>

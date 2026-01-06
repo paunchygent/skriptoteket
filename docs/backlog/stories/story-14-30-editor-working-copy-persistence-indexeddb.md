@@ -2,10 +2,10 @@
 type: story
 id: ST-14-30
 title: "Editor: working copy persistence (IndexedDB) + checkpoints + restore"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-01-04
-updated: 2026-01-04
+updated: 2026-01-05
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given a tool author has unsaved changes, when the browser is reloaded or reopened, then the editor can restore a local working copy for the same user + tool."

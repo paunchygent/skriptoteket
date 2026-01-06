@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 from skriptoteket.application.catalog.commands import PublishToolCommand, PublishToolResult
-from skriptoteket.domain.catalog.models import (
-    is_placeholder_tool_slug,
-    set_tool_published_state,
-    validate_tool_slug,
+from skriptoteket.application.catalog.publish_requirements import (
+    ensure_tool_publish_requirements,
 )
+from skriptoteket.domain.catalog.models import set_tool_published_state
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
@@ -48,29 +47,10 @@ class PublishToolHandler(PublishToolHandlerProtocol):
                     details={"tool_id": str(tool.id)},
                 )
 
-            if is_placeholder_tool_slug(slug=tool.slug):
-                raise validation_error(
-                    "URL-namn måste ändras (får inte börja med 'draft-') innan publicering.",
-                    details={"tool_id": str(tool.id), "slug": tool.slug},
-                )
-
-            normalized_slug = validate_tool_slug(slug=tool.slug)
-            if normalized_slug != tool.slug:
-                raise validation_error(
-                    "Ogiltigt URL-namn. Använd bara a–z, 0–9 och bindestreck (1–128 tecken).",
-                    details={"tool_id": str(tool.id), "slug": tool.slug},
-                )
-
-            profession_ids, category_ids = await self._tools.list_tag_ids(tool_id=tool.id)
-            if not profession_ids or not category_ids:
-                raise validation_error(
-                    "Välj minst ett yrke och minst en kategori innan publicering.",
-                    details={
-                        "tool_id": str(tool.id),
-                        "profession_count": len(profession_ids),
-                        "category_count": len(category_ids),
-                    },
-                )
+            await ensure_tool_publish_requirements(
+                tool=tool,
+                list_tag_ids=self._tools.list_tag_ids,
+            )
 
             version = await self._versions.get_by_id(version_id=tool.active_version_id)
             if version is None:

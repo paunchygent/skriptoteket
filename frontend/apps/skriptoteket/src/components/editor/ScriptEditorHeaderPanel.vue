@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import InlineEditableText from "./InlineEditableText.vue";
 import WorkflowContextButtons from "./WorkflowContextButtons.vue";
+import type { SubmitReviewTooltip } from "../../composables/editor/useEditorWorkflowActions";
 
 type WorkflowAction = "submit_review" | "publish" | "request_changes" | "rollback";
 
@@ -12,6 +13,7 @@ type ScriptEditorHeaderPanelProps = {
   isTitleSaving: boolean;
   isSummarySaving: boolean;
   canSubmitReview: boolean;
+  submitReviewTooltip: SubmitReviewTooltip | null;
   canPublish: boolean;
   canRequestChanges: boolean;
   canRollback: boolean;
@@ -68,6 +70,7 @@ const emit = defineEmits<{
     <div class="border-t border-navy/20 pt-4">
       <WorkflowContextButtons
         :can-submit-review="props.canSubmitReview"
+        :submit-review-tooltip="props.submitReviewTooltip"
         :can-publish="props.canPublish"
         :can-request-changes="props.canRequestChanges"
         :can-rollback="props.canRollback"

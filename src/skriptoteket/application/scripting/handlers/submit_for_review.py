@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from skriptoteket.application.catalog.publish_requirements import (
+    ensure_tool_publish_requirements,
+)
 from skriptoteket.application.scripting.commands import (
     SubmitForReviewCommand,
     SubmitForReviewResult,
@@ -8,7 +11,10 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.domain.scripting.models import submit_for_review
-from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
+from skriptoteket.protocols.catalog import (
+    ToolMaintainerRepositoryProtocol,
+    ToolRepositoryProtocol,
+)
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.scripting import (
     SubmitForReviewHandlerProtocol,
@@ -22,11 +28,13 @@ class SubmitForReviewHandler(SubmitForReviewHandlerProtocol):
         self,
         *,
         uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
         versions: ToolVersionRepositoryProtocol,
         maintainers: ToolMaintainerRepositoryProtocol,
         clock: ClockProtocol,
     ) -> None:
         self._uow = uow
+        self._tools = tools
         self._versions = versions
         self._maintainers = maintainers
         self._clock = clock
@@ -68,6 +76,15 @@ class SubmitForReviewHandler(SubmitForReviewHandlerProtocol):
                         "created_by_user_id": str(version.created_by_user_id),
                     },
                 )
+
+            tool = await self._tools.get_by_id(tool_id=version.tool_id)
+            if tool is None:
+                raise not_found("Tool", str(version.tool_id))
+
+            await ensure_tool_publish_requirements(
+                tool=tool,
+                list_tag_ids=self._tools.list_tag_ids,
+            )
 
             submitted = submit_for_review(
                 version=version,

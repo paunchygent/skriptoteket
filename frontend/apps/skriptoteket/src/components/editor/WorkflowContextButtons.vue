@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import type { SubmitReviewTooltip } from "../../composables/editor/useEditorWorkflowActions";
 
 import WorkflowActionsDropdown from "./WorkflowActionsDropdown.vue";
 
@@ -7,6 +8,7 @@ type WorkflowAction = "submit_review" | "publish" | "request_changes" | "rollbac
 
 const props = defineProps<{
   canSubmitReview: boolean;
+  submitReviewTooltip: SubmitReviewTooltip | null;
   canPublish: boolean;
   canRequestChanges: boolean;
   canRollback: boolean;
@@ -18,6 +20,7 @@ const emit = defineEmits<{
 }>();
 
 const hasAdminContext = computed(() => props.canPublish || props.canRequestChanges);
+const hasSubmitReviewTooltip = computed(() => Boolean(props.submitReviewTooltip));
 
 function handleDropdownSelect(actionId: string): void {
   emit("action", actionId as WorkflowAction);
@@ -31,15 +34,46 @@ function handleDropdownSelect(actionId: string): void {
       <span class="text-xs font-semibold uppercase tracking-wide text-navy/50">
         Författare
       </span>
-      <button
+      <div
         v-if="canSubmitReview"
-        type="button"
-        class="btn-primary px-3 py-2 text-xs font-semibold tracking-wide"
-        :disabled="isSubmitting"
-        @click="emit('action', 'submit_review')"
+        class="relative group"
       >
-        Begär publicering
-      </button>
+        <button
+          type="button"
+          class="btn-primary px-3 py-2 text-xs font-semibold tracking-wide"
+          :disabled="isSubmitting"
+          @click="emit('action', 'submit_review')"
+        >
+          Begär publicering
+        </button>
+        <div
+          v-if="hasSubmitReviewTooltip"
+          class="absolute left-0 top-full mt-2 w-[min(260px,calc(100vw-2*var(--huleedu-space-4)))] border border-navy bg-white text-navy shadow-brutal-sm px-3 py-2 text-xs opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+          role="tooltip"
+        >
+          <div class="text-[0.65rem] font-semibold uppercase tracking-wide text-navy/70">
+            {{ submitReviewTooltip?.title }}
+          </div>
+          <p
+            v-if="submitReviewTooltip?.description"
+            class="mt-2 text-xs text-navy/70"
+          >
+            {{ submitReviewTooltip?.description }}
+          </p>
+          <ul
+            v-else-if="submitReviewTooltip?.items?.length"
+            class="mt-2 space-y-1 text-xs text-navy/70"
+          >
+            <li
+              v-for="item in submitReviewTooltip?.items"
+              :key="item"
+              class="leading-snug"
+            >
+              - {{ item }}
+            </li>
+          </ul>
+        </div>
+      </div>
       <span
         v-else
         class="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-navy/30 border border-navy/20 bg-canvas cursor-not-allowed"

@@ -86,3 +86,4 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 - ST-14-15 shipped: backend schema validation endpoint (`POST /api/v1/editor/tools/{tool_id}/validate-schemas`) returns `{valid, issues[]}` and enforces upload limits (`UPLOAD_MAX_FILES`).
 - ST-14-16 shipped: debounced backend schema validation UI; shows structured issues per schema and blocks Save + sandbox run when schemas are parseable but backend-invalid.
 - ST-14-17 shipped: version diff viewer (virtual file tabs) with copy/download + unified patch support and access-aware errors.
+- ST-14-30 shipped: IndexedDB-backed working copy persistence with restore prompt, rolling/manual checkpoints, local history drawer, and compare-against-working support.

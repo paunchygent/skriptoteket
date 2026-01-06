@@ -147,6 +147,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 
 - `docs/backlog/prs/pr-0001-editor-working-copy-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
+- `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`
+- `docs/backlog/prs/pr-0004-sandbox-transient-settings-input-multi-enum-clear-settings.md`
+- `docs/backlog/prs/pr-0005-contract-v2-help-template-update.md`
 
 ### Backlog Stories
 

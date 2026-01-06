@@ -162,6 +162,7 @@ async def _seed_script_bank_async(
         )
         submit_for_review = SubmitForReviewHandler(
             uow=uow,
+            tools=tools,
             versions=versions,
             maintainers=maintainers,
             clock=clock,

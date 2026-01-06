@@ -162,12 +162,14 @@ class EditorProvider(Provider):
     def submit_for_review_handler(
         self,
         uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
         versions: ToolVersionRepositoryProtocol,
         maintainers: ToolMaintainerRepositoryProtocol,
         clock: ClockProtocol,
     ) -> SubmitForReviewHandlerProtocol:
         return SubmitForReviewHandler(
             uow=uow,
+            tools=tools,
             versions=versions,
             maintainers=maintainers,
             clock=clock,
