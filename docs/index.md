@@ -150,6 +150,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`
 - `docs/backlog/prs/pr-0004-sandbox-transient-settings-input-multi-enum-clear-settings.md`
 - `docs/backlog/prs/pr-0005-contract-v2-help-template-update.md`
+- `docs/backlog/prs/pr-0006-hemma-incident-log-findings-2026-01-06.md`
 
 ### Backlog Stories
 
