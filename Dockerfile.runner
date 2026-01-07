@@ -2,11 +2,14 @@
 
 ARG PANDOC_VERSION=3.8.3
 ARG PANDOC_SHA256=d7fac78b58b8c8da39254955eff321233ab97d74e8b2d461c0f0719a1fb5f357
+ARG PANDOC_SHA256_ARM64=566334d71769d15dfabf6514882ad6a41d57c0400ded1b6677bd72de7ec66a3d
 
-FROM python:3.13-slim AS builder
+FROM python:3.13-slim AS pandoc-base
 
 ARG PANDOC_VERSION
 ARG PANDOC_SHA256
+ARG PANDOC_SHA256_ARM64
+ARG TARGETARCH
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -17,7 +20,6 @@ WORKDIR /app
 # Mirror the main app runtime deps (parity): tool scripts may import the same curated libs.
 # Fonts included for PDF generation fidelity.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
     curl \
     ca-certificates \
     librsvg2-bin \
@@ -32,12 +34,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-dejavu-core \
     fonts-freefont-ttf \
     fonts-noto-core \
-    && PANDOC_DEB="pandoc-${PANDOC_VERSION}-1-amd64.deb" \
+    && case "$TARGETARCH" in \
+        amd64|"") PANDOC_ARCH="amd64"; PANDOC_SHA="$PANDOC_SHA256" ;; \
+        arm64) PANDOC_ARCH="arm64"; PANDOC_SHA="$PANDOC_SHA256_ARM64" ;; \
+        *) echo "Unsupported TARGETARCH=$TARGETARCH" >&2; exit 1 ;; \
+    esac \
+    && PANDOC_DEB="pandoc-${PANDOC_VERSION}-1-${PANDOC_ARCH}.deb" \
     && curl -fsSL -o "/tmp/${PANDOC_DEB}" "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/${PANDOC_DEB}" \
-    && echo "${PANDOC_SHA256}  /tmp/${PANDOC_DEB}" | sha256sum -c - \
+    && echo "${PANDOC_SHA}  /tmp/${PANDOC_DEB}" | sha256sum -c - \
     && dpkg -i "/tmp/${PANDOC_DEB}" \
     && apt-get -y -f install \
     && rm -f "/tmp/${PANDOC_DEB}" \
+    && rm -rf /var/lib/apt/lists/*
+
+FROM pandoc-base AS builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir pdm==2.26.2
@@ -48,39 +61,7 @@ RUN pdm config python.use_venv true \
     && pdm install --frozen-lockfile --prod --no-editable --no-self
 
 
-FROM python:3.13-slim AS runner
-
-ARG PANDOC_VERSION
-ARG PANDOC_SHA256
-
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PDM_CHECK_UPDATE=false
-
-WORKDIR /app
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    ca-certificates \
-    librsvg2-bin \
-    libcairo2 \
-    libgdk-pixbuf-2.0-0 \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libpangoft2-1.0-0 \
-    shared-mime-info \
-    fontconfig \
-    fonts-liberation2 \
-    fonts-dejavu-core \
-    fonts-freefont-ttf \
-    fonts-noto-core \
-    && PANDOC_DEB="pandoc-${PANDOC_VERSION}-1-amd64.deb" \
-    && curl -fsSL -o "/tmp/${PANDOC_DEB}" "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/${PANDOC_DEB}" \
-    && echo "${PANDOC_SHA256}  /tmp/${PANDOC_DEB}" | sha256sum -c - \
-    && dpkg -i "/tmp/${PANDOC_DEB}" \
-    && apt-get -y -f install \
-    && rm -f "/tmp/${PANDOC_DEB}" \
-    && rm -rf /var/lib/apt/lists/*
+FROM pandoc-base AS runner
 
 COPY --from=builder /app/.venv /app/.venv
 

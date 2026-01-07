@@ -80,6 +80,12 @@ class EditorEditSuggestionResponse(BaseModel):
     enabled: bool
 
 
+class EditorChatRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    message: str = Field(min_length=1)
+
+
 class CreateDraftVersionRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 

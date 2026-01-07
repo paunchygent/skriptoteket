@@ -7,7 +7,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2026-01-01
-updated: 2026-01-04
+updated: 2026-01-07
 links: ["EPIC-08", "ST-08-20", "ST-08-21", "ST-08-22", "ST-14-17", "ST-14-30",
 "ADR-0043"]
 ---
@@ -54,7 +54,8 @@ safe preview/apply flow.
 
 - Place AI chat in the editor as a drawer/panel that can be opened without
   leaving the editor.
-- Keep conversation history client-side in IndexedDB (not server-side).
+- Store conversation history server-side as the canonical source of truth (not
+  client-side only).
 
 ### 2) Edit protocol: structured CRUD operations (v1)
 
@@ -104,16 +105,20 @@ files explicitly so:
   apply MUST be blocked and the user prompted
     to regenerate.
 
-### 3.1 Multi-turn conversation (client-side)
+### 3.1 Multi-turn conversation (server-side)
 
-- Conversation history MUST be persisted client-side in IndexedDB (no server-
-  side persistence of message content).
-- Full transcripts MUST NOT be stored in localStorage. localStorage is
-  reserved for small UI preferences (e.g. Focus
-    mode).
-- When generating proposals, the frontend sends a bounded conversation context
-  (tail and optional bounded summary), and
-    the backend enforces prompt budgets deterministically (ADR-0052).
+- Conversation history MUST be persisted server-side as a per-user chat thread
+  keyed by `{user_id, tool_id}` (30-day TTL since last activity, and clear on
+  user demand).
+- The frontend renders the thread and sends only the newest user message to
+  chat-first endpoints (no client-managed transcript rules that drift across
+  endpoints).
+- When calling the provider, the backend enforces prompt budgets
+  deterministically (ADR-0052) using a sliding window:
+  drop oldest turns first, and **never truncate** the system prompt.
+- If the newest user message cannot fit together with the full system prompt
+  and reserved output budget, fail with a user-actionable validation error and
+  do not mutate the stored thread.
 
 ### 4) Observability + evaluation
 
@@ -146,5 +151,5 @@ files explicitly so:
 
 - Multi-range operations, anchor/pattern-based targeting, or protected/locked
   regions.
-- Server-side conversation persistence or shared conversations.
+- Shared conversations across users/maintainers.
 - Metrics dashboards; only metadata logging is in scope.

@@ -9,7 +9,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import AuthProvider, Role
 from skriptoteket.infrastructure.db.models.tool import ToolModel
-from skriptoteket.infrastructure.db.models.tool_version import ToolVersionModel  # noqa: F401
 from skriptoteket.infrastructure.db.models.user import UserModel
 from skriptoteket.infrastructure.repositories.tool_session_repository import (
     PostgreSQLToolSessionRepository,

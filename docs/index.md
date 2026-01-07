@@ -152,6 +152,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0004-sandbox-transient-settings-input-multi-enum-clear-settings.md`
 - `docs/backlog/prs/pr-0005-contract-v2-help-template-update.md`
 - `docs/backlog/prs/pr-0006-hemma-incident-log-findings-2026-01-06.md`
+- `docs/backlog/prs/pr-0007-editor-ai-chat-thread-tool-scoped-sse.md`
+- `docs/backlog/prs/pr-0008-editor-chat-message-storage-minimal-c.md`
+- `docs/backlog/prs/pr-0009-editor-chat-message-id-thread-persistence.md`
 
 ### Backlog Stories
 

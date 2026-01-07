@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from . import (
     boot,
+    chat,
     completions,
     drafts,
     edits,
@@ -16,6 +17,7 @@ from . import (
     workflow,
 )
 from .boot import get_editor_for_tool, get_editor_for_version
+from .chat import clear_editor_chat, stream_editor_chat
 from .completions import create_inline_completion
 from .drafts import create_draft_version, save_draft_version
 from .edits import create_edit_suggestion
@@ -33,6 +35,7 @@ from .models import (
     DraftLockRequest,
     DraftLockResponse,
     EditorBootResponse,
+    EditorChatRequest,
     EditorEditSuggestionRequest,
     EditorEditSuggestionResponse,
     EditorInlineCompletionRequest,
@@ -85,6 +88,7 @@ router.include_router(schema_validation.router)
 router.include_router(runs.router)
 router.include_router(completions.router)
 router.include_router(edits.router)
+router.include_router(chat.router)
 
 __all__ = [
     "AssignMaintainerRequest",
@@ -93,6 +97,7 @@ __all__ = [
     "DraftLockRequest",
     "DraftLockResponse",
     "EditorBootResponse",
+    "EditorChatRequest",
     "EditorEditSuggestionRequest",
     "EditorEditSuggestionResponse",
     "EditorInlineCompletionRequest",
@@ -128,6 +133,7 @@ __all__ = [
     "create_draft_version",
     "create_edit_suggestion",
     "create_inline_completion",
+    "clear_editor_chat",
     "download_artifact",
     "get_editor_for_tool",
     "get_editor_for_version",
@@ -145,6 +151,7 @@ __all__ = [
     "save_draft_version",
     "save_sandbox_settings",
     "start_sandbox_action",
+    "stream_editor_chat",
     "submit_review",
     "validate_schemas",
     "update_tool_metadata",

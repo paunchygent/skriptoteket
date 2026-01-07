@@ -5,7 +5,7 @@ title: "Hemma incident log findings (2026-01-04 to 2026-01-06)"
 status: ready
 owners: "agents"
 created: 2026-01-06
-updated: 2026-01-06
+updated: 2026-01-07
 stories: []
 tags: ["devops", "incident", "ops"]
 acceptance_criteria:
@@ -349,7 +349,7 @@ Rebooted back to the default HWE kernel after the 6.8 failure.
 3) **Verify** GPU health and boot logs (amdgpu/IOMMU/MCE/reg_wait).
 4) **Restore** configs + services from the backup snapshot.
 
-### Restore progress (2026-01-06, ongoing)
+### Restore progress (2026-01-06 to 2026-01-07, ongoing)
 
 - **Reimage complete:** Ubuntu 24.04.2 LTS installed, kernel `6.8.0-90-generic`,
   hostname `paunchygentserver`.
@@ -374,7 +374,14 @@ Rebooted back to the default HWE kernel after the 6.8 failure.
 - **llama.cpp (HIP default):** `llama-server-hip.service` enabled on boot with
   `Devstral-Small-2-24B-Instruct-2512-Q8_0.gguf`; `llama-server-vulkan.service`
   disabled.
-- **Remaining:** start Skriptoteket `compose.prod.yaml`.
+- **Public HTTPS restored:** router port forwarding for `80/443` updated to
+  `192.168.0.9`; certs restored from backup snapshot to the nginx-proxy cert
+  volume; nginx-proxy restarted; `https://skriptoteket.hule.education/healthz`
+  reachable (acme-companion restarted to resume renewals).
+- **Shared Postgres restored:** postgres data volume restored from backup
+  snapshot; bootstrap user present; login verified from server.
+- **Remaining:** confirm UI login from a browser, validate runner/tool execution,
+  and re-check observability endpoints from outside the LAN.
 
 ### Autoinstall boot instructions (headless)
 
@@ -411,6 +418,20 @@ This forces cloud-init to load the autoinstall seed from `/dev/sdd1` (label
 ## Rollback plan
 
 - Remove this PR doc and its index entry.
+
+## Follow-up actions after the window (2026-01-07)
+
+These changes were applied after the 2026-01-04 → 2026-01-06 incident window to
+improve crash capture and reduce future ambiguity. They are not part of the
+findings above.
+
+- Crash capture hardening applied (sysctl panic-on-oops, `log_buf_len=4M`,
+  kdump enabled, netconsole to `192.168.0.11:6666`); see
+  `docs/runbooks/runbook-home-server.md`.
+- AMDGPU hang mitigation flags enabled on hemma (`amdgpu.cwsr_enable=0`,
+  `amdgpu.mcbp=0`, `amdgpu.runpm=0`); see
+  `docs/reference/reports/ref-hemma-host-freeze-stack-alignment-2026-01-03.md`.
+- Post-change baseline capture: `/root/logs/incident-20260107-191503.log`.
 
 ## Plan A: Align to AMD 24.04.3 HWE + ROCm 7.1.1 (recommended)
 

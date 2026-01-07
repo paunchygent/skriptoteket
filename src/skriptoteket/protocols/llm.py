@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from typing import Literal, Protocol
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
 from skriptoteket.domain.identity.models import User
 
 PromptEvalOutcome = Literal["ok", "empty", "truncated", "over_budget", "timeout", "error"]
+ChatStreamDoneReason = Literal["stop", "cancelled", "error"]
+ChatMessageRole = Literal["user", "assistant"]
 
 
 class PromptEvalMeta(BaseModel):
@@ -55,6 +59,21 @@ class LLMEditResponse(BaseModel):
     finish_reason: str | None = None
 
 
+class ChatMessage(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    role: ChatMessageRole
+    content: str
+    message_id: UUID | None = None
+    in_reply_to: UUID | None = None
+
+
+class LLMChatRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    messages: list[ChatMessage]
+
+
 class InlineCompletionCommand(BaseModel):
     """Application command for editor inline completions (ghost text)."""
 
@@ -91,6 +110,71 @@ class EditSuggestionResult(BaseModel):
     eval_meta: PromptEvalMeta | None = None
 
 
+class EditorChatCommand(BaseModel):
+    """Application command for editor chat (streaming)."""
+
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    message: str
+
+
+class EditorChatClearCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+
+
+class EditorChatMetaData(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    enabled: Literal[True] = True
+
+
+class EditorChatDeltaData(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    text: str
+
+
+class EditorChatDoneEnabledData(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    enabled: Literal[True] = True
+    reason: ChatStreamDoneReason
+
+
+class EditorChatDoneDisabledData(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    enabled: Literal[False] = False
+    message: str
+
+
+class EditorChatMetaEvent(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    event: Literal["meta"] = "meta"
+    data: EditorChatMetaData
+
+
+class EditorChatDeltaEvent(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    event: Literal["delta"] = "delta"
+    data: EditorChatDeltaData
+
+
+class EditorChatDoneEvent(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    event: Literal["done"] = "done"
+    data: EditorChatDoneEnabledData | EditorChatDoneDisabledData
+
+
+EditorChatStreamEvent = EditorChatMetaEvent | EditorChatDeltaEvent | EditorChatDoneEvent
+
+
 class InlineCompletionProviderProtocol(Protocol):
     """Protocol for an OpenAI-compatible completion provider."""
 
@@ -113,6 +197,17 @@ class EditSuggestionProviderProtocol(Protocol):
     ) -> LLMEditResponse: ...
 
 
+class ChatStreamProviderProtocol(Protocol):
+    """Protocol for an OpenAI-compatible streaming chat provider."""
+
+    def stream_chat(
+        self,
+        *,
+        request: LLMChatRequest,
+        system_prompt: str,
+    ) -> AsyncIterator[str]: ...
+
+
 class InlineCompletionHandlerProtocol(Protocol):
     async def handle(
         self,
@@ -129,3 +224,27 @@ class EditSuggestionHandlerProtocol(Protocol):
         actor: User,
         command: EditSuggestionCommand,
     ) -> EditSuggestionResult: ...
+
+
+class EditorChatHandlerProtocol(Protocol):
+    def stream(
+        self,
+        *,
+        actor: User,
+        command: EditorChatCommand,
+    ) -> AsyncIterator[EditorChatStreamEvent]: ...
+
+
+class EditorChatClearHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: EditorChatClearCommand,
+    ) -> None: ...
+
+
+class ChatInFlightGuardProtocol(Protocol):
+    async def try_acquire(self, *, user_id: UUID, tool_id: UUID) -> bool: ...
+
+    async def release(self, *, user_id: UUID, tool_id: UUID) -> None: ...

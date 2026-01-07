@@ -263,8 +263,8 @@ onMounted(async () => {
             <div class="pt-6 pl-5 border-l-2 border-navy min-h-[120px]">
               <h3 class="font-semibold text-navy text-lg">Dela och återanvänd</h3>
               <p class="mt-2 text-sm text-navy/70 leading-relaxed">
-                Slipp skriva samma skript om och om igen. Hitta färdiga verktyg
-                eller bidra med egna idéer.
+                Hitta redan färdiga skript, kom med förslag på nya verktyg till din verksamhet,
+                eller skapa dina egna och dela med dina kollegor.
               </p>
             </div>
           </div>
@@ -277,10 +277,10 @@ onMounted(async () => {
               <span class="text-canvas font-bold text-sm">2</span>
             </div>
             <div class="pt-6 pl-5 border-l-2 border-navy min-h-[120px]">
-              <h3 class="font-semibold text-navy text-lg">Enkel uppladdning</h3>
+              <h3 class="font-semibold text-navy text-lg">Sätt igång direkt</h3>
               <p class="mt-2 text-sm text-navy/70 leading-relaxed">
-                Ladda upp en fil, kör, ladda ner resultatet. Ingen IDE, ingen
-                terminal, ingen installation.
+                Välj ett verktyg eller skapa ett nytt, ladda upp en fil, ladda ned resultatet.
+                En AI-assistent hjälper dig att skriva ditt första skript.
               </p>
             </div>
           </div>
@@ -295,8 +295,8 @@ onMounted(async () => {
             <div class="pt-6 pl-5 border-l-2 border-navy min-h-[120px]">
               <h3 class="font-semibold text-navy text-lg">Tryggt och lokalt</h3>
               <p class="mt-2 text-sm text-navy/70 leading-relaxed">
-                Alla filer behandlas säkert på vår server. Verktyg granskas
-                innan publicering.
+                Alla dina filer och chattar behandlas säkert och lokalt.
+                Varje verktyg granskas före publicering.
               </p>
             </div>
           </div>

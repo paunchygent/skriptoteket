@@ -5,7 +5,7 @@ title: "Runbook: Home Server Operations"
 status: active
 owners: "olof"
 created: 2025-12-16
-updated: 2026-01-06
+updated: 2026-01-07
 system: "hemma.hule.education"
 ---
 
@@ -205,6 +205,41 @@ Quick checks:
 ssh hemma "sudo ls -la /sys/fs/pstore"
 ssh hemma "sudo ls -la /var/lib/systemd/pstore"
 ssh hemma "sudo systemctl status --no-pager systemd-pstore"
+```
+
+### Crash Capture Hardening (hemma, 2026-01-07)
+
+Crash capture is hardened with larger kernel buffers, panic-on-oops, kdump, and netconsole.
+
+Kernel/sysctl settings:
+
+- Sysctl config: `/etc/sysctl.d/99-crash-capture.conf`
+  - `kernel.panic_on_oops=1`
+  - `kernel.panic=10`
+  - `kernel.softlockup_panic=1`
+  - `kernel.panic_on_warn=1`
+- GRUB cmdline: `log_buf_len=4M`
+- GPU hang mitigation flags (GRUB cmdline, hemma):
+  - `amdgpu.cwsr_enable=0`
+  - `amdgpu.mcbp=0`
+  - `amdgpu.runpm=0`
+- Kdump enabled via `linux-crashdump` + `kdump-tools` (range-based `crashkernel=...` added by kdump-tools)
+
+Netconsole (UDP kernel logging):
+
+- Module config: `/etc/modprobe.d/netconsole.conf`
+- Module load: `/etc/modules-load.d/netconsole.conf`
+- Current target: `192.168.0.11:6666` (listener on Mac; update if the receiver changes)
+- Verify sender:
+
+```bash
+ssh hemma "dmesg -T | rg -i 'netconsole|netpoll' | tail -n 20"
+```
+
+Listener (Mac):
+
+```bash
+sudo tcpdump -ni en0 udp port 6666
 ```
 
 Reboot log retrieval (persistent journal):

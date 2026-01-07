@@ -1,7 +1,5 @@
 """Admin users API endpoints (superuser-only)."""
 
-from __future__ import annotations
-
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject

@@ -12,123 +12,50 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-01-06
+- Date: 2026-01-07
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
-- Completed: ST-14-01/14-02 done; ST-14-09 done; ST-14-10 done; ST-14-13/14 done; ST-14-15 done; ST-14-16 done; ST-14-17 done; ST-14-18 done; ST-14-30 done; ST-14-31 done
+- Completed: ST-14-01/14-02 done; ST-14-09 done; ST-14-10 done; ST-14-13/14 done; ST-14-15 done; ST-14-16 done; ST-14-17 done; ST-14-18 done; ST-14-30 done; ST-14-31 done; ST-08-23 done
 
-## Current Session (2026-01-06)
+## Current Session (2026-01-07)
 
-- ST-14-31 (done): focus mode toggle hides desktop sidebar and removes layout margin; persisted per-user with localStorage.
-  - Store + tests: `frontend/apps/skriptoteket/src/stores/layout.ts`, `frontend/apps/skriptoteket/src/stores/layout.spec.ts`.
-  - Layout wiring: `frontend/apps/skriptoteket/src/components/layout/AuthLayout.vue`, `AuthSidebar.vue`, `AuthTopBar.vue`.
-  - Editor toggle + toast: `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceToolbar.vue`,
-    `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`,
-    `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
-  - Playwright check (not run): `scripts/playwright_st_14_31_editor_focus_mode_e2e.py`.
-- PR-0003 (done): gate submit-review on slug/taxonomy + add help surfaces (hover + blocked modal + help modal copy).
-  - Backend guard shared with publish: `src/skriptoteket/application/catalog/publish_requirements.py`,
-    wired in `src/skriptoteket/application/scripting/handlers/submit_for_review.py` and
-    `src/skriptoteket/application/catalog/handlers/publish_tool.py`.
-  - UI gating + help: `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkflowActions.ts`,
-    `frontend/apps/skriptoteket/src/components/editor/WorkflowContextButtons.vue`,
-    `frontend/apps/skriptoteket/src/components/editor/WorkflowActionModal.vue`,
-    `frontend/apps/skriptoteket/src/components/help/HelpPanel.vue`.
-- Pandoc pinned to upstream 3.8.3 via official .deb in `Dockerfile` and `Dockerfile.runner` (sha256 verified).
-- ST-14-30 (done): added IndexedDB-backed working copy persistence + checkpoints + restore UX wiring in SPA.
-  - New persistence module + composable: `frontend/apps/skriptoteket/src/composables/editor/editorPersistence.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkingCopy.ts`
-  - PR-0001 (done): SRP modularization of `useEditorWorkingCopy.ts` into small editor-focused modules (API stable).
-    - New: `frontend/apps/skriptoteket/src/composables/editor/editorWorkingCopyFingerprint.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkingCopyCheckpoints.ts`
-  - Restore prompt + diff modal: `frontend/apps/skriptoteket/src/components/editor/WorkingCopyRestorePrompt.vue`
-  - Local history UI in version drawer: `frontend/apps/skriptoteket/src/components/editor/VersionHistoryDrawer.vue` + wiring in `EditorWorkspaceDrawers.vue`, `EditorWorkspacePanel.vue`, `ScriptEditorView.vue`
-  - Compare=working support: `frontend/apps/skriptoteket/src/composables/editor/useEditorCompareData.ts`, `EditorComparePanel.vue`
-  - Autosave + checkpoints: debounced head save, auto cadence + pagehide/visibility safety, before-save + before-AI-apply hooks
-  - Tests: `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkingCopy.spec.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorCompareData.spec.ts`
-  - Dependency: added `idb` to `frontend/apps/skriptoteket/package.json` + `frontend/pnpm-lock.yaml`
-  - Decision log: Discard clears head + all checkpoints (B2); local history lives in VersionHistoryDrawer; schemas persisted as raw text.
-  - Hardening: stash restore-candidate into local history on first edit (prevents silent overwrite), confirm before clearing pinned checkpoints, warn-once toasts for persistence failures, IndexedDB schema bump to v2 for `chat_threads` keying.
-- ST-14-18 (done): reviewer navigation improvements (compare defaults + deep links) + clarified editor boot contract.
-  - Backend boot contract: `src/skriptoteket/web/api/v1/editor/models.py`, `src/skriptoteket/web/api/v1/editor/boot.py` (+ unit tests in `tests/unit/web/test_editor_draft_lock_api.py`).
-  - Frontend compare defaults + deep links: `frontend/apps/skriptoteket/src/composables/editor/editorCompareDefaults.ts` (+ spec) and `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
-  - Save CTA copy: `frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.ts` and toolbar wiring in `EditorWorkspaceToolbar.vue`.
-- ST-14-17 (done): version diff viewer shipped (virtual file tabs, unified patch/downloads, access-aware compare errors).
-- PR-0002 (done): refactored `useToolRun` into polling + session-files composables (API unchanged).
-  - Tests: `frontend/apps/skriptoteket/src/composables/editor/virtualFiles.spec.ts`, `frontend/apps/skriptoteket/src/composables/editor/diff/unifiedPatch.spec.ts`
-  - Tests: `frontend/apps/skriptoteket/src/composables/editor/editorRouteKey.spec.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorCompareState.spec.ts`
-  - Test harness fixes: add `params: {}` to mocked routes in `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkflowActions.spec.ts` and `frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.spec.ts`.
-  - Adjusted `frontend/apps/skriptoteket/src/composables/editor/useScriptEditorDrawers.spec.ts` to assert close-on-version navigation (align with `editorBaseRouteKey`).
-  - Lint cleanup (no behavior change): removed unused eslint-disable directives in `frontend/apps/skriptoteket/src/composables/editor/useEditorCompareState.ts`, `frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.ts`, `frontend/apps/skriptoteket/src/composables/editor/useScriptEditorDrawers.ts`.
-- DevOps: investigated recurrent host hard hangs on `hemma` (RDNA4 R9700 + kernel/ROCm/amdgpu) and applied mitigations for the “silent wedge” pattern.
-  - Disabled Tabby for Vulkan-only isolation (Tabby `Wants=llama-server.service` can start ROCm/KFD llama on boot).
-  - Added boot-persistent runtime-PM clamp: `/etc/systemd/system/amdgpu-force-active.service` (forces `/sys/class/drm/card1/device/power/control=on`).
-  - Captured `llama-bench` baseline (Vulkan): `pp512 366.65 t/s`, `tg128 19.97 t/s` (build `0f89d2ecf`); report updated.
-  - Canonical output-quality A/B (HTTP chat review+diff): Devstral produced a usable patch; Qwen3-Coder (Q4_K_M) produced a non-usable patch even at `temperature=0.1`; reverted `llama-server-vulkan.service` back to Devstral. Artifacts: `docs/reference/reports/artifacts/llama-canonical-chat-v3/`.
-  - Updated report: `docs/reference/reports/ref-hemma-host-freeze-investigation-2026-01-03.md`
-- ST-14-16 (done): Backend schema validation UX (render issues + block Save/Run when parseable-but-invalid).
-  - Composable: `frontend/apps/skriptoteket/src/composables/editor/useEditorSchemaValidation.ts`
-  - Wire-up: `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`, `frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.ts`, `frontend/apps/skriptoteket/src/components/editor/SandboxRunner.vue`
-  - Rendering: `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`
-- Editor SRP refactor: split oversized editor UI modules to keep files <500 LOC (no behavior changes).
-  - `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue` -> extracted panels/toolbars/drawers
-  - `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue` -> header extracted + reduced prop wiring via `v-model:*`
-  - `frontend/apps/skriptoteket/src/components/editor/SandboxRunner.vue` -> session-files composable + settings card component
-- Editor SRP refactor (continued): extracted drawers/guards + sandbox runner logic into composables (reduce view/component to wiring).
-  - New: `frontend/apps/skriptoteket/src/composables/editor/useUnsavedChangesGuards.ts`, `frontend/apps/skriptoteket/src/composables/editor/useScriptEditorDrawers.ts`
-  - New: `frontend/apps/skriptoteket/src/composables/editor/useEditorSandboxRunExecution.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorSandboxActions.ts`
-  - Wire-up: `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`, `frontend/apps/skriptoteket/src/components/editor/SandboxRunner.vue`
-- ST-14-13/14 (done): CodeMirror JSON editors for `settings_schema` + `input_schema` with JSON lint markers + summary, preset guidance, prettify, and snippet insertion.
-  - UI: `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`
-  - Editor config: `frontend/apps/skriptoteket/src/composables/editor/schemaJsonEditor.ts`
-  - Parse details: `frontend/apps/skriptoteket/src/composables/editor/schemaJsonHelpers.ts`
-  - CodeMirror overrides: `frontend/apps/skriptoteket/src/components/editor/CodeMirrorEditor.vue`
-- Editor AI planning: tightened story acceptance criteria and added a backend slice for separate chat vs ops endpoints/profiles.
-  - Updated: `docs/backlog/stories/story-08-20-editor-ai-chat-drawer-mvp.md`, `docs/backlog/stories/story-08-21-ai-structured-crud-edit-ops-protocol-v1.md`, `docs/backlog/stories/story-08-22-editor-ai-diff-preview-apply-undo.md`
-  - Added: `docs/backlog/stories/story-08-23-ai-chat-streaming-proxy-and-config.md`
-  - Updated index: `docs/index.md`, `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md`
-- Epic 14 planning: updated diff/compare specs and added a working-copy persistence story (IndexedDB) to support diff + AI workflows.
-  - Updated: `docs/backlog/stories/story-14-17-editor-version-diff-view.md`, `docs/backlog/stories/story-14-18-editor-review-navigation-and-compare.md`
-  - Added: `docs/backlog/stories/story-14-30-editor-working-copy-persistence-indexeddb.md`
-  - Added: `docs/backlog/stories/story-14-31-editor-focus-mode-collapse-sidebar.md`
-  - Updated: `docs/backlog/epics/epic-14-admin-tool-authoring.md`, `docs/index.md`
-- ST-14-15: reviewed implementation (endpoint + handler + tests) and marked story done.
-- Repo housekeeping: moved `docs/guide-teacher-developers.md` to `stakeholders/guide-teacher-developers.md` (per user request).
+- PR-0008: marked done; normalized chat storage docs updated with TTL-on-access semantics (docs: `docs/backlog/prs/pr-0008-editor-chat-message-storage-minimal-c.md`).
+- Chat history storage: new `tool_session_messages` table + repo + migration; chat handler no longer reads/writes `tool_sessions.state["messages"]` (infra/app: `src/skriptoteket/infrastructure/db/models/tool_session_message.py`, `src/skriptoteket/infrastructure/repositories/tool_session_message_repository.py`, `migrations/versions/0024_tool_session_messages.py`, `src/skriptoteket/application/editor/chat_handler.py`).
+- Chat semantics: tail cap 60 (`LLM_CHAT_TAIL_MAX_MESSAGES`), TTL based on last message timestamp, assistant persistence uses `message_id` correlation + `orphaned` meta when missing user message (app/config: `src/skriptoteket/application/editor/chat_handler.py`, `src/skriptoteket/config.py`).
+- Clear chat endpoint now deletes message rows via `EditorChatClearHandler` (app/web: `src/skriptoteket/application/editor/clear_chat_handler.py`, `src/skriptoteket/web/api/v1/editor/chat.py`).
+- Tests updated/added: chat handler unit tests, clear handler unit tests, guard/orphaned + duplicate-message concurrency unit tests, integration repo test (tests: `tests/unit/application/test_editor_chat_handler.py`, `tests/unit/application/test_editor_chat_clear_handler.py`, `tests/unit/application/test_editor_chat_handler_concurrency.py`, `tests/integration/infrastructure/repositories/test_tool_session_message_repository.py`).
+- ST-08-23: implemented tool-scoped SSE chat endpoints `POST`/`DELETE /api/v1/editor/tools/{tool_id}/chat` (web: `src/skriptoteket/web/api/v1/editor/chat.py`).
+- ST-08-23: canonical chat thread stored in `tool_session_messages` (context `editor_chat`), TTL enforced on access via message timestamps (app: `src/skriptoteket/application/editor/chat_handler.py`).
+- ST-08-23: budgeting now uses sliding window (drop oldest turns; never truncate system prompt) and returns 422 on too-long newest message (app: `src/skriptoteket/application/editor/prompt_budget.py`).
+- ST-08-23: provider compatibility: `cache_prompt: true` only for local llama-server `:8082` (infra: `src/skriptoteket/infrastructure/llm/openai_provider.py`).
+- ST-08-23: updated unit tests for handler behavior and persistence semantics (tests: `tests/unit/application/test_editor_chat_handler.py`).
+- ST-08-23: added message-id based thread persistence with conflict retry + assistant insertion by `message_id`, plus in-process single-flight guard (app: `src/skriptoteket/application/editor/chat_handler.py`; infra: `src/skriptoteket/infrastructure/llm/chat_inflight_guard.py`; DI: `src/skriptoteket/di/llm.py`; protocol: `src/skriptoteket/protocols/llm.py`).
+- Tests: added concurrency coverage (tests: `tests/unit/application/test_editor_chat_handler_concurrency.py`).
+- Rule-040: removed `from __future__ import annotations` from API router modules to keep OpenAPI typing stable (files: `src/skriptoteket/web/api/v1/editor/completions.py`, `src/skriptoteket/web/api/v1/editor/edits.py`, `src/skriptoteket/web/api/v1/favorites.py`, `src/skriptoteket/web/api/v1/admin_users.py`).
+- Docs: PR-0008 marked done; ST-08-23 TTL/storage wording updated; EPIC-08 summary aligned (docs: `docs/backlog/prs/pr-0008-editor-chat-message-storage-minimal-c.md`, `docs/backlog/stories/story-08-23-ai-chat-streaming-proxy-and-config.md`, `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md`).
+- Docs: added PR-0009 for message_id persistence, updated PR-0008 coordination notes, aligned ST-08-23 scope, and updated `docs/index.md`.
+- Docs: PR plan `docs/backlog/prs/pr-0007-editor-ai-chat-thread-tool-scoped-sse.md` + story `docs/backlog/stories/story-08-23-ai-chat-streaming-proxy-and-config.md` marked done; EPIC-08 implementation summary updated.
+- Ops (hemma): allowed `172.18.0.0/16 -> 8082/tcp` in UFW, switched LLM edit model to Devstral, and raised AI edit limits in `~/apps/skriptoteket/.env` + `compose.prod.yaml`; web recreated.
 
 ## Verification
 
-- Frontend tests (ST-14-31): `pdm run fe-test -- src/stores/layout.spec.ts` (pass), `pdm run fe-test` (pass)
-- Frontend typecheck/lint/build (ST-14-31): `pdm run fe-type-check` (pass), `pdm run fe-lint` (pass), `pdm run fe-build` (pass)
-- Docs validate (ST-14-31): `pdm run docs-validate` (pass)
-- Playwright (ST-14-31, escalated): `pdm run python -m scripts.playwright_st_14_31_editor_focus_mode_e2e` (pass; artifacts: `.artifacts/st-14-31-editor-focus-mode-e2e/`)
-- Live check (ST-14-31): `pdm run dev` (running), `pdm run fe-dev` (running),
-  `curl -sSf http://127.0.0.1:5173/ | head -n 5` (SPA HTML served),
-  `curl -sSf http://127.0.0.1:8000/healthz` (503; SMTP check degraded) — focus-mode UI not manually exercised in CLI.
-- Backend unit tests (PR-0003): `pdm run pytest tests/unit/application/scripting/handlers/test_submit_for_review_handler.py -q` (pass)
-- Frontend tests (PR-0003): `pdm run fe-test -- src/composables/editor/useEditorWorkflowActions.spec.ts` (pass)
-- Live check (fe-dev): `curl -sSf http://127.0.0.1:5173/admin/tools | head -n 5` (SPA HTML served)
-- Docs update (PR-0003): `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md` status + criteria synced
-- Frontend tests: `pdm run fe-test` (pass)
-- Frontend typecheck: `pdm run fe-type-check` (pass)
-- Frontend lint: `pdm run fe-lint` (pass)
-- Live check (fe-dev): `pdm run fe-dev` + `curl -sSf http://127.0.0.1:5173/ | head -n 5` (SPA HTML served)
-- Frontend OpenAPI types: `pdm run fe-gen-api-types` (pass)
-- Frontend build: `pdm run fe-build` (pass)
+- Not run (this session): `pdm run pytest tests/unit/application/test_editor_chat_handler.py -q`, `pdm run pytest tests/unit/application/test_editor_chat_clear_handler.py -q`, `pdm run pytest tests/integration/infrastructure/repositories/test_tool_session_message_repository.py -q`, live `/api/v1/editor/tools/{tool_id}/chat` SSE + clear checks.
+- Unit tests (chat): `pdm run pytest tests/unit/application/test_editor_chat_handler.py -q` (pass)
+- Unit tests (chat concurrency): `pdm run pytest tests/unit/application/test_editor_chat_handler_concurrency.py -q` (pass)
+- Unit tests (application): `pdm run pytest tests/unit/application -q` (pass)
 - Docs validate: `pdm run docs-validate` (pass)
-- Backend unit tests (ST-14-15): `pdm run pytest tests/unit/application/scripting/handlers/test_validate_tool_schemas_handler.py -q` (pass)
-- Live check (dev containers): `curl -sSf http://127.0.0.1:5173/ | head -n 5` (SPA HTML served)
-- Live check (dev backend): `curl -sSf http://127.0.0.1:8000/healthz`
-- Playwright (ui-editor-smoke): `pdm run ui-editor-smoke` (fails on macOS without escalation: MachPort permission denied)
-- Playwright (ui-editor-smoke, escalated): `pdm run ui-editor-smoke` (pass; artifacts: `.artifacts/ui-editor-smoke/`)
-- Script run (yrkesgenerator PDF): `pdm run python -c "import json,os,sys,tempfile; from importlib.util import module_from_spec,spec_from_file_location; from pathlib import Path; sys.path.insert(0,'runner'); spec=spec_from_file_location('yrkesgenerator','src/skriptoteket/script_bank/scripts/yrkesgenerator.py'); module=module_from_spec(spec); spec.loader.exec_module(module); tmp=tempfile.TemporaryDirectory(); input_dir=Path(tmp.name)/'input'; output_dir=Path(tmp.name)/'output'; input_dir.mkdir(parents=True, exist_ok=True); (input_dir/'action.json').write_text(json.dumps({'action_id':'pdf','input':{},'state':{}})); os.environ['SKRIPTOTEKET_INPUTS']=json.dumps({'full_name':'Test Person'}); module.run_tool(str(input_dir), str(output_dir)); print([p.name for p in output_dir.glob('*.pdf')]); tmp.cleanup()"` (generated `yrkesdiplom_Test_Person.pdf`; fontconfig cache warnings)
-- Live check (Playwright, escalated): `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_14_16_editor_schema_validation_errors_ux_e2e` (pass; artifacts: `.artifacts/st-14-16-editor-schema-validation-errors-ux-e2e/`)
-- Live check (Playwright, escalated): `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_14_30_editor_working_copy_persistence_e2e` (pass; artifacts: `.artifacts/st-14-30-editor-working-copy-persistence-e2e/`)
-- Backend unit tests (ST-14-18): `pdm run pytest tests/unit/web/test_editor_draft_lock_api.py -q` (pass)
-- Frontend lint/build (ST-14-18): `pdm run fe-lint` (pass), `pdm run fe-build` (pass)
-- Live check (Playwright, escalated): `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_14_18_editor_compare_deeplink_e2e` (pass; artifacts: `.artifacts/st-14-18-editor-compare-deeplink-e2e/`)
-- Hemma: `ssh hemma "sudo systemctl status --no-pager amdgpu-force-active.service"` (active/exited; SUCCESS)
-- Hemma: `ssh hemma "sudo sh -c 'cat /sys/class/drm/card1/device/power/control; cat /sys/class/drm/card1/device/power/runtime_status'"` (`on` / `active`)
-- Hemma: `ssh hemma "curl -s http://127.0.0.1:8082/v1/models | jq -r '.data[0].id'"` (confirm served model)
-- Hemma: `ssh hemma "/home/paunchygent/llama.cpp/build-vulkan/bin/llama-bench -m /home/paunchygent/models/Devstral-Small-2-24B-Instruct-2512-Q8_0.gguf -p 512 -n 128 -r 1 --no-warmup -t 8 -ngl 99 -dev Vulkan0 -o md"` (baseline)
+- OpenAPI/docs (local): `curl -sS http://127.0.0.1:8000/openapi.json | jq -r '.paths | keys[] | select(.=="/api/v1/editor/tools/{tool_id}/chat")'` and `curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8000/docs` (200)
+- Rule-040 check (local): `rg -n "from __future__ import annotations" src/skriptoteket/web/api -S` (no output)
+- Live SSE smoke (docker dev; no secrets):
+  - Login: `set -a && source .env && set +a && COOKIE_JAR=/tmp/skriptoteket-cookies.txt && CSRF_FILE=/tmp/skriptoteket-csrf.txt && curl -sS -c "$COOKIE_JAR" -H 'Content-Type: application/json' -d "{\"email\":\"$BOOTSTRAP_SUPERUSER_EMAIL\",\"password\":\"$BOOTSTRAP_SUPERUSER_PASSWORD\"}" http://127.0.0.1:8000/api/v1/auth/login | jq -r .csrf_token > "$CSRF_FILE"`
+  - SSE: `TOOL_ID=$(curl -sS -b "$COOKIE_JAR" http://127.0.0.1:8000/api/v1/catalog/tools | jq -r '.items[0].id') && CSRF=$(cat "$CSRF_FILE") && curl -N --max-time 10 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' -d '{"message":"Hej"}' http://127.0.0.1:8000/api/v1/editor/tools/$TOOL_ID/chat`
+  - Clear: `curl -sS -o /dev/null -w '%{http_code}\n' -X DELETE -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" http://127.0.0.1:8000/api/v1/editor/tools/$TOOL_ID/chat` (expect 204)
+- HTTPS healthz: `curl -sk https://skriptoteket.hule.education/healthz`
+- Local HTTPS (host header): `ssh hemma "curl -sk -H 'Host: skriptoteket.hule.education' https://127.0.0.1/healthz"`
+- Postgres data restored: `ssh hemma "sudo docker exec shared-postgres psql -U skriptoteket -d skriptoteket -c '\\dt'"`
+- Bootstrap login (server): `/api/v1/auth/login` using `BOOTSTRAP_SUPERUSER_*` from `~/apps/skriptoteket/.env` (no secrets stored here).
+- LLM edit connectivity (container → host): `ssh hemma "sudo docker exec skriptoteket-web python -c \"import urllib.request; print(urllib.request.urlopen('http://172.18.0.1:8082/health').read().decode())\""`
 
 ## How to Run
 
@@ -138,26 +65,22 @@ docker compose up -d db && pdm run db-upgrade
 
 # Development
 pdm run dev                 # Backend 127.0.0.1:8000
-pdm run fe-dev              # SPA 127.0.0.1:5173
 
 # Quality gates
 pdm run format
 pdm run lint
 pdm run typecheck
 pdm run test
-
-# Playwright
-pdm run ui-editor-smoke
 ```
 
 ## Known Issues / Risks
 
-- Playwright Chromium may require escalated permissions on macOS (MachPort permission errors); CodeMirror lint tooltip action buttons can be flaky to click in Playwright—use a DOM-evaluate click helper.
-- AI inference (hemma): Vulkan-only trial is currently enforced by disabling `tabby.service` + clamping GPU runtime-PM to `control=on` via `amdgpu-force-active.service`.
-- Prompt budgeting is a conservative char→token approximation; rare over-budget cases can still happen and return empty completion/suggestion (see `docs/reference/reports/ref-ai-edit-suggestions-kb-context-budget-blocker.md`).
-- Dev UI uses Vite proxy to `127.0.0.1:8000` (host backend); check the `pdm run dev` terminal for errors, not `docker logs`, unless the UI is pointed at the container port directly.
+- Streaming cancellation: client disconnect cancels upstream best-effort; `done.reason="cancelled"` may not be observed client-side if the connection is already closed.
+- Prompt budgeting is a conservative char→token approximation; rare over-budget cases can still happen.
+- If `LLM_CHAT_ENABLED=false` (default) or chat is misconfigured, SSE returns a single `done` event with the Swedish “not available” message.
 
 ## Next Steps
 
-- PR-0002: SRP modularize `frontend/apps/skriptoteket/src/composables/tools/useToolRun.ts` (keep API stable).
-- Follow-up (EPIC-08): key chat history by tool id (not version id) so saves don’t silently reset conversations.
+- ST-08-20 (UI): wire the chat drawer to `POST`/`DELETE /api/v1/editor/tools/{tool_id}/chat` (no client-managed history).
+- ST-08-21/22 (future): reuse the same canonical server-side thread (`context="editor_chat"`) for edit-ops/diff/apply/undo chat-first endpoints.
+- If you want to validate real streaming locally, enable `LLM_CHAT_ENABLED=true` and point `LLM_CHAT_BASE_URL` to a working OpenAI-compatible provider (default `http://localhost:8082`).

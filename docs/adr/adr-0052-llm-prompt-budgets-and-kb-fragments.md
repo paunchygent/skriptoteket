@@ -6,7 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-31
-updated: 2026-01-04
+updated: 2026-01-07
 links: ["EPIC-08", "ADR-0043", "ADR-0051", "ST-08-18", "ST-08-23", "ST-08-21",
 "REF-ai-completion-architecture"]
 ---
@@ -57,13 +57,14 @@ runner constraints + helpers)
    - instruction
    - selection/cursor context (if applicable)
    - prefix/suffix (if applicable)
-   - conversation context (bounded tail and optional bounded summary) for chat
-flows
+   - conversation context for chat-first flows (server-side thread tail)
    - virtual file payloads (multiple logical documents) for chat ops
    - expected completion/output tokens
    Truncate deterministically (keep selection intact; trim suffix/prefix
-first; reduce conversation tail/summary next; reduce system prompt last if
-needed).
+first; reduce conversation by dropping oldest turns next; **never truncate**
+the system prompt. If the newest user message cannot fit together with the
+full system prompt and reserved output budget, fail with a validation error
+and do not mutate stored chat state.
 
 3. **Graceful handling of over-budget responses**
    Treat upstream “context too large” responses as non-fatal:

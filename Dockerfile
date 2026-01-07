@@ -2,6 +2,7 @@
 
 ARG PANDOC_VERSION=3.8.3
 ARG PANDOC_SHA256=d7fac78b58b8c8da39254955eff321233ab97d74e8b2d461c0f0719a1fb5f357
+ARG PANDOC_SHA256_ARM64=566334d71769d15dfabf6514882ad6a41d57c0400ded1b6677bd72de7ec66a3d
 
 # Stage 1: Build frontend assets (full SPA)
 FROM node:22-slim AS frontend-builder
@@ -31,6 +32,8 @@ FROM python:3.13-slim AS builder
 
 ARG PANDOC_VERSION
 ARG PANDOC_SHA256
+ARG PANDOC_SHA256_ARM64
+ARG TARGETARCH
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -57,9 +60,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-dejavu-core \
     fonts-freefont-ttf \
     fonts-noto-core \
-    && PANDOC_DEB="pandoc-${PANDOC_VERSION}-1-amd64.deb" \
+    && case "$TARGETARCH" in \
+        amd64|"") PANDOC_ARCH="amd64"; PANDOC_SHA="$PANDOC_SHA256" ;; \
+        arm64) PANDOC_ARCH="arm64"; PANDOC_SHA="$PANDOC_SHA256_ARM64" ;; \
+        *) echo "Unsupported TARGETARCH=$TARGETARCH" >&2; exit 1 ;; \
+    esac \
+    && PANDOC_DEB="pandoc-${PANDOC_VERSION}-1-${PANDOC_ARCH}.deb" \
     && curl -fsSL -o "/tmp/${PANDOC_DEB}" "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/${PANDOC_DEB}" \
-    && echo "${PANDOC_SHA256}  /tmp/${PANDOC_DEB}" | sha256sum -c - \
+    && echo "${PANDOC_SHA}  /tmp/${PANDOC_DEB}" | sha256sum -c - \
     && dpkg -i "/tmp/${PANDOC_DEB}" \
     && apt-get -y -f install \
     && rm -f "/tmp/${PANDOC_DEB}" \
@@ -76,6 +84,8 @@ FROM python:3.13-slim AS production
 
 ARG PANDOC_VERSION
 ARG PANDOC_SHA256
+ARG PANDOC_SHA256_ARM64
+ARG TARGETARCH
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -103,9 +113,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     bat \
     fzf \
     tree \
-    && PANDOC_DEB="pandoc-${PANDOC_VERSION}-1-amd64.deb" \
+    && case "$TARGETARCH" in \
+        amd64|"") PANDOC_ARCH="amd64"; PANDOC_SHA="$PANDOC_SHA256" ;; \
+        arm64) PANDOC_ARCH="arm64"; PANDOC_SHA="$PANDOC_SHA256_ARM64" ;; \
+        *) echo "Unsupported TARGETARCH=$TARGETARCH" >&2; exit 1 ;; \
+    esac \
+    && PANDOC_DEB="pandoc-${PANDOC_VERSION}-1-${PANDOC_ARCH}.deb" \
     && curl -fsSL -o "/tmp/${PANDOC_DEB}" "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/${PANDOC_DEB}" \
-    && echo "${PANDOC_SHA256}  /tmp/${PANDOC_DEB}" | sha256sum -c - \
+    && echo "${PANDOC_SHA}  /tmp/${PANDOC_DEB}" | sha256sum -c - \
     && dpkg -i "/tmp/${PANDOC_DEB}" \
     && apt-get -y -f install \
     && rm -f "/tmp/${PANDOC_DEB}" \
@@ -114,7 +129,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # DevOps DX parity tools (see skriptoteket-devops skill/runbook)
 RUN ln -sf /usr/bin/fdfind /usr/local/bin/fd \
     && ln -sf /usr/bin/batcat /usr/local/bin/bat \
-    && curl -fsSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq \
+    && YQ_ARCH="amd64" \
+    && if [ "$TARGETARCH" = "arm64" ]; then YQ_ARCH="arm64"; fi \
+    && curl -fsSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${YQ_ARCH}" -o /usr/local/bin/yq \
     && chmod +x /usr/local/bin/yq
 
 RUN pip install --no-cache-dir pdm==2.26.2

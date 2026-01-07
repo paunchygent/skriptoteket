@@ -59,6 +59,8 @@ def _system_prompt_max_tokens(*, settings: Settings, capability: PromptCapabilit
         return settings.LLM_COMPLETION_SYSTEM_PROMPT_MAX_TOKENS
     if capability == "edit_suggestion":
         return settings.LLM_EDIT_SYSTEM_PROMPT_MAX_TOKENS
+    if capability == "chat_stream":
+        return settings.LLM_CHAT_SYSTEM_PROMPT_MAX_TOKENS
     raise ValueError(f"Unknown PromptCapability: {capability}")
 
 

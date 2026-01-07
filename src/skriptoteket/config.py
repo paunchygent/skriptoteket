@@ -84,6 +84,7 @@ class Settings(BaseSettings):
     # LLM API
     LLM_COMPLETION_TEMPLATE_ID: str = "inline_completion_v1"
     LLM_EDIT_TEMPLATE_ID: str = "edit_suggestion_v1"
+    LLM_CHAT_TEMPLATE_ID: str = "editor_chat_v1"
 
     LLM_COMPLETION_ENABLED: bool = False
     LLM_COMPLETION_BASE_URL: str = "http://localhost:8082"
@@ -112,3 +113,15 @@ class Settings(BaseSettings):
     LLM_EDIT_SELECTION_MAX_TOKENS: int = 896
     LLM_EDIT_PREFIX_MAX_TOKENS: int = 1024
     LLM_EDIT_SUFFIX_MAX_TOKENS: int = 256
+
+    LLM_CHAT_ENABLED: bool = False
+    LLM_CHAT_BASE_URL: str = "http://localhost:8082"
+    OPENAI_LLM_CHAT_API_KEY: str = ""
+    LLM_CHAT_MODEL: str = "qwen3-coder-30b-a3b"
+    LLM_CHAT_MAX_TOKENS: int = 1500
+    LLM_CHAT_TEMPERATURE: float = 0.2
+    LLM_CHAT_TIMEOUT_SECONDS: int = 60
+    LLM_CHAT_CONTEXT_WINDOW_TOKENS: int = 16384
+    LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS: int = 256
+    LLM_CHAT_SYSTEM_PROMPT_MAX_TOKENS: int = 1024
+    LLM_CHAT_TAIL_MAX_MESSAGES: int = 60

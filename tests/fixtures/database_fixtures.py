@@ -17,6 +17,10 @@ from sqlalchemy.ext.asyncio import (
 )
 from testcontainers.postgres import PostgresContainer
 
+from tests.fixtures.orm_models import load_all_models
+
+load_all_models()
+
 
 def _to_async_database_url(url: str) -> str:
     if url.startswith("postgresql+asyncpg://"):

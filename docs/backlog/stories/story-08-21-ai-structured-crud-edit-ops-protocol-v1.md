@@ -5,11 +5,11 @@ title: "AI: structured CRUD edit ops protocol v1 (insert/replace/delete)"
 status: ready
 owners: "agents"
 created: 2026-01-01
-updated: 2026-01-04
+updated: 2026-01-07
 epic: "EPIC-08"
 acceptance_criteria:
   - "Given the user requests an edit in chat, when the frontend calls `POST /api/v1/editor/edit-ops`, then the backend requests a response in a strict, schema-validated edit-ops format (JSON only; no markdown)."
-  - "Given an edit-ops request is sent, then the request includes the canonical virtual_files payload (tool.py, entrypoint.txt, settings_schema.json, input_schema.json, usage_instructions.md) and a bounded conversation context so proposals are deterministic and previewable."
+  - "Given an edit-ops request is sent, then the request includes the canonical virtual_files payload (tool.py, entrypoint.txt, settings_schema.json, input_schema.json, usage_instructions.md) and the newest user message, and the backend uses the canonical server-side chat thread (per `{user_id, tool_id}`) as multi-turn context."
   - "Given the LLM returns a valid response, when the backend parses it, then it returns `{ enabled: true, assistant_message: string, ops: [...] }` where each op supports insert/replace/delete against one of: whole document, selection, or cursor, and each op targets an explicit virtual file from the canonical editor file map: tool.py, entrypoint.txt, settings_schema.json, input_schema.json, usage_instructions.md."
   - "Given the backend returns an edit-ops proposal, then the response includes `base_fingerprints` per virtual file so the frontend can detect stale proposals reliably (ST-08-22)."
   - "Given base_fingerprints are returned, then each fingerprint is `sha256:<hex>` computed over the exact UTF-8 content of the corresponding virtual file used as the base (no normalization)."
@@ -26,7 +26,7 @@ dependencies:
   - "ST-14-17"
 
 ui_impact: "Yes (enables chat-driven edit proposals)"
-data_impact: "No (stateless requests)"
+data_impact: "Yes (uses canonical server-side chat thread per {user_id, tool_id})"
 ---
 
 ## Context
@@ -90,8 +90,7 @@ These ids are canonical across:
 `POST /api/v1/editor/edit-ops` MUST include:
 
 - `tool_id` (UUID; for permission checks + metadata logging)
-- `instruction` (string; the user’s current request)
-- `conversation` (bounded list; max length enforced by the frontend)
+- `message` (string; the user’s newest request)
 - `active_file` (one of the canonical virtual file ids)
 - `selection` (optional) and/or `cursor` (optional), so v1 targeting is well-
 defined:
@@ -99,6 +98,11 @@ defined:
   - cursor: `{ pos: int }` in the active file
 - `virtual_files`: a map containing the full current text for each canonical
 virtual file id
+
+Conversation context:
+
+- Multi-turn context MUST come from the canonical server-side chat thread (per
+  `{user_id, tool_id}`), not from client-managed transcripts.
 
 ### Response payload (backend → frontend)
 

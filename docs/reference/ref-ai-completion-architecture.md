@@ -5,7 +5,7 @@ title: "AI Completion Architecture Technical Specification"
 status: active
 owners: "agents"
 created: 2025-12-26
-updated: 2026-01-02
+updated: 2026-01-07
 topic: "ai-completion"
 ---
 
@@ -45,7 +45,9 @@ Chat-first editing is defined in ADR-0051 and implemented via stories ST-08-20/2
 
 Key implications for architecture:
 
-- Requests may include bounded multi-turn context (last N turns or a summary).
+- Multi-turn context is server-side: chat-first endpoints use a canonical chat
+  thread keyed by `{user_id, tool_id}` (30-day TTL since last activity) and
+  the frontend sends only the newest user message.
 - Proposals must target an explicit virtual file to keep diffs and apply/undo reliable.
 - Output token budgets for proposals are expected to exceed inline completion defaults, and must be coordinated with the
   provider context window and backend budgeting (ADR-0052).
@@ -323,6 +325,43 @@ Notes:
 | Unauthorized | HTTP 401 |
 | Missing CSRF | HTTP 403 |
 
+### 6.4 Editor chat streaming (SSE)
+
+```
+POST /api/v1/editor/tools/{tool_id}/chat
+Content-Type: application/json
+X-CSRF-Token: <csrf_token>
+
+{
+  "message": "..."
+}
+```
+
+Response is **SSE** (`Content-Type: text/event-stream; charset=utf-8`, `Cache-Control: no-cache`) with stable event
+types:
+
+- `event: meta` (exactly once, first): `data: {"enabled": true}`
+- `event: delta` (0..n): `data: {"text": "<utf8-chunk>"}`
+- `event: done` (exactly once, last): `data: {"enabled": true, "reason": "stop"|"cancelled"|"error"}`
+- If disabled/misconfigured: a single `event: done` with `data: {"enabled": false, "message": "<svenska>"}`
+
+Canonical thread behavior:
+
+- Conversation history is stored server-side per `{user_id, tool_id}` and used
+  as context on subsequent chat-first requests (30-day TTL since last
+  activity).
+- Clear the thread via `DELETE /api/v1/editor/tools/{tool_id}/chat`.
+- Provider calls use a sliding window (drop oldest turns first) and never
+  truncate the system prompt.
+- If the newest user message cannot fit with the full system prompt and
+  reserved output budget: return HTTP 422 with
+  `För långt meddelande: korta ned eller starta en ny chatt.` (and do not
+  mutate stored history).
+
+Client rule:
+
+- If the SSE connection closes before a `done` event is received, treat the stream as cancelled.
+
 ---
 
 ## 7. CodeMirror Extension Architecture
@@ -373,6 +412,7 @@ Prompt templates:
 
 - `LLM_COMPLETION_TEMPLATE_ID` (default: `inline_completion_v1`)
 - `LLM_EDIT_TEMPLATE_ID` (default: `edit_suggestion_v1`)
+- `LLM_CHAT_TEMPLATE_ID` (default: `editor_chat_v1`)
 
 Notes:
 
@@ -416,6 +456,22 @@ Edit suggestions:
 | `LLM_EDIT_SELECTION_MAX_TOKENS` | `896` | Target max tokens for selection (preserved first) |
 | `LLM_EDIT_PREFIX_MAX_TOKENS` | `1024` | Target max tokens for prefix context |
 | `LLM_EDIT_SUFFIX_MAX_TOKENS` | `256` | Target max tokens for suffix context |
+
+Chat (streaming):
+
+| Variable | Default | Description |
+| -------- | ------- | ----------- |
+| `LLM_CHAT_TEMPLATE_ID` | `editor_chat_v1` | Prompt template ID for system prompt composition |
+| `LLM_CHAT_ENABLED` | `false` | Enable/disable feature |
+| `LLM_CHAT_BASE_URL` | `http://localhost:8082` | LLM API URL |
+| `OPENAI_LLM_CHAT_API_KEY` | `""` | API key (optional for self-hosted) |
+| `LLM_CHAT_MODEL` | `qwen3-coder-30b-a3b` | Model name |
+| `LLM_CHAT_MAX_TOKENS` | `1500` | Max tokens in response |
+| `LLM_CHAT_TEMPERATURE` | `0.2` | Sampling temperature |
+| `LLM_CHAT_TIMEOUT_SECONDS` | `60` | Request timeout |
+| `LLM_CHAT_CONTEXT_WINDOW_TOKENS` | `16384` | Context window (prompt + output), matches llama.cpp `n_ctx` |
+| `LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS` | `256` | Reserved prompt budget for variance |
+| `LLM_CHAT_SYSTEM_PROMPT_MAX_TOKENS` | `1024` | Target max tokens for system prompt (rules + KB) |
 
 ### 8.2 Frontend (Intelligence Config)
 

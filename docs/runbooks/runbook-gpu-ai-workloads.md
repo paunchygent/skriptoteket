@@ -5,7 +5,7 @@ title: "Runbook: GPU AI Workloads (AMD Radeon AI PRO R9700)"
 status: active
 owners: "olof"
 created: 2025-12-30
-updated: 2026-01-06
+updated: 2026-01-07
 system: "hemma.hule.education"
 ---
 
@@ -39,6 +39,15 @@ Operations guide for AI workloads on the AMD Radeon AI PRO R9700 (32GB VRAM, RDN
 | **HIP** | 7.1.x | `/opt/rocm/bin/hipcc` |
 | **MIOpen** | 3.5.1 | `/opt/rocm/bin/MIOpenDriver` |
 | **MIGraphX** | - | `/opt/rocm/bin/migraphx-driver` |
+
+## Support Baseline (ROCm System Requirements)
+
+ROCm system requirements footnote for Radeon PRO / Radeon GPUs (verbatim excerpt):
+> "only support Ubuntu 24.04.3, Ubuntu 22.04.5, RHEL 10.1, and RHEL 9.7."
+
+Notes:
+- Treat Ubuntu 24.04.2 as installer media only; target the Ubuntu 24.04.3 runtime baseline with HWE 6.14.x.
+- Source: ROCm system requirements (Linux), 2026-01-05.
 
 ## Quick Commands
 
@@ -389,6 +398,25 @@ ssh hemma "/opt/rocm/hip/bin/hipDeviceQuery"
 # Benchmark with a model
 ssh hemma "cd ~/llama.cpp && ./llama-bench -m models/model.gguf -p 512 -n 128 -ngl 99"
 ```
+
+### Canonical Chat Burn (llama.cpp HIP service)
+
+Use the canonical chat fixtures to stress the live `llama-server-hip.service`
+for 10 minutes (review + diff requests). This is the preferred stability burn
+when netconsole is enabled.
+
+```bash
+# Ensure llama-server-hip is running (port 8082)
+ssh hemma "sudo systemctl status llama-server-hip --no-pager | head -n 20"
+
+# Run the 10-minute burn (logs to /root/logs/)
+ssh hemma "cd ~/apps/skriptoteket && sudo python3 scripts/ai_prompt_eval/llama_canonical_chat_burn.py \
+  --duration-seconds 600 --workers 8 --log-dir /root/logs"
+```
+
+Log format includes progress every 30s and a final summary (p50/p95/p99).
+The fixture source is
+`docs/reference/reports/artifacts/llama-canonical-chat-v3/llama-canonical-chat-v3-20260105T012947Z/`.
 
 ## Maintenance
 

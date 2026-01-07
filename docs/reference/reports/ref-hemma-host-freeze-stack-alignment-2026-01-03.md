@@ -5,7 +5,7 @@ title: "Follow-up: hemma host freeze stack alignment (Jan 2026)"
 status: active
 owners: "agents"
 created: 2026-01-03
-updated: 2026-01-03
+updated: 2026-01-07
 topic: "devops"
 links:
   - docs/reference/reports/ref-hemma-host-freeze-investigation-2026-01-03.md
@@ -43,6 +43,34 @@ of remediation options from most likely to least likely to resolve the underlyin
 
 Note: AMD marks Ubuntu 24.04.3 support as preliminary when using the 24.04.2 installer. That means the stack is
 supported but may still contain early-release regressions.
+
+ROCm system requirements footnote for Radeon PRO / Radeon GPUs (verbatim excerpt):
+> "only support Ubuntu 24.04.3, Ubuntu 22.04.5, RHEL 10.1, and RHEL 9.7."
+
+Source: ROCm system requirements (Linux), 2026-01-05.
+
+## Applied changes (2026-01-07)
+
+Crash capture hardening:
+
+- Sysctl config: `/etc/sysctl.d/99-crash-capture.conf`
+  - `kernel.panic_on_oops=1`
+  - `kernel.panic=10`
+  - `kernel.softlockup_panic=1`
+  - `kernel.panic_on_warn=1`
+- GRUB cmdline: `log_buf_len=4M`
+- Kdump enabled (`linux-crashdump` + `kdump-tools`), with range-based `crashkernel=...` managed by kdump-tools
+- Netconsole configured to UDP listener `192.168.0.11:6666` (update if receiver changes)
+
+AMDGPU tuning flags applied (GRUB cmdline):
+
+- `amdgpu.cwsr_enable=0`
+- `amdgpu.mcbp=0`
+- `amdgpu.runpm=0`
+
+Post-change baseline capture:
+
+- `/root/logs/incident-20260107-191503.log` (first larger snapshot after changes)
 
 ## Driver source check (local DKMS)
 
