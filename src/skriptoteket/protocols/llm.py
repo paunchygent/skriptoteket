@@ -9,6 +9,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.scripting.tool_session_messages import ToolSessionMessage
 
 PromptEvalOutcome = Literal["ok", "empty", "truncated", "over_budget", "timeout", "error"]
 ChatStreamDoneReason = Literal["stop", "cancelled", "error"]
@@ -117,6 +118,21 @@ class EditorChatCommand(BaseModel):
 
     tool_id: UUID
     message: str
+    base_version_id: UUID | None = None
+
+
+class EditorChatHistoryQuery(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    limit: int = 60
+
+
+class EditorChatHistoryResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    messages: list[ToolSessionMessage]
+    base_version_id: UUID | None = None
 
 
 class EditorChatClearCommand(BaseModel):
@@ -242,6 +258,15 @@ class EditorChatClearHandlerProtocol(Protocol):
         actor: User,
         command: EditorChatClearCommand,
     ) -> None: ...
+
+
+class EditorChatHistoryHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        query: EditorChatHistoryQuery,
+    ) -> EditorChatHistoryResult: ...
 
 
 class ChatInFlightGuardProtocol(Protocol):

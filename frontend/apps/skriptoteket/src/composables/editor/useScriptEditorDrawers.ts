@@ -3,7 +3,7 @@ import type { RouteLocationNormalizedLoaded, Router } from "vue-router";
 
 import { editorBaseRouteKey } from "./editorRouteKey";
 
-type DrawerKey = "history" | "metadata" | "maintainers" | "instructions";
+type DrawerKey = "history" | "metadata" | "maintainers" | "instructions" | "chat";
 
 type UseScriptEditorDrawersOptions = {
   route: RouteLocationNormalizedLoaded;
@@ -32,6 +32,7 @@ export function useScriptEditorDrawers({
   const isMetadataDrawerOpen = computed(() => activeDrawer.value === "metadata");
   const isMaintainersDrawerOpen = computed(() => activeDrawer.value === "maintainers");
   const isInstructionsDrawerOpen = computed(() => activeDrawer.value === "instructions");
+  const isChatDrawerOpen = computed(() => activeDrawer.value === "chat");
   const isDrawerOpen = computed(() => activeDrawer.value !== null);
 
   function toggleHistoryDrawer(): void {
@@ -56,6 +57,10 @@ export function useScriptEditorDrawers({
 
   function toggleInstructionsDrawer(): void {
     activeDrawer.value = activeDrawer.value === "instructions" ? null : "instructions";
+  }
+
+  function toggleChatDrawer(): void {
+    activeDrawer.value = activeDrawer.value === "chat" ? null : "chat";
   }
 
   function closeDrawer(): void {
@@ -116,10 +121,12 @@ export function useScriptEditorDrawers({
     isMetadataDrawerOpen,
     isMaintainersDrawerOpen,
     isInstructionsDrawerOpen,
+    isChatDrawerOpen,
     toggleHistoryDrawer,
     toggleMetadataDrawer,
     toggleMaintainersDrawer,
     toggleInstructionsDrawer,
+    toggleChatDrawer,
     closeDrawer,
     selectHistoryVersion,
   };

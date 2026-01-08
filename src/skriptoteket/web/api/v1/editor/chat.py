@@ -3,7 +3,7 @@ from collections.abc import AsyncIterator
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response, StreamingResponse
 
 from skriptoteket.domain.identity.models import User
@@ -13,12 +13,14 @@ from skriptoteket.protocols.llm import (
     EditorChatClearHandlerProtocol,
     EditorChatCommand,
     EditorChatHandlerProtocol,
+    EditorChatHistoryHandlerProtocol,
+    EditorChatHistoryQuery,
     EditorChatStreamEvent,
 )
 from skriptoteket.web.auth.api_dependencies import require_contributor_api, require_csrf_token
 from skriptoteket.web.editor_support import require_tool_access
 
-from .models import EditorChatRequest
+from .models import EditorChatHistoryMessage, EditorChatHistoryResponse, EditorChatRequest
 
 router = APIRouter()
 
@@ -44,7 +46,11 @@ async def stream_editor_chat(
 ) -> Response:
     await require_tool_access(actor=user, tool_id=tool_id, maintainers=maintainers)
 
-    command = EditorChatCommand(tool_id=tool_id, message=payload.message)
+    command = EditorChatCommand(
+        tool_id=tool_id,
+        message=payload.message,
+        base_version_id=payload.base_version_id,
+    )
     stream_iter = handler.stream(actor=user, command=command)
 
     first_event = await anext(stream_iter)
@@ -62,6 +68,33 @@ async def stream_editor_chat(
             "Cache-Control": "no-cache",
         },
     )
+
+
+@router.get("/tools/{tool_id}/chat", response_model=EditorChatHistoryResponse)
+@inject
+async def get_editor_chat_history(
+    tool_id: UUID,
+    handler: FromDishka[EditorChatHistoryHandlerProtocol],
+    maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
+    user: User = Depends(require_contributor_api),
+    limit: int = Query(60, ge=1, le=200),
+) -> EditorChatHistoryResponse:
+    await require_tool_access(actor=user, tool_id=tool_id, maintainers=maintainers)
+
+    result = await handler.handle(
+        actor=user,
+        query=EditorChatHistoryQuery(tool_id=tool_id, limit=limit),
+    )
+    messages = [
+        EditorChatHistoryMessage(
+            message_id=message.message_id,
+            role=message.role,
+            content=message.content,
+            created_at=message.created_at,
+        )
+        for message in result.messages
+    ]
+    return EditorChatHistoryResponse(messages=messages, base_version_id=result.base_version_id)
 
 
 @router.delete("/tools/{tool_id}/chat", status_code=204)

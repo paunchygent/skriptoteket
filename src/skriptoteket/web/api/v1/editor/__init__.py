@@ -17,7 +17,7 @@ from . import (
     workflow,
 )
 from .boot import get_editor_for_tool, get_editor_for_version
-from .chat import clear_editor_chat, stream_editor_chat
+from .chat import clear_editor_chat, get_editor_chat_history, stream_editor_chat
 from .completions import create_inline_completion
 from .drafts import create_draft_version, save_draft_version
 from .edits import create_edit_suggestion
@@ -35,6 +35,8 @@ from .models import (
     DraftLockRequest,
     DraftLockResponse,
     EditorBootResponse,
+    EditorChatHistoryMessage,
+    EditorChatHistoryResponse,
     EditorChatRequest,
     EditorEditSuggestionRequest,
     EditorEditSuggestionResponse,
@@ -97,6 +99,8 @@ __all__ = [
     "DraftLockRequest",
     "DraftLockResponse",
     "EditorBootResponse",
+    "EditorChatHistoryMessage",
+    "EditorChatHistoryResponse",
     "EditorChatRequest",
     "EditorEditSuggestionRequest",
     "EditorEditSuggestionResponse",
@@ -134,6 +138,7 @@ __all__ = [
     "create_edit_suggestion",
     "create_inline_completion",
     "clear_editor_chat",
+    "get_editor_chat_history",
     "download_artifact",
     "get_editor_for_tool",
     "get_editor_for_version",

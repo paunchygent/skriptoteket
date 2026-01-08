@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { components } from "../../api/openapi";
 import type { EditorWorkingCopyCheckpointSummary } from "../../composables/editor/useEditorWorkingCopy";
+import type { EditorChatMessage } from "../../composables/editor/useEditorChat";
 
+import ChatDrawer from "./ChatDrawer.vue";
 import InstructionsDrawer from "./InstructionsDrawer.vue";
 import MaintainersDrawer from "./MaintainersDrawer.vue";
 import MetadataDrawer from "./MetadataDrawer.vue";
@@ -17,6 +19,7 @@ type EditorWorkspaceDrawersProps = {
   isMetadataDrawerOpen: boolean;
   isMaintainersDrawerOpen: boolean;
   isInstructionsDrawerOpen: boolean;
+  isChatDrawerOpen: boolean;
 
   versions: EditorVersionSummary[];
   activeVersionId: string | null;
@@ -52,6 +55,11 @@ type EditorWorkspaceDrawersProps = {
   usageInstructions: string;
   isSaving: boolean;
   isReadOnly: boolean;
+
+  chatMessages: EditorChatMessage[];
+  chatIsStreaming: boolean;
+  chatDisabledMessage: string | null;
+  chatError: string | null;
 };
 
 const props = defineProps<EditorWorkspaceDrawersProps>();
@@ -79,6 +87,11 @@ const emit = defineEmits<{
   (event: "update:maintainersError", value: string | null): void;
   (event: "update:selectedProfessionIds", value: string[]): void;
   (event: "update:selectedCategoryIds", value: string[]): void;
+  (event: "sendChatMessage", message: string): void;
+  (event: "cancelChatStream"): void;
+  (event: "clearChat"): void;
+  (event: "clearChatError"): void;
+  (event: "clearChatDisabled"): void;
 }>();
 </script>
 
@@ -156,5 +169,20 @@ const emit = defineEmits<{
     @close="emit('close')"
     @save="emit('save')"
     @update:usage-instructions="emit('update:usageInstructions', $event)"
+  />
+
+  <ChatDrawer
+    v-if="props.isChatDrawerOpen"
+    :is-open="props.isChatDrawerOpen"
+    :messages="props.chatMessages"
+    :is-streaming="props.chatIsStreaming"
+    :disabled-message="props.chatDisabledMessage"
+    :error="props.chatError"
+    @close="emit('close')"
+    @send="emit('sendChatMessage', $event)"
+    @cancel="emit('cancelChatStream')"
+    @clear="emit('clearChat')"
+    @clear-error="emit('clearChatError')"
+    @clear-disabled="emit('clearChatDisabled')"
   />
 </template>

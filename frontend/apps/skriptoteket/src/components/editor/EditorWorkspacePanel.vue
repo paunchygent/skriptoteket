@@ -9,6 +9,7 @@ import type { EditorWorkingCopyCheckpointSummary } from "../../composables/edito
 import type { SchemaIssuesBySchema } from "../../composables/editor/useEditorSchemaValidation";
 import type { VirtualFileId } from "../../composables/editor/virtualFiles";
 import { virtualFileTextFromEditorFields } from "../../composables/editor/virtualFiles";
+import type { EditorChatMessage } from "../../composables/editor/useEditorChat";
 import EditorComparePanel from "./EditorComparePanel.vue";
 import EditorEditSuggestionPanel from "./EditorEditSuggestionPanel.vue";
 import EditorInputSchemaPanel from "./EditorInputSchemaPanel.vue";
@@ -76,6 +77,7 @@ type EditorWorkspacePanelProps = {
   isMetadataDrawerOpen: boolean;
   isMaintainersDrawerOpen: boolean;
   isInstructionsDrawerOpen: boolean;
+  isChatDrawerOpen: boolean;
   canCompareVersions: boolean;
 
   editInstruction: string;
@@ -104,6 +106,11 @@ type EditorWorkspacePanelProps = {
   pinnedCheckpointCount: number;
   pinnedCheckpointLimit: number;
   isCheckpointBusy: boolean;
+
+  chatMessages: EditorChatMessage[];
+  chatIsStreaming: boolean;
+  chatDisabledMessage: string | null;
+  chatError: string | null;
 };
 
 const props = defineProps<EditorWorkspacePanelProps>();
@@ -115,6 +122,7 @@ const emit = defineEmits<{
   (event: "openMetadataDrawer"): void;
   (event: "openMaintainersDrawer"): void;
   (event: "openInstructionsDrawer"): void;
+  (event: "openChatDrawer"): void;
   (event: "closeDrawer"): void;
   (event: "selectHistoryVersion", versionId: string): void;
   (event: "compareVersion", versionId: string): void;
@@ -150,6 +158,11 @@ const emit = defineEmits<{
   (event: "removeCheckpoint", checkpointId: string): void;
   (event: "restoreServerVersion"): void;
   (event: "toggleFocusMode"): void;
+  (event: "sendChatMessage", message: string): void;
+  (event: "cancelChatStream"): void;
+  (event: "clearChat"): void;
+  (event: "clearChatError"): void;
+  (event: "clearChatDisabled"): void;
 }>();
 
 const activeVersionId = computed(() => props.selectedVersion?.id ?? null);
@@ -190,6 +203,7 @@ const isCompareMode = computed(() => props.compareTarget !== null);
       @open-metadata-drawer="emit('openMetadataDrawer')"
       @open-maintainers-drawer="emit('openMaintainersDrawer')"
       @open-instructions-drawer="emit('openInstructionsDrawer')"
+      @open-chat-drawer="emit('openChatDrawer')"
       @toggle-focus-mode="emit('toggleFocusMode')"
       @update:change-summary="emit('update:changeSummary', $event)"
     />
@@ -284,6 +298,7 @@ const isCompareMode = computed(() => props.compareTarget !== null);
         :is-metadata-drawer-open="props.isMetadataDrawerOpen"
         :is-maintainers-drawer-open="props.isMaintainersDrawerOpen"
         :is-instructions-drawer-open="props.isInstructionsDrawerOpen"
+        :is-chat-drawer-open="props.isChatDrawerOpen"
         :versions="props.versions"
         :active-version-id="activeVersionId"
         :can-compare-versions="props.canCompareVersions"
@@ -313,6 +328,10 @@ const isCompareMode = computed(() => props.compareTarget !== null);
         :pinned-checkpoint-count="props.pinnedCheckpointCount"
         :pinned-checkpoint-limit="props.pinnedCheckpointLimit"
         :is-checkpoint-busy="props.isCheckpointBusy"
+        :chat-messages="props.chatMessages"
+        :chat-is-streaming="props.chatIsStreaming"
+        :chat-disabled-message="props.chatDisabledMessage"
+        :chat-error="props.chatError"
         @close="emit('closeDrawer')"
         @select-history-version="emit('selectHistoryVersion', $event)"
         @compare-version="emit('compareVersion', $event)"
@@ -335,6 +354,11 @@ const isCompareMode = computed(() => props.compareTarget !== null);
         @update:maintainers-error="emit('update:maintainersError', $event)"
         @update:selected-profession-ids="emit('update:selectedProfessionIds', $event)"
         @update:selected-category-ids="emit('update:selectedCategoryIds', $event)"
+        @send-chat-message="emit('sendChatMessage', $event)"
+        @cancel-chat-stream="emit('cancelChatStream')"
+        @clear-chat="emit('clearChat')"
+        @clear-chat-error="emit('clearChatError')"
+        @clear-chat-disabled="emit('clearChatDisabled')"
       />
     </div>
   </div>

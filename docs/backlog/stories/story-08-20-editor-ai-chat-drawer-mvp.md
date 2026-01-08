@@ -2,7 +2,7 @@
 type: story
 id: ST-08-20
 title: "Editor: AI chat drawer MVP (beginner-friendly assistant UI)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-01
 updated: 2026-01-07

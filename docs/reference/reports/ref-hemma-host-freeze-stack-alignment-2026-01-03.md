@@ -72,6 +72,32 @@ Post-change baseline capture:
 
 - `/root/logs/incident-20260107-191503.log` (first larger snapshot after changes)
 
+## Crash (2026-01-07 21:57 UTC) — auto reboot + kdump
+
+Timeline (UTC):
+
+- Last log in boot `-2`: **21:56:04** (UFW block line; matches netconsole stream).
+- Auto-reboot boot `-1`: **21:57:12 → 21:57:34** (kdump executed).
+- Manual hard cycle: **22:06** (boot `0` starts at **22:06:47**).
+
+Crash artifacts:
+
+- `/var/crash/202601072157/dmesg.202601072157`
+- `/var/crash/202601072157/dump.202601072157` (~228 MB)
+- Copies in `/root/logs/`:
+  - `kdump-20260107-2157-dmesg.log`
+  - `kdump-20260107-2157.crash`
+  - `incident-20260107-2157-kdump-bug.txt` (extracted BUG context)
+
+Signature summary:
+
+- Kernel BUG/invalid opcode in **timerqueue_del** with stack frames in
+  **cpuidle_enter_state** (scheduler/timerqueue path), not an amdgpu/DCN log line.
+
+Post-crash capture:
+
+- `/root/logs/incident-20260107-220906.log`
+
 ## Driver source check (local DKMS)
 
 The installed AMDGPU DKMS source under `/usr/src/amdgpu-6.16.6-2255209.24.04/amd/display/` already contains the

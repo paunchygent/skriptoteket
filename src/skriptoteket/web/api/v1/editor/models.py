@@ -84,6 +84,23 @@ class EditorChatRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     message: str = Field(min_length=1)
+    base_version_id: UUID | None = None
+
+
+class EditorChatHistoryMessage(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    message_id: UUID
+    role: Literal["user", "assistant"]
+    content: str
+    created_at: datetime
+
+
+class EditorChatHistoryResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    messages: list[EditorChatHistoryMessage] = Field(default_factory=list)
+    base_version_id: UUID | None = None
 
 
 class CreateDraftVersionRequest(BaseModel):

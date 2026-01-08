@@ -8,6 +8,7 @@ import httpx
 from dishka import Provider, Scope, provide
 
 from skriptoteket.application.editor.chat_handler import EditorChatHandler
+from skriptoteket.application.editor.chat_history_handler import EditorChatHistoryHandler
 from skriptoteket.application.editor.clear_chat_handler import EditorChatClearHandler
 from skriptoteket.application.editor.completion_handler import InlineCompletionHandler
 from skriptoteket.application.editor.edit_suggestion_handler import EditSuggestionHandler
@@ -25,6 +26,7 @@ from skriptoteket.protocols.llm import (
     ChatStreamProviderProtocol,
     EditorChatClearHandlerProtocol,
     EditorChatHandlerProtocol,
+    EditorChatHistoryHandlerProtocol,
     EditSuggestionHandlerProtocol,
     EditSuggestionProviderProtocol,
     InlineCompletionHandlerProtocol,
@@ -117,3 +119,18 @@ class LlmProvider(Provider):
         messages: ToolSessionMessageRepositoryProtocol,
     ) -> EditorChatClearHandlerProtocol:
         return EditorChatClearHandler(uow=uow, sessions=sessions, messages=messages)
+
+    @provide(scope=Scope.REQUEST)
+    def editor_chat_history_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        sessions: ToolSessionRepositoryProtocol,
+        messages: ToolSessionMessageRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> EditorChatHistoryHandlerProtocol:
+        return EditorChatHistoryHandler(
+            uow=uow,
+            sessions=sessions,
+            messages=messages,
+            clock=clock,
+        )

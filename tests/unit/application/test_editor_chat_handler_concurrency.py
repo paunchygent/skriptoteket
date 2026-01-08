@@ -235,12 +235,14 @@ async def test_duplicate_user_messages_persist_distinct_assistant_rows() -> None
         actor=actor,
         message="Hej",
         system_prompt="system prompt",
+        base_version_id=None,
     )
     _budgeted_b, message_id_b, session_id_b = await handler._persist_user_message(
         tool_id=tool_id,
         actor=actor,
         message="Hej",
         system_prompt="system prompt",
+        base_version_id=None,
     )
 
     assert message_id_a == user_message_id_a

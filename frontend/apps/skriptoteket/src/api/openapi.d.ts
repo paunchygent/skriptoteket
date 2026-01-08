@@ -687,6 +687,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/editor/tools/{tool_id}/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Editor Chat History */
+        get: operations["get_editor_chat_history_api_v1_editor_tools__tool_id__chat_get"];
+        put?: never;
+        /** Stream Editor Chat */
+        post: operations["stream_editor_chat_api_v1_editor_tools__tool_id__chat_post"];
+        /** Clear Editor Chat */
+        delete: operations["clear_editor_chat_api_v1_editor_tools__tool_id__chat_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/editor/tools/{tool_id}/draft": {
         parameters: {
             query?: never;
@@ -1503,6 +1522,40 @@ export interface components {
             usage_instructions?: string | null;
             /** Versions */
             versions: components["schemas"]["EditorVersionSummary"][];
+        };
+        /** EditorChatHistoryMessage */
+        EditorChatHistoryMessage: {
+            /** Content */
+            content: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Message Id
+             * Format: uuid
+             */
+            message_id: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "user" | "assistant";
+        };
+        /** EditorChatHistoryResponse */
+        EditorChatHistoryResponse: {
+            /** Base Version Id */
+            base_version_id?: string | null;
+            /** Messages */
+            messages?: components["schemas"]["EditorChatHistoryMessage"][];
+        };
+        /** EditorChatRequest */
+        EditorChatRequest: {
+            /** Base Version Id */
+            base_version_id?: string | null;
+            /** Message */
+            message: string;
         };
         /** EditorEditSuggestionRequest */
         EditorEditSuggestionRequest: {
@@ -4331,6 +4384,105 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["EditorBootResponse"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_editor_chat_history_api_v1_editor_tools__tool_id__chat_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                tool_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorChatHistoryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    stream_editor_chat_api_v1_editor_tools__tool_id__chat_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                tool_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditorChatRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clear_editor_chat_api_v1_editor_tools__tool_id__chat_delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                tool_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

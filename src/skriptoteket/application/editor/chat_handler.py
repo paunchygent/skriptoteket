@@ -19,6 +19,7 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
+from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
@@ -48,6 +49,7 @@ _MESSAGE_TOO_LONG = "För långt meddelande: korta ned eller starta en ny chatt.
 _THREAD_CONTEXT = "editor_chat"
 _THREAD_TTL = timedelta(days=30)
 _IN_FLIGHT_MESSAGE = "En chatförfrågan pågår redan. Försök igen om en stund."
+_BASE_VERSION_KEY = "base_version_id"
 
 
 def _is_context_window_error(exc: httpx.HTTPStatusError) -> bool:
@@ -96,6 +98,43 @@ class EditorChatHandler(EditorChatHandlerProtocol):
     def _is_thread_expired(self, *, last_message_at: datetime) -> bool:
         return self._clock.now() - last_message_at > _THREAD_TTL
 
+    async def _update_base_version_id(
+        self,
+        *,
+        tool_id: UUID,
+        actor: User,
+        session: ToolSession,
+        base_version_id: UUID,
+    ) -> ToolSession:
+        next_state = dict(session.state)
+        next_state[_BASE_VERSION_KEY] = str(base_version_id)
+
+        for _attempt in range(2):
+            try:
+                return await self._sessions.update_state(
+                    tool_id=tool_id,
+                    user_id=actor.id,
+                    context=_THREAD_CONTEXT,
+                    expected_state_rev=session.state_rev,
+                    state=next_state,
+                )
+            except DomainError as exc:
+                if exc.code is not ErrorCode.CONFLICT:
+                    raise
+
+                refreshed = await self._sessions.get(
+                    tool_id=tool_id,
+                    user_id=actor.id,
+                    context=_THREAD_CONTEXT,
+                )
+                if refreshed is None:
+                    return session
+                session = refreshed
+                next_state = dict(session.state)
+                next_state[_BASE_VERSION_KEY] = str(base_version_id)
+
+        return session
+
     async def _persist_user_message(
         self,
         *,
@@ -103,6 +142,7 @@ class EditorChatHandler(EditorChatHandlerProtocol):
         actor: User,
         message: str,
         system_prompt: str,
+        base_version_id: UUID | None,
     ) -> tuple[list[ChatMessage], UUID, UUID]:
         user_message_id = self._id_generator.new_uuid()
         user_message = ChatMessage(role="user", content=message, message_id=user_message_id)
@@ -127,7 +167,21 @@ class EditorChatHandler(EditorChatHandlerProtocol):
             )
             if tail and self._is_thread_expired(last_message_at=tail[-1].created_at):
                 await self._messages.delete_all(tool_session_id=session.id)
+                if session.state:
+                    session = await self._sessions.clear_state(
+                        tool_id=tool_id,
+                        user_id=actor.id,
+                        context=_THREAD_CONTEXT,
+                    )
                 tail = []
+
+            if base_version_id is not None:
+                session = await self._update_base_version_id(
+                    tool_id=tool_id,
+                    actor=actor,
+                    session=session,
+                    base_version_id=base_version_id,
+                )
 
             existing_messages = [
                 ChatMessage(
@@ -260,6 +314,7 @@ class EditorChatHandler(EditorChatHandlerProtocol):
                 actor=actor,
                 message=command.message,
                 system_prompt=system_prompt,
+                base_version_id=command.base_version_id,
             )
             request = LLMChatRequest(messages=budgeted_messages)
             system_prompt_chars = len(system_prompt)

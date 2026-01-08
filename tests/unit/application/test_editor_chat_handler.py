@@ -78,6 +78,7 @@ async def test_editor_chat_returns_done_disabled_when_disabled() -> None:
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
     sessions.get = AsyncMock()
     sessions.get_or_create = AsyncMock()
+    sessions.clear_state = AsyncMock()
     messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
     messages.list_tail = AsyncMock()
     messages.append_message = AsyncMock()
@@ -469,6 +470,7 @@ async def test_editor_chat_drops_expired_thread_history() -> None:
         updated_at=now - timedelta(days=31),
     )
     sessions.get.return_value = expired_session
+    sessions.clear_state.return_value = expired_session
     messages.list_tail.return_value = [
         ToolSessionMessage(
             id=uuid4(),
@@ -522,6 +524,11 @@ async def test_editor_chat_drops_expired_thread_history() -> None:
 
     assert [event.event for event in events] == ["meta", "delta", "done"]
     messages.delete_all.assert_called_once_with(tool_session_id=expired_session.id)
+    sessions.clear_state.assert_called_once_with(
+        tool_id=tool_id,
+        user_id=actor.id,
+        context="editor_chat",
+    )
     assert messages.append_message.call_count == 2
     first_call = messages.append_message.call_args_list[0].kwargs
     assert first_call["message_id"] == user_message_id

@@ -20,6 +20,10 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Current Session (2026-01-07)
 
+- Chat drawer UI consolidated into a single scrollable conversation surface (no per-message boxes), cleaned copy, and stronger hierarchy: `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`.
+- Focus mode now defaults on editor load (no toast), preserving user manual toggle afterward: `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
+- Migration integration test added for tool_session_messages (0024): `tests/integration/test_migration_0024_tool_session_messages_idempotent.py`.
+- Playwright chat drawer check added: `scripts/playwright_st_08_20_editor_chat_drawer_check.py`.
 - PR-0008: marked done; normalized chat storage docs updated with TTL-on-access semantics (docs: `docs/backlog/prs/pr-0008-editor-chat-message-storage-minimal-c.md`).
 - Chat history storage: new `tool_session_messages` table + repo + migration; chat handler no longer reads/writes `tool_sessions.state["messages"]` (infra/app: `src/skriptoteket/infrastructure/db/models/tool_session_message.py`, `src/skriptoteket/infrastructure/repositories/tool_session_message_repository.py`, `migrations/versions/0024_tool_session_messages.py`, `src/skriptoteket/application/editor/chat_handler.py`).
 - Chat semantics: tail cap 60 (`LLM_CHAT_TAIL_MAX_MESSAGES`), TTL based on last message timestamp, assistant persistence uses `message_id` correlation + `orphaned` meta when missing user message (app/config: `src/skriptoteket/application/editor/chat_handler.py`, `src/skriptoteket/config.py`).
@@ -41,6 +45,8 @@ Keep this file updated so the next session can pick up work quickly.
 ## Verification
 
 - Not run (this session): `pdm run pytest tests/unit/application/test_editor_chat_handler.py -q`, `pdm run pytest tests/unit/application/test_editor_chat_clear_handler.py -q`, `pdm run pytest tests/integration/infrastructure/repositories/test_tool_session_message_repository.py -q`, live `/api/v1/editor/tools/{tool_id}/chat` SSE + clear checks.
+- Migration test (docker): `pdm run pytest -m docker tests/integration/test_migration_0024_tool_session_messages_idempotent.py -q` (pass)
+- Dev DB migration: `pdm run db-upgrade`
 - Unit tests (chat): `pdm run pytest tests/unit/application/test_editor_chat_handler.py -q` (pass)
 - Unit tests (chat concurrency): `pdm run pytest tests/unit/application/test_editor_chat_handler_concurrency.py -q` (pass)
 - Unit tests (application): `pdm run pytest tests/unit/application -q` (pass)
@@ -51,6 +57,7 @@ Keep this file updated so the next session can pick up work quickly.
   - Login: `set -a && source .env && set +a && COOKIE_JAR=/tmp/skriptoteket-cookies.txt && CSRF_FILE=/tmp/skriptoteket-csrf.txt && curl -sS -c "$COOKIE_JAR" -H 'Content-Type: application/json' -d "{\"email\":\"$BOOTSTRAP_SUPERUSER_EMAIL\",\"password\":\"$BOOTSTRAP_SUPERUSER_PASSWORD\"}" http://127.0.0.1:8000/api/v1/auth/login | jq -r .csrf_token > "$CSRF_FILE"`
   - SSE: `TOOL_ID=$(curl -sS -b "$COOKIE_JAR" http://127.0.0.1:8000/api/v1/catalog/tools | jq -r '.items[0].id') && CSRF=$(cat "$CSRF_FILE") && curl -N --max-time 10 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' -d '{"message":"Hej"}' http://127.0.0.1:8000/api/v1/editor/tools/$TOOL_ID/chat`
   - Clear: `curl -sS -o /dev/null -w '%{http_code}\n' -X DELETE -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" http://127.0.0.1:8000/api/v1/editor/tools/$TOOL_ID/chat` (expect 204)
+- Playwright chat drawer check (Vite): `pdm run seed-script-bank --slug demo-next-actions`, then `pdm run python -m scripts.playwright_st_08_20_editor_chat_drawer_check --base-url http://127.0.0.1:5173` (screenshot: `.artifacts/ui-editor-chat/chat-drawer.png`)
 - HTTPS healthz: `curl -sk https://skriptoteket.hule.education/healthz`
 - Local HTTPS (host header): `ssh hemma "curl -sk -H 'Host: skriptoteket.hule.education' https://127.0.0.1/healthz"`
 - Postgres data restored: `ssh hemma "sudo docker exec shared-postgres psql -U skriptoteket -d skriptoteket -c '\\dt'"`

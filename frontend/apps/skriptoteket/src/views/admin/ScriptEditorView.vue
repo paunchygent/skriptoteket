@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { EditorView } from "@codemirror/view";
-import { computed, ref, shallowRef } from "vue";
+import { computed, ref, shallowRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import type { components } from "../../api/openapi";
@@ -11,6 +11,7 @@ import SystemMessage from "../../components/ui/SystemMessage.vue";
 import WorkflowActionModal from "../../components/editor/WorkflowActionModal.vue";
 import WorkingCopyRestorePrompt from "../../components/editor/WorkingCopyRestorePrompt.vue";
 import { useEditorEditSuggestions } from "../../composables/editor/useEditorEditSuggestions";
+import { useEditorChat } from "../../composables/editor/useEditorChat";
 import {
   resolveDefaultCompareTarget,
   resolveMostRecentRejectedReviewVersionId,
@@ -93,6 +94,7 @@ const {
   router,
   notify,
 });
+const focusInitialized = ref(false);
 const { inputSchema, inputSchemaError, settingsSchema, settingsSchemaError } = useEditorSchemaParsing({
   inputSchemaText,
   settingsSchemaText,
@@ -242,10 +244,12 @@ const {
   isMetadataDrawerOpen,
   isMaintainersDrawerOpen,
   isInstructionsDrawerOpen,
+  isChatDrawerOpen,
   toggleHistoryDrawer,
   toggleMetadataDrawer,
   toggleMaintainersDrawer,
   toggleInstructionsDrawer,
+  toggleChatDrawer,
   closeDrawer,
   selectHistoryVersion,
 } = drawers;
@@ -346,6 +350,24 @@ const {
   workingCopyProvider,
 } = workingCopy;
 
+const editorChat = useEditorChat({
+  toolId: editorToolId,
+  baseVersionId: computed(() => selectedVersion.value?.id ?? null),
+});
+
+const {
+  messages: chatMessages,
+  streaming: chatStreaming,
+  disabledMessage: chatDisabledMessage,
+  error: chatError,
+  loadHistory: loadChatHistory,
+  sendMessage: sendChatMessage,
+  cancel: cancelChat,
+  clear: clearChat,
+  clearError: clearChatError,
+  clearDisabledMessage: clearChatDisabled,
+} = editorChat;
+
 const {
   instruction: editInstruction,
   suggestion: editSuggestion,
@@ -360,6 +382,30 @@ const {
   isReadOnly,
   beforeApply: createBeforeAiApplyCheckpoint,
 });
+
+watch(
+  () => isChatDrawerOpen.value,
+  (open) => {
+    if (!open) return;
+    void loadChatHistory();
+    if (compareTarget.value && !focusMode.value) {
+      layout.enable();
+      toast.info("Fokuslage aktiverat");
+    }
+  },
+);
+
+watch(
+  () => editor.value,
+  (value) => {
+    if (!value || focusInitialized.value) return;
+    focusInitialized.value = true;
+    if (!focusMode.value) {
+      layout.enable();
+    }
+  },
+  { immediate: true },
+);
 
 function handleRestoreServerVersion(): void {
   if (pinnedCheckpointCount.value > 0) {
@@ -573,6 +619,7 @@ const statusLine = computed(() => {
           :is-metadata-drawer-open="isMetadataDrawerOpen"
           :is-maintainers-drawer-open="isMaintainersDrawerOpen"
           :is-instructions-drawer-open="isInstructionsDrawerOpen"
+          :is-chat-drawer-open="isChatDrawerOpen"
           :can-compare-versions="canCompareVersions"
           :compare-target="compareTarget"
           :compare-active-file-id="compareActiveFileId"
@@ -582,6 +629,10 @@ const statusLine = computed(() => {
           :pinned-checkpoint-count="pinnedCheckpointCount"
           :pinned-checkpoint-limit="pinnedCheckpointLimit"
           :is-checkpoint-busy="isCheckpointBusy"
+          :chat-messages="chatMessages"
+          :chat-is-streaming="chatStreaming"
+          :chat-disabled-message="chatDisabledMessage"
+          :chat-error="chatError"
           :edit-suggestion="editSuggestion"
           :edit-is-loading="isEditLoading"
           :edit-error="editError"
@@ -600,6 +651,7 @@ const statusLine = computed(() => {
           @open-metadata-drawer="toggleMetadataDrawer"
           @open-maintainers-drawer="toggleMaintainersDrawer"
           @open-instructions-drawer="toggleInstructionsDrawer"
+          @open-chat-drawer="toggleChatDrawer"
           @toggle-focus-mode="handleToggleFocusMode"
           @close-drawer="closeDrawer"
           @select-history-version="selectHistoryVersion"
@@ -620,6 +672,11 @@ const statusLine = computed(() => {
           @restore-checkpoint="restoreCheckpoint"
           @remove-checkpoint="removeCheckpoint"
           @restore-server-version="handleRestoreServerVersion"
+          @send-chat-message="sendChatMessage"
+          @cancel-chat-stream="cancelChat"
+          @clear-chat="clearChat"
+          @clear-chat-error="clearChatError"
+          @clear-chat-disabled="clearChatDisabled"
         />
       </div>
     </template>

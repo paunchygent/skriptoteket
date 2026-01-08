@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1.6
 
 ARG PANDOC_VERSION=3.8.3
 ARG PANDOC_SHA256=d7fac78b58b8c8da39254955eff321233ab97d74e8b2d461c0f0719a1fb5f357
@@ -18,7 +18,8 @@ COPY frontend/apps/skriptoteket/package.json ./frontend/apps/skriptoteket/
 
 # Install dependencies from workspace root
 WORKDIR /app/frontend
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=cache,target=/pnpm/store,sharing=locked \
+    pnpm install --frozen-lockfile --store-dir /pnpm/store
 
 # Copy source and build
 COPY frontend/apps/skriptoteket/ ./apps/skriptoteket/
@@ -27,8 +28,8 @@ COPY src/skriptoteket/web/static/css/huleedu-design-tokens.css /app/src/skriptot
 RUN pnpm --filter @skriptoteket/spa build
 
 
-# Stage 2: Build Python dependencies
-FROM python:3.13-slim AS builder
+# Stage 2: Base system deps + Pandoc (shared)
+FROM python:3.13-slim AS pandoc-base
 
 ARG PANDOC_VERSION
 ARG PANDOC_SHA256
@@ -45,8 +46,9 @@ WORKDIR /app
 # - WeasyPrint: pango/cairo/gdk-pixbuf + shared-mime-info
 # - Pandoc: used by pypandoc at runtime
 # - Fonts: for PDF generation fidelity
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
     libcairo2 \
@@ -73,18 +75,33 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -f "/tmp/${PANDOC_DEB}" \
     && rm -rf /var/lib/apt/lists/*
 
+
+# Stage 3: Build Python dependencies
+FROM pandoc-base AS builder
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PDM_CHECK_UPDATE=false \
+    PDM_CACHE_DIR=/root/.cache/pdm
+
+WORKDIR /app
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN pip install --no-cache-dir pdm==2.26.2
 
 COPY pyproject.toml pdm.lock ./
-RUN pdm config python.use_venv false \
+RUN --mount=type=cache,target=/root/.cache/pdm,sharing=locked \
+    pdm config python.use_venv false \
     && pdm install --frozen-lockfile --prod --no-editable --no-self
 
 
-FROM python:3.13-slim AS production
+FROM pandoc-base AS production
 
-ARG PANDOC_VERSION
-ARG PANDOC_SHA256
-ARG PANDOC_SHA256_ARM64
 ARG TARGETARCH
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -93,37 +110,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libcairo2 \
-    libgdk-pixbuf-2.0-0 \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libpangoft2-1.0-0 \
-    shared-mime-info \
-    fontconfig \
-    fonts-liberation2 \
-    fonts-dejavu-core \
-    fonts-freefont-ttf \
-    fonts-noto-core \
-    curl \
-    ca-certificates \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
     jq \
     ripgrep \
     fd-find \
     bat \
     fzf \
     tree \
-    && case "$TARGETARCH" in \
-        amd64|"") PANDOC_ARCH="amd64"; PANDOC_SHA="$PANDOC_SHA256" ;; \
-        arm64) PANDOC_ARCH="arm64"; PANDOC_SHA="$PANDOC_SHA256_ARM64" ;; \
-        *) echo "Unsupported TARGETARCH=$TARGETARCH" >&2; exit 1 ;; \
-    esac \
-    && PANDOC_DEB="pandoc-${PANDOC_VERSION}-1-${PANDOC_ARCH}.deb" \
-    && curl -fsSL -o "/tmp/${PANDOC_DEB}" "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/${PANDOC_DEB}" \
-    && echo "${PANDOC_SHA}  /tmp/${PANDOC_DEB}" | sha256sum -c - \
-    && dpkg -i "/tmp/${PANDOC_DEB}" \
-    && apt-get -y -f install \
-    && rm -f "/tmp/${PANDOC_DEB}" \
     && rm -rf /var/lib/apt/lists/*
 
 # DevOps DX parity tools (see skriptoteket-devops skill/runbook)
@@ -150,6 +145,7 @@ CMD ["pdm", "run", "serve"]
 
 FROM production AS development
 
-RUN pdm install --frozen-lockfile -G monorepo-tools -G dev --no-editable --no-self
+RUN --mount=type=cache,target=/root/.cache/pdm,sharing=locked \
+    pdm install --frozen-lockfile -G monorepo-tools -G dev --no-editable --no-self
 
 CMD ["pdm", "run", "dev-docker"]

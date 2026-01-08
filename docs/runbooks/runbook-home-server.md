@@ -224,6 +224,8 @@ Kernel/sysctl settings:
   - `amdgpu.mcbp=0`
   - `amdgpu.runpm=0`
 - Kdump enabled via `linux-crashdump` + `kdump-tools` (range-based `crashkernel=...` added by kdump-tools)
+- Full kdump dumps enabled: `MAKEDUMP_ARGS="-c -d 0"` in `/etc/default/kdump-tools`
+  - Warning: full dumps are large; ensure `/var/crash` has ample free space
 
 Netconsole (UDP kernel logging):
 

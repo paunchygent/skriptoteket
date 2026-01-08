@@ -25,6 +25,7 @@ const emit = defineEmits<{
   (event: "openMetadataDrawer"): void;
   (event: "openMaintainersDrawer"): void;
   (event: "openInstructionsDrawer"): void;
+  (event: "openChatDrawer"): void;
   (event: "update:changeSummary", value: string): void;
   (event: "toggleFocusMode"): void;
 }>();
@@ -117,6 +118,13 @@ const emit = defineEmits<{
           @click="emit('openMaintainersDrawer')"
         >
           Redigeringsbehörigheter
+        </button>
+        <button
+          type="button"
+          class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
+          @click="emit('openChatDrawer')"
+        >
+          AI-chat
         </button>
         <button
           type="button"
