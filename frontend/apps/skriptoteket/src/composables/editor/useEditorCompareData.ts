@@ -44,7 +44,7 @@ export function useEditorCompareData(
         const provider = options.workingCopyProvider;
         if (!provider) {
           isLoading.value = false;
-          errorMessage.value = "Det finns inget lokalt arbetsexemplar att jämföra.";
+          errorMessage.value = "Det finns inget lokalt arbetsexemplar att diffa.";
           return;
         }
 
@@ -55,7 +55,7 @@ export function useEditorCompareData(
 
           if (!snapshot) {
             compareFiles.value = null;
-            errorMessage.value = "Det finns inget lokalt arbetsexemplar att jämföra.";
+            errorMessage.value = "Det finns inget lokalt arbetsexemplar att diffa.";
           } else {
             compareFiles.value = virtualFileTextFromEditorFields(snapshot);
           }
@@ -87,16 +87,16 @@ export function useEditorCompareData(
         if (isApiError(error)) {
           if (error.status === 403) {
             errorMessage.value =
-              "Du saknar behörighet att se den här versionen, så den kan inte jämföras.";
+              "Du saknar behörighet att se den här versionen, så den kan inte diffas.";
           } else if (error.status === 404) {
-            errorMessage.value = "Versionen hittades inte, så den kan inte jämföras.";
+            errorMessage.value = "Versionen hittades inte, så den kan inte diffas.";
           } else {
             errorMessage.value = error.message;
           }
         } else if (error instanceof Error) {
           errorMessage.value = error.message;
         } else {
-          errorMessage.value = "Det gick inte att ladda jämförelseversionen.";
+          errorMessage.value = "Det gick inte att ladda diffversionen.";
         }
       } finally {
         if (requestId === requestCounter) {

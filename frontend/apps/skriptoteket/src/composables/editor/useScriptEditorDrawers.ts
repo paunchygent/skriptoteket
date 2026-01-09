@@ -1,17 +1,11 @@
-import { computed, onBeforeUnmount, onMounted, ref, watch, type Ref } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { RouteLocationNormalizedLoaded, Router } from "vue-router";
 
 import { editorBaseRouteKey } from "./editorRouteKey";
 
-type DrawerKey = "history" | "metadata" | "maintainers" | "instructions" | "chat";
-
 type UseScriptEditorDrawersOptions = {
   route: RouteLocationNormalizedLoaded;
   router: Router;
-  editorToolId: Readonly<Ref<string>>;
-  canEditTaxonomy: Readonly<Ref<boolean>>;
-  canEditMaintainers: Readonly<Ref<boolean>>;
-  loadMaintainers: (toolId: string) => Promise<void>;
   confirmDiscardChanges: (message: string) => boolean;
 };
 
@@ -20,51 +14,28 @@ const HISTORY_SWITCH_MESSAGE = "Du har osparade ändringar. Vill du byta version
 export function useScriptEditorDrawers({
   route,
   router,
-  editorToolId,
-  canEditTaxonomy,
-  canEditMaintainers,
-  loadMaintainers,
   confirmDiscardChanges,
 }: UseScriptEditorDrawersOptions) {
-  const activeDrawer = ref<DrawerKey | null>(null);
-
-  const isHistoryDrawerOpen = computed(() => activeDrawer.value === "history");
-  const isMetadataDrawerOpen = computed(() => activeDrawer.value === "metadata");
-  const isMaintainersDrawerOpen = computed(() => activeDrawer.value === "maintainers");
-  const isInstructionsDrawerOpen = computed(() => activeDrawer.value === "instructions");
-  const isChatDrawerOpen = computed(() => activeDrawer.value === "chat");
-  const isDrawerOpen = computed(() => activeDrawer.value !== null);
+  const isHistoryDrawerOpen = ref(false);
+  const isChatDrawerOpen = ref(true);
+  const isChatCollapsed = ref(false);
 
   function toggleHistoryDrawer(): void {
-    activeDrawer.value = activeDrawer.value === "history" ? null : "history";
-  }
-
-  function toggleMetadataDrawer(): void {
-    if (!canEditTaxonomy.value) return;
-    activeDrawer.value = activeDrawer.value === "metadata" ? null : "metadata";
-  }
-
-  function toggleMaintainersDrawer(): void {
-    if (!canEditMaintainers.value) return;
-
-    const next = activeDrawer.value === "maintainers" ? null : "maintainers";
-    activeDrawer.value = next;
-
-    if (next === "maintainers" && editorToolId.value) {
-      void loadMaintainers(editorToolId.value);
-    }
-  }
-
-  function toggleInstructionsDrawer(): void {
-    activeDrawer.value = activeDrawer.value === "instructions" ? null : "instructions";
-  }
-
-  function toggleChatDrawer(): void {
-    activeDrawer.value = activeDrawer.value === "chat" ? null : "chat";
+    isHistoryDrawerOpen.value = !isHistoryDrawerOpen.value;
   }
 
   function closeDrawer(): void {
-    activeDrawer.value = null;
+    if (isHistoryDrawerOpen.value) {
+      isHistoryDrawerOpen.value = false;
+      return;
+    }
+    if (isChatDrawerOpen.value) {
+      isChatCollapsed.value = true;
+    }
+  }
+
+  function toggleChatCollapsed(): void {
+    isChatCollapsed.value = !isChatCollapsed.value;
   }
 
   function selectHistoryVersion(versionId: string): void {
@@ -80,6 +51,7 @@ export function useScriptEditorDrawers({
         path: `/admin/tool-versions/${encodeURIComponent(versionId)}`,
         query: nextQuery,
       });
+      isHistoryDrawerOpen.value = false;
       return;
     }
 
@@ -89,10 +61,11 @@ export function useScriptEditorDrawers({
         version: versionId,
       },
     });
+    isHistoryDrawerOpen.value = false;
   }
 
   function handleKeydown(event: KeyboardEvent): void {
-    if (event.key === "Escape" && isDrawerOpen.value) {
+    if (event.key === "Escape" && (isHistoryDrawerOpen.value || isChatDrawerOpen.value)) {
       closeDrawer();
     }
   }
@@ -108,25 +81,18 @@ export function useScriptEditorDrawers({
   watch(
     () => editorBaseRouteKey(route),
     () => {
-      if (activeDrawer.value && activeDrawer.value !== "history") {
-        closeDrawer();
-      }
+      isChatDrawerOpen.value = true;
+      isChatCollapsed.value = false;
+      isHistoryDrawerOpen.value = false;
     },
   );
 
   return {
-    activeDrawer,
-    isDrawerOpen,
     isHistoryDrawerOpen,
-    isMetadataDrawerOpen,
-    isMaintainersDrawerOpen,
-    isInstructionsDrawerOpen,
     isChatDrawerOpen,
+    isChatCollapsed,
     toggleHistoryDrawer,
-    toggleMetadataDrawer,
-    toggleMaintainersDrawer,
-    toggleInstructionsDrawer,
-    toggleChatDrawer,
+    toggleChatCollapsed,
     closeDrawer,
     selectHistoryVersion,
   };

@@ -293,6 +293,20 @@ body::before {
   width: 100%;
 }
 
+.route-stage--editor {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.route-stage--editor .route-stage-item {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .page-enter-active,
 .page-leave-active {
   transition: opacity var(--huleedu-duration-default) var(--huleedu-ease-default);

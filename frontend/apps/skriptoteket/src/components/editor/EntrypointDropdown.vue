@@ -24,7 +24,8 @@ const emit = defineEmits<{ (event: "update:modelValue", value: string): void }>(
 const customValue = ref("");
 
 const selectId = computed(() => props.id);
-const helpId = computed(() => `${selectId.value}-help`);
+const helpText =
+  "Måste vara en funktion i skriptet som tar (input_dir, output_dir).";
 
 const selectedOption = computed(() => {
   return props.options.includes(props.modelValue) ? props.modelValue : CUSTOM_OPTION;
@@ -67,25 +68,37 @@ watch(
 
 <template>
   <div class="space-y-2">
-    <label
-      class="text-xs font-semibold uppercase tracking-wide text-navy/70"
-      :for="selectId"
-    >
-      {{ label }}
-    </label>
-    <p
-      :id="helpId"
-      class="text-xs text-navy/60"
-    >
-      Måste vara en funktion i skriptet som tar <span class="font-mono">(input_dir, output_dir)</span>.
-    </p>
+    <div class="relative inline-flex items-center gap-2">
+      <label
+        class="text-xs font-semibold uppercase tracking-wide text-navy/70"
+        :for="selectId"
+      >
+        {{ label }}
+      </label>
+      <div class="relative group">
+        <button
+          type="button"
+          class="h-5 w-5 border border-navy/30 text-[10px] font-semibold text-navy/70 hover:text-navy"
+          aria-label="Info om startfunktion"
+        >
+          ?
+        </button>
+        <div
+          class="absolute left-0 top-full mt-2 w-[min(260px,calc(100vw-2*var(--huleedu-space-4)))] border border-navy bg-white text-navy shadow-brutal-sm px-3 py-2 text-xs opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+          role="tooltip"
+        >
+          <span class="text-xs text-navy/70">
+            {{ helpText }}
+          </span>
+        </div>
+      </div>
+    </div>
     <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
       <select
         :id="selectId"
         :value="selectedOption"
         class="w-full sm:w-44 border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
         :disabled="disabled"
-        :aria-describedby="helpId"
         @change="handleSelectChange"
       >
         <option

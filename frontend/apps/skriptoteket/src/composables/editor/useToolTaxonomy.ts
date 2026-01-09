@@ -54,7 +54,7 @@ export function useToolTaxonomy({ toolId, canEdit, notify }: UseToolTaxonomyOpti
       } else if (error instanceof Error) {
         taxonomyError.value = error.message;
       } else {
-        taxonomyError.value = "Det gick inte att ladda taxonomi.";
+        taxonomyError.value = "Det gick inte att ladda sökord.";
       }
     } finally {
       isTaxonomyLoading.value = false;
@@ -93,7 +93,7 @@ export function useToolTaxonomy({ toolId, canEdit, notify }: UseToolTaxonomyOpti
       );
       selectedProfessionIds.value = response.profession_ids;
       selectedCategoryIds.value = response.category_ids;
-      notify.success("Taxonomi sparad.");
+      notify.success("Sökord sparade.");
     } catch (error: unknown) {
       if (isApiError(error)) {
         taxonomyError.value = error.message;
@@ -102,7 +102,7 @@ export function useToolTaxonomy({ toolId, canEdit, notify }: UseToolTaxonomyOpti
         taxonomyError.value = error.message;
         notify.failure(error.message);
       } else {
-        taxonomyError.value = "Det gick inte att spara taxonomi.";
+        taxonomyError.value = "Det gick inte att spara sökord.";
         notify.failure(taxonomyError.value);
       }
     } finally {

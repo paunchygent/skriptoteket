@@ -1,82 +1,75 @@
 <script setup lang="ts">
+import { computed, withDefaults } from "vue";
 import InlineEditableText from "./InlineEditableText.vue";
-import WorkflowContextButtons from "./WorkflowContextButtons.vue";
-import type { SubmitReviewTooltip } from "../../composables/editor/useEditorWorkflowActions";
-
-type WorkflowAction = "submit_review" | "publish" | "request_changes" | "rollback";
 
 type ScriptEditorHeaderPanelProps = {
+  section?: "title" | "summary" | "full";
   metadataTitle: string;
   metadataSummary: string;
   toolSlug: string;
-  statusLine: string;
   isTitleSaving: boolean;
   isSummarySaving: boolean;
-  canSubmitReview: boolean;
-  submitReviewTooltip: SubmitReviewTooltip | null;
-  canPublish: boolean;
-  canRequestChanges: boolean;
-  canRollback: boolean;
-  isWorkflowSubmitting: boolean;
 };
 
-const props = defineProps<ScriptEditorHeaderPanelProps>();
+const props = withDefaults(defineProps<ScriptEditorHeaderPanelProps>(), {
+  section: "full",
+});
+
+const showTitle = computed(() => props.section !== "summary");
+const showSummary = computed(() => props.section !== "title");
 
 const emit = defineEmits<{
   (event: "update:metadataTitle", value: string): void;
   (event: "update:metadataSummary", value: string): void;
   (event: "commitTitle"): void;
   (event: "commitSummary"): void;
-  (event: "action", action: WorkflowAction): void;
 }>();
 </script>
 
 <template>
-  <div class="border border-navy bg-white shadow-brutal-sm p-5 space-y-4">
-    <!-- Title and summary section -->
-    <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-      <div class="space-y-2 flex-1">
+  <div :class="showTitle && showSummary ? 'space-y-2' : ''">
+    <div
+      v-if="showTitle"
+      class="flex flex-wrap items-start gap-2"
+    >
+      <div class="flex-1 min-w-[200px]">
         <InlineEditableText
           :model-value="props.metadataTitle"
           tag="h1"
-          display-class="text-2xl font-semibold text-navy"
-          input-class="text-2xl font-semibold"
+          display-class="text-base font-semibold text-navy"
+          input-class="text-base font-semibold"
           placeholder="Verktygets titel"
           :saving="props.isTitleSaving"
           @update:model-value="emit('update:metadataTitle', $event)"
           @commit="emit('commitTitle')"
         />
-        <p class="text-sm text-navy/70">
-          URL-namn: <span class="font-mono">{{ props.toolSlug }}</span>
-        </p>
+      </div>
+    </div>
+
+    <div
+      v-if="showSummary"
+      class="flex flex-wrap items-center gap-3"
+    >
+      <div class="flex-1 min-w-[220px] space-y-1">
         <InlineEditableText
           :model-value="props.metadataSummary"
           tag="p"
-          display-class="text-sm text-navy/70"
-          input-class="text-sm"
-          placeholder="Lägg till en sammanfattning..."
+          display-class="text-xs text-navy/70"
+          input-class="text-xs"
+          placeholder="Kort sammanfattning..."
           :saving="props.isSummarySaving"
           @update:model-value="emit('update:metadataSummary', $event)"
           @commit="emit('commitSummary')"
         />
+        <div class="flex flex-wrap items-center gap-2 text-xs text-navy/70">
+          <span class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+            URL-namn
+          </span>
+          <span class="text-xs font-mono text-navy">
+            {{ props.toolSlug }}
+          </span>
+        </div>
       </div>
-
-      <div class="text-sm font-medium text-navy/70 shrink-0">
-        {{ props.statusLine }}
-      </div>
-    </div>
-
-    <!-- Workflow context buttons -->
-    <div class="border-t border-navy/20 pt-4">
-      <WorkflowContextButtons
-        :can-submit-review="props.canSubmitReview"
-        :submit-review-tooltip="props.submitReviewTooltip"
-        :can-publish="props.canPublish"
-        :can-request-changes="props.canRequestChanges"
-        :can-rollback="props.canRollback"
-        :is-submitting="props.isWorkflowSubmitting"
-        @action="emit('action', $event)"
-      />
     </div>
   </div>
 </template>

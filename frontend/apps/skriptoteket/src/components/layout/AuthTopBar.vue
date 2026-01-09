@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { computed } from "vue";
+import { RouterLink, useRoute } from "vue-router";
+
 import HelpButton from "../help/HelpButton.vue";
 
-defineProps<{
+const props = defineProps<{
   user: { email: string; role: string } | null;
   logoutInProgress: boolean;
   isFocusMode: boolean;
@@ -9,34 +12,52 @@ defineProps<{
 
 const emit = defineEmits<{
   logout: [];
-  exitFocusMode: [];
+  toggleFocusMode: [];
 }>();
+
+const route = useRoute();
+const navLink = computed(() => {
+  if (!props.isFocusMode) {
+    return null;
+  }
+  if (route.name === "admin-tool-editor" || route.name === "admin-tool-version-editor") {
+    return {
+      to: "/admin/tools",
+      label: "← Tillbaka till verktyg",
+    };
+  }
+  return null;
+});
 
 function onLogout(): void {
   emit("logout");
 }
 
-function onExitFocusMode(): void {
-  emit("exitFocusMode");
+function onToggleFocusMode(): void {
+  emit("toggleFocusMode");
 }
 </script>
 
 <template>
   <header class="top-user-bar">
     <div class="top-user-bar-left">
-      <span class="user-info">
-        {{ user?.email }}
-        <span class="user-role">({{ user?.role }})</span>
-      </span>
+      <RouterLink
+        v-if="navLink"
+        :to="navLink.to"
+        class="top-nav-link"
+      >
+        {{ navLink.label }}
+      </RouterLink>
     </div>
     <div class="top-user-bar-right">
       <button
-        v-if="isFocusMode"
         type="button"
         class="btn-ghost"
-        @click="onExitFocusMode"
+        :aria-pressed="isFocusMode"
+        @click="onToggleFocusMode"
       >
-        Avsluta fokusläge
+        <span v-if="isFocusMode">Avsluta fokusl&auml;ge</span>
+        <span v-else>Aktivera fokusl&auml;ge</span>
       </button>
       <HelpButton />
       <span class="user-separator">|</span>
@@ -82,14 +103,19 @@ function onExitFocusMode(): void {
   gap: var(--huleedu-space-3);
 }
 
-.user-info {
+.top-nav-link {
   font-size: var(--huleedu-text-xs);
-  font-family: var(--huleedu-font-mono);
+  font-weight: var(--huleedu-font-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--huleedu-tracking-label);
   color: var(--huleedu-navy);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--huleedu-duration-default) var(--huleedu-ease-default);
 }
 
-.user-role {
-  opacity: 0.6;
+.top-nav-link:hover {
+  color: var(--huleedu-burgundy);
 }
 
 .user-separator {

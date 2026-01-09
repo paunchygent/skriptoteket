@@ -84,11 +84,8 @@ def _open_editor(page: object, *, base_url: str, artifacts_dir: Path | None = No
     edit_link.click()
     page.wait_for_url("**/admin/**", wait_until="domcontentloaded")
     try:
-        heading = page.get_by_role(
-            "heading",
-            name=re.compile(r"(Testk.r kod|Testkor kod|Kallkod)", re.IGNORECASE),
-        ).first
-        expect(heading).to_be_visible()
+        mode_button = page.get_by_role("button", name=re.compile(r"K.llkod", re.IGNORECASE))
+        expect(mode_button).to_be_visible()
     except AssertionError:
         if artifacts_dir:
             page.screenshot(
@@ -115,13 +112,22 @@ def main() -> None:
         _login(page, base_url=base_url, email=email, password=password, artifacts_dir=artifacts_dir)
         _open_editor(page, base_url=base_url, artifacts_dir=artifacts_dir)
 
-        chat_button = page.get_by_role("button", name=re.compile(r"AI-chat", re.IGNORECASE))
-        expect(chat_button).to_be_visible()
-        chat_button.click()
+        menu_button = page.get_by_role("button", name="Spara/Öppna", exact=True)
+        expect(menu_button).to_be_visible()
+        menu_button.click()
+        menu = page.get_by_role("menu")
+        expect(menu).to_be_visible()
+        expect(menu.get_by_text("Spara", exact=True)).to_be_visible()
+        expect(menu.get_by_text("Öppna sparade", exact=True)).to_be_visible()
+        page.screenshot(path=str(artifacts_dir / "save-open-menu.png"), full_page=True)
 
-        drawer = page.get_by_role("dialog", name=re.compile(r"AI-chat", re.IGNORECASE))
+        drawer = page.get_by_role("dialog", name="Kodassistenten", exact=True)
         expect(drawer).to_be_visible()
-        expect(drawer.get_by_text(re.compile(r"Konversation", re.IGNORECASE))).to_be_visible()
+        toggle = drawer.get_by_role(
+            "button", name=re.compile(r"(Minimera|Expandera) kodassistenten", re.IGNORECASE)
+        )
+        expect(toggle).to_be_visible()
+        expect(drawer.get_by_text("Konversation", exact=True)).to_be_visible()
         expect(drawer.get_by_text("Meddelande", exact=True)).to_be_visible()
 
         page.screenshot(path=str(artifacts_dir / "chat-drawer.png"), full_page=True)

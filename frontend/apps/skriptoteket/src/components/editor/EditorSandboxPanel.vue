@@ -26,9 +26,12 @@ type EditorSandboxPanelProps = {
   hasBlockingSchemaIssues: boolean;
   schemaValidationError: string | null;
   validateSchemasNow: () => Promise<boolean>;
+  variant?: "inline" | "mode";
 };
 
-const props = defineProps<EditorSandboxPanelProps>();
+const props = withDefaults(defineProps<EditorSandboxPanelProps>(), {
+  variant: "inline",
+});
 
 const emit = defineEmits<{
   (event: "update:entrypoint", value: string): void;
@@ -36,8 +39,16 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="border-t border-navy/20 pt-4 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
+  <div
+    :class="[
+      'flex flex-col min-h-0',
+      props.variant === 'mode' ? 'space-y-3' : 'border-t border-navy/20 pt-4 space-y-3',
+    ]"
+  >
+    <h2
+      v-if="props.variant !== 'mode'"
+      class="text-sm font-semibold uppercase tracking-wide text-navy/70"
+    >
       Testkör kod
     </h2>
 

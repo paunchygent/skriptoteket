@@ -536,7 +536,7 @@ watch(
                   måste vara valda.
                 </li>
                 <li>
-                  Ändra URL-namn och taxonomi under <strong>Metadata</strong>-panelen.
+                  Ändra URL-namn och s&ouml;kord under <strong>Metadata</strong>-panelen.
                 </li>
               </ul>
               <p class="text-sm text-navy/60">Mer hjälp kommer snart.</p>

@@ -32,6 +32,10 @@ const isPageTransitionEnabled = computed(() => {
   return route.meta.pageTransition !== false && !route.redirectedFrom;
 });
 
+const isEditorRoute = computed(
+  () => route.name === "admin-tool-editor" || route.name === "admin-tool-version-editor",
+);
+
 onMounted(() => {
   void auth.bootstrap();
 });
@@ -107,7 +111,10 @@ async function onLogout(): Promise<void> {
   <div class="app-layout min-h-screen text-navy">
     <!-- Unauthenticated: Landing layout -->
     <LandingLayout v-if="!isAuthenticated">
-      <div class="route-stage">
+      <div
+        class="route-stage"
+        :class="{ 'route-stage--editor': isEditorRoute }"
+      >
         <RouterView v-slot="{ Component, route: viewRoute }">
           <Transition
             v-if="isPageTransitionEnabled"
@@ -144,7 +151,10 @@ async function onLogout(): Promise<void> {
       :logout-in-progress="logoutInProgress"
       @logout="onLogout"
     >
-      <div class="route-stage">
+      <div
+        class="route-stage"
+        :class="{ 'route-stage--editor': isEditorRoute }"
+      >
         <RouterView v-slot="{ Component, route: viewRoute }">
           <Transition
             v-if="isPageTransitionEnabled"

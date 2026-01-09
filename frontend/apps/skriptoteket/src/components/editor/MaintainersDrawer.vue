@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import type { components } from "../../api/openapi";
 
 import SystemMessage from "../ui/SystemMessage.vue";
@@ -9,6 +9,7 @@ type ApiRole = components["schemas"]["Role"];
 
 type MaintainersDrawerProps = {
   isOpen: boolean;
+  variant?: "drawer" | "panel";
   maintainers: MaintainerSummary[];
   ownerUserId: string | null;
   isSuperuser: boolean;
@@ -17,7 +18,11 @@ type MaintainersDrawerProps = {
   error: string | null;
 };
 
-const props = defineProps<MaintainersDrawerProps>();
+const props = withDefaults(defineProps<MaintainersDrawerProps>(), {
+  variant: "drawer",
+});
+
+const isPanel = computed(() => props.variant === "panel");
 
 const emit = defineEmits<{
   (event: "close"): void;
@@ -62,7 +67,10 @@ function removalBlockedReason(maintainer: MaintainerSummary): string | null {
 
 <template>
   <!-- Mobile backdrop -->
-  <Teleport to="body">
+  <Teleport
+    v-if="!isPanel"
+    to="body"
+  >
     <Transition name="drawer-backdrop">
       <div
         v-if="isOpen"
@@ -74,12 +82,21 @@ function removalBlockedReason(maintainer: MaintainerSummary): string | null {
 
   <!-- Drawer - direct grid participant on desktop -->
   <aside
-    class="fixed inset-y-0 right-0 z-50 w-full bg-canvas border-l border-navy shadow-brutal flex flex-col md:relative md:inset-auto md:z-auto md:w-full"
+    :class="[
+      isPanel
+        ? 'relative w-full bg-canvas border border-navy shadow-brutal-sm flex flex-col min-h-0'
+        : 'fixed inset-y-0 right-0 z-50 w-full bg-canvas border-l border-navy shadow-brutal flex flex-col md:relative md:inset-auto md:z-auto md:w-full md:h-full md:overflow-hidden',
+    ]"
     role="dialog"
-    aria-modal="true"
+    :aria-modal="!isPanel"
     aria-labelledby="maintainers-drawer-title"
   >
-    <div class="p-6 border-b border-navy flex items-start justify-between gap-4">
+    <div
+      :class="[
+        'border-b border-navy flex items-start justify-between gap-4',
+        isPanel ? 'p-3' : 'p-4',
+      ]"
+    >
       <div>
         <h2
           id="maintainers-drawer-title"
@@ -92,6 +109,7 @@ function removalBlockedReason(maintainer: MaintainerSummary): string | null {
         </p>
       </div>
       <button
+        v-if="!isPanel"
         type="button"
         class="text-navy/60 hover:text-navy text-2xl leading-none"
         @click="emit('close')"
@@ -100,7 +118,11 @@ function removalBlockedReason(maintainer: MaintainerSummary): string | null {
       </button>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-6 space-y-4">
+    <div
+      :class="[
+        isPanel ? 'p-3 space-y-3' : 'flex-1 overflow-y-auto p-4 space-y-4',
+      ]"
+    >
       <SystemMessage
         v-if="error"
         :model-value="error"
@@ -181,7 +203,7 @@ function removalBlockedReason(maintainer: MaintainerSummary): string | null {
             >
             <button
               type="submit"
-              class="btn-primary min-w-[80px]"
+              class="btn-ghost min-w-[80px]"
               :disabled="isSaving"
             >
               Lägg till

@@ -12,16 +12,34 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-01-07
+- Date: 2026-01-08
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: ST-14-01/14-02 done; ST-14-09 done; ST-14-10 done; ST-14-13/14 done; ST-14-15 done; ST-14-16 done; ST-14-17 done; ST-14-18 done; ST-14-30 done; ST-14-31 done; ST-08-23 done
 
-## Current Session (2026-01-07)
+## Current Session (2026-01-08)
 
+- Editor modes now fixed toggles (Källkod/Diff/Metadata) with compare text relabeled to Diff; metadata/instructions/behörigheter render as in-page panels (no drawer overlay): `frontend/apps/skriptoteket/src/components/editor/{EditorWorkspaceToolbar,EditorWorkspacePanel,MetadataDrawer,InstructionsDrawer,MaintainersDrawer}.vue`, `frontend/apps/skriptoteket/src/components/editor/EditorComparePanel.vue`, `frontend/apps/skriptoteket/src/components/editor/diff/VirtualFileDiffViewer.vue`, `frontend/apps/skriptoteket/src/composables/editor/{editorCompareDefaults,useEditorCompareData}.ts`.
+- Editor workspace layout refit: toolbar sits under header; mode content uses fixed-height row; chat now aligns to editor row with a spacer row for schemas; diff toggle always enabled (shows empty state if no compare target): `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`, `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`.
+- Schema editors unified into a shared "Indata & inställningar (JSON)" section with divider layout and synced headers/actions; removed duplicate "Schema (JSON)" headers; settings panel has aligned header row placeholder: `frontend/apps/skriptoteket/src/components/editor/{EditorInputSchemaPanel,EditorSettingsSchemaPanel}.vue`.
+- Editor layout tightened again: header/toolbar live inside the left column grid (mode selector aligns to editor edge), schema section has shared collapse toggle, chat column gets a top border, and chat rail no longer steals width when expanded: `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`.
+- Editor route height is now constrained so CodeMirror scrolls inside the viewport (route-stage + auth-main-content editor classes): `frontend/apps/skriptoteket/src/components/layout/AuthLayout.vue`, `frontend/apps/skriptoteket/src/App.vue`, `frontend/apps/skriptoteket/src/assets/main.css`.
+- Auth top bar now shows the back-to-tools link only in focus mode (no user email label): `frontend/apps/skriptoteket/src/components/layout/AuthTopBar.vue`. PR-0010 updated to note focus-mode back link is deferred: `docs/backlog/prs/pr-0010-editor-save-restore-ux-clarity.md`.
+- Focus toggle moved to top bar (always visible, label toggles) and editor focus still auto-enabled on load: `frontend/apps/skriptoteket/src/components/layout/{AuthTopBar,AuthLayout}.vue`, `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
+- Chat drawer renamed to “Kodassistenten”, copy updated, default open on load; collapse via robot icon (no toolbar toggle). History load triggers on open + tool change: `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`, `frontend/apps/skriptoteket/src/composables/editor/useScriptEditorDrawers.ts`, `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
+- Taxonomy UI copy renamed to “Sökord” (metadata panel + help + toasts): `frontend/apps/skriptoteket/src/components/editor/MetadataDrawer.vue`, `frontend/apps/skriptoteket/src/components/help/HelpPanel.vue`, `frontend/apps/skriptoteket/src/composables/editor/useToolTaxonomy.ts`.
+- Playwright chat drawer check updated for new label/default open: `scripts/playwright_st_08_20_editor_chat_drawer_check.py`.
 - Chat drawer UI consolidated into a single scrollable conversation surface (no per-message boxes), cleaned copy, and stronger hierarchy: `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`.
-- Focus mode now defaults on editor load (no toast), preserving user manual toggle afterward: `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
+- Editor workspace now full-height split with independent scroll per column; code editor flexes to fill available height: `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`, `frontend/apps/skriptoteket/src/components/editor/EditorSourceCodePanel.vue`, `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
+- AI-REDIGERING panel removed from the editor flow (chat replaces it): `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`.
+- Toolbar regrouped: single Spara/Öppna menu (save + local checkpoint + open popover), lock badge, mode toggles; workflow actions live in header strip; no chat toggle: `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceToolbar.vue`, `frontend/apps/skriptoteket/src/components/editor/WorkflowContextButtons.vue`, `frontend/apps/skriptoteket/src/components/editor/ScriptEditorHeaderPanel.vue`.
+- Title/summary/slug header panel moved into editor main column as a compact inline strip (no separate panel); workflow actions no longer live there: `frontend/apps/skriptoteket/src/components/editor/ScriptEditorHeaderPanel.vue`, `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`, `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
+- Lock indicator is now a small badge in the toolbar for owner/acquiring; full banner only shows when locked by another user: `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`, `frontend/apps/skriptoteket/src/components/editor/DraftLockBanner.vue`.
+- Version history list is compact (latest 12) with “Visa fler”; action buttons are small text buttons; history opens as a left-side popover modal: `frontend/apps/skriptoteket/src/components/editor/VersionHistoryDrawer.vue`.
+- Drawers now full-height on desktop with tighter padding and subdued action buttons (ghost instead of primary/CTA): `frontend/apps/skriptoteket/src/components/editor/{Chat,Metadata,Instructions,Maintainers,VersionHistory}Drawer.vue`.
+- Focus mode now defaults on editor load and auto-enables when any drawer opens (no toast spam): `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
+- PR-0010 + PR-0011 created for upcoming editor UX work: `docs/backlog/prs/pr-0010-editor-save-restore-ux-clarity.md`, `docs/backlog/prs/pr-0011-editor-mode-toggles-and-metadata-mode.md`.
 - Migration integration test added for tool_session_messages (0024): `tests/integration/test_migration_0024_tool_session_messages_idempotent.py`.
 - Playwright chat drawer check added: `scripts/playwright_st_08_20_editor_chat_drawer_check.py`.
 - PR-0008: marked done; normalized chat storage docs updated with TTL-on-access semantics (docs: `docs/backlog/prs/pr-0008-editor-chat-message-storage-minimal-c.md`).
@@ -45,19 +63,22 @@ Keep this file updated so the next session can pick up work quickly.
 ## Verification
 
 - Not run (this session): `pdm run pytest tests/unit/application/test_editor_chat_handler.py -q`, `pdm run pytest tests/unit/application/test_editor_chat_clear_handler.py -q`, `pdm run pytest tests/integration/infrastructure/repositories/test_tool_session_message_repository.py -q`, live `/api/v1/editor/tools/{tool_id}/chat` SSE + clear checks.
+- Quality gates (frontend): `pdm run lint`, `pdm run fe-test`, `pdm run typecheck`, `pdm run fe-build` (pass; Vite chunk-size warning).
+- Playwright chat drawer check (Vite, macOS escalation): `pdm run python -m scripts.playwright_st_08_20_editor_chat_drawer_check --base-url http://127.0.0.1:5173` (last attempt rejected; needs approval to rerun).
+- Frontend unit (drawers): covered by full `pdm run fe-test` (pass).
 - Migration test (docker): `pdm run pytest -m docker tests/integration/test_migration_0024_tool_session_messages_idempotent.py -q` (pass)
 - Dev DB migration: `pdm run db-upgrade`
 - Unit tests (chat): `pdm run pytest tests/unit/application/test_editor_chat_handler.py -q` (pass)
 - Unit tests (chat concurrency): `pdm run pytest tests/unit/application/test_editor_chat_handler_concurrency.py -q` (pass)
 - Unit tests (application): `pdm run pytest tests/unit/application -q` (pass)
 - Docs validate: `pdm run docs-validate` (pass)
+- Docs validate (post-PR-0011 update): `pdm run docs-validate` (pass)
 - OpenAPI/docs (local): `curl -sS http://127.0.0.1:8000/openapi.json | jq -r '.paths | keys[] | select(.=="/api/v1/editor/tools/{tool_id}/chat")'` and `curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8000/docs` (200)
 - Rule-040 check (local): `rg -n "from __future__ import annotations" src/skriptoteket/web/api -S` (no output)
 - Live SSE smoke (docker dev; no secrets):
   - Login: `set -a && source .env && set +a && COOKIE_JAR=/tmp/skriptoteket-cookies.txt && CSRF_FILE=/tmp/skriptoteket-csrf.txt && curl -sS -c "$COOKIE_JAR" -H 'Content-Type: application/json' -d "{\"email\":\"$BOOTSTRAP_SUPERUSER_EMAIL\",\"password\":\"$BOOTSTRAP_SUPERUSER_PASSWORD\"}" http://127.0.0.1:8000/api/v1/auth/login | jq -r .csrf_token > "$CSRF_FILE"`
   - SSE: `TOOL_ID=$(curl -sS -b "$COOKIE_JAR" http://127.0.0.1:8000/api/v1/catalog/tools | jq -r '.items[0].id') && CSRF=$(cat "$CSRF_FILE") && curl -N --max-time 10 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' -d '{"message":"Hej"}' http://127.0.0.1:8000/api/v1/editor/tools/$TOOL_ID/chat`
   - Clear: `curl -sS -o /dev/null -w '%{http_code}\n' -X DELETE -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" http://127.0.0.1:8000/api/v1/editor/tools/$TOOL_ID/chat` (expect 204)
-- Playwright chat drawer check (Vite): `pdm run seed-script-bank --slug demo-next-actions`, then `pdm run python -m scripts.playwright_st_08_20_editor_chat_drawer_check --base-url http://127.0.0.1:5173` (screenshot: `.artifacts/ui-editor-chat/chat-drawer.png`)
 - HTTPS healthz: `curl -sk https://skriptoteket.hule.education/healthz`
 - Local HTTPS (host header): `ssh hemma "curl -sk -H 'Host: skriptoteket.hule.education' https://127.0.0.1/healthz"`
 - Postgres data restored: `ssh hemma "sudo docker exec shared-postgres psql -U skriptoteket -d skriptoteket -c '\\dt'"`

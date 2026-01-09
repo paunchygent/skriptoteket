@@ -71,7 +71,7 @@ onBeforeUnmount(() => {
   >
     <button
       type="button"
-      class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
+      class="btn-ghost shadow-none bg-canvas px-2.5 py-1 text-[10px] font-semibold tracking-[var(--huleedu-tracking-label)] border-navy/30"
       :class="{ 'opacity-60 cursor-not-allowed': !hasItems }"
       :disabled="!hasItems"
       :aria-expanded="isOpen"

@@ -83,7 +83,7 @@ export function resolveDefaultCompareTarget(context: DefaultCompareContext): Def
   const { baseVersion, toolIsPublished, versions, parentVersionId } = context;
 
   if (!baseVersion) {
-    return { target: null, reason: "Ingen version att jämföra." };
+    return { target: null, reason: "Ingen version att diffa." };
   }
 
   if (baseVersion.state === "in_review") {
@@ -101,7 +101,7 @@ export function resolveDefaultCompareTarget(context: DefaultCompareContext): Def
 
     return {
       target: null,
-      reason: "Ingen publicerad version eller tidigare avvisad granskning att jämföra med.",
+      reason: "Ingen publicerad version eller tidigare avvisad granskning att diffa mot.",
     };
   }
 
@@ -118,8 +118,8 @@ export function resolveDefaultCompareTarget(context: DefaultCompareContext): Def
       return { target: { kind: "version", versionId: previousVisibleId }, reason: null };
     }
 
-    return { target: null, reason: "Ingen tidigare version att jämföra med." };
+    return { target: null, reason: "Ingen tidigare version att diffa mot." };
   }
 
-  return { target: null, reason: "Den här versionen går inte att jämföra automatiskt." };
+  return { target: null, reason: "Den här versionen går inte att diffa automatiskt." };
 }

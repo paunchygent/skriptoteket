@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { defineComponent, nextTick, ref } from "vue";
+import { defineComponent, nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 import { RouterView, createMemoryHistory, createRouter, useRoute, useRouter } from "vue-router";
 
@@ -11,10 +11,6 @@ async function flushPromises(): Promise<void> {
 }
 
 async function mountHarness() {
-  const editorToolId = ref("tool-1");
-  const canEditTaxonomy = ref(true);
-  const canEditMaintainers = ref(true);
-  const loadMaintainers = vi.fn().mockResolvedValue(undefined);
   const confirmDiscardChanges = vi.fn().mockReturnValue(true);
 
   const TestComponent = defineComponent({
@@ -23,10 +19,6 @@ async function mountHarness() {
       return useScriptEditorDrawers({
         route: useRoute(),
         router: useRouter(),
-        editorToolId,
-        canEditTaxonomy,
-        canEditMaintainers,
-        loadMaintainers,
         confirmDiscardChanges,
       });
     },
@@ -50,10 +42,6 @@ async function mountHarness() {
     wrapper,
     router,
     vm,
-    editorToolId,
-    canEditTaxonomy,
-    canEditMaintainers,
-    loadMaintainers,
     confirmDiscardChanges,
   };
 }
@@ -63,56 +51,81 @@ afterEach(() => {
 });
 
 describe("useScriptEditorDrawers", () => {
-  it("loads maintainers when opening the maintainers drawer", async () => {
-    const { vm, loadMaintainers, wrapper } = await mountHarness();
-
-    vm.toggleMaintainersDrawer();
-    await flushPromises();
-
-    expect(vm.activeDrawer).toBe("maintainers");
-    expect(loadMaintainers).toHaveBeenCalledWith("tool-1");
-
-    vm.toggleMaintainersDrawer();
-    await flushPromises();
-
-    expect(vm.activeDrawer).toBeNull();
-    expect(loadMaintainers).toHaveBeenCalledTimes(1);
-
-    wrapper.unmount();
-  });
-
-  it("closes non-history drawers on route navigation", async () => {
+  it("defaults to open chat and closed history", async () => {
     const { vm, router, wrapper } = await mountHarness();
 
-    vm.toggleMetadataDrawer();
-    await flushPromises();
-    expect(vm.activeDrawer).toBe("metadata");
+    expect(vm.isChatDrawerOpen).toBe(true);
+    expect(vm.isHistoryDrawerOpen).toBe(false);
+    expect(vm.isChatCollapsed).toBe(false);
 
     await router.push({ path: "/editor", query: { foo: "bar", version: "ver-1" } });
     await flushPromises();
-    expect(vm.activeDrawer).toBeNull();
 
-    vm.toggleHistoryDrawer();
-    await flushPromises();
-    expect(vm.activeDrawer).toBe("history");
-
-    await router.push({ path: "/editor", query: { foo: "bar", version: "ver-2" } });
-    await flushPromises();
-    expect(vm.activeDrawer).toBe("history");
+    expect(vm.isChatDrawerOpen).toBe(true);
+    expect(vm.isHistoryDrawerOpen).toBe(false);
+    expect(vm.isChatCollapsed).toBe(false);
 
     wrapper.unmount();
   });
 
-  it("closes the drawer on Escape", async () => {
+  it("toggles history and collapsed states", async () => {
+    const { vm, wrapper } = await mountHarness();
+
+    vm.toggleChatCollapsed();
+    await flushPromises();
+    expect(vm.isChatCollapsed).toBe(true);
+
+    vm.toggleChatCollapsed();
+    await flushPromises();
+    expect(vm.isChatCollapsed).toBe(false);
+
+    vm.toggleHistoryDrawer();
+    await flushPromises();
+    expect(vm.isHistoryDrawerOpen).toBe(true);
+    expect(vm.isChatDrawerOpen).toBe(true);
+
+    vm.closeDrawer();
+    await flushPromises();
+    expect(vm.isHistoryDrawerOpen).toBe(false);
+    expect(vm.isChatDrawerOpen).toBe(true);
+
+    vm.closeDrawer();
+    await flushPromises();
+    expect(vm.isChatDrawerOpen).toBe(true);
+    expect(vm.isChatCollapsed).toBe(true);
+
+    wrapper.unmount();
+  });
+
+  it("resets history and collapse on navigation", async () => {
+    const { vm, router, wrapper } = await mountHarness();
+
+    vm.toggleHistoryDrawer();
+    vm.toggleChatCollapsed();
+    await flushPromises();
+
+    await router.push({ path: "/editor", query: { foo: "bar", version: "ver-2" } });
+    await flushPromises();
+
+    expect(vm.isHistoryDrawerOpen).toBe(false);
+    expect(vm.isChatDrawerOpen).toBe(true);
+    expect(vm.isChatCollapsed).toBe(false);
+
+    wrapper.unmount();
+  });
+
+  it("closes history before chat on Escape", async () => {
     const { vm, wrapper } = await mountHarness();
 
     vm.toggleHistoryDrawer();
     await flushPromises();
-    expect(vm.activeDrawer).toBe("history");
+    expect(vm.isHistoryDrawerOpen).toBe(true);
 
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     await flushPromises();
-    expect(vm.activeDrawer).toBeNull();
+    expect(vm.isHistoryDrawerOpen).toBe(false);
+    expect(vm.isChatDrawerOpen).toBe(true);
+    expect(vm.isChatCollapsed).toBe(false);
 
     wrapper.unmount();
   });

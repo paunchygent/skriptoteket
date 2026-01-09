@@ -60,7 +60,7 @@ const compareLabel = computed(() => {
     return "Lokalt arbetsexemplar";
   }
   const version = compareEditor.value?.selected_version ?? null;
-  return shortVersionLabel(version, "Jämförelse");
+  return shortVersionLabel(version, "Diff");
 });
 
 const compareTargetValue = computed(() => {
@@ -92,12 +92,9 @@ const diffItems = computed(() => {
 </script>
 
 <template>
-  <div class="space-y-3">
+  <div class="flex flex-col min-h-0 gap-3">
     <div class="flex flex-wrap items-start justify-between gap-3">
-      <div class="space-y-1 min-w-0">
-        <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
-          Jämför versioner
-        </h2>
+      <div class="min-w-0">
         <p class="text-sm text-navy/70">
           {{ compareLabel }} → {{ baseLabel }}
         </p>
@@ -105,7 +102,7 @@ const diffItems = computed(() => {
 
       <div class="flex flex-wrap items-center gap-2">
         <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-          Jämför med
+          Diff mot
         </label>
         <select
           class="border border-navy bg-white px-3 py-2 text-xs text-navy shadow-brutal-sm"
@@ -133,7 +130,7 @@ const diffItems = computed(() => {
           class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
           @click="emit('close')"
         >
-          Stäng jämförelse
+          Stäng diff
         </button>
       </div>
     </div>
@@ -143,7 +140,7 @@ const diffItems = computed(() => {
       class="flex items-center gap-3 p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
     >
       <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
-      <span>Laddar jämförelseversion...</span>
+      <span>Laddar diffversion...</span>
     </div>
 
     <div
@@ -155,6 +152,7 @@ const diffItems = computed(() => {
 
     <VirtualFileDiffViewer
       v-else
+      class="flex-1 min-h-0"
       :items="diffItems"
       :active-file-id="props.activeFileId"
       :before-label="compareLabel"

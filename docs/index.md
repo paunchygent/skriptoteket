@@ -155,6 +155,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0007-editor-ai-chat-thread-tool-scoped-sse.md`
 - `docs/backlog/prs/pr-0008-editor-chat-message-storage-minimal-c.md`
 - `docs/backlog/prs/pr-0009-editor-chat-message-id-thread-persistence.md`
+- `docs/backlog/prs/pr-0010-editor-save-restore-ux-clarity.md`
+- `docs/backlog/prs/pr-0011-editor-mode-toggles-and-metadata-mode.md`
 
 ### Backlog Stories
 

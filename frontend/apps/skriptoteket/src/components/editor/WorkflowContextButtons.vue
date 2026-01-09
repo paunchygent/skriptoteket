@@ -22,25 +22,30 @@ const emit = defineEmits<{
 const hasAdminContext = computed(() => props.canPublish || props.canRequestChanges);
 const hasSubmitReviewTooltip = computed(() => Boolean(props.submitReviewTooltip));
 
+const actionButtonClass =
+  "btn-ghost shadow-none bg-canvas h-[28px] px-2.5 py-1 text-[10px] font-semibold tracking-[var(--huleedu-tracking-label)] w-[140px] justify-center border-navy/30 whitespace-nowrap leading-none";
+const disabledButtonClass =
+  "inline-flex items-center justify-center h-[28px] w-[140px] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] border border-navy/20 bg-canvas text-navy/30 cursor-not-allowed whitespace-nowrap leading-none";
+
 function handleDropdownSelect(actionId: string): void {
   emit("action", actionId as WorkflowAction);
 }
 </script>
 
 <template>
-  <div class="flex flex-wrap items-center gap-3 w-full">
+  <div class="flex flex-wrap items-center gap-2">
     <!-- Author Context -->
-    <div class="flex items-center gap-2">
-      <span class="text-xs font-semibold uppercase tracking-wide text-navy/50">
-        Författare
-      </span>
+    <div
+      class="flex items-center gap-2"
+      title="Författare"
+    >
       <div
         v-if="canSubmitReview"
         class="relative group"
       >
         <button
           type="button"
-          class="btn-primary px-3 py-2 text-xs font-semibold tracking-wide"
+          :class="actionButtonClass"
           :disabled="isSubmitting"
           @click="emit('action', 'submit_review')"
         >
@@ -76,23 +81,22 @@ function handleDropdownSelect(actionId: string): void {
       </div>
       <span
         v-else
-        class="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-navy/30 border border-navy/20 bg-canvas cursor-not-allowed"
+        :class="disabledButtonClass"
       >
         Begär publicering
       </span>
     </div>
 
     <!-- Admin/Reviewer Context -->
-    <div class="flex items-center gap-2 md:ml-auto">
-      <span class="text-xs font-semibold uppercase tracking-wide text-navy/50">
-        Granskare
-      </span>
-
+    <div
+      class="flex items-center gap-2"
+      title="Granskare"
+    >
       <template v-if="hasAdminContext">
         <button
           v-if="canPublish"
           type="button"
-          class="btn-cta px-3 py-2 text-xs font-semibold tracking-wide"
+          :class="actionButtonClass"
           :disabled="isSubmitting"
           @click="emit('action', 'publish')"
         >
@@ -101,7 +105,7 @@ function handleDropdownSelect(actionId: string): void {
         <button
           v-if="canRequestChanges"
           type="button"
-          class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
+          :class="[actionButtonClass, 'text-burgundy']"
           :disabled="isSubmitting"
           @click="emit('action', 'request_changes')"
         >
@@ -109,10 +113,10 @@ function handleDropdownSelect(actionId: string): void {
         </button>
       </template>
       <template v-else>
-        <span class="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-navy/30 border border-navy/20 bg-canvas cursor-not-allowed">
+        <span :class="disabledButtonClass">
           Publicera
         </span>
-        <span class="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-navy/30 border border-navy/20 bg-canvas cursor-not-allowed">
+        <span :class="disabledButtonClass">
           Avslå
         </span>
       </template>

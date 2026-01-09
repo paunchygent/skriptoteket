@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import { RouterLink } from "vue-router";
+import { computed, ref, watch } from "vue";
+import { RouterLink, useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 
 import BrandLogo from "../brand/BrandLogo.vue";
@@ -23,6 +23,11 @@ const emit = defineEmits<{
 
 const layout = useLayoutStore();
 const { focusMode } = storeToRefs(layout);
+const route = useRoute();
+
+const isEditorRoute = computed(
+  () => route.name === "admin-tool-editor" || route.name === "admin-tool-version-editor",
+);
 
 const sidebarOpen = ref(false);
 
@@ -38,8 +43,8 @@ function onLogout(): void {
   emit("logout");
 }
 
-function exitFocusMode(): void {
-  layout.disable();
+function toggleFocusMode(): void {
+  layout.toggle();
 }
 
 watch(
@@ -104,12 +109,15 @@ watch(
       :user="user"
       :logout-in-progress="logoutInProgress"
       :is-focus-mode="focusMode"
-      @exit-focus-mode="exitFocusMode"
+      @toggle-focus-mode="toggleFocusMode"
       @logout="onLogout"
     />
 
     <!-- Main content area -->
-    <main class="auth-main-content">
+    <main
+      class="auth-main-content"
+      :class="{ 'auth-main-content--editor': isEditorRoute }"
+    >
       <div
         v-if="logoutError"
         class="mb-4 p-4 border border-error bg-white shadow-brutal-sm text-error text-sm"
@@ -171,6 +179,27 @@ watch(
   padding: var(--huleedu-space-6);
   overflow-y: auto;
   scrollbar-gutter: stable;
+}
+
+.auth-main-content--editor {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.auth-main-content--editor .route-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-main-content--editor .route-stage-item {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 @media (min-width: 768px) {

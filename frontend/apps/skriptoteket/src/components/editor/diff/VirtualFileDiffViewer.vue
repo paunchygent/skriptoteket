@@ -217,7 +217,7 @@ function downloadPatch(): void {
 </script>
 
 <template>
-  <div class="border border-navy bg-white shadow-brutal-sm">
+  <div class="border border-navy bg-white shadow-brutal-sm flex flex-col min-h-0">
     <div class="border-b border-navy/20 bg-canvas p-4 space-y-3">
       <div class="flex flex-wrap items-start justify-between gap-4">
         <div class="space-y-1 min-w-0">
@@ -313,11 +313,11 @@ function downloadPatch(): void {
       v-if="!activeItem"
       class="p-4 text-sm text-navy/70"
     >
-      Inget att jämföra.
+      Ingen diff att visa.
     </div>
     <div
       v-else
-      class="h-[560px] border-t border-navy/20"
+      class="flex-1 min-h-0 border-t border-navy/20"
     >
       <CodeMirrorMergeDiff
         :before-text="activeItem.beforeText"

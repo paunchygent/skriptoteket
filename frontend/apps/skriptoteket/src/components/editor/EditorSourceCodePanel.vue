@@ -34,11 +34,8 @@ const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtens
 </script>
 
 <template>
-  <div class="space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
-      Källkod
-    </h2>
-    <div class="h-[420px] border border-navy bg-canvas shadow-brutal-sm overflow-hidden">
+  <div class="flex flex-col min-h-0 h-full">
+    <div class="flex-1 min-h-0 border border-navy bg-canvas shadow-brutal-sm overflow-hidden">
       <Suspense>
         <template #default>
           <CodeMirrorEditor

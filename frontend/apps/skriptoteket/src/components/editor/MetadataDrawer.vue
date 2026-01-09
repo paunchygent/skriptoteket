@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import type { components } from "../../api/openapi";
 import SystemMessage from "../ui/SystemMessage.vue";
 
@@ -7,6 +8,7 @@ type CategoryItem = components["schemas"]["CategoryItem"];
 
 type MetadataDrawerProps = {
   isOpen: boolean;
+  variant?: "drawer" | "panel";
   metadataTitle: string;
   metadataSlug: string;
   metadataSummary: string;
@@ -21,7 +23,11 @@ type MetadataDrawerProps = {
   isSaving: boolean;
 };
 
-const props = defineProps<MetadataDrawerProps>();
+const props = withDefaults(defineProps<MetadataDrawerProps>(), {
+  variant: "drawer",
+});
+
+const isPanel = computed(() => props.variant === "panel");
 
 const emit = defineEmits<{
   (event: "close"): void;
@@ -51,7 +57,10 @@ function toggleCategory(value: string): void {
 
 <template>
   <!-- Mobile backdrop -->
-  <Teleport to="body">
+  <Teleport
+    v-if="!isPanel"
+    to="body"
+  >
     <Transition name="drawer-backdrop">
       <div
         v-if="isOpen"
@@ -63,12 +72,21 @@ function toggleCategory(value: string): void {
 
   <!-- Drawer - direct grid participant on desktop -->
   <aside
-    class="fixed inset-y-0 right-0 z-50 w-full bg-canvas border-l border-navy shadow-brutal flex flex-col md:relative md:inset-auto md:z-auto md:w-full"
+    :class="[
+      isPanel
+        ? 'relative w-full bg-canvas border border-navy shadow-brutal-sm flex flex-col min-h-0'
+        : 'fixed inset-y-0 right-0 z-50 w-full bg-canvas border-l border-navy shadow-brutal flex flex-col md:relative md:inset-auto md:z-auto md:w-full md:h-full md:overflow-hidden',
+    ]"
     role="dialog"
-    aria-modal="true"
+    :aria-modal="!isPanel"
     aria-labelledby="metadata-drawer-title"
   >
-    <div class="p-6 border-b border-navy flex items-start justify-between gap-4">
+    <div
+      :class="[
+        'border-b border-navy flex items-start justify-between gap-4',
+        isPanel ? 'p-3' : 'p-4',
+      ]"
+    >
       <div>
         <h2
           id="metadata-drawer-title"
@@ -81,6 +99,7 @@ function toggleCategory(value: string): void {
         </p>
       </div>
       <button
+        v-if="!isPanel"
         type="button"
         class="text-navy/60 hover:text-navy text-2xl leading-none"
         @click="emit('close')"
@@ -89,7 +108,11 @@ function toggleCategory(value: string): void {
       </button>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-6 space-y-6">
+    <div
+      :class="[
+        isPanel ? 'p-3 space-y-4' : 'flex-1 overflow-y-auto p-4 space-y-6',
+      ]"
+    >
       <!-- Title and Summary -->
       <div class="space-y-4">
         <div class="flex items-center justify-between">
@@ -166,7 +189,7 @@ function toggleCategory(value: string): void {
       <!-- Taxonomy section -->
       <div class="border-t border-navy/20 pt-4 space-y-4">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">Taxonomi</span>
+          <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">S&ouml;kord</span>
           <span
             v-if="isLoading"
             class="text-xs text-navy/60"
@@ -240,7 +263,7 @@ function toggleCategory(value: string): void {
       <div class="pt-4 border-t border-navy/20">
         <button
           type="button"
-          class="btn-primary w-full"
+          class="btn-ghost"
           :disabled="isSaving"
           @click="emit('save')"
         >
