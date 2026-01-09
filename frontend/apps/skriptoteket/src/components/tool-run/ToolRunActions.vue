@@ -14,9 +14,10 @@ const props = withDefaults(
     actions: UiFormAction[];
     idBase: string;
     disabled?: boolean;
+    density?: "default" | "compact";
     errorMessage?: string | null;
   }>(),
-  { disabled: false, errorMessage: null },
+  { disabled: false, density: "default", errorMessage: null },
 );
 
 const emit = defineEmits<{
@@ -37,6 +38,8 @@ const allFields = computed(() => {
   }
   return fields;
 });
+
+const isCompact = computed(() => props.density === "compact");
 
 function ensureDefaults(): void {
   for (const field of allFields.value) {
@@ -137,39 +140,58 @@ watch(allFields, () => ensureDefaults());
 <template>
   <div
     v-if="actions.length > 0"
-    class="space-y-4"
+    :class="[isCompact ? 'border border-navy/20 bg-white shadow-brutal-sm' : 'space-y-4']"
   >
-    <SystemMessage
-      :model-value="errorMessage"
-      variant="error"
-      @update:model-value="emit('update:errorMessage', $event)"
-    />
-
     <div
-      v-if="allFields.length > 0"
-      class="space-y-3"
+      v-if="isCompact"
+      class="border-b border-navy/20 px-3 py-2 flex items-center justify-between gap-3"
     >
-      <UiActionFieldRenderer
-        v-for="field in allFields"
-        :key="field.name"
-        :field="field"
-        :id-base="`${idBase}-field`"
-        :model-value="modelValueFor(field)"
-        @update:model-value="(value) => updateModelValue(field, value)"
-      />
+      <span class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+        &Aring;tg&auml;rder
+      </span>
+      <span class="text-[10px] text-navy/60">
+        {{ actions.length }}
+      </span>
     </div>
 
-    <div class="flex flex-wrap gap-2">
-      <button
-        v-for="action in actions"
-        :key="action.action_id"
-        type="button"
-        :class="action === actions[0] ? 'btn-cta' : 'btn-ghost'"
-        :disabled="disabled"
-        @click="onSubmit(action)"
+    <div :class="[isCompact ? 'p-3 space-y-3' : 'space-y-4']">
+      <SystemMessage
+        :model-value="errorMessage"
+        variant="error"
+        @update:model-value="emit('update:errorMessage', $event)"
+      />
+
+      <div
+        v-if="allFields.length > 0"
+        class="space-y-3"
       >
-        {{ action.label }}
-      </button>
+        <UiActionFieldRenderer
+          v-for="field in allFields"
+          :key="field.name"
+          :field="field"
+          :id-base="`${idBase}-field`"
+          :model-value="modelValueFor(field)"
+          :density="isCompact ? 'compact' : 'default'"
+          @update:model-value="(value) => updateModelValue(field, value)"
+        />
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="action in actions"
+          :key="action.action_id"
+          type="button"
+          :class="[
+            isCompact
+              ? 'btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none'
+              : (action === actions[0] ? 'btn-cta' : 'btn-ghost'),
+          ]"
+          :disabled="disabled"
+          @click="onSubmit(action)"
+        >
+          {{ action.label }}
+        </button>
+      </div>
     </div>
   </div>
 </template>

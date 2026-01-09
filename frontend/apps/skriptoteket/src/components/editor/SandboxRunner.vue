@@ -187,6 +187,7 @@ const onSubmitAction = actions.onSubmitAction;
     <SessionFilesPanel
       v-model:mode="sessionFilesMode"
       :files="sessionFiles"
+      density="compact"
       :can-reuse="canReuseSessionFiles"
       :can-clear="canClearSessionFiles"
       :helper-text="sessionFilesHelperText"

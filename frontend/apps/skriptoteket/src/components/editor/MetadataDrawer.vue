@@ -74,18 +74,36 @@ function toggleCategory(value: string): void {
   <aside
     :class="[
       isPanel
-        ? 'relative w-full bg-canvas border border-navy shadow-brutal-sm flex flex-col min-h-0'
+        ? 'relative w-full bg-white border border-navy/20 shadow-brutal-sm flex flex-col min-h-0'
         : 'fixed inset-y-0 right-0 z-50 w-full bg-canvas border-l border-navy shadow-brutal flex flex-col md:relative md:inset-auto md:z-auto md:w-full md:h-full md:overflow-hidden',
     ]"
-    role="dialog"
+    :role="isPanel ? 'region' : 'dialog'"
     :aria-modal="!isPanel"
     aria-labelledby="metadata-drawer-title"
   >
     <div
-      :class="[
-        'border-b border-navy flex items-start justify-between gap-4',
-        isPanel ? 'p-3' : 'p-4',
-      ]"
+      v-if="isPanel"
+      class="border-b border-navy/20 px-3 py-2 flex items-center justify-between gap-3"
+    >
+      <span
+        id="metadata-drawer-title"
+        class="text-[10px] font-semibold uppercase tracking-wide text-navy/60"
+      >
+        Verktygsinfo
+      </span>
+      <button
+        type="button"
+        class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+        :disabled="isSaving"
+        @click="emit('save')"
+      >
+        {{ isSaving ? "Sparar..." : "Spara" }}
+      </button>
+    </div>
+
+    <div
+      v-else
+      class="border-b border-navy flex items-start justify-between gap-4 p-4"
     >
       <div>
         <h2
@@ -99,7 +117,6 @@ function toggleCategory(value: string): void {
         </p>
       </div>
       <button
-        v-if="!isPanel"
         type="button"
         class="text-navy/60 hover:text-navy text-2xl leading-none"
         @click="emit('close')"
@@ -110,89 +127,83 @@ function toggleCategory(value: string): void {
 
     <div
       :class="[
-        isPanel ? 'p-3 space-y-4' : 'flex-1 overflow-y-auto p-4 space-y-6',
+        isPanel ? 'p-3 space-y-3' : 'flex-1 overflow-y-auto p-4 space-y-6',
       ]"
     >
       <!-- Title and Summary -->
-      <div class="space-y-4">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">Verktygsinfo</span>
+      <div class="space-y-3">
+        <div class="space-y-1">
+          <label class="block text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+            Titel
+          </label>
+          <input
+            :value="metadataTitle"
+            type="text"
+            class="w-full h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none"
+            placeholder="Verktygets titel"
+            :disabled="isSaving"
+            @input="emit('update:metadataTitle', ($event.target as HTMLInputElement).value)"
+          >
         </div>
 
-        <div class="space-y-3">
-          <div class="space-y-1">
-            <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
-              Titel
+        <div class="space-y-2">
+          <div class="flex items-center justify-between gap-3">
+            <label class="block text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+              URL-namn
             </label>
-            <input
-              :value="metadataTitle"
-              type="text"
-              class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
-              placeholder="Verktygets titel"
-              :disabled="isSaving"
-              @input="emit('update:metadataTitle', ($event.target as HTMLInputElement).value)"
-            >
-          </div>
-
-          <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
-                URL-namn
-              </label>
-              <button
-                type="button"
-                class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide whitespace-nowrap"
-                :disabled="isSaving || !canEditSlug"
-                @click="emit('suggestSlugFromTitle')"
-              >
-                Använd nuvarande titel
-              </button>
-            </div>
-
-            <input
-              :value="metadataSlug"
-              type="text"
-              class="w-full border border-navy bg-white px-3 py-2 text-sm font-mono text-navy shadow-brutal-sm"
-              placeholder="t.ex. mattest"
+            <button
+              type="button"
+              class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none whitespace-nowrap"
               :disabled="isSaving || !canEditSlug"
-              @input="emit('update:metadataSlug', ($event.target as HTMLInputElement).value)"
+              @click="emit('suggestSlugFromTitle')"
             >
-
-            <p class="text-xs text-navy/60">
-              Används i länken <span class="font-mono">/tools/&lt;url-namn&gt;/run</span>.
-              <span v-if="!canEditSlug">URL-namn är låst efter publicering.</span>
-            </p>
-
-            <SystemMessage
-              :model-value="slugError"
-              variant="error"
-              @update:model-value="emit('update:slugError', $event)"
-            />
+              Fr&aring;n titel
+            </button>
           </div>
 
-          <div class="space-y-1">
-            <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70">
-              Sammanfattning
-            </label>
-            <textarea
-              :value="metadataSummary"
-              rows="3"
-              class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
-              placeholder="Kort beskrivning av verktyget"
-              :disabled="isSaving"
-              @input="emit('update:metadataSummary', ($event.target as HTMLTextAreaElement).value)"
-            />
-          </div>
+          <input
+            :value="metadataSlug"
+            type="text"
+            class="w-full h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] font-mono text-navy shadow-none"
+            placeholder="t.ex. mattest"
+            :disabled="isSaving || !canEditSlug"
+            @input="emit('update:metadataSlug', ($event.target as HTMLInputElement).value)"
+          >
+
+          <p class="text-[11px] text-navy/60">
+            Anv&auml;nds i l&auml;nken <span class="font-mono">/tools/&lt;url-namn&gt;/run</span>.
+            <span v-if="!canEditSlug">URL-namn &auml;r l&aring;st efter publicering.</span>
+          </p>
+
+          <SystemMessage
+            :model-value="slugError"
+            variant="error"
+            @update:model-value="emit('update:slugError', $event)"
+          />
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+            Sammanfattning
+          </label>
+          <textarea
+            :value="metadataSummary"
+            rows="3"
+            class="w-full border border-navy/30 bg-white px-2.5 py-1.5 text-[11px] text-navy shadow-none leading-snug"
+            placeholder="Kort beskrivning av verktyget"
+            :disabled="isSaving"
+            @input="emit('update:metadataSummary', ($event.target as HTMLTextAreaElement).value)"
+          />
         </div>
       </div>
 
       <!-- Taxonomy section -->
-      <div class="border-t border-navy/20 pt-4 space-y-4">
+      <div class="border-t border-navy/20 pt-3 space-y-3">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">S&ouml;kord</span>
+          <span class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">S&ouml;kord</span>
           <span
             v-if="isLoading"
-            class="text-xs text-navy/60"
+            class="text-[10px] text-navy/60"
           >
             Laddar...
           </span>
@@ -207,18 +218,18 @@ function toggleCategory(value: string): void {
 
         <div
           v-if="!isLoading"
-          class="space-y-4"
+          class="space-y-3"
         >
           <div class="space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">Yrken</span>
-              <span class="text-xs text-navy/60">Välj minst ett</span>
+              <span class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">Yrken</span>
+              <span class="text-[10px] text-navy/60">Välj minst ett</span>
             </div>
-            <div class="grid gap-2">
+            <div class="grid gap-1.5">
               <label
                 v-for="profession in professions"
                 :key="profession.id"
-                class="flex items-center gap-2 border border-navy/30 bg-white px-3 py-2 shadow-brutal-sm text-xs text-navy"
+                class="flex items-center gap-2 border border-navy/30 bg-white px-2.5 py-1.5 shadow-none text-[11px] text-navy hover:bg-canvas/40"
               >
                 <input
                   :value="profession.id"
@@ -235,14 +246,14 @@ function toggleCategory(value: string): void {
 
           <div class="space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">Kategorier</span>
-              <span class="text-xs text-navy/60">Välj minst en</span>
+              <span class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">Kategorier</span>
+              <span class="text-[10px] text-navy/60">Välj minst en</span>
             </div>
-            <div class="grid gap-2">
+            <div class="grid gap-1.5">
               <label
                 v-for="category in categories"
                 :key="category.id"
-                class="flex items-center gap-2 border border-navy/30 bg-white px-3 py-2 shadow-brutal-sm text-xs text-navy"
+                class="flex items-center gap-2 border border-navy/30 bg-white px-2.5 py-1.5 shadow-none text-[11px] text-navy hover:bg-canvas/40"
               >
                 <input
                   :value="category.id"
@@ -260,7 +271,10 @@ function toggleCategory(value: string): void {
       </div>
 
       <!-- Save button -->
-      <div class="pt-4 border-t border-navy/20">
+      <div
+        v-if="!isPanel"
+        class="pt-4 border-t border-navy/20"
+      >
         <button
           type="button"
           class="btn-ghost"

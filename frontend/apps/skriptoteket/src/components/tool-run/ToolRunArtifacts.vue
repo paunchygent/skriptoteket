@@ -1,12 +1,18 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import type { components } from "../../api/openapi";
 
 type RunArtifact = components["schemas"]["RunArtifact"];
 type ArtifactEntry = components["schemas"]["ArtifactEntry"];
 
-defineProps<{
+const props = withDefaults(defineProps<{
   artifacts: (RunArtifact | ArtifactEntry)[];
-}>();
+  density?: "default" | "compact";
+}>(), {
+  density: "default",
+});
+
+const isCompact = computed(() => props.density === "compact");
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -18,16 +24,31 @@ function formatBytes(bytes: number): string {
 <template>
   <div
     v-if="artifacts.length > 0"
-    class="space-y-2"
+    :class="[isCompact ? 'border border-navy/20 bg-white shadow-brutal-sm' : 'space-y-2']"
   >
-    <div class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+    <div
+      v-if="isCompact"
+      class="border-b border-navy/20 px-3 py-2 flex items-center justify-between gap-3"
+    >
+      <span class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+        Filer
+      </span>
+      <span class="text-[10px] text-navy/60">
+        {{ artifacts.length }}
+      </span>
+    </div>
+    <div
+      v-else
+      class="text-xs font-semibold uppercase tracking-wide text-navy/70"
+    >
       Filer
     </div>
-    <ul class="space-y-1">
+
+    <ul :class="[isCompact ? 'px-3 py-2 space-y-1' : 'space-y-1']">
       <li
         v-for="artifact in artifacts"
         :key="artifact.artifact_id"
-        class="flex items-center gap-3 text-sm"
+        :class="[isCompact ? 'flex items-center gap-3 text-[11px]' : 'flex items-center gap-3 text-sm']"
       >
         <a
           :href="artifact.download_url"

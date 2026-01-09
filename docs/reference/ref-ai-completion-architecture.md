@@ -150,7 +150,10 @@ cause parsing errors. For KB injection, use the backend proxy or Tabby's chat en
 | Anthropic | **Claude Opus 4.5** | High-quality completions |
 | OpenAI | **GPT-5-2-Codex** | Code-specialized model |
 | OpenAI | **GPT-5-2** | Dense big model |
-| OpenAI | **GPT-5.2 High** | Planning model (chat, more reliable than Opus 4.5) |
+| OpenAI | **GPT-5-2 High** | Planning model (chat, more reliable than Opus 4.5) |
+
+Note: For OpenAI, we target the **GPT-5-2 family only** (Codex, GPT-5-2, GPT-5-2 High). These share the same
+OpenAI-compatible API surface and prompt caching behavior, which lets us keep a single caching strategy.
 
 ### 4.3 Configuration Examples
 
@@ -164,22 +167,27 @@ LLM_COMPLETION_MAX_TOKENS=256
 LLM_COMPLETION_TEMPERATURE=0.2
 ```
 
-**API Provider (Claude Opus 4.5):**
-
-```bash
-LLM_COMPLETION_ENABLED=true
-LLM_COMPLETION_BASE_URL=https://api.anthropic.com/v1
-OPENAI_LLM_COMPLETION_API_KEY=sk-ant-...
-LLM_COMPLETION_MODEL=claude-opus-4.5
-```
-
-**API Provider (GPT-5-2-Codex):**
+**API Provider (OpenAI GPT-5-2 family + prompt caching):**
 
 ```bash
 LLM_COMPLETION_ENABLED=true
 LLM_COMPLETION_BASE_URL=https://api.openai.com/v1
 OPENAI_LLM_COMPLETION_API_KEY=sk-...
 LLM_COMPLETION_MODEL=gpt-5-2-codex
+LLM_COMPLETION_PROMPT_CACHE_RETENTION=24h
+LLM_COMPLETION_PROMPT_CACHE_KEY=skriptoteket:completion
+```
+
+**API Provider (OpenRouter + GPT-5-2 family, optional headers):**
+
+```bash
+LLM_COMPLETION_ENABLED=true
+LLM_COMPLETION_BASE_URL=https://openrouter.ai/api/v1
+OPENAI_LLM_COMPLETION_API_KEY=sk-or-...
+LLM_COMPLETION_MODEL=gpt-5-2-codex  # Use provider-specific model ID if required
+LLM_COMPLETION_PROMPT_CACHE_RETENTION=24h
+LLM_COMPLETION_PROMPT_CACHE_KEY=skriptoteket:completion
+LLM_COMPLETION_EXTRA_HEADERS={"HTTP-Referer":"https://skriptoteket.hule.education","X-Title":"Skriptoteket"}
 ```
 
 ---
@@ -413,11 +421,25 @@ Prompt templates:
 - `LLM_COMPLETION_TEMPLATE_ID` (default: `inline_completion_v1`)
 - `LLM_EDIT_TEMPLATE_ID` (default: `edit_suggestion_v1`)
 - `LLM_CHAT_TEMPLATE_ID` (default: `editor_chat_v1`)
+- `LLM_CHAT_OPS_TEMPLATE_ID` (default: `editor_chat_ops_v1`)
 
 Notes:
 
 - Templates are repo-owned text files with placeholders like `{{CONTRACT_V2_FRAGMENT}}`.
 - Placeholders are replaced with code-owned fragments sourced from canonical Contract v2 + policy definitions.
+
+Provider caching + headers (applies per profile):
+
+- `LLM_COMPLETION_PROMPT_CACHE_RETENTION` / `LLM_EDIT_PROMPT_CACHE_RETENTION` /
+  `LLM_CHAT_PROMPT_CACHE_RETENTION` / `LLM_CHAT_OPS_PROMPT_CACHE_RETENTION`:
+  Optional prompt cache retention. Use `24h` for GPT-5-2 family (prompt caching), or omit for providers
+  that do not support it.
+- `LLM_COMPLETION_PROMPT_CACHE_KEY` / `LLM_EDIT_PROMPT_CACHE_KEY` /
+  `LLM_CHAT_PROMPT_CACHE_KEY` / `LLM_CHAT_OPS_PROMPT_CACHE_KEY`:
+  Optional stable key to improve cache routing (example: `skriptoteket:chat_ops`).
+- `LLM_COMPLETION_EXTRA_HEADERS` / `LLM_EDIT_EXTRA_HEADERS` /
+  `LLM_CHAT_EXTRA_HEADERS` / `LLM_CHAT_OPS_EXTRA_HEADERS`:
+  JSON object of provider-specific headers (example: `{"HTTP-Referer":"https://example.com","X-Title":"Skriptoteket"}`).
 
 Inline completions:
 
@@ -472,6 +494,22 @@ Chat (streaming):
 | `LLM_CHAT_CONTEXT_WINDOW_TOKENS` | `16384` | Context window (prompt + output), matches llama.cpp `n_ctx` |
 | `LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS` | `256` | Reserved prompt budget for variance |
 | `LLM_CHAT_SYSTEM_PROMPT_MAX_TOKENS` | `1024` | Target max tokens for system prompt (rules + KB) |
+
+Chat edit-ops (non-streaming):
+
+| Variable | Default | Description |
+| -------- | ------- | ----------- |
+| `LLM_CHAT_OPS_TEMPLATE_ID` | `editor_chat_ops_v1` | Prompt template ID for system prompt composition |
+| `LLM_CHAT_OPS_ENABLED` | `false` | Enable/disable feature |
+| `LLM_CHAT_OPS_BASE_URL` | `http://localhost:8082` | LLM API URL |
+| `OPENAI_LLM_CHAT_OPS_API_KEY` | `""` | API key (optional for self-hosted) |
+| `LLM_CHAT_OPS_MODEL` | `qwen3-coder-30b-a3b` | Model name |
+| `LLM_CHAT_OPS_MAX_TOKENS` | `1500` | Max tokens in response |
+| `LLM_CHAT_OPS_TEMPERATURE` | `0.2` | Sampling temperature |
+| `LLM_CHAT_OPS_TIMEOUT_SECONDS` | `60` | Request timeout |
+| `LLM_CHAT_OPS_CONTEXT_WINDOW_TOKENS` | `16384` | Context window (prompt + output), matches llama.cpp `n_ctx` |
+| `LLM_CHAT_OPS_CONTEXT_SAFETY_MARGIN_TOKENS` | `256` | Reserved prompt budget for variance |
+| `LLM_CHAT_OPS_SYSTEM_PROMPT_MAX_TOKENS` | `1024` | Target max tokens for system prompt (rules + KB) |
 
 ### 8.2 Frontend (Intelligence Config)
 

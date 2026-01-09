@@ -5,7 +5,7 @@ import type { components } from "../../api/openapi";
 import { useEditorCompareData, type WorkingCopyProvider } from "../../composables/editor/useEditorCompareData";
 import type { EditorCompareTarget } from "../../composables/editor/useEditorCompareState";
 import type { VirtualFileId, VirtualFileTextMap } from "../../composables/editor/virtualFiles";
-import { VIRTUAL_FILE_IDS } from "../../composables/editor/virtualFiles";
+import { VIRTUAL_DIFF_FILE_IDS } from "../../composables/editor/virtualFiles";
 import VirtualFileDiffViewer from "./diff/VirtualFileDiffViewer.vue";
 
 type EditorVersionSummary = components["schemas"]["EditorVersionSummary"];
@@ -83,7 +83,7 @@ const workingCompareLabel = computed(() =>
 
 const diffItems = computed(() => {
   if (!compareFiles.value) return [];
-  return VIRTUAL_FILE_IDS.map((virtualFileId) => ({
+  return VIRTUAL_DIFF_FILE_IDS.map((virtualFileId) => ({
     virtualFileId,
     beforeText: compareFiles.value![virtualFileId],
     afterText: props.baseFiles[virtualFileId],
@@ -101,11 +101,11 @@ const diffItems = computed(() => {
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+        <label class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
           Diff mot
         </label>
         <select
-          class="border border-navy bg-white px-3 py-2 text-xs text-navy shadow-brutal-sm"
+          class="h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none"
           :value="compareTargetValue"
           @change="emit('updateCompareTargetValue', ($event.target as HTMLSelectElement).value)"
         >
@@ -127,7 +127,7 @@ const diffItems = computed(() => {
 
         <button
           type="button"
-          class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
+          class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
           @click="emit('close')"
         >
           Stäng diff

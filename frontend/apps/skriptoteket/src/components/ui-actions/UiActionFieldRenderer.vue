@@ -21,6 +21,7 @@ const props = defineProps<{
   field: UiActionField;
   idBase: string;
   modelValue: FieldValue;
+  density?: "default" | "compact";
 }>();
 
 const emit = defineEmits<{ "update:modelValue": [value: FieldValue] }>();
@@ -43,6 +44,7 @@ const componentProps = computed<Record<string, unknown>>(() => {
   const baseProps = {
     field: props.field,
     modelValue: props.modelValue,
+    density: props.density,
   };
 
   if (props.field.kind === "enum" || props.field.kind === "multi_enum") {

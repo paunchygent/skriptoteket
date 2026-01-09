@@ -84,7 +84,7 @@ onBeforeUnmount(() => {
 
     <div
       v-if="isOpen"
-      class="absolute right-0 mt-2 w-56 border border-navy bg-canvas shadow-brutal-sm z-20"
+      class="absolute right-0 mt-2 w-56 border border-navy bg-canvas z-20"
       role="menu"
     >
       <button
@@ -92,7 +92,7 @@ onBeforeUnmount(() => {
         :key="item.id"
         type="button"
         role="menuitem"
-        class="w-full text-left px-3 py-2 text-sm text-navy hover:bg-white transition-colors"
+        class="w-full text-left px-2.5 py-2 text-[11px] text-navy hover:bg-white transition-colors"
         :class="{
           'text-burgundy': item.tone === 'danger',
           'font-semibold': item.tone === 'primary',

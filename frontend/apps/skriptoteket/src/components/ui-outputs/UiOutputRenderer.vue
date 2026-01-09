@@ -15,7 +15,9 @@ import UiOutputVegaLite from "./UiOutputVegaLite.vue";
 type UiOutput = NonNullable<components["schemas"]["UiPayloadV2"]["outputs"]>[number];
 type UiOutputKind = UiOutput["kind"];
 
-const props = defineProps<{ output: UiOutput }>();
+const props = withDefaults(defineProps<{ output: UiOutput; density?: "default" | "compact" }>(), {
+  density: "default",
+});
 
 const COMPONENT_BY_KIND: Record<UiOutputKind, Component> = {
   notice: UiOutputNotice,
@@ -36,5 +38,6 @@ const component = computed<Component | undefined>(() => {
   <component
     :is="component ?? UiOutputUnknown"
     :output="output"
+    :density="props.density"
   />
 </template>

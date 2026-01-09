@@ -8,6 +8,13 @@ export const VIRTUAL_FILE_IDS = [
 
 export type VirtualFileId = (typeof VIRTUAL_FILE_IDS)[number];
 
+export const VIRTUAL_DIFF_FILE_IDS = [
+  "tool.py",
+  "settings_schema.json",
+  "input_schema.json",
+  "usage_instructions.md",
+] as const satisfies readonly VirtualFileId[];
+
 export type VirtualFileLanguage = "python" | "json" | "text";
 
 export type VirtualFileMeta = {

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import type { components } from "../../api/openapi";
 import type { ToolInputFormValue, ToolInputFormValues } from "../../composables/tools/useToolInputs";
 
@@ -6,16 +7,21 @@ type ToolMetadataResponse = components["schemas"]["ToolMetadataResponse"];
 type ToolInputSchema = NonNullable<ToolMetadataResponse["input_schema"]>;
 type ToolInputField = ToolInputSchema[number];
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   idBase: string;
   fields: ToolInputField[];
   modelValue: ToolInputFormValues;
   errors: Record<string, string>;
-}>();
+  density?: "default" | "compact";
+}>(), {
+  density: "default",
+});
 
 const emit = defineEmits<{
   (event: "update:modelValue", value: ToolInputFormValues): void;
 }>();
+
+const isCompact = computed(() => props.density === "compact");
 
 function defaultValue(field: ToolInputField): ToolInputFormValue {
   if (field.kind === "boolean") return false;
@@ -35,10 +41,10 @@ function updateField(name: string, value: ToolInputFormValue): void {
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div :class="[isCompact ? 'space-y-3' : 'space-y-4']">
     <div
       v-if="fields.length === 0"
-      class="text-sm text-navy/60"
+      :class="[isCompact ? 'text-[11px] text-navy/60' : 'text-sm text-navy/60']"
     >
       Inga indata krävs.
     </div>
@@ -51,7 +57,11 @@ function updateField(name: string, value: ToolInputFormValue): void {
       <label
         v-if="field.kind !== 'boolean'"
         :for="`${idBase}-input-${field.name}`"
-        class="text-xs font-semibold uppercase tracking-wide text-navy/70"
+        :class="[
+          isCompact
+            ? 'text-[10px] font-semibold uppercase tracking-wide text-navy/60'
+            : 'text-xs font-semibold uppercase tracking-wide text-navy/70',
+        ]"
       >
         {{ field.label }}
       </label>
@@ -61,7 +71,12 @@ function updateField(name: string, value: ToolInputFormValue): void {
         :id="`${idBase}-input-${field.name}`"
         :value="getValue(field) as string"
         rows="4"
-        class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+        :class="[
+          'w-full bg-white text-navy',
+          isCompact
+            ? 'border border-navy/30 px-2.5 py-1.5 text-[11px] shadow-none leading-snug'
+            : 'border border-navy px-3 py-2 text-sm shadow-brutal-sm',
+        ]"
         @input="updateField(field.name, ($event.target as HTMLTextAreaElement).value)"
       />
 
@@ -69,7 +84,12 @@ function updateField(name: string, value: ToolInputFormValue): void {
         v-else-if="field.kind === 'enum'"
         :id="`${idBase}-input-${field.name}`"
         :value="getValue(field) as string"
-        class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+        :class="[
+          'w-full bg-white text-navy',
+          isCompact
+            ? 'h-[28px] border border-navy/30 px-2.5 text-[11px] shadow-none leading-none'
+            : 'border border-navy px-3 py-2 text-sm shadow-brutal-sm',
+        ]"
         @change="updateField(field.name, ($event.target as HTMLSelectElement).value)"
       >
         <option value="">
@@ -86,16 +106,27 @@ function updateField(name: string, value: ToolInputFormValue): void {
 
       <label
         v-else-if="field.kind === 'boolean'"
-        class="flex items-center gap-2 border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+        :class="[
+          'flex items-center gap-2 bg-white text-navy',
+          isCompact
+            ? 'border border-navy/30 px-2.5 py-1.5 text-[11px] shadow-none'
+            : 'border border-navy px-3 py-2 text-sm shadow-brutal-sm',
+        ]"
       >
         <input
           :id="`${idBase}-input-${field.name}`"
           type="checkbox"
           :checked="getValue(field) === true"
-          class="h-4 w-4"
+          :class="[isCompact ? 'h-3.5 w-3.5' : 'h-4 w-4']"
           @change="updateField(field.name, ($event.target as HTMLInputElement).checked)"
         >
-        <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+        <span
+          :class="[
+            isCompact
+              ? 'text-[10px] font-semibold uppercase tracking-wide text-navy/60'
+              : 'text-xs font-semibold uppercase tracking-wide text-navy/70',
+          ]"
+        >
           {{ field.label }}
         </span>
       </label>
@@ -106,7 +137,12 @@ function updateField(name: string, value: ToolInputFormValue): void {
         :value="getValue(field) as string"
         :inputmode="field.kind === 'integer' ? 'numeric' : field.kind === 'number' ? 'decimal' : undefined"
         type="text"
-        class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+        :class="[
+          'w-full bg-white text-navy',
+          isCompact
+            ? 'h-[28px] border border-navy/30 px-2.5 text-[11px] shadow-none leading-none'
+            : 'border border-navy px-3 py-2 text-sm shadow-brutal-sm',
+        ]"
         @input="updateField(field.name, ($event.target as HTMLInputElement).value)"
       >
 

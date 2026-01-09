@@ -12,15 +12,21 @@ type SettingsFieldKind = SettingsField["kind"];
 type FieldValue = string | boolean | string[];
 type SettingsFormValues = Record<string, FieldValue>;
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   idBase: string;
   schema: SettingsField[];
   modelValue: SettingsFormValues;
   isLoading: boolean;
   isSaving: boolean;
+  variant?: "standalone" | "embedded";
+  density?: "default" | "compact";
   isSaveDisabled?: boolean;
   errorMessage: string | null;
-}>();
+}>(), {
+  variant: "standalone",
+  density: "default",
+  isSaveDisabled: false,
+});
 
 const emit = defineEmits<{
   "update:modelValue": [value: SettingsFormValues];
@@ -29,6 +35,7 @@ const emit = defineEmits<{
 }>();
 
 const fieldIdBase = computed(() => `${props.idBase}-settings`);
+const isCompact = computed(() => props.variant === "embedded" || props.density === "compact");
 
 function defaultValueForKind(kind: SettingsFieldKind): FieldValue {
   switch (kind) {
@@ -55,8 +62,11 @@ function onSave(): void {
 </script>
 
 <template>
-  <div class="space-y-4">
-    <div class="flex items-center justify-between gap-3">
+  <div :class="[isCompact ? 'space-y-3' : 'space-y-4']">
+    <div
+      v-if="props.variant === 'standalone'"
+      class="flex items-center justify-between gap-3"
+    >
       <div>
         <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
           Inställningar
@@ -81,8 +91,26 @@ function onSave(): void {
     </div>
 
     <div
+      v-else
+      class="flex items-center justify-end gap-2"
+    >
+      <button
+        type="button"
+        :disabled="isLoading || isSaving || props.isSaveDisabled"
+        class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+        @click="onSave"
+      >
+        <span
+          v-if="isSaving"
+          class="inline-block w-3 h-3 border-2 border-navy/20 border-t-navy rounded-full animate-spin"
+        />
+        <span v-else>Spara</span>
+      </button>
+    </div>
+
+    <div
       v-if="isLoading"
-      class="flex items-center gap-2 text-sm text-navy/70"
+      :class="[isCompact ? 'flex items-center gap-2 text-[11px] text-navy/70' : 'flex items-center gap-2 text-sm text-navy/70']"
     >
       <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
       <span>Laddar inställningar...</span>
@@ -90,7 +118,7 @@ function onSave(): void {
 
     <div
       v-else
-      class="grid gap-4"
+      :class="[isCompact ? 'grid gap-3' : 'grid gap-4']"
     >
       <UiActionFieldRenderer
         v-for="field in schema"
@@ -98,6 +126,7 @@ function onSave(): void {
         :field="field"
         :id-base="fieldIdBase"
         :model-value="valueForField(field)"
+        :density="isCompact ? 'compact' : 'default'"
         @update:model-value="updateField(field.name, $event)"
       />
     </div>

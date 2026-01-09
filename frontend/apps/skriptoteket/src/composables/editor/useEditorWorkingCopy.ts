@@ -13,7 +13,7 @@ import {
 } from "./editorPersistence";
 import { areFieldsEqual } from "./editorWorkingCopyFingerprint";
 import { useEditorWorkingCopyCheckpoints } from "./useEditorWorkingCopyCheckpoints";
-import { VIRTUAL_FILE_IDS, virtualFileTextFromEditorFields } from "./virtualFiles";
+import { VIRTUAL_DIFF_FILE_IDS, virtualFileTextFromEditorFields } from "./virtualFiles";
 
 export type EditorWorkingCopyCheckpointSummary = {
   id: string;
@@ -100,7 +100,7 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
       workingCopyFieldsFromRecord(restoreCandidate.value),
     );
 
-    return VIRTUAL_FILE_IDS.map((virtualFileId) => ({
+    return VIRTUAL_DIFF_FILE_IDS.map((virtualFileId) => ({
       virtualFileId,
       beforeText: beforeFiles[virtualFileId],
       afterText: afterFiles[virtualFileId],

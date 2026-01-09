@@ -46,13 +46,14 @@ function updateInputValues(value: ToolInputFormValues): void {
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div class="max-w-[min(960px,100%)] space-y-4">
     <div v-if="inputFields.length > 0">
       <ToolInputForm
         :id-base="idBase"
         :fields="inputFields"
         :model-value="inputValues"
         :errors="inputFieldErrors"
+        density="compact"
         @update:model-value="updateInputValues"
       />
     </div>
@@ -67,22 +68,22 @@ function updateInputValues(value: ToolInputFormValues): void {
     <div class="space-y-2">
       <label
         v-if="showFilePicker"
-        class="block text-xs font-semibold uppercase tracking-wide text-navy/70"
+        class="block text-[10px] font-semibold uppercase tracking-wide text-navy/60"
       >
         {{ fileLabel }}
       </label>
 
       <!-- Input + buttons row (same height via items-stretch) -->
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-stretch">
         <div
           v-if="showFilePicker"
           class="flex-1 min-w-0"
         >
           <div
-            class="flex items-center gap-3 w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm overflow-hidden h-full"
+            class="flex items-center gap-2 w-full h-[28px] border border-navy/30 bg-white px-2.5 shadow-none overflow-hidden"
           >
             <label
-              class="btn-cta shrink-0 px-3 py-1 text-xs font-semibold tracking-wide"
+              class="btn-ghost shrink-0 h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
               :class="{ 'opacity-60 pointer-events-none': isReadOnly }"
             >
               Välj filer
@@ -95,7 +96,7 @@ function updateInputValues(value: ToolInputFormValues): void {
                 @change="onFilesSelected"
               >
             </label>
-            <span class="text-sm text-navy/60 truncate">
+            <span class="text-[11px] text-navy/60 truncate">
               {{ selectedFiles.length > 0 ? `${selectedFiles.length} fil(er) valda` : "Inga filer valda" }}
             </span>
           </div>
@@ -104,12 +105,12 @@ function updateInputValues(value: ToolInputFormValues): void {
         <button
           type="button"
           :disabled="!canRun || isRunning || isReadOnly"
-          class="btn-cta min-w-[120px]"
+          class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none min-w-[120px]"
           @click="emit('run')"
         >
           <span
             v-if="isRunning"
-            class="inline-block w-3 h-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
+            class="inline-block w-3 h-3 border-2 border-navy/20 border-t-navy rounded-full animate-spin"
           />
           <span v-else>Testkör kod</span>
         </button>
@@ -117,7 +118,7 @@ function updateInputValues(value: ToolInputFormValues): void {
         <button
           v-if="hasResults"
           type="button"
-          class="btn-ghost"
+          class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
           @click="emit('clear')"
         >
           Rensa

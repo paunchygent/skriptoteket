@@ -5,7 +5,7 @@ title: "Admin tool authoring (draft-first workflow)"
 status: active
 owners: "agents"
 created: 2025-12-25
-updated: 2026-01-06
+updated: 2026-01-09
 outcome: "Admins can quickly create draft tools directly from /admin/tools, iterate without contributor-only hoops, and publish only when slug and taxonomy are finalized."
 ---
 
@@ -61,6 +61,7 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 - [ST-14-28: Layout editor v1: UX polish + accessibility + tests](../stories/story-14-28-layout-editor-v1-ux-polish-and-a11y.md)
 - [ST-14-29: Editor: Pro mode combined bundle view (tool.py + schemas)](../stories/story-14-29-editor-pro-mode-combined-bundle-view.md)
 - [ST-14-30: Editor: working copy persistence (IndexedDB) + checkpoints + restore](../stories/story-14-30-editor-working-copy-persistence-indexeddb.md)
+- [ST-14-32: Editor: cohesion pass (panel language + input selectors across modes)](../stories/story-14-32-editor-cohesion-pass-input-selectors.md)
 
 ## References
 

@@ -24,6 +24,7 @@ const emit = defineEmits<{ (event: "update:modelValue", value: string): void }>(
 const customValue = ref("");
 
 const selectId = computed(() => props.id);
+const helpId = computed(() => `${selectId.value}-help`);
 const helpText =
   "Måste vara en funktion i skriptet som tar (input_dir, output_dir).";
 
@@ -70,7 +71,7 @@ watch(
   <div class="space-y-2">
     <div class="relative inline-flex items-center gap-2">
       <label
-        class="text-xs font-semibold uppercase tracking-wide text-navy/70"
+        class="text-[10px] font-semibold uppercase tracking-wide text-navy/60"
         :for="selectId"
       >
         {{ label }}
@@ -78,16 +79,17 @@ watch(
       <div class="relative group">
         <button
           type="button"
-          class="h-5 w-5 border border-navy/30 text-[10px] font-semibold text-navy/70 hover:text-navy"
-          aria-label="Info om startfunktion"
+          class="inline-flex h-3.5 w-3.5 items-center justify-center text-[9px] font-semibold leading-none text-navy/50 hover:text-navy self-center -translate-y-[3px]"
+          aria-label="Visa hjälp"
         >
           ?
         </button>
         <div
-          class="absolute left-0 top-full mt-2 w-[min(260px,calc(100vw-2*var(--huleedu-space-4)))] border border-navy bg-white text-navy shadow-brutal-sm px-3 py-2 text-xs opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+          :id="helpId"
+          class="absolute left-0 top-full mt-2 w-[min(260px,calc(100vw-2*var(--huleedu-space-4)))] border border-navy/30 bg-white text-navy px-3 py-2 text-[11px] opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 z-[var(--huleedu-z-tooltip)]"
           role="tooltip"
         >
-          <span class="text-xs text-navy/70">
+          <span class="text-[11px] text-navy/80">
             {{ helpText }}
           </span>
         </div>
@@ -97,7 +99,8 @@ watch(
       <select
         :id="selectId"
         :value="selectedOption"
-        class="w-full sm:w-44 border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+        :aria-describedby="helpId"
+        class="w-full sm:w-44 h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none"
         :disabled="disabled"
         @change="handleSelectChange"
       >
@@ -115,7 +118,8 @@ watch(
         v-if="isCustom"
         :value="customValue"
         type="text"
-        class="w-full flex-1 border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+        :aria-describedby="helpId"
+        class="w-full flex-1 h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none"
         :placeholder="placeholder"
         :disabled="disabled"
         @input="handleCustomInput"

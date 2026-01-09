@@ -12,16 +12,23 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-01-08
+- Date: 2026-01-09
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: ST-14-01/14-02 done; ST-14-09 done; ST-14-10 done; ST-14-13/14 done; ST-14-15 done; ST-14-16 done; ST-14-17 done; ST-14-18 done; ST-14-30 done; ST-14-31 done; ST-08-23 done
 
-## Current Session (2026-01-08)
+## Current Session (2026-01-09)
 
 - Editor modes now fixed toggles (Källkod/Diff/Metadata) with compare text relabeled to Diff; metadata/instructions/behörigheter render as in-page panels (no drawer overlay): `frontend/apps/skriptoteket/src/components/editor/{EditorWorkspaceToolbar,EditorWorkspacePanel,MetadataDrawer,InstructionsDrawer,MaintainersDrawer}.vue`, `frontend/apps/skriptoteket/src/components/editor/EditorComparePanel.vue`, `frontend/apps/skriptoteket/src/components/editor/diff/VirtualFileDiffViewer.vue`, `frontend/apps/skriptoteket/src/composables/editor/{editorCompareDefaults,useEditorCompareData}.ts`.
 - Editor workspace layout refit: toolbar sits under header; mode content uses fixed-height row; chat now aligns to editor row with a spacer row for schemas; diff toggle always enabled (shows empty state if no compare target): `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`, `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`.
+- ST-08-21 backend scaffold: edit-ops handler + OpenAI provider + prompt template + settings + router/model wiring (POST `/api/v1/editor/edit-ops`): `src/skriptoteket/application/editor/edit_ops_handler.py`, `src/skriptoteket/infrastructure/llm/openai_provider.py`, `src/skriptoteket/application/editor/system_prompts/editor_chat_ops_v1.txt`, `src/skriptoteket/config.py`, `src/skriptoteket/web/api/v1/editor/{edit_ops.py,models.py,__init__.py}`, `src/skriptoteket/protocols/llm.py`, `src/skriptoteket/di/llm.py`, `src/skriptoteket/application/editor/prompt_{templates,budget,composer}.py`.
+- ST-08-22 frontend: edit-ops proposal preview/apply/undo panel + stale fingerprint guard + chat CTA + tests: `frontend/apps/skriptoteket/src/composables/editor/{editOps,useEditorEditOps}.ts`, `frontend/apps/skriptoteket/src/composables/editor/{editOps,useEditorEditOps}.spec.ts`, `frontend/apps/skriptoteket/src/components/editor/EditorEditOpsPanel.vue`, `frontend/apps/skriptoteket/src/components/editor/{ChatDrawer,EditorWorkspacePanel,EditorWorkspaceDrawers}.vue`, `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
+- Docs: PR-0011 marked done (Kodassistenten naming), created PR-0012 + ST-14-32 for the next cohesion pass (selectors + Testkör/Metadata/Diff density): `docs/backlog/prs/pr-0011-editor-mode-toggles-and-metadata-mode.md`, `docs/backlog/prs/pr-0012-editor-cohesion-pass-input-selectors.md`, `docs/backlog/stories/story-14-32-editor-cohesion-pass-input-selectors.md`.
+- PR-0012 started (ST-14-32 in_progress): compact selectors + tooltip `aria-describedby` pattern (Preset→Förval, entrypoint dropdown), diff file selector now dropdown + per-side copy/download (clear Före/Efter) with file-specific names, and Testkör actions downgraded to compact ghost utilities: `frontend/apps/skriptoteket/src/components/editor/{EntrypointDropdown,EditorInputSchemaPanel,EditorComparePanel,SandboxInputPanel}.vue`, `frontend/apps/skriptoteket/src/components/editor/diff/VirtualFileDiffViewer.vue`, `frontend/apps/skriptoteket/src/composables/editor/{virtualFiles,useEditorWorkingCopy}.ts`.
+- Metadata-läget paneler (Verktygsinfo/Instruktioner/Behörigheter) är nu kompakta och följer editor-utilities (ingen drawer-header inne i editorn; actions i header): `frontend/apps/skriptoteket/src/components/editor/{MetadataDrawer,InstructionsDrawer,MaintainersDrawer}.vue`.
+- Testkör-subpaneler (inputs/sessionfiler/inställningar/debug/actions/artifacts/outputs) är nu kompakta och använder samma panel-header + utility-styling som resten av editorn: `frontend/apps/skriptoteket/src/components/editor/{SandboxInputPanel,SandboxRunner,SandboxRunnerActions,SandboxSettingsCard}.vue`, `frontend/apps/skriptoteket/src/components/tool-run/{SessionFilesPanel,ToolInputForm,ToolRunSettingsPanel,ToolRunActions,ToolRunArtifacts}.vue`, `frontend/apps/skriptoteket/src/components/ui-actions/UiActionField*.vue`.
+- UiOutput-komponenter stödjer `density` så editorn kan rendera outputs compact utan att ändra ToolRunView: `frontend/apps/skriptoteket/src/components/ui-outputs/UiOutput*.vue`, `frontend/apps/skriptoteket/src/components/ui-outputs/UiOutputRenderer.vue`.
 - Schema editors unified into a shared "Indata & inställningar (JSON)" section with divider layout and synced headers/actions; removed duplicate "Schema (JSON)" headers; settings panel has aligned header row placeholder: `frontend/apps/skriptoteket/src/components/editor/{EditorInputSchemaPanel,EditorSettingsSchemaPanel}.vue`.
 - Editor layout tightened again: header/toolbar live inside the left column grid (mode selector aligns to editor edge), schema section has shared collapse toggle, chat column gets a top border, and chat rail no longer steals width when expanded: `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`.
 - Editor route height is now constrained so CodeMirror scrolls inside the viewport (route-stage + auth-main-content editor classes): `frontend/apps/skriptoteket/src/components/layout/AuthLayout.vue`, `frontend/apps/skriptoteket/src/App.vue`, `frontend/apps/skriptoteket/src/assets/main.css`.
@@ -30,8 +37,12 @@ Keep this file updated so the next session can pick up work quickly.
 - Chat drawer renamed to “Kodassistenten”, copy updated, default open on load; collapse via robot icon (no toolbar toggle). History load triggers on open + tool change: `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`, `frontend/apps/skriptoteket/src/composables/editor/useScriptEditorDrawers.ts`, `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
 - Taxonomy UI copy renamed to “Sökord” (metadata panel + help + toasts): `frontend/apps/skriptoteket/src/components/editor/MetadataDrawer.vue`, `frontend/apps/skriptoteket/src/components/help/HelpPanel.vue`, `frontend/apps/skriptoteket/src/composables/editor/useToolTaxonomy.ts`.
 - Playwright chat drawer check updated for new label/default open: `scripts/playwright_st_08_20_editor_chat_drawer_check.py`.
-- Chat drawer UI consolidated into a single scrollable conversation surface (no per-message boxes), cleaned copy, and stronger hierarchy: `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`.
+- Playwright chat drawer check now asserts the “Föreslå ändringar” button and waits for Send enable: `scripts/playwright_st_08_20_editor_chat_drawer_check.py`.
+- Chat drawer now fills the full right column (no empty lower panel), shows an assistant intro message when empty, aligns buttons with schema actions, and auto-resizes the prompt textarea: `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`, `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`.
+- Working copy restore prompt restyled to match editor surface (compact, no big CTAs): `frontend/apps/skriptoteket/src/components/editor/WorkingCopyRestorePrompt.vue`.
 - Editor workspace now full-height split with independent scroll per column; code editor flexes to fill available height: `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`, `frontend/apps/skriptoteket/src/components/editor/EditorSourceCodePanel.vue`, `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
+- Version history popover + Spara/Öppna menu further aligned: restore point naming (“Spara ny återställningspunkt”), no nested shadows in Öppna sparade, compact “ledger/menu” rows with timestamp, subtle active-row fill, and actions are lightweight text links (status is secondary): `frontend/apps/skriptoteket/src/components/editor/{EditorWorkspaceToolbar,VersionHistoryDrawer,EditorWorkspacePanel}.vue`.
+- Diff viewer controls now sit directly above their respective panes; patch actions labeled as global: `frontend/apps/skriptoteket/src/components/editor/diff/VirtualFileDiffViewer.vue`.
 - AI-REDIGERING panel removed from the editor flow (chat replaces it): `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`.
 - Toolbar regrouped: single Spara/Öppna menu (save + local checkpoint + open popover), lock badge, mode toggles; workflow actions live in header strip; no chat toggle: `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceToolbar.vue`, `frontend/apps/skriptoteket/src/components/editor/WorkflowContextButtons.vue`, `frontend/apps/skriptoteket/src/components/editor/ScriptEditorHeaderPanel.vue`.
 - Title/summary/slug header panel moved into editor main column as a compact inline strip (no separate panel); workflow actions no longer live there: `frontend/apps/skriptoteket/src/components/editor/ScriptEditorHeaderPanel.vue`, `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`, `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
@@ -62,9 +73,18 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Verification
 
+- Frontend unit tests: `pdm run fe-test` (pass).
+- Playwright chat drawer check (Vite): `set -a && source .env && set +a && pdm run python -m scripts.playwright_st_08_20_editor_chat_drawer_check --base-url http://127.0.0.1:5173` (pass; asserts “Föreslå ändringar” + send flow).
 - Not run (this session): `pdm run pytest tests/unit/application/test_editor_chat_handler.py -q`, `pdm run pytest tests/unit/application/test_editor_chat_clear_handler.py -q`, `pdm run pytest tests/integration/infrastructure/repositories/test_tool_session_message_repository.py -q`, live `/api/v1/editor/tools/{tool_id}/chat` SSE + clear checks.
+- FE lint: `pdm run fe-lint` (pass)
 - Quality gates (frontend): `pdm run lint`, `pdm run fe-test`, `pdm run typecheck`, `pdm run fe-build` (pass; Vite chunk-size warning).
-- Playwright chat drawer check (Vite, macOS escalation): `pdm run python -m scripts.playwright_st_08_20_editor_chat_drawer_check --base-url http://127.0.0.1:5173` (last attempt rejected; needs approval to rerun).
+- Playwright editor smoke (Vite, macOS escalation; re-run after PR-0012 UI changes): `pdm run ui-editor-smoke --base-url http://127.0.0.1:5173` (pass; artifacts in `.artifacts/ui-editor-smoke/`).
+- Playwright chat drawer check (Vite, macOS escalation): `pdm run python -m scripts.playwright_st_08_20_editor_chat_drawer_check --base-url http://127.0.0.1:5173` (pass; includes send + disabled/assistant response check).
+- Edit-ops handler unit tests: `pdm run pytest tests/unit/application/test_editor_edit_ops_handler.py -q` (pass).
+- OpenAPI route check (local dev): `curl -sS http://127.0.0.1:8000/openapi.json | jq -r '.paths | keys[] | select(.==\"/api/v1/editor/edit-ops\")'`.
+- Frontend OpenAPI types: `pdm run fe-gen-api-types` (pass).
+- Full test run (incl. integration): `pdm run test` (pass).
+- Edit-ops smoke (auth + CSRF + tool access; returns disabled when ops off): `set -a && source .env && set +a && BASE_URL=http://127.0.0.1:8000 && COOKIE_JAR=/tmp/skriptoteket-cookies.txt && CSRF_FILE=/tmp/skriptoteket-csrf.txt && curl -sS -c "$COOKIE_JAR" -H 'Content-Type: application/json' -d "{\"email\":\"$BOOTSTRAP_SUPERUSER_EMAIL\",\"password\":\"$BOOTSTRAP_SUPERUSER_PASSWORD\"}" "$BASE_URL/api/v1/auth/login" | jq -r .csrf_token > "$CSRF_FILE" && TOOL_ID=$(curl -sS -b "$COOKIE_JAR" "$BASE_URL/api/v1/catalog/tools" | jq -r '.items[0].id') && PAYLOAD=$(curl -sS -b "$COOKIE_JAR" "$BASE_URL/api/v1/editor/tools/$TOOL_ID" | jq -c --arg message "Föreslå en enkel förbättring." '{tool_id: .tool.id, message: $message, active_file: "tool.py", virtual_files: {"tool.py": .source_code, "entrypoint.txt": .entrypoint, "settings_schema.json": (if .settings_schema == null then "" else (.settings_schema|tojson) end), "input_schema.json": (if .input_schema == null then "" else (.input_schema|tojson) end), "usage_instructions.md": (.usage_instructions // "")}}') && CSRF=$(cat "$CSRF_FILE") && curl -sS -w '\n%{http_code}\n' -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' -d "$PAYLOAD" "$BASE_URL/api/v1/editor/edit-ops"` (200; enabled=false when ops disabled).
 - Frontend unit (drawers): covered by full `pdm run fe-test` (pass).
 - Migration test (docker): `pdm run pytest -m docker tests/integration/test_migration_0024_tool_session_messages_idempotent.py -q` (pass)
 - Dev DB migration: `pdm run db-upgrade`
@@ -109,6 +129,6 @@ pdm run test
 
 ## Next Steps
 
-- ST-08-20 (UI): wire the chat drawer to `POST`/`DELETE /api/v1/editor/tools/{tool_id}/chat` (no client-managed history).
-- ST-08-21/22 (future): reuse the same canonical server-side thread (`context="editor_chat"`) for edit-ops/diff/apply/undo chat-first endpoints.
+- ST-08-21: implement structured CRUD edit-ops endpoint (`POST /api/v1/editor/edit-ops`) using the canonical chat thread + virtual file map.
+- ST-08-22: build diff preview + apply/undo for edit-ops proposals (reuse ST-14-17 diff viewer + checkpoints).
 - If you want to validate real streaming locally, enable `LLM_CHAT_ENABLED=true` and point `LLM_CHAT_BASE_URL` to a working OpenAI-compatible provider (default `http://localhost:8082`).

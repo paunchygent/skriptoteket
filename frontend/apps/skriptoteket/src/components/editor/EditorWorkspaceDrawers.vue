@@ -13,6 +13,7 @@ type EditorWorkspaceDrawersProps = {
   chatIsStreaming: boolean;
   chatDisabledMessage: string | null;
   chatError: string | null;
+  isEditOpsLoading: boolean;
 };
 
 const props = withDefaults(defineProps<EditorWorkspaceDrawersProps>(), {
@@ -27,6 +28,7 @@ const emit = defineEmits<{
   (event: "clearChatError"): void;
   (event: "clearChatDisabled"): void;
   (event: "toggleChatCollapsed"): void;
+  (event: "requestEditOps", message: string): void;
 }>();
 </script>
 
@@ -40,6 +42,7 @@ const emit = defineEmits<{
     :is-streaming="props.chatIsStreaming"
     :disabled-message="props.chatDisabledMessage"
     :error="props.chatError"
+    :is-edit-ops-loading="props.isEditOpsLoading"
     @close="emit('close')"
     @toggle-collapse="emit('toggleChatCollapsed')"
     @send="emit('sendChatMessage', $event)"
@@ -47,5 +50,6 @@ const emit = defineEmits<{
     @clear="emit('clearChat')"
     @clear-error="emit('clearChatError')"
     @clear-disabled="emit('clearChatDisabled')"
+    @request-edit-ops="emit('requestEditOps', $event)"
   />
 </template>

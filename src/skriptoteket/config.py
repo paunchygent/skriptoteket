@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -85,10 +86,14 @@ class Settings(BaseSettings):
     LLM_COMPLETION_TEMPLATE_ID: str = "inline_completion_v1"
     LLM_EDIT_TEMPLATE_ID: str = "edit_suggestion_v1"
     LLM_CHAT_TEMPLATE_ID: str = "editor_chat_v1"
+    LLM_CHAT_OPS_TEMPLATE_ID: str = "editor_chat_ops_v1"
 
     LLM_COMPLETION_ENABLED: bool = False
     LLM_COMPLETION_BASE_URL: str = "http://localhost:8082"
     OPENAI_LLM_COMPLETION_API_KEY: str = ""
+    LLM_COMPLETION_PROMPT_CACHE_KEY: str = ""
+    LLM_COMPLETION_PROMPT_CACHE_RETENTION: Literal["in_memory", "24h"] | None = None
+    LLM_COMPLETION_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
     LLM_COMPLETION_MODEL: str = "qwen3-coder-30b-a3b"
     LLM_COMPLETION_MAX_TOKENS: int = 256
     LLM_COMPLETION_TEMPERATURE: float = 0.2
@@ -102,6 +107,9 @@ class Settings(BaseSettings):
     LLM_EDIT_ENABLED: bool = False
     LLM_EDIT_BASE_URL: str = "http://localhost:8082"
     OPENAI_LLM_EDIT_API_KEY: str = ""
+    LLM_EDIT_PROMPT_CACHE_KEY: str = ""
+    LLM_EDIT_PROMPT_CACHE_RETENTION: Literal["in_memory", "24h"] | None = None
+    LLM_EDIT_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
     LLM_EDIT_MODEL: str = "qwen3-coder-30b-a3b"
     LLM_EDIT_MAX_TOKENS: int = 512
     LLM_EDIT_TEMPERATURE: float = 0.2
@@ -117,6 +125,9 @@ class Settings(BaseSettings):
     LLM_CHAT_ENABLED: bool = False
     LLM_CHAT_BASE_URL: str = "http://localhost:8082"
     OPENAI_LLM_CHAT_API_KEY: str = ""
+    LLM_CHAT_PROMPT_CACHE_KEY: str = ""
+    LLM_CHAT_PROMPT_CACHE_RETENTION: Literal["in_memory", "24h"] | None = None
+    LLM_CHAT_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
     LLM_CHAT_MODEL: str = "qwen3-coder-30b-a3b"
     LLM_CHAT_MAX_TOKENS: int = 1500
     LLM_CHAT_TEMPERATURE: float = 0.2
@@ -125,3 +136,17 @@ class Settings(BaseSettings):
     LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS: int = 256
     LLM_CHAT_SYSTEM_PROMPT_MAX_TOKENS: int = 1024
     LLM_CHAT_TAIL_MAX_MESSAGES: int = 60
+
+    LLM_CHAT_OPS_ENABLED: bool = False
+    LLM_CHAT_OPS_BASE_URL: str = "http://localhost:8082"
+    OPENAI_LLM_CHAT_OPS_API_KEY: str = ""
+    LLM_CHAT_OPS_PROMPT_CACHE_KEY: str = ""
+    LLM_CHAT_OPS_PROMPT_CACHE_RETENTION: Literal["in_memory", "24h"] | None = None
+    LLM_CHAT_OPS_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
+    LLM_CHAT_OPS_MODEL: str = "qwen3-coder-30b-a3b"
+    LLM_CHAT_OPS_MAX_TOKENS: int = 1500
+    LLM_CHAT_OPS_TEMPERATURE: float = 0.2
+    LLM_CHAT_OPS_TIMEOUT_SECONDS: int = 60
+    LLM_CHAT_OPS_CONTEXT_WINDOW_TOKENS: int = 16384
+    LLM_CHAT_OPS_CONTEXT_SAFETY_MARGIN_TOKENS: int = 256
+    LLM_CHAT_OPS_SYSTEM_PROMPT_MAX_TOKENS: int = 1024

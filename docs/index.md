@@ -157,6 +157,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0009-editor-chat-message-id-thread-persistence.md`
 - `docs/backlog/prs/pr-0010-editor-save-restore-ux-clarity.md`
 - `docs/backlog/prs/pr-0011-editor-mode-toggles-and-metadata-mode.md`
+- `docs/backlog/prs/pr-0012-editor-cohesion-pass-input-selectors.md`
+- `docs/backlog/prs/pr-0013-editor-ai-edit-ops-protocol-v1.md`
+- `docs/backlog/prs/pr-0014-editor-ai-diff-preview-apply-undo.md`
 
 ### Backlog Stories
 
@@ -312,6 +315,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-14-29-editor-pro-mode-combined-bundle-view.md`
 - `docs/backlog/stories/story-14-30-editor-working-copy-persistence-indexeddb.md`
 - `docs/backlog/stories/story-14-31-editor-focus-mode-collapse-sidebar.md`
+- `docs/backlog/stories/story-14-32-editor-cohesion-pass-input-selectors.md`
 - `docs/backlog/stories/story-15-01-user-profile-redesign.md`
 - `docs/backlog/stories/story-15-02-avatar-upload.md`
 - `docs/backlog/stories/story-16-01-favorites-domain-and-database.md`

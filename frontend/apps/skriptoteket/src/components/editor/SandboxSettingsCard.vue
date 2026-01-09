@@ -57,21 +57,16 @@ watch(
 <template>
   <div
     v-if="props.hasSettingsSchema || props.settingsSchemaError"
-    class="border border-navy bg-white shadow-brutal-sm"
+    class="border border-navy/20 bg-white shadow-brutal-sm"
   >
     <div class="flex items-center justify-between gap-3 px-3 py-2 border-b border-navy/20">
-      <div>
-        <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-          Inställningar
-        </h2>
-        <p class="text-xs text-navy/60">
-          Sparas för din sandbox.
-        </p>
-      </div>
+      <span class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+        Inställningar
+      </span>
 
       <button
         type="button"
-        class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
+        class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
         :disabled="!props.hasSettingsSchema"
         @click="toggleSettings"
       >
@@ -88,7 +83,7 @@ watch(
 
     <div
       v-if="isOpen && props.hasSettingsSchema && props.settingsSchema"
-      class="px-3 py-4 border-t border-navy/20 bg-canvas/30"
+      class="px-3 py-3 bg-canvas/30"
     >
       <ToolRunSettingsPanel
         :id-base="`sandbox-${props.versionId}`"
@@ -96,6 +91,8 @@ watch(
         :model-value="props.settingsValues"
         :is-loading="props.isLoadingSettings"
         :is-saving="props.isSavingSettings"
+        variant="embedded"
+        density="compact"
         :is-save-disabled="isSaveDisabled"
         :error-message="props.settingsErrorMessage"
         @update:model-value="emit('update:settingsValues', $event)"

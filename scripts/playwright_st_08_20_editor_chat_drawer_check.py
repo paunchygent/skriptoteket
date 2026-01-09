@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import time
 from pathlib import Path
 
 from playwright.sync_api import Error as PlaywrightError
@@ -127,10 +128,57 @@ def main() -> None:
             "button", name=re.compile(r"(Minimera|Expandera) kodassistenten", re.IGNORECASE)
         )
         expect(toggle).to_be_visible()
-        expect(drawer.get_by_text("Konversation", exact=True)).to_be_visible()
-        expect(drawer.get_by_text("Meddelande", exact=True)).to_be_visible()
+        chat_body = drawer.locator(".chat-body")
+        if chat_body.get_attribute("aria-hidden") == "true":
+            toggle.click()
+            expect(chat_body).not_to_have_attribute("aria-hidden", "true")
+        expect(
+            drawer.get_by_text(re.compile(r"Beskriv ditt m.l eller problem", re.IGNORECASE))
+        ).to_be_visible()
+        message_input = drawer.get_by_placeholder(re.compile(r"Beskriv ditt m.l", re.IGNORECASE))
+        expect(message_input).to_be_visible()
+        clear_button = drawer.get_by_role("button", name="Ny chatt", exact=True)
+        expect(clear_button).to_be_visible()
+        send_button = drawer.get_by_role("button", name="Skicka", exact=True)
+        expect(send_button).to_be_visible()
+        propose_button = drawer.get_by_role(
+            "button", name=re.compile(r"F.resl. .*ndringar", re.IGNORECASE)
+        )
+        expect(propose_button).to_be_visible()
 
         page.screenshot(path=str(artifacts_dir / "chat-drawer.png"), full_page=True)
+
+        placeholder = drawer.get_by_text(
+            re.compile(r"Beskriv ditt m.l eller problem", re.IGNORECASE)
+        )
+        if clear_button.is_enabled():
+            clear_button.click()
+        expect(placeholder).to_be_visible()
+
+        messages = drawer.locator("li")
+
+        message_input.click()
+        message_input.type("Hej!")
+        expect(message_input).to_have_value(re.compile(r".+"))
+        expect(send_button).to_be_enabled()
+        send_button.click()
+
+        expect(drawer.get_by_text("Hej!", exact=True)).to_be_visible()
+        expect(placeholder).not_to_be_visible()
+
+        warning = drawer.locator(".system-message-warning")
+
+        deadline = time.time() + 10
+        while time.time() < deadline:
+            if warning.count() > 0 and warning.first.is_visible():
+                break
+            if messages.count() >= 2:
+                break
+            page.wait_for_timeout(250)
+        else:
+            raise AssertionError("No chat response or disabled message observed within timeout.")
+
+        page.screenshot(path=str(artifacts_dir / "chat-drawer-after-send.png"), full_page=True)
 
         context.close()
 

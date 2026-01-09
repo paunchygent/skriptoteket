@@ -160,7 +160,9 @@ watch(
 .auth-main-wrapper {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
 }
 
 @media (min-width: 768px) {
@@ -176,6 +178,7 @@ watch(
 /* Main content (authenticated) */
 .auth-main-content {
   flex: 1;
+  min-height: 0;
   padding: var(--huleedu-space-6);
   overflow-y: auto;
   scrollbar-gutter: stable;

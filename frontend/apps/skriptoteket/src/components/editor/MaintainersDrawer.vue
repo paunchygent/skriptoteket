@@ -84,18 +84,28 @@ function removalBlockedReason(maintainer: MaintainerSummary): string | null {
   <aside
     :class="[
       isPanel
-        ? 'relative w-full bg-canvas border border-navy shadow-brutal-sm flex flex-col min-h-0'
+        ? 'relative w-full bg-white border border-navy/20 shadow-brutal-sm flex flex-col min-h-0'
         : 'fixed inset-y-0 right-0 z-50 w-full bg-canvas border-l border-navy shadow-brutal flex flex-col md:relative md:inset-auto md:z-auto md:w-full md:h-full md:overflow-hidden',
     ]"
-    role="dialog"
+    :role="isPanel ? 'region' : 'dialog'"
     :aria-modal="!isPanel"
     aria-labelledby="maintainers-drawer-title"
   >
     <div
-      :class="[
-        'border-b border-navy flex items-start justify-between gap-4',
-        isPanel ? 'p-3' : 'p-4',
-      ]"
+      v-if="isPanel"
+      class="border-b border-navy/20 px-3 py-2 flex items-center justify-between gap-3"
+    >
+      <span
+        id="maintainers-drawer-title"
+        class="text-[10px] font-semibold uppercase tracking-wide text-navy/60"
+      >
+        Beh&ouml;righeter
+      </span>
+    </div>
+
+    <div
+      v-else
+      class="border-b border-navy flex items-start justify-between gap-4 p-4"
     >
       <div>
         <h2
@@ -109,7 +119,6 @@ function removalBlockedReason(maintainer: MaintainerSummary): string | null {
         </p>
       </div>
       <button
-        v-if="!isPanel"
         type="button"
         class="text-navy/60 hover:text-navy text-2xl leading-none"
         @click="emit('close')"
@@ -132,43 +141,75 @@ function removalBlockedReason(maintainer: MaintainerSummary): string | null {
 
       <div
         v-if="isLoading"
-        class="flex items-center gap-3 text-sm text-navy/60"
+        class="flex items-center gap-3 text-[11px] text-navy/60"
       >
         <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
         <span>Laddar...</span>
       </div>
 
       <template v-else>
+        <div class="border-b border-navy/20 pb-3">
+          <form
+            class="space-y-2"
+            @submit.prevent="handleSubmit"
+          >
+            <label
+              for="maintainer-email"
+              class="block text-[10px] font-semibold uppercase tracking-wide text-navy/60"
+            >
+              L&auml;gg till redigerare
+            </label>
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <input
+                id="maintainer-email"
+                v-model="email"
+                type="email"
+                autocomplete="email"
+                placeholder="e-post@example.com"
+                class="w-full h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none"
+                :disabled="isSaving"
+              >
+              <button
+                type="submit"
+                class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none min-w-[84px]"
+                :disabled="isSaving"
+              >
+                L&auml;gg till
+              </button>
+            </div>
+          </form>
+        </div>
+
         <p
           v-if="maintainers.length === 0"
-          class="text-sm text-navy/60"
+          class="text-[11px] text-navy/60"
         >
           Inga redigerare tilldelade.
         </p>
 
         <ul
           v-else
-          class="space-y-2"
+          class="space-y-1.5"
         >
           <li
             v-for="maintainer in maintainers"
             :key="maintainer.id"
-            class="border border-navy/30 bg-white shadow-brutal-sm"
+            class="border border-navy/30 bg-white shadow-none"
           >
-            <div class="flex items-center justify-between gap-3 px-3 py-2">
+            <div class="flex items-center justify-between gap-3 px-2.5 py-2">
               <div class="min-w-0">
-                <div class="text-sm font-medium text-navy break-words">
+                <div class="text-[11px] font-medium text-navy break-words">
                   {{ maintainer.email }}
                 </div>
                 <span
-                  class="inline-block mt-1 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide border border-navy/40 text-navy/70"
+                  class="inline-block mt-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide border border-navy/40 text-navy/70"
                 >
                   {{ roleLabel(maintainer.role) }}
                 </span>
               </div>
               <button
                 type="button"
-                class="btn-ghost"
+                class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
                 :disabled="isSaving || isRemovalBlocked(maintainer)"
                 :title="removalBlockedReason(maintainer) ?? undefined"
                 @click="emit('remove', maintainer.id)"
@@ -179,38 +220,6 @@ function removalBlockedReason(maintainer: MaintainerSummary): string | null {
           </li>
         </ul>
       </template>
-
-      <div class="border-t border-navy/20 pt-4">
-        <form
-          class="space-y-2"
-          @submit.prevent="handleSubmit"
-        >
-          <label
-            for="maintainer-email"
-            class="block text-xs font-semibold uppercase tracking-wide text-navy/70"
-          >
-            E-post
-          </label>
-          <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <input
-              id="maintainer-email"
-              v-model="email"
-              type="email"
-              autocomplete="email"
-              placeholder="e-post@example.com"
-              class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
-              :disabled="isSaving"
-            >
-            <button
-              type="submit"
-              class="btn-ghost min-w-[80px]"
-              :disabled="isSaving"
-            >
-              Lägg till
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
   </aside>
 </template>

@@ -53,49 +53,46 @@ watch(
 <template>
   <div
     v-if="props.isOpen"
-    class="border border-warning bg-white shadow-brutal-sm p-4 space-y-3"
+    class="border border-navy/30 bg-canvas/30 px-3 py-2"
   >
-    <div class="flex flex-wrap items-start justify-between gap-3">
-      <div class="space-y-1 min-w-0">
-        <h2 class="text-xs font-semibold uppercase tracking-wide text-warning">
-          Lokalt arbetsexemplar hittades
-        </h2>
-        <p class="text-sm text-navy/70">
-          Det finns osparade ändringar sparade lokalt för det här verktyget.
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="min-w-0 space-y-0.5">
+        <p class="text-[11px] text-navy/70">
+          <span class="font-semibold text-navy">Lokalt arbetsexemplar hittades.</span>
+          Osparade &auml;ndringar finns sparade lokalt.
         </p>
         <p
           v-if="updatedAtLabel"
-          class="text-xs text-navy/60"
+          class="text-[10px] text-navy/60"
         >
           Senast sparat: {{ updatedAtLabel }}
         </p>
       </div>
 
-      <button
-        type="button"
-        class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-        :disabled="props.diffItems.length === 0"
-        @click="openDiff"
-      >
-        Visa diff
-      </button>
-    </div>
-
-    <div class="flex flex-wrap gap-2">
-      <button
-        type="button"
-        class="btn-primary"
-        @click="emit('restore')"
-      >
-        Återställ lokalt
-      </button>
-      <button
-        type="button"
-        class="btn-ghost"
-        @click="emit('discard')"
-      >
-        Kasta lokalt
-      </button>
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+          @click="emit('restore')"
+        >
+          &Aring;terst&auml;ll
+        </button>
+        <button
+          type="button"
+          class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+          @click="emit('discard')"
+        >
+          Kasta
+        </button>
+        <button
+          type="button"
+          class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+          :disabled="props.diffItems.length === 0"
+          @click="openDiff"
+        >
+          Visa diff
+        </button>
+      </div>
     </div>
   </div>
 

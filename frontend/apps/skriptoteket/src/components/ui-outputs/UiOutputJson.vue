@@ -5,7 +5,11 @@ import type { components } from "../../api/openapi";
 
 type UiJsonOutput = components["schemas"]["UiJsonOutput"];
 
-const props = defineProps<{ output: UiJsonOutput }>();
+const props = withDefaults(defineProps<{ output: UiJsonOutput; density?: "default" | "compact" }>(), {
+  density: "default",
+});
+
+const isCompact = computed(() => props.density === "compact");
 
 const pretty = computed(() => {
   try {
@@ -17,13 +21,13 @@ const pretty = computed(() => {
 </script>
 
 <template>
-  <div class="border border-navy bg-white shadow-brutal-sm">
+  <div :class="[isCompact ? 'border border-navy/20 bg-white shadow-brutal-sm' : 'border border-navy bg-white shadow-brutal-sm']">
     <div
       v-if="output.title"
-      class="px-4 py-3 border-b border-navy font-semibold text-navy"
+      :class="[isCompact ? 'px-3 py-2 border-b border-navy/20 font-semibold text-[11px] text-navy' : 'px-4 py-3 border-b border-navy font-semibold text-navy']"
     >
       {{ output.title }}
     </div>
-    <pre class="p-4 whitespace-pre-wrap font-mono text-sm text-navy">{{ pretty }}</pre>
+    <pre :class="[isCompact ? 'p-3 whitespace-pre-wrap font-mono text-[11px] text-navy' : 'p-4 whitespace-pre-wrap font-mono text-sm text-navy']">{{ pretty }}</pre>
   </div>
 </template>

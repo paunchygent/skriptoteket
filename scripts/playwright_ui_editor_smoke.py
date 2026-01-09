@@ -84,11 +84,8 @@ def _open_editor(page: object, *, base_url: str, artifacts_dir: Path | None = No
     edit_link.click()
     page.wait_for_url("**/admin/**", wait_until="domcontentloaded")
     try:
-        heading = page.get_by_role(
-            "heading",
-            name=re.compile(r"(Testkör kod|Testkor kod|Källkod|Kallkod)", re.IGNORECASE),
-        ).first
-        expect(heading).to_be_visible()
+        editor = page.locator(".cm-editor").first
+        expect(editor).to_be_visible(timeout=30_000)
     except AssertionError:
         if artifacts_dir:
             page.screenshot(
@@ -118,7 +115,11 @@ def main() -> None:
         editor = page.locator(".cm-editor").first
         expect(editor).to_be_visible(timeout=30_000)
 
-        entrypoint_select = page.get_by_label(re.compile(r"Startfunktion", re.IGNORECASE))
+        test_mode_button = page.get_by_role("button", name="Testkör").first
+        expect(test_mode_button).to_be_visible()
+        test_mode_button.click()
+
+        entrypoint_select = page.get_by_label("Startfunktion", exact=True)
         expect(entrypoint_select).to_be_visible()
         expect(
             entrypoint_select.locator("option", has_text=re.compile(r"^run_tool$", re.IGNORECASE))
@@ -141,18 +142,31 @@ def main() -> None:
         ).first
         expect(help_text).to_be_visible()
 
-        sandbox_section_label = page.get_by_text("Testfiler")
+        sandbox_section_label = page.get_by_role("button", name="Testkör kod")
         if sandbox_section_label.count() == 0:
+            save_menu_button = page.get_by_role("button", name="Spara/Öppna").first
+            expect(save_menu_button).to_be_visible()
+            save_menu_button.click()
+
             save_button = page.get_by_role(
-                "button",
+                "menuitem",
                 name=re.compile(r"^(Spara|Skapa ny) arbetsversion$", re.IGNORECASE),
             )
             if save_button.count() == 0:
+                if artifacts_dir:
+                    page.screenshot(
+                        path=str(artifacts_dir / "missing-save-work-version.png"),
+                        full_page=True,
+                    )
                 raise RuntimeError(
-                    "Sandbox runner missing and no 'Spara arbetsversion'/'Skapa ny arbetsversion' button found."
+                    "Sandbox runner missing and no 'Spara arbetsversion'/'Skapa ny arbetsversion' menu item found."
                 )
             save_button.first.click()
             page.wait_for_url("**/admin/tool-versions/**", wait_until="domcontentloaded")
+
+            test_mode_button = page.get_by_role("button", name="Testkör").first
+            expect(test_mode_button).to_be_visible()
+            test_mode_button.click()
 
         inputs_summary_locator = page.locator(
             "summary", has_text=re.compile(r"Indata\s*\(JSON\)", re.IGNORECASE)
@@ -191,10 +205,15 @@ def main() -> None:
         )
         if action_button.count() > 0:
             action_button.first.click()
-            dialog = page.get_by_role("dialog")
+            dialog = page.locator("[aria-labelledby='workflow-modal-title']").first
             if dialog.count() > 0:
                 expect(dialog).to_be_visible()
-                dialog.get_by_role("button", name=re.compile(r"Avbryt", re.IGNORECASE)).click()
+                cancel_button = dialog.get_by_role("button", name="Avbryt")
+                close_button = dialog.get_by_role("button", name="Stäng")
+                if cancel_button.count() > 0:
+                    cancel_button.first.click()
+                elif close_button.count() > 0:
+                    close_button.first.click()
                 expect(dialog).not_to_be_visible()
 
         context.close()

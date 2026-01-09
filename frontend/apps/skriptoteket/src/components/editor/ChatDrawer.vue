@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, withDefaults } from "vue";
+import { computed, nextTick, onMounted, ref, watch, withDefaults } from "vue";
 
 import type { EditorChatMessage } from "../../composables/editor/useEditorChat";
 import SystemMessage from "../ui/SystemMessage.vue";
@@ -10,6 +10,7 @@ type ChatDrawerProps = {
   isCollapsed: boolean;
   messages: EditorChatMessage[];
   isStreaming: boolean;
+  isEditOpsLoading: boolean;
   disabledMessage: string | null;
   error: string | null;
 };
@@ -26,18 +27,72 @@ const emit = defineEmits<{
   (event: "clearError"): void;
   (event: "clearDisabled"): void;
   (event: "toggleCollapse"): void;
+  (event: "requestEditOps", message: string): void;
 }>();
 
 const draft = ref("");
+const textarea = ref<HTMLTextAreaElement | null>(null);
 
-const canSend = computed(() => !props.isStreaming && draft.value.trim().length > 0);
+const canSend = computed(
+  () => !props.isStreaming && !props.isEditOpsLoading && draft.value.trim().length > 0,
+);
+const canRequestOps = computed(() => canSend.value);
+const displayMessages = computed(() => {
+  if (props.messages.length > 0) {
+    return props.messages;
+  }
+  return [
+    {
+      id: "assistant-intro",
+      role: "assistant" as const,
+      content: "Beskriv ditt mål eller problem för mig så hjälper jag dig",
+      createdAt: "",
+    },
+  ] satisfies EditorChatMessage[];
+});
+
+function resetDraftTextarea(): void {
+  const element = textarea.value;
+  if (!element) {
+    return;
+  }
+  element.style.height = "";
+  element.style.overflowY = "";
+}
+
+function resizeDraftTextarea(): void {
+  const element = textarea.value;
+  if (!element) {
+    return;
+  }
+
+  if (!draft.value) {
+    resetDraftTextarea();
+    return;
+  }
+
+  element.style.height = "auto";
+  const maxHeightPx = 260;
+  const nextHeight = Math.min(element.scrollHeight, maxHeightPx);
+  element.style.height = `${nextHeight}px`;
+  element.style.overflowY = element.scrollHeight > maxHeightPx ? "auto" : "hidden";
+}
 
 function handleSend(): void {
   const message = draft.value.trim();
-  if (!message || props.isStreaming) {
+  if (!message || props.isStreaming || props.isEditOpsLoading) {
     return;
   }
   emit("send", message);
+  draft.value = "";
+}
+
+function handleRequestEditOps(): void {
+  const message = draft.value.trim();
+  if (!message || props.isStreaming || props.isEditOpsLoading) {
+    return;
+  }
+  emit("requestEditOps", message);
   draft.value = "";
 }
 
@@ -51,6 +106,19 @@ function handleKeydown(event: KeyboardEvent): void {
 function labelForRole(role: "user" | "assistant"): string {
   return role === "user" ? "Du" : "AI";
 }
+
+onMounted(() => {
+  resetDraftTextarea();
+});
+
+watch(
+  () => draft.value,
+  async () => {
+    await nextTick();
+    resizeDraftTextarea();
+  },
+  { flush: "post" },
+);
 </script>
 
 <template>
@@ -81,7 +149,7 @@ function labelForRole(role: "user" | "assistant"): string {
         class="chat-body"
         :class="{ 'chat-body--collapsed': props.isCollapsed }"
         :aria-hidden="props.isCollapsed"
-        :inert="props.isCollapsed ? '' : undefined"
+        :inert="props.isCollapsed"
       >
         <div class="p-3 pr-10 border-b border-navy/30">
           <h2
@@ -90,17 +158,13 @@ function labelForRole(role: "user" | "assistant"): string {
           >
             Kodassistenten
           </h2>
-          <p class="text-sm text-navy/70">
-            Beskriv ditt m&aring;l eller problem f&ouml;r kodassistenten s&aring; hj&auml;lper den dig.
-            H&aring;ll konversationerna korta f&ouml;r b&auml;sta kvalitet.
-          </p>
         </div>
 
         <div class="flex-1 min-h-0 overflow-hidden p-4 flex flex-col gap-4">
-          <div class="space-y-2">
-            <span class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-              Konversation
-            </span>
+          <div
+            v-if="error || disabledMessage"
+            class="space-y-2"
+          >
             <SystemMessage
               v-if="error"
               :model-value="error"
@@ -116,19 +180,11 @@ function labelForRole(role: "user" | "assistant"): string {
           </div>
 
           <div class="flex-1 min-h-0 overflow-y-auto border-t border-navy/20 pt-4">
-            <p
-              v-if="messages.length === 0"
-              class="text-sm text-navy/60"
-            >
-              Ingen chatthistorik &auml;nnu. Skriv ett f&ouml;rsta meddelande nedan.
-            </p>
-
             <ul
-              v-else
               class="divide-y divide-navy/10"
             >
               <li
-                v-for="message in messages"
+                v-for="message in displayMessages"
                 :key="message.id"
                 :class="[
                   'py-3 pl-3',
@@ -156,13 +212,11 @@ function labelForRole(role: "user" | "assistant"): string {
           </div>
 
           <div class="border-t border-navy/20 pt-4 space-y-3">
-            <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-              Meddelande
-            </label>
             <textarea
+              ref="textarea"
               v-model="draft"
-              rows="4"
-              class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+              rows="2"
+              class="w-full resize-none border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
               placeholder="Beskriv ditt m&aring;l eller problem..."
               :disabled="isStreaming"
               @keydown="handleKeydown"
@@ -176,6 +230,12 @@ function labelForRole(role: "user" | "assistant"): string {
                 AI skriver...
               </span>
               <span
+                v-else-if="props.isEditOpsLoading"
+                class="text-xs text-navy/60"
+              >
+                Skapar f&ouml;rslag...
+              </span>
+              <span
                 v-else
                 class="text-xs text-navy/60"
               >
@@ -184,23 +244,31 @@ function labelForRole(role: "user" | "assistant"): string {
               <div class="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
+                  class="btn-ghost shadow-none px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-canvas"
                   :disabled="messages.length === 0"
                   @click="emit('clear')"
                 >
-                  Rensa
+                  Ny chatt
+                </button>
+                <button
+                  type="button"
+                  class="btn-ghost shadow-none px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-canvas"
+                  :disabled="!canRequestOps"
+                  @click="handleRequestEditOps"
+                >
+                  F&ouml;resl&aring; &auml;ndringar
                 </button>
                 <button
                   v-if="isStreaming"
                   type="button"
-                  class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
+                  class="btn-ghost shadow-none px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-canvas"
                   @click="emit('cancel')"
                 >
                   Avbryt
                 </button>
                 <button
                   type="button"
-                  class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
+                  class="btn-ghost shadow-none px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-canvas"
                   :disabled="!canSend"
                   @click="handleSend"
                 >

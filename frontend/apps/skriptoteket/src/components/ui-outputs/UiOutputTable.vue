@@ -1,10 +1,15 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import type { components } from "../../api/openapi";
 
 type UiTableOutput = components["schemas"]["UiTableOutput"];
 type JsonValue = components["schemas"]["JsonValue"];
 
-defineProps<{ output: UiTableOutput }>();
+const props = withDefaults(defineProps<{ output: UiTableOutput; density?: "default" | "compact" }>(), {
+  density: "default",
+});
+
+const isCompact = computed(() => props.density === "compact");
 
 function formatCell(value: JsonValue | undefined): string {
   if (value === undefined || value === null) return "";
@@ -19,22 +24,22 @@ function formatCell(value: JsonValue | undefined): string {
 </script>
 
 <template>
-  <div class="border border-navy bg-white shadow-brutal-sm">
+  <div :class="[isCompact ? 'border border-navy/20 bg-white shadow-brutal-sm' : 'border border-navy bg-white shadow-brutal-sm']">
     <div
-      v-if="output.title"
-      class="px-4 py-3 border-b border-navy font-semibold text-navy"
+      v-if="props.output.title"
+      :class="[isCompact ? 'px-3 py-2 border-b border-navy/20 font-semibold text-[11px] text-navy' : 'px-4 py-3 border-b border-navy font-semibold text-navy']"
     >
-      {{ output.title }}
+      {{ props.output.title }}
     </div>
 
     <div class="overflow-x-auto">
-      <table class="min-w-full text-sm">
+      <table :class="[isCompact ? 'min-w-full text-[11px]' : 'min-w-full text-sm']">
         <thead>
-          <tr class="text-left text-navy/70">
+          <tr :class="[isCompact ? 'text-left text-navy/70' : 'text-left text-navy/70']">
             <th
-              v-for="col in output.columns"
+              v-for="col in props.output.columns"
               :key="col.key"
-              class="px-4 py-2 border-b border-navy/20 whitespace-nowrap"
+              :class="[isCompact ? 'px-3 py-2 border-b border-navy/20 whitespace-nowrap' : 'px-4 py-2 border-b border-navy/20 whitespace-nowrap']"
             >
               {{ col.label }}
             </th>
@@ -42,14 +47,14 @@ function formatCell(value: JsonValue | undefined): string {
         </thead>
         <tbody class="text-navy">
           <tr
-            v-for="(row, rowIndex) in output.rows"
+            v-for="(row, rowIndex) in props.output.rows"
             :key="rowIndex"
             class="border-b border-navy/10"
           >
             <td
-              v-for="col in output.columns"
+              v-for="col in props.output.columns"
               :key="col.key"
-              class="px-4 py-2 align-top whitespace-nowrap"
+              :class="[isCompact ? 'px-3 py-2 align-top whitespace-nowrap' : 'px-4 py-2 align-top whitespace-nowrap']"
             >
               {{ formatCell(row[col.key]) }}
             </td>

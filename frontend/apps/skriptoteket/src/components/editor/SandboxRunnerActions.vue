@@ -164,16 +164,16 @@ async function copyDebugText(): Promise<void> {
           v-for="(step, index) in completedSteps"
           :key="step.run_id"
           type="button"
-          class="btn-ghost btn-sm text-xs"
-          :class="{ 'ring-2 ring-navy': selectedStepIndex === index }"
+          class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+          :class="{ 'ring-1 ring-navy/40': selectedStepIndex === index }"
           @click="emit('select-step', index)"
         >
           Steg {{ index + 1 }}
         </button>
         <button
           type="button"
-          class="btn-ghost btn-sm text-xs"
-          :class="{ 'ring-2 ring-navy': selectedStepIndex === null }"
+          class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+          :class="{ 'ring-1 ring-navy/40': selectedStepIndex === null }"
           @click="emit('select-step', null)"
         >
           Aktuellt
@@ -183,10 +183,10 @@ async function copyDebugText(): Promise<void> {
       <!-- Status row (uses displayedRun for viewing past steps) -->
       <div
         v-if="displayedRun"
-        class="flex items-center gap-2 text-sm"
+        class="flex items-center gap-2 text-[11px]"
       >
         <span
-          class="px-2 py-1 border font-semibold uppercase tracking-wide text-xs"
+          class="px-2 py-0.5 border font-semibold uppercase tracking-wide text-[10px]"
           :class="{
             'border-success bg-success/10 text-success': displayedRun.status === 'succeeded',
             'border-burgundy bg-burgundy/10 text-burgundy': displayedRun.status === 'failed',
@@ -203,45 +203,40 @@ async function copyDebugText(): Promise<void> {
       <!-- Error summary -->
       <div
         v-if="displayedRun?.error_summary"
-        class="text-sm text-burgundy"
+        class="text-[11px] text-burgundy"
       >
         <p class="font-semibold">Ett fel uppstod</p>
-        <pre class="mt-1 whitespace-pre-wrap font-mono text-xs">{{ displayedRun.error_summary }}</pre>
+        <pre class="mt-1 whitespace-pre-wrap font-mono text-[11px]">{{ displayedRun.error_summary }}</pre>
       </div>
 
       <!-- Debug panel -->
       <div
         v-if="displayedRun"
-        class="border border-navy bg-white shadow-brutal-sm"
+        class="border border-navy/20 bg-white shadow-brutal-sm"
       >
         <div class="flex flex-wrap items-center justify-between gap-3 px-3 py-2 border-b border-navy/20">
-          <div>
-            <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-              Debug
-            </h2>
-            <p class="text-xs text-navy/60">
-              Diagnostik för sandbox-körningen.
-            </p>
-          </div>
+          <span class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+            Debug
+          </span>
 
           <div class="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              class="btn-primary"
+              class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
               @click="copyDebugJson"
             >
-              Kopiera debug (JSON)
+              Kopiera JSON
             </button>
             <button
               type="button"
-              class="btn-ghost"
+              class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
               @click="copyDebugText"
             >
-              Kopiera debug (text)
+              Kopiera text
             </button>
             <button
               type="button"
-              class="btn-ghost"
+              class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
               @click="isDebugOpen = !isDebugOpen"
             >
               {{ isDebugOpen ? "Dölj" : "Visa" }}
@@ -251,27 +246,27 @@ async function copyDebugText(): Promise<void> {
 
         <div
           v-if="isDebugOpen"
-          class="border-t border-navy/20 bg-canvas/30 px-3 py-3 space-y-3"
+          class="bg-canvas/30 px-3 py-2 space-y-2"
         >
           <p
             v-if="debugState.hasMissingDetails"
-            class="text-sm text-navy/70"
+            class="text-[11px] text-navy/70"
           >
             Debug-detaljer saknas för den här körningen.
           </p>
           <p
             v-else-if="debugState.hasNoOutput"
-            class="text-sm text-navy/70 italic"
+            class="text-[11px] text-navy/70 italic"
           >
             Ingen stdout/stderr för den här körningen.
           </p>
           <div
             v-else
-            class="space-y-3"
+            class="space-y-2"
           >
             <section class="space-y-1">
               <div class="flex flex-wrap items-center gap-2">
-                <h3 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+                <h3 class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
                   Stdout
                 </h3>
                 <span
@@ -282,20 +277,20 @@ async function copyDebugText(): Promise<void> {
                 </span>
                 <span
                   v-if="stdoutTruncated"
-                  class="px-2 py-0.5 text-xs font-semibold uppercase tracking-wide border border-warning text-warning"
+                  class="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide border border-warning text-warning"
                 >
                   Trunkerad
                 </span>
               </div>
               <pre
-                class="border border-navy/20 bg-white p-2 text-xs font-mono whitespace-pre-wrap break-words"
+                class="border border-navy/30 bg-white p-2 text-[11px] font-mono whitespace-pre-wrap break-words"
                 v-text="stdoutValue"
               />
             </section>
 
             <section class="space-y-1">
               <div class="flex flex-wrap items-center gap-2">
-                <h3 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+                <h3 class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
                   Stderr
                 </h3>
                 <span
@@ -306,13 +301,13 @@ async function copyDebugText(): Promise<void> {
                 </span>
                 <span
                   v-if="stderrTruncated"
-                  class="px-2 py-0.5 text-xs font-semibold uppercase tracking-wide border border-warning text-warning"
+                  class="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide border border-warning text-warning"
                 >
                   Trunkerad
                 </span>
               </div>
               <pre
-                class="border border-navy/20 bg-white p-2 text-xs font-mono whitespace-pre-wrap break-words"
+                class="border border-navy/30 bg-white p-2 text-[11px] font-mono whitespace-pre-wrap break-words"
                 v-text="stderrValue"
               />
             </section>
@@ -329,11 +324,15 @@ async function copyDebugText(): Promise<void> {
           v-for="(output, index) in outputs"
           :key="index"
           :output="output"
+          density="compact"
         />
       </div>
 
       <!-- Artifacts -->
-      <ToolRunArtifacts :artifacts="artifacts" />
+      <ToolRunArtifacts
+        :artifacts="artifacts"
+        density="compact"
+      />
 
       <!-- Action error message -->
       <SystemMessage
@@ -347,6 +346,7 @@ async function copyDebugText(): Promise<void> {
         :actions="nextActions"
         :id-base="actionIdBase"
         :disabled="!canSubmitActions"
+        density="compact"
         @submit="emit('submit-action', $event)"
       />
     </template>

@@ -1,18 +1,18 @@
 ---
 type: pr
 id: PR-0011
-title: "Editor modes + metadata mode + Kodskrivarassistent"
-status: ready
+title: "Editor modes + metadata mode + Kodassistenten"
+status: done
 owners: "agents"
 created: 2026-01-08
-updated: 2026-01-08
+updated: 2026-01-09
 stories:
   - "ST-08-20"
 tags: ["frontend", "editor", "ux"]
 acceptance_criteria:
   - "Källkod/Diff/Metadata/Testkör är fasta lägen (toggles) i editorn; knapparna byter inte plats."
   - "Jämför är omdöpt till Diff och fungerar som läge oberoende av chattfönstret."
-  - "Kodskrivarassisten är namngiven i toolbar och drawer, med uppdaterad copy enligt beslut."
+  - "Kodassistenten är namngiven i toolbar och drawer, med uppdaterad copy enligt beslut."
   - "Fokusläge-toggle flyttas till top bar och behåller fast position; text ändras men placering gör inte det."
   - "Metadata-läget visar Verktygsinfo, Sökord (taxonomy rename), Instruktioner och Behörigheter samlat."
   - "Chatten öppnas default när editorn laddas och kan vara öppen i alla lägen."
@@ -85,3 +85,7 @@ Skapa en tydlig, IDE-liknande mode-struktur:
 ## Rollback plan
 
 - Revertera PR-0011; inga datamodeller ändras.
+
+## Follow-ups
+
+- Cohesion pass (selectors + test/diff/metadata panel density): `docs/backlog/prs/pr-0012-editor-cohesion-pass-input-selectors.md`

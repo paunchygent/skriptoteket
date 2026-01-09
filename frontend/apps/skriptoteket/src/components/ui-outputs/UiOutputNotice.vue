@@ -5,7 +5,9 @@ import type { components } from "../../api/openapi";
 
 type UiNoticeOutput = components["schemas"]["UiNoticeOutput"];
 
-const props = defineProps<{ output: UiNoticeOutput }>();
+const props = withDefaults(defineProps<{ output: UiNoticeOutput; density?: "default" | "compact" }>(), {
+  density: "default",
+});
 
 const variantClasses = computed(() => {
   if (props.output.level === "error") {
@@ -16,14 +18,18 @@ const variantClasses = computed(() => {
   }
   return "border-navy text-navy";
 });
+
+const isCompact = computed(() => props.density === "compact");
 </script>
 
 <template>
   <div
-    class="p-4 border bg-white shadow-brutal-sm"
-    :class="variantClasses"
+    :class="[
+      isCompact ? 'p-3 border bg-white shadow-brutal-sm' : 'p-4 border bg-white shadow-brutal-sm',
+      variantClasses,
+    ]"
   >
-    <p class="text-sm">
+    <p :class="[isCompact ? 'text-[11px]' : 'text-sm']">
       {{ output.message }}
     </p>
   </div>

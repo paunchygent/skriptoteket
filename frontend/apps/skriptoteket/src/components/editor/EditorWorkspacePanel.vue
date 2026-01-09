@@ -4,6 +4,7 @@ import { computed, ref } from "vue";
 import type { components } from "../../api/openapi";
 
 import type { EditorCompareTarget } from "../../composables/editor/useEditorCompareState";
+import type { EditOpsPanelState } from "../../composables/editor/useEditorEditOps";
 import type { WorkingCopyProvider } from "../../composables/editor/useEditorCompareData";
 import type { EditorWorkingCopyCheckpointSummary } from "../../composables/editor/useEditorWorkingCopy";
 import type { SchemaIssuesBySchema } from "../../composables/editor/useEditorSchemaValidation";
@@ -12,6 +13,7 @@ import { virtualFileTextFromEditorFields } from "../../composables/editor/virtua
 import type { EditorChatMessage } from "../../composables/editor/useEditorChat";
 import type { SubmitReviewTooltip } from "../../composables/editor/useEditorWorkflowActions";
 import EditorComparePanel from "./EditorComparePanel.vue";
+import EditorEditOpsPanel from "./EditorEditOpsPanel.vue";
 import EditorInputSchemaPanel from "./EditorInputSchemaPanel.vue";
 import EditorSandboxPanel from "./EditorSandboxPanel.vue";
 import EditorSettingsSchemaPanel from "./EditorSettingsSchemaPanel.vue";
@@ -119,6 +121,9 @@ type EditorWorkspacePanelProps = {
   chatIsStreaming: boolean;
   chatDisabledMessage: string | null;
   chatError: string | null;
+
+  editOpsState: EditOpsPanelState;
+  isEditOpsRequesting: boolean;
 };
 
 const props = defineProps<EditorWorkspacePanelProps>();
@@ -166,6 +171,11 @@ const emit = defineEmits<{
   (event: "clearChat"): void;
   (event: "clearChatError"): void;
   (event: "clearChatDisabled"): void;
+  (event: "requestEditOps", message: string): void;
+  (event: "applyEditOps"): void;
+  (event: "discardEditOps"): void;
+  (event: "regenerateEditOps"): void;
+  (event: "undoEditOps"): void;
 }>();
 
 const activeVersionId = computed(() => props.selectedVersion?.id ?? null);
@@ -248,7 +258,7 @@ const chatColumnWidth = computed(() => {
               :lock-badge-tone="props.lockBadgeTone"
               @save="emit('save')"
               @open-history-drawer="emit('openHistoryDrawer')"
-              @create-checkpoint="emit('createCheckpoint', '')"
+              @create-checkpoint="emit('createCheckpoint', $event)"
               @update:change-summary="emit('update:changeSummary', $event)"
             />
           </div>
@@ -404,6 +414,14 @@ const chatColumnWidth = computed(() => {
 
         <template v-else>
           <div class="h-full min-h-0 flex flex-col gap-3">
+            <EditorEditOpsPanel
+              v-if="props.editOpsState.proposal || props.editOpsState.hasUndoSnapshot"
+              :state="props.editOpsState"
+              @apply="emit('applyEditOps')"
+              @discard="emit('discardEditOps')"
+              @regenerate="emit('regenerateEditOps')"
+              @undo="emit('undoEditOps')"
+            />
             <div class="flex-1 min-h-0">
               <EditorSourceCodePanel
                 :entrypoint="props.entrypoint"
@@ -463,8 +481,7 @@ const chatColumnWidth = computed(() => {
 
       <div
         v-if="props.isChatDrawerOpen"
-        class="min-h-0 min-w-0 md:col-start-2 md:row-start-2 md:border-l md:border-t md:border-navy md:bg-canvas md:shadow-brutal-sm"
-        :class="{ 'md:pb-3': !showsSchemaPanels }"
+        class="min-h-0 min-w-0 md:col-start-2 md:row-start-2 md:row-span-2 md:border-l md:border-t md:border-navy md:bg-canvas md:shadow-brutal-sm"
       >
         <EditorWorkspaceDrawers
           variant="column"
@@ -474,6 +491,7 @@ const chatColumnWidth = computed(() => {
           :chat-is-streaming="props.chatIsStreaming"
           :chat-disabled-message="props.chatDisabledMessage"
           :chat-error="props.chatError"
+          :is-edit-ops-loading="props.isEditOpsRequesting"
           @close="emit('closeDrawer')"
           @toggle-chat-collapsed="emit('toggleChatCollapsed')"
           @send-chat-message="emit('sendChatMessage', $event)"
@@ -481,14 +499,8 @@ const chatColumnWidth = computed(() => {
           @clear-chat="emit('clearChat')"
           @clear-chat-error="emit('clearChatError')"
           @clear-chat-disabled="emit('clearChatDisabled')"
+          @request-edit-ops="emit('requestEditOps', $event)"
         />
-      </div>
-
-      <div
-        v-if="props.isChatDrawerOpen && showsSchemaPanels"
-        class="hidden md:block md:col-start-2 md:row-start-3 border-l border-navy bg-canvas shadow-brutal-sm"
-      >
-        <div class="h-full w-full" />
       </div>
     </div>
 
@@ -498,18 +510,15 @@ const chatColumnWidth = computed(() => {
       :is-open="props.isHistoryDrawerOpen"
       :versions="props.versions"
       :active-version-id="activeVersionId"
+      :compare-version-id="props.compareTarget?.kind === 'version' ? props.compareTarget.versionId : null"
       :can-compare="props.canCompareVersions"
       :can-rollback="props.canRollbackVersions"
       :is-submitting="props.isWorkflowSubmitting"
       :checkpoints="props.localCheckpoints"
-      :pinned-checkpoint-count="props.pinnedCheckpointCount"
-      :pinned-checkpoint-limit="props.pinnedCheckpointLimit"
-      :is-checkpoint-busy="props.isCheckpointBusy"
       @close="emit('closeDrawer')"
       @select="emit('selectHistoryVersion', $event)"
       @compare="emit('compareVersion', $event)"
       @rollback="emit('rollbackVersion', $event)"
-      @create-checkpoint="emit('createCheckpoint', $event)"
       @restore-checkpoint="emit('restoreCheckpoint', $event)"
       @remove-checkpoint="emit('removeCheckpoint', $event)"
       @restore-server-version="emit('restoreServerVersion')"

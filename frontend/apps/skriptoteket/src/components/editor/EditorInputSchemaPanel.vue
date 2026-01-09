@@ -54,6 +54,7 @@ const presetTooltipLines = computed(() => {
   lines.push(...inputPresetGuidance.value);
   return lines;
 });
+const presetTooltipId = "tool-input-schema-preset-help";
 const isCollapsed = ref(false);
 const isInline = computed(() => props.variant === "inline");
 const contentVisible = computed(() => (isInline.value ? true : !isCollapsed.value));
@@ -95,7 +96,7 @@ function handleInsertInputExample(): void {
             <button
               type="button"
               class="inline-flex h-3.5 w-3.5 items-center justify-center text-[9px] font-semibold leading-none text-navy/50 hover:text-navy self-center -translate-y-[3px]"
-              aria-label="Info om indataschemat"
+              aria-label="Visa hjälp"
             >
               ?
             </button>
@@ -128,12 +129,13 @@ function handleInsertInputExample(): void {
             for="tool-input-schema-preset"
             class="text-[10px] font-semibold uppercase tracking-wide text-navy/60"
           >
-            Preset
+            F&ouml;rval
           </label>
           <select
             id="tool-input-schema-preset"
             v-model="selectedInputPresetId"
-            class="border border-navy/30 bg-white px-2 py-1 text-[11px] text-navy shadow-none"
+            :aria-describedby="presetTooltipLines.length ? presetTooltipId : undefined"
+            class="h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none"
           >
             <option
               v-for="preset in inputSchemaPresets"
@@ -150,11 +152,12 @@ function handleInsertInputExample(): void {
             <button
               type="button"
               class="inline-flex h-3.5 w-3.5 items-center justify-center text-[9px] font-semibold leading-none text-navy/50 hover:text-navy self-center -translate-y-[3px]"
-              aria-label="Info om preset"
+              aria-label="Visa hjälp"
             >
               ?
             </button>
             <div
+              :id="presetTooltipId"
               class="absolute left-0 top-full mt-2 w-[min(280px,calc(100vw-2*var(--huleedu-space-4)))] border border-navy/30 bg-white text-navy px-3 py-2 text-[11px] opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 z-[var(--huleedu-z-tooltip)]"
               role="tooltip"
             >

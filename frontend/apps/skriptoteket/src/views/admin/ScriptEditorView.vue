@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { EditorView } from "@codemirror/view";
 import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
@@ -16,6 +17,7 @@ import {
 import { useEditorCompareState, type EditorCompareTarget } from "../../composables/editor/useEditorCompareState";
 import { useEditorSchemaParsing } from "../../composables/editor/useEditorSchemaParsing";
 import { useEditorSchemaValidation } from "../../composables/editor/useEditorSchemaValidation";
+import { useEditorEditOps } from "../../composables/editor/useEditorEditOps";
 import { useEditorWorkingCopy } from "../../composables/editor/useEditorWorkingCopy";
 import { useEditorWorkflowActions } from "../../composables/editor/useEditorWorkflowActions";
 import { useDraftLock } from "../../composables/editor/useDraftLock";
@@ -44,6 +46,7 @@ const notify: UiNotifier = {
   warning: (message: string) => toast.warning(message),
   failure: (message: string) => toast.failure(message),
 };
+const editorView = ref<EditorView | null>(null);
 const toolId = computed(() => {
   const param = route.params.toolId;
   return typeof param === "string" ? param : "";
@@ -367,6 +370,7 @@ const {
   discardWorkingCopy,
   restoreServerVersion,
   createBeforeSaveCheckpoint,
+  createBeforeAiApplyCheckpoint,
   createPinnedCheckpoint,
   restoreCheckpoint,
   removeCheckpoint,
@@ -376,6 +380,21 @@ const {
 const editorChat = useEditorChat({
   toolId: editorToolId,
   baseVersionId: computed(() => selectedVersion.value?.id ?? null),
+});
+
+const editOps = useEditorEditOps({
+  toolId: editorToolId,
+  isReadOnly,
+  editorView,
+  fields: {
+    entrypoint,
+    sourceCode,
+    settingsSchemaText,
+    inputSchemaText,
+    usageInstructions,
+  },
+  createBeforeApplyCheckpoint: createBeforeAiApplyCheckpoint,
+  notify,
 });
 
 const {
@@ -452,6 +471,74 @@ watch(
   },
   { immediate: true },
 );
+
+watch(
+  () => editOps.proposal.value,
+  (value) => {
+    if (!value) return;
+    if (editorMode.value !== "source") {
+      editorMode.value = "source";
+    }
+  },
+);
+
+function createLocalChatId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `chat-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function appendChatMessage(role: "user" | "assistant", content: string): void {
+  chatMessages.value = [
+    ...chatMessages.value,
+    {
+      id: createLocalChatId(),
+      role,
+      content,
+      createdAt: new Date().toISOString(),
+      isStreaming: false,
+    },
+  ];
+}
+
+async function handleRequestEditOps(message: string): Promise<void> {
+  if (chatStreaming.value || editOps.isRequesting.value) return;
+  const result = await editOps.requestEditOps(message);
+  if (!result) return;
+
+  if (!result.response.enabled) {
+    toast.warning(result.response.assistant_message || "AI-förslag är inte tillgängligt.");
+    return;
+  }
+
+  appendChatMessage("user", result.message);
+  appendChatMessage("assistant", result.response.assistant_message);
+
+  if (result.response.ops.length === 0) {
+    toast.info(result.response.assistant_message || "Inga ändringar föreslogs.");
+  }
+}
+
+async function handleApplyEditOps(): Promise<void> {
+  const applied = await editOps.applyProposal();
+  if (applied) {
+    toast.success("AI-förslaget är tillämpat.");
+  }
+}
+
+function handleUndoEditOps(): void {
+  const undone = editOps.undoLastApply();
+  if (undone) {
+    toast.info("AI-ändringen är återställd.");
+  }
+}
+
+async function handleRegenerateEditOps(): Promise<void> {
+  const message = editOps.proposal.value?.message;
+  if (!message) return;
+  await handleRequestEditOps(message);
+}
 
 function handleRestoreServerVersion(): void {
   if (pinnedCheckpointCount.value > 0) {
@@ -665,6 +752,8 @@ const lockBadge = computed(() => {
             :chat-is-streaming="chatStreaming"
             :chat-disabled-message="chatDisabledMessage"
             :chat-error="chatError"
+            :edit-ops-state="editOps.panelState.value"
+            :is-edit-ops-requesting="editOps.isRequesting.value"
             :professions="professions"
             :categories="categories"
             :is-taxonomy-loading="isTaxonomyLoading"
@@ -695,11 +784,17 @@ const lockBadge = computed(() => {
             @restore-checkpoint="restoreCheckpoint"
             @remove-checkpoint="removeCheckpoint"
             @restore-server-version="handleRestoreServerVersion"
+            @editor-view-ready="editorView = $event"
             @send-chat-message="sendChatMessage"
             @cancel-chat-stream="cancelChat"
             @clear-chat="clearChat"
             @clear-chat-error="clearChatError"
             @clear-chat-disabled="clearChatDisabled"
+            @request-edit-ops="handleRequestEditOps"
+            @apply-edit-ops="handleApplyEditOps"
+            @discard-edit-ops="editOps.discardProposal"
+            @regenerate-edit-ops="handleRegenerateEditOps"
+            @undo-edit-ops="handleUndoEditOps"
           />
         </div>
       </div>

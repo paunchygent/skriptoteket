@@ -204,3 +204,47 @@ def apply_chat_budget(
     while kept and kept[0].role == "assistant":
         kept = kept[1:]
     return system_prompt, kept
+
+
+def apply_chat_ops_budget(
+    *,
+    system_prompt: str,
+    messages: list[ChatMessage],
+    user_payload: str,
+    context_window_tokens: int,
+    max_output_tokens: int,
+    safety_margin_tokens: int,
+    system_prompt_max_tokens: int,
+) -> tuple[str, list[ChatMessage], bool]:
+    del (
+        system_prompt_max_tokens
+    )  # enforced at prompt composition time; never truncate the system prompt here
+
+    prompt_budget_tokens = _budget_prompt_tokens(
+        context_window_tokens=context_window_tokens,
+        max_output_tokens=max_output_tokens,
+        safety_margin_tokens=safety_margin_tokens,
+    )
+
+    system_prompt_tokens = estimate_text_tokens(system_prompt)
+    user_payload_tokens = _code_tokens_for_text(user_payload)
+
+    available_message_tokens = prompt_budget_tokens - system_prompt_tokens - user_payload_tokens
+    if available_message_tokens <= 0:
+        return system_prompt, [], False
+
+    if not messages:
+        return system_prompt, [], True
+
+    token_costs = [estimate_text_tokens(message.content) for message in messages]
+    total_tokens = sum(token_costs)
+
+    start = 0
+    while start < len(messages) and total_tokens > available_message_tokens:
+        total_tokens -= token_costs[start]
+        start += 1
+
+    kept = messages[start:]
+    while kept and kept[0].role == "assistant":
+        kept = kept[1:]
+    return system_prompt, kept, True

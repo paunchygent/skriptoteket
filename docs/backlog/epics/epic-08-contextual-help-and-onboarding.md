@@ -5,7 +5,7 @@ title: "Contextual help (Hjälp) and onboarding"
 status: active
 owners: "agents"
 created: 2025-12-17
-updated: 2026-01-07
+updated: 2026-01-09
 outcome: "Users understand what they can do on each page via concise, Swedish, context-aware help without external documentation."
 ---
 
@@ -52,16 +52,17 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - [ST-08-22: Editor AI proposed changes diff preview + apply/undo](../stories/story-08-22-editor-ai-diff-preview-apply-undo.md)
 - [ST-08-23: AI editor chat streaming proxy + LLM_CHAT_* config](../stories/story-08-23-ai-chat-streaming-proxy-and-config.md)
 
-## Implementation Summary (as of 2026-01-07)
+## Implementation Summary (as of 2026-01-09)
 
 - AI inline completions (ghost text) are live with backend LLM proxy and CodeMirror integration (ST-08-14).
 - AI edit suggestions are live in the editor with preview + apply flow (ST-08-16).
 - Prompt system v1 is in place: template registry, contract fragments, budget validation, and template ID logging (ST-08-18).
 - Live prompt evaluation harness exists with metadata-only artifacts under `.artifacts/ai-prompt-eval/` (ST-08-19).
 - Editor AI chat backend is in place: tool-scoped SSE endpoint + canonical server-side chat thread stored in `tool_session_messages` (per `{user_id, tool_id}`) with TTL enforced on access and sliding-window budgeting (ST-08-23).
+- Editor AI chat drawer MVP is wired to the tool-scoped chat endpoints with server-side history restore + clear chat (ST-08-20).
 - Remaining work:
   - Tabby provider switch + prompt A/B evaluation for edit suggestions (ST-08-17).
-  - Chat-first editor AI UX (drawer + structured CRUD edits + diff preview + apply/undo) (ST-08-20/21/22).
+  - Chat-first editor AI UX: structured CRUD edits + diff preview + apply/undo (ST-08-21/22).
 
 ## Risks
 

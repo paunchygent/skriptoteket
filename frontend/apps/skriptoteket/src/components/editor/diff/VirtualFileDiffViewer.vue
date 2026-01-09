@@ -90,11 +90,6 @@ const activeItem = computed(() => {
   return props.items.find((item) => item.virtualFileId === selected) ?? null;
 });
 
-const activeItemLabel = computed(() => {
-  const item = activeItem.value;
-  return item ? virtualFileLabel(item.virtualFileId) : "";
-});
-
 const activeLanguage = computed<Extension | null>(() => {
   const fileId = activeItem.value?.virtualFileId;
   if (!fileId) return null;
@@ -153,6 +148,18 @@ function downloadTextFile(filename: string, content: string, mimeType: string): 
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
+function mimeTypeForVirtualFile(virtualFileId: VirtualFileId): string {
+  const language = virtualFileLanguage(virtualFileId);
+  switch (language) {
+    case "python":
+      return "text/x-python;charset=utf-8";
+    case "json":
+      return "application/json;charset=utf-8";
+    default:
+      return "text/plain;charset=utf-8";
+  }
+}
+
 async function copyBefore(): Promise<void> {
   if (!activeItem.value) return;
   try {
@@ -194,18 +201,26 @@ async function copyPatch(): Promise<void> {
 
 function downloadBefore(): void {
   if (!activeItem.value) return;
-  downloadTextFile("before.txt", normalizeTextForPatch(activeItem.value.beforeText), "text/plain;charset=utf-8");
+  downloadTextFile(
+    `before-${activeItem.value.virtualFileId}`,
+    normalizeTextForPatch(activeItem.value.beforeText),
+    mimeTypeForVirtualFile(activeItem.value.virtualFileId),
+  );
 }
 
 function downloadAfter(): void {
   if (!activeItem.value) return;
-  downloadTextFile("after.txt", normalizeTextForPatch(activeItem.value.afterText), "text/plain;charset=utf-8");
+  downloadTextFile(
+    `after-${activeItem.value.virtualFileId}`,
+    normalizeTextForPatch(activeItem.value.afterText),
+    mimeTypeForVirtualFile(activeItem.value.virtualFileId),
+  );
 }
 
 function downloadPatch(): void {
   if (!activeItem.value) return;
   downloadTextFile(
-    "changes.patch",
+    `${activeItem.value.virtualFileId}.patch`,
     buildUnifiedPatch({
       virtualFileId: activeItem.value.virtualFileId,
       before: activeItem.value.beforeText,
@@ -218,94 +233,117 @@ function downloadPatch(): void {
 
 <template>
   <div class="border border-navy bg-white shadow-brutal-sm flex flex-col min-h-0">
-    <div class="border-b border-navy/20 bg-canvas p-4 space-y-3">
-      <div class="flex flex-wrap items-start justify-between gap-4">
-        <div class="space-y-1 min-w-0">
-          <div class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-            Versiondiff
-          </div>
-          <div
-            v-if="activeItem"
-            class="text-sm text-navy flex flex-wrap items-center gap-2 min-w-0"
+    <div class="border-b border-navy/20 bg-canvas px-3 py-2">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <label
+            for="editor-diff-file"
+            class="text-[10px] font-semibold uppercase tracking-wide text-navy/60"
           >
-            <span class="font-mono">
-              {{ activeItem.virtualFileId }}
-            </span>
-            <span class="text-navy/50">·</span>
-            <span class="text-navy/70">
-              {{ activeItemLabel }}
-            </span>
+            Fil
+          </label>
+          <select
+            id="editor-diff-file"
+            class="h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none max-w-[min(360px,100%)]"
+            :value="activeFileId ?? ''"
+            :disabled="props.items.length === 0"
+            @change="setActiveFileId(($event.target as HTMLSelectElement).value as VirtualFileId)"
+          >
+            <option
+              v-for="item in props.items"
+              :key="item.virtualFileId"
+              :value="item.virtualFileId"
+            >
+              {{ item.virtualFileId }} · {{ virtualFileLabel(item.virtualFileId) }}
+            </option>
+          </select>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-end gap-2">
+          <div class="min-w-0 text-right">
+            <p class="text-[10px] font-semibold uppercase tracking-wide text-navy/60 leading-none">
+              Patch (hela diffen)
+            </p>
+            <p class="text-[10px] text-navy/60 truncate">
+              {{ activeItem?.virtualFileId ? `${activeItem.virtualFileId}.patch` : "" }}
+            </p>
+          </div>
+          <button
+            type="button"
+            class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-white leading-none"
+            @click="copyPatch"
+          >
+            Kopiera
+          </button>
+          <button
+            type="button"
+            class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-white leading-none"
+            @click="downloadPatch"
+          >
+            Ladda ned
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-if="activeItem"
+      class="border-b border-navy/20 bg-white"
+    >
+      <div class="grid grid-cols-1 md:grid-cols-2">
+        <div class="flex items-start justify-between gap-3 px-3 py-2 min-w-0">
+          <div class="min-w-0">
+            <p class="text-[10px] font-semibold uppercase tracking-wide text-navy/60 leading-none">
+              Före
+            </p>
+            <p class="text-[10px] text-navy/60 truncate">
+              {{ props.beforeLabel }}
+            </p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-white leading-none"
+              @click="copyBefore"
+            >
+              Kopiera
+            </button>
+            <button
+              type="button"
+              class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-white leading-none"
+              @click="downloadBefore"
+            >
+              Ladda ned
+            </button>
           </div>
         </div>
 
-        <div class="text-xs text-navy/60">
-          {{ props.beforeLabel }} → {{ props.afterLabel }}
+        <div class="flex items-start justify-between gap-3 px-3 py-2 min-w-0 md:border-l md:border-navy/20">
+          <div class="min-w-0">
+            <p class="text-[10px] font-semibold uppercase tracking-wide text-navy/60 leading-none">
+              Efter
+            </p>
+            <p class="text-[10px] text-navy/60 truncate">
+              {{ props.afterLabel }}
+            </p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-white leading-none"
+              @click="copyAfter"
+            >
+              Kopiera
+            </button>
+            <button
+              type="button"
+              class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-white leading-none"
+              @click="downloadAfter"
+            >
+              Ladda ned
+            </button>
+          </div>
         </div>
-      </div>
-
-      <div class="flex flex-wrap gap-2">
-        <button
-          type="button"
-          class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-          @click="copyBefore"
-        >
-          Kopiera före
-        </button>
-        <button
-          type="button"
-          class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-          @click="copyAfter"
-        >
-          Kopiera efter
-        </button>
-        <button
-          type="button"
-          class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-          @click="copyPatch"
-        >
-          Kopiera patch
-        </button>
-
-        <button
-          type="button"
-          class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-          @click="downloadBefore"
-        >
-          Ladda ner före
-        </button>
-        <button
-          type="button"
-          class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-          @click="downloadAfter"
-        >
-          Ladda ner efter
-        </button>
-        <button
-          type="button"
-          class="btn-ghost px-3 py-2 text-xs font-semibold tracking-wide"
-          @click="downloadPatch"
-        >
-          Ladda ner patch
-        </button>
-      </div>
-
-      <div class="flex flex-wrap gap-2">
-        <button
-          v-for="item in props.items"
-          :key="item.virtualFileId"
-          type="button"
-          :class="[
-            'px-3 py-1 border shadow-brutal-sm text-xs font-semibold',
-            item.virtualFileId === activeFileId
-              ? 'border-burgundy bg-burgundy/5 text-burgundy'
-              : 'border-navy/30 bg-white hover:bg-canvas hover:border-navy text-navy/70',
-          ]"
-          @click="setActiveFileId(item.virtualFileId)"
-        >
-          <span class="font-mono">
-            {{ item.virtualFileId }}
-          </span>
-        </button>
       </div>
     </div>
 
@@ -317,7 +355,7 @@ function downloadPatch(): void {
     </div>
     <div
       v-else
-      class="flex-1 min-h-0 border-t border-navy/20"
+      class="flex-1 min-h-0"
     >
       <CodeMirrorMergeDiff
         :before-text="activeItem.beforeText"

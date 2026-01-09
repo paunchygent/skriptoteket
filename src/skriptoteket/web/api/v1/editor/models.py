@@ -2,13 +2,14 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, JsonValue
+from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
 from skriptoteket.application.scripting.commands import SchemaValidationIssue
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.models import RunStatus, VersionState
 from skriptoteket.domain.scripting.tool_inputs import ToolInputField
 from skriptoteket.domain.scripting.ui.contract_v2 import UiActionField
+from skriptoteket.protocols.llm import VirtualFileId
 from skriptoteket.web.editor_support import DEFAULT_ENTRYPOINT
 
 EditorSaveMode = Literal["snapshot", "create_draft"]
@@ -78,6 +79,85 @@ class EditorEditSuggestionResponse(BaseModel):
 
     suggestion: str
     enabled: bool
+
+
+class EditorEditOpsSelection(BaseModel):
+    model_config = ConfigDict(frozen=True, populate_by_name=True)
+
+    start: int = Field(alias="from", ge=0)
+    end: int = Field(alias="to", ge=0)
+
+    @model_validator(mode="after")
+    def validate_range(self) -> "EditorEditOpsSelection":
+        if self.end < self.start:
+            raise ValueError("Selection end must be >= start")
+        return self
+
+
+class EditorEditOpsCursor(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    pos: int = Field(ge=0)
+
+
+class EditorVirtualFiles(BaseModel):
+    model_config = ConfigDict(frozen=True, populate_by_name=True)
+
+    tool_py: str = Field(alias="tool.py")
+    entrypoint_txt: str = Field(alias="entrypoint.txt")
+    settings_schema_json: str = Field(alias="settings_schema.json")
+    input_schema_json: str = Field(alias="input_schema.json")
+    usage_instructions_md: str = Field(alias="usage_instructions.md")
+
+    def as_map(self) -> dict[VirtualFileId, str]:
+        return {
+            "tool.py": self.tool_py,
+            "entrypoint.txt": self.entrypoint_txt,
+            "settings_schema.json": self.settings_schema_json,
+            "input_schema.json": self.input_schema_json,
+            "usage_instructions.md": self.usage_instructions_md,
+        }
+
+
+class EditorEditOpsRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    message: str = Field(min_length=1)
+    active_file: VirtualFileId
+    selection: EditorEditOpsSelection | None = None
+    cursor: EditorEditOpsCursor | None = None
+    virtual_files: EditorVirtualFiles
+
+    @model_validator(mode="after")
+    def validate_active_file(self) -> "EditorEditOpsRequest":
+        if self.active_file not in self.virtual_files.as_map():
+            raise ValueError("Active file is missing from virtual_files")
+        return self
+
+
+class EditorEditOpsTarget(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    kind: Literal["cursor", "selection", "document"]
+
+
+class EditorEditOpsOp(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    op: Literal["insert", "replace", "delete"]
+    target_file: VirtualFileId
+    target: EditorEditOpsTarget
+    content: str | None = None
+
+
+class EditorEditOpsResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    enabled: bool
+    assistant_message: str
+    ops: list[EditorEditOpsOp]
+    base_fingerprints: dict[VirtualFileId, str]
 
 
 class EditorChatRequest(BaseModel):

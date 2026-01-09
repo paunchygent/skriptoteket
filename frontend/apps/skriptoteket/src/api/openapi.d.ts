@@ -409,6 +409,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/editor/edit-ops": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Edit Ops */
+        post: operations["create_edit_ops_api_v1_editor_edit_ops_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/editor/edits": {
         parameters: {
             query?: never;
@@ -1557,6 +1574,73 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** EditorEditOpsCursor */
+        EditorEditOpsCursor: {
+            /** Pos */
+            pos: number;
+        };
+        /** EditorEditOpsOp */
+        EditorEditOpsOp: {
+            /** Content */
+            content?: string | null;
+            /**
+             * Op
+             * @enum {string}
+             */
+            op: "insert" | "replace" | "delete";
+            target: components["schemas"]["EditorEditOpsTarget"];
+            /**
+             * Target File
+             * @enum {string}
+             */
+            target_file: "tool.py" | "entrypoint.txt" | "settings_schema.json" | "input_schema.json" | "usage_instructions.md";
+        };
+        /** EditorEditOpsRequest */
+        EditorEditOpsRequest: {
+            /**
+             * Active File
+             * @enum {string}
+             */
+            active_file: "tool.py" | "entrypoint.txt" | "settings_schema.json" | "input_schema.json" | "usage_instructions.md";
+            cursor?: components["schemas"]["EditorEditOpsCursor"] | null;
+            /** Message */
+            message: string;
+            selection?: components["schemas"]["EditorEditOpsSelection"] | null;
+            /**
+             * Tool Id
+             * Format: uuid
+             */
+            tool_id: string;
+            virtual_files: components["schemas"]["EditorVirtualFiles"];
+        };
+        /** EditorEditOpsResponse */
+        EditorEditOpsResponse: {
+            /** Assistant Message */
+            assistant_message: string;
+            /** Base Fingerprints */
+            base_fingerprints: {
+                [key: string]: string;
+            };
+            /** Enabled */
+            enabled: boolean;
+            /** Ops */
+            ops: components["schemas"]["EditorEditOpsOp"][];
+        };
+        /** EditorEditOpsSelection */
+        EditorEditOpsSelection: {
+            /** From */
+            from: number;
+            /** To */
+            to: number;
+        };
+        /** EditorEditOpsTarget */
+        EditorEditOpsTarget: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "cursor" | "selection" | "document";
+        };
         /** EditorEditSuggestionRequest */
         EditorEditSuggestionRequest: {
             /** Instruction */
@@ -1696,6 +1780,19 @@ export interface components {
             state: components["schemas"]["VersionState"];
             /** Version Number */
             version_number: number;
+        };
+        /** EditorVirtualFiles */
+        EditorVirtualFiles: {
+            /** Entrypoint.Txt */
+            "entrypoint.txt": string;
+            /** Input Schema.Json */
+            "input_schema.json": string;
+            /** Settings Schema.Json */
+            "settings_schema.json": string;
+            /** Tool.Py */
+            "tool.py": string;
+            /** Usage Instructions.Md */
+            "usage_instructions.md": string;
         };
         /** FavoriteCuratedAppItem */
         FavoriteCuratedAppItem: {
@@ -3827,6 +3924,42 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EditorInlineCompletionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_edit_ops_api_v1_editor_edit_ops_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Skriptoteket-Eval"?: string | null;
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditorEditOpsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorEditOpsResponse"];
                 };
             };
             /** @description Validation Error */
