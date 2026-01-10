@@ -36,6 +36,22 @@ Object.defineProperty(globalThis, "localStorage", {
   writable: true,
 });
 
+if (typeof window.matchMedia !== "function") {
+  Object.defineProperty(window, "matchMedia", {
+    value: (query: string) => ({
+      matches: true,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }),
+    configurable: true,
+  });
+}
+
 // Mock fetch globally
 globalThis.fetch = vi.fn();
 

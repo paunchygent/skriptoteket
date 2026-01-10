@@ -119,6 +119,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 
 - `docs/backlog/reviews/review-epic-06-linter-architecture-refactor.md`
 - `docs/backlog/reviews/review-epic-08-ai-completion.md`
+- `docs/backlog/reviews/review-epic-08-ai-edit-ops-v2.md`
 - `docs/backlog/reviews/review-epic-09-security-hardening.md`
 - `docs/backlog/reviews/review-epic-14-editor-sandbox-preview.md`
 - `docs/backlog/reviews/review-epic-16-catalog-discovery.md`
@@ -160,6 +161,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0012-editor-cohesion-pass-input-selectors.md`
 - `docs/backlog/prs/pr-0013-editor-ai-edit-ops-protocol-v1.md`
 - `docs/backlog/prs/pr-0014-editor-ai-diff-preview-apply-undo.md`
+- `docs/backlog/prs/pr-0015-editor-ai-edit-ops-anchor-patch-v2.md`
+- `docs/backlog/prs/pr-0016-editor-ai-edit-ops-v2-hardening.md`
 
 ### Backlog Stories
 
@@ -235,6 +238,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-08-21-ai-structured-crud-edit-ops-protocol-v1.md`
 - `docs/backlog/stories/story-08-22-editor-ai-diff-preview-apply-undo.md`
 - `docs/backlog/stories/story-08-23-ai-chat-streaming-proxy-and-config.md`
+- `docs/backlog/stories/story-08-24-ai-edit-ops-anchor-patch-v2.md`
 - `docs/backlog/stories/story-09-01-http-security-headers.md`
 - `docs/backlog/stories/story-09-02-content-security-policy.md`
 - `docs/backlog/stories/story-09-03-firewall-audit.md`

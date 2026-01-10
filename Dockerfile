@@ -51,6 +51,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
+    patch \
     libcairo2 \
     libgdk-pixbuf-2.0-0 \
     libpango-1.0-0 \

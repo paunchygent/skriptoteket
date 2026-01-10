@@ -57,7 +57,7 @@ watch(
 <template>
   <div
     v-if="props.hasSettingsSchema || props.settingsSchemaError"
-    class="border border-navy/20 bg-white shadow-brutal-sm"
+    class="panel-inset"
   >
     <div class="flex items-center justify-between gap-3 px-3 py-2 border-b border-navy/20">
       <span class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">

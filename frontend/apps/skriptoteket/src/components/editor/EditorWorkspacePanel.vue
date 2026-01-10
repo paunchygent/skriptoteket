@@ -121,6 +121,9 @@ type EditorWorkspacePanelProps = {
   chatIsStreaming: boolean;
   chatDisabledMessage: string | null;
   chatError: string | null;
+  editOpsRequestError: string | null;
+  editOpsDisabledMessage: string | null;
+  editOpsClearDraftToken: number;
 
   editOpsState: EditOpsPanelState;
   isEditOpsRequesting: boolean;
@@ -172,6 +175,9 @@ const emit = defineEmits<{
   (event: "clearChatError"): void;
   (event: "clearChatDisabled"): void;
   (event: "requestEditOps", message: string): void;
+  (event: "clearEditOpsError"): void;
+  (event: "clearEditOpsDisabled"): void;
+  (event: "setEditOpsConfirmationAccepted", value: boolean): void;
   (event: "applyEditOps"): void;
   (event: "discardEditOps"): void;
   (event: "regenerateEditOps"): void;
@@ -320,7 +326,7 @@ const chatColumnWidth = computed(() => {
             />
             <div
               v-else
-              class="p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
+              class="p-4 panel-inset text-sm text-navy/70"
             >
               Ingen diff att visa.
             </div>
@@ -420,6 +426,7 @@ const chatColumnWidth = computed(() => {
               @apply="emit('applyEditOps')"
               @discard="emit('discardEditOps')"
               @regenerate="emit('regenerateEditOps')"
+              @set-confirmation-accepted="emit('setEditOpsConfirmationAccepted', $event)"
               @undo="emit('undoEditOps')"
             />
             <div class="flex-1 min-h-0">
@@ -439,7 +446,7 @@ const chatColumnWidth = computed(() => {
         v-if="showsSchemaPanels"
         class="min-h-0 min-w-0 px-3 pb-3 md:col-start-1 md:row-start-3"
       >
-        <section class="border border-navy/20 bg-white shadow-brutal-sm">
+        <section class="panel-inset">
           <div class="border-b border-navy/20 px-3 py-2 flex items-center justify-between gap-3">
             <span class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
               Indata & inst&auml;llningar (JSON)
@@ -481,7 +488,7 @@ const chatColumnWidth = computed(() => {
 
       <div
         v-if="props.isChatDrawerOpen"
-        class="min-h-0 min-w-0 md:col-start-2 md:row-start-2 md:row-span-2 md:border-l md:border-t md:border-navy md:bg-canvas md:shadow-brutal-sm"
+        class="min-h-0 min-w-0 md:col-start-2 md:row-start-2 md:row-span-2 md:border-l-2 md:border-t-2 md:border-navy/20 md:bg-canvas md:shadow-none"
       >
         <EditorWorkspaceDrawers
           variant="column"
@@ -492,6 +499,9 @@ const chatColumnWidth = computed(() => {
           :chat-disabled-message="props.chatDisabledMessage"
           :chat-error="props.chatError"
           :is-edit-ops-loading="props.isEditOpsRequesting"
+          :edit-ops-error="props.editOpsRequestError"
+          :edit-ops-disabled-message="props.editOpsDisabledMessage"
+          :edit-ops-clear-draft-token="props.editOpsClearDraftToken"
           @close="emit('closeDrawer')"
           @toggle-chat-collapsed="emit('toggleChatCollapsed')"
           @send-chat-message="emit('sendChatMessage', $event)"
@@ -499,6 +509,8 @@ const chatColumnWidth = computed(() => {
           @clear-chat="emit('clearChat')"
           @clear-chat-error="emit('clearChatError')"
           @clear-chat-disabled="emit('clearChatDisabled')"
+          @clear-edit-ops-error="emit('clearEditOpsError')"
+          @clear-edit-ops-disabled="emit('clearEditOpsDisabled')"
           @request-edit-ops="emit('requestEditOps', $event)"
         />
       </div>

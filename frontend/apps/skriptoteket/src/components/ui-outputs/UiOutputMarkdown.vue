@@ -17,7 +17,7 @@ const isCompact = computed(() => props.density === "compact");
     v-if="props.output.markdown"
     :class="[
       isCompact
-        ? 'p-3 border border-navy/20 bg-white shadow-brutal-sm'
+        ? 'p-3 panel-inset'
         : 'p-4 border border-navy bg-white shadow-brutal-sm',
     ]"
   >

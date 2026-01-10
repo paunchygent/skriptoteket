@@ -5,7 +5,7 @@ title: "Contextual help (Hjälp) and onboarding"
 status: active
 owners: "agents"
 created: 2025-12-17
-updated: 2026-01-09
+updated: 2026-01-10
 outcome: "Users understand what they can do on each page via concise, Swedish, context-aware help without external documentation."
 ---
 
@@ -51,6 +51,7 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - [ST-08-21: AI structured CRUD edit ops protocol v1 (insert/replace/delete)](../stories/story-08-21-ai-structured-crud-edit-ops-protocol-v1.md)
 - [ST-08-22: Editor AI proposed changes diff preview + apply/undo](../stories/story-08-22-editor-ai-diff-preview-apply-undo.md)
 - [ST-08-23: AI editor chat streaming proxy + LLM_CHAT_* config](../stories/story-08-23-ai-chat-streaming-proxy-and-config.md)
+- [ST-08-24: AI edit ops v2: anchor/patch-based targets + apply](../stories/story-08-24-ai-edit-ops-anchor-patch-v2.md)
 
 ## Implementation Summary (as of 2026-01-09)
 
@@ -63,6 +64,7 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - Remaining work:
   - Tabby provider switch + prompt A/B evaluation for edit suggestions (ST-08-17).
   - Chat-first editor AI UX: structured CRUD edits + diff preview + apply/undo (ST-08-21/22).
+  - Anchor/patch-based edit ops v2 for deterministic apply without cursor reliance (ST-08-24).
 
 ## Risks
 

@@ -84,7 +84,7 @@ function removalBlockedReason(maintainer: MaintainerSummary): string | null {
   <aside
     :class="[
       isPanel
-        ? 'relative w-full bg-white border border-navy/20 shadow-brutal-sm flex flex-col min-h-0'
+        ? 'relative w-full panel-inset flex flex-col min-h-0'
         : 'fixed inset-y-0 right-0 z-50 w-full bg-canvas border-l border-navy shadow-brutal flex flex-col md:relative md:inset-auto md:z-auto md:w-full md:h-full md:overflow-hidden',
     ]"
     :role="isPanel ? 'region' : 'dialog'"

@@ -3,8 +3,6 @@ import { computed, onScopeDispose, ref, watch, type Ref } from "vue";
 
 import { apiFetch, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
-import type { UiNotifier } from "../notify";
-import { applyEditOpsToVirtualFiles, type EditOpsApplyResult, type EditOpsDiffItem } from "./editOps";
 import {
   virtualFileTextFromEditorFields,
   type VirtualFileId,
@@ -15,13 +13,32 @@ type EditorEditOpsResponse = components["schemas"]["EditorEditOpsResponse"];
 type EditorEditOpsRequest = components["schemas"]["EditorEditOpsRequest"];
 type EditorEditOpsSelection = components["schemas"]["EditorEditOpsSelection"];
 type EditorEditOpsCursor = components["schemas"]["EditorEditOpsCursor"];
-type EditorEditOpsOp = components["schemas"]["EditorEditOpsOp"];
+type EditorEditOpsPreviewRequest = components["schemas"]["EditorEditOpsPreviewRequest"];
+type EditorEditOpsPreviewResponse = components["schemas"]["EditorEditOpsPreviewResponse"];
+type EditorEditOpsApplyRequest = components["schemas"]["EditorEditOpsApplyRequest"];
+type EditorEditOpsPreviewMeta = components["schemas"]["EditorEditOpsPreviewMeta"];
+type EditorEditOpsPreviewErrorDetails = components["schemas"]["EditorEditOpsPreviewErrorDetails"];
+type EditorEditOpsOpInput =
+  | components["schemas"]["EditorEditOpsInsertOp-Input"]
+  | components["schemas"]["EditorEditOpsReplaceOp-Input"]
+  | components["schemas"]["EditorEditOpsDeleteOp-Input"]
+  | components["schemas"]["EditorEditOpsPatchOp"];
+type EditorEditOpsOpOutput =
+  | components["schemas"]["EditorEditOpsInsertOp-Output"]
+  | components["schemas"]["EditorEditOpsReplaceOp-Output"]
+  | components["schemas"]["EditorEditOpsDeleteOp-Output"]
+  | components["schemas"]["EditorEditOpsPatchOp"];
+
+export type EditOpsDiffItem = {
+  virtualFileId: VirtualFileId;
+  beforeText: string;
+  afterText: string;
+};
 
 export type EditOpsProposal = {
   message: string;
   assistantMessage: string;
-  ops: EditorEditOpsOp[];
-  baseFingerprints: Record<VirtualFileId, string>;
+  ops: EditorEditOpsOpOutput[];
   activeFile: VirtualFileId;
   selection: EditorEditOpsSelection | null;
   cursor: EditorEditOpsCursor | null;
@@ -38,8 +55,8 @@ type AppliedEditOpsSnapshot = {
 export type EditOpsPanelState = {
   proposal: EditOpsProposal | null;
   diffItems: EditOpsDiffItem[];
-  isStale: boolean;
-  staleFiles: VirtualFileId[];
+  previewMeta: EditorEditOpsPreviewMeta | null;
+  previewErrorDetails: EditorEditOpsPreviewErrorDetails | null;
   previewError: string | null;
   applyError: string | null;
   undoError: string | null;
@@ -49,6 +66,8 @@ export type EditOpsPanelState = {
   undoDisabledReason: string | null;
   hasUndoSnapshot: boolean;
   isApplying: boolean;
+  requiresConfirmation: boolean;
+  confirmationAccepted: boolean;
 };
 
 type UseEditorEditOpsOptions = {
@@ -63,8 +82,6 @@ type UseEditorEditOpsOptions = {
     usageInstructions: Ref<string>;
   };
   createBeforeApplyCheckpoint: () => Promise<void> | void;
-  notify: UiNotifier;
-  fingerprint?: (text: string) => Promise<string>;
 };
 
 type EditOpsRequestResult = {
@@ -76,6 +93,7 @@ type EditOpsRequestResult = {
 };
 
 const DEFAULT_ACTIVE_FILE: VirtualFileId = "tool.py";
+const EXPLICIT_CURSOR_TTL_MS = 45_000;
 
 function virtualFilesFingerprint(files: VirtualFileTextMap): string {
   return [
@@ -87,7 +105,7 @@ function virtualFilesFingerprint(files: VirtualFileTextMap): string {
   ].join("\u0000");
 }
 
-function uniqueTargetFiles(ops: EditorEditOpsOp[]): VirtualFileId[] {
+function uniqueTargetFiles(ops: EditorEditOpsOpOutput[]): VirtualFileId[] {
   const seen = new Set<VirtualFileId>();
   const ordered: VirtualFileId[] = [];
   for (const op of ops) {
@@ -99,22 +117,15 @@ function uniqueTargetFiles(ops: EditorEditOpsOp[]): VirtualFileId[] {
   return ordered;
 }
 
-async function sha256Fingerprint(text: string): Promise<string> {
-  if (!globalThis.crypto?.subtle) {
-    throw new Error("WebCrypto är inte tillgängligt.");
-  }
-  const data = new TextEncoder().encode(text);
-  const digest = await globalThis.crypto.subtle.digest("SHA-256", data);
-  const hash = Array.from(new Uint8Array(digest))
-    .map((value) => value.toString(16).padStart(2, "0"))
-    .join("");
-  return `sha256:${hash}`;
-}
-
-function resolveSelection(view: EditorView | null): {
+function resolveSelection(params: {
+  view: EditorView | null;
+  includeCursorWhenNoSelection: boolean;
+}): {
   selection: EditorEditOpsSelection | null;
   cursor: EditorEditOpsCursor | null;
 } {
+  const { view, includeCursorWhenNoSelection } = params;
+
   if (!view) {
     return { selection: null, cursor: null };
   }
@@ -123,13 +134,13 @@ function resolveSelection(view: EditorView | null): {
   if (!main.empty) {
     return {
       selection: { from: main.from, to: main.to },
-      cursor: null,
+      cursor: { pos: main.to },
     };
   }
 
   return {
     selection: null,
-    cursor: { pos: main.from },
+    cursor: includeCursorWhenNoSelection ? { pos: main.from } : null,
   };
 }
 
@@ -144,20 +155,22 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
     editorView,
     fields,
     createBeforeApplyCheckpoint,
-    notify,
-    fingerprint = sha256Fingerprint,
   } = options;
 
   const proposal = ref<EditOpsProposal | null>(null);
   const lastApplied = ref<AppliedEditOpsSnapshot | null>(null);
   const isRequesting = ref(false);
+  const isPreviewing = ref(false);
   const isApplying = ref(false);
   const requestError = ref<string | null>(null);
   const previewError = ref<string | null>(null);
+  const previewErrorDetails = ref<EditorEditOpsPreviewErrorDetails | null>(null);
   const applyError = ref<string | null>(null);
   const undoError = ref<string | null>(null);
-  const staleFiles = ref<VirtualFileId[]>([]);
-  const previewResult = ref<EditOpsApplyResult | null>(null);
+  const previewResponse = ref<EditorEditOpsPreviewResponse | null>(null);
+  const previewBaseFiles = ref<VirtualFileTextMap | null>(null);
+  const confirmationAccepted = ref(false);
+  const lastExplicitCursorInteractionAt = ref<number | null>(null);
 
   const currentFiles = computed(() =>
     virtualFileTextFromEditorFields({
@@ -172,14 +185,13 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
   const currentFingerprint = computed(() => virtualFilesFingerprint(currentFiles.value));
 
   const hasUndoSnapshot = computed(() => lastApplied.value !== null);
-  const isStale = computed(() => staleFiles.value.length > 0);
   const targetFiles = computed(() => (proposal.value ? uniqueTargetFiles(proposal.value.ops) : []));
-  const hasChanges = computed(() => (previewResult.value?.changedFiles.length ?? 0) > 0);
 
   const diffItems = computed<EditOpsDiffItem[]>(() => {
-    if (!proposal.value || !previewResult.value) return [];
-    const beforeFiles = currentFiles.value;
-    const afterFiles = previewResult.value.nextFiles;
+    if (!proposal.value || !previewResponse.value || !previewBaseFiles.value) return [];
+    if (!previewResponse.value.ok) return [];
+    const beforeFiles = previewBaseFiles.value;
+    const afterFiles = previewResponse.value.after_virtual_files as unknown as VirtualFileTextMap;
     return targetFiles.value
       .filter((fileId) => beforeFiles[fileId] !== afterFiles[fileId])
       .map((fileId) => ({
@@ -189,12 +201,19 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       }));
   });
 
+  const hasChanges = computed(() => diffItems.value.length > 0);
+  const previewMeta = computed(() => previewResponse.value?.meta ?? null);
+  const requiresConfirmation = computed(() => previewMeta.value?.requires_confirmation ?? false);
+
   const applyDisabledReason = computed(() => {
     if (!proposal.value) return null;
     if (isReadOnly.value) return "Editorn är låst för redigering.";
-    if (isStale.value) return "Förslaget är utdaterat. Regenerera.";
+    if (isPreviewing.value) return "Skapar förhandsvisning...";
     if (previewError.value) return previewError.value;
     if (!hasChanges.value) return "Inga ändringar att tillämpa.";
+    if (requiresConfirmation.value && !confirmationAccepted.value) {
+      return "Bekräfta att du har granskat ändringen.";
+    }
     return null;
   });
 
@@ -202,9 +221,10 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
     () =>
       Boolean(proposal.value) &&
       !isReadOnly.value &&
-      !isStale.value &&
+      !isPreviewing.value &&
       !previewError.value &&
       hasChanges.value &&
+      (!requiresConfirmation.value || confirmationAccepted.value) &&
       !isApplying.value,
   );
 
@@ -225,89 +245,95 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       !isApplying.value,
   );
 
-  let staleTimer: ReturnType<typeof setTimeout> | null = null;
-  let staleToken = 0;
+  let detachExplicitListeners: (() => void) | null = null;
 
   function clearErrors(): void {
     requestError.value = null;
     previewError.value = null;
+    previewErrorDetails.value = null;
     applyError.value = null;
     undoError.value = null;
   }
 
-  function updatePreview(nextFiles: VirtualFileTextMap, nextProposal: EditOpsProposal | null): void {
-    if (!nextProposal) {
-      previewResult.value = null;
-      previewError.value = null;
-      return;
-    }
-
-    if (isStale.value) {
-      previewResult.value = null;
-      previewError.value = null;
-      return;
-    }
-
-    const result = applyEditOpsToVirtualFiles({
-      virtualFiles: nextFiles,
-      ops: nextProposal.ops,
-      selection: nextProposal.selection,
-      cursor: nextProposal.cursor,
-      activeFile: nextProposal.activeFile,
-    });
-    previewResult.value = result;
-    previewError.value = result.errors[0] ?? null;
+  function clearRequestError(): void {
+    requestError.value = null;
   }
 
-  async function checkStaleNow(): Promise<void> {
-    staleToken += 1;
-    const token = staleToken;
-    if (!proposal.value) {
-      staleFiles.value = [];
-      previewResult.value = null;
-      previewError.value = null;
-      return;
+  function setConfirmationAccepted(nextValue: boolean): void {
+    confirmationAccepted.value = nextValue;
+  }
+
+  async function loadPreview(params: {
+    proposal: EditOpsProposal;
+    virtualFiles: VirtualFileTextMap;
+  }): Promise<EditorEditOpsPreviewResponse | null> {
+    if (!toolId.value) {
+      previewError.value = "Ingen editor hittades.";
+      return null;
     }
 
-    const proposalValue = proposal.value;
-    const files = currentFiles.value;
-    const targets = targetFiles.value;
+    isPreviewing.value = true;
+    previewError.value = null;
+    previewErrorDetails.value = null;
+    applyError.value = null;
 
-    if (targets.length === 0) {
-      staleFiles.value = [];
-      updatePreview(files, proposalValue);
-      return;
+    const body: EditorEditOpsPreviewRequest = {
+      tool_id: toolId.value,
+      active_file: params.proposal.activeFile,
+      virtual_files: params.virtualFiles,
+      ops: params.proposal.ops as unknown as EditorEditOpsOpInput[],
+    };
+    if (params.proposal.selection) {
+      body.selection = params.proposal.selection;
+    }
+    if (params.proposal.cursor) {
+      body.cursor = params.proposal.cursor;
     }
 
     try {
-      const hashes = await Promise.all(targets.map((fileId) => fingerprint(files[fileId])));
-      if (token !== staleToken) return;
+      const response = await apiFetch<EditorEditOpsPreviewResponse>("/api/v1/editor/edit-ops/preview", {
+        method: "POST",
+        body,
+      });
 
-      const mismatched = targets.filter(
-        (fileId, index) => hashes[index] !== proposalValue.baseFingerprints[fileId],
-      );
-      staleFiles.value = mismatched;
-      updatePreview(files, proposalValue);
+      previewResponse.value = response;
+      previewBaseFiles.value = cloneVirtualFiles(params.virtualFiles);
+
+      const errors = response.errors ?? [];
+      const details = response.error_details ?? [];
+      previewError.value = response.ok ? null : (errors[0] ?? "Förhandsvisningen misslyckades. Regenerera.");
+      previewErrorDetails.value = details[0] ?? null;
+      confirmationAccepted.value = false;
+
+      return response;
     } catch (error: unknown) {
-      if (token !== staleToken) return;
-      staleFiles.value = [...targets];
-      previewError.value = "Kunde inte verifiera filernas status.";
-      notify.warning(
-        error instanceof Error
-          ? error.message
-          : "Kunde inte verifiera filernas status.",
-      );
+      previewResponse.value = null;
+      previewBaseFiles.value = null;
+      confirmationAccepted.value = false;
+      if (isApiError(error)) {
+        previewError.value = error.message;
+      } else if (error instanceof Error) {
+        previewError.value = error.message;
+      } else {
+        previewError.value = "Det gick inte att förhandsvisa förslaget.";
+      }
+      return null;
+    } finally {
+      isPreviewing.value = false;
     }
   }
 
-  function scheduleStaleCheck(): void {
-    if (staleTimer) {
-      clearTimeout(staleTimer);
+  async function refreshPreview(): Promise<EditorEditOpsPreviewResponse | null> {
+    if (!proposal.value) {
+      previewResponse.value = null;
+      previewBaseFiles.value = null;
+      previewError.value = null;
+      previewErrorDetails.value = null;
+      confirmationAccepted.value = false;
+      return null;
     }
-    staleTimer = setTimeout(() => {
-      staleTimer = null;
-      void checkStaleNow();
-    }, 250);
+
+    return await loadPreview({ proposal: proposal.value, virtualFiles: currentFiles.value });
   }
 
   function applyVirtualFiles(nextFiles: VirtualFileTextMap): void {
@@ -330,9 +356,19 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
     }
 
     clearErrors();
+    previewResponse.value = null;
+    previewBaseFiles.value = null;
+    confirmationAccepted.value = false;
     isRequesting.value = true;
 
-    const { selection, cursor } = resolveSelection(editorView.value);
+    const hasExplicitCursor =
+      lastExplicitCursorInteractionAt.value !== null &&
+      Date.now() - lastExplicitCursorInteractionAt.value <= EXPLICIT_CURSOR_TTL_MS;
+
+    const { selection, cursor } = resolveSelection({
+      view: editorView.value,
+      includeCursorWhenNoSelection: hasExplicitCursor,
+    });
     const activeFile = DEFAULT_ACTIVE_FILE;
     const virtualFiles = currentFiles.value;
 
@@ -356,34 +392,39 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       });
 
       if (response.enabled && response.ops.length > 0) {
-        proposal.value = {
+        const nextProposal: EditOpsProposal = {
           message: trimmed,
           assistantMessage: response.assistant_message,
-          ops: response.ops,
-          baseFingerprints: response.base_fingerprints as Record<VirtualFileId, string>,
+          ops: response.ops as unknown as EditorEditOpsOpOutput[],
           activeFile,
           selection,
           cursor,
           createdAt: new Date().toISOString(),
         };
+        proposal.value = nextProposal;
+        await loadPreview({ proposal: nextProposal, virtualFiles });
       } else {
         proposal.value = null;
+        previewResponse.value = null;
+        previewBaseFiles.value = null;
+        previewError.value = null;
+        previewErrorDetails.value = null;
+        confirmationAccepted.value = false;
       }
-
-      scheduleStaleCheck();
 
       return { response, message: trimmed, activeFile, selection, cursor };
     } catch (error: unknown) {
       proposal.value = null;
+      previewResponse.value = null;
+      previewBaseFiles.value = null;
+      previewErrorDetails.value = null;
+      confirmationAccepted.value = false;
       if (isApiError(error)) {
         requestError.value = error.message;
-        notify.failure(error.message);
       } else if (error instanceof Error) {
         requestError.value = error.message;
-        notify.failure(error.message);
       } else {
         requestError.value = "Det gick inte att skapa ett AI-förslag.";
-        notify.failure(requestError.value);
       }
       return null;
     } finally {
@@ -401,50 +442,98 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       return false;
     }
 
-    await checkStaleNow();
-    if (isStale.value) {
-      applyError.value = "Förslaget är utdaterat. Regenerera.";
+    if (!previewResponse.value || previewError.value) {
+      await refreshPreview();
+    }
+
+    if (!previewResponse.value) {
+      applyError.value = previewError.value ?? "Förhandsvisningen saknas. Försök igen.";
       return false;
     }
 
-    const result = applyEditOpsToVirtualFiles({
-      virtualFiles: currentFiles.value,
-      ops: proposal.value.ops,
-      selection: proposal.value.selection,
-      cursor: proposal.value.cursor,
-      activeFile: proposal.value.activeFile,
-    });
-
-    if (result.errors.length > 0) {
-      applyError.value = result.errors[0];
+    if (!previewResponse.value.ok) {
+      const errors = previewResponse.value.errors ?? [];
+      applyError.value = errors[0] ?? "Förhandsvisningen misslyckades. Regenerera.";
       return false;
     }
-    if (result.changedFiles.length === 0) {
+
+    if (!hasChanges.value) {
       applyError.value = "Inga ändringar att tillämpa.";
       return false;
     }
 
+    if (previewResponse.value.meta.requires_confirmation && !confirmationAccepted.value) {
+      applyError.value = "Bekräfta att du har granskat ändringen innan du tillämpar.";
+      return false;
+    }
+
+    const proposalValue = proposal.value;
     const beforeFiles = cloneVirtualFiles(currentFiles.value);
 
     isApplying.value = true;
     try {
+      const body: EditorEditOpsApplyRequest = {
+        tool_id: toolId.value,
+        active_file: proposalValue.activeFile,
+        virtual_files: beforeFiles,
+        ops: proposalValue.ops as unknown as EditorEditOpsOpInput[],
+        base_hash: previewResponse.value.meta.base_hash,
+        patch_id: previewResponse.value.meta.patch_id,
+      };
+      if (proposalValue.selection) {
+        body.selection = proposalValue.selection;
+      }
+      if (proposalValue.cursor) {
+        body.cursor = proposalValue.cursor;
+      }
+
+      const response = await apiFetch<EditorEditOpsPreviewResponse>("/api/v1/editor/edit-ops/apply", {
+        method: "POST",
+        body,
+      });
+
+      if (!response.ok) {
+        const errors = response.errors ?? [];
+        const errorMessage = errors[0] ?? "Förslaget kunde inte tillämpas. Regenerera.";
+        applyError.value = null;
+        previewResponse.value = response;
+        previewBaseFiles.value = cloneVirtualFiles(beforeFiles);
+        previewError.value = errorMessage;
+        previewErrorDetails.value = (response.error_details ?? [])[0] ?? null;
+        confirmationAccepted.value = false;
+        return false;
+      }
+
       await createBeforeApplyCheckpoint();
-      applyVirtualFiles(result.nextFiles);
+      const afterFiles = response.after_virtual_files as unknown as VirtualFileTextMap;
+      applyVirtualFiles(afterFiles);
       lastApplied.value = {
         beforeFiles,
-        afterFiles: result.nextFiles,
-        afterFingerprint: virtualFilesFingerprint(result.nextFiles),
+        afterFiles,
+        afterFingerprint: virtualFilesFingerprint(afterFiles),
         appliedAt: new Date().toISOString(),
       };
       proposal.value = null;
-      previewResult.value = null;
+      previewResponse.value = null;
+      previewBaseFiles.value = null;
       previewError.value = null;
-      staleFiles.value = [];
+      previewErrorDetails.value = null;
+      confirmationAccepted.value = false;
       return true;
     } catch (error: unknown) {
-      applyError.value =
-        error instanceof Error ? error.message : "Det gick inte att tillämpa förslaget.";
-      notify.failure(applyError.value);
+      if (isApiError(error) && error.status === 409) {
+        confirmationAccepted.value = false;
+        const message = error.message;
+        await refreshPreview();
+        applyError.value = message;
+        return false;
+      }
+
+      applyError.value = isApiError(error)
+        ? error.message
+        : error instanceof Error
+            ? error.message
+            : "Det gick inte att tillämpa förslaget.";
       return false;
     } finally {
       isApplying.value = false;
@@ -453,10 +542,12 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
 
   function discardProposal(): void {
     proposal.value = null;
-    previewResult.value = null;
+    previewResponse.value = null;
+    previewBaseFiles.value = null;
     previewError.value = null;
+    previewErrorDetails.value = null;
     applyError.value = null;
-    staleFiles.value = [];
+    confirmationAccepted.value = false;
   }
 
   function undoLastApply(): boolean {
@@ -473,20 +564,6 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
   }
 
   watch(
-    () => [proposal.value, currentFiles.value] as const,
-    () => {
-      if (!proposal.value) {
-        previewResult.value = null;
-        previewError.value = null;
-        staleFiles.value = [];
-        return;
-      }
-      scheduleStaleCheck();
-    },
-    { immediate: true },
-  );
-
-  watch(
     () => currentFingerprint.value,
     () => {
       if (!lastApplied.value) return;
@@ -497,17 +574,46 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
   );
 
   onScopeDispose(() => {
-    if (staleTimer) {
-      clearTimeout(staleTimer);
+    if (detachExplicitListeners) {
+      detachExplicitListeners();
+      detachExplicitListeners = null;
     }
   });
+
+  watch(
+    () => editorView.value,
+    (view) => {
+      if (detachExplicitListeners) {
+        detachExplicitListeners();
+        detachExplicitListeners = null;
+      }
+
+      if (!view) {
+        lastExplicitCursorInteractionAt.value = null;
+        return;
+      }
+
+      const markExplicit = () => {
+        lastExplicitCursorInteractionAt.value = Date.now();
+      };
+
+      view.dom.addEventListener("pointerdown", markExplicit);
+      view.dom.addEventListener("keydown", markExplicit);
+
+      detachExplicitListeners = () => {
+        view.dom.removeEventListener("pointerdown", markExplicit);
+        view.dom.removeEventListener("keydown", markExplicit);
+      };
+    },
+    { immediate: true },
+  );
 
   const panelState = computed<EditOpsPanelState>(() => ({
     proposal: proposal.value,
     diffItems: diffItems.value,
-    isStale: isStale.value,
-    staleFiles: staleFiles.value,
+    previewMeta: previewMeta.value,
     previewError: previewError.value,
+    previewErrorDetails: previewErrorDetails.value,
     applyError: applyError.value,
     undoError: undoError.value,
     canApply: canApply.value,
@@ -516,17 +622,20 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
     undoDisabledReason: undoDisabledReason.value,
     hasUndoSnapshot: hasUndoSnapshot.value,
     isApplying: isApplying.value,
+    requiresConfirmation: requiresConfirmation.value,
+    confirmationAccepted: confirmationAccepted.value,
   }));
 
   return {
     proposal,
     isRequesting,
     requestError,
+    clearRequestError,
     panelState,
     diffItems,
-    isStale,
-    staleFiles,
     previewError,
+    previewErrorDetails,
+    previewMeta,
     applyError,
     undoError,
     canApply,
@@ -535,6 +644,9 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
     undoDisabledReason,
     hasUndoSnapshot,
     isApplying,
+    requiresConfirmation,
+    confirmationAccepted,
+    setConfirmationAccepted,
     requestEditOps,
     applyProposal,
     discardProposal,

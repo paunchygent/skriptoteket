@@ -12,8 +12,13 @@ from skriptoteket.application.editor.chat_history_handler import EditorChatHisto
 from skriptoteket.application.editor.clear_chat_handler import EditorChatClearHandler
 from skriptoteket.application.editor.completion_handler import InlineCompletionHandler
 from skriptoteket.application.editor.edit_ops_handler import EditOpsHandler
+from skriptoteket.application.editor.edit_ops_preview_handler import (
+    EditOpsApplyHandler,
+    EditOpsPreviewHandler,
+)
 from skriptoteket.application.editor.edit_suggestion_handler import EditSuggestionHandler
 from skriptoteket.config import Settings
+from skriptoteket.infrastructure.editor.unified_diff_applier import SubprocessUnifiedDiffApplier
 from skriptoteket.infrastructure.llm.chat_inflight_guard import InProcessChatInFlightGuard
 from skriptoteket.infrastructure.llm.openai_provider import (
     OpenAIChatOpsProvider,
@@ -22,12 +27,15 @@ from skriptoteket.infrastructure.llm.openai_provider import (
     OpenAIInlineCompletionProvider,
 )
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.editor_patches import UnifiedDiffApplierProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
     ChatInFlightGuardProtocol,
     ChatOpsProviderProtocol,
     ChatStreamProviderProtocol,
+    EditOpsApplyHandlerProtocol,
     EditOpsHandlerProtocol,
+    EditOpsPreviewHandlerProtocol,
     EditorChatClearHandlerProtocol,
     EditorChatHandlerProtocol,
     EditorChatHistoryHandlerProtocol,
@@ -42,6 +50,10 @@ from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 
 class LlmProvider(Provider):
+    @provide(scope=Scope.APP)
+    def unified_diff_applier(self) -> UnifiedDiffApplierProtocol:
+        return SubprocessUnifiedDiffApplier()
+
     @provide(scope=Scope.APP)
     async def llm_http_client(self, settings: Settings) -> AsyncIterator[httpx.AsyncClient]:
         timeout = httpx.Timeout(settings.LLM_COMPLETION_TIMEOUT_SECONDS)
@@ -122,6 +134,20 @@ class LlmProvider(Provider):
             clock=clock,
             id_generator=id_generator,
         )
+
+    @provide(scope=Scope.REQUEST)
+    def edit_ops_preview_handler(
+        self,
+        patch_applier: UnifiedDiffApplierProtocol,
+    ) -> EditOpsPreviewHandlerProtocol:
+        return EditOpsPreviewHandler(patch_applier=patch_applier)
+
+    @provide(scope=Scope.REQUEST)
+    def edit_ops_apply_handler(
+        self,
+        preview: EditOpsPreviewHandlerProtocol,
+    ) -> EditOpsApplyHandlerProtocol:
+        return EditOpsApplyHandler(preview=preview)
 
     @provide(scope=Scope.REQUEST)
     def editor_chat_handler(

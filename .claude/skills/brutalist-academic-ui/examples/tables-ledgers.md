@@ -4,40 +4,23 @@
 
 ---
 
-## 1. Ledger Structure
+## 1. Ledger Structure (Tailwind)
 
-```css
-.ledger {
-  width: 100%;
-  border: var(--huleedu-border-width-2) solid var(--huleedu-border-color);
-  background: #fff;
-}
-
-.ledger-header {
-  display: grid;
-  border-bottom: var(--huleedu-border-width-2) solid var(--huleedu-border-color);
-  background: var(--huleedu-navy-02);
-  font-size: var(--huleedu-text-xs);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--huleedu-tracking-label);
-}
-
-.ledger-row {
-  display: grid;
-  border-bottom: var(--huleedu-border-width) solid var(--huleedu-border-color);
-  background: #fff;
-  cursor: pointer;
-}
-
-.ledger-cell {
-  padding: var(--huleedu-space-4);
-  border-right: var(--huleedu-border-width) solid var(--huleedu-border-color);
-}
-
-.ledger-cell:last-child {
-  border-right: none;
-}
+```vue
+<div class="w-full border border-navy bg-white shadow-brutal-sm">
+  <div class="grid grid-cols-[2fr_1fr_1fr] border-b border-navy bg-canvas text-xs font-semibold uppercase tracking-wide text-navy/70">
+    <div class="px-4 py-3">Titel</div>
+    <div class="px-4 py-3">Status</div>
+    <div class="px-4 py-3">Senast</div>
+  </div>
+  <div class="group grid grid-cols-[2fr_1fr_1fr] border-b border-navy/15 bg-white hover:bg-canvas transition-colors">
+    <div class="px-4 py-3 group-hover:underline group-hover:underline-offset-4">
+      Algebra 1
+    </div>
+    <div class="px-4 py-3 text-navy/70">Draft</div>
+    <div class="px-4 py-3 text-navy/70">2026-01-02</div>
+  </div>
+</div>
 ```
 
 ---
@@ -46,131 +29,54 @@
 
 State is communicated through structural changes, not decorative badges.
 
-### Processing State
-
-```html
-<div class="ledger-row ledger-row-processing" data-state="processing">
-  <div class="ledger-cell">
-    <span class="huleedu-badge huleedu-badge-burgundy">Processing</span>
-  </div>
-  <div class="ledger-cell">
-    <span class="huleedu-spinner huleedu-spinner-sm" aria-label="Processing"></span>
-  </div>
-</div>
-```
-
-### Attention Required
-
-```html
-<div class="ledger-row ledger-row-attention" data-state="attention">
-  <div class="ledger-cell">
-    <span class="huleedu-badge huleedu-badge-burgundy">Action</span>
+```vue
+<div
+  class="grid grid-cols-[2fr_1fr_1fr] border-b border-navy/15 bg-white"
+  :class="{
+    'border-l-4 border-burgundy bg-burgundy/5': state === 'attention',
+    'border-l-4 border-burgundy': state === 'processing',
+  }"
+>
+  <div class="px-4 py-3">Process</div>
+  <div class="px-4 py-3 text-navy/70">{{ state }}</div>
+  <div class="px-4 py-3">
+    <span
+      v-if="state === 'processing'"
+      class="inline-block h-3 w-3 border-2 border-navy/30 border-t-navy rounded-full animate-spin"
+      aria-label="Processing"
+    />
   </div>
 </div>
-```
-
-### Complete State
-
-```html
-<div class="ledger-row" data-state="complete">
-  <div class="ledger-cell">
-    <span class="huleedu-badge">Done</span>
-  </div>
-</div>
-```
-
-```css
-.ledger-row-processing {
-  border-left: 4px solid var(--huleedu-burgundy);
-}
-
-.ledger-row-attention {
-  border-bottom: var(--huleedu-border-width-2) solid var(--huleedu-burgundy);
-  background: var(--huleedu-burgundy-05);
-}
 ```
 
 ---
 
 ## 3. Row Hover
 
-```css
-/* Hard outline, background shift */
-.ledger-row:hover {
-  background: var(--huleedu-navy-02);
-  outline: var(--huleedu-border-width-2) solid var(--huleedu-border-color);
-  outline-offset: -2px;
-  position: relative;
-  z-index: 1;
-}
+Use background shift + underline; avoid transforms on hard-edged surfaces.
 
-/* Underline on primary text */
-.ledger-row:hover .ledger-title {
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 4px;
-}
+---
 
-/* Banned */
-.ledger-row:hover {
-  box-shadow: 0 10px 40px rgba(0,0,0,0.1); /* No */
-  transform: scale(1.01); /* No */
-}
+## 4. Progress Indicators
+
+```html
+<div class="h-[6px] w-full bg-navy/20">
+  <div class="h-full bg-navy" style="width: 40%"></div>
+</div>
+```
+
+Active attention state:
+
+```html
+<div class="h-[6px] w-full bg-navy/20">
+  <div class="h-full bg-burgundy" style="width: 70%"></div>
+</div>
 ```
 
 ---
 
-## 4. State Transitions (Websocket)
+## 5. Anti-Patterns
 
-Brief flash on state change. Not bounce, not slide.
-
-```css
-@keyframes state-change {
-  0%, 100% { background-color: transparent; }
-  50% { background-color: var(--huleedu-burgundy-10); }
-}
-
-.ledger-row[data-state-changed] {
-  animation: state-change 0.4s ease;
-}
-```
-
-```javascript
-row.setAttribute('data-state-changed', '');
-row.addEventListener('animationend', () => {
-  row.removeAttribute('data-state-changed');
-}, { once: true });
-```
-
----
-
-## 5. Progress Indicators
-
-```css
-.progress-track {
-  width: 100%;
-  height: 6px;
-  background: var(--huleedu-navy-20);
-  /* No border-radius. A bar is a bar. */
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--huleedu-navy);
-  transition: width 0.3s ease;
-}
-
-.progress-fill[data-active] {
-  background: var(--huleedu-burgundy);
-}
-```
-
----
-
-## 6. Anti-Patterns
-
-- **Status pills with big border-radius** = decorating, not communicating
-- **Multiple competing colors**: One accent for attention. Everything else is ink or muted.
-- **Icons for every state**: Checkmark next to "Complete" is redundant
-- **Animated progress for complete items**: If done, it's done.
-- **Hover effects that obscure**: Enhance readability, don't compete with it.
+- Over-decorated status indicators (multiple colors, icon spam)
+- Transforms (`scale`, `translate`) on hard borders/shadows
+- Default palette colors (`bg-slate-*`, `text-gray-*`)

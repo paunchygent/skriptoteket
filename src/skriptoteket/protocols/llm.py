@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
-from typing import Literal, Protocol
+from typing import Annotated, Literal, Protocol
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.tool_session_messages import ToolSessionMessage
@@ -21,8 +21,9 @@ VirtualFileId = Literal[
     "input_schema.json",
     "usage_instructions.md",
 ]
-EditOpKind = Literal["insert", "replace", "delete"]
-EditTargetKind = Literal["cursor", "selection", "document"]
+EditOpKind = Literal["insert", "replace", "delete", "patch"]
+EditTargetKind = Literal["cursor", "selection", "document", "anchor"]
+EditAnchorPlacement = Literal["before", "after"]
 
 
 class PromptEvalMeta(BaseModel):
@@ -146,31 +147,173 @@ class EditOpsCursor(BaseModel):
     pos: int
 
 
-class EditOpsTarget(BaseModel):
+class EditOpsAnchor(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    kind: EditTargetKind
+    match: str = Field(min_length=1)
+    placement: EditAnchorPlacement | None = None
 
 
-class EditOpsOp(BaseModel):
+class EditOpsCursorTarget(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    op: EditOpKind
+    kind: Literal["cursor"]
+
+
+class EditOpsSelectionTarget(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    kind: Literal["selection"]
+
+
+class EditOpsDocumentTarget(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    kind: Literal["document"]
+
+
+class EditOpsAnchorTarget(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    kind: Literal["anchor"]
+    anchor: EditOpsAnchor
+
+
+EditOpsTarget = Annotated[
+    EditOpsCursorTarget | EditOpsSelectionTarget | EditOpsDocumentTarget | EditOpsAnchorTarget,
+    Field(discriminator="kind"),
+]
+
+
+class EditOpsInsertOp(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    op: Literal["insert"]
     target_file: VirtualFileId
     target: EditOpsTarget
-    content: str | None = None
+    content: str = Field(min_length=1)
 
     @model_validator(mode="after")
-    def validate_content(self) -> "EditOpsOp":
-        if self.op in {"insert", "replace"} and not self.content:
-            raise ValueError("Content is required for insert/replace ops")
-        if self.op == "delete" and self.content:
-            raise ValueError("Content must be omitted for delete ops")
-        if self.op == "insert" and self.target.kind != "cursor":
-            raise ValueError("Insert ops must target cursor")
-        if self.op in {"replace", "delete"} and self.target.kind == "cursor":
-            raise ValueError("Replace/delete ops must target selection or document")
+    def validate_insert(self) -> "EditOpsInsertOp":
+        if self.target.kind not in {"cursor", "anchor"}:
+            raise ValueError("Insert ops must target cursor or anchor")
+        if self.target.kind == "anchor" and self.target.anchor.placement is None:
+            raise ValueError("Anchor placement is required for insert ops")
         return self
+
+
+class EditOpsReplaceOp(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    op: Literal["replace"]
+    target_file: VirtualFileId
+    target: EditOpsTarget
+    content: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_replace(self) -> "EditOpsReplaceOp":
+        if self.target.kind == "cursor":
+            raise ValueError("Replace ops must target selection, document, or anchor")
+        return self
+
+
+class EditOpsDeleteOp(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    op: Literal["delete"]
+    target_file: VirtualFileId
+    target: EditOpsTarget
+    content: None = None
+
+    @model_validator(mode="after")
+    def validate_delete(self) -> "EditOpsDeleteOp":
+        if self.target.kind == "cursor":
+            raise ValueError("Delete ops must target selection, document, or anchor")
+        return self
+
+
+class EditOpsPatchOp(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    op: Literal["patch"]
+    target_file: VirtualFileId
+    patch: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_patch_shape(self) -> "EditOpsPatchOp":
+        """Light validation; backend is responsible for robust sanitization + apply.
+
+        We accept slightly malformed headers to reduce regeneration loops, but still reject
+        obvious multi-file diffs and wrong-file targets when headers are present.
+        """
+
+        patch = self.patch.replace("\r\n", "\n").replace("\r", "\n")
+        if "@@" not in patch:
+            raise ValueError("Patch must include at least one @@ hunk header")
+
+        def basename(path: str) -> str:
+            cleaned = path
+            if cleaned.startswith(("a/", "b/")):
+                cleaned = cleaned[2:]
+            if cleaned.startswith("./"):
+                cleaned = cleaned[2:]
+            return cleaned
+
+        old_path: str | None = None
+        new_path: str | None = None
+        diff_git_paths: tuple[str | None, str | None] = (None, None)
+
+        diff_git_count = 0
+        header_old_count = 0
+        header_new_count = 0
+
+        for line in patch.split("\n"):
+            if line.startswith("diff --git "):
+                diff_git_count += 1
+                parts = line.split()
+                if len(parts) >= 4 and diff_git_paths == (None, None):
+                    diff_git_paths = (parts[2], parts[3])
+                continue
+
+            if line.startswith("--- "):
+                header_old_count += 1
+                if old_path is None:
+                    parts = line.split()
+                    if len(parts) >= 2:
+                        old_path = parts[1]
+                continue
+
+            if line.startswith("+++ "):
+                header_new_count += 1
+                if new_path is None:
+                    parts = line.split()
+                    if len(parts) >= 2:
+                        new_path = parts[1]
+                continue
+
+        if diff_git_count > 1 or header_old_count > 1 or header_new_count > 1:
+            raise ValueError("Patch must only touch one file")
+
+        git_old, git_new = diff_git_paths
+        if git_old and git_new:
+            if git_old == "/dev/null" or git_new == "/dev/null":
+                raise ValueError("Patch must not create or delete files")
+            if basename(git_old) != self.target_file or basename(git_new) != self.target_file:
+                raise ValueError("Patch targets a different file than target_file")
+
+        if old_path and new_path:
+            if old_path == "/dev/null" or new_path == "/dev/null":
+                raise ValueError("Patch must not create or delete files")
+            if basename(old_path) != self.target_file or basename(new_path) != self.target_file:
+                raise ValueError("Patch targets a different file than target_file")
+
+        return self
+
+
+EditOpsOp = Annotated[
+    EditOpsInsertOp | EditOpsReplaceOp | EditOpsDeleteOp | EditOpsPatchOp,
+    Field(discriminator="op"),
+]
 
 
 class EditOpsCommand(BaseModel):
@@ -192,6 +335,57 @@ class EditOpsResult(BaseModel):
     ops: list[EditOpsOp]
     base_fingerprints: dict[VirtualFileId, str]
     eval_meta: PromptEvalMeta | None = None
+
+
+class EditOpsPreviewCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    active_file: VirtualFileId
+    selection: EditOpsSelection | None = None
+    cursor: EditOpsCursor | None = None
+    virtual_files: dict[VirtualFileId, str]
+    ops: list[EditOpsOp]
+
+
+class EditOpsPreviewMeta(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    base_hash: str
+    patch_id: str
+    requires_confirmation: bool
+    fuzz_level_used: int = 0
+    max_offset: int = 0
+    normalizations_applied: list[str] = Field(default_factory=list)
+    applied_cleanly: bool = True
+
+
+class EditOpsPreviewErrorDetails(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    op_index: int | None = None
+    target_file: VirtualFileId | None = None
+    hunk_index: int | None = None
+    hunk_header: str | None = None
+    expected_snippet: str | None = None
+    base_snippet: str | None = None
+
+
+class EditOpsPreviewResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    ok: bool
+    after_virtual_files: dict[VirtualFileId, str]
+    errors: list[str]
+    error_details: list[EditOpsPreviewErrorDetails] = Field(default_factory=list)
+    meta: EditOpsPreviewMeta
+
+
+class EditOpsApplyCommand(EditOpsPreviewCommand):
+    model_config = ConfigDict(frozen=True)
+
+    base_hash: str
+    patch_id: str
 
 
 class EditorChatCommand(BaseModel):
@@ -343,6 +537,24 @@ class EditOpsHandlerProtocol(Protocol):
         actor: User,
         command: EditOpsCommand,
     ) -> EditOpsResult: ...
+
+
+class EditOpsPreviewHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: EditOpsPreviewCommand,
+    ) -> EditOpsPreviewResult: ...
+
+
+class EditOpsApplyHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: EditOpsApplyCommand,
+    ) -> EditOpsPreviewResult: ...
 
 
 class EditorChatHandlerProtocol(Protocol):

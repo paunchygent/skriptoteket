@@ -4,19 +4,27 @@
 
 ---
 
-## 1. Hard Shadow Button
+## 1. Button Primitives (SPA)
 
-Skriptoteket already ships brutalist buttons. Prefer these instead of inventing new button styles.
+Skriptoteket ships brutalist buttons in the SPA entry stylesheet. Prefer these before inventing new button styles.
 
 ```html
-<!-- Primary CTA (burgundy) -->
-<button class="huleedu-btn">Publicera</button>
+<button class="btn-primary">Spara</button>
+<button class="btn-cta">Publicera</button>
+<button class="btn-ghost">Redigera</button>
+```
 
-<!-- Functional action (navy) -->
-<button class="huleedu-btn huleedu-btn-navy">Logga in</button>
+### Async button with spinner
 
-<!-- Secondary/cancel (outline) -->
-<button class="huleedu-btn huleedu-btn-secondary">Avbryt</button>
+```vue
+<button class="btn-cta" :disabled="isRunning">
+  <span
+    v-if="isRunning"
+    class="inline-block h-3 w-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
+    aria-hidden="true"
+  />
+  <span v-else>Kör</span>
+</button>
 ```
 
 ---
@@ -24,16 +32,12 @@ Skriptoteket already ships brutalist buttons. Prefer these instead of inventing 
 ## 2. Cards
 
 ```html
-<section class="huleedu-card">
-  <header class="huleedu-card-header">
-    <h2>Card title</h2>
+<section class="border border-navy bg-white shadow-brutal-sm p-4 space-y-3">
+  <header class="space-y-1">
+    <h2 class="text-lg font-semibold text-navy">Card title</h2>
+    <p class="text-sm text-navy/70">Subtitle</p>
   </header>
   <p>Content…</p>
-</section>
-
-<!-- Nested/flat context -->
-<section class="huleedu-card-flat">
-  <p>Flat card…</p>
 </section>
 ```
 
@@ -42,63 +46,43 @@ Skriptoteket already ships brutalist buttons. Prefer these instead of inventing 
 ## 3. Links
 
 ```html
-<a class="huleedu-link" href="/docs">Läs mer</a>
+<a class="text-navy underline underline-offset-4 hover:text-burgundy" href="/docs">Läs mer</a>
 ```
 
 ---
 
-## 4. Tags/Labels
+## 4. Status Pills
+
+Use the shared `.status-pill` base class and add token-driven colors.
 
 ```html
-<span class="huleedu-badge">DRAFT</span>
-<span class="huleedu-badge huleedu-badge-burgundy">ATGÄRD</span>
-<span class="huleedu-badge huleedu-badge-navy">PUBLISHED</span>
+<span class="status-pill border border-navy/30 bg-canvas/40 text-navy/70">Draft</span>
+<span class="status-pill border border-warning bg-warning/10 text-navy">Granskas</span>
+<span class="status-pill border border-success bg-success/10 text-success">OK</span>
+<span class="status-pill border border-burgundy/40 bg-burgundy/10 text-burgundy">Åtgärd</span>
 ```
 
 ---
 
-## 5. Dividers
+## 5. Utility Buttons (Dense Toolbars)
 
-```css
-hr {
-  border: none;
-  border-top: var(--huleedu-border-width) solid var(--huleedu-navy-20);
-  margin: var(--huleedu-space-8) 0;
-}
-
-/* Heavy divider */
-hr.heavy {
-  border-top: var(--huleedu-border-width-2) solid var(--huleedu-border-color);
-}
-```
-
----
-
-## 6. Badges (Minimal)
-
-Only when semantically necessary.
-
-```css
-.badge {
-  font-family: var(--huleedu-font-mono);
-  font-size: var(--huleedu-text-xs);
-  font-weight: var(--huleedu-font-medium);
-  text-transform: uppercase;
-  letter-spacing: var(--huleedu-tracking-label);
-}
-
-.badge-error { color: var(--huleedu-error); }
-.badge-warning { color: var(--huleedu-warning); }
-.badge-ok { color: var(--huleedu-navy); } /* Skriptoteket convention: success = navy */
-```
-
-No backgrounds. No pills. Text color only.
-
----
-
-## 7. Loading States
+Use `.btn-ghost` with overrides for micro controls.
 
 ```html
-<span class="huleedu-spinner" aria-label="Loading"></span>
-<span class="huleedu-spinner huleedu-spinner-sm" aria-label="Loading"></span>
+<button
+  class="btn-ghost shadow-none h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-canvas leading-none"
+>
+  Formatera
+</button>
+```
+
+---
+
+## 6. Loading States
+
+```html
+<span
+  class="inline-block h-4 w-4 border-2 border-navy/30 border-t-navy rounded-full animate-spin"
+  aria-label="Laddar"
+></span>
 ```

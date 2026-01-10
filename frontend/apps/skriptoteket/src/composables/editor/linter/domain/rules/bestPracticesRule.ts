@@ -53,10 +53,35 @@ function openModeIsWriting(mode: string): boolean {
 }
 
 function addEncodingFix(ctxText: string, call: PythonCallExpression): FixIntent | null {
-  if (call.argListFrom === null || call.argListTo === null) return null;
+  let argListFrom = call.argListFrom;
+  let argListTo = call.argListTo;
 
-  const openParenPos = call.argListFrom;
-  const closeParenPos = call.argListTo - 1;
+  if (argListFrom === null || argListTo === null) {
+    const closeParenPos = call.to - 1;
+    if ((ctxText[closeParenPos] ?? "") !== ")") return null;
+
+    let depth = 0;
+    for (let pos = closeParenPos; pos >= call.from; pos -= 1) {
+      const ch = ctxText[pos] ?? "";
+      if (ch === ")") {
+        depth += 1;
+        continue;
+      }
+      if (ch === "(") {
+        depth -= 1;
+        if (depth === 0) {
+          argListFrom = pos;
+          argListTo = closeParenPos + 1;
+          break;
+        }
+      }
+    }
+  }
+
+  if (argListFrom === null || argListTo === null) return null;
+
+  const openParenPos = argListFrom;
+  const closeParenPos = argListTo - 1;
 
   const positionalEnds = call.positionalArgs.map((arg) => arg.to);
   const keywordEnds = call.keywordArgs.map((arg) => arg.value?.to ?? arg.nameTo);

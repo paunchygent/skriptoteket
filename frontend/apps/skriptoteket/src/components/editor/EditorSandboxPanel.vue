@@ -81,7 +81,7 @@ const emit = defineEmits<{
         />
       </template>
       <template #fallback>
-        <div class="flex items-center gap-3 p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70">
+        <div class="flex items-center gap-3 p-4 panel-inset text-sm text-navy/70">
           <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
           <span>Laddar testkörning...</span>
         </div>

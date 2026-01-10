@@ -222,6 +222,7 @@ class EditorChatHandler(EditorChatHandlerProtocol):
         tool_session_id: UUID,
         expected_user_message_id: UUID,
         assistant_message: str,
+        meta_extra: dict[str, JsonValue] | None = None,
     ) -> None:
         async with self._uow:
             user_message = await self._messages.get_by_message_id(
@@ -229,6 +230,8 @@ class EditorChatHandler(EditorChatHandlerProtocol):
                 message_id=expected_user_message_id,
             )
             meta: dict[str, JsonValue] = {"in_reply_to": str(expected_user_message_id)}
+            if meta_extra:
+                meta.update(meta_extra)
             if user_message is None:
                 meta["orphaned"] = True
                 logger.warning(
@@ -334,6 +337,8 @@ class EditorChatHandler(EditorChatHandlerProtocol):
             output_chars = 0
             saw_delta = False
             assistant_chunks: list[str] = []
+            failure_outcome: str | None = None
+            failure_status_code: int | None = None
 
             yield EditorChatMetaEvent(data=EditorChatMetaData())
 
@@ -363,39 +368,15 @@ class EditorChatHandler(EditorChatHandlerProtocol):
                 )
                 raise
             except httpx.TimeoutException:
-                elapsed_ms = int((time.perf_counter() - start) * 1000)
-                logger.info(
-                    "ai_chat_failed",
-                    template_id=template_id,
-                    system_prompt_chars=system_prompt_chars,
-                    message_count=len(request.messages),
-                    messages_chars=messages_chars,
-                    output_chars=output_chars,
-                    user_id=str(actor.id),
-                    tool_id=str(command.tool_id),
-                    outcome="timeout",
-                    elapsed_ms=elapsed_ms,
-                )
-                yield EditorChatDoneEvent(data=EditorChatDoneEnabledData(reason="error"))
-                return
+                failure_outcome = "timeout"
             except httpx.HTTPStatusError as exc:
-                elapsed_ms = int((time.perf_counter() - start) * 1000)
-                logger.info(
-                    "ai_chat_failed",
-                    template_id=template_id,
-                    system_prompt_chars=system_prompt_chars,
-                    message_count=len(request.messages),
-                    messages_chars=messages_chars,
-                    output_chars=output_chars,
-                    user_id=str(actor.id),
-                    tool_id=str(command.tool_id),
-                    outcome="over_budget" if _is_context_window_error(exc) else "error",
-                    status_code=exc.response.status_code if exc.response is not None else None,
-                    elapsed_ms=elapsed_ms,
-                )
-                yield EditorChatDoneEvent(data=EditorChatDoneEnabledData(reason="error"))
-                return
+                failure_outcome = "over_budget" if _is_context_window_error(exc) else "error"
+                if exc.response is not None:
+                    failure_status_code = exc.response.status_code
             except (httpx.RequestError, ValueError):
+                failure_outcome = "error"
+
+            if failure_outcome is not None:
                 elapsed_ms = int((time.perf_counter() - start) * 1000)
                 logger.info(
                     "ai_chat_failed",
@@ -406,9 +387,26 @@ class EditorChatHandler(EditorChatHandlerProtocol):
                     output_chars=output_chars,
                     user_id=str(actor.id),
                     tool_id=str(command.tool_id),
-                    outcome="error",
+                    outcome=failure_outcome,
+                    status_code=failure_status_code,
+                    partial=saw_delta,
                     elapsed_ms=elapsed_ms,
                 )
+
+                if assistant_chunks:
+                    assistant_message = "".join(assistant_chunks)
+                    await self._persist_assistant_message(
+                        tool_id=command.tool_id,
+                        actor=actor,
+                        tool_session_id=tool_session_id,
+                        expected_user_message_id=user_message_id,
+                        assistant_message=assistant_message,
+                        meta_extra={
+                            "partial": True,
+                            "stream_outcome": failure_outcome,
+                        },
+                    )
+
                 yield EditorChatDoneEvent(data=EditorChatDoneEnabledData(reason="error"))
                 return
 

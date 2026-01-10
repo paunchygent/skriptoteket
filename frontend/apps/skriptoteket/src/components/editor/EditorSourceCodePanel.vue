@@ -35,7 +35,7 @@ const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtens
 
 <template>
   <div class="flex flex-col min-h-0 h-full">
-    <div class="flex-1 min-h-0 border border-navy bg-canvas shadow-brutal-sm overflow-hidden">
+    <div class="flex-1 min-h-0 panel-inset-canvas overflow-hidden">
       <Suspense>
         <template #default>
           <CodeMirrorEditor

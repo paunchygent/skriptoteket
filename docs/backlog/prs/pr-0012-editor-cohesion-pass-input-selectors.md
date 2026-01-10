@@ -95,6 +95,7 @@ Additional scope clarifications (2026-01-09):
 - Metadata/Instructions/Behörigheter panels now use compact panel headers (no drawer-style headers inside the editor grid).
 - Diff viewer header/actions now align directly with the diff panes (file selector + patch actions above; per-side actions above their respective pane).
 - Spara/Öppna: restore-point naming is explicit (no "lokal"), and Öppna sparade popover is now compact “ledger/menu” rows with timestamps, subtle active-row fill, secondary status text, and lightweight action links (no nested brutalist shadows).
+- Chat drawer responsive fix: auto-collapses on narrow viewports (rail width) and avoids a modal backdrop in column mode, keeping the editor usable while still allowing expand via the rail button.
 
 ## Envisioned endstate (ASCII)
 

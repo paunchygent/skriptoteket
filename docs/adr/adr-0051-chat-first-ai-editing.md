@@ -3,13 +3,13 @@ type: adr
 id: ADR-0051
 title: "Chat-first AI editing (structured CRUD ops + diff preview + apply/
 undo)"
-status: accepted
+status: proposed
 owners: "agents"
 deciders: ["user-lead"]
 created: 2026-01-01
-updated: 2026-01-07
-links: ["EPIC-08", "ST-08-20", "ST-08-21", "ST-08-22", "ST-14-17", "ST-14-30",
-"ADR-0043"]
+updated: 2026-01-10
+links: ["EPIC-08", "ST-08-20", "ST-08-21", "ST-08-22", "ST-08-24", "ST-14-17",
+"ST-14-30", "ADR-0043"]
 ---
 
 ## Context
@@ -95,15 +95,115 @@ files explicitly so:
 - the assistant cannot accidentally mix JSON schema edits into Python (and
   vice versa)
 
+### 2.2 Edit protocol v2: anchor/patch-based targets
+
+To match coding-assistant expectations when no selection/cursor is provided,
+we add a second, location-aware targeting mode that relies on anchors rather
+than raw cursor offsets.
+
+- Add `patch` operations that carry a unified diff for a single virtual file.
+  The diff must reference the same canonical virtual file id in the `a/` and
+  `b/` headers, and apply is **strict** (all hunks must match; no fuzzy apply).
+- Add `anchor` targets for insert/replace/delete with an explicit anchor payload
+  (exact match + placement) so the assistant can say “insert after/before this
+  text” without relying on cursor position.
+- If no selection/cursor is supplied, the model must prefer patch/anchor ops
+  and must not emit cursor-only inserts.
+
+#### 2.2.1 Triggering v2 + request semantics (required)
+
+Because a CodeMirror editor always has an internal cursor, **v2 must be triggered by request semantics**, not by
+“whatever the editor happens to have”.
+
+Definitions:
+
+- **Explicit selection/cursor**: a location that the user intentionally targeted in the active virtual file, and that
+  the frontend can resolve at the time it sends `POST /api/v1/editor/edit-ops`.
+- **Implicit/unknown location**: the user did not explicitly target a location, or the frontend cannot reliably resolve
+  selection/cursor for the active file at send time (e.g. editor view unavailable / not focused).
+
+Frontend rules:
+
+- If a selection exists in the active file, include **both**:
+  - `selection: { from, to }`
+  - `cursor: { pos }` (cursor position MUST be explicitly defined; default to the selection end)
+- If there is no selection but there is an explicitly targeted cursor in the active file, include:
+  - `cursor: { pos }`
+- If the location is implicit/unknown, omit **both** `selection` and `cursor` to intentionally trigger v2.
+
+Backend rules:
+
+- When `selection` and `cursor` are omitted, the system prompt MUST instruct the model to use `patch` and/or `anchor`
+  targeting and MUST treat cursor-only ops as invalid (safe-fail).
+
+#### 2.2.2 Patch op (v2)
+
+Patch ops apply against a single virtual file with backend-first unified-diff application (sanitization + bounded fuzz).
+
+Shape (conceptual):
+
+```json
+{
+  "op": "patch",
+  "target_file": "tool.py",
+  "patch": "diff --git a/tool.py b/tool.py\n--- a/tool.py\n+++ b/tool.py\n@@ ...\n"
+}
+```
+
+Rules:
+
+- `target_file` MUST be one of the canonical virtual file ids.
+- The patch MUST reference the same canonical id in both headers (`a/<id>` and `b/<id>`).
+- Backend MUST sanitize/normalize predictable LLM noise (code fences, indentation, CRLF, invisible chars, missing
+  headers) before attempting apply.
+- Apply MUST be atomic (“all hunks or nothing”). Multi-file diffs are rejected.
+- Apply uses a **bounded fuzz ladder** to reduce regeneration loops:
+  - Stage 0: strict apply (fuzz 0)
+  - Stage 0b: whitespace-tolerant strict apply (ignore whitespace in context)
+  - Stage 1: fuzz 1
+  - Stage 2: fuzz 2
+- Safety policy:
+  - If `max_offset > 50` lines, treat the diff as stale and fail with a regenerate message.
+  - If `fuzz>0` OR `max_offset>10`, the UI MUST show a warning and require an extra confirmation before apply.
+
+#### 2.2.3 Anchor target (v2)
+
+Anchor targeting resolves an edit location by exact string match in the base file.
+
+Shape (conceptual):
+
+```json
+{
+  "op": "insert",
+  "target_file": "tool.py",
+  "target": {
+    "kind": "anchor",
+    "anchor": { "match": "def run_tool():\n", "placement": "after" }
+  },
+  "content": "..."
+}
+```
+
+Rules:
+
+- `anchor.match` MUST match the base file **exactly once**.
+- If `anchor.match` has zero matches: safe-fail with a user-actionable error (“hittade inte ankaret”).
+- If `anchor.match` has more than one match: safe-fail with a user-actionable error (“ankaret är otydligt”).
+
 ### 3) Guardrails: diff preview + atomic apply + undo
 
 - The UI MUST render a diff preview of “current” vs “proposed” before applying
   any changes.
+- The diff preview UI SHOULD be purpose-built for AI proposals (minimal controls), even if it reuses the underlying diff
+  engine used elsewhere in the editor.
 - Applying a proposal MUST be a single atomic CodeMirror transaction so a
   single undo reverts the change.
 - If the underlying editor content changes after the proposal is generated,
   apply MUST be blocked and the user prompted
     to regenerate.
+- Preview and apply MUST be version-gated so “what the user saw is what gets applied”:
+  - Preview returns `base_hash` + `patch_id` for the exact base + normalized ops/diff.
+  - Apply MUST include the same tokens and MUST return `409` on mismatch; the user must re-preview and confirm again.
 
 ### 3.1 Multi-turn conversation (server-side)
 
@@ -144,12 +244,13 @@ files explicitly so:
   responses.
 - Requires a reusable diff viewer component and a stronger preview/apply UX
   than the current edit MVP.
+- Patch/anchor apply adds validation complexity and stricter failure cases
+  (invalid hunks or ambiguous anchors must safe-fail).
 - Limiting targets in v1 reduces capability (no multi-range or semantic
   refactors) but improves safety.
 
 ### Follow-ups (out of scope for this ADR)
 
-- Multi-range operations, anchor/pattern-based targeting, or protected/locked
-  regions.
+- Multi-range operations, semantic refactors, or protected/locked regions.
 - Shared conversations across users/maintainers.
 - Metrics dashboards; only metadata logging is in scope.

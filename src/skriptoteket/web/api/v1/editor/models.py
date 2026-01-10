@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
@@ -136,19 +136,106 @@ class EditorEditOpsRequest(BaseModel):
         return self
 
 
-class EditorEditOpsTarget(BaseModel):
+class EditorEditOpsAnchor(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    kind: Literal["cursor", "selection", "document"]
+    match: str = Field(min_length=1)
+    placement: Literal["before", "after"] | None = None
 
 
-class EditorEditOpsOp(BaseModel):
+class EditorEditOpsCursorTarget(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    op: Literal["insert", "replace", "delete"]
+    kind: Literal["cursor"]
+
+
+class EditorEditOpsSelectionTarget(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    kind: Literal["selection"]
+
+
+class EditorEditOpsDocumentTarget(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    kind: Literal["document"]
+
+
+class EditorEditOpsAnchorTarget(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    kind: Literal["anchor"]
+    anchor: EditorEditOpsAnchor
+
+
+EditorEditOpsTarget = Annotated[
+    EditorEditOpsCursorTarget
+    | EditorEditOpsSelectionTarget
+    | EditorEditOpsDocumentTarget
+    | EditorEditOpsAnchorTarget,
+    Field(discriminator="kind"),
+]
+
+
+class EditorEditOpsInsertOp(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    op: Literal["insert"]
     target_file: VirtualFileId
     target: EditorEditOpsTarget
-    content: str | None = None
+    content: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_insert(self) -> "EditorEditOpsInsertOp":
+        if self.target.kind not in {"cursor", "anchor"}:
+            raise ValueError("Insert ops must target cursor or anchor")
+        if self.target.kind == "anchor" and self.target.anchor.placement is None:
+            raise ValueError("Anchor placement is required for insert ops")
+        return self
+
+
+class EditorEditOpsReplaceOp(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    op: Literal["replace"]
+    target_file: VirtualFileId
+    target: EditorEditOpsTarget
+    content: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_replace(self) -> "EditorEditOpsReplaceOp":
+        if self.target.kind == "cursor":
+            raise ValueError("Replace ops must target selection, document, or anchor")
+        return self
+
+
+class EditorEditOpsDeleteOp(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    op: Literal["delete"]
+    target_file: VirtualFileId
+    target: EditorEditOpsTarget
+    content: None = None
+
+    @model_validator(mode="after")
+    def validate_delete(self) -> "EditorEditOpsDeleteOp":
+        if self.target.kind == "cursor":
+            raise ValueError("Delete ops must target selection, document, or anchor")
+        return self
+
+
+class EditorEditOpsPatchOp(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    op: Literal["patch"]
+    target_file: VirtualFileId
+    patch: str = Field(min_length=1)
+
+
+EditorEditOpsOp = Annotated[
+    EditorEditOpsInsertOp | EditorEditOpsReplaceOp | EditorEditOpsDeleteOp | EditorEditOpsPatchOp,
+    Field(discriminator="op"),
+]
 
 
 class EditorEditOpsResponse(BaseModel):
@@ -158,6 +245,57 @@ class EditorEditOpsResponse(BaseModel):
     assistant_message: str
     ops: list[EditorEditOpsOp]
     base_fingerprints: dict[VirtualFileId, str]
+
+
+class EditorEditOpsPreviewRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    active_file: VirtualFileId
+    selection: EditorEditOpsSelection | None = None
+    cursor: EditorEditOpsCursor | None = None
+    virtual_files: EditorVirtualFiles
+    ops: list[EditorEditOpsOp]
+
+
+class EditorEditOpsPreviewMeta(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    base_hash: str
+    patch_id: str
+    requires_confirmation: bool
+    fuzz_level_used: int = 0
+    max_offset: int = 0
+    normalizations_applied: list[str] = Field(default_factory=list)
+    applied_cleanly: bool = True
+
+
+class EditorEditOpsPreviewErrorDetails(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    op_index: int | None = None
+    target_file: VirtualFileId | None = None
+    hunk_index: int | None = None
+    hunk_header: str | None = None
+    expected_snippet: str | None = None
+    base_snippet: str | None = None
+
+
+class EditorEditOpsPreviewResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    ok: bool
+    after_virtual_files: EditorVirtualFiles
+    errors: list[str] = Field(default_factory=list)
+    error_details: list[EditorEditOpsPreviewErrorDetails] = Field(default_factory=list)
+    meta: EditorEditOpsPreviewMeta
+
+
+class EditorEditOpsApplyRequest(EditorEditOpsPreviewRequest):
+    model_config = ConfigDict(frozen=True)
+
+    base_hash: str
+    patch_id: str
 
 
 class EditorChatRequest(BaseModel):

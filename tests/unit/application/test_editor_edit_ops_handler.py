@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID, uuid4
@@ -226,6 +227,135 @@ async def test_edit_ops_parses_valid_response_and_persists_messages() -> None:
     assert result.ops[0].op == "replace"
     assert messages.append_message.await_count == 2
     assert result.base_fingerprints["tool.py"] == _fingerprint("print('hi')\n")
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_edit_ops_rejects_cursor_ops_when_cursor_missing() -> None:
+    settings = Settings(LLM_CHAT_OPS_ENABLED=True)
+    provider = MagicMock(spec=ChatOpsProviderProtocol)
+    sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
+    sessions.get = AsyncMock(return_value=None)
+    sessions.get_or_create = AsyncMock()
+    messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
+    messages.list_tail = AsyncMock(return_value=[])
+    messages.append_message = AsyncMock()
+    clock = MagicMock(spec=ClockProtocol)
+    id_generator = MagicMock(spec=IdGeneratorProtocol)
+
+    actor = make_user(role=Role.CONTRIBUTOR)
+    tool_id = uuid4()
+    session = _make_tool_session(tool_id=tool_id, user_id=actor.id)
+    sessions.get_or_create.return_value = session
+    id_generator.new_uuid.side_effect = [uuid4(), uuid4(), uuid4()]
+
+    response_payload = (
+        '{"assistant_message":"Klart.","ops":[{"op":"insert","target_file":"tool.py",'
+        '"target":{"kind":"cursor"},"content":"# TODO\\n"}]}'
+    )
+    provider.complete_chat_ops = AsyncMock(
+        return_value=LLMChatOpsResponse(content=response_payload, finish_reason=None)
+    )
+
+    handler = EditOpsHandler(
+        settings=settings,
+        provider=provider,
+        guard=DummyChatGuard(),
+        uow=DummyUow(),
+        sessions=sessions,
+        messages=messages,
+        clock=clock,
+        id_generator=id_generator,
+        system_prompt_loader=lambda _: "prompt",
+    )
+
+    result = await handler.handle(
+        actor=actor,
+        command=EditOpsCommand(
+            tool_id=tool_id,
+            message="Lägg till en rad",
+            active_file="tool.py",
+            selection=None,
+            cursor=None,
+            virtual_files=_virtual_files(),
+        ),
+    )
+
+    assert result.enabled is True
+    assert result.ops == []
+    assert (
+        result.assistant_message == "Jag kunde inte skapa ett giltigt ändringsförslag. Försök igen."
+    )
+    assert messages.append_message.await_count == 2
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_edit_ops_parses_valid_patch_ops() -> None:
+    settings = Settings(LLM_CHAT_OPS_ENABLED=True)
+    provider = MagicMock(spec=ChatOpsProviderProtocol)
+    sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
+    sessions.get = AsyncMock(return_value=None)
+    sessions.get_or_create = AsyncMock()
+    messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
+    messages.list_tail = AsyncMock(return_value=[])
+    messages.append_message = AsyncMock()
+    clock = MagicMock(spec=ClockProtocol)
+    id_generator = MagicMock(spec=IdGeneratorProtocol)
+
+    actor = make_user(role=Role.CONTRIBUTOR)
+    tool_id = uuid4()
+    session = _make_tool_session(tool_id=tool_id, user_id=actor.id)
+    sessions.get_or_create.return_value = session
+    id_generator.new_uuid.side_effect = [uuid4(), uuid4(), uuid4()]
+
+    patch = (
+        "diff --git a/tool.py b/tool.py\n"
+        "--- a/tool.py\n"
+        "+++ b/tool.py\n"
+        "@@ -1,1 +1,1 @@\n"
+        "-print('hi')\n"
+        "+print('hej')\n"
+    )
+    response_payload = json.dumps(
+        {
+            "assistant_message": "Klart.",
+            "ops": [{"op": "patch", "target_file": "tool.py", "patch": patch}],
+        },
+        ensure_ascii=False,
+    )
+    provider.complete_chat_ops = AsyncMock(
+        return_value=LLMChatOpsResponse(content=response_payload, finish_reason=None)
+    )
+
+    handler = EditOpsHandler(
+        settings=settings,
+        provider=provider,
+        guard=DummyChatGuard(),
+        uow=DummyUow(),
+        sessions=sessions,
+        messages=messages,
+        clock=clock,
+        id_generator=id_generator,
+        system_prompt_loader=lambda _: "prompt",
+    )
+
+    result = await handler.handle(
+        actor=actor,
+        command=EditOpsCommand(
+            tool_id=tool_id,
+            message="Byt texten",
+            active_file="tool.py",
+            selection=None,
+            cursor=None,
+            virtual_files=_virtual_files(),
+        ),
+    )
+
+    assert result.enabled is True
+    assert len(result.ops) == 1
+    assert result.ops[0].op == "patch"
+    assert messages.append_message.await_count == 2
 
 
 @pytest.mark.unit

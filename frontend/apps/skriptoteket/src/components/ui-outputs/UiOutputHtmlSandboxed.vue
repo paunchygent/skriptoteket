@@ -12,7 +12,7 @@ const isCompact = computed(() => props.density === "compact");
 </script>
 
 <template>
-  <div :class="[isCompact ? 'border border-navy/20 bg-white shadow-brutal-sm' : 'border border-navy bg-white shadow-brutal-sm']">
+  <div :class="[isCompact ? 'panel-inset' : 'border border-navy bg-white shadow-brutal-sm']">
     <iframe
       sandbox=""
       :srcdoc="props.output.html"

@@ -25,7 +25,7 @@ const isCompact = computed(() => props.density === "compact");
 <template>
   <div
     :class="[
-      isCompact ? 'p-3 border bg-white shadow-brutal-sm' : 'p-4 border bg-white shadow-brutal-sm',
+      isCompact ? 'p-3 border-2 bg-white shadow-none' : 'p-4 border bg-white shadow-brutal-sm',
       variantClasses,
     ]"
   >

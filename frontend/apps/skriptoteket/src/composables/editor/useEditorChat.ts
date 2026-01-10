@@ -29,7 +29,8 @@ type ApiErrorEnvelope = {
   detail?: unknown;
 };
 
-const STREAM_ERROR_MESSAGE = "Det gick inte att lasa AI-svaret.";
+const STREAM_ERROR_MESSAGE = "Det gick inte att läsa AI-svaret.";
+const STREAM_PARTIAL_ERROR_MESSAGE = "Svaret kan vara ofullständigt. Skicka igen om något saknas.";
 const SEND_ERROR_MESSAGE = "Det gick inte att skicka meddelandet.";
 const HISTORY_ERROR_MESSAGE = "Det gick inte att hamta chatthistorik.";
 const CLEAR_ERROR_MESSAGE = "Det gick inte att rensa chatten.";
@@ -275,7 +276,7 @@ export function useEditorChat({ toolId, baseVersionId }: UseEditorChatOptions) {
                 ).trim();
                 disabledMessage.value = messageText || null;
               } else if ((payload as { reason?: string }).reason === "error") {
-                error.value = STREAM_ERROR_MESSAGE;
+                error.value = sawDelta ? STREAM_PARTIAL_ERROR_MESSAGE : STREAM_ERROR_MESSAGE;
               }
             }
             sawDone = true;

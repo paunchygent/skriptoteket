@@ -137,7 +137,7 @@ const diffItems = computed(() => {
 
     <div
       v-if="isLoading"
-      class="flex items-center gap-3 p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
+      class="flex items-center gap-3 p-4 panel-inset text-sm text-navy/70"
     >
       <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
       <span>Laddar diffversion...</span>
@@ -145,7 +145,7 @@ const diffItems = computed(() => {
 
     <div
       v-else-if="errorMessage"
-      class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy"
+      class="p-4 border-2 border-burgundy/40 bg-white shadow-none text-sm text-burgundy"
     >
       {{ errorMessage }}
     </div>

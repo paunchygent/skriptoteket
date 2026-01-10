@@ -17,7 +17,7 @@ const details = computed(() => {
 </script>
 
 <template>
-  <div :class="[isCompact ? 'p-3 border border-warning bg-white shadow-brutal-sm' : 'p-4 border border-warning bg-white shadow-brutal-sm']">
+  <div :class="[isCompact ? 'p-3 border-2 border-warning bg-white shadow-none' : 'p-4 border border-warning bg-white shadow-brutal-sm']">
     <p :class="[isCompact ? 'text-[11px] font-semibold text-warning' : 'text-sm font-semibold text-warning']">
       Okänt output-format
     </p>

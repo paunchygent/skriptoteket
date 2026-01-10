@@ -46,6 +46,86 @@ afterEach(() => {
 });
 
 describe("useEditorChat", () => {
+  it("shows a partial warning when the stream ends with done.reason=error after deltas", async () => {
+    setActivePinia(createPinia());
+    const auth = useAuthStore();
+    auth.user = {
+      id: "user-1",
+      email: "user@example.com",
+      role: "contributor",
+      auth_provider: "local",
+      external_id: null,
+      is_active: true,
+      created_at: "2025-01-01T00:00:00Z",
+      updated_at: "2025-01-01T00:00:00Z",
+    };
+    auth.csrfToken = "csrf";
+
+    const { stream, push, close } = createControlledStream();
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(stream, {
+        status: 200,
+        headers: { "Content-Type": "text/event-stream" },
+      }),
+    );
+
+    const toolId = ref("tool-1");
+    const baseVersionId = ref<string | null>(null);
+    const { error, messages, sendMessage } = useEditorChat({ toolId, baseVersionId });
+
+    const sendPromise = sendMessage("Hej");
+
+    push("event: meta\ndata: {\"enabled\": true}\n\n");
+    push("event: delta\ndata: {\"text\": \"Hej\"}\n\n");
+    push("event: done\ndata: {\"enabled\": true, \"reason\": \"error\"}\n\n");
+    close();
+
+    await sendPromise;
+
+    expect(messages.value.length).toBe(2);
+    expect(messages.value[1].content).toBe("Hej");
+    expect(error.value).toContain("ofullständigt");
+  });
+
+  it("shows an error when the stream ends with done.reason=error before any deltas", async () => {
+    setActivePinia(createPinia());
+    const auth = useAuthStore();
+    auth.user = {
+      id: "user-1",
+      email: "user@example.com",
+      role: "contributor",
+      auth_provider: "local",
+      external_id: null,
+      is_active: true,
+      created_at: "2025-01-01T00:00:00Z",
+      updated_at: "2025-01-01T00:00:00Z",
+    };
+    auth.csrfToken = "csrf";
+
+    const { stream, push, close } = createControlledStream();
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(stream, {
+        status: 200,
+        headers: { "Content-Type": "text/event-stream" },
+      }),
+    );
+
+    const toolId = ref("tool-1");
+    const baseVersionId = ref<string | null>(null);
+    const { error, messages, sendMessage } = useEditorChat({ toolId, baseVersionId });
+
+    const sendPromise = sendMessage("Hej");
+
+    push("event: meta\ndata: {\"enabled\": true}\n\n");
+    push("event: done\ndata: {\"enabled\": true, \"reason\": \"error\"}\n\n");
+    close();
+
+    await sendPromise;
+
+    expect(messages.value.length).toBe(1);
+    expect(error.value).toContain("läsa");
+  });
+
   it("cancels a stream without applying late deltas", async () => {
     setActivePinia(createPinia());
     const auth = useAuthStore();

@@ -47,6 +47,7 @@ _IN_FLIGHT_MESSAGE = "En chatförfrågan pågår redan. Försök igen om en stun
 _DISABLED_MESSAGE = "AI-redigering är inte tillgänglig just nu. Försök igen senare."
 _MESSAGE_TOO_LONG = "För långt meddelande: korta ned eller starta en ny chatt."
 _GENERATION_ERROR = "Jag kunde inte skapa ett ändringsförslag just nu. Försök igen."
+_INVALID_OPS_ERROR = "Jag kunde inte skapa ett giltigt ändringsförslag. Försök igen."
 
 _CODE_FENCE_PATTERN = re.compile(r"```[a-zA-Z0-9_-]*\n(.*?)```", re.DOTALL)
 _VIRTUAL_FILE_IDS: tuple[VirtualFileId, ...] = (
@@ -176,6 +177,24 @@ class EditOpsHandler(EditOpsHandlerProtocol):
             except ValidationError:
                 continue
         return None
+
+    def _ops_compatible_with_request(
+        self, *, command: EditOpsCommand, ops: list[EditOpsOp]
+    ) -> bool:
+        for op in ops:
+            if hasattr(op, "target") and op.target.kind in {"cursor", "selection"}:
+                if op.target_file != command.active_file:
+                    return False
+
+            if hasattr(op, "target") and op.target.kind == "cursor":
+                if command.cursor is None:
+                    return False
+
+            if hasattr(op, "target") and op.target.kind == "selection":
+                if command.selection is None:
+                    return False
+
+        return True
 
     async def _prepare_request(
         self,
@@ -366,9 +385,16 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                 else:
                     parsed = self._parse_payload(response.content)
                     if parsed is not None:
-                        ops = parsed.ops
-                        assistant_message = parsed.assistant_message.strip() or assistant_message
-                        outcome = "ok" if ops else "empty"
+                        if self._ops_compatible_with_request(command=command, ops=parsed.ops):
+                            ops = parsed.ops
+                            assistant_message = (
+                                parsed.assistant_message.strip() or assistant_message
+                            )
+                            outcome = "ok" if ops else "empty"
+                        else:
+                            ops = []
+                            assistant_message = _INVALID_OPS_ERROR
+                            outcome = "error"
 
             await self._persist_assistant_message(
                 tool_session_id=prepared.tool_session_id,

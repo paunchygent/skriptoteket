@@ -76,7 +76,7 @@ function handleKeydown(event: KeyboardEvent): void {
         v-model="localValue"
         type="text"
         :placeholder="placeholder"
-        class="inline-edit-input w-full px-2 py-1 bg-white shadow-brutal-sm focus:outline-none focus:ring-2 focus:ring-burgundy/30"
+        class="inline-edit-input w-full px-2 py-1 bg-white shadow-none focus:outline-none focus:ring-2 focus:ring-burgundy/30"
         :class="inputClass"
         @blur="commitEdit"
         @keydown="handleKeydown"

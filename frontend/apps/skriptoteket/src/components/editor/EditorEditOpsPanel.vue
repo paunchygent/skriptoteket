@@ -2,8 +2,7 @@
 import { computed } from "vue";
 
 import type { EditOpsPanelState } from "../../composables/editor/useEditorEditOps";
-import { virtualFileLabel } from "../../composables/editor/virtualFiles";
-import VirtualFileDiffViewer from "./diff/VirtualFileDiffViewer.vue";
+import AiVirtualFileDiffViewer from "./diff/AiVirtualFileDiffViewer.vue";
 
 const props = defineProps<{
   state: EditOpsPanelState;
@@ -13,6 +12,7 @@ const emit = defineEmits<{
   (event: "apply"): void;
   (event: "discard"): void;
   (event: "regenerate"): void;
+  (event: "setConfirmationAccepted", value: boolean): void;
   (event: "undo"): void;
 }>();
 
@@ -21,19 +21,23 @@ const hasUndo = computed(() => props.state.hasUndoSnapshot && !props.state.propo
 const summaryText = computed(
   () => props.state.proposal?.assistantMessage?.trim() || "AI-förslaget är redo att granskas.",
 );
-const staleLabel = computed(() => {
-  if (!props.state.isStale || props.state.staleFiles.length === 0) return "";
-  return props.state.staleFiles.map((fileId) => virtualFileLabel(fileId)).join(", ");
-});
-const showRegenerate = computed(() => props.state.isStale || Boolean(props.state.previewError));
+const showRegenerate = computed(() => Boolean(props.state.previewError) || Boolean(props.state.applyError));
 const applyDisabledReason = computed(() => props.state.applyDisabledReason ?? "");
 const undoDisabledReason = computed(() => props.state.undoDisabledReason ?? "");
+const requiresConfirmation = computed(() => props.state.requiresConfirmation);
+const fuzzLevel = computed(() => props.state.previewMeta?.fuzz_level_used ?? 0);
+const maxOffset = computed(() => props.state.previewMeta?.max_offset ?? 0);
+const normalizations = computed(() => props.state.previewMeta?.normalizations_applied ?? []);
+
+function updateConfirmationAccepted(event: Event): void {
+  emit("setConfirmationAccepted", (event.target as HTMLInputElement).checked);
+}
 </script>
 
 <template>
   <section
     v-if="hasProposal || hasUndo"
-    class="border border-navy/30 bg-canvas/40 px-3 py-3 space-y-3"
+    class="border border-navy/30 bg-white px-3 py-3 space-y-3"
   >
     <div
       v-if="hasProposal"
@@ -78,28 +82,73 @@ const undoDisabledReason = computed(() => props.state.undoDisabledReason ?? "");
 
       <div
         v-if="props.state.previewError"
-        class="p-3 border border-burgundy bg-white text-sm text-burgundy shadow-brutal-sm"
+        class="p-3 border border-error bg-error/10 text-sm text-error"
       >
-        {{ props.state.previewError }}
+        <p>{{ props.state.previewError }}</p>
+        <details
+          v-if="props.state.previewErrorDetails"
+          class="mt-2"
+        >
+          <summary class="cursor-pointer text-xs text-error/90">
+            Visa detaljer
+          </summary>
+          <div class="mt-2 space-y-2">
+            <p
+              v-if="props.state.previewErrorDetails.hunk_header"
+              class="text-[11px] font-mono text-error/90 break-words"
+            >
+              {{ props.state.previewErrorDetails.hunk_header }}
+            </p>
+            <pre
+              v-if="props.state.previewErrorDetails.expected_snippet"
+              class="text-[11px] whitespace-pre-wrap border border-error/30 bg-white/60 p-2"
+            ><code>{{ props.state.previewErrorDetails.expected_snippet }}</code></pre>
+            <pre
+              v-if="props.state.previewErrorDetails.base_snippet"
+              class="text-[11px] whitespace-pre-wrap border border-error/30 bg-white/60 p-2"
+            ><code>{{ props.state.previewErrorDetails.base_snippet }}</code></pre>
+          </div>
+        </details>
       </div>
 
       <div
         v-if="props.state.applyError"
-        class="p-3 border border-burgundy bg-white text-sm text-burgundy shadow-brutal-sm"
+        class="p-3 border border-error bg-error/10 text-sm text-error"
       >
         {{ props.state.applyError }}
       </div>
 
       <div
-        v-if="props.state.isStale"
-        class="p-3 border border-navy/30 bg-white text-sm text-navy/70 shadow-brutal-sm"
+        v-if="requiresConfirmation && props.state.previewMeta"
+        class="p-3 border border-warning bg-warning/10 text-sm text-navy space-y-2"
       >
-        F&ouml;rslaget &auml;r utdaterat. F&ouml;ljande filer har &auml;ndrats:
-        <span class="font-semibold text-navy">{{ staleLabel }}</span>. Regenerera f&ouml;r att forts&auml;tta.
+        <p class="font-semibold">
+          Granska extra noga
+        </p>
+        <p class="text-xs text-navy/80">
+          Förhandsvisningen använde <span class="font-semibold">fuzz={{ fuzzLevel }}</span> och
+          <span class="font-semibold">förskjutning={{ maxOffset }} rader</span>.
+        </p>
+        <p
+          v-if="normalizations.length > 0"
+          class="text-xs text-navy/70"
+        >
+          Normaliseringar: {{ normalizations.join(", ") }}.
+        </p>
+        <label class="flex items-start gap-2 text-xs text-navy/80">
+          <input
+            type="checkbox"
+            class="mt-0.5"
+            :checked="props.state.confirmationAccepted"
+            :disabled="props.state.isApplying"
+            @change="updateConfirmationAccepted"
+          >
+          <span>Jag har granskat ändringen och vill använda den.</span>
+        </label>
       </div>
 
       <div
-        v-if="applyDisabledReason && !props.state.canApply && !props.state.isStale && !props.state.previewError"
+        v-if="applyDisabledReason && !props.state.canApply && !props.state.previewError"
         class="text-xs text-navy/60"
       >
         {{ applyDisabledReason }}
@@ -107,9 +156,9 @@ const undoDisabledReason = computed(() => props.state.undoDisabledReason ?? "");
 
       <div
         v-if="props.state.diffItems.length > 0"
-        class="border border-navy/20 bg-white shadow-brutal-sm h-[320px] min-h-[240px]"
+        class="h-[320px] min-h-[240px]"
       >
-        <VirtualFileDiffViewer
+        <AiVirtualFileDiffViewer
           :items="props.state.diffItems"
           before-label="Nuvarande"
           after-label="F&ouml;rslag"
@@ -117,7 +166,7 @@ const undoDisabledReason = computed(() => props.state.undoDisabledReason ?? "");
       </div>
       <div
         v-else
-        class="p-3 border border-navy/20 bg-white text-sm text-navy/70 shadow-brutal-sm"
+        class="p-3 panel-inset-canvas text-sm text-navy/70"
       >
         Ingen diff att visa.
       </div>
@@ -148,14 +197,14 @@ const undoDisabledReason = computed(() => props.state.undoDisabledReason ?? "");
 
       <div
         v-if="props.state.undoError"
-        class="p-3 border border-burgundy bg-white text-sm text-burgundy shadow-brutal-sm"
+        class="p-3 border border-error bg-error/10 text-sm text-error"
       >
         {{ props.state.undoError }}
       </div>
 
       <div
         v-if="undoDisabledReason && !props.state.canUndo"
-        class="p-3 border border-navy/30 bg-white text-sm text-navy/70 shadow-brutal-sm"
+        class="p-3 border border-warning bg-warning/10 text-sm text-navy"
       >
         {{ undoDisabledReason }}
       </div>

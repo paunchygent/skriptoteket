@@ -133,7 +133,7 @@ function updateInputValues(value: ToolInputFormValues): void {
       </p>
     </div>
 
-    <details class="border border-navy bg-white shadow-brutal-sm">
+    <details class="panel-inset">
       <summary class="px-3 py-2 cursor-pointer text-xs font-semibold uppercase tracking-wide text-navy/70">
         Indata (JSON)
       </summary>

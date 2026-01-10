@@ -118,8 +118,13 @@ def main() -> None:
         menu_button.click()
         menu = page.get_by_role("menu")
         expect(menu).to_be_visible()
-        expect(menu.get_by_text("Spara", exact=True)).to_be_visible()
-        expect(menu.get_by_text("Öppna sparade", exact=True)).to_be_visible()
+        expect(
+            menu.get_by_role(
+                "menuitem",
+                name=re.compile(r"^(Spara|Skapa ny) arbetsversion$", re.IGNORECASE),
+            )
+        ).to_be_visible()
+        expect(menu.get_by_role("menuitem", name="Öppna sparade", exact=True)).to_be_visible()
         page.screenshot(path=str(artifacts_dir / "save-open-menu.png"), full_page=True)
 
         drawer = page.get_by_role("dialog", name="Kodassistenten", exact=True)
@@ -132,9 +137,6 @@ def main() -> None:
         if chat_body.get_attribute("aria-hidden") == "true":
             toggle.click()
             expect(chat_body).not_to_have_attribute("aria-hidden", "true")
-        expect(
-            drawer.get_by_text(re.compile(r"Beskriv ditt m.l eller problem", re.IGNORECASE))
-        ).to_be_visible()
         message_input = drawer.get_by_placeholder(re.compile(r"Beskriv ditt m.l", re.IGNORECASE))
         expect(message_input).to_be_visible()
         clear_button = drawer.get_by_role("button", name="Ny chatt", exact=True)

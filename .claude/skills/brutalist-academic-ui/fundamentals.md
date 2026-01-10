@@ -6,9 +6,13 @@
 
 ## 0. Skriptoteket Constraints (must follow)
 
-- **No Tailwind** (Skriptoteket is pure CSS + tokens): `docs/adr/adr-0029-frontend-styling-pure-css-design-tokens.md`.
-- **Tokens + classes are canonical**: `.agent/rules/045-huleedu-design-system.md` and `src/skriptoteket/web/static/css/huleedu-design-tokens.css`.
-- Prefer existing primitives before inventing new ones: `.huleedu-btn`, `.huleedu-card`, `.huleedu-link`, `.huleedu-table`, `.huleedu-row`.
+- Vue 3 + Vite SPA; SSR/HTMX removed.
+- Tailwind CSS v4 with `@theme inline` token bridge; prefer utilities in templates.
+- Single CSS entry: `frontend/apps/skriptoteket/src/assets/main.css`.
+- Token source of truth: `src/skriptoteket/web/static/css/huleedu-design-tokens.css` (do not edit).
+- Use SPA primitives in `frontend/apps/skriptoteket/src/assets/main.css` for buttons, toasts, system messages, and
+  status pills.
+- No Tailwind default palette leakage (e.g. `bg-slate-*`, `text-gray-*`) in product UI.
 
 ---
 
@@ -16,21 +20,15 @@
 
 The grid is the skeleton. Not a suggestion.
 
-- Use CSS Grid. Not flexbox-for-everything.
-- Baseline grid: 8px (or 4px for precision)
-- Columns with purpose. 12-column means nothing if you only use 1 and 11.
-- Gutters: 24px, 32px, or 48px. Pick one.
-- If something is 3px off, fix it.
+- Use CSS Grid (Tailwind `grid`) for structural layout; use flex for 1‑dimensional alignment.
+- Baseline grid exists globally (24px background grid); keep layout rhythm consistent with the 4px spacing scale.
+- For editor-like routes (CodeMirror, drawers), enforce full-height layouts with `min-h-0` + explicit scroll regions.
 
-```css
-.layout {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: var(--huleedu-space-8);
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 var(--huleedu-space-12);
-}
+```vue
+<section class="grid grid-cols-12 gap-6">
+  <aside class="col-span-12 lg:col-span-3">Filter</aside>
+  <main class="col-span-12 lg:col-span-9">Content</main>
+</section>
 ```
 
 ---
@@ -41,19 +39,20 @@ Type does 80% of the work. The interface is a reading environment.
 
 ### Font Stack
 
-| Purpose | Fonts | Never |
-|---------|-------|-------|
-| Body | `var(--huleedu-font-serif)` / `var(--huleedu-font-sans)` | Roboto, Open Sans, Lato, Inter |
-| Headings | Same family, heavier weight | Decorative display fonts |
-| Monospace | `var(--huleedu-font-mono)` | System defaults |
+Use the token-mapped Tailwind font utilities:
 
-### Measure (Line Length)
+- UI: `font-sans`
+- Titles: `font-serif`
+- Code/IDs: `font-mono`
 
-45-75 characters. Not optional.
+### Micro-typography (editor/toolbars)
 
-```css
-.prose { max-width: 65ch; }
-```
+In dense “IDE” surfaces, use a deliberate micro scale:
+
+- Labels: `text-[10px] font-semibold uppercase tracking-wide text-navy/60`
+- Controls: `h-[28px]` with `text-[11px]` inputs/selects
+
+---
 
 ---
 
@@ -61,42 +60,33 @@ Type does 80% of the work. The interface is a reading environment.
 
 Color has semantic meaning or it doesn't exist.
 
-### Banned
+### Use
 
-- Purple gradients (Stripe/Linear is dead)
-- Gradients in general (unless specific reason)
-- Background colors for "visual interest"
-- Colored shadows
-- Opacity below 0.1 for "subtle effect"
+- `bg-canvas` for app background
+- `bg-white` for “paper” surfaces (cards/panels)
+- `text-navy` for primary text; `text-navy/60`–`/80` for secondary
+- `bg-burgundy` for critical CTA; `text-burgundy` for emphasis/errors
+- `text-success`, `text-warning`, `text-error` for state
 
 ---
 
-## 4. Borders, Not Shadows
+## 4. Hard Frames, Hard Shadows
 
 Brutalist = hard edges. Academic = clear delineation.
 
-```css
-/* Yes */
-.card { border: var(--huleedu-border-width) solid var(--huleedu-border-color-subtle); }
-.card { border: var(--huleedu-border-width-2) solid var(--huleedu-border-color); }
-
-/* Acceptable for elevation */
-.card-elevated { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
-
-/* Banned */
-.card-slop {
-  border-radius: 24px;
-  box-shadow: 0 25px 50px -12px rgba(139, 92, 246, 0.25);
-  backdrop-filter: blur(10px);
-}
+```vue
+<div class="border border-navy bg-white shadow-brutal-sm p-4">
+  Card content
+</div>
 ```
 
-### Border Radius
+Rules of thumb:
 
-- 0px: valid, often correct
-- 2-4px: subtle softening
-- Use HuleEdu tokens: `--huleedu-radius-none|sm|md|lg` (≤ 8px)
-- Avoid pills for buttons; reserve `--huleedu-radius-full` for tiny dots/spinners only
+- Prefer borders + brutal shadows (`shadow-brutal`, `shadow-brutal-sm`) over blurred shadows.
+- Only the outermost surface gets a brutal shadow; nested panels/fields use `shadow-none` and thicker, uniform borders to
+  avoid “stacked shadow” noise.
+- Avoid large radii; brutalist surfaces are squared-off or minimally rounded.
+- Don’t translate/scale hard-edged cards/panels on hover; prefer color/underline/opacity.
 
 ---
 
@@ -104,10 +94,9 @@ Brutalist = hard edges. Academic = clear delineation.
 
 Whitespace is architecture, not empty space.
 
-- Follow baseline grid for margins/padding
-- Generous whitespace = confidence
-- Cramped layouts = uncertainty
-- Section spacing > element spacing
+- Tailwind spacing utilities are acceptable (4px base scale). Use token variables when you need exact semantic values
+  (safe areas, sidebar widths, max widths).
+- Section spacing > element spacing; keep consistent rhythm across screens.
 
 ---
 
@@ -117,20 +106,15 @@ Every visual element must do something.
 
 ### Banned
 
-- Floating shapes for "visual interest"
-- Gradient blobs
-- Decorative SVG patterns
-- Parallax for parallax's sake
-- Animations that don't communicate state
-- "Fun" hover effects
+- Decorative gradients and blobs
+- Soft shadows/backdrop blur
+- Motion that doesn’t communicate state
 
 ### Allowed
 
-- Borders that delineate sections
-- Horizontal rules that separate content
-- Icons that convey meaning
-- State transitions (hover = interactive)
-- Loading states that communicate progress
+- Borders and dividers
+- Underlines to show interactivity
+- Loading indicators (`animate-spin`) and clear state colors
 
 ---
 
@@ -140,16 +124,19 @@ Hover states communicate "this is interactive."
 
 No bounces. No 3D transforms. No `scale(1.05)`. The user clicked a button, not launched a rocket.
 
+Also:
+
+- Hover styles should be gated for fine pointers to avoid sticky hover on touch devices.
+- Prefer opacity-only transitions around hard shadows/borders (see route cross-fades in `main.css`).
+
 ---
 
 ## Success Criteria
 
 A successful brutalist/academic interface:
 
-1. Can be understood with CSS disabled
-2. Looks intentional, not default
-3. Communicates hierarchy through typography alone
-4. Has no element you cannot justify
-5. Loads fast (not drowning in assets)
-6. Works in print (cmd+P produces something readable)
-7. Respects user's time and attention
+1. Shows hierarchy through typography and structure (not decoration)
+2. Uses tokens consistently (no hex, no default palettes)
+3. Keeps hard edges stable (no shimmering transforms)
+4. Keeps editor routes readable (width, full-height, right-side drawer surfaces)
+5. Respects attention: fewer, clearer elements

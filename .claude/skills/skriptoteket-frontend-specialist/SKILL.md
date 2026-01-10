@@ -11,8 +11,18 @@ description: Skriptoteket frontend development (FastAPI backend + full Vue/Vite 
 - Use Vue 3.5 Composition API with `<script setup lang="ts">`.
 - Keep the frontend HuleEdu-aligned so it can be integrated into HuleEdu later (shared design tokens and compatible auth model).
 - Keep integration costs low: avoid hardcoded base paths, isolate auth transport (cookie vs bearer), and prefer token-driven styling over bespoke CSS.
-- Lock styling down with a tokens-first setup: `tokens.css` (canonical `--huleedu-*`) + `tailwind-theme.css` (Tailwind bridge via `@theme inline`).
-- Use the SPA button primitives (`btn-primary`, `btn-cta`, `btn-ghost`) from `frontend/apps/skriptoteket/src/assets/main.css` to avoid drift.
+- Styling is tokens-first: `tokens.css` (canonical `--huleedu-*`) + `tailwind-theme.css` (Tailwind bridge via `@theme inline`).
+- Single CSS entry point: `frontend/apps/skriptoteket/src/assets/main.css` (imports Tailwind + tokens + theme once).
+- Use SPA primitives from `frontend/apps/skriptoteket/src/assets/main.css` to avoid drift:
+  - Buttons: `.btn-primary`, `.btn-cta`, `.btn-ghost`
+  - Panels (nested): `.panel-inset`, `.panel-inset-canvas`
+  - Toasts: `.toast-*` (via `ToastHost`)
+  - Inline messages: `.system-message*` (via `SystemMessage`)
+  - Badges: `.status-pill`
+- No stacked brutal shadows: only the outermost “card/panel” gets `shadow-brutal*`. Nested panels/fields inside a
+  shadowed surface use `shadow-none` + thicker, uniform borders (`panel-inset*`, or `border-2 border-navy/20`).
+- No Tailwind default palette leakage in product UI: avoid `bg-slate-*`, `text-gray-*`, etc. Prefer token-mapped utilities (`bg-canvas`, `text-navy`, `shadow-brutal-sm`) or CSS variables.
+- Page/editor transitions: prefer opacity-only transitions (hard borders/shadows shimmer when translated).
 - Admin editor features: extract logic into `frontend/apps/skriptoteket/src/composables/editor/` and keep views UI-only.
 
 ## Repo map (Skriptoteket monolith)
@@ -27,9 +37,11 @@ description: Skriptoteket frontend development (FastAPI backend + full Vue/Vite 
 ## Workflow
 
 1. Work from the repo root:
-   - Backend dev: `pdm run dev`
+   - Backend dev: `pdm run dev` (or `pdm run dev-logs` for log piping)
    - Frontend install: `pdm run fe-install`
-   - SPA dev server: `pdm run fe-dev`
+   - SPA dev server: `pdm run fe-dev` (or `pdm run fe-dev-logs` for log piping)
+   - Local combo (backend + SPA): `pdm run dev-local`
+   - Container dev: `pdm run dev-start` (logs: `pdm run dev-containers-logs`, rebuild: `pdm run dev-rebuild`)
    - SPA tests: `pdm run fe-test` (Vitest), `pdm run fe-type-check`, `pdm run fe-lint`
 2. Implement in this order:
    - OpenAPI models (backend) -> regenerate TypeScript types (`pdm run fe-gen-api-types`)
@@ -61,6 +73,23 @@ description: Skriptoteket frontend development (FastAPI backend + full Vue/Vite 
 - Current Skriptoteket reality: cookie-session auth + CSRF for mutating requests.
 - Future HuleEdu integration: identity federation without shared authorization (keep Skriptoteket roles local).
 - In the SPA, isolate auth transport details behind a small adapter (cookie vs bearer) so the UI can run in both modes.
+
+### Layout + editor ergonomics
+
+- Full-height editor routes:
+  - Wrap route content in `route-stage` + `route-stage-item` (see `frontend/apps/skriptoteket/src/App.vue`).
+  - Use `route-stage--editor` for editor routes so nested flex/grid children can use `min-h-0`.
+  - In authenticated layout, use the editor variant (`auth-main-content--editor`) to avoid double scrollbars and let the
+    editor manage its own scroll regions (see `frontend/apps/skriptoteket/src/components/layout/AuthLayout.vue`).
+- Focus mode (width matters):
+  - Persisted per user via `useLayoutStore` (`frontend/apps/skriptoteket/src/stores/layout.ts`).
+  - Editor is the primary entry point for toggling; ensure the user is never “trapped” without an exit control.
+- Drawers:
+  - Reuse the existing right-side drawer surface for editor chat/history; don’t introduce a second sidebar.
+  - Prefer `bg-canvas` + `border-navy` + `shadow-brutal-sm` for drawer frames (see `EditorWorkspacePanel.vue`).
+- Dense toolbars:
+  - Use the editor micro-typography pattern: `text-[10px] font-semibold uppercase tracking-wide text-navy/60`.
+  - Use `.btn-ghost` with size/shadow overrides for 28px controls (see `EditorWorkspaceToolbar.vue`).
 
 ### Testing (Vitest)
 

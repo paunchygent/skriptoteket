@@ -43,7 +43,7 @@ function toggleClear(): void {
   <div
     :class="[
       isCompact
-        ? 'border border-navy/20 bg-white shadow-brutal-sm'
+        ? 'panel-inset'
         : 'border border-navy bg-white shadow-brutal-sm',
     ]"
   >

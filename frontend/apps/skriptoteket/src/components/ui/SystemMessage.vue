@@ -9,8 +9,9 @@ const props = withDefaults(
     variant: SystemMessageVariant;
     id?: string;
     dismissLabel?: string;
+    dismissible?: boolean;
   }>(),
-  { id: undefined, dismissLabel: "Stäng" },
+  { id: undefined, dismissLabel: "Stäng", dismissible: true },
 );
 
 const emit = defineEmits<{
@@ -42,6 +43,7 @@ function dismiss(): void {
     </p>
 
     <button
+      v-if="dismissible"
       type="button"
       class="system-message-close"
       :aria-label="dismissLabel"

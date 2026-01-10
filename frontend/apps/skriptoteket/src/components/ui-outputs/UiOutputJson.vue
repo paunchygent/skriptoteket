@@ -21,7 +21,7 @@ const pretty = computed(() => {
 </script>
 
 <template>
-  <div :class="[isCompact ? 'border border-navy/20 bg-white shadow-brutal-sm' : 'border border-navy bg-white shadow-brutal-sm']">
+  <div :class="[isCompact ? 'panel-inset' : 'border border-navy bg-white shadow-brutal-sm']">
     <div
       v-if="output.title"
       :class="[isCompact ? 'px-3 py-2 border-b border-navy/20 font-semibold text-[11px] text-navy' : 'px-4 py-3 border-b border-navy font-semibold text-navy']"

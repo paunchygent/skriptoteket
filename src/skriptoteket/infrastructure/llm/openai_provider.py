@@ -356,12 +356,19 @@ class OpenAIChatStreamProvider(ChatStreamProviderProtocol):
                 data = line[5:].strip()
                 if data == "[DONE]":
                     break
-
-                payload = json.loads(data)
+                try:
+                    payload = json.loads(data)
+                except json.JSONDecodeError:
+                    continue
                 if not isinstance(payload, dict):
-                    raise ValueError("Upstream LLM stream chunk is not an object")
+                    continue
+                if "error" in payload:
+                    raise ValueError("Upstream LLM stream chunk includes an error payload")
 
-                delta, _finish_reason = _extract_first_choice_delta(payload)
+                try:
+                    delta, _finish_reason = _extract_first_choice_delta(payload)
+                except ValueError:
+                    continue
                 if delta:
                     yield delta
 

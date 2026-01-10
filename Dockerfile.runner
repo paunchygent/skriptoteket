@@ -22,6 +22,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
+    patch \
     librsvg2-bin \
     libcairo2 \
     libgdk-pixbuf-2.0-0 \

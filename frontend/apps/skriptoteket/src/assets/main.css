@@ -80,6 +80,22 @@ body::before {
   }
 
   /* ════════════════════════════════════════════════════════════════════════
+     PANEL PRIMITIVES - Brutalist hierarchy
+
+     Rule of thumb:
+       - Outer panels: `border border-navy bg-white shadow-brutal*`
+       - Nested panels: thick inset border, no shadow (`panel-inset*`)
+     ════════════════════════════════════════════════════════════════════════ */
+
+  .panel-inset {
+    @apply border-2 border-navy/20 bg-white shadow-none;
+  }
+
+  .panel-inset-canvas {
+    @apply border-2 border-navy/20 bg-canvas shadow-none;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
      TOAST PRIMITIVES - Skriptoteket SPA
 
      Overlay notifications that do not cause layout shift.

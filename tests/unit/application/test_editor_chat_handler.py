@@ -360,6 +360,91 @@ async def test_editor_chat_emits_done_error_on_timeout_and_persists_user_message
 
 
 @pytest.mark.unit
+@pytest.mark.asyncio
+async def test_editor_chat_persists_partial_assistant_message_on_timeout_after_deltas() -> None:
+    settings = Settings(LLM_CHAT_ENABLED=True)
+    provider = MagicMock(spec=ChatStreamProviderProtocol)
+    sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
+    sessions.get = AsyncMock()
+    sessions.get_or_create = AsyncMock()
+    messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
+    messages.list_tail = AsyncMock()
+    messages.append_message = AsyncMock()
+    messages.get_by_message_id = AsyncMock()
+    clock = MagicMock(spec=ClockProtocol)
+    id_generator = MagicMock(spec=IdGeneratorProtocol)
+    user_message_id = uuid4()
+    session_id = uuid4()
+    assistant_message_id = uuid4()
+    id_generator.new_uuid.side_effect = [user_message_id, session_id, assistant_message_id]
+
+    tool_id = uuid4()
+    actor = make_user(role=Role.CONTRIBUTOR)
+    session_empty = _make_tool_session(
+        tool_id=tool_id,
+        user_id=actor.id,
+        state={},
+        state_rev=0,
+        updated_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
+    )
+    sessions.get.return_value = None
+    sessions.get_or_create.return_value = session_empty
+    messages.list_tail.return_value = []
+
+    async def stream() -> AsyncIterator[str]:
+        yield "Hej"
+        raise httpx.ReadTimeout("timeout", request=httpx.Request("POST", "http://test"))
+
+    provider.stream_chat.return_value = stream()
+
+    messages.get_by_message_id.return_value = ToolSessionMessage(
+        id=uuid4(),
+        tool_session_id=session_empty.id,
+        message_id=user_message_id,
+        role="user",
+        content="Hej",
+        meta=None,
+        sequence=1,
+        created_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
+    )
+
+    handler = EditorChatHandler(
+        settings=settings,
+        provider=provider,
+        guard=DummyChatGuard(),
+        uow=DummyUow(),
+        sessions=sessions,
+        messages=messages,
+        clock=clock,
+        id_generator=id_generator,
+        system_prompt_loader=lambda _template_id: "system prompt",
+    )
+
+    events = [
+        event
+        async for event in handler.stream(
+            actor=actor,
+            command=EditorChatCommand(
+                tool_id=tool_id,
+                message="Hej",
+            ),
+        )
+    ]
+
+    assert [event.event for event in events] == ["meta", "delta", "done"]
+    assert isinstance(events[-1], EditorChatDoneEvent)
+    assert isinstance(events[-1].data, EditorChatDoneEnabledData)
+    assert events[-1].data.reason == "error"
+
+    assert messages.append_message.call_count == 2
+    assistant_call = messages.append_message.call_args_list[1].kwargs
+    assert assistant_call["role"] == "assistant"
+    assert assistant_call["content"] == "Hej"
+    assert assistant_call["message_id"] == assistant_message_id
+    assert assistant_call["meta"]["partial"] is True
+
+
+@pytest.mark.unit
 def test_apply_chat_budget_drops_oldest_turns_and_never_truncates_system_prompt() -> None:
     system_prompt = "S" * 4
     messages = [

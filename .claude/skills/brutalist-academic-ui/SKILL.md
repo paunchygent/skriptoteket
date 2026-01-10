@@ -1,6 +1,6 @@
 ---
 name: brutalist-academic-ui
-description: Skriptoteket-specific brutalist/academic UI design. Use for Vue/Vite SPA and SSR templates when you want grid-based layouts, systematic typography, and high-contrast “academic” aesthetics, while staying compatible with Skriptoteket’s pure-CSS + HuleEdu token stack (no Tailwind).
+description: Skriptoteket-specific brutalist/academic UI design for the Vue 3 + Vite SPA. Uses Tailwind v4 utilities mapped to HuleEdu tokens and SPA primitives.
 ---
 
 # Brutalist Academic UI
@@ -9,66 +9,88 @@ Opinionated design skill for interfaces where intellectual rigor, typographic pr
 
 ## Skriptoteket Compatibility (must follow)
 
-- **No Tailwind / utility CSS frameworks** (see `docs/adr/adr-0029-frontend-styling-pure-css-design-tokens.md`).
-- **Use HuleEdu tokens + component classes** (see `.agent/rules/045-huleedu-design-system.md` and `src/skriptoteket/web/static/css/huleedu-design-tokens.css`).
-- Prefer existing classes before inventing new ones: `.huleedu-btn`, `.huleedu-card`, `.huleedu-link`, `.huleedu-table`, `.huleedu-row`.
+- Vue 3 + Vite SPA only. SSR/HTMX is removed; do not re-introduce it.
+- Tailwind CSS v4 with `@theme inline` token bridge. Prefer utilities in templates over custom CSS.
+- Tokens are canonical: `src/skriptoteket/web/static/css/huleedu-design-tokens.css` (do not edit directly).
+- SPA entry point: `frontend/apps/skriptoteket/src/assets/main.css` (import Tailwind + tokens + theme once).
+- Use SPA primitives before inventing new ones:
+  - Buttons: `.btn-primary`, `.btn-cta`, `.btn-ghost`
+  - Panels (nested): `.panel-inset`, `.panel-inset-canvas`
+  - Messages: `.toast-*` (via `ToastHost`), `.system-message*` (via `SystemMessage`)
+  - Badges: `.status-pill`
+  - Page text: `.page-title`, `.page-description`
+- **No stacked brutal shadows**: only the outermost “panel/card” gets `shadow-brutal*`. Panels/fields nested inside a
+  shadowed surface must use `shadow-none` + thicker, uniform borders (`panel-inset*`, or `border-2 border-navy/20`) to
+  keep the UI calm and readable.
+- No Tailwind default palette leakage in product UI: avoid `bg-slate-*`, `text-gray-*`, etc. Use token-mapped utilities
+  (`bg-canvas`, `text-navy`, `shadow-brutal-sm`) or CSS variables (`var(--color-*)`, `var(--huleedu-*)`).
+- Editor ergonomics: full-height editor routes require `min-h-0` + `overflow` discipline; follow the Script Editor
+  layout patterns (`route-stage--editor`, `AuthLayout`).
 
 ## When to Use
 
 Activate when user:
 - Builds websites, landing pages, dashboards, documentation sites
 - Needs institutional or academic visual language
-- Mentions: "brutalist", "academic", "minimal", "no gradients", "serious UI"
-- Wants to avoid AI-generated aesthetic (purple gradients, Roboto, pill buttons)
+- Mentions: "brutalist", "academic", "minimal", "serious UI"
+- Wants to avoid generic startup aesthetics (gradients, soft shadows, pill-everything)
 
 ## I Need To...
 
 | Task | Read |
 |------|------|
-| Align with Skriptoteket tokens + button hierarchy | `.agent/rules/045-huleedu-design-system.md` |
-| Understand grid/typography/color principles | [fundamentals.md](fundamentals.md) |
-| Build page structure, layouts, navigation | [patterns.md](patterns.md) |
-| Create data tables, ledgers, state rows | [examples/tables-ledgers.md](examples/tables-ledgers.md) |
-| Build buttons, cards, interactions | [examples/components.md](examples/components.md) |
+| Token + Tailwind mapping rules | `.agent/rules/045-huleedu-design-system.md` |
+| Tailwind v4 token bridge ADR | `docs/adr/adr-0032-tailwind-4-theme-tokens.md` |
+| Canonical tokens | `src/skriptoteket/web/static/css/huleedu-design-tokens.css` |
+| SPA token bridge | `frontend/apps/skriptoteket/src/styles/tokens.css` + `frontend/apps/skriptoteket/src/styles/tailwind-theme.css` |
+| SPA primitives (buttons, toasts, system messages) | `frontend/apps/skriptoteket/src/assets/main.css` |
+| Well-aligned editor layout example | `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue` |
+| Workspace panel (IDE layout) | `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue` |
+| Grid/typography/color principles | [fundamentals.md](fundamentals.md) |
+| Layout patterns | [patterns.md](patterns.md) |
+| Components | [examples/components.md](examples/components.md) |
+| Tables + ledgers | [examples/tables-ledgers.md](examples/tables-ledgers.md) |
 
 ## Quick Reference
 
-### Banned
+### Do
 
-- Purple/startup gradients
-- Roboto, Open Sans, Lato, Inter
-- Tailwind / utility-first styling that bypasses tokens
-- `border-radius` > `var(--huleedu-radius-lg)` (8px) for containers
-- Decorative blobs, floating shapes
-- Soft shadows, backdrop blur
-- Scale/bounce hover animations
+- Use token-mapped utilities: `bg-canvas`, `text-navy`, `border-navy`, `shadow-brutal-sm`, `font-serif`.
+- Use CSS variables when a token is not mapped: `p-[var(--huleedu-space-4)]`, `text-[var(--huleedu-text-sm)]`.
+- Use the SPA button primitives for actions.
+- Prefer opacity-only transitions (hard borders/shadows shimmer when translated).
+- Prefer **one** brutal shadow per major surface (page card / editor workspace / modal). Nested sections get borders, not
+  shadows.
+
+### Avoid
+
+- Tailwind default palette (`bg-slate-*`, `text-gray-*`) in product UI.
+- Hardcoded hex colors or ad-hoc shadows.
+- Large radii, blur/backdrop filters, or decorative gradients.
+- Motion/hover transforms that distort “hard” edges (`translate`, `scale`) unless there’s a strong UX reason.
 
 ### Font Stack
 
-```css
-/* Use HuleEdu token fonts (defined in src/skriptoteket/web/static/css/huleedu-design-tokens.css). */
-font-family: var(--huleedu-font-serif); /* long-form reading */
-font-family: var(--huleedu-font-sans);  /* UI */
-font-family: var(--huleedu-font-mono);  /* code/ids */
+Use token fonts via Tailwind utilities: `font-sans`, `font-serif`, `font-mono`.
+
+### Button Primitives
+
+```html
+<button class="btn-primary">Spara</button>
+<button class="btn-cta">Publicera</button>
+<button class="btn-ghost">Redigera</button>
 ```
 
-### Spacing Scale
+### Utility Buttons (Toolbars / Micro UI)
 
-```css
-/* Representative spacing tokens (4px base scale). */
---huleedu-space-1: 4px;   --huleedu-space-2: 8px;   --huleedu-space-3: 12px;  --huleedu-space-4: 16px;
---huleedu-space-6: 24px;  --huleedu-space-8: 32px;  --huleedu-space-12: 48px; --huleedu-space-16: 64px;
-```
+Use `.btn-ghost` as a base and override size/shadow for dense controls:
 
-### Color Palette
-
-```css
-/* Use HuleEdu tokens for all color decisions (no hardcoded hex). */
---huleedu-navy: #1C2E4A;      /* ink */
---huleedu-canvas: #F9F8F2;    /* paper */
---huleedu-burgundy: #4D1521;  /* accent / CTA / attention */
---huleedu-warning: #D97706;
---huleedu-error: #DC2626;
+```html
+<button
+  class="btn-ghost shadow-none h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-canvas leading-none"
+>
+  Formatera
+</button>
 ```
 
 ## Core Principle

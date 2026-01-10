@@ -24,7 +24,7 @@ function formatBytes(bytes: number): string {
 <template>
   <div
     v-if="artifacts.length > 0"
-    :class="[isCompact ? 'border border-navy/20 bg-white shadow-brutal-sm' : 'space-y-2']"
+    :class="[isCompact ? 'panel-inset' : 'space-y-2']"
   >
     <div
       v-if="isCompact"

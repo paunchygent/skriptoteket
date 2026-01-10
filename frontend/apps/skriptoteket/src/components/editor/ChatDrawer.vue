@@ -11,12 +11,18 @@ type ChatDrawerProps = {
   messages: EditorChatMessage[];
   isStreaming: boolean;
   isEditOpsLoading: boolean;
+  editOpsError?: string | null;
+  editOpsDisabledMessage?: string | null;
+  clearDraftToken?: number;
   disabledMessage: string | null;
   error: string | null;
 };
 
 const props = withDefaults(defineProps<ChatDrawerProps>(), {
   variant: "drawer",
+  editOpsError: null,
+  editOpsDisabledMessage: null,
+  clearDraftToken: 0,
 });
 
 const emit = defineEmits<{
@@ -26,6 +32,8 @@ const emit = defineEmits<{
   (event: "clear"): void;
   (event: "clearError"): void;
   (event: "clearDisabled"): void;
+  (event: "clearEditOpsError"): void;
+  (event: "clearEditOpsDisabled"): void;
   (event: "toggleCollapse"): void;
   (event: "requestEditOps", message: string): void;
 }>();
@@ -96,7 +104,6 @@ function handleRequestEditOps(): void {
     return;
   }
   emit("requestEditOps", message);
-  draft.value = "";
 }
 
 function handleKeydown(event: KeyboardEvent): void {
@@ -121,6 +128,15 @@ watch(
     resizeDraftTextarea();
   },
   { flush: "post" },
+);
+
+watch(
+  () => props.clearDraftToken,
+  async () => {
+    draft.value = "";
+    await nextTick();
+    resetDraftTextarea();
+  },
 );
 </script>
 
@@ -169,7 +185,7 @@ watch(
 
         <div class="flex-1 min-h-0 overflow-hidden p-4 flex flex-col gap-4">
           <div
-            v-if="error || disabledMessage"
+            v-if="error || disabledMessage || props.editOpsError || props.editOpsDisabledMessage"
             class="space-y-2"
           >
             <SystemMessage
@@ -183,6 +199,18 @@ watch(
               :model-value="disabledMessage"
               variant="warning"
               @update:model-value="emit('clearDisabled')"
+            />
+            <SystemMessage
+              v-if="props.editOpsError"
+              :model-value="props.editOpsError"
+              variant="error"
+              @update:model-value="emit('clearEditOpsError')"
+            />
+            <SystemMessage
+              v-if="props.editOpsDisabledMessage"
+              :model-value="props.editOpsDisabledMessage"
+              variant="warning"
+              @update:model-value="emit('clearEditOpsDisabled')"
             />
           </div>
 
@@ -223,7 +251,7 @@ watch(
               ref="textarea"
               v-model="draft"
               rows="2"
-              class="w-full resize-none border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+              class="w-full resize-none border border-navy/30 bg-white px-3 py-2 text-sm text-navy shadow-none"
               placeholder="Beskriv ditt m&aring;l eller problem..."
               :disabled="isStreaming"
               @keydown="handleKeydown"

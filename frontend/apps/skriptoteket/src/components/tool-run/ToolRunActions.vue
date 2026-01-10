@@ -140,7 +140,7 @@ watch(allFields, () => ensureDefaults());
 <template>
   <div
     v-if="actions.length > 0"
-    :class="[isCompact ? 'border border-navy/20 bg-white shadow-brutal-sm' : 'space-y-4']"
+    :class="[isCompact ? 'panel-inset' : 'space-y-4']"
   >
     <div
       v-if="isCompact"

@@ -426,6 +426,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/editor/edit-ops/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply Edit Ops */
+        post: operations["apply_edit_ops_api_v1_editor_edit_ops_apply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/editor/edit-ops/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Edit Ops */
+        post: operations["preview_edit_ops_api_v1_editor_edit_ops_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/editor/edits": {
         parameters: {
             query?: never;
@@ -1574,21 +1608,246 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** EditorEditOpsAnchor */
+        EditorEditOpsAnchor: {
+            /** Match */
+            match: string;
+            /** Placement */
+            placement?: ("before" | "after") | null;
+        };
+        /** EditorEditOpsAnchorTarget */
+        EditorEditOpsAnchorTarget: {
+            anchor: components["schemas"]["EditorEditOpsAnchor"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "anchor";
+        };
+        /** EditorEditOpsApplyRequest */
+        EditorEditOpsApplyRequest: {
+            /**
+             * Active File
+             * @enum {string}
+             */
+            active_file: "tool.py" | "entrypoint.txt" | "settings_schema.json" | "input_schema.json" | "usage_instructions.md";
+            /** Base Hash */
+            base_hash: string;
+            cursor?: components["schemas"]["EditorEditOpsCursor"] | null;
+            /** Ops */
+            ops: (components["schemas"]["EditorEditOpsInsertOp-Input"] | components["schemas"]["EditorEditOpsReplaceOp-Input"] | components["schemas"]["EditorEditOpsDeleteOp-Input"] | components["schemas"]["EditorEditOpsPatchOp"])[];
+            /** Patch Id */
+            patch_id: string;
+            selection?: components["schemas"]["EditorEditOpsSelection"] | null;
+            /**
+             * Tool Id
+             * Format: uuid
+             */
+            tool_id: string;
+            virtual_files: components["schemas"]["EditorVirtualFiles"];
+        };
         /** EditorEditOpsCursor */
         EditorEditOpsCursor: {
             /** Pos */
             pos: number;
         };
-        /** EditorEditOpsOp */
-        EditorEditOpsOp: {
-            /** Content */
-            content?: string | null;
+        /** EditorEditOpsCursorTarget */
+        EditorEditOpsCursorTarget: {
             /**
-             * Op
+             * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            op: "insert" | "replace" | "delete";
-            target: components["schemas"]["EditorEditOpsTarget"];
+            kind: "cursor";
+        };
+        /** EditorEditOpsDeleteOp */
+        "EditorEditOpsDeleteOp-Input": {
+            /** Content */
+            content?: null;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "delete";
+            /** Target */
+            target: components["schemas"]["EditorEditOpsCursorTarget"] | components["schemas"]["EditorEditOpsSelectionTarget"] | components["schemas"]["EditorEditOpsDocumentTarget"] | components["schemas"]["EditorEditOpsAnchorTarget"];
+            /**
+             * Target File
+             * @enum {string}
+             */
+            target_file: "tool.py" | "entrypoint.txt" | "settings_schema.json" | "input_schema.json" | "usage_instructions.md";
+        };
+        /** EditorEditOpsDeleteOp */
+        "EditorEditOpsDeleteOp-Output": {
+            /** Content */
+            content?: null;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "delete";
+            /** Target */
+            target: components["schemas"]["EditorEditOpsCursorTarget"] | components["schemas"]["EditorEditOpsSelectionTarget"] | components["schemas"]["EditorEditOpsDocumentTarget"] | components["schemas"]["EditorEditOpsAnchorTarget"];
+            /**
+             * Target File
+             * @enum {string}
+             */
+            target_file: "tool.py" | "entrypoint.txt" | "settings_schema.json" | "input_schema.json" | "usage_instructions.md";
+        };
+        /** EditorEditOpsDocumentTarget */
+        EditorEditOpsDocumentTarget: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "document";
+        };
+        /** EditorEditOpsInsertOp */
+        "EditorEditOpsInsertOp-Input": {
+            /** Content */
+            content: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "insert";
+            /** Target */
+            target: components["schemas"]["EditorEditOpsCursorTarget"] | components["schemas"]["EditorEditOpsSelectionTarget"] | components["schemas"]["EditorEditOpsDocumentTarget"] | components["schemas"]["EditorEditOpsAnchorTarget"];
+            /**
+             * Target File
+             * @enum {string}
+             */
+            target_file: "tool.py" | "entrypoint.txt" | "settings_schema.json" | "input_schema.json" | "usage_instructions.md";
+        };
+        /** EditorEditOpsInsertOp */
+        "EditorEditOpsInsertOp-Output": {
+            /** Content */
+            content: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "insert";
+            /** Target */
+            target: components["schemas"]["EditorEditOpsCursorTarget"] | components["schemas"]["EditorEditOpsSelectionTarget"] | components["schemas"]["EditorEditOpsDocumentTarget"] | components["schemas"]["EditorEditOpsAnchorTarget"];
+            /**
+             * Target File
+             * @enum {string}
+             */
+            target_file: "tool.py" | "entrypoint.txt" | "settings_schema.json" | "input_schema.json" | "usage_instructions.md";
+        };
+        /** EditorEditOpsPatchOp */
+        EditorEditOpsPatchOp: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "patch";
+            /** Patch */
+            patch: string;
+            /**
+             * Target File
+             * @enum {string}
+             */
+            target_file: "tool.py" | "entrypoint.txt" | "settings_schema.json" | "input_schema.json" | "usage_instructions.md";
+        };
+        /** EditorEditOpsPreviewErrorDetails */
+        EditorEditOpsPreviewErrorDetails: {
+            /** Base Snippet */
+            base_snippet?: string | null;
+            /** Expected Snippet */
+            expected_snippet?: string | null;
+            /** Hunk Header */
+            hunk_header?: string | null;
+            /** Hunk Index */
+            hunk_index?: number | null;
+            /** Op Index */
+            op_index?: number | null;
+            /** Target File */
+            target_file?: ("tool.py" | "entrypoint.txt" | "settings_schema.json" | "input_schema.json" | "usage_instructions.md") | null;
+        };
+        /** EditorEditOpsPreviewMeta */
+        EditorEditOpsPreviewMeta: {
+            /**
+             * Applied Cleanly
+             * @default true
+             */
+            applied_cleanly: boolean;
+            /** Base Hash */
+            base_hash: string;
+            /**
+             * Fuzz Level Used
+             * @default 0
+             */
+            fuzz_level_used: number;
+            /**
+             * Max Offset
+             * @default 0
+             */
+            max_offset: number;
+            /** Normalizations Applied */
+            normalizations_applied?: string[];
+            /** Patch Id */
+            patch_id: string;
+            /** Requires Confirmation */
+            requires_confirmation: boolean;
+        };
+        /** EditorEditOpsPreviewRequest */
+        EditorEditOpsPreviewRequest: {
+            /**
+             * Active File
+             * @enum {string}
+             */
+            active_file: "tool.py" | "entrypoint.txt" | "settings_schema.json" | "input_schema.json" | "usage_instructions.md";
+            cursor?: components["schemas"]["EditorEditOpsCursor"] | null;
+            /** Ops */
+            ops: (components["schemas"]["EditorEditOpsInsertOp-Input"] | components["schemas"]["EditorEditOpsReplaceOp-Input"] | components["schemas"]["EditorEditOpsDeleteOp-Input"] | components["schemas"]["EditorEditOpsPatchOp"])[];
+            selection?: components["schemas"]["EditorEditOpsSelection"] | null;
+            /**
+             * Tool Id
+             * Format: uuid
+             */
+            tool_id: string;
+            virtual_files: components["schemas"]["EditorVirtualFiles"];
+        };
+        /** EditorEditOpsPreviewResponse */
+        EditorEditOpsPreviewResponse: {
+            after_virtual_files: components["schemas"]["EditorVirtualFiles"];
+            /** Error Details */
+            error_details?: components["schemas"]["EditorEditOpsPreviewErrorDetails"][];
+            /** Errors */
+            errors?: string[];
+            meta: components["schemas"]["EditorEditOpsPreviewMeta"];
+            /** Ok */
+            ok: boolean;
+        };
+        /** EditorEditOpsReplaceOp */
+        "EditorEditOpsReplaceOp-Input": {
+            /** Content */
+            content: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "replace";
+            /** Target */
+            target: components["schemas"]["EditorEditOpsCursorTarget"] | components["schemas"]["EditorEditOpsSelectionTarget"] | components["schemas"]["EditorEditOpsDocumentTarget"] | components["schemas"]["EditorEditOpsAnchorTarget"];
+            /**
+             * Target File
+             * @enum {string}
+             */
+            target_file: "tool.py" | "entrypoint.txt" | "settings_schema.json" | "input_schema.json" | "usage_instructions.md";
+        };
+        /** EditorEditOpsReplaceOp */
+        "EditorEditOpsReplaceOp-Output": {
+            /** Content */
+            content: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "replace";
+            /** Target */
+            target: components["schemas"]["EditorEditOpsCursorTarget"] | components["schemas"]["EditorEditOpsSelectionTarget"] | components["schemas"]["EditorEditOpsDocumentTarget"] | components["schemas"]["EditorEditOpsAnchorTarget"];
             /**
              * Target File
              * @enum {string}
@@ -1624,7 +1883,7 @@ export interface components {
             /** Enabled */
             enabled: boolean;
             /** Ops */
-            ops: components["schemas"]["EditorEditOpsOp"][];
+            ops: (components["schemas"]["EditorEditOpsInsertOp-Output"] | components["schemas"]["EditorEditOpsReplaceOp-Output"] | components["schemas"]["EditorEditOpsDeleteOp-Output"] | components["schemas"]["EditorEditOpsPatchOp"])[];
         };
         /** EditorEditOpsSelection */
         EditorEditOpsSelection: {
@@ -1633,13 +1892,13 @@ export interface components {
             /** To */
             to: number;
         };
-        /** EditorEditOpsTarget */
-        EditorEditOpsTarget: {
+        /** EditorEditOpsSelectionTarget */
+        EditorEditOpsSelectionTarget: {
             /**
-             * Kind
+             * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            kind: "cursor" | "selection" | "document";
+            kind: "selection";
         };
         /** EditorEditSuggestionRequest */
         EditorEditSuggestionRequest: {
@@ -3960,6 +4219,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EditorEditOpsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    apply_edit_ops_api_v1_editor_edit_ops_apply_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditorEditOpsApplyRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorEditOpsPreviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_edit_ops_api_v1_editor_edit_ops_preview_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditorEditOpsPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorEditOpsPreviewResponse"];
                 };
             };
             /** @description Validation Error */

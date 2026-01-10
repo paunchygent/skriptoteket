@@ -394,8 +394,10 @@ const editOps = useEditorEditOps({
     usageInstructions,
   },
   createBeforeApplyCheckpoint: createBeforeAiApplyCheckpoint,
-  notify,
 });
+
+const editOpsDisabledMessage = ref<string | null>(null);
+const editOpsClearDraftToken = ref(0);
 
 const {
   messages: chatMessages,
@@ -504,19 +506,22 @@ function appendChatMessage(role: "user" | "assistant", content: string): void {
 
 async function handleRequestEditOps(message: string): Promise<void> {
   if (chatStreaming.value || editOps.isRequesting.value) return;
+  editOpsDisabledMessage.value = null;
   const result = await editOps.requestEditOps(message);
   if (!result) return;
 
   if (!result.response.enabled) {
-    toast.warning(result.response.assistant_message || "AI-förslag är inte tillgängligt.");
+    editOpsDisabledMessage.value = result.response.assistant_message
+      ? `AI-redigering: ${result.response.assistant_message}`
+      : "AI-redigering är inte tillgänglig.";
     return;
   }
 
   appendChatMessage("user", result.message);
   appendChatMessage("assistant", result.response.assistant_message);
 
-  if (result.response.ops.length === 0) {
-    toast.info(result.response.assistant_message || "Inga ändringar föreslogs.");
+  if (editOps.proposal.value && !editOps.previewError.value) {
+    editOpsClearDraftToken.value += 1;
   }
 }
 
@@ -752,6 +757,9 @@ const lockBadge = computed(() => {
             :chat-is-streaming="chatStreaming"
             :chat-disabled-message="chatDisabledMessage"
             :chat-error="chatError"
+            :edit-ops-request-error="editOps.requestError.value"
+            :edit-ops-disabled-message="editOpsDisabledMessage"
+            :edit-ops-clear-draft-token="editOpsClearDraftToken"
             :edit-ops-state="editOps.panelState.value"
             :is-edit-ops-requesting="editOps.isRequesting.value"
             :professions="professions"
@@ -790,7 +798,10 @@ const lockBadge = computed(() => {
             @clear-chat="clearChat"
             @clear-chat-error="clearChatError"
             @clear-chat-disabled="clearChatDisabled"
+            @clear-edit-ops-error="editOps.clearRequestError()"
+            @clear-edit-ops-disabled="editOpsDisabledMessage = null"
             @request-edit-ops="handleRequestEditOps"
+            @set-edit-ops-confirmation-accepted="editOps.setConfirmationAccepted($event)"
             @apply-edit-ops="handleApplyEditOps"
             @discard-edit-ops="editOps.discardProposal"
             @regenerate-edit-ops="handleRegenerateEditOps"
