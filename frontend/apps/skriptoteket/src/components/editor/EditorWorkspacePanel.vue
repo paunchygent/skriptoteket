@@ -198,7 +198,7 @@ const isSchemaCollapsed = ref(false);
 const chatRailWidth = "64px";
 const chatColumnWidth = computed(() => {
   if (!props.isChatDrawerOpen) return "0px";
-  return props.isChatCollapsed ? chatRailWidth : "360px";
+  return props.isChatCollapsed ? chatRailWidth : "clamp(280px, 34vw, 360px)";
 });
 </script>
 

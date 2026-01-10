@@ -19,6 +19,8 @@ export function useScriptEditorDrawers({
   const isHistoryDrawerOpen = ref(false);
   const isChatDrawerOpen = ref(true);
   const isChatCollapsed = ref(false);
+  const didAutoCollapseForNarrowViewport = ref(false);
+  let viewportQuery: MediaQueryList | null = null;
 
   function toggleHistoryDrawer(): void {
     isHistoryDrawerOpen.value = !isHistoryDrawerOpen.value;
@@ -30,12 +32,41 @@ export function useScriptEditorDrawers({
       return;
     }
     if (isChatDrawerOpen.value) {
+      didAutoCollapseForNarrowViewport.value = false;
       isChatCollapsed.value = true;
     }
   }
 
   function toggleChatCollapsed(): void {
+    didAutoCollapseForNarrowViewport.value = false;
     isChatCollapsed.value = !isChatCollapsed.value;
+  }
+
+  function syncChatCollapsedForViewport(): void {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (!viewportQuery) {
+      viewportQuery = window.matchMedia("(min-width: 768px)");
+    }
+
+    if (!viewportQuery.matches) {
+      if (!isChatCollapsed.value) {
+        didAutoCollapseForNarrowViewport.value = true;
+        isChatCollapsed.value = true;
+      }
+      return;
+    }
+
+    if (didAutoCollapseForNarrowViewport.value) {
+      didAutoCollapseForNarrowViewport.value = false;
+      isChatCollapsed.value = false;
+    }
+  }
+
+  function handleViewportQueryChange(): void {
+    syncChatCollapsedForViewport();
   }
 
   function selectHistoryVersion(versionId: string): void {
@@ -72,10 +103,16 @@ export function useScriptEditorDrawers({
 
   onMounted(() => {
     window.addEventListener("keydown", handleKeydown);
+    viewportQuery = window.matchMedia("(min-width: 768px)");
+    syncChatCollapsedForViewport();
+    viewportQuery.addEventListener?.("change", handleViewportQueryChange);
+    viewportQuery.addListener?.(handleViewportQueryChange);
   });
 
   onBeforeUnmount(() => {
     window.removeEventListener("keydown", handleKeydown);
+    viewportQuery?.removeEventListener?.("change", handleViewportQueryChange);
+    viewportQuery?.removeListener?.(handleViewportQueryChange);
   });
 
   watch(
@@ -84,6 +121,7 @@ export function useScriptEditorDrawers({
       isChatDrawerOpen.value = true;
       isChatCollapsed.value = false;
       isHistoryDrawerOpen.value = false;
+      syncChatCollapsedForViewport();
     },
   );
 

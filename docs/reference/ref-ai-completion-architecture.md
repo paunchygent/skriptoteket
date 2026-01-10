@@ -140,7 +140,7 @@ cause parsing errors. For KB injection, use the backend proxy or Tabby's chat en
 
 | Model | Architecture | VRAM | Context | Use Case |
 | ----- | ------------ | ---- | ------- | -------- |
-| **Qwen3-Coder-30B-A3B** | MoE (3.3B active) | ~18.5 GB | model: 262K / runtime: configured | Inline completions + chat-first editing (current) |
+| **Devstral-Small-2-24B** | Dense | ~24 GB (Q8) | model: 262K / runtime: configured | Inline completions + chat-first editing (current) |
 | **Kimi K2** | Open-source | Varies | - | Alternative for code |
 
 ### 4.2 API Providers
@@ -157,12 +157,12 @@ OpenAI-compatible API surface and prompt caching behavior, which lets us keep a 
 
 ### 4.3 Configuration Examples
 
-**Self-hosted (Qwen3-Coder via llama.cpp):**
+**Self-hosted (Devstral-Small-2-24B via llama.cpp):**
 
 ```bash
 LLM_COMPLETION_ENABLED=true
 LLM_COMPLETION_BASE_URL=http://localhost:8082
-LLM_COMPLETION_MODEL=qwen3-coder-30b-a3b
+LLM_COMPLETION_MODEL=Devstral-Small-2-24B
 LLM_COMPLETION_MAX_TOKENS=256
 LLM_COMPLETION_TEMPERATURE=0.2
 ```
@@ -449,7 +449,7 @@ Inline completions:
 | `LLM_COMPLETION_ENABLED` | `false` | Enable/disable feature |
 | `LLM_COMPLETION_BASE_URL` | `http://localhost:8082` | LLM API URL |
 | `OPENAI_LLM_COMPLETION_API_KEY` | `""` | API key (optional for self-hosted) |
-| `LLM_COMPLETION_MODEL` | `qwen3-coder-30b-a3b` | Model name |
+| `LLM_COMPLETION_MODEL` | `Devstral-Small-2-24B` | Model name |
 | `LLM_COMPLETION_MAX_TOKENS` | `256` | Max tokens in response |
 | `LLM_COMPLETION_TEMPERATURE` | `0.2` | Sampling temperature |
 | `LLM_COMPLETION_TIMEOUT_SECONDS` | `30` | Request timeout |
@@ -467,7 +467,7 @@ Edit suggestions:
 | `LLM_EDIT_ENABLED` | `false` | Enable/disable feature |
 | `LLM_EDIT_BASE_URL` | `http://localhost:8082` | LLM API URL |
 | `OPENAI_LLM_EDIT_API_KEY` | `""` | API key (optional for self-hosted) |
-| `LLM_EDIT_MODEL` | `qwen3-coder-30b-a3b` | Model name |
+| `LLM_EDIT_MODEL` | `Devstral-Small-2-24B` | Model name |
 | `LLM_EDIT_MAX_TOKENS` | `512` | Max tokens in response |
 | `LLM_EDIT_TEMPERATURE` | `0.2` | Sampling temperature |
 | `LLM_EDIT_TIMEOUT_SECONDS` | `60` | Request timeout |
@@ -487,7 +487,7 @@ Chat (streaming):
 | `LLM_CHAT_ENABLED` | `false` | Enable/disable feature |
 | `LLM_CHAT_BASE_URL` | `http://localhost:8082` | LLM API URL |
 | `OPENAI_LLM_CHAT_API_KEY` | `""` | API key (optional for self-hosted) |
-| `LLM_CHAT_MODEL` | `qwen3-coder-30b-a3b` | Model name |
+| `LLM_CHAT_MODEL` | `Devstral-Small-2-24B` | Model name |
 | `LLM_CHAT_MAX_TOKENS` | `1500` | Max tokens in response |
 | `LLM_CHAT_TEMPERATURE` | `0.2` | Sampling temperature |
 | `LLM_CHAT_TIMEOUT_SECONDS` | `60` | Request timeout |
@@ -503,7 +503,7 @@ Chat edit-ops (non-streaming):
 | `LLM_CHAT_OPS_ENABLED` | `false` | Enable/disable feature |
 | `LLM_CHAT_OPS_BASE_URL` | `http://localhost:8082` | LLM API URL |
 | `OPENAI_LLM_CHAT_OPS_API_KEY` | `""` | API key (optional for self-hosted) |
-| `LLM_CHAT_OPS_MODEL` | `qwen3-coder-30b-a3b` | Model name |
+| `LLM_CHAT_OPS_MODEL` | `Devstral-Small-2-24B` | Model name |
 | `LLM_CHAT_OPS_MAX_TOKENS` | `1500` | Max tokens in response |
 | `LLM_CHAT_OPS_TEMPERATURE` | `0.2` | Sampling temperature |
 | `LLM_CHAT_OPS_TIMEOUT_SECONDS` | `60` | Request timeout |

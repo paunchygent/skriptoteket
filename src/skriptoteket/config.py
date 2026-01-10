@@ -94,7 +94,7 @@ class Settings(BaseSettings):
     LLM_COMPLETION_PROMPT_CACHE_KEY: str = ""
     LLM_COMPLETION_PROMPT_CACHE_RETENTION: Literal["in_memory", "24h"] | None = None
     LLM_COMPLETION_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
-    LLM_COMPLETION_MODEL: str = "qwen3-coder-30b-a3b"
+    LLM_COMPLETION_MODEL: str = "Devstral-Small-2-24B"
     LLM_COMPLETION_MAX_TOKENS: int = 256
     LLM_COMPLETION_TEMPERATURE: float = 0.2
     LLM_COMPLETION_TIMEOUT_SECONDS: int = 30
@@ -110,7 +110,7 @@ class Settings(BaseSettings):
     LLM_EDIT_PROMPT_CACHE_KEY: str = ""
     LLM_EDIT_PROMPT_CACHE_RETENTION: Literal["in_memory", "24h"] | None = None
     LLM_EDIT_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
-    LLM_EDIT_MODEL: str = "qwen3-coder-30b-a3b"
+    LLM_EDIT_MODEL: str = "Devstral-Small-2-24B"
     LLM_EDIT_MAX_TOKENS: int = 512
     LLM_EDIT_TEMPERATURE: float = 0.2
     LLM_EDIT_TIMEOUT_SECONDS: int = 60
@@ -128,7 +128,7 @@ class Settings(BaseSettings):
     LLM_CHAT_PROMPT_CACHE_KEY: str = ""
     LLM_CHAT_PROMPT_CACHE_RETENTION: Literal["in_memory", "24h"] | None = None
     LLM_CHAT_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
-    LLM_CHAT_MODEL: str = "qwen3-coder-30b-a3b"
+    LLM_CHAT_MODEL: str = "Devstral-Small-2-24B"
     LLM_CHAT_MAX_TOKENS: int = 1500
     LLM_CHAT_TEMPERATURE: float = 0.2
     LLM_CHAT_TIMEOUT_SECONDS: int = 60
@@ -143,7 +143,7 @@ class Settings(BaseSettings):
     LLM_CHAT_OPS_PROMPT_CACHE_KEY: str = ""
     LLM_CHAT_OPS_PROMPT_CACHE_RETENTION: Literal["in_memory", "24h"] | None = None
     LLM_CHAT_OPS_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
-    LLM_CHAT_OPS_MODEL: str = "qwen3-coder-30b-a3b"
+    LLM_CHAT_OPS_MODEL: str = "Devstral-Small-2-24B"
     LLM_CHAT_OPS_MAX_TOKENS: int = 1500
     LLM_CHAT_OPS_TEMPERATURE: float = 0.2
     LLM_CHAT_OPS_TIMEOUT_SECONDS: int = 60

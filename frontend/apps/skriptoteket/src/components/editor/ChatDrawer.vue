@@ -37,6 +37,9 @@ const canSend = computed(
   () => !props.isStreaming && !props.isEditOpsLoading && draft.value.trim().length > 0,
 );
 const canRequestOps = computed(() => canSend.value);
+const isColumnVariant = computed(() => props.variant === "column");
+const isRailOnlyOnMobile = computed(() => isColumnVariant.value && props.isCollapsed);
+
 const displayMessages = computed(() => {
   if (props.messages.length > 0) {
     return props.messages;
@@ -122,7 +125,10 @@ watch(
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport
+    v-if="!isColumnVariant"
+    to="body"
+  >
     <Transition name="drawer-backdrop">
       <div
         v-if="isOpen"
@@ -134,7 +140,8 @@ watch(
 
   <aside
     :class="[
-      'fixed inset-y-0 right-0 z-50 w-full bg-canvas border-l border-navy shadow-brutal flex flex-col md:relative md:inset-auto md:z-auto md:h-full md:overflow-hidden',
+      'fixed inset-y-0 right-0 z-50 bg-canvas border-l border-navy shadow-brutal flex flex-col md:relative md:inset-auto md:z-auto md:h-full md:overflow-hidden',
+      isRailOnlyOnMobile ? 'w-[var(--chat-rail-width,64px)]' : 'w-full',
       props.variant === 'column' ? 'md:border-0 md:shadow-none md:bg-transparent' : '',
     ]"
     role="dialog"

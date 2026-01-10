@@ -248,7 +248,7 @@ prompt_template = "<|fim_prefix|>{prefix}<|fim_suffix|>{suffix}<|fim_middle|>"
 [model.chat.http]
 kind = "openai/chat"
 api_endpoint = "http://127.0.0.1:8082/v1"
-model_name = "qwen3-coder-30b-a3b"
+model_name = "Devstral-Small-2-24B"
 ```
 
 ---
