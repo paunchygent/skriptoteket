@@ -84,7 +84,7 @@ onBeforeUnmount(() => {
 
     <div
       v-if="isOpen"
-      class="absolute right-0 mt-2 w-56 border border-navy bg-canvas z-20"
+      class="absolute right-0 mt-2 w-56 border border-navy bg-canvas z-[var(--huleedu-z-tooltip)]"
       role="menu"
     >
       <button

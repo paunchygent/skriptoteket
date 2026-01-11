@@ -53,7 +53,7 @@ function handleDropdownSelect(actionId: string): void {
         </button>
         <div
           v-if="hasSubmitReviewTooltip"
-          class="absolute left-0 top-full mt-2 w-[min(260px,calc(100vw-2*var(--huleedu-space-4)))] border border-navy bg-white text-navy shadow-brutal-sm px-3 py-2 text-xs opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+          class="absolute left-0 top-full mt-2 w-[min(260px,calc(100vw-2*var(--huleedu-space-4)))] border border-navy bg-white text-navy px-3 py-2 text-xs opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 z-[var(--huleedu-z-tooltip)]"
           role="tooltip"
         >
           <div class="text-[0.65rem] font-semibold uppercase tracking-wide text-navy/70">

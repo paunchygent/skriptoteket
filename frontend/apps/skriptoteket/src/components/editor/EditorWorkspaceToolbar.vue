@@ -173,7 +173,7 @@ function formatDateTime(value: string | number): string {
         </button>
         <div
           v-if="isSaveMenuOpen"
-          class="absolute left-0 top-full mt-2 w-[min(320px,90vw)] border border-navy bg-canvas z-20"
+          class="absolute left-0 top-full mt-2 w-[min(320px,90vw)] border border-navy bg-canvas z-[var(--huleedu-z-tooltip)]"
           role="menu"
         >
           <div class="p-3 space-y-3">
@@ -311,7 +311,7 @@ function formatDateTime(value: string | number): string {
 
         <div
           v-if="isAiMenuOpen"
-          class="absolute left-0 top-full mt-2 w-[min(320px,90vw)] border border-navy bg-canvas z-20"
+          class="absolute left-0 top-full mt-2 w-[min(320px,90vw)] border border-navy bg-canvas z-[var(--huleedu-z-tooltip)]"
           role="menu"
         >
           <div class="p-3 space-y-2">
