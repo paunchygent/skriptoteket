@@ -13,17 +13,14 @@ const emit = defineEmits<{
   (event: "discard"): void;
   (event: "regenerate"): void;
   (event: "setConfirmationAccepted", value: boolean): void;
-  (event: "undo"): void;
 }>();
 
 const hasProposal = computed(() => Boolean(props.state.proposal));
-const hasUndo = computed(() => props.state.hasUndoSnapshot && !props.state.proposal);
 const summaryText = computed(
   () => props.state.proposal?.assistantMessage?.trim() || "AI-förslaget är redo att granskas.",
 );
 const showRegenerate = computed(() => Boolean(props.state.previewError) || Boolean(props.state.applyError));
 const applyDisabledReason = computed(() => props.state.applyDisabledReason ?? "");
-const undoDisabledReason = computed(() => props.state.undoDisabledReason ?? "");
 const requiresConfirmation = computed(() => props.state.requiresConfirmation);
 const fuzzLevel = computed(() => props.state.previewMeta?.fuzz_level_used ?? 0);
 const maxOffset = computed(() => props.state.previewMeta?.max_offset ?? 0);
@@ -36,13 +33,10 @@ function updateConfirmationAccepted(event: Event): void {
 
 <template>
   <section
-    v-if="hasProposal || hasUndo"
+    v-if="hasProposal"
     class="border border-navy/30 bg-white px-3 py-3 space-y-3"
   >
-    <div
-      v-if="hasProposal"
-      class="space-y-3"
-    >
+    <div class="space-y-3">
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div class="min-w-0 space-y-1">
           <p class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
@@ -169,44 +163,6 @@ function updateConfirmationAccepted(event: Event): void {
         class="p-3 panel-inset-canvas text-sm text-navy/70"
       >
         Ingen diff att visa.
-      </div>
-    </div>
-
-    <div
-      v-else-if="hasUndo"
-      class="space-y-2"
-    >
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <div class="min-w-0 space-y-1">
-          <p class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
-            AI-&auml;ndring
-          </p>
-          <p class="text-sm text-navy/80">
-            Senaste AI-f&ouml;rslaget &auml;r till&auml;mpat.
-          </p>
-        </div>
-        <button
-          type="button"
-          class="btn-ghost h-[28px] px-3 py-1 text-[11px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-canvas shadow-none"
-          :disabled="!props.state.canUndo"
-          @click="emit('undo')"
-        >
-          &Aring;ngra
-        </button>
-      </div>
-
-      <div
-        v-if="props.state.undoError"
-        class="p-3 border border-error bg-error/10 text-sm text-error"
-      >
-        {{ props.state.undoError }}
-      </div>
-
-      <div
-        v-if="undoDisabledReason && !props.state.canUndo"
-        class="p-3 border border-warning bg-warning/10 text-sm text-navy"
-      >
-        {{ undoDisabledReason }}
       </div>
     </div>
   </section>

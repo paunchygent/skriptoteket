@@ -379,7 +379,7 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
     refreshCheckpoints,
     createAutoCheckpoint,
     createBeforeSaveCheckpoint: () => createAutoCheckpoint("Före sparning", { force: true }),
-    createBeforeAiApplyCheckpoint: () => createAutoCheckpoint("Före AI-ändring", { force: true }),
+    createBeforeAiApplyCheckpoint: () => createAutoCheckpoint("AI: före tillämpning", { force: true }),
     workingCopyProvider: async () => {
       if (workingCopyHead.value) {
         return workingCopyFieldsFromRecord(workingCopyHead.value);

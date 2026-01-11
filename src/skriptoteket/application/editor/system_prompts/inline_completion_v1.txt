@@ -13,11 +13,12 @@ Return ONLY the code that should be inserted at the cursor.
 
 {{HELPERS_FRAGMENT}}
 
-## Inputs
+## Inputs (env vars; no input JSON files)
 
-- Prefer `SKRIPTOTEKET_INPUT_MANIFEST` (JSON) to discover uploaded files (supports multi-file).
-- Optional form inputs: `SKRIPTOTEKET_INPUTS` (JSON object).
-- Optional user settings: `SKRIPTOTEKET_MEMORY_PATH` (JSON) under `memory["settings"]`.
+- Files: `SKRIPTOTEKET_INPUT_MANIFEST` (JSON). Use `files[].path`; do NOT read manifest/inputs from disk.
+- Form values (incl. action inputs): `SKRIPTOTEKET_INPUTS` (JSON object; no files).
+- Settings: `SKRIPTOTEKET_MEMORY_PATH` (JSON) under `memory["settings"]`.
+- Contract v2 is outputs/actions/state only (no inputs).
 
 ## Output & artifacts
 

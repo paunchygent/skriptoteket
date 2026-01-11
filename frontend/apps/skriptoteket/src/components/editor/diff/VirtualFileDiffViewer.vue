@@ -232,7 +232,7 @@ function downloadPatch(): void {
 </script>
 
 <template>
-  <div class="panel-inset flex flex-col min-h-0">
+  <div class="panel-inset flex flex-col min-h-0 h-full">
     <div class="border-b border-navy/20 bg-canvas px-3 py-2">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-2">

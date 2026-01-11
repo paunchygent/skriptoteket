@@ -18,6 +18,10 @@ acceptance_criteria:
   - "Edit-ops request errors are visible in the chat UI (not only via toast) and are actionable."
   - "Patch/anchor preview+apply failures are surfaced clearly with a single Regenerate path; failures include compact hunk-level details when available."
   - "Selection requests include cursor at selection end per ADR-0051."
+  - "Diff previews (AI proposal + working-copy restore modal) are height-constrained and scrollable; the close/action buttons remain reachable even for large diffs."
+  - "After apply, the UI does not show a persistent banner that steals editor space; instead it exposes compact undo/redo controls and a clearly named restore point in “Öppna sparade”."
+  - "When “Spara arbetsversion” is disabled, the save menu shows the specific blockers (schema errors, read-only, etc.)."
+  - "Chat-ops timeout is tuned for local llama.cpp (slow generation is not treated as a failure)."
 ---
 
 Related:
@@ -33,6 +37,8 @@ The v2 edit-ops flow exists, but there are trust-breaking gaps that prevent it f
 - Some failures are only visible via toast (easy to miss) and do not provide a single, clear “Regenerate” path.
 - Patch application is still effectively strict client-side (regen loops) instead of using a controlled backend fuzz ladder.
 - Missing backend wiring/entry points can break preview/apply (API route/model mapping must be correct).
+- Diff previews can become unscrollable/overflow the viewport (AI diff panel + working-copy restore “Visa diff” modal).
+- Post-apply UX can feel “stuck”: a banner encroaches editor space and “Spara arbetsversion” can be disabled without explaining why.
 
 ## Goal
 
@@ -80,13 +86,20 @@ UX + tests) without expanding the feature scope. Reduce regen loops while keepin
    - Treat `requires_confirmation`/fuzz/offset as a safety signal: show a warning banner and require an extra click.
    - Remove/deprecate any client-side unified diff applier (frontend must not apply patches).
 
-6) **Runtime support**
+6) **Frontend: modern post-apply UX + scroll safety**
+   - Ensure diff viewers are always height-constrained and scrollable (AI proposal diff + working-copy restore diff modal).
+   - Replace the post-apply banner with compact undo/redo controls that do not steal CodeMirror real estate.
+   - Ensure a clearly named restore point is created before apply so users can find it in “Öppna sparade”.
+   - Show save blockers inline when “Spara arbetsversion” is disabled.
+
+7) **Runtime support**
    - Ensure the backend runtime image has the `patch` binary available (install in Docker images used by dev/prod).
 
-7) **Tests + verification**
+8) **Tests + verification**
    - Backend unit tests: sanitizer edge cases (fences/CRLF/missing headers), fuzz ladder, version gating, misapply-safe
      failures.
    - Frontend unit tests: draft retention, inline error visibility, preview/apply gating tokens, fuzz warning UX.
+   - Add a minimal Playwright check to ensure large diffs don’t break scroll/close affordances.
 
 ## Checklist (MUST be kept updated during implementation)
 
@@ -117,6 +130,10 @@ UX + tests) without expanding the feature scope. Reduce regen loops while keepin
 - [x] Apply uses backend apply with `base_hash` + `patch_id`; 409 triggers re-preview + re-confirm.
 - [x] Fuzz/offset warning banner + extra confirmation click when `requires_confirmation=true`.
 - [x] Client-side unified diff apply is removed/unused (`frontend/apps/skriptoteket/src/composables/editor/diff/applyUnifiedPatchStrict.ts`).
+- [x] Diff previews are scroll-safe (AI proposal panel + working-copy restore modal “Visa diff”).
+- [x] Post-apply UX is compact: toolbar “AI” pill + undo/redo mini-buttons (no persistent banner).
+- [x] Restore-point label for AI apply is user-readable (“AI: före tillämpning”) and visible in “Öppna sparade”.
+- [x] Save menu shows blockers when saving is disabled (schema errors/read-only/etc).
 
 ### Prompt/contract alignment
 
@@ -128,6 +145,7 @@ UX + tests) without expanding the feature scope. Reduce regen loops while keepin
 - [x] `pdm run fe-test` (add/update tests near `editOps.spec.ts` / `useEditorEditOps.spec.ts`).
 - [x] `pdm run pytest tests/unit/application/test_editor_edit_ops_handler.py -q`.
 - [x] `pdm run pytest tests/unit/application/test_editor_edit_ops_preview_handler.py tests/unit/infrastructure/test_unified_diff_applier.py tests/unit/web/test_editor_edit_ops_preview_apply_api.py -q`.
+- [x] `pdm run python -m scripts.playwright_st_08_24_working_copy_diff_scroll_check --base-url http://localhost:5173` (macOS escalation may be needed).
 
 ### Manual verification (record steps)
 

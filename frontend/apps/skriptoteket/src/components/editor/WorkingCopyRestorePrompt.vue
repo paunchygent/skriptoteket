@@ -105,7 +105,9 @@ watch(
         aria-modal="true"
         @click.self="closeDiff"
       >
-        <div class="relative w-full max-w-6xl mx-4 p-4 bg-canvas border border-navy shadow-brutal">
+        <div
+          class="relative w-full max-w-6xl mx-4 p-4 bg-canvas border border-navy shadow-brutal flex flex-col min-h-0 h-[min(760px,calc(100vh-3rem))]"
+        >
           <button
             type="button"
             class="absolute top-3 right-3 text-navy/60 hover:text-navy text-xl leading-none"
@@ -114,13 +116,15 @@ watch(
             &times;
           </button>
 
-          <VirtualFileDiffViewer
-            :items="props.diffItems"
-            :active-file-id="activeFileId"
-            before-label="Serverversion"
-            after-label="Lokalt arbetsexemplar"
-            @update:active-file-id="activeFileId = $event"
-          />
+          <div class="flex-1 min-h-0 overflow-hidden">
+            <VirtualFileDiffViewer
+              :items="props.diffItems"
+              :active-file-id="activeFileId"
+              before-label="Serverversion"
+              after-label="Lokalt arbetsexemplar"
+              @update:active-file-id="activeFileId = $event"
+            />
+          </div>
         </div>
       </div>
     </Transition>

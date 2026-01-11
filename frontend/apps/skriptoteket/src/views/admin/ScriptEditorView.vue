@@ -539,6 +539,13 @@ function handleUndoEditOps(): void {
   }
 }
 
+function handleRedoEditOps(): void {
+  const redone = editOps.redoLastApply();
+  if (redone) {
+    toast.info("AI-ändringen är återtillämpad.");
+  }
+}
+
 async function handleRegenerateEditOps(): Promise<void> {
   const message = editOps.proposal.value?.message;
   if (!message) return;
@@ -806,6 +813,7 @@ const lockBadge = computed(() => {
             @discard-edit-ops="editOps.discardProposal"
             @regenerate-edit-ops="handleRegenerateEditOps"
             @undo-edit-ops="handleUndoEditOps"
+            @redo-edit-ops="handleRedoEditOps"
           />
         </div>
       </div>

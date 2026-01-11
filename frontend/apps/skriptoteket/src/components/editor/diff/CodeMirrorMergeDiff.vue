@@ -52,9 +52,6 @@ const editorTheme = EditorView.theme(
     ".cm-content": {
       padding: "8px 0",
     },
-    ".cm-scroller": {
-      overflow: "auto",
-    },
   },
   { dark: false },
 );

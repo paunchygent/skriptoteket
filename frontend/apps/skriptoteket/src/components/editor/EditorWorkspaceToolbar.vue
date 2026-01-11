@@ -14,6 +14,12 @@ type EditorWorkspaceToolbarProps = {
   isCheckpointBusy: boolean;
   lockBadgeLabel: string | null;
   lockBadgeTone: "success" | "neutral";
+  aiStatus: "applied" | "undone" | null;
+  aiAppliedAt: string | null;
+  aiCanUndo: boolean;
+  aiUndoDisabledReason: string | null;
+  aiCanRedo: boolean;
+  aiRedoDisabledReason: string | null;
 };
 
 const props = defineProps<EditorWorkspaceToolbarProps>();
@@ -23,6 +29,8 @@ const emit = defineEmits<{
   (event: "openHistoryDrawer"): void;
   (event: "createCheckpoint", label: string): void;
   (event: "update:changeSummary", value: string): void;
+  (event: "undoAi"): void;
+  (event: "redoAi"): void;
 }>();
 
 const utilityButtonClass =
@@ -34,6 +42,8 @@ const menuButtonClass =
 const isSaveMenuOpen = ref(false);
 const saveMenuRef = ref<HTMLElement | null>(null);
 const checkpointLabel = ref("");
+const isAiMenuOpen = ref(false);
+const aiMenuRef = ref<HTMLElement | null>(null);
 
 const isSaveDisabled = computed(
   () =>
@@ -44,12 +54,40 @@ const isSaveDisabled = computed(
     props.hasBlockingSchemaIssues,
 );
 
+const saveBlockers = computed(() => {
+  const blockers: string[] = [];
+  if (props.isReadOnly) {
+    blockers.push("Editorn är låst för redigering.");
+  }
+  if (props.inputSchemaError) {
+    blockers.push("Indata (JSON): ogiltig. Kontrollera “Indata & inställningar”.");
+  }
+  if (props.settingsSchemaError) {
+    blockers.push("Inställningar (JSON): ogiltig. Kontrollera “Indata & inställningar”.");
+  }
+  if (props.hasBlockingSchemaIssues) {
+    blockers.push("Blockerande schemafel. Åtgärda innan du sparar.");
+  }
+  if (props.isSaving) {
+    blockers.push("Sparar...");
+  }
+  return blockers;
+});
+
 function toggleSaveMenu(): void {
   isSaveMenuOpen.value = !isSaveMenuOpen.value;
 }
 
 function closeSaveMenu(): void {
   isSaveMenuOpen.value = false;
+}
+
+function toggleAiMenu(): void {
+  isAiMenuOpen.value = !isAiMenuOpen.value;
+}
+
+function closeAiMenu(): void {
+  isAiMenuOpen.value = false;
 }
 
 function handleCreateCheckpoint(): void {
@@ -60,15 +98,19 @@ function handleCreateCheckpoint(): void {
 
 function handleDocumentClick(event: MouseEvent): void {
   const target = event.target as Node | null;
-  if (!target || !saveMenuRef.value) return;
-  if (!saveMenuRef.value.contains(target)) {
+  if (!target) return;
+  if (saveMenuRef.value && !saveMenuRef.value.contains(target)) {
     closeSaveMenu();
+  }
+  if (aiMenuRef.value && !aiMenuRef.value.contains(target)) {
+    closeAiMenu();
   }
 }
 
 function handleKeydown(event: KeyboardEvent): void {
   if (event.key === "Escape") {
     closeSaveMenu();
+    closeAiMenu();
   }
 }
 
@@ -81,6 +123,30 @@ onBeforeUnmount(() => {
   document.removeEventListener("click", handleDocumentClick);
   document.removeEventListener("keydown", handleKeydown);
 });
+
+const aiPillClass = computed(() => {
+  const base =
+    "inline-flex items-center h-[28px] px-2 py-1 text-[10px] font-semibold uppercase tracking-wide border leading-none";
+  if (props.aiStatus === "applied") {
+    return `${base} border-success text-success bg-success/10`;
+  }
+  return `${base} border-navy/30 text-navy/70 bg-canvas/40`;
+});
+
+function formatDateTime(value: string | number): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+  const formatted = new Intl.DateTimeFormat("sv-SE", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+  return formatted.replace(",", "");
+}
 </script>
 
 <template>
@@ -136,6 +202,23 @@ onBeforeUnmount(() => {
               >
                 {{ props.saveLabel }}
               </button>
+
+              <div
+                v-if="isSaveDisabled && saveBlockers.length > 0"
+                class="pt-2 space-y-1"
+              >
+                <div class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+                  Blockerar sparning
+                </div>
+                <ul class="space-y-0.5 text-[10px] text-navy/60">
+                  <li
+                    v-for="(blocker, idx) in saveBlockers"
+                    :key="idx"
+                  >
+                    • {{ blocker }}
+                  </li>
+                </ul>
+              </div>
             </div>
 
             <div class="border-t border-navy/20 pt-3 space-y-2">
@@ -180,6 +263,74 @@ onBeforeUnmount(() => {
                 Öppna sparade
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        v-if="props.aiStatus"
+        ref="aiMenuRef"
+        class="relative flex items-center gap-1 shrink-0"
+      >
+        <button
+          type="button"
+          :class="aiPillClass"
+          :aria-expanded="isAiMenuOpen"
+          aria-haspopup="menu"
+          aria-label="AI-ändring"
+          @click="toggleAiMenu"
+        >
+          AI
+        </button>
+
+        <button
+          type="button"
+          class="btn-ghost h-[28px] w-[28px] p-0 text-[12px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+          :disabled="!props.aiCanUndo"
+          :title="props.aiUndoDisabledReason || undefined"
+          aria-label="Ångra AI-ändring"
+          @click="emit('undoAi')"
+        >
+          ↶
+        </button>
+
+        <button
+          type="button"
+          class="btn-ghost h-[28px] w-[28px] p-0 text-[12px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+          :disabled="!props.aiCanRedo"
+          :title="props.aiRedoDisabledReason || undefined"
+          aria-label="Återställ AI-ändring"
+          @click="emit('redoAi')"
+        >
+          ↷
+        </button>
+
+        <div
+          v-if="isAiMenuOpen"
+          class="absolute left-0 top-full mt-2 w-[min(320px,90vw)] border border-navy bg-canvas z-20"
+          role="menu"
+        >
+          <div class="p-3 space-y-2">
+            <div class="space-y-1">
+              <div class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+                AI-ändring
+              </div>
+              <div class="text-[11px] text-navy/70">
+                <span class="font-semibold">
+                  {{ props.aiStatus === "applied" ? "Tillämpad" : "Återställd" }}
+                </span>
+                <span
+                  v-if="props.aiAppliedAt"
+                  class="text-navy/60"
+                >
+                  · {{ formatDateTime(props.aiAppliedAt) }}
+                </span>
+              </div>
+            </div>
+
+            <p class="text-[11px] text-navy/60">
+              Återställningspunkt finns i “Öppna sparade”.
+            </p>
           </div>
         </div>
       </div>

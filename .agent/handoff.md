@@ -25,6 +25,12 @@ Keep this file updated so the next session can pick up work quickly.
 - ST-08-24 implementation: v2 patch/anchor support + backend-first preview/apply + controlled fuzz ladder + cursor TTL request semantics (plus updated tests + regenerated OpenAPI TS types):
   - Backend: `src/skriptoteket/protocols/llm.py`, `src/skriptoteket/web/api/v1/editor/models.py`, `src/skriptoteket/application/editor/edit_ops_handler.py`, `src/skriptoteket/application/editor/system_prompts/editor_chat_ops_v1.txt`, `tests/unit/application/test_editor_edit_ops_handler.py`.
   - Frontend: `frontend/apps/skriptoteket/src/composables/editor/useEditorEditOps.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorEditOps.spec.ts`, `frontend/apps/skriptoteket/src/components/editor/EditorEditOpsPanel.vue`, `frontend/apps/skriptoteket/src/components/editor/diff/AiVirtualFileDiffViewer.vue`, `frontend/apps/skriptoteket/src/api/openapi.d.ts`.
+- Follow-up hardening fixes (trust/UX):
+  - Diff scroll: ensure CodeMirror MergeView scrolls via `.cm-mergeView` and that AI + working-copy diffs are height-constrained: `frontend/apps/skriptoteket/src/components/editor/diff/CodeMirrorMergeDiff.vue`, `frontend/apps/skriptoteket/src/components/editor/diff/{AiVirtualFileDiffViewer,VirtualFileDiffViewer}.vue`, `frontend/apps/skriptoteket/src/components/editor/WorkingCopyRestorePrompt.vue`.
+  - Post-apply UX: remove the “AI-ÄNDRING … tillämpat” banner; replace with compact toolbar “AI” pill + undo/redo mini-buttons (no extra vertical space): `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceToolbar.vue`, `frontend/apps/skriptoteket/src/composables/editor/useEditorEditOps.ts`.
+  - Save UX: show “blockers” inline in the save dropdown when disabled (schema errors, read-only, etc): `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceToolbar.vue`.
+  - Local llama.cpp: bump chat-ops timeout from 60s → 120s to avoid false failures: `src/skriptoteket/config.py`.
+  - New Playwright check: working-copy diff modal remains scrollable/closable: `scripts/playwright_st_08_24_working_copy_diff_scroll_check.py`.
 - Editor modes now fixed toggles (Källkod/Diff/Metadata) with compare text relabeled to Diff; metadata/instructions/behörigheter render as in-page panels (no drawer overlay): `frontend/apps/skriptoteket/src/components/editor/{EditorWorkspaceToolbar,EditorWorkspacePanel,MetadataDrawer,InstructionsDrawer,MaintainersDrawer}.vue`, `frontend/apps/skriptoteket/src/components/editor/EditorComparePanel.vue`, `frontend/apps/skriptoteket/src/components/editor/diff/VirtualFileDiffViewer.vue`, `frontend/apps/skriptoteket/src/composables/editor/{editorCompareDefaults,useEditorCompareData}.ts`.
 - Editor workspace layout refit: toolbar sits under header; mode content uses fixed-height row; chat now aligns to editor row with a spacer row for schemas; diff toggle always enabled (shows empty state if no compare target): `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`, `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`.
 - ST-08-21 backend scaffold: edit-ops handler + OpenAI provider + prompt template + settings + router/model wiring (POST `/api/v1/editor/edit-ops`): `src/skriptoteket/application/editor/edit_ops_handler.py`, `src/skriptoteket/infrastructure/llm/openai_provider.py`, `src/skriptoteket/application/editor/system_prompts/editor_chat_ops_v1.txt`, `src/skriptoteket/config.py`, `src/skriptoteket/web/api/v1/editor/{edit_ops.py,models.py,__init__.py}`, `src/skriptoteket/protocols/llm.py`, `src/skriptoteket/di/llm.py`, `src/skriptoteket/application/editor/prompt_{templates,budget,composer}.py`.
@@ -99,6 +105,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Unit tests (chat concurrency): `pdm run pytest tests/unit/application/test_editor_chat_handler_concurrency.py -q` (pass)
 - Unit tests (application): `pdm run pytest tests/unit/application -q` (pass)
 - Docs validate: `pdm run docs-validate` (pass)
+- Docker web logs check (why first request failed): `docker logs --tail 400 skriptoteket_web` (observed chat-ops request ~60s → generic failure; timeout bumped to 120s).
 - Docs validate (post-PR-0011 update): `pdm run docs-validate` (pass)
 - OpenAPI/docs (local): `curl -sS http://127.0.0.1:8000/openapi.json | jq -r '.paths | keys[] | select(.=="/api/v1/editor/tools/{tool_id}/chat")'` and `curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8000/docs` (200)
 - Rule-040 check (local): `rg -n "from __future__ import annotations" src/skriptoteket/web/api -S` (no output)
@@ -111,6 +118,8 @@ Keep this file updated so the next session can pick up work quickly.
 - Postgres data restored: `ssh hemma "sudo docker exec shared-postgres psql -U skriptoteket -d skriptoteket -c '\\dt'"`
 - Bootstrap login (server): `/api/v1/auth/login` using `BOOTSTRAP_SUPERUSER_*` from `~/apps/skriptoteket/.env` (no secrets stored here).
 - LLM edit connectivity (container → host): `ssh hemma "sudo docker exec skriptoteket-web python -c \"import urllib.request; print(urllib.request.urlopen('http://172.18.0.1:8082/health').read().decode())\""`
+- UI check (Playwright; macOS escalation may be needed):
+  - Working-copy diff modal scroll/close: `pdm run python -m scripts.playwright_st_08_24_working_copy_diff_scroll_check --base-url http://localhost:5173` (pass; artifacts in `.artifacts/ui-working-copy-diff/`).
 
 ## How to Run
 

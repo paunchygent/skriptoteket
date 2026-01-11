@@ -346,6 +346,9 @@ docs-validate = "python -m scripts.validate_docs"
 skills-prompt = "python -m scripts.skills_prompt"
 skills-validate = "python -m scripts.skills_prompt --validate"
 
+# Dependency locking (multi-platform)
+lock-multi = "pdm lock --platform macos_14_0_arm64 --platform manylinux_2_40_x86_64 --platform manylinux_2_41_aarch64"
+
 # Database
 db-upgrade = "alembic upgrade head"
 

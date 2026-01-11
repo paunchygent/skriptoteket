@@ -10,6 +10,7 @@ Teacher-first Script Hub for running curated, upload-based tools. FastAPI backen
 - Bootstrap first superuser: `pdm run bootstrap-superuser`
 - Run locally: `pdm run dev` (serves on `http://127.0.0.1:8000`, login required)
 - Validate docs: `pdm run docs-validate`
+- Update lockfile (multi-platform): `pdm run lock-multi` (keeps macOS + Linux targets)
 
 ## Frontend (SPA)
 

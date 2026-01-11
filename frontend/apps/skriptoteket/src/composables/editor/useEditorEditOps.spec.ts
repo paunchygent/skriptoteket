@@ -14,7 +14,7 @@ vi.mock("../../api/client", () => ({
 }));
 
 describe("useEditorEditOps", () => {
-  it("applies and undoes a proposal", async () => {
+  it("applies, undoes, and redoes a proposal", async () => {
     vi.useFakeTimers();
     const sourceCode = ref("print('hej')\n");
     const entrypoint = ref("run_tool\n");
@@ -104,11 +104,18 @@ describe("useEditorEditOps", () => {
     expect(applied).toBe(true);
     expect(createBeforeApplyCheckpoint).toHaveBeenCalled();
     expect(sourceCode.value).toContain("print('klar')");
-    expect(state.hasUndoSnapshot.value).toBe(true);
+    expect(state.panelState.value.aiStatus).toBe("applied");
 
     const undone = state.undoLastApply();
     expect(undone).toBe(true);
     expect(sourceCode.value).toBe("print('hej')\n");
+    expect(state.panelState.value.aiStatus).toBe("undone");
+    expect(state.canRedo.value).toBe(true);
+
+    const redone = state.redoLastApply();
+    expect(redone).toBe(true);
+    expect(sourceCode.value).toContain("print('klar')");
+    expect(state.panelState.value.aiStatus).toBe("applied");
 
     scope.stop();
     vi.useRealTimers();

@@ -182,6 +182,7 @@ const emit = defineEmits<{
   (event: "discardEditOps"): void;
   (event: "regenerateEditOps"): void;
   (event: "undoEditOps"): void;
+  (event: "redoEditOps"): void;
 }>();
 
 const activeVersionId = computed(() => props.selectedVersion?.id ?? null);
@@ -262,10 +263,18 @@ const chatColumnWidth = computed(() => {
               :is-checkpoint-busy="props.isCheckpointBusy"
               :lock-badge-label="props.lockBadgeLabel"
               :lock-badge-tone="props.lockBadgeTone"
+              :ai-status="props.editOpsState.aiStatus"
+              :ai-applied-at="props.editOpsState.aiAppliedAt"
+              :ai-can-undo="props.editOpsState.canUndo"
+              :ai-undo-disabled-reason="props.editOpsState.undoDisabledReason"
+              :ai-can-redo="props.editOpsState.canRedo"
+              :ai-redo-disabled-reason="props.editOpsState.redoDisabledReason"
               @save="emit('save')"
               @open-history-drawer="emit('openHistoryDrawer')"
               @create-checkpoint="emit('createCheckpoint', $event)"
               @update:change-summary="emit('update:changeSummary', $event)"
+              @undo-ai="emit('undoEditOps')"
+              @redo-ai="emit('redoEditOps')"
             />
           </div>
 
@@ -421,13 +430,12 @@ const chatColumnWidth = computed(() => {
         <template v-else>
           <div class="h-full min-h-0 flex flex-col gap-3">
             <EditorEditOpsPanel
-              v-if="props.editOpsState.proposal || props.editOpsState.hasUndoSnapshot"
+              v-if="props.editOpsState.proposal"
               :state="props.editOpsState"
               @apply="emit('applyEditOps')"
               @discard="emit('discardEditOps')"
               @regenerate="emit('regenerateEditOps')"
               @set-confirmation-accepted="emit('setEditOpsConfirmationAccepted', $event)"
-              @undo="emit('undoEditOps')"
             />
             <div class="flex-1 min-h-0">
               <EditorSourceCodePanel

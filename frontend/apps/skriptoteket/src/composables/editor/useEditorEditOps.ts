@@ -48,6 +48,7 @@ export type EditOpsProposal = {
 type AppliedEditOpsSnapshot = {
   beforeFiles: VirtualFileTextMap;
   afterFiles: VirtualFileTextMap;
+  beforeFingerprint: string;
   afterFingerprint: string;
   appliedAt: string;
 };
@@ -64,7 +65,10 @@ export type EditOpsPanelState = {
   applyDisabledReason: string | null;
   canUndo: boolean;
   undoDisabledReason: string | null;
-  hasUndoSnapshot: boolean;
+  canRedo: boolean;
+  redoDisabledReason: string | null;
+  aiStatus: "applied" | "undone" | null;
+  aiAppliedAt: string | null;
   isApplying: boolean;
   requiresConfirmation: boolean;
   confirmationAccepted: boolean;
@@ -171,6 +175,7 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
   const previewBaseFiles = ref<VirtualFileTextMap | null>(null);
   const confirmationAccepted = ref(false);
   const lastExplicitCursorInteractionAt = ref<number | null>(null);
+  const aiPosition = ref<"after" | "before">("after");
 
   const currentFiles = computed(() =>
     virtualFileTextFromEditorFields({
@@ -184,7 +189,6 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
 
   const currentFingerprint = computed(() => virtualFilesFingerprint(currentFiles.value));
 
-  const hasUndoSnapshot = computed(() => lastApplied.value !== null);
   const targetFiles = computed(() => (proposal.value ? uniqueTargetFiles(proposal.value.ops) : []));
 
   const diffItems = computed<EditOpsDiffItem[]>(() => {
@@ -231,8 +235,11 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
   const undoDisabledReason = computed(() => {
     if (!lastApplied.value) return null;
     if (isReadOnly.value) return "Editorn är låst för redigering.";
+    if (aiPosition.value !== "after") {
+      return "AI-ändringen är redan återställd.";
+    }
     if (currentFingerprint.value !== lastApplied.value.afterFingerprint) {
-      return "Ändringar har gjorts efter AI-förslaget. Återställ via lokala checkpoints.";
+      return "Ändringar har gjorts efter AI-ändringen. Återställ via återställningspunkter.";
     }
     return null;
   });
@@ -242,6 +249,26 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       Boolean(lastApplied.value) &&
       !isReadOnly.value &&
       !undoDisabledReason.value &&
+      !isApplying.value,
+  );
+
+  const redoDisabledReason = computed(() => {
+    if (!lastApplied.value) return null;
+    if (isReadOnly.value) return "Editorn är låst för redigering.";
+    if (aiPosition.value !== "before") {
+      return "Ingen AI-ändring att återställa.";
+    }
+    if (currentFingerprint.value !== lastApplied.value.beforeFingerprint) {
+      return "Ändringar har gjorts efter återställning. Återställ via återställningspunkter.";
+    }
+    return null;
+  });
+
+  const canRedo = computed(
+    () =>
+      Boolean(lastApplied.value) &&
+      !isReadOnly.value &&
+      !redoDisabledReason.value &&
       !isApplying.value,
   );
 
@@ -510,9 +537,11 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       lastApplied.value = {
         beforeFiles,
         afterFiles,
+        beforeFingerprint: virtualFilesFingerprint(beforeFiles),
         afterFingerprint: virtualFilesFingerprint(afterFiles),
         appliedAt: new Date().toISOString(),
       };
+      aiPosition.value = "after";
       proposal.value = null;
       previewResponse.value = null;
       previewBaseFiles.value = null;
@@ -559,7 +588,20 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
     }
 
     applyVirtualFiles(lastApplied.value.beforeFiles);
-    lastApplied.value = null;
+    aiPosition.value = "before";
+    return true;
+  }
+
+  function redoLastApply(): boolean {
+    undoError.value = null;
+    if (!lastApplied.value) return false;
+    if (!canRedo.value) {
+      undoError.value = redoDisabledReason.value ?? "Det gick inte att återställa.";
+      return false;
+    }
+
+    applyVirtualFiles(lastApplied.value.afterFiles);
+    aiPosition.value = "after";
     return true;
   }
 
@@ -620,7 +662,10 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
     applyDisabledReason: applyDisabledReason.value,
     canUndo: canUndo.value,
     undoDisabledReason: undoDisabledReason.value,
-    hasUndoSnapshot: hasUndoSnapshot.value,
+    canRedo: canRedo.value,
+    redoDisabledReason: redoDisabledReason.value,
+    aiStatus: lastApplied.value ? (aiPosition.value === "after" ? "applied" : "undone") : null,
+    aiAppliedAt: lastApplied.value?.appliedAt ?? null,
     isApplying: isApplying.value,
     requiresConfirmation: requiresConfirmation.value,
     confirmationAccepted: confirmationAccepted.value,
@@ -642,7 +687,6 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
     applyDisabledReason,
     canUndo,
     undoDisabledReason,
-    hasUndoSnapshot,
     isApplying,
     requiresConfirmation,
     confirmationAccepted,
@@ -651,5 +695,8 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
     applyProposal,
     discardProposal,
     undoLastApply,
+    redoLastApply,
+    canRedo,
+    redoDisabledReason,
   };
 }
