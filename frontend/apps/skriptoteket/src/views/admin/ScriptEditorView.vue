@@ -533,17 +533,11 @@ async function handleApplyEditOps(): Promise<void> {
 }
 
 function handleUndoEditOps(): void {
-  const undone = editOps.undoLastApply();
-  if (undone) {
-    toast.info("AI-ändringen är återställd.");
-  }
+  editOps.undoLastApply();
 }
 
 function handleRedoEditOps(): void {
-  const redone = editOps.redoLastApply();
-  if (redone) {
-    toast.info("AI-ändringen är återtillämpad.");
-  }
+  editOps.redoLastApply();
 }
 
 async function handleRegenerateEditOps(): Promise<void> {
@@ -769,6 +763,7 @@ const lockBadge = computed(() => {
             :edit-ops-clear-draft-token="editOpsClearDraftToken"
             :edit-ops-state="editOps.panelState.value"
             :is-edit-ops-requesting="editOps.isRequesting.value"
+            :is-edit-ops-slow="editOps.isSlowRequest.value"
             :professions="professions"
             :categories="categories"
             :is-taxonomy-loading="isTaxonomyLoading"

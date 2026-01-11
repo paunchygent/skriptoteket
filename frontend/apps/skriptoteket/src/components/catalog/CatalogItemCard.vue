@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useRouter } from "vue-router";
 
 import type { CatalogItem } from "../../types/catalog";
 import { IconBookmark } from "../icons";
@@ -21,6 +22,8 @@ const isCuratedApp = computed(() => props.item.kind === "curated_app");
 const isCompact = computed(() => props.variant === "compact");
 const isList = computed(() => props.variant === "list");
 const actionLabel = computed(() => (isCuratedApp.value ? "Öppna" : "Välj"));
+const isInteractive = computed(() => isCompact.value);
+const router = useRouter();
 
 const actionTarget = computed(() => {
   if (props.item.kind === "curated_app") {
@@ -32,43 +35,65 @@ const actionTarget = computed(() => {
 function handleToggle(): void {
   emit("favorite-toggled", { id: props.item.id, isFavorite: props.item.is_favorite });
 }
+
+function handleCardActivate(): void {
+  if (!isInteractive.value) return;
+  router.push(actionTarget.value);
+}
+
+function handleCardKeydown(event: KeyboardEvent): void {
+  if (!isInteractive.value) return;
+  if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+    event.preventDefault();
+    handleCardActivate();
+  }
+}
 </script>
 
 <template>
   <article
+    data-catalog-card
+    :role="isInteractive ? 'link' : undefined"
+    :tabindex="isInteractive ? 0 : undefined"
+    :aria-label="isInteractive ? `${actionLabel} ${item.title}` : undefined"
     :class="[
       'relative',
       isList ? 'px-4 py-3' : 'border border-navy bg-white shadow-brutal-sm',
-      isCompact ? 'flex flex-col h-full p-3' : (!isList && 'p-4'),
+      isCompact ? 'flex flex-col h-full p-3 compact-card' : (!isList && 'p-4'),
+      isInteractive ? 'catalog-card-interactive' : '',
     ]"
+    @click="handleCardActivate"
+    @keydown="handleCardKeydown"
   >
     <div
       v-if="isCompact"
-      class="grid h-full grid-cols-[minmax(0,1fr)_auto_auto] grid-rows-[auto_auto_1fr_auto] gap-x-3 gap-y-2"
+      class="grid h-full grid-cols-[minmax(0,1fr)_auto] grid-rows-[auto_auto_1fr_auto] gap-x-3 gap-y-2"
     >
       <h3 class="min-w-0 text-sm font-semibold text-navy clamp-2 compact-title col-start-1 row-start-1">
         {{ item.title }}
       </h3>
-      <span
-        v-if="isCuratedApp"
-        class="inline-flex items-center justify-self-end self-start h-5 px-2 py-0 text-[10px] uppercase tracking-wide border border-navy/60 bg-canvas text-navy leading-none sm:text-xs col-start-2 row-start-1"
-      >
-        Kurerad app
-      </span>
+      <div class="col-start-1 row-start-2 min-h-5">
+        <span
+          v-if="isCuratedApp"
+          class="inline-flex items-center self-start h-5 px-2 py-0 text-[10px] uppercase tracking-wide border border-navy/60 bg-canvas text-navy leading-none sm:text-xs"
+        >
+          Kurerad app
+        </span>
+      </div>
       <button
         type="button"
         :disabled="isToggling"
         :aria-label="item.is_favorite ? 'Ta bort favorit' : 'Lägg till favorit'"
         :aria-pressed="item.is_favorite"
         :class="[
-          'inline-flex items-center justify-center justify-self-end self-start -mt-1 col-start-3 row-start-1',
+          'inline-flex items-center justify-center justify-self-end self-start -mt-1 col-start-2 row-start-1',
           'focus-visible:outline focus-visible:outline-2',
           'focus-visible:outline-burgundy/40 focus-visible:outline-offset-2',
           'transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
           item.is_favorite ? 'text-burgundy' : 'text-burgundy/70 hover:text-burgundy',
           'h-6 w-6',
         ]"
-        @click="handleToggle"
+        @click.stop="handleToggle"
       >
         <IconBookmark
           class="h-full w-full"
@@ -77,23 +102,15 @@ function handleToggle(): void {
       </button>
       <p
         v-if="item.summary"
-        class="min-w-0 text-xs text-navy/60 break-words clamp-4 compact-summary col-span-3 row-start-2"
+        class="min-w-0 text-xs text-navy/60 break-words clamp-4 compact-summary col-span-2 row-start-3"
       >
         {{ item.summary }}
       </p>
       <p
         v-else
-        class="compact-summary col-span-3 row-start-2"
+        class="compact-summary col-span-2 row-start-3"
         aria-hidden="true"
       />
-      <div class="col-start-3 row-start-4 justify-self-end">
-        <RouterLink
-          :to="actionTarget"
-          class="btn-ghost w-full sm:w-auto sm:min-w-24 text-center no-underline"
-        >
-          {{ actionLabel }}
-        </RouterLink>
-      </div>
     </div>
 
     <div
@@ -117,7 +134,7 @@ function handleToggle(): void {
           item.is_favorite ? 'text-burgundy' : 'text-burgundy/70 hover:text-burgundy',
           'right-3 h-6 w-6 sm:right-4 sm:h-7 sm:w-7',
         ]"
-        @click="handleToggle"
+        @click.stop="handleToggle"
       >
         <IconBookmark
           class="h-full w-full"
@@ -157,7 +174,9 @@ function handleToggle(): void {
           :to="actionTarget"
           :class="[
             'text-center no-underline',
-            isList ? 'btn-ghost text-xs py-1.5 px-3' : 'btn-ghost w-full sm:w-auto sm:min-w-24',
+            isList
+              ? 'btn-ghost text-xs py-1.5 px-3'
+              : 'btn-ghost w-full sm:w-auto sm:min-w-24',
           ]"
         >
           {{ actionLabel }}
@@ -201,6 +220,27 @@ function handleToggle(): void {
 
 .compact-summary {
   min-height: 5.6em;
+}
+
+.compact-card {
+  min-height: var(--catalog-card-height, 12.75rem);
+}
+
+.catalog-card-interactive {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.catalog-card-interactive:focus-visible {
+  outline: 2px solid var(--huleedu-burgundy-40);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .catalog-card-interactive:hover {
+    box-shadow: var(--huleedu-shadow-brutal);
+    transform: translate(-2px, -2px);
+  }
 }
 
 .clamp-2 {

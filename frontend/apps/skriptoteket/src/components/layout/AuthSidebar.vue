@@ -175,11 +175,22 @@ function onHelp(): void {
     border-left: none;
     border-right: var(--huleedu-border-width) solid var(--huleedu-navy);
     transform: none;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
     z-index: var(--huleedu-z-overlay);
+    transition:
+      opacity var(--huleedu-duration-slow) var(--huleedu-ease-default),
+      visibility 0s linear 0s;
   }
 
   .sidebar.is-focus-mode {
-    display: none;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity var(--huleedu-duration-slow) var(--huleedu-ease-default),
+      visibility 0s linear var(--huleedu-duration-slow);
   }
 }
 

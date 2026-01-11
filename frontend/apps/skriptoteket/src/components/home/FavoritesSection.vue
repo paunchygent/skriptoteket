@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, toRef } from "vue";
 
 import type { CatalogItem } from "../../types/catalog";
+import { useEqualHeightGrid } from "../../composables/useEqualHeightGrid";
 import CatalogItemCard from "../catalog/CatalogItemCard.vue";
 import SectionHeader from "./SectionHeader.vue";
 
@@ -16,6 +17,7 @@ const emit = defineEmits<{
 }>();
 
 const hasItems = computed(() => props.items.length > 0);
+const { gridRef } = useEqualHeightGrid(toRef(props, "items"));
 
 function isItemToggling(id: string): boolean {
   return props.isToggling ? props.isToggling(id) : false;
@@ -41,7 +43,10 @@ function handleFavoriteToggled(payload: { id: string; isFavorite: boolean }): vo
         </RouterLink>
       </template>
     </SectionHeader>
-    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <div
+      ref="gridRef"
+      class="grid items-stretch gap-3 sm:grid-cols-2 xl:grid-cols-3"
+    >
       <CatalogItemCard
         v-for="item in items"
         :key="`${item.kind}-${item.id}`"

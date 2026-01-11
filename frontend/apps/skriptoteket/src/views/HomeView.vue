@@ -65,9 +65,22 @@ const createSummary = ref("");
 const createError = ref<string | null>(null);
 const isCreating = ref(false);
 
+const FAVORITES_LIMIT = 5;
+
 // Favorites and recent tools
 const favorites = ref<CatalogItem[]>([]);
 const recentTools = ref<CatalogItem[]>([]);
+
+function catalogKey(item: CatalogItem): string {
+  return `${item.kind}:${item.id}`;
+}
+
+const favoriteKeys = computed(() => new Set(favorites.value.map(catalogKey)));
+const recentNonFavorites = computed(() =>
+  recentTools.value.filter(
+    (item) => !item.is_favorite && !favoriteKeys.value.has(catalogKey(item))
+  )
+);
 
 function normalizedOptionalString(value: string): string | null {
   const trimmed = value.trim();
@@ -167,7 +180,9 @@ async function loadAdminDashboard(): Promise<void> {
 
 async function loadFavorites(): Promise<void> {
   try {
-    const response = await apiGet<ListFavoritesResponse>("/api/v1/favorites?limit=5");
+    const response = await apiGet<ListFavoritesResponse>(
+      `/api/v1/favorites?limit=${FAVORITES_LIMIT}`
+    );
     favorites.value = response.items as CatalogItem[];
   } catch {
     // Silent fail - section just won't show
@@ -187,20 +202,37 @@ async function handleFavoriteToggled(payload: { id: string; isFavorite: boolean 
   if (isToggling(payload.id)) return;
 
   const nextIsFavorite = !payload.isFavorite;
+  const targetItem =
+    favorites.value.find((item) => item.id === payload.id) ??
+    recentTools.value.find((item) => item.id === payload.id);
+  const targetKey = targetItem ? catalogKey(targetItem) : null;
 
   // Optimistic update for favorites list
   const prevFavorites = favorites.value;
-  favorites.value = prevFavorites.flatMap((item) => {
-    if (item.id !== payload.id) return item;
-    if (!nextIsFavorite) return [];
-    return { ...item, is_favorite: nextIsFavorite };
-  });
+  if (nextIsFavorite) {
+    if (!targetItem || !targetKey) {
+      favorites.value = prevFavorites;
+    } else {
+      const nextItem = { ...targetItem, is_favorite: true };
+      const nextFavorites = prevFavorites.some((item) => catalogKey(item) === targetKey)
+        ? prevFavorites.map((item) =>
+            catalogKey(item) === targetKey ? { ...item, is_favorite: true } : item
+          )
+        : [nextItem, ...prevFavorites];
+      favorites.value = nextFavorites.slice(0, FAVORITES_LIMIT);
+    }
+  } else if (targetKey) {
+    favorites.value = prevFavorites.filter((item) => catalogKey(item) !== targetKey);
+  }
 
   // Optimistic update for recent tools list
   const prevRecent = recentTools.value;
-  recentTools.value = prevRecent.map((item) =>
-    item.id === payload.id ? { ...item, is_favorite: nextIsFavorite } : item
-  );
+  recentTools.value = prevRecent.map((item) => {
+    if (targetKey) {
+      return catalogKey(item) === targetKey ? { ...item, is_favorite: nextIsFavorite } : item;
+    }
+    return item.id === payload.id ? { ...item, is_favorite: nextIsFavorite } : item;
+  });
 
   const finalIsFavorite = await toggleFavorite(payload.id, payload.isFavorite);
   if (finalIsFavorite !== nextIsFavorite) {
@@ -335,7 +367,7 @@ onMounted(async () => {
         />
 
         <RecentToolsSection
-          :items="recentTools"
+          :items="recentNonFavorites"
           :is-toggling="isToggling"
           @favorite-toggled="handleFavoriteToggled"
         />

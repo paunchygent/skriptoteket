@@ -38,4 +38,24 @@ describe("ChatDrawer", () => {
     await nextTick();
     expect(wrapper.find("textarea").element.value).toBe("");
   });
+
+  it("shows a slow-request hint for edit-ops", () => {
+    const wrapper = mountWithContext(ChatDrawer, {
+      props: {
+        variant: "column",
+        isOpen: true,
+        isCollapsed: false,
+        messages: [],
+        isStreaming: false,
+        isEditOpsLoading: true,
+        editOpsIsSlow: true,
+        disabledMessage: null,
+        error: null,
+        clearDraftToken: 0,
+      },
+    });
+
+    expect(wrapper.text()).toContain("Skapar förslag...");
+    expect(wrapper.text()).toContain("Tar lite längre tid");
+  });
 });

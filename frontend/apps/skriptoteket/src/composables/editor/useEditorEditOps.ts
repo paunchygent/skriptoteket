@@ -166,6 +166,9 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
   const isRequesting = ref(false);
   const isPreviewing = ref(false);
   const isApplying = ref(false);
+  const requestStartedAt = ref<number | null>(null);
+  const requestNow = ref(Date.now());
+  let requestInterval: ReturnType<typeof setInterval> | null = null;
   const requestError = ref<string | null>(null);
   const previewError = ref<string | null>(null);
   const previewErrorDetails = ref<EditorEditOpsPreviewErrorDetails | null>(null);
@@ -188,6 +191,13 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
   );
 
   const currentFingerprint = computed(() => virtualFilesFingerprint(currentFiles.value));
+
+  const requestElapsedSeconds = computed(() => {
+    if (!isRequesting.value || requestStartedAt.value === null) return 0;
+    return Math.max(0, Math.floor((requestNow.value - requestStartedAt.value) / 1000));
+  });
+
+  const isSlowRequest = computed(() => requestElapsedSeconds.value >= 45);
 
   const targetFiles = computed(() => (proposal.value ? uniqueTargetFiles(proposal.value.ops) : []));
 
@@ -620,7 +630,34 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       detachExplicitListeners();
       detachExplicitListeners = null;
     }
+    if (requestInterval) {
+      clearInterval(requestInterval);
+      requestInterval = null;
+    }
   });
+
+  watch(
+    () => isRequesting.value,
+    (isActive) => {
+      if (requestInterval) {
+        clearInterval(requestInterval);
+        requestInterval = null;
+      }
+
+      if (!isActive) {
+        requestStartedAt.value = null;
+        requestNow.value = Date.now();
+        return;
+      }
+
+      requestStartedAt.value = Date.now();
+      requestNow.value = Date.now();
+      requestInterval = setInterval(() => {
+        requestNow.value = Date.now();
+      }, 1000);
+    },
+    { immediate: true },
+  );
 
   watch(
     () => editorView.value,
@@ -674,6 +711,8 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
   return {
     proposal,
     isRequesting,
+    requestElapsedSeconds,
+    isSlowRequest,
     requestError,
     clearRequestError,
     panelState,

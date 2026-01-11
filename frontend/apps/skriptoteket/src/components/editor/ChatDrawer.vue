@@ -11,6 +11,7 @@ type ChatDrawerProps = {
   messages: EditorChatMessage[];
   isStreaming: boolean;
   isEditOpsLoading: boolean;
+  editOpsIsSlow?: boolean;
   editOpsError?: string | null;
   editOpsDisabledMessage?: string | null;
   clearDraftToken?: number;
@@ -20,6 +21,7 @@ type ChatDrawerProps = {
 
 const props = withDefaults(defineProps<ChatDrawerProps>(), {
   variant: "drawer",
+  editOpsIsSlow: false,
   editOpsError: null,
   editOpsDisabledMessage: null,
   clearDraftToken: 0,
@@ -268,7 +270,13 @@ watch(
                 v-else-if="props.isEditOpsLoading"
                 class="text-xs text-navy/60"
               >
-                Skapar f&ouml;rslag...
+                <span>Skapar f&ouml;rslag...</span>
+                <span
+                  v-if="props.editOpsIsSlow"
+                  class="block pt-1 text-[10px] text-navy/50"
+                >
+                  Tar lite l&auml;ngre tid &auml;n vanligt. Lokala modeller kan ta upp till ~2 min.
+                </span>
               </span>
               <span
                 v-else

@@ -20,6 +20,7 @@ type EditorWorkspaceToolbarProps = {
   aiUndoDisabledReason: string | null;
   aiCanRedo: boolean;
   aiRedoDisabledReason: string | null;
+  aiError: string | null;
 };
 
 const props = defineProps<EditorWorkspaceToolbarProps>();
@@ -127,6 +128,9 @@ onBeforeUnmount(() => {
 const aiPillClass = computed(() => {
   const base =
     "inline-flex items-center h-[28px] px-2 py-1 text-[10px] font-semibold uppercase tracking-wide border leading-none";
+  if (props.aiError) {
+    return `${base} border-error text-error bg-error/10`;
+  }
   if (props.aiStatus === "applied") {
     return `${base} border-success text-success bg-success/10`;
   }
@@ -326,6 +330,13 @@ function formatDateTime(value: string | number): string {
                   · {{ formatDateTime(props.aiAppliedAt) }}
                 </span>
               </div>
+            </div>
+
+            <div
+              v-if="props.aiError"
+              class="border border-error/30 bg-error/10 px-2 py-1 text-[11px] text-error"
+            >
+              {{ props.aiError }}
             </div>
 
             <p class="text-[11px] text-navy/60">

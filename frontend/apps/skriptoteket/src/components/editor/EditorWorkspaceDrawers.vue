@@ -13,6 +13,7 @@ type EditorWorkspaceDrawersProps = {
   chatDisabledMessage: string | null;
   chatError: string | null;
   isEditOpsLoading: boolean;
+  isEditOpsSlow: boolean;
 
   editOpsError: string | null;
   editOpsDisabledMessage: string | null;
@@ -49,6 +50,7 @@ const emit = defineEmits<{
     :disabled-message="props.chatDisabledMessage"
     :error="props.chatError"
     :is-edit-ops-loading="props.isEditOpsLoading"
+    :edit-ops-is-slow="props.isEditOpsSlow"
     :edit-ops-error="props.editOpsError"
     :edit-ops-disabled-message="props.editOpsDisabledMessage"
     :clear-draft-token="props.editOpsClearDraftToken"

@@ -5,7 +5,7 @@ title: "Editor AI: edit-ops v2 hardening (backend patching + controlled fuzz + U
 status: ready
 owners: "agents"
 created: 2026-01-10
-updated: 2026-01-10
+updated: 2026-01-11
 stories:
   - "ST-08-24"
 tags: ["backend", "frontend", "editor", "ai", "diff", "ux"]
@@ -15,6 +15,7 @@ acceptance_criteria:
   - "Frontend does not parse/apply diffs; it uses backend preview/apply and renders diffs from `before` vs `after_virtual_files`."
   - "If fuzz>0 OR max_offset>10, the UI shows a warning and requires an extra confirmation click before apply."
   - "Chat drawer keeps the prompt text until the edit-ops request succeeds (no silent prompt loss on failure)."
+  - "When edit-ops generation is slow, the chat drawer shows a subtle inline hint after ~45s (slow ≠ failure)."
   - "Edit-ops request errors are visible in the chat UI (not only via toast) and are actionable."
   - "Patch/anchor preview+apply failures are surfaced clearly with a single Regenerate path; failures include compact hunk-level details when available."
   - "Selection requests include cursor at selection end per ADR-0051."
@@ -125,6 +126,7 @@ UX + tests) without expanding the feature scope. Reduce regen loops while keepin
 
 - [x] Chat drawer: “Föreslå ändringar” does not clear draft until request succeeds.
 - [x] Chat drawer: edit-ops request failures show via `SystemMessage` (and do not rely only on toast).
+- [x] Chat drawer: shows a slow-request hint after ~45s (slow ≠ failure).
 - [x] Edit-ops request uses cursor semantics aligned with ADR-0051 when selection exists (cursor defaults to selection end).
 - [x] Proposal preview uses backend preview results (`after_virtual_files`) rather than client patch apply.
 - [x] Apply uses backend apply with `base_hash` + `patch_id`; 409 triggers re-preview + re-confirm.
@@ -132,6 +134,7 @@ UX + tests) without expanding the feature scope. Reduce regen loops while keepin
 - [x] Client-side unified diff apply is removed/unused (`frontend/apps/skriptoteket/src/composables/editor/diff/applyUnifiedPatchStrict.ts`).
 - [x] Diff previews are scroll-safe (AI proposal panel + working-copy restore modal “Visa diff”).
 - [x] Post-apply UX is compact: toolbar “AI” pill + undo/redo mini-buttons (no persistent banner).
+- [x] Undo/redo errors are visible inline in the AI pill popover (no toast needed).
 - [x] Restore-point label for AI apply is user-readable (“AI: före tillämpning”) and visible in “Öppna sparade”.
 - [x] Save menu shows blockers when saving is disabled (schema errors/read-only/etc).
 

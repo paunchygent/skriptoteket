@@ -127,6 +127,7 @@ type EditorWorkspacePanelProps = {
 
   editOpsState: EditOpsPanelState;
   isEditOpsRequesting: boolean;
+  isEditOpsSlow: boolean;
 };
 
 const props = defineProps<EditorWorkspacePanelProps>();
@@ -269,6 +270,7 @@ const chatColumnWidth = computed(() => {
               :ai-undo-disabled-reason="props.editOpsState.undoDisabledReason"
               :ai-can-redo="props.editOpsState.canRedo"
               :ai-redo-disabled-reason="props.editOpsState.redoDisabledReason"
+              :ai-error="props.editOpsState.undoError"
               @save="emit('save')"
               @open-history-drawer="emit('openHistoryDrawer')"
               @create-checkpoint="emit('createCheckpoint', $event)"
@@ -507,6 +509,7 @@ const chatColumnWidth = computed(() => {
           :chat-disabled-message="props.chatDisabledMessage"
           :chat-error="props.chatError"
           :is-edit-ops-loading="props.isEditOpsRequesting"
+          :is-edit-ops-slow="props.isEditOpsSlow"
           :edit-ops-error="props.editOpsRequestError"
           :edit-ops-disabled-message="props.editOpsDisabledMessage"
           :edit-ops-clear-draft-token="props.editOpsClearDraftToken"

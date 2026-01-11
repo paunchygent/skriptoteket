@@ -168,6 +168,8 @@ watch(
 @media (min-width: 768px) {
   .auth-main-wrapper {
     margin-left: var(--huleedu-sidebar-width);
+    transition: margin-left var(--huleedu-duration-slow) var(--huleedu-ease-default);
+    will-change: margin-left;
   }
 
   .auth-main-wrapper.is-focus-mode {

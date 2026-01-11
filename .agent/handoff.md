@@ -12,13 +12,13 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-01-10
+- Date: 2026-01-11
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: ST-14-01/14-02 done; ST-14-09 done; ST-14-10 done; ST-14-13/14 done; ST-14-15 done; ST-14-16 done; ST-14-17 done; ST-14-18 done; ST-14-30 done; ST-14-31 done; ST-08-23 done
 
-## Current Session (2026-01-10)
+## Current Session (2026-01-11)
 
 - EPIC-08 edit-ops v2: review set to `changes_requested` + clarified v2 semantics (triggering, patch/anchor shapes, AI diff preview UI): `docs/backlog/reviews/review-epic-08-ai-edit-ops-v2.md`, `docs/adr/adr-0051-chat-first-ai-editing.md`, `docs/backlog/stories/story-08-24-ai-edit-ops-anchor-patch-v2.md`.
 - Docs validate (after the review/doc edits): `pdm run docs-validate` (pass).
@@ -28,9 +28,12 @@ Keep this file updated so the next session can pick up work quickly.
 - Follow-up hardening fixes (trust/UX):
   - Diff scroll: ensure CodeMirror MergeView scrolls via `.cm-mergeView` and that AI + working-copy diffs are height-constrained: `frontend/apps/skriptoteket/src/components/editor/diff/CodeMirrorMergeDiff.vue`, `frontend/apps/skriptoteket/src/components/editor/diff/{AiVirtualFileDiffViewer,VirtualFileDiffViewer}.vue`, `frontend/apps/skriptoteket/src/components/editor/WorkingCopyRestorePrompt.vue`.
   - Post-apply UX: remove the “AI-ÄNDRING … tillämpat” banner; replace with compact toolbar “AI” pill + undo/redo mini-buttons (no extra vertical space): `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceToolbar.vue`, `frontend/apps/skriptoteket/src/composables/editor/useEditorEditOps.ts`.
+  - Surface AI undo/redo errors inline in the AI pill popover (no toast needed): `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceToolbar.vue`, `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`.
   - Save UX: show “blockers” inline in the save dropdown when disabled (schema errors, read-only, etc): `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceToolbar.vue`.
   - Local llama.cpp: bump chat-ops timeout from 60s → 120s to avoid false failures: `src/skriptoteket/config.py`.
   - New Playwright check: working-copy diff modal remains scrollable/closable: `scripts/playwright_st_08_24_working_copy_diff_scroll_check.py`.
+  - Chat UX: show a “still generating” hint after 45s (slow ≠ failure): `frontend/apps/skriptoteket/src/composables/editor/useEditorEditOps.ts`, `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`.
+  - Remove undo/redo success toasts (state is visible in toolbar controls): `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`.
 - Editor modes now fixed toggles (Källkod/Diff/Metadata) with compare text relabeled to Diff; metadata/instructions/behörigheter render as in-page panels (no drawer overlay): `frontend/apps/skriptoteket/src/components/editor/{EditorWorkspaceToolbar,EditorWorkspacePanel,MetadataDrawer,InstructionsDrawer,MaintainersDrawer}.vue`, `frontend/apps/skriptoteket/src/components/editor/EditorComparePanel.vue`, `frontend/apps/skriptoteket/src/components/editor/diff/VirtualFileDiffViewer.vue`, `frontend/apps/skriptoteket/src/composables/editor/{editorCompareDefaults,useEditorCompareData}.ts`.
 - Editor workspace layout refit: toolbar sits under header; mode content uses fixed-height row; chat now aligns to editor row with a spacer row for schemas; diff toggle always enabled (shows empty state if no compare target): `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`, `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`.
 - ST-08-21 backend scaffold: edit-ops handler + OpenAI provider + prompt template + settings + router/model wiring (POST `/api/v1/editor/edit-ops`): `src/skriptoteket/application/editor/edit_ops_handler.py`, `src/skriptoteket/infrastructure/llm/openai_provider.py`, `src/skriptoteket/application/editor/system_prompts/editor_chat_ops_v1.txt`, `src/skriptoteket/config.py`, `src/skriptoteket/web/api/v1/editor/{edit_ops.py,models.py,__init__.py}`, `src/skriptoteket/protocols/llm.py`, `src/skriptoteket/di/llm.py`, `src/skriptoteket/application/editor/prompt_{templates,budget,composer}.py`.
@@ -86,6 +89,8 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Verification
 
+- UI live check (dev local): `pdm run dev-local` (Vite + Uvicorn running); `pdm run ui-smoke --base-url http://127.0.0.1:5173` failed (Playwright strict mode: help panel has two headings matching "Hjälp").
+- UI live check (dev local): `pdm run python -m scripts.playwright_nav_transitions_smoke --base-url http://127.0.0.1:5173` (pass; screenshots in `.artifacts/ui-smoke`).
 - Backend unit tests (edit-ops v2 hardening): `pdm run pytest tests/unit/application/test_editor_edit_ops_preview_handler.py tests/unit/infrastructure/test_unified_diff_applier.py tests/unit/web/test_editor_edit_ops_preview_apply_api.py -q` (pass).
 - Frontend unit tests: `pdm run fe-test` (pass).
 - Playwright chat drawer check (Vite): `pdm run python -m scripts.playwright_st_08_20_editor_chat_drawer_check --base-url http://127.0.0.1:5173` (pass; artifacts in `.artifacts/ui-editor-chat/`).
@@ -120,6 +125,7 @@ Keep this file updated so the next session can pick up work quickly.
 - LLM edit connectivity (container → host): `ssh hemma "sudo docker exec skriptoteket-web python -c \"import urllib.request; print(urllib.request.urlopen('http://172.18.0.1:8082/health').read().decode())\""`
 - UI check (Playwright; macOS escalation may be needed):
   - Working-copy diff modal scroll/close: `pdm run python -m scripts.playwright_st_08_24_working_copy_diff_scroll_check --base-url http://localhost:5173` (pass; artifacts in `.artifacts/ui-working-copy-diff/`).
+- Frontend unit: `pdm run fe-test` (pass; added CodeMirror MergeView scroll contract tests + Range polyfills in `frontend/apps/skriptoteket/src/test/setup.ts`).
 
 ## How to Run
 
