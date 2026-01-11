@@ -43,7 +43,6 @@ function onToggleFocusMode(): void {
   <header class="top-user-bar">
     <div class="top-user-bar-left">
       <div
-        v-if="isFocusMode"
         class="topbar-brand-spacer"
         aria-hidden="true"
       />

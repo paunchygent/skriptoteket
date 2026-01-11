@@ -13,7 +13,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2026-01-11
-- Branch: `main` + local changes
+- Branch: `main`
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: ST-14-01/14-02 done; ST-14-09 done; ST-14-10 done; ST-14-13/14 done; ST-14-15 done; ST-14-16 done; ST-14-17 done; ST-14-18 done; ST-14-30 done; ST-14-31 done; ST-08-23 done
@@ -125,6 +125,7 @@ Keep this file updated so the next session can pick up work quickly.
 - LLM edit connectivity (container → host): `ssh hemma "sudo docker exec skriptoteket-web python -c \"import urllib.request; print(urllib.request.urlopen('http://172.18.0.1:8082/health').read().decode())\""`
 - UI check (Playwright; macOS escalation may be needed):
   - Focus mode toggle + topbar logo: open `http://127.0.0.1:5173`, login, toggle focus mode; verify sidebar fades, topbar logo stays fixed, and toggle width does not jump.
+  - Topbar height: focus mode on/off has same height (`frontend/apps/skriptoteket/src/components/layout/AuthTopBar.vue`) (user visual check).
   - Working-copy diff modal scroll/close: `pdm run python -m scripts.playwright_st_08_24_working_copy_diff_scroll_check --base-url http://localhost:5173` (pass; artifacts in `.artifacts/ui-working-copy-diff/`).
 - Frontend unit: `pdm run fe-test` (pass; added CodeMirror MergeView scroll contract tests + Range polyfills in `frontend/apps/skriptoteket/src/test/setup.ts`).
 
