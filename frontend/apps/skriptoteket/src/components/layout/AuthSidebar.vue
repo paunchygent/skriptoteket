@@ -201,6 +201,12 @@ function onHelp(): void {
   padding: var(--huleedu-space-6) var(--huleedu-space-4);
 }
 
+@media (min-width: 768px) {
+  .sidebar-content {
+    padding-top: var(--huleedu-space-3);
+  }
+}
+
 .sidebar-brand {
   font-family: var(--huleedu-font-serif);
   font-weight: var(--huleedu-font-bold);
@@ -209,6 +215,12 @@ function onHelp(): void {
   color: var(--huleedu-navy);
   text-decoration: none;
   margin-bottom: var(--huleedu-space-8);
+}
+
+@media (min-width: 768px) {
+  .sidebar-brand {
+    transform: translateY(1px);
+  }
 }
 
 .sidebar-brand:hover {

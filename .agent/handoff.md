@@ -124,6 +124,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Bootstrap login (server): `/api/v1/auth/login` using `BOOTSTRAP_SUPERUSER_*` from `~/apps/skriptoteket/.env` (no secrets stored here).
 - LLM edit connectivity (container → host): `ssh hemma "sudo docker exec skriptoteket-web python -c \"import urllib.request; print(urllib.request.urlopen('http://172.18.0.1:8082/health').read().decode())\""`
 - UI check (Playwright; macOS escalation may be needed):
+  - Focus mode toggle + topbar logo: open `http://127.0.0.1:5173`, login, toggle focus mode; verify sidebar fades, topbar logo stays fixed, and toggle width does not jump.
   - Working-copy diff modal scroll/close: `pdm run python -m scripts.playwright_st_08_24_working_copy_diff_scroll_check --base-url http://localhost:5173` (pass; artifacts in `.artifacts/ui-working-copy-diff/`).
 - Frontend unit: `pdm run fe-test` (pass; added CodeMirror MergeView scroll contract tests + Range polyfills in `frontend/apps/skriptoteket/src/test/setup.ts`).
 

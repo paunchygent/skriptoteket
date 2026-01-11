@@ -142,7 +142,7 @@ function onToggleFocusMode(): void {
   position: absolute;
   top: 50%;
   left: var(--huleedu-space-4);
-  transform: translateY(-50%);
+  transform: translateY(calc(-50% + 1px));
   z-index: 31;
   display: inline-flex;
   align-items: center;
