@@ -71,7 +71,12 @@ describe("useEditorChat", () => {
 
     const toolId = ref("tool-1");
     const baseVersionId = ref<string | null>(null);
-    const { error, messages, sendMessage } = useEditorChat({ toolId, baseVersionId });
+    const allowRemoteFallback = ref(false);
+    const { error, messages, sendMessage } = useEditorChat({
+      toolId,
+      baseVersionId,
+      allowRemoteFallback,
+    });
 
     const sendPromise = sendMessage("Hej");
 
@@ -112,7 +117,12 @@ describe("useEditorChat", () => {
 
     const toolId = ref("tool-1");
     const baseVersionId = ref<string | null>(null);
-    const { error, messages, sendMessage } = useEditorChat({ toolId, baseVersionId });
+    const allowRemoteFallback = ref(false);
+    const { error, messages, sendMessage } = useEditorChat({
+      toolId,
+      baseVersionId,
+      allowRemoteFallback,
+    });
 
     const sendPromise = sendMessage("Hej");
 
@@ -152,7 +162,12 @@ describe("useEditorChat", () => {
 
     const toolId = ref("tool-1");
     const baseVersionId = ref<string | null>(null);
-    const { messages, streaming, sendMessage, cancel } = useEditorChat({ toolId, baseVersionId });
+    const allowRemoteFallback = ref(false);
+    const { messages, streaming, sendMessage, cancel } = useEditorChat({
+      toolId,
+      baseVersionId,
+      allowRemoteFallback,
+    });
 
     const sendPromise = sendMessage("Hej");
 
@@ -191,7 +206,12 @@ describe("useEditorChat", () => {
 
     const toolId = ref("tool-1");
     const baseVersionId = ref<string | null>(null);
-    const { messages, streaming, clear } = useEditorChat({ toolId, baseVersionId });
+    const allowRemoteFallback = ref(false);
+    const { messages, streaming, clear } = useEditorChat({
+      toolId,
+      baseVersionId,
+      allowRemoteFallback,
+    });
 
     messages.value = [
       {

@@ -208,8 +208,8 @@ This ensures the LLM understands:
 ### 5.1 Condensed KB (~450 tokens)
 
 For injection into prompts (example content). In production we compose the system prompt from a repo-owned prompt
-template selected by `LLM_COMPLETION_TEMPLATE_ID` / `LLM_EDIT_TEMPLATE_ID`, with code-owned fragments (Contract v2 +
-runner constraints + helpers) (ST-08-18).
+template selected by `LLM_COMPLETION_TEMPLATE_ID` / `LLM_CHAT_TEMPLATE_ID` / `LLM_CHAT_OPS_TEMPLATE_ID`, with
+code-owned fragments (Contract v2 + runner constraints + helpers) (ST-08-18).
 
 ```text
 Skriptoteket Python script completion. Scripts process uploaded files and return structured results.
@@ -268,7 +268,8 @@ LIBRARIES: pandas, openpyxl, pypdf, python-docx, weasyprint, jinja2
 
 ### 5.3 Context Budget Enforcement (llama.cpp `n_ctx=4096`)
 
-For both inline completions and edit suggestions, llama.cpp enforces that **prompt tokens + output tokens** fit within
+For both inline completions and chat-first editor capabilities, llama.cpp enforces that **prompt tokens + output
+tokens** fit within
 the configured context window (`n_ctx`). This means `max_tokens` reduces the available prompt budget.
 
 Chat-first editing proposals (ADR-0051) are expected to require larger outputs than inline completions. Increasing
@@ -279,7 +280,8 @@ Skriptoteket enforces a deterministic prompt budget in the backend:
 
 - Use the dedicated system prompt templates (selected by template ID):
   - `LLM_COMPLETION_TEMPLATE_ID` (inline completions)
-  - `LLM_EDIT_TEMPLATE_ID` (edit suggestions)
+  - `LLM_CHAT_TEMPLATE_ID` (chat streaming)
+  - `LLM_CHAT_OPS_TEMPLATE_ID` (chat edit-ops)
 - Reserve an explicit safety margin
 - Trim suffix first, then prefix; reduce KB last (if still over budget)
 
@@ -419,7 +421,6 @@ type GhostTextState = {
 Prompt templates:
 
 - `LLM_COMPLETION_TEMPLATE_ID` (default: `inline_completion_v1`)
-- `LLM_EDIT_TEMPLATE_ID` (default: `edit_suggestion_v1`)
 - `LLM_CHAT_TEMPLATE_ID` (default: `editor_chat_v1`)
 - `LLM_CHAT_OPS_TEMPLATE_ID` (default: `editor_chat_ops_v1`)
 
@@ -430,14 +431,14 @@ Notes:
 
 Provider caching + headers (applies per profile):
 
-- `LLM_COMPLETION_PROMPT_CACHE_RETENTION` / `LLM_EDIT_PROMPT_CACHE_RETENTION` /
+- `LLM_COMPLETION_PROMPT_CACHE_RETENTION` /
   `LLM_CHAT_PROMPT_CACHE_RETENTION` / `LLM_CHAT_OPS_PROMPT_CACHE_RETENTION`:
   Optional prompt cache retention. Use `24h` for GPT-5-2 family (prompt caching), or omit for providers
   that do not support it.
-- `LLM_COMPLETION_PROMPT_CACHE_KEY` / `LLM_EDIT_PROMPT_CACHE_KEY` /
+- `LLM_COMPLETION_PROMPT_CACHE_KEY` /
   `LLM_CHAT_PROMPT_CACHE_KEY` / `LLM_CHAT_OPS_PROMPT_CACHE_KEY`:
   Optional stable key to improve cache routing (example: `skriptoteket:chat_ops`).
-- `LLM_COMPLETION_EXTRA_HEADERS` / `LLM_EDIT_EXTRA_HEADERS` /
+- `LLM_COMPLETION_EXTRA_HEADERS` /
   `LLM_CHAT_EXTRA_HEADERS` / `LLM_CHAT_OPS_EXTRA_HEADERS`:
   JSON object of provider-specific headers (example: `{"HTTP-Referer":"https://example.com","X-Title":"Skriptoteket"}`).
 
@@ -458,26 +459,6 @@ Inline completions:
 | `LLM_COMPLETION_SYSTEM_PROMPT_MAX_TOKENS` | `1024` | Target max tokens for system prompt (rules + KB) |
 | `LLM_COMPLETION_PREFIX_MAX_TOKENS` | `2048` | Target max tokens for prefix (keeps tail near cursor) |
 | `LLM_COMPLETION_SUFFIX_MAX_TOKENS` | `512` | Target max tokens for suffix (keeps head after cursor) |
-
-Edit suggestions:
-
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
-| `LLM_EDIT_TEMPLATE_ID` | `edit_suggestion_v1` | Prompt template ID for system prompt composition |
-| `LLM_EDIT_ENABLED` | `false` | Enable/disable feature |
-| `LLM_EDIT_BASE_URL` | `http://localhost:8082` | LLM API URL |
-| `OPENAI_LLM_EDIT_API_KEY` | `""` | API key (optional for self-hosted) |
-| `LLM_EDIT_MODEL` | `Devstral-Small-2-24B` | Model name |
-| `LLM_EDIT_MAX_TOKENS` | `512` | Max tokens in response |
-| `LLM_EDIT_TEMPERATURE` | `0.2` | Sampling temperature |
-| `LLM_EDIT_TIMEOUT_SECONDS` | `60` | Request timeout |
-| `LLM_EDIT_CONTEXT_WINDOW_TOKENS` | `4096` | Context window (prompt + output), matches llama.cpp `n_ctx` |
-| `LLM_EDIT_CONTEXT_SAFETY_MARGIN_TOKENS` | `256` | Reserved prompt budget for chat wrapping/variance |
-| `LLM_EDIT_SYSTEM_PROMPT_MAX_TOKENS` | `1024` | Target max tokens for system prompt (rules + KB) |
-| `LLM_EDIT_INSTRUCTION_MAX_TOKENS` | `128` | Target max tokens for edit instruction |
-| `LLM_EDIT_SELECTION_MAX_TOKENS` | `896` | Target max tokens for selection (preserved first) |
-| `LLM_EDIT_PREFIX_MAX_TOKENS` | `1024` | Target max tokens for prefix context |
-| `LLM_EDIT_SUFFIX_MAX_TOKENS` | `256` | Target max tokens for suffix context |
 
 Chat (streaming):
 

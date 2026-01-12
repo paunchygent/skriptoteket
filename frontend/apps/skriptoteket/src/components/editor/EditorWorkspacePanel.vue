@@ -87,6 +87,7 @@ type EditorWorkspacePanelProps = {
   isHistoryDrawerOpen: boolean;
   isChatDrawerOpen: boolean;
   isChatCollapsed: boolean;
+  allowRemoteFallback: boolean;
   canCompareVersions: boolean;
   lockBadgeLabel: string | null;
   lockBadgeTone: "success" | "neutral";
@@ -121,6 +122,8 @@ type EditorWorkspacePanelProps = {
   chatIsStreaming: boolean;
   chatDisabledMessage: string | null;
   chatError: string | null;
+  chatNoticeMessage: string | null;
+  chatNoticeVariant: "info" | "warning";
   editOpsRequestError: string | null;
   editOpsDisabledMessage: string | null;
   editOpsClearDraftToken: number;
@@ -175,6 +178,8 @@ const emit = defineEmits<{
   (event: "clearChat"): void;
   (event: "clearChatError"): void;
   (event: "clearChatDisabled"): void;
+  (event: "clearChatNotice"): void;
+  (event: "setAllowRemoteFallback", value: boolean): void;
   (event: "requestEditOps", message: string): void;
   (event: "clearEditOpsError"): void;
   (event: "clearEditOpsDisabled"): void;
@@ -213,10 +218,10 @@ const chatColumnWidth = computed(() => {
 <template>
   <div class="border border-navy bg-white shadow-brutal-sm flex flex-col min-h-0 h-full">
     <div
-      class="grid flex-1 min-h-0 h-full gap-y-3 transition-[grid-template-columns] duration-200 ease-out md:grid-cols-[minmax(0,1fr)_var(--chat-column-width)] md:grid-rows-[auto_minmax(0,1fr)_auto]"
+      class="grid flex-1 min-h-0 h-full gap-y-3 transition-[grid-template-columns] duration-200 ease-out lg:grid-cols-[minmax(0,1fr)_var(--chat-column-width)] lg:grid-rows-[auto_minmax(0,1fr)_auto]"
       :style="{ '--chat-column-width': chatColumnWidth, '--chat-rail-width': chatRailWidth }"
     >
-      <div class="min-w-0 px-3 pt-3 md:col-span-2 md:row-start-1">
+      <div class="min-w-0 px-3 pt-3 lg:col-span-2 lg:row-start-1">
         <div
           class="grid gap-x-4 gap-y-2 border-b border-navy/20 pb-3 md:grid-cols-[minmax(0,1fr)_auto] md:grid-rows-[auto_auto_auto]"
         >
@@ -255,6 +260,7 @@ const chatColumnWidth = computed(() => {
               :is-saving="props.isSaving"
               :is-read-only="props.isReadOnly"
               :has-dirty-changes="props.hasDirtyChanges"
+              :is-chat-collapsed="props.isChatCollapsed"
               :save-label="props.saveLabel"
               :save-title="props.saveTitle"
               :change-summary="props.changeSummary"
@@ -275,18 +281,19 @@ const chatColumnWidth = computed(() => {
               @open-history-drawer="emit('openHistoryDrawer')"
               @create-checkpoint="emit('createCheckpoint', $event)"
               @update:change-summary="emit('update:changeSummary', $event)"
+              @toggle-chat-collapsed="emit('toggleChatCollapsed')"
               @undo-ai="emit('undoEditOps')"
               @redo-ai="emit('redoEditOps')"
             />
           </div>
 
-          <div class="flex items-start justify-end md:col-start-2 md:row-start-1">
-            <span class="text-[10px] font-semibold uppercase tracking-wide text-navy/60 text-right">
+          <div class="flex items-start justify-start md:justify-end md:col-start-2 md:row-start-1">
+            <span class="text-[10px] font-semibold uppercase tracking-wide text-navy/60 md:text-right">
               {{ props.statusLine }}
             </span>
           </div>
 
-          <div class="flex items-start justify-end md:col-start-2 md:row-start-2 md:mt-0.5">
+          <div class="flex items-start justify-start md:justify-end md:col-start-2 md:row-start-2 md:mt-0.5">
             <WorkflowContextButtons
               :can-submit-review="props.canSubmitReview"
               :submit-review-tooltip="props.submitReviewTooltip"
@@ -298,7 +305,7 @@ const chatColumnWidth = computed(() => {
             />
           </div>
 
-          <div class="flex items-end justify-end md:col-start-2 md:row-start-3 md:self-end">
+          <div class="flex items-end justify-start md:justify-end md:col-start-2 md:row-start-3 md:self-end">
             <EditorWorkspaceModeSelector
               :active-mode="props.activeMode"
               :can-enter-diff="props.canEnterDiff"
@@ -310,7 +317,7 @@ const chatColumnWidth = computed(() => {
       </div>
 
       <div
-        class="min-h-0 min-w-0 px-3 md:col-start-1 md:row-start-2 flex flex-col h-full overflow-hidden"
+        class="min-h-0 min-w-0 px-3 lg:col-start-1 lg:row-start-2 flex flex-col h-full overflow-hidden"
         :class="{ 'pb-3': !showsSchemaPanels }"
       >
         <template v-if="isDiffMode">
@@ -454,7 +461,7 @@ const chatColumnWidth = computed(() => {
 
       <div
         v-if="showsSchemaPanels"
-        class="min-h-0 min-w-0 px-3 pb-3 md:col-start-1 md:row-start-3"
+        class="min-h-0 min-w-0 px-3 pb-3 lg:col-start-1 lg:row-start-3"
       >
         <section class="panel-inset">
           <div class="border-b border-navy/20 px-3 py-2 flex items-center justify-between gap-3">
@@ -472,7 +479,7 @@ const chatColumnWidth = computed(() => {
           </div>
           <div
             v-show="!isSchemaCollapsed"
-            class="grid lg:grid-cols-2 divide-x divide-navy/20"
+            class="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-navy/20"
             :aria-hidden="isSchemaCollapsed"
           >
             <EditorInputSchemaPanel
@@ -498,16 +505,19 @@ const chatColumnWidth = computed(() => {
 
       <div
         v-if="props.isChatDrawerOpen"
-        class="min-h-0 min-w-0 md:col-start-2 md:row-start-2 md:row-span-2 md:border-l-2 md:border-t-2 md:border-navy/20 md:bg-canvas md:shadow-none"
+        class="hidden min-h-0 min-w-0 lg:block lg:col-start-2 lg:row-start-2 lg:row-span-2 lg:border-l-2 lg:border-t-2 lg:border-navy/20 lg:bg-canvas lg:shadow-none"
       >
         <EditorWorkspaceDrawers
           variant="column"
           :is-chat-drawer-open="props.isChatDrawerOpen"
           :is-chat-collapsed="props.isChatCollapsed"
+          :allow-remote-fallback="props.allowRemoteFallback"
           :chat-messages="props.chatMessages"
           :chat-is-streaming="props.chatIsStreaming"
           :chat-disabled-message="props.chatDisabledMessage"
           :chat-error="props.chatError"
+          :chat-notice-message="props.chatNoticeMessage"
+          :chat-notice-variant="props.chatNoticeVariant"
           :is-edit-ops-loading="props.isEditOpsRequesting"
           :is-edit-ops-slow="props.isEditOpsSlow"
           :edit-ops-error="props.editOpsRequestError"
@@ -520,11 +530,48 @@ const chatColumnWidth = computed(() => {
           @clear-chat="emit('clearChat')"
           @clear-chat-error="emit('clearChatError')"
           @clear-chat-disabled="emit('clearChatDisabled')"
+          @clear-chat-notice="emit('clearChatNotice')"
+          @set-allow-remote-fallback="emit('setAllowRemoteFallback', $event)"
           @clear-edit-ops-error="emit('clearEditOpsError')"
           @clear-edit-ops-disabled="emit('clearEditOpsDisabled')"
           @request-edit-ops="emit('requestEditOps', $event)"
         />
       </div>
+    </div>
+
+    <div
+      v-if="props.isChatDrawerOpen && !props.isChatCollapsed"
+      class="lg:hidden"
+    >
+      <EditorWorkspaceDrawers
+        variant="drawer"
+        :is-chat-drawer-open="props.isChatDrawerOpen"
+        :is-chat-collapsed="props.isChatCollapsed"
+        :allow-remote-fallback="props.allowRemoteFallback"
+        :chat-messages="props.chatMessages"
+        :chat-is-streaming="props.chatIsStreaming"
+        :chat-disabled-message="props.chatDisabledMessage"
+        :chat-error="props.chatError"
+        :chat-notice-message="props.chatNoticeMessage"
+        :chat-notice-variant="props.chatNoticeVariant"
+        :is-edit-ops-loading="props.isEditOpsRequesting"
+        :is-edit-ops-slow="props.isEditOpsSlow"
+        :edit-ops-error="props.editOpsRequestError"
+        :edit-ops-disabled-message="props.editOpsDisabledMessage"
+        :edit-ops-clear-draft-token="props.editOpsClearDraftToken"
+        @close="emit('closeDrawer')"
+        @toggle-chat-collapsed="emit('toggleChatCollapsed')"
+        @send-chat-message="emit('sendChatMessage', $event)"
+        @cancel-chat-stream="emit('cancelChatStream')"
+        @clear-chat="emit('clearChat')"
+        @clear-chat-error="emit('clearChatError')"
+        @clear-chat-disabled="emit('clearChatDisabled')"
+        @clear-chat-notice="emit('clearChatNotice')"
+        @set-allow-remote-fallback="emit('setAllowRemoteFallback', $event)"
+        @clear-edit-ops-error="emit('clearEditOpsError')"
+        @clear-edit-ops-disabled="emit('clearEditOpsDisabled')"
+        @request-edit-ops="emit('requestEditOps', $event)"
+      />
     </div>
 
     <VersionHistoryDrawer

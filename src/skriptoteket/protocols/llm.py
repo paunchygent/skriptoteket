@@ -14,6 +14,7 @@ from skriptoteket.domain.scripting.tool_session_messages import ToolSessionMessa
 PromptEvalOutcome = Literal["ok", "empty", "truncated", "over_budget", "timeout", "error"]
 ChatStreamDoneReason = Literal["stop", "cancelled", "error"]
 ChatMessageRole = Literal["user", "assistant"]
+SystemMessageVariant = Literal["info", "warning"]
 VirtualFileId = Literal[
     "tool.py",
     "entrypoint.txt",
@@ -54,22 +55,6 @@ class LLMCompletionResponse(BaseModel):
     finish_reason: str | None = None
 
 
-class LLMEditRequest(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    prefix: str
-    selection: str
-    suffix: str
-    instruction: str | None = None
-
-
-class LLMEditResponse(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    suggestion: str
-    finish_reason: str | None = None
-
-
 class ChatMessage(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -90,6 +75,7 @@ class LLMChatOpsResponse(BaseModel):
 
     content: str
     finish_reason: str | None = None
+    raw_payload: dict[str, object] | None = None
 
 
 class InlineCompletionCommand(BaseModel):
@@ -105,25 +91,6 @@ class InlineCompletionResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     completion: str
-    enabled: bool
-    eval_meta: PromptEvalMeta | None = None
-
-
-class EditSuggestionCommand(BaseModel):
-    """Application command for editor edit suggestions."""
-
-    model_config = ConfigDict(frozen=True)
-
-    prefix: str
-    selection: str
-    suffix: str
-    instruction: str | None = None
-
-
-class EditSuggestionResult(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    suggestion: str
     enabled: bool
     eval_meta: PromptEvalMeta | None = None
 
@@ -325,6 +292,7 @@ class EditOpsCommand(BaseModel):
     selection: EditOpsSelection | None = None
     cursor: EditOpsCursor | None = None
     virtual_files: dict[VirtualFileId, str]
+    allow_remote_fallback: bool = False
 
 
 class EditOpsResult(BaseModel):
@@ -396,6 +364,7 @@ class EditorChatCommand(BaseModel):
     tool_id: UUID
     message: str
     base_version_id: UUID | None = None
+    allow_remote_fallback: bool = False
 
 
 class EditorChatHistoryQuery(BaseModel):
@@ -442,6 +411,14 @@ class EditorChatDoneDisabledData(BaseModel):
 
     enabled: Literal[False] = False
     message: str
+    code: str | None = None
+
+
+class EditorChatNoticeData(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    message: str
+    variant: SystemMessageVariant = "info"
 
 
 class EditorChatMetaEvent(BaseModel):
@@ -465,7 +442,16 @@ class EditorChatDoneEvent(BaseModel):
     data: EditorChatDoneEnabledData | EditorChatDoneDisabledData
 
 
-EditorChatStreamEvent = EditorChatMetaEvent | EditorChatDeltaEvent | EditorChatDoneEvent
+class EditorChatNoticeEvent(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    event: Literal["notice"] = "notice"
+    data: EditorChatNoticeData
+
+
+EditorChatStreamEvent = (
+    EditorChatMetaEvent | EditorChatNoticeEvent | EditorChatDeltaEvent | EditorChatDoneEvent
+)
 
 
 class InlineCompletionProviderProtocol(Protocol):
@@ -477,17 +463,6 @@ class InlineCompletionProviderProtocol(Protocol):
         request: LLMCompletionRequest,
         system_prompt: str,
     ) -> LLMCompletionResponse: ...
-
-
-class EditSuggestionProviderProtocol(Protocol):
-    """Protocol for an OpenAI-compatible edit provider."""
-
-    async def suggest_edits(
-        self,
-        *,
-        request: LLMEditRequest,
-        system_prompt: str,
-    ) -> LLMEditResponse: ...
 
 
 class ChatOpsProviderProtocol(Protocol):
@@ -512,6 +487,66 @@ class ChatStreamProviderProtocol(Protocol):
     ) -> AsyncIterator[str]: ...
 
 
+class ChatStreamProvidersProtocol(Protocol):
+    primary: ChatStreamProviderProtocol
+    fallback: ChatStreamProviderProtocol | None
+    fallback_is_remote: bool
+
+
+class ChatOpsProvidersProtocol(Protocol):
+    primary: ChatOpsProviderProtocol
+    fallback: ChatOpsProviderProtocol | None
+    fallback_is_remote: bool
+
+
+class ChatOpsBudget(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    context_window_tokens: int
+    max_output_tokens: int
+
+
+class ChatOpsBudgetResolverProtocol(Protocol):
+    """Resolve prompt budgeting constraints for chat-ops (edit-ops)."""
+
+    def resolve_chat_ops_budget(self, *, provider: "ChatFailoverProvider") -> ChatOpsBudget: ...
+
+
+ChatFailoverProvider = Literal["primary", "fallback"]
+ChatFailoverReason = Literal["primary_default", "sticky_fallback", "breaker_open", "load_shed"]
+ChatFailoverBlock = Literal["remote_fallback_required"]
+
+
+class ChatFailoverDecision(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    provider: ChatFailoverProvider
+    reason: ChatFailoverReason
+    blocked: ChatFailoverBlock | None = None
+
+
+class ChatFailoverRouterProtocol(Protocol):
+    async def decide_route(
+        self,
+        *,
+        user_id: UUID,
+        tool_id: UUID,
+        allow_remote_fallback: bool,
+        fallback_available: bool,
+        fallback_is_remote: bool,
+    ) -> ChatFailoverDecision: ...
+
+    async def acquire_inflight(self, *, provider: ChatFailoverProvider) -> None: ...
+
+    async def release_inflight(self, *, provider: ChatFailoverProvider) -> None: ...
+
+    async def record_success(self, *, provider: ChatFailoverProvider) -> None: ...
+
+    async def record_failure(self, *, provider: ChatFailoverProvider) -> None: ...
+
+    async def mark_fallback_used(self, *, user_id: UUID, tool_id: UUID) -> None: ...
+
+
 class InlineCompletionHandlerProtocol(Protocol):
     async def handle(
         self,
@@ -519,15 +554,6 @@ class InlineCompletionHandlerProtocol(Protocol):
         actor: User,
         command: InlineCompletionCommand,
     ) -> InlineCompletionResult: ...
-
-
-class EditSuggestionHandlerProtocol(Protocol):
-    async def handle(
-        self,
-        *,
-        actor: User,
-        command: EditSuggestionCommand,
-    ) -> EditSuggestionResult: ...
 
 
 class EditOpsHandlerProtocol(Protocol):

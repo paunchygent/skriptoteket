@@ -65,22 +65,6 @@ class EditorBootResponse(BaseModel):
     usage_instructions: str | None = None
 
 
-class EditorEditSuggestionRequest(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    prefix: str
-    selection: str
-    suffix: str
-    instruction: str | None = None
-
-
-class EditorEditSuggestionResponse(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    suggestion: str
-    enabled: bool
-
-
 class EditorEditOpsSelection(BaseModel):
     model_config = ConfigDict(frozen=True, populate_by_name=True)
 
@@ -124,6 +108,7 @@ class EditorEditOpsRequest(BaseModel):
 
     tool_id: UUID
     message: str = Field(min_length=1)
+    allow_remote_fallback: bool = False
     active_file: VirtualFileId
     selection: EditorEditOpsSelection | None = None
     cursor: EditorEditOpsCursor | None = None
@@ -303,6 +288,7 @@ class EditorChatRequest(BaseModel):
 
     message: str = Field(min_length=1)
     base_version_id: UUID | None = None
+    allow_remote_fallback: bool = False
 
 
 class EditorChatHistoryMessage(BaseModel):

@@ -15,7 +15,7 @@ acceptance_criteria:
   - "Given the newest user message cannot fit with the full system prompt and reserved output budget, when `POST /api/v1/editor/tools/{tool_id}/chat` is called, then the backend returns HTTP 422 with a user-actionable Swedish message and does not mutate stored chat history."
   - "Given a contributor calls `DELETE /api/v1/editor/tools/{tool_id}/chat`, then the backend clears the stored chat thread for that user and tool."
   - "Given a chat request is handled, then the backend logs metadata only (template id, lengths, outcome, latency) and never logs prompts, code, conversation text, or model output."
-  - "Given chat is configured, then it uses a dedicated `LLM_CHAT_*` profile and prompt template ID (does not reuse `LLM_COMPLETION_*` or `LLM_EDIT_*`)."
+  - "Given chat is configured, then it uses a dedicated `LLM_CHAT_*` profile and prompt template ID (does not reuse `LLM_COMPLETION_*`)."
   - "Given the endpoint is implemented, then the SSE event types and payload format are explicitly defined and stable to avoid frontend/backend drift."
 
 dependencies:

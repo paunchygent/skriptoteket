@@ -16,6 +16,8 @@ services:
       - ENVIRONMENT=development
       - ENABLE_DOCS=true
       - COOKIE_SECURE=false
+      # Ensure container uses the mounted artifacts dir (avoids relying on host-dev `.env` defaults like `/tmp/...`).
+      - ARTIFACTS_ROOT=/var/lib/skriptoteket/artifacts
       - WATCHFILES_FORCE_POLLING=true
       - WATCHFILES_POLL_DELAY_MS=300
   frontend:

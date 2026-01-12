@@ -2,9 +2,10 @@
 type: review
 id: REV-EPIC-08
 title: "Review: Anchor/Patch-based AI Edit Ops v2"
-status: changes_requested
+status: approved
 owners: "agents"
 created: 2026-01-10
+updated: 2026-01-11
 reviewer: "lead-developer"
 epic: EPIC-08
 adrs:
@@ -43,47 +44,41 @@ This undermines trust in the chat assistant and does not match expected coding-a
 
 | Decision | Rationale | Approve? |
 |----------|-----------|----------|
-| Adopt patch ops (unified diff) as the primary v2 targeting mode | Deterministic apply without cursor reliance | [ ] |
-| Support anchor targets for insert/replace/delete | Enables “insert after/before this text” without offsets | [ ] |
-| Define v2 triggering + request semantics (explicit vs implicit selection/cursor) | Prevents v2 never engaging; avoids cursor-less insert failures | [ ] |
-| Use an AI-specific diff preview UI (reuse diff engine only) | Avoids noisy version-review UI and outdated design patterns | [ ] |
-| Controlled backend fuzz ladder (0→whitespace-tolerant→1→2) + safe-fail + regenerate | Fewer regen loops while staying bounded and reviewable | [ ] |
+| Adopt patch ops (unified diff) as the primary v2 targeting mode | Deterministic apply without cursor reliance | [x] |
+| Support anchor targets for insert/replace/delete | Enables “insert after/before this text” without offsets | [x] |
+| Define v2 triggering + request semantics (explicit vs implicit selection/cursor) | Prevents v2 never engaging; avoids cursor-less insert failures | [x] |
+| Use an AI-specific diff preview UI (reuse diff engine only) | Avoids noisy version-review UI and outdated design patterns | [x] |
+| Controlled backend fuzz ladder (0→whitespace-tolerant→1→2) + safe-fail + regenerate | Fewer regen loops while staying bounded and reviewable | [x] |
 
 ## Review Checklist
 
-- [ ] ADR defines clear v2 contract boundaries
-- [ ] Story acceptance criteria are testable and complete
-- [ ] Scope stays within EPIC-08 goals
-- [ ] Risks are identified with mitigations
+- [x] ADR defines clear v2 contract boundaries
+- [x] Story acceptance criteria are testable and complete
+- [x] Scope stays within EPIC-08 goals
+- [x] Risks are identified with mitigations
 
 ---
 
 ## Review Feedback
 
 **Reviewer:** @lead-developer
-**Date:** 2026-01-10
-**Verdict:** changes_requested
+**Date:** 2026-01-11
+**Verdict:** approved
 
-### Required Changes
+### Required Changes (resolved)
 
 1) **Clarify v2 trigger + request semantics (must be unambiguous and testable)**
-   - Define “explicit selection/cursor” precisely (today the frontend effectively always sends a cursor/selection).
-   - Require the frontend to **omit both `selection` and `cursor`** when the user did not explicitly target a location,
-     so v2 reliably triggers.
-   - When a selection exists, require the request to include **both** `selection` and `cursor` (cursor position must be
-     explicitly defined) to avoid “markör men ingen markör finns” failures.
+   - Frontend now treats “explicit cursor” as a TTL-gated user interaction; when not explicit it omits both `selection`
+     and `cursor` (so v2 reliably triggers).
+   - When a selection exists, the frontend includes both `selection` and `cursor` (cursor defaults to selection end).
 
 2) **Define v2 JSON shapes**
-   - Patch op: required fields, unified diff header requirements (`a/<virtualFileId>` and `b/<virtualFileId>`), and
-     strict apply behavior (no fuzzy matching).
-   - Anchor target: required fields, match rules (exact + single match), and explicit error reasons for mismatch vs
-     ambiguity.
+   - Patch op: schema validates shape; backend sanitizes headers and rejects multi-file diffs; apply uses bounded fuzz
+     ladder.
+   - Anchor target: strict single-match resolution with user-actionable errors for missing/ambiguous anchors.
 
 3) **AI diff preview UX must be purpose-built**
-   - Reuse the diff implementation capabilities (merge view / unified patch helpers), but do **not** reuse the existing
-     “review/version diff” UI chrome (copy/download/patch controls) for AI proposals.
-   - Avoid clunky nested shadow stacks in the AI proposal panel; keep the surface minimal and consistent with current
-     SPA patterns.
+   - AI proposals render in an AI-specific diff surface (reuse diff engine only; no version-review chrome).
 
 ### Suggestions (Optional)
 
@@ -92,19 +87,19 @@ This undermines trust in the chat assistant and does not match expected coding-a
 
 ### Decision Approvals
 
-- [ ] Patch ops as primary v2 mode
-- [ ] Anchor targets for insert/replace/delete
-- [ ] V2 trigger + request semantics
-- [ ] AI diff preview uses AI-specific UI
-- [ ] Controlled fuzz ladder + safe-fail
+- [x] Patch ops as primary v2 mode
+- [x] Anchor targets for insert/replace/delete
+- [x] V2 trigger + request semantics
+- [x] AI diff preview uses AI-specific UI
+- [x] Controlled fuzz ladder + safe-fail
 
 ---
 
 ## Changes Made
 
-[Author fills this in after addressing feedback]
-
 | Change | Artifact | Description |
 |--------|----------|-------------|
-| 1 | ADR-0051 | |
-| 2 | ST-08-24 | |
+| 1 | ADR-0051 | Clarified v2 trigger semantics and patch/anchor contract boundaries. |
+| 2 | ST-08-24 | Acceptance criteria updated/validated against implemented v2 behavior. |
+| 3 | Backend | Patch/anchor ops supported; backend preview/apply endpoints; bounded fuzz ladder; safe-fail error mapping. |
+| 4 | Frontend | Explicit cursor TTL; omit cursor/selection when implicit; AI-specific diff preview UI + regenerate path. |

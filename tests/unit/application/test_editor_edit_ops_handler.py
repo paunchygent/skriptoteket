@@ -15,13 +15,18 @@ from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
+    ChatFailoverDecision,
+    ChatFailoverRouterProtocol,
     ChatInFlightGuardProtocol,
+    ChatOpsBudget,
+    ChatOpsBudgetResolverProtocol,
     ChatOpsProviderProtocol,
     EditOpsCommand,
     EditOpsResult,
     LLMChatOpsResponse,
     VirtualFileId,
 )
+from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
@@ -42,6 +47,45 @@ class DummyChatGuard(ChatInFlightGuardProtocol):
 
     async def release(self, *, user_id: UUID, tool_id: UUID) -> None:
         return None
+
+
+class DummyFailover(ChatFailoverRouterProtocol):
+    async def decide_route(
+        self,
+        *,
+        user_id: UUID,
+        tool_id: UUID,
+        allow_remote_fallback: bool,
+        fallback_available: bool,
+        fallback_is_remote: bool,
+    ) -> ChatFailoverDecision:
+        return ChatFailoverDecision(provider="primary", reason="primary_default")
+
+    async def acquire_inflight(self, *, provider: str) -> None:
+        return None
+
+    async def release_inflight(self, *, provider: str) -> None:
+        return None
+
+    async def record_success(self, *, provider: str) -> None:
+        return None
+
+    async def record_failure(self, *, provider: str) -> None:
+        return None
+
+    async def mark_fallback_used(self, *, user_id: UUID, tool_id: UUID) -> None:
+        return None
+
+
+class DummyChatOpsBudgetResolver(ChatOpsBudgetResolverProtocol):
+    def __init__(self, settings: Settings) -> None:
+        self._settings = settings
+
+    def resolve_chat_ops_budget(self, *, provider: str) -> ChatOpsBudget:
+        return ChatOpsBudget(
+            context_window_tokens=self._settings.LLM_CHAT_OPS_CONTEXT_WINDOW_TOKENS,
+            max_output_tokens=self._settings.LLM_CHAT_OPS_MAX_TOKENS,
+        )
 
 
 def _make_tool_session(*, tool_id: UUID, user_id: UUID) -> ToolSession:
@@ -72,6 +116,12 @@ def _fingerprint(text: str) -> str:
     return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _stub_capture_store() -> LlmCaptureStoreProtocol:
+    store = MagicMock(spec=LlmCaptureStoreProtocol)
+    store.write_capture = AsyncMock()
+    return store
+
+
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_edit_ops_returns_disabled_when_disabled() -> None:
@@ -82,10 +132,18 @@ async def test_edit_ops_returns_disabled_when_disabled() -> None:
     clock = MagicMock(spec=ClockProtocol)
     id_generator = MagicMock(spec=IdGeneratorProtocol)
 
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
     handler = EditOpsHandler(
         settings=settings,
-        provider=provider,
+        providers=providers,
+        budget_resolver=DummyChatOpsBudgetResolver(settings),
         guard=DummyChatGuard(),
+        failover=DummyFailover(),
+        capture_store=_stub_capture_store(),
         uow=DummyUow(),
         sessions=sessions,
         messages=messages,
@@ -139,10 +197,18 @@ async def test_edit_ops_over_budget_does_not_mutate_thread() -> None:
     session = _make_tool_session(tool_id=tool_id, user_id=actor.id)
     sessions.get_or_create.return_value = session
 
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
     handler = EditOpsHandler(
         settings=settings,
-        provider=provider,
+        providers=providers,
+        budget_resolver=DummyChatOpsBudgetResolver(settings),
         guard=DummyChatGuard(),
+        failover=DummyFailover(),
+        capture_store=_stub_capture_store(),
         uow=DummyUow(),
         sessions=sessions,
         messages=messages,
@@ -197,10 +263,18 @@ async def test_edit_ops_parses_valid_response_and_persists_messages() -> None:
         return_value=LLMChatOpsResponse(content=response_payload, finish_reason=None)
     )
 
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
     handler = EditOpsHandler(
         settings=settings,
-        provider=provider,
+        providers=providers,
+        budget_resolver=DummyChatOpsBudgetResolver(settings),
         guard=DummyChatGuard(),
+        failover=DummyFailover(),
+        capture_store=_stub_capture_store(),
         uow=DummyUow(),
         sessions=sessions,
         messages=messages,
@@ -231,6 +305,69 @@ async def test_edit_ops_parses_valid_response_and_persists_messages() -> None:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+async def test_edit_ops_requires_remote_fallback_opt_in_when_primary_fails() -> None:
+    settings = Settings(LLM_CHAT_OPS_ENABLED=True)
+    primary = MagicMock(spec=ChatOpsProviderProtocol)
+    primary.complete_chat_ops = AsyncMock(side_effect=ValueError("boom"))
+    fallback = MagicMock(spec=ChatOpsProviderProtocol)
+
+    sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
+    sessions.get = AsyncMock(return_value=None)
+    sessions.get_or_create = AsyncMock()
+    messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
+    messages.list_tail = AsyncMock(return_value=[])
+    messages.append_message = AsyncMock()
+    clock = MagicMock(spec=ClockProtocol)
+    id_generator = MagicMock(spec=IdGeneratorProtocol)
+
+    actor = make_user(role=Role.CONTRIBUTOR)
+    tool_id = uuid4()
+    session = _make_tool_session(tool_id=tool_id, user_id=actor.id)
+    sessions.get_or_create.return_value = session
+    id_generator.new_uuid.side_effect = [uuid4(), uuid4()]
+
+    providers = MagicMock()
+    providers.primary = primary
+    providers.fallback = fallback
+    providers.fallback_is_remote = True
+
+    handler = EditOpsHandler(
+        settings=settings,
+        providers=providers,
+        budget_resolver=DummyChatOpsBudgetResolver(settings),
+        guard=DummyChatGuard(),
+        failover=DummyFailover(),
+        capture_store=_stub_capture_store(),
+        uow=DummyUow(),
+        sessions=sessions,
+        messages=messages,
+        clock=clock,
+        id_generator=id_generator,
+        system_prompt_loader=lambda _: "prompt",
+    )
+
+    result = await handler.handle(
+        actor=actor,
+        command=EditOpsCommand(
+            tool_id=tool_id,
+            message="Uppdatera koden",
+            active_file="tool.py",
+            selection=None,
+            cursor=None,
+            virtual_files=_virtual_files(),
+        ),
+    )
+
+    assert result.enabled is False
+    assert "Tillåt externa API:er (OpenAI)" in result.assistant_message
+    assert result.ops == []
+    primary.complete_chat_ops.assert_awaited_once()
+    fallback.complete_chat_ops.assert_not_called()
+    assert messages.append_message.await_count == 1
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
 async def test_edit_ops_rejects_cursor_ops_when_cursor_missing() -> None:
     settings = Settings(LLM_CHAT_OPS_ENABLED=True)
     provider = MagicMock(spec=ChatOpsProviderProtocol)
@@ -257,10 +394,18 @@ async def test_edit_ops_rejects_cursor_ops_when_cursor_missing() -> None:
         return_value=LLMChatOpsResponse(content=response_payload, finish_reason=None)
     )
 
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
     handler = EditOpsHandler(
         settings=settings,
-        provider=provider,
+        providers=providers,
+        budget_resolver=DummyChatOpsBudgetResolver(settings),
         guard=DummyChatGuard(),
+        failover=DummyFailover(),
+        capture_store=_stub_capture_store(),
         uow=DummyUow(),
         sessions=sessions,
         messages=messages,
@@ -328,10 +473,18 @@ async def test_edit_ops_parses_valid_patch_ops() -> None:
         return_value=LLMChatOpsResponse(content=response_payload, finish_reason=None)
     )
 
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
     handler = EditOpsHandler(
         settings=settings,
-        provider=provider,
+        providers=providers,
+        budget_resolver=DummyChatOpsBudgetResolver(settings),
         guard=DummyChatGuard(),
+        failover=DummyFailover(),
+        capture_store=_stub_capture_store(),
         uow=DummyUow(),
         sessions=sessions,
         messages=messages,
@@ -382,10 +535,18 @@ async def test_edit_ops_invalid_json_returns_empty_ops() -> None:
         return_value=LLMChatOpsResponse(content="not-json", finish_reason=None)
     )
 
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
     handler = EditOpsHandler(
         settings=settings,
-        provider=provider,
+        providers=providers,
+        budget_resolver=DummyChatOpsBudgetResolver(settings),
         guard=DummyChatGuard(),
+        failover=DummyFailover(),
+        capture_store=_stub_capture_store(),
         uow=DummyUow(),
         sessions=sessions,
         messages=messages,

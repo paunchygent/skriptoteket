@@ -3,6 +3,7 @@ import { computed, nextTick, onMounted, ref, watch, withDefaults } from "vue";
 
 import type { EditorChatMessage } from "../../composables/editor/useEditorChat";
 import SystemMessage from "../ui/SystemMessage.vue";
+import type { SystemMessageVariant } from "../ui/SystemMessage.vue";
 
 type ChatDrawerProps = {
   variant?: "drawer" | "column";
@@ -17,6 +18,9 @@ type ChatDrawerProps = {
   clearDraftToken?: number;
   disabledMessage: string | null;
   error: string | null;
+  noticeMessage?: string | null;
+  noticeVariant?: Extract<SystemMessageVariant, "info" | "warning">;
+  allowRemoteFallback: boolean;
 };
 
 const props = withDefaults(defineProps<ChatDrawerProps>(), {
@@ -25,6 +29,8 @@ const props = withDefaults(defineProps<ChatDrawerProps>(), {
   editOpsError: null,
   editOpsDisabledMessage: null,
   clearDraftToken: 0,
+  noticeMessage: null,
+  noticeVariant: "info",
 });
 
 const emit = defineEmits<{
@@ -34,14 +40,17 @@ const emit = defineEmits<{
   (event: "clear"): void;
   (event: "clearError"): void;
   (event: "clearDisabled"): void;
+  (event: "clearNotice"): void;
   (event: "clearEditOpsError"): void;
   (event: "clearEditOpsDisabled"): void;
   (event: "toggleCollapse"): void;
   (event: "requestEditOps", message: string): void;
+  (event: "setAllowRemoteFallback", value: boolean): void;
 }>();
 
 const draft = ref("");
 const textarea = ref<HTMLTextAreaElement | null>(null);
+const debugOpenByMessageId = ref<Record<string, boolean>>({});
 
 const canSend = computed(
   () => !props.isStreaming && !props.isEditOpsLoading && draft.value.trim().length > 0,
@@ -108,6 +117,12 @@ function handleRequestEditOps(): void {
   emit("requestEditOps", message);
 }
 
+function handleRemoteFallbackToggle(event: Event): void {
+  const target = event.target as HTMLInputElement | null;
+  if (!target) return;
+  emit("setAllowRemoteFallback", target.checked);
+}
+
 function handleKeydown(event: KeyboardEvent): void {
   if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
@@ -117,6 +132,40 @@ function handleKeydown(event: KeyboardEvent): void {
 
 function labelForRole(role: "user" | "assistant"): string {
   return role === "user" ? "Du" : "AI";
+}
+
+function toggleDebug(messageId: string): void {
+  debugOpenByMessageId.value = {
+    ...debugOpenByMessageId.value,
+    [messageId]: !debugOpenByMessageId.value[messageId],
+  };
+}
+
+function isDebugOpen(messageId: string): boolean {
+  return Boolean(debugOpenByMessageId.value[messageId]);
+}
+
+async function copyText(text: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return;
+  } catch {
+    // fall back to the legacy clipboard API (best effort)
+  }
+
+  try {
+    const element = document.createElement("textarea");
+    element.value = text;
+    element.setAttribute("readonly", "true");
+    element.style.position = "absolute";
+    element.style.left = "-9999px";
+    document.body.appendChild(element);
+    element.select();
+    document.execCommand("copy");
+    document.body.removeChild(element);
+  } catch {
+    // ignore clipboard failures
+  }
 }
 
 onMounted(() => {
@@ -150,7 +199,7 @@ watch(
     <Transition name="drawer-backdrop">
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-40 bg-navy/40 md:hidden"
+        class="fixed inset-0 z-40 bg-navy/40 lg:hidden"
         @click="emit('close')"
       />
     </Transition>
@@ -158,9 +207,9 @@ watch(
 
   <aside
     :class="[
-      'fixed inset-y-0 right-0 z-50 bg-canvas border-l border-navy shadow-brutal flex flex-col md:relative md:inset-auto md:z-auto md:h-full md:overflow-hidden',
+      'fixed inset-y-0 right-0 z-50 bg-canvas border-l border-navy shadow-brutal flex flex-col lg:relative lg:inset-auto lg:z-auto lg:h-full lg:overflow-hidden',
       isRailOnlyOnMobile ? 'w-[var(--chat-rail-width,64px)]' : 'w-full',
-      props.variant === 'column' ? 'md:border-0 md:shadow-none md:bg-transparent' : '',
+      props.variant === 'column' ? 'lg:border-0 lg:shadow-none lg:bg-transparent' : '',
     ]"
     role="dialog"
     aria-modal="true"
@@ -187,9 +236,21 @@ watch(
 
         <div class="flex-1 min-h-0 overflow-hidden p-4 flex flex-col gap-4">
           <div
-            v-if="error || disabledMessage || props.editOpsError || props.editOpsDisabledMessage"
+            v-if="
+              error ||
+                disabledMessage ||
+                props.noticeMessage ||
+                props.editOpsError ||
+                props.editOpsDisabledMessage
+            "
             class="space-y-2"
           >
+            <SystemMessage
+              v-if="props.noticeMessage"
+              :model-value="props.noticeMessage"
+              :variant="props.noticeVariant"
+              @update:model-value="emit('clearNotice')"
+            />
             <SystemMessage
               v-if="error"
               :model-value="error"
@@ -216,7 +277,7 @@ watch(
             />
           </div>
 
-          <div class="flex-1 min-h-0 overflow-y-auto border-t border-navy/20 pt-4">
+          <div class="flex-1 min-h-0 overflow-y-auto border-t border-navy/20 pt-4 pr-3">
             <ul
               class="divide-y divide-navy/10"
             >
@@ -231,9 +292,31 @@ watch(
                 ]"
               >
                 <div class="flex items-center justify-between">
-                  <span class="text-xs font-semibold uppercase tracking-wide text-navy/60">
-                    {{ labelForRole(message.role) }}
-                  </span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold uppercase tracking-wide text-navy/60">
+                      {{ labelForRole(message.role) }}
+                    </span>
+                    <span
+                      v-if="message.correlationId"
+                      class="relative inline-flex group"
+                    >
+                      <button
+                        type="button"
+                        class="text-[11px] font-mono leading-none text-navy/45 hover:text-navy/70"
+                        :aria-expanded="isDebugOpen(message.id)"
+                        aria-label="Visa correlation-id"
+                        @click="toggleDebug(message.id)"
+                      >
+                        ...
+                      </button>
+                      <span
+                        class="pointer-events-none absolute left-0 top-full z-10 mt-1 whitespace-nowrap border border-navy/30 bg-white px-2 py-1 text-[10px] text-navy/70 opacity-0 shadow-brutal-sm transition-opacity group-hover:opacity-100"
+                        aria-hidden="true"
+                      >
+                        Visa correlation-id
+                      </span>
+                    </span>
+                  </div>
                   <span
                     v-if="message.isStreaming"
                     class="text-xs text-navy/60"
@@ -243,6 +326,19 @@ watch(
                 </div>
                 <div class="mt-2 text-sm text-navy whitespace-pre-wrap">
                   {{ message.content }}
+                </div>
+                <div
+                  v-if="message.correlationId && isDebugOpen(message.id)"
+                  class="mt-2 flex flex-wrap items-center justify-between gap-2 border border-navy/20 bg-white px-2 py-1 text-[10px] text-navy/70"
+                >
+                  <span class="font-mono break-all">correlation-id: {{ message.correlationId }}</span>
+                  <button
+                    type="button"
+                    class="text-[10px] font-semibold text-navy/60 hover:text-navy"
+                    @click="copyText(message.correlationId)"
+                  >
+                    Kopiera
+                  </button>
                 </div>
               </li>
             </ul>
@@ -258,6 +354,20 @@ watch(
               :disabled="isStreaming"
               @keydown="handleKeydown"
             />
+
+            <label class="flex items-start gap-2 text-[10px] text-navy/70">
+              <input
+                type="checkbox"
+                class="mt-0.5"
+                :checked="props.allowRemoteFallback"
+                :disabled="props.isStreaming || props.isEditOpsLoading"
+                @change="handleRemoteFallbackToggle"
+              >
+              <span>
+                Till&aring;t externa API:er (OpenAI) om den lokala modellen &auml;r nere eller
+                &ouml;verbelastad. Detta kan skicka inneh&aring;ll utanf&ouml;r servern.
+              </span>
+            </label>
 
             <div class="flex flex-wrap items-center justify-between gap-2">
               <span

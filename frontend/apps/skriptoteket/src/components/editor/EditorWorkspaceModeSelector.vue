@@ -14,14 +14,16 @@ const emit = defineEmits<{
 }>();
 
 const modeButtonBase =
-  "inline-flex items-center justify-center px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border border-navy/30 transition-colors";
+  "inline-flex w-full sm:w-auto items-center justify-center px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border border-navy/30 transition-colors";
 const modeButtonActive = "bg-navy text-canvas border-navy";
 const modeButtonInactive = "bg-canvas text-navy/70";
 const modeButtonDisabled = "opacity-40 cursor-not-allowed";
 </script>
 
 <template>
-  <div class="inline-flex items-center gap-1 rounded-[4px] border border-navy/30 bg-canvas p-1">
+  <div
+    class="grid w-full grid-cols-2 items-center gap-1 rounded-[4px] border border-navy/30 bg-canvas p-1 sm:w-auto sm:inline-flex"
+  >
     <button
       type="button"
       :class="[modeButtonBase, props.activeMode === 'source' ? modeButtonActive : modeButtonInactive]"

@@ -30,16 +30,19 @@ import { isVirtualFileId } from "../../composables/editor/virtualFiles";
 import type { UiNotifier } from "../../composables/notify";
 import { useToast } from "../../composables/useToast";
 import { useAuthStore } from "../../stores/auth";
+import { useAiStore } from "../../stores/ai";
 import { useLayoutStore } from "../../stores/layout";
 import { useHelp } from "../../components/help/useHelp";
 type VersionState = components["schemas"]["VersionState"];
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
+const ai = useAiStore();
 const layout = useLayoutStore();
 const toast = useToast();
 const help = useHelp();
 const { focusMode } = storeToRefs(layout);
+const { allowRemoteFallback } = storeToRefs(ai);
 const notify: UiNotifier = {
   info: (message: string) => toast.info(message),
   success: (message: string) => toast.success(message),
@@ -380,10 +383,12 @@ const {
 const editorChat = useEditorChat({
   toolId: editorToolId,
   baseVersionId: computed(() => selectedVersion.value?.id ?? null),
+  allowRemoteFallback,
 });
 
 const editOps = useEditorEditOps({
   toolId: editorToolId,
+  allowRemoteFallback,
   isReadOnly,
   editorView,
   fields: {
@@ -404,12 +409,15 @@ const {
   streaming: chatStreaming,
   disabledMessage: chatDisabledMessage,
   error: chatError,
+  noticeMessage: chatNoticeMessage,
+  noticeVariant: chatNoticeVariant,
   loadHistory: loadChatHistory,
   sendMessage: sendChatMessage,
   cancel: cancelChat,
   clear: clearChat,
   clearError: clearChatError,
   clearDisabledMessage: clearChatDisabled,
+  clearNoticeMessage: clearChatNotice,
 } = editorChat;
 
 watch(
@@ -491,7 +499,11 @@ function createLocalChatId(): string {
   return `chat-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-function appendChatMessage(role: "user" | "assistant", content: string): void {
+function appendChatMessage(
+  role: "user" | "assistant",
+  content: string,
+  correlationId: string | null = null,
+): void {
   chatMessages.value = [
     ...chatMessages.value,
     {
@@ -500,6 +512,7 @@ function appendChatMessage(role: "user" | "assistant", content: string): void {
       content,
       createdAt: new Date().toISOString(),
       isStreaming: false,
+      correlationId,
     },
   ];
 }
@@ -518,7 +531,7 @@ async function handleRequestEditOps(message: string): Promise<void> {
   }
 
   appendChatMessage("user", result.message);
-  appendChatMessage("assistant", result.response.assistant_message);
+  appendChatMessage("assistant", result.response.assistant_message, result.correlationId);
 
   if (editOps.proposal.value && !editOps.previewError.value) {
     editOpsClearDraftToken.value += 1;
@@ -738,6 +751,7 @@ const lockBadge = computed(() => {
             :is-history-drawer-open="isHistoryDrawerOpen"
             :is-chat-drawer-open="isChatDrawerOpen"
             :is-chat-collapsed="isChatCollapsed"
+            :allow-remote-fallback="allowRemoteFallback"
             :can-compare-versions="canCompareVersions"
             :compare-target="compareTarget"
             :compare-active-file-id="compareActiveFileId"
@@ -758,6 +772,8 @@ const lockBadge = computed(() => {
             :chat-is-streaming="chatStreaming"
             :chat-disabled-message="chatDisabledMessage"
             :chat-error="chatError"
+            :chat-notice-message="chatNoticeMessage"
+            :chat-notice-variant="chatNoticeVariant"
             :edit-ops-request-error="editOps.requestError.value"
             :edit-ops-disabled-message="editOpsDisabledMessage"
             :edit-ops-clear-draft-token="editOpsClearDraftToken"
@@ -800,6 +816,8 @@ const lockBadge = computed(() => {
             @clear-chat="clearChat"
             @clear-chat-error="clearChatError"
             @clear-chat-disabled="clearChatDisabled"
+            @clear-chat-notice="clearChatNotice"
+            @set-allow-remote-fallback="ai.setAllowRemoteFallback($event)"
             @clear-edit-ops-error="editOps.clearRequestError()"
             @clear-edit-ops-disabled="editOpsDisabledMessage = null"
             @request-edit-ops="handleRequestEditOps"

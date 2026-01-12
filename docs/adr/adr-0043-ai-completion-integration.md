@@ -194,6 +194,15 @@ skriptoteketIntelligence(config)
 - KB injection must be production-safe: package KB content with the application, load once, and cache in memory
 - Privacy: never log raw prefix/suffix/prompt/code; log metadata only (lengths, provider, timing, status)
 
+## Update (2026-01-11): legacy edit suggestions removed
+
+Skriptoteket initially added a separate “edit suggestions” surface using `POST /api/v1/editor/edits` and the `LLM_EDIT_*`
+profile (ST-08-16). The product direction has since converged on **chat-first editing** with structured edit ops
+(ADR-0051) using the `LLM_CHAT_OPS_*` profile.
+
+To avoid maintaining two overlapping edit paths, the `/edits` endpoint and related UI code were removed; chat-first
+edit-ops is the canonical editing capability.
+
 ## References
 
 - [ADR-0035: Script editor intelligence architecture](adr-0035-script-editor-intelligence-architecture.md)

@@ -50,6 +50,7 @@ async def stream_editor_chat(
         tool_id=tool_id,
         message=payload.message,
         base_version_id=payload.base_version_id,
+        allow_remote_fallback=payload.allow_remote_fallback,
     )
     stream_iter = handler.stream(actor=user, command=command)
 

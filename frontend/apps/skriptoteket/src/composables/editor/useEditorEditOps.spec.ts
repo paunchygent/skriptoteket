@@ -77,6 +77,7 @@ describe("useEditorEditOps", () => {
     const state = scope.run(() =>
       useEditorEditOps({
         toolId: ref("tool-1"),
+        allowRemoteFallback: ref(false),
         isReadOnly: ref(false),
         editorView: shallowRef(null),
         fields: {
@@ -182,6 +183,7 @@ describe("useEditorEditOps", () => {
     const state = scope.run(() =>
       useEditorEditOps({
         toolId: ref("tool-1"),
+        allowRemoteFallback: ref(false),
         isReadOnly: ref(false),
         editorView: shallowRef(null),
         fields: {
@@ -261,6 +263,7 @@ describe("useEditorEditOps", () => {
     const state = scope.run(() =>
       useEditorEditOps({
         toolId: ref("tool-1"),
+        allowRemoteFallback: ref(false),
         isReadOnly: ref(false),
         editorView: shallowRef(view),
         fields: {
@@ -348,6 +351,7 @@ describe("useEditorEditOps", () => {
     const state = scope.run(() =>
       useEditorEditOps({
         toolId: ref("tool-1"),
+        allowRemoteFallback: ref(false),
         isReadOnly: ref(false),
         editorView: shallowRef(view),
         fields: {
@@ -438,6 +442,7 @@ describe("useEditorEditOps", () => {
     const state = scope.run(() =>
       useEditorEditOps({
         toolId: ref("tool-1"),
+        allowRemoteFallback: ref(false),
         isReadOnly: ref(false),
         editorView: shallowRef(null),
         fields: {
@@ -540,6 +545,7 @@ describe("useEditorEditOps", () => {
     const state = scope.run(() =>
       useEditorEditOps({
         toolId: ref("tool-1"),
+        allowRemoteFallback: ref(false),
         isReadOnly: ref(false),
         editorView: shallowRef(null),
         fields: {

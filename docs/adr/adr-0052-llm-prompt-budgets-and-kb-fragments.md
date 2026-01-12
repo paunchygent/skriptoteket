@@ -6,14 +6,14 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-31
-updated: 2026-01-07
+updated: 2026-01-11
 links: ["EPIC-08", "ADR-0043", "ADR-0051", "ST-08-18", "ST-08-23", "ST-08-21",
 "REF-ai-completion-architecture"]
 ---
 
 ## Context
 
-ST-08-14 (inline completions) and ST-08-16 (edit suggestions) rely on
+ST-08-14 (inline completions) and ST-08-23 (chat streaming) rely on
 injecting a knowledge base
 into the system prompt. The existing KB (`docs/reference/ref-ai-script-
 generation-kb.md`) is
@@ -47,9 +47,8 @@ output token budgets.
 runner constraints + helpers)
 
 2. **Enforce a context budget in the backend (per capability profile)**
-   Budgets MUST be enforced per capability profile, not shared implicitly:
+Budgets MUST be enforced per capability profile, not shared implicitly:
    - inline completions (`LLM_COMPLETION_*`)
-   - edit suggestions (`LLM_EDIT_*`)
    - chat streaming (`LLM_CHAT_*`)
    - chat edit ops (`LLM_CHAT_OPS_*`)
    The budget accounting MUST include:

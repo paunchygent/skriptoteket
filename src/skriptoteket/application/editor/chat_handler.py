@@ -4,6 +4,7 @@ import asyncio
 import time
 from collections.abc import AsyncIterator, Callable
 from datetime import datetime, timedelta
+from typing import Literal
 from uuid import UUID
 
 import httpx
@@ -23,9 +24,10 @@ from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
+    ChatFailoverRouterProtocol,
     ChatInFlightGuardProtocol,
     ChatMessage,
-    ChatStreamProviderProtocol,
+    ChatStreamProvidersProtocol,
     EditorChatCommand,
     EditorChatDeltaData,
     EditorChatDeltaEvent,
@@ -35,6 +37,8 @@ from skriptoteket.protocols.llm import (
     EditorChatHandlerProtocol,
     EditorChatMetaData,
     EditorChatMetaEvent,
+    EditorChatNoticeData,
+    EditorChatNoticeEvent,
     EditorChatStreamEvent,
     LLMChatRequest,
 )
@@ -45,6 +49,10 @@ from skriptoteket.protocols.uow import UnitOfWorkProtocol
 logger = structlog.get_logger(__name__)
 
 _DISABLED_MESSAGE = "AI‑chat är inte tillgänglig just nu. Försök igen senare."
+_REMOTE_FALLBACK_REQUIRED_MESSAGE = (
+    "Lokala AI-modellen är inte tillgänglig. Tillåt externa API:er (OpenAI) för att fortsätta."
+)
+_REMOTE_FALLBACK_REQUIRED_CODE = "remote_fallback_required"
 _MESSAGE_TOO_LONG = "För långt meddelande: korta ned eller starta en ny chatt."
 _THREAD_CONTEXT = "editor_chat"
 _THREAD_TTL = timedelta(days=30)
@@ -71,8 +79,9 @@ class EditorChatHandler(EditorChatHandlerProtocol):
         self,
         *,
         settings: Settings,
-        provider: ChatStreamProviderProtocol,
+        providers: ChatStreamProvidersProtocol,
         guard: ChatInFlightGuardProtocol,
+        failover: ChatFailoverRouterProtocol,
         uow: UnitOfWorkProtocol,
         sessions: ToolSessionRepositoryProtocol,
         messages: ToolSessionMessageRepositoryProtocol,
@@ -81,8 +90,9 @@ class EditorChatHandler(EditorChatHandlerProtocol):
         system_prompt_loader: Callable[[str], str] | None = None,
     ) -> None:
         self._settings = settings
-        self._provider = provider
+        self._providers = providers
         self._guard = guard
+        self._failover = failover
         self._uow = uow
         self._sessions = sessions
         self._messages = messages
@@ -312,6 +322,23 @@ class EditorChatHandler(EditorChatHandlerProtocol):
             if estimate_text_tokens(command.message) > available_message_tokens:
                 raise validation_error(_MESSAGE_TOO_LONG)
 
+            allow_remote_fallback = command.allow_remote_fallback
+            decision = await self._failover.decide_route(
+                user_id=actor.id,
+                tool_id=command.tool_id,
+                allow_remote_fallback=allow_remote_fallback,
+                fallback_available=self._providers.fallback is not None,
+                fallback_is_remote=self._providers.fallback_is_remote,
+            )
+            if decision.blocked == "remote_fallback_required":
+                yield EditorChatDoneEvent(
+                    data=EditorChatDoneDisabledData(
+                        message=_REMOTE_FALLBACK_REQUIRED_MESSAGE,
+                        code=_REMOTE_FALLBACK_REQUIRED_CODE,
+                    )
+                )
+                return
+
             budgeted_messages, user_message_id, tool_session_id = await self._persist_user_message(
                 tool_id=command.tool_id,
                 actor=actor,
@@ -343,16 +370,71 @@ class EditorChatHandler(EditorChatHandlerProtocol):
             yield EditorChatMetaEvent(data=EditorChatMetaData())
 
             try:
-                async for delta in self._provider.stream_chat(
-                    request=request,
-                    system_prompt=system_prompt,
-                ):
-                    if not delta:
-                        continue
-                    saw_delta = True
-                    output_chars += len(delta)
-                    assistant_chunks.append(delta)
-                    yield EditorChatDeltaEvent(data=EditorChatDeltaData(text=delta))
+
+                def is_retryable_status(exc: httpx.HTTPStatusError) -> bool:
+                    if exc.response is None:
+                        return False
+                    status = exc.response.status_code
+                    return status == 429 or status >= 500
+
+                NoticeVariant = Literal["info", "warning"]
+
+                def notice_for(reason: str) -> tuple[str, NoticeVariant]:
+                    if reason == "breaker_open":
+                        return (
+                            "Lokala modellen verkar nere. Använder externa API:er (OpenAI).",
+                            "warning",
+                        )
+                    if reason == "load_shed":
+                        return (
+                            "Lokala modellen är hårt belastad. Använder externa API:er (OpenAI).",
+                            "warning",
+                        )
+                    if reason == "sticky_fallback":
+                        return (
+                            "Fortsätter med externa API:er (OpenAI) för den här chatten.",
+                            "info",
+                        )
+                    return (
+                        "Använder externa API:er (OpenAI).",
+                        "info",
+                    )
+
+                provider_key = decision.provider
+                provider = (
+                    self._providers.primary
+                    if provider_key == "primary"
+                    else self._providers.fallback
+                )
+                if provider is None:
+                    provider_key = "primary"
+                    provider = self._providers.primary
+
+                if provider_key == "fallback":
+                    await self._failover.mark_fallback_used(
+                        user_id=actor.id, tool_id=command.tool_id
+                    )
+                    if self._providers.fallback_is_remote:
+                        message, variant = notice_for(decision.reason)
+                        yield EditorChatNoticeEvent(
+                            data=EditorChatNoticeData(message=message, variant=variant)
+                        )
+
+                await self._failover.acquire_inflight(provider=provider_key)
+                try:
+                    async for delta in provider.stream_chat(
+                        request=request,
+                        system_prompt=system_prompt,
+                    ):
+                        if not delta:
+                            continue
+                        saw_delta = True
+                        output_chars += len(delta)
+                        assistant_chunks.append(delta)
+                        yield EditorChatDeltaEvent(data=EditorChatDeltaData(text=delta))
+                finally:
+                    await self._failover.release_inflight(provider=provider_key)
+                await self._failover.record_success(provider=provider_key)
             except asyncio.CancelledError:
                 elapsed_ms = int((time.perf_counter() - start) * 1000)
                 logger.info(
@@ -369,12 +451,95 @@ class EditorChatHandler(EditorChatHandlerProtocol):
                 raise
             except httpx.TimeoutException:
                 failure_outcome = "timeout"
+                await self._failover.record_failure(provider=provider_key)
+                retryable = True
             except httpx.HTTPStatusError as exc:
                 failure_outcome = "over_budget" if _is_context_window_error(exc) else "error"
                 if exc.response is not None:
                     failure_status_code = exc.response.status_code
+                retryable = is_retryable_status(exc)
+                if retryable:
+                    await self._failover.record_failure(provider=provider_key)
             except (httpx.RequestError, ValueError):
                 failure_outcome = "error"
+                await self._failover.record_failure(provider=provider_key)
+                retryable = True
+
+            if (
+                failure_outcome is not None
+                and not saw_delta
+                and provider_key == "primary"
+                and retryable
+                and self._providers.fallback is not None
+                and (allow_remote_fallback or not self._providers.fallback_is_remote)
+            ):
+                provider_key = "fallback"
+                provider = self._providers.fallback
+                if provider is not None:
+                    await self._failover.mark_fallback_used(
+                        user_id=actor.id, tool_id=command.tool_id
+                    )
+                    if self._providers.fallback_is_remote:
+                        yield EditorChatNoticeEvent(
+                            data=EditorChatNoticeData(
+                                message=(
+                                    "Byter till externa API:er (OpenAI) eftersom den lokala "
+                                    "modellen inte svarade."
+                                ),
+                                variant="warning",
+                            )
+                        )
+                    failure_outcome = None
+                    failure_status_code = None
+                    try:
+                        await self._failover.acquire_inflight(provider=provider_key)
+                        try:
+                            async for delta in provider.stream_chat(
+                                request=request,
+                                system_prompt=system_prompt,
+                            ):
+                                if not delta:
+                                    continue
+                                saw_delta = True
+                                output_chars += len(delta)
+                                assistant_chunks.append(delta)
+                                yield EditorChatDeltaEvent(data=EditorChatDeltaData(text=delta))
+                        finally:
+                            await self._failover.release_inflight(provider=provider_key)
+                    except asyncio.CancelledError:
+                        raise
+                    except httpx.TimeoutException:
+                        failure_outcome = "timeout"
+                        await self._failover.record_failure(provider=provider_key)
+                    except httpx.HTTPStatusError as exc:
+                        failure_outcome = (
+                            "over_budget" if _is_context_window_error(exc) else "error"
+                        )
+                        if exc.response is not None:
+                            failure_status_code = exc.response.status_code
+                        if is_retryable_status(exc):
+                            await self._failover.record_failure(provider=provider_key)
+                    except (httpx.RequestError, ValueError):
+                        failure_outcome = "error"
+                        await self._failover.record_failure(provider=provider_key)
+                    else:
+                        await self._failover.record_success(provider=provider_key)
+
+            if (
+                failure_outcome is not None
+                and not saw_delta
+                and provider_key == "primary"
+                and self._providers.fallback is not None
+                and self._providers.fallback_is_remote
+                and not allow_remote_fallback
+            ):
+                yield EditorChatDoneEvent(
+                    data=EditorChatDoneDisabledData(
+                        message=_REMOTE_FALLBACK_REQUIRED_MESSAGE,
+                        code=_REMOTE_FALLBACK_REQUIRED_CODE,
+                    )
+                )
+                return
 
             if failure_outcome is not None:
                 elapsed_ms = int((time.perf_counter() - start) * 1000)

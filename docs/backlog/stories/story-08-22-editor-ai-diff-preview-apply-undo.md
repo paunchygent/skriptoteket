@@ -2,10 +2,10 @@
 type: story
 id: ST-08-22
 title: "Editor: AI proposed changes diff preview + apply/undo"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-01
-updated: 2026-01-04
+updated: 2026-01-11
 epic: "EPIC-08"
 acceptance_criteria:
   - "Given the chat has produced a proposed edit operation list (potentially across multiple virtual files), when the user opens preview, then the UI shows diffs (current vs proposed) per targeted file before any change is applied."

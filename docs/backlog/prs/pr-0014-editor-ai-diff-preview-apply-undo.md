@@ -2,10 +2,10 @@
 type: pr
 id: PR-0014
 title: "Editor: AI proposed changes diff preview + apply/undo (ST-08-22)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-09
-updated: 2026-01-09
+updated: 2026-01-11
 stories:
   - "ST-08-22"
 adrs:

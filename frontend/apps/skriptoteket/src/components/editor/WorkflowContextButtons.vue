@@ -23,9 +23,9 @@ const hasAdminContext = computed(() => props.canPublish || props.canRequestChang
 const hasSubmitReviewTooltip = computed(() => Boolean(props.submitReviewTooltip));
 
 const actionButtonClass =
-  "btn-ghost shadow-none bg-canvas h-[28px] px-2.5 py-1 text-[10px] font-semibold tracking-[var(--huleedu-tracking-label)] w-[140px] justify-center border-navy/30 whitespace-nowrap leading-none";
+  "btn-ghost shadow-none bg-canvas h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 whitespace-nowrap leading-none";
 const disabledButtonClass =
-  "inline-flex items-center justify-center h-[28px] w-[140px] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] border border-navy/20 bg-canvas text-navy/30 cursor-not-allowed whitespace-nowrap leading-none";
+  "inline-flex items-center justify-center h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border border-navy/20 bg-canvas text-navy/30 cursor-not-allowed whitespace-nowrap leading-none";
 
 function handleDropdownSelect(actionId: string): void {
   emit("action", actionId as WorkflowAction);

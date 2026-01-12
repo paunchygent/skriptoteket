@@ -6,6 +6,7 @@ import { storeToRefs } from "pinia";
 import BrandLogo from "../brand/BrandLogo.vue";
 import AuthSidebar from "./AuthSidebar.vue";
 import AuthTopBar from "./AuthTopBar.vue";
+import { useAiStore } from "../../stores/ai";
 import { useLayoutStore } from "../../stores/layout";
 
 const props = defineProps<{
@@ -22,6 +23,7 @@ const emit = defineEmits<{
 }>();
 
 const layout = useLayoutStore();
+const ai = useAiStore();
 const { focusMode } = storeToRefs(layout);
 const route = useRoute();
 
@@ -51,6 +53,7 @@ watch(
   () => props.user?.id ?? null,
   (userId) => {
     layout.hydrateForUser(userId);
+    ai.hydrateForUser(userId);
   },
   { immediate: true },
 );
@@ -190,7 +193,8 @@ watch(
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .auth-main-content--editor .route-stage {
@@ -205,6 +209,12 @@ watch(
   min-height: 0;
   display: flex;
   flex-direction: column;
+}
+
+@media (min-width: 1024px) {
+  .auth-main-content--editor {
+    overflow: hidden;
+  }
 }
 
 @media (min-width: 768px) {

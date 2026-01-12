@@ -19,6 +19,9 @@ dependencies: ["ADR-0043", "ST-08-14"]
 
 ## Context
 
+**Update (2026-01-11):** The legacy edit-suggestion flow (`POST /api/v1/editor/edits`, `LLM_EDIT_*`) was removed in favor
+of chat-first editing via edit ops (ADR-0051 / `LLM_CHAT_OPS_*`). This story is kept as historical context only.
+
 Inline completions (ST-08-14) are optimized for low-latency, local-first suggestions. Edit suggestions are a different
 capability: they require more context and typically benefit from larger remote models. To keep DI protocol-first, edit
 suggestions use a separate protocol surface and separate provider configuration.

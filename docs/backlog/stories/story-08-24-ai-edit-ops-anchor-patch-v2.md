@@ -2,10 +2,10 @@
 type: story
 id: ST-08-24
 title: "AI edit ops v2: anchor/patch-based targets + apply"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-10
-updated: 2026-01-10
+updated: 2026-01-11
 epic: "EPIC-08"
 acceptance_criteria:
   - "Given the user requests an edit without explicitly targeting a location (the frontend omits both `selection` and `cursor`), when the frontend calls `POST /api/v1/editor/edit-ops`, then the backend instructs the model to return patch/anchor-based ops (no cursor-only insert ops)."

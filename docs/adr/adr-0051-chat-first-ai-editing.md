@@ -3,13 +3,13 @@ type: adr
 id: ADR-0051
 title: "Chat-first AI editing (structured CRUD ops + diff preview + apply/
 undo)"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2026-01-01
-updated: 2026-01-10
+updated: 2026-01-11
 links: ["EPIC-08", "ST-08-20", "ST-08-21", "ST-08-22", "ST-08-24", "ST-14-17",
-"ST-14-30", "ADR-0043"]
+"ST-14-30", "ST-08-28", "ADR-0043"]
 ---
 
 ## Context
@@ -225,6 +225,12 @@ Rules:
 - Log metadata only (template id, lengths, outcome, provider/model, latency if
   available).
 - Never log prompt text, code text, conversation messages, or model outputs.
+- Platform-only “full model response capture” is allowed **only** as an explicit debug
+  mechanism when enabled by server config (default: OFF). Captures are written to
+  artifact storage with TTL cleanup and are retrievable only via server filesystem access.
+  When enabled, captures are written automatically on edit-ops generation and preview failures
+  for all users (no per-request opt-in).
+  (no tool-developer-facing API surface).
 - Keep eval-only response metadata behind an admin-gated dev-only mode
   (existing `X-Skriptoteket-Eval` pattern).
 

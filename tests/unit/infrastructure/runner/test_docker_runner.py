@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
-from docker.errors import NotFound
+from docker.errors import DockerException, NotFound
 from requests.exceptions import ReadTimeout
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -309,3 +309,41 @@ async def test_execute_artifact_extraction_violation_returns_failed(
 
     assert exc_info.value.code is ErrorCode.INTERNAL_ERROR
     assert exc_info.value.message == "Execution failed (artifact extraction violation)."
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_execute_returns_service_unavailable_when_docker_sock_missing(
+    runner: DockerToolRunner,
+    tool_version: ToolVersion,
+    mock_capacity: MagicMock,
+    monkeypatch,
+) -> None:
+    import docker
+
+    from skriptoteket.infrastructure.runner import docker_runner
+
+    monkeypatch.setattr(
+        docker,
+        "from_env",
+        MagicMock(side_effect=DockerException("Docker is unavailable")),
+    )
+    monkeypatch.setattr(
+        docker_runner.os.path,
+        "exists",
+        lambda path: False if path == "/var/run/docker.sock" else True,
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await runner.execute(
+            run_id=uuid4(),
+            version=tool_version,
+            context=RunContext.SANDBOX,
+            input_files=[("input.txt", b"input")],
+            input_values={},
+            memory_json=b'{"settings":{}}',
+        )
+
+    assert exc_info.value.code is ErrorCode.SERVICE_UNAVAILABLE
+    assert "pdm run dev-start" in exc_info.value.message
+    mock_capacity.release.assert_awaited_once()

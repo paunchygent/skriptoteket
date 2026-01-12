@@ -82,6 +82,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0051-chat-first-ai-editing.md`
 - `docs/adr/adr-0052-llm-prompt-budgets-and-kb-fragments.md`
 - `docs/adr/adr-0053-production-security-perimeter-and-vpn-gating.md`
+- `docs/adr/adr-0054-editor-chat-virtual-file-context.md`
+- `docs/adr/adr-0055-tokenizer-backed-prompt-budgeting.md`
 
 ### PRDs
 
@@ -120,6 +122,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-06-linter-architecture-refactor.md`
 - `docs/backlog/reviews/review-epic-08-ai-completion.md`
 - `docs/backlog/reviews/review-epic-08-ai-edit-ops-v2.md`
+- `docs/backlog/reviews/review-epic-08-editor-chat-virtual-files-context.md`
+- `docs/backlog/reviews/review-epic-08-llm-response-capture.md`
 - `docs/backlog/reviews/review-epic-09-security-hardening.md`
 - `docs/backlog/reviews/review-epic-14-editor-sandbox-preview.md`
 - `docs/backlog/reviews/review-epic-16-catalog-discovery.md`
@@ -163,6 +167,13 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0014-editor-ai-diff-preview-apply-undo.md`
 - `docs/backlog/prs/pr-0015-editor-ai-edit-ops-anchor-patch-v2.md`
 - `docs/backlog/prs/pr-0016-editor-ai-edit-ops-v2-hardening.md`
+- `docs/backlog/prs/pr-0017-ai-provider-gpt5-cleanup.md`
+- `docs/backlog/prs/pr-0018-ai-chat-provider-failover.md`
+- `docs/backlog/prs/pr-0019-ai-srp-refactor-audit-hotspots.md`
+- `docs/backlog/prs/pr-0020-ai-frontend-srp-refactor-audit-hotspots.md`
+- `docs/backlog/prs/pr-0021-ai-chat-ops-response-capture-on-error.md`
+- `docs/backlog/prs/pr-0022-editor-chat-virtual-file-context-retention.md`
+- `docs/backlog/prs/pr-0023-tokenizer-backed-prompt-budgeting.md`
 
 ### Backlog Stories
 
@@ -239,6 +250,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-08-22-editor-ai-diff-preview-apply-undo.md`
 - `docs/backlog/stories/story-08-23-ai-chat-streaming-proxy-and-config.md`
 - `docs/backlog/stories/story-08-24-ai-edit-ops-anchor-patch-v2.md`
+- `docs/backlog/stories/story-08-25-ai-provider-gpt5-cleanup.md`
+- `docs/backlog/stories/story-08-26-ai-chat-provider-failover.md`
+- `docs/backlog/stories/story-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md`
+- `docs/backlog/stories/story-08-28-ai-chat-ops-response-capture-on-error.md`
 - `docs/backlog/stories/story-09-01-http-security-headers.md`
 - `docs/backlog/stories/story-09-02-content-security-policy.md`
 - `docs/backlog/stories/story-09-03-firewall-audit.md`
@@ -380,6 +395,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/reports/ref-hemma-canonical-chat-v3-run-2026-01-05.md`
 - `docs/reference/reports/ref-hemma-incident-log-2026-01-02-083355-083455.md`
 - `docs/reference/reports/ref-hemma-incident-log-2026-01-04-153900-154030.md`
+- `docs/reference/reports/ref-hemma-kdump-amdgpu-blacklist-dc0-test-2026-01-11.md`
 - `docs/reference/reports/ref-hemma-bios-update-guide-2026-01-03.md`
 - `docs/reference/reports/ref-htmx-ux-enhancement-plan.md`
 - `docs/reference/reports/ref-lead-architect-suggestions-post-mvp.md`
@@ -387,6 +403,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/reports/ref-security-perimeter-vpn-gating-ssh-and-observability.md`
 - `docs/reference/reports/ref-vue-spa-migration-assessment.md`
 - `docs/reference/reports/ref-vue-spa-migration-roadmap.md`
+- `docs/reference/reports/ref-editor-chat-virtual-file-context-tokenizers-2026-01-11.md`
 
 ### Runbooks
 

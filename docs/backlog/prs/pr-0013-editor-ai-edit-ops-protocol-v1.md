@@ -2,10 +2,10 @@
 type: pr
 id: PR-0013
 title: "AI editor: structured edit-ops protocol v1 (ST-08-21)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-09
-updated: 2026-01-09
+updated: 2026-01-11
 stories:
   - "ST-08-21"
 adrs:
@@ -19,7 +19,7 @@ acceptance_criteria:
   - "Backend uses the canonical server-side chat thread (context editor_chat) for multi-turn context; it persists the newest user message and assistant response with metadata-only logging."
   - "Budgeting follows ADR-0052: never truncate the system prompt; drop oldest turns first; if prompt is over budget, return ops=[] with a user-actionable assistant_message and do not mutate stored chat state."
   - "Invalid JSON, schema violations, truncation, or upstream errors fail safely with ops=[] (no partial edits)."
-  - "LLM_CHAT_OPS_* settings and prompt template are separate from LLM_CHAT_* and LLM_EDIT_*."
+  - "LLM_CHAT_OPS_* settings and prompt template are separate from LLM_CHAT_* and LLM_COMPLETION_*."
   - "Edit-ops requests share the chat in-flight guard (one chat/edit-ops request per user/tool at a time)."
 ---
 

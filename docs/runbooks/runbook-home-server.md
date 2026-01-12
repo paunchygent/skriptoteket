@@ -5,7 +5,7 @@ title: "Runbook: Home Server Operations"
 status: active
 owners: "olof"
 created: 2025-12-16
-updated: 2026-01-07
+updated: 2026-01-11
 system: "hemma.hule.education"
 ---
 
@@ -223,9 +223,25 @@ Kernel/sysctl settings:
   - `amdgpu.cwsr_enable=0`
   - `amdgpu.mcbp=0`
   - `amdgpu.runpm=0`
-- Kdump enabled via `linux-crashdump` + `kdump-tools` (range-based `crashkernel=...` added by kdump-tools)
-- Full kdump dumps enabled: `MAKEDUMP_ARGS="-c -d 0"` in `/etc/default/kdump-tools`
-  - Warning: full dumps are large; ensure `/var/crash` has ample free space
+- Crash-kernel GPU blacklist (prevents kdump hang if AMDGPU is wedged):
+  - `KDUMP_CMDLINE_APPEND="... modprobe.blacklist=amdgpu"` in `/etc/default/kdump-tools`
+  - Reload kdump kernel after changes: `sudo kdump-config unload && sudo kdump-config load`
+  - Verify: `sudo kdump-config show` (kexec cmdline should include `modprobe.blacklist=amdgpu`)
+- Kdump enabled via `linux-crashdump` + `kdump-tools`
+  - `crashkernel=1536M` set in `/etc/default/grub.d/kdump-tools.cfg` (requires `update-grub` + reboot)
+- Reduced kdump dumps enabled: `MAKEDUMP_ARGS="-c -d 31"` in `/etc/default/kdump-tools`
+  - Faster + smaller kernel-only dumps; user-space cores handled by `systemd-coredump`
+- Savecore timeout guard: `KDUMP_SAVECORE_TIMEOUT=40s` in `/etc/default/kdump-tools`
+  - `/etc/init.d/kdump-tools` wraps `kdump-config savecore` with `timeout --preserve-status` when set
+
+One-time DC-off test boot (headless):
+
+- Add custom entries in `/etc/grub.d/40_custom` for `Ubuntu (safe)` and `Ubuntu (dc=0 test)`.
+- Regenerate GRUB: `sudo update-grub`.
+- One-time boot: `sudo grub-reboot "Ubuntu (dc=0 test)" && sudo reboot`.
+- Verify after boot: `cat /proc/cmdline | rg amdgpu.dc=0`.
+- Expect display corruption/blank after early boot; use SSH. A normal reboot returns to the safe entry.
+- Related reference: `docs/reference/reports/ref-hemma-kdump-amdgpu-blacklist-dc0-test-2026-01-11.md`.
 
 Netconsole (UDP kernel logging):
 
@@ -365,6 +381,28 @@ ssh hemma "/snap/bin/docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run
 
 # DANGER: Delete ALL session files (requires --yes)
 ssh hemma "/snap/bin/docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli clear-all-session-files --yes"
+```
+
+### Platform-only LLM debug captures (Option A)
+
+When enabled, Skriptoteket persists **sensitive** debug captures for edit-ops generation and preview failures under the
+artifacts volume.
+
+- Config: `LLM_CAPTURE_ON_ERROR_ENABLED=true` (default: `false`)
+- Capture id: the request correlation id (`X-Correlation-ID` / `correlation_id`)
+- Location (prod): `/app/.artifacts/llm-captures/<kind>/<capture_id>/capture.json`
+- Security: captures may include tool code and raw model output; access is platform-only (filesystem/SSH).
+
+List recent captures:
+
+```bash
+ssh hemma "sudo docker exec skriptoteket-web ls -1 /app/.artifacts/llm-captures 2>/dev/null || true"
+```
+
+Open a specific capture (replace `<CID>`):
+
+```bash
+ssh hemma \"sudo docker exec -T skriptoteket-web sh -lc 'cat /app/.artifacts/llm-captures/chat_ops_response/<CID>/capture.json | jq .'\"
 ```
 
 ### Sandbox Snapshot Cleanup (DB)
@@ -695,5 +733,6 @@ ssh hemma "sudo docker system df"
 ssh hemma "sudo docker system prune -f"
 
 # Prune old artifact directories
+# (includes platform-only LLM captures under /app/.artifacts/llm-captures/)
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli prune-artifacts"
 ```

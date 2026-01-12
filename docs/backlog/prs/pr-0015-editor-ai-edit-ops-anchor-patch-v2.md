@@ -2,10 +2,10 @@
 type: pr
 id: PR-0015
 title: "Editor AI: anchor/patch-based edit ops v2 (ST-08-24)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-10
-updated: 2026-01-10
+updated: 2026-01-11
 stories:
   - "ST-08-24"
 tags: ["backend", "frontend", "editor", "ai", "diff"]

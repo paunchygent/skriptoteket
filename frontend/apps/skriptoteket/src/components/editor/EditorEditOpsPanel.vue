@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import type { EditOpsPanelState } from "../../composables/editor/useEditorEditOps";
 import AiVirtualFileDiffViewer from "./diff/AiVirtualFileDiffViewer.vue";
@@ -29,6 +29,31 @@ const normalizations = computed(() => props.state.previewMeta?.normalizations_ap
 function updateConfirmationAccepted(event: Event): void {
   emit("setConfirmationAccepted", (event.target as HTMLInputElement).checked);
 }
+
+const showDebug = ref(false);
+
+async function copyText(text: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return;
+  } catch {
+    // fall back to legacy clipboard API (best effort)
+  }
+
+  try {
+    const element = document.createElement("textarea");
+    element.value = text;
+    element.setAttribute("readonly", "true");
+    element.style.position = "absolute";
+    element.style.left = "-9999px";
+    document.body.appendChild(element);
+    element.select();
+    document.execCommand("copy");
+    document.body.removeChild(element);
+  } catch {
+    // ignore clipboard failures
+  }
+}
 </script>
 
 <template>
@@ -48,6 +73,26 @@ function updateConfirmationAccepted(event: Event): void {
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
+          <span
+            v-if="props.state.proposal?.correlationId"
+            class="relative inline-flex group"
+          >
+            <button
+              type="button"
+              class="btn-ghost h-[28px] px-2 py-1 text-[11px] font-mono normal-case border-navy/30 bg-canvas shadow-none text-navy/70"
+              :aria-expanded="showDebug"
+              aria-label="Visa correlation-id"
+              @click="showDebug = !showDebug"
+            >
+              ...
+            </button>
+            <span
+              class="pointer-events-none absolute right-0 top-full z-10 mt-1 whitespace-nowrap border border-navy/30 bg-white px-2 py-1 text-[10px] text-navy/70 opacity-0 shadow-brutal-sm transition-opacity group-hover:opacity-100"
+              aria-hidden="true"
+            >
+              Visa correlation-id
+            </span>
+          </span>
           <button
             type="button"
             class="btn-cta h-[28px] px-3 py-1 text-[11px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)]"
@@ -70,6 +115,22 @@ function updateConfirmationAccepted(event: Event): void {
             @click="emit('regenerate')"
           >
             Regenerera
+          </button>
+        </div>
+      </div>
+
+      <div
+        v-if="showDebug && props.state.proposal?.correlationId"
+        class="border border-navy/20 bg-white px-3 py-2 text-[10px] text-navy/70"
+      >
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="font-mono break-all">correlation-id: {{ props.state.proposal.correlationId }}</span>
+          <button
+            type="button"
+            class="text-[10px] font-semibold text-navy/60 hover:text-navy"
+            @click="copyText(props.state.proposal.correlationId)"
+          >
+            Kopiera
           </button>
         </div>
       </div>

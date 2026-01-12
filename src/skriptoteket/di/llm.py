@@ -16,34 +16,43 @@ from skriptoteket.application.editor.edit_ops_preview_handler import (
     EditOpsApplyHandler,
     EditOpsPreviewHandler,
 )
-from skriptoteket.application.editor.edit_suggestion_handler import EditSuggestionHandler
 from skriptoteket.config import Settings
 from skriptoteket.infrastructure.editor.unified_diff_applier import SubprocessUnifiedDiffApplier
+from skriptoteket.infrastructure.llm.capture_store import ArtifactsLlmCaptureStore
+from skriptoteket.infrastructure.llm.chat_failover_router import InProcessChatFailoverRouter
 from skriptoteket.infrastructure.llm.chat_inflight_guard import InProcessChatInFlightGuard
+from skriptoteket.infrastructure.llm.chat_ops_budget_resolver import (
+    SettingsBasedChatOpsBudgetResolver,
+)
 from skriptoteket.infrastructure.llm.openai_provider import (
     OpenAIChatOpsProvider,
     OpenAIChatStreamProvider,
-    OpenAIEditSuggestionProvider,
     OpenAIInlineCompletionProvider,
+)
+from skriptoteket.infrastructure.llm.provider_sets import (
+    ChatOpsProviders,
+    ChatStreamProviders,
+    is_remote_llm_endpoint,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.editor_patches import UnifiedDiffApplierProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
+    ChatFailoverRouterProtocol,
     ChatInFlightGuardProtocol,
-    ChatOpsProviderProtocol,
-    ChatStreamProviderProtocol,
+    ChatOpsBudgetResolverProtocol,
+    ChatOpsProvidersProtocol,
+    ChatStreamProvidersProtocol,
     EditOpsApplyHandlerProtocol,
     EditOpsHandlerProtocol,
     EditOpsPreviewHandlerProtocol,
     EditorChatClearHandlerProtocol,
     EditorChatHandlerProtocol,
     EditorChatHistoryHandlerProtocol,
-    EditSuggestionHandlerProtocol,
-    EditSuggestionProviderProtocol,
     InlineCompletionHandlerProtocol,
     InlineCompletionProviderProtocol,
 )
+from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
@@ -53,6 +62,10 @@ class LlmProvider(Provider):
     @provide(scope=Scope.APP)
     def unified_diff_applier(self) -> UnifiedDiffApplierProtocol:
         return SubprocessUnifiedDiffApplier()
+
+    @provide(scope=Scope.APP)
+    def llm_capture_store(self, settings: Settings) -> LlmCaptureStoreProtocol:
+        return ArtifactsLlmCaptureStore(settings=settings)
 
     @provide(scope=Scope.APP)
     async def llm_http_client(self, settings: Settings) -> AsyncIterator[httpx.AsyncClient]:
@@ -69,28 +82,64 @@ class LlmProvider(Provider):
         return OpenAIInlineCompletionProvider(settings=settings, client=client)
 
     @provide(scope=Scope.APP)
-    def edit_suggestion_provider(
-        self,
-        settings: Settings,
-        client: httpx.AsyncClient,
-    ) -> EditSuggestionProviderProtocol:
-        return OpenAIEditSuggestionProvider(settings=settings, client=client)
+    def chat_failover_router(self, settings: Settings) -> ChatFailoverRouterProtocol:
+        return InProcessChatFailoverRouter(settings=settings)
 
     @provide(scope=Scope.APP)
-    def chat_stream_provider(
-        self,
-        settings: Settings,
-        client: httpx.AsyncClient,
-    ) -> ChatStreamProviderProtocol:
-        return OpenAIChatStreamProvider(settings=settings, client=client)
+    def chat_ops_budget_resolver(self, settings: Settings) -> ChatOpsBudgetResolverProtocol:
+        return SettingsBasedChatOpsBudgetResolver(settings=settings)
 
     @provide(scope=Scope.APP)
-    def chat_ops_provider(
+    def chat_stream_providers(
         self,
         settings: Settings,
         client: httpx.AsyncClient,
-    ) -> ChatOpsProviderProtocol:
-        return OpenAIChatOpsProvider(settings=settings, client=client)
+    ) -> ChatStreamProvidersProtocol:
+        primary = OpenAIChatStreamProvider(settings=settings, client=client)
+
+        fallback = None
+        fallback_base_url = settings.LLM_CHAT_FALLBACK_BASE_URL.strip()
+        fallback_model = settings.LLM_CHAT_FALLBACK_MODEL.strip()
+        if fallback_base_url and fallback_model:
+            fallback = OpenAIChatStreamProvider(
+                settings=settings,
+                client=client,
+                base_url=fallback_base_url,
+                model=fallback_model,
+                reasoning_effort=settings.LLM_CHAT_FALLBACK_REASONING_EFFORT,
+            )
+
+        return ChatStreamProviders(
+            primary=primary,
+            fallback=fallback,
+            fallback_is_remote=is_remote_llm_endpoint(fallback_base_url) if fallback else False,
+        )
+
+    @provide(scope=Scope.APP)
+    def chat_ops_providers(
+        self,
+        settings: Settings,
+        client: httpx.AsyncClient,
+    ) -> ChatOpsProvidersProtocol:
+        primary = OpenAIChatOpsProvider(settings=settings, client=client)
+
+        fallback = None
+        fallback_base_url = settings.LLM_CHAT_OPS_FALLBACK_BASE_URL.strip()
+        fallback_model = settings.LLM_CHAT_OPS_FALLBACK_MODEL.strip()
+        if fallback_base_url and fallback_model:
+            fallback = OpenAIChatOpsProvider(
+                settings=settings,
+                client=client,
+                base_url=fallback_base_url,
+                model=fallback_model,
+                reasoning_effort=settings.LLM_CHAT_OPS_FALLBACK_REASONING_EFFORT,
+            )
+
+        return ChatOpsProviders(
+            primary=primary,
+            fallback=fallback,
+            fallback_is_remote=is_remote_llm_endpoint(fallback_base_url) if fallback else False,
+        )
 
     @provide(scope=Scope.APP)
     def chat_inflight_guard(self) -> ChatInFlightGuardProtocol:
@@ -105,19 +154,14 @@ class LlmProvider(Provider):
         return InlineCompletionHandler(settings=settings, provider=provider)
 
     @provide(scope=Scope.REQUEST)
-    def edit_suggestion_handler(
-        self,
-        settings: Settings,
-        provider: EditSuggestionProviderProtocol,
-    ) -> EditSuggestionHandlerProtocol:
-        return EditSuggestionHandler(settings=settings, provider=provider)
-
-    @provide(scope=Scope.REQUEST)
     def edit_ops_handler(
         self,
         settings: Settings,
-        provider: ChatOpsProviderProtocol,
+        providers: ChatOpsProvidersProtocol,
+        budget_resolver: ChatOpsBudgetResolverProtocol,
         guard: ChatInFlightGuardProtocol,
+        failover: ChatFailoverRouterProtocol,
+        capture_store: LlmCaptureStoreProtocol,
         uow: UnitOfWorkProtocol,
         sessions: ToolSessionRepositoryProtocol,
         messages: ToolSessionMessageRepositoryProtocol,
@@ -126,8 +170,11 @@ class LlmProvider(Provider):
     ) -> EditOpsHandlerProtocol:
         return EditOpsHandler(
             settings=settings,
-            provider=provider,
+            providers=providers,
+            budget_resolver=budget_resolver,
             guard=guard,
+            failover=failover,
+            capture_store=capture_store,
             uow=uow,
             sessions=sessions,
             messages=messages,
@@ -138,9 +185,15 @@ class LlmProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def edit_ops_preview_handler(
         self,
+        settings: Settings,
+        capture_store: LlmCaptureStoreProtocol,
         patch_applier: UnifiedDiffApplierProtocol,
     ) -> EditOpsPreviewHandlerProtocol:
-        return EditOpsPreviewHandler(patch_applier=patch_applier)
+        return EditOpsPreviewHandler(
+            settings=settings,
+            capture_store=capture_store,
+            patch_applier=patch_applier,
+        )
 
     @provide(scope=Scope.REQUEST)
     def edit_ops_apply_handler(
@@ -153,8 +206,9 @@ class LlmProvider(Provider):
     def editor_chat_handler(
         self,
         settings: Settings,
-        provider: ChatStreamProviderProtocol,
+        providers: ChatStreamProvidersProtocol,
         guard: ChatInFlightGuardProtocol,
+        failover: ChatFailoverRouterProtocol,
         uow: UnitOfWorkProtocol,
         sessions: ToolSessionRepositoryProtocol,
         messages: ToolSessionMessageRepositoryProtocol,
@@ -163,8 +217,9 @@ class LlmProvider(Provider):
     ) -> EditorChatHandlerProtocol:
         return EditorChatHandler(
             settings=settings,
-            provider=provider,
+            providers=providers,
             guard=guard,
+            failover=failover,
             uow=uow,
             sessions=sessions,
             messages=messages,

@@ -18,6 +18,8 @@ from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
+    ChatFailoverDecision,
+    ChatFailoverRouterProtocol,
     ChatInFlightGuardProtocol,
     ChatMessage,
     ChatStreamProviderProtocol,
@@ -46,6 +48,34 @@ class DummyChatGuard(ChatInFlightGuardProtocol):
         return True
 
     async def release(self, *, user_id: UUID, tool_id: UUID) -> None:
+        return None
+
+
+class DummyFailover(ChatFailoverRouterProtocol):
+    async def decide_route(
+        self,
+        *,
+        user_id: UUID,
+        tool_id: UUID,
+        allow_remote_fallback: bool,
+        fallback_available: bool,
+        fallback_is_remote: bool,
+    ) -> ChatFailoverDecision:
+        return ChatFailoverDecision(provider="primary", reason="primary_default")
+
+    async def acquire_inflight(self, *, provider: str) -> None:
+        return None
+
+    async def release_inflight(self, *, provider: str) -> None:
+        return None
+
+    async def record_success(self, *, provider: str) -> None:
+        return None
+
+    async def record_failure(self, *, provider: str) -> None:
+        return None
+
+    async def mark_fallback_used(self, *, user_id: UUID, tool_id: UUID) -> None:
         return None
 
 
@@ -85,10 +115,16 @@ async def test_editor_chat_returns_done_disabled_when_disabled() -> None:
     clock = MagicMock(spec=ClockProtocol)
     id_generator = MagicMock(spec=IdGeneratorProtocol)
 
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
     handler = EditorChatHandler(
         settings=settings,
-        provider=provider,
+        providers=providers,
         guard=DummyChatGuard(),
+        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         messages=messages,
@@ -135,10 +171,16 @@ async def test_editor_chat_returns_done_disabled_when_system_prompt_unavailable(
         del template_id
         raise OSError("missing system prompt")
 
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
     handler = EditorChatHandler(
         settings=settings,
-        provider=provider,
+        providers=providers,
         guard=DummyChatGuard(),
+        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         messages=messages,
@@ -241,10 +283,16 @@ async def test_editor_chat_streams_meta_delta_done_and_persists_thread() -> None
 
     provider.stream_chat.side_effect = stream_chat
 
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
     handler = EditorChatHandler(
         settings=settings,
-        provider=provider,
+        providers=providers,
         guard=DummyChatGuard(),
+        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         messages=messages,
@@ -328,10 +376,16 @@ async def test_editor_chat_emits_done_error_on_timeout_and_persists_user_message
     sessions.get_or_create.return_value = session_empty
     messages.list_tail.return_value = []
 
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
     handler = EditorChatHandler(
         settings=settings,
-        provider=provider,
+        providers=providers,
         guard=DummyChatGuard(),
+        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         messages=messages,
@@ -408,10 +462,16 @@ async def test_editor_chat_persists_partial_assistant_message_on_timeout_after_d
         created_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
     )
 
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
     handler = EditorChatHandler(
         settings=settings,
-        provider=provider,
+        providers=providers,
         guard=DummyChatGuard(),
+        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         messages=messages,
@@ -487,10 +547,16 @@ async def test_editor_chat_raises_validation_error_when_message_too_long() -> No
     clock = MagicMock(spec=ClockProtocol)
     id_generator = MagicMock(spec=IdGeneratorProtocol)
 
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
     handler = EditorChatHandler(
         settings=settings,
-        provider=provider,
+        providers=providers,
         guard=DummyChatGuard(),
+        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         messages=messages,
@@ -584,10 +650,16 @@ async def test_editor_chat_drops_expired_thread_history() -> None:
 
     provider.stream_chat.return_value = stream()
 
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
     handler = EditorChatHandler(
         settings=settings,
-        provider=provider,
+        providers=providers,
         guard=DummyChatGuard(),
+        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         messages=messages,

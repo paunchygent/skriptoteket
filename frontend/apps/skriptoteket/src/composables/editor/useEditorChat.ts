@@ -1,5 +1,6 @@
 import { ref, watch, type Ref } from "vue";
 
+import { createCorrelationId } from "../../api/correlation";
 import { apiFetch, apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import { useAuthStore } from "../../stores/auth";
@@ -10,10 +11,12 @@ type EditorChatHistoryMessage = components["schemas"]["EditorChatHistoryMessage"
 type EditorChatRequest = components["schemas"]["EditorChatRequest"];
 
 type ChatRole = "user" | "assistant";
+type NoticeVariant = "info" | "warning";
 
 type UseEditorChatOptions = {
   toolId: Readonly<Ref<string>>;
   baseVersionId: Readonly<Ref<string | null>>;
+  allowRemoteFallback: Readonly<Ref<boolean>>;
 };
 
 export type EditorChatMessage = {
@@ -22,6 +25,7 @@ export type EditorChatMessage = {
   content: string;
   createdAt: string;
   isStreaming?: boolean;
+  correlationId?: string | null;
 };
 
 type ApiErrorEnvelope = {
@@ -50,6 +54,7 @@ function mapHistoryMessage(message: EditorChatHistoryMessage): EditorChatMessage
     content: message.content,
     createdAt: message.created_at,
     isStreaming: false,
+    correlationId: null,
   };
 }
 
@@ -77,12 +82,18 @@ async function readErrorMessage(response: Response): Promise<string> {
   return fallback;
 }
 
-export function useEditorChat({ toolId, baseVersionId }: UseEditorChatOptions) {
+export function useEditorChat({
+  toolId,
+  baseVersionId,
+  allowRemoteFallback,
+}: UseEditorChatOptions) {
   const auth = useAuthStore();
   const messages = ref<EditorChatMessage[]>([]);
   const streaming = ref(false);
   const disabledMessage = ref<string | null>(null);
   const error = ref<string | null>(null);
+  const noticeMessage = ref<string | null>(null);
+  const noticeVariant = ref<NoticeVariant>("info");
 
   let activeController: AbortController | null = null;
   let activeStreamToken = 0;
@@ -99,6 +110,8 @@ export function useEditorChat({ toolId, baseVersionId }: UseEditorChatOptions) {
     messages.value = [];
     disabledMessage.value = null;
     error.value = null;
+    noticeMessage.value = null;
+    noticeVariant.value = "info";
   }
 
   function clearError(): void {
@@ -107,6 +120,11 @@ export function useEditorChat({ toolId, baseVersionId }: UseEditorChatOptions) {
 
   function clearDisabledMessage(): void {
     disabledMessage.value = null;
+  }
+
+  function clearNoticeMessage(): void {
+    noticeMessage.value = null;
+    noticeVariant.value = "info";
   }
 
   watch(
@@ -121,6 +139,7 @@ export function useEditorChat({ toolId, baseVersionId }: UseEditorChatOptions) {
 
     error.value = null;
     disabledMessage.value = null;
+    clearNoticeMessage();
 
     try {
       const response = await apiGet<EditorChatHistoryResponse>(
@@ -154,12 +173,14 @@ export function useEditorChat({ toolId, baseVersionId }: UseEditorChatOptions) {
 
     error.value = null;
     disabledMessage.value = null;
+    clearNoticeMessage();
 
     const userMessage: EditorChatMessage = {
       id: createLocalMessageId(),
       role: "user",
       content: trimmed,
       createdAt: new Date().toISOString(),
+      correlationId: null,
     };
     messages.value = [...messages.value, userMessage];
 
@@ -169,8 +190,12 @@ export function useEditorChat({ toolId, baseVersionId }: UseEditorChatOptions) {
     const streamToken = ++activeStreamToken;
     const controller = new AbortController();
     activeController = controller;
+    const correlationId = createCorrelationId();
 
-    const body: EditorChatRequest = { message: trimmed };
+    const body: EditorChatRequest = {
+      message: trimmed,
+      allow_remote_fallback: allowRemoteFallback.value,
+    };
     if (baseVersionId.value) {
       body.base_version_id = baseVersionId.value;
     }
@@ -188,6 +213,7 @@ export function useEditorChat({ toolId, baseVersionId }: UseEditorChatOptions) {
         content: "",
         createdAt: new Date().toISOString(),
         isStreaming: true,
+        correlationId,
       };
       activeAssistantMessage = assistantMessage;
       messages.value = [...messages.value, assistantMessage];
@@ -210,6 +236,7 @@ export function useEditorChat({ toolId, baseVersionId }: UseEditorChatOptions) {
       if (auth.csrfToken) {
         headers.set("X-CSRF-Token", auth.csrfToken);
       }
+      headers.set("X-Correlation-ID", correlationId);
 
       const response = await fetch(`/api/v1/editor/tools/${encodeURIComponent(toolId.value)}/chat`, {
         method: "POST",
@@ -264,6 +291,18 @@ export function useEditorChat({ toolId, baseVersionId }: UseEditorChatOptions) {
                 assistant.content += text;
                 sawDelta = true;
               }
+            }
+          }
+
+          if (event.event === "notice") {
+            if (payload && typeof payload === "object" && "message" in payload) {
+              noticeMessage.value = String(
+                (payload as { message?: string }).message ?? "",
+              ).trim();
+              const nextVariant = String(
+                (payload as { variant?: string }).variant ?? "info",
+              );
+              noticeVariant.value = nextVariant === "warning" ? "warning" : "info";
             }
           }
 
@@ -331,11 +370,13 @@ export function useEditorChat({ toolId, baseVersionId }: UseEditorChatOptions) {
       messages.value = [];
       disabledMessage.value = null;
       error.value = null;
+      clearNoticeMessage();
       return;
     }
 
     error.value = null;
     disabledMessage.value = null;
+    clearNoticeMessage();
 
     try {
       await apiFetch<void>(`/api/v1/editor/tools/${encodeURIComponent(toolId.value)}/chat`, {
@@ -356,11 +397,14 @@ export function useEditorChat({ toolId, baseVersionId }: UseEditorChatOptions) {
     streaming,
     disabledMessage,
     error,
+    noticeMessage,
+    noticeVariant,
     loadHistory,
     sendMessage,
     cancel,
     clear,
     clearError,
     clearDisabledMessage,
+    clearNoticeMessage,
   };
 }

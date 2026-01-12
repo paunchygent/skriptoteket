@@ -6,7 +6,6 @@ from . import (
     completions,
     drafts,
     edit_ops,
-    edits,
     locks,
     maintainers,
     metadata,
@@ -22,7 +21,6 @@ from .chat import clear_editor_chat, get_editor_chat_history, stream_editor_chat
 from .completions import create_inline_completion
 from .drafts import create_draft_version, save_draft_version
 from .edit_ops import create_edit_ops
-from .edits import create_edit_suggestion
 from .locks import acquire_draft_lock, release_draft_lock
 from .maintainers import (
     assign_tool_maintainer,
@@ -42,8 +40,6 @@ from .models import (
     EditorChatRequest,
     EditorEditOpsRequest,
     EditorEditOpsResponse,
-    EditorEditSuggestionRequest,
-    EditorEditSuggestionResponse,
     EditorInlineCompletionRequest,
     EditorInlineCompletionResponse,
     EditorRunDetails,
@@ -93,7 +89,6 @@ router.include_router(sandbox_settings.router)
 router.include_router(schema_validation.router)
 router.include_router(runs.router)
 router.include_router(completions.router)
-router.include_router(edits.router)
 router.include_router(edit_ops.router)
 router.include_router(chat.router)
 
@@ -109,8 +104,6 @@ __all__ = [
     "EditorChatRequest",
     "EditorEditOpsRequest",
     "EditorEditOpsResponse",
-    "EditorEditSuggestionRequest",
-    "EditorEditSuggestionResponse",
     "EditorInlineCompletionRequest",
     "EditorInlineCompletionResponse",
     "EditorRunDetails",
@@ -143,7 +136,6 @@ __all__ = [
     "assign_tool_maintainer",
     "create_draft_version",
     "create_edit_ops",
-    "create_edit_suggestion",
     "create_inline_completion",
     "clear_editor_chat",
     "get_editor_chat_history",

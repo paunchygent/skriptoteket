@@ -8,10 +8,13 @@ type EditorWorkspaceDrawersProps = {
   isChatCollapsed: boolean;
   variant?: "drawer" | "column";
 
+  allowRemoteFallback: boolean;
   chatMessages: EditorChatMessage[];
   chatIsStreaming: boolean;
   chatDisabledMessage: string | null;
   chatError: string | null;
+  chatNoticeMessage: string | null;
+  chatNoticeVariant: "info" | "warning";
   isEditOpsLoading: boolean;
   isEditOpsSlow: boolean;
 
@@ -32,6 +35,8 @@ const emit = defineEmits<{
   (event: "clearChat"): void;
   (event: "clearChatError"): void;
   (event: "clearChatDisabled"): void;
+  (event: "clearChatNotice"): void;
+  (event: "setAllowRemoteFallback", value: boolean): void;
   (event: "toggleChatCollapsed"): void;
   (event: "requestEditOps", message: string): void;
   (event: "clearEditOpsError"): void;
@@ -49,6 +54,9 @@ const emit = defineEmits<{
     :is-streaming="props.chatIsStreaming"
     :disabled-message="props.chatDisabledMessage"
     :error="props.chatError"
+    :notice-message="props.chatNoticeMessage"
+    :notice-variant="props.chatNoticeVariant"
+    :allow-remote-fallback="props.allowRemoteFallback"
     :is-edit-ops-loading="props.isEditOpsLoading"
     :edit-ops-is-slow="props.isEditOpsSlow"
     :edit-ops-error="props.editOpsError"
@@ -61,6 +69,8 @@ const emit = defineEmits<{
     @clear="emit('clearChat')"
     @clear-error="emit('clearChatError')"
     @clear-disabled="emit('clearChatDisabled')"
+    @clear-notice="emit('clearChatNotice')"
+    @set-allow-remote-fallback="emit('setAllowRemoteFallback', $event)"
     @clear-edit-ops-error="emit('clearEditOpsError')"
     @clear-edit-ops-disabled="emit('clearEditOpsDisabled')"
     @request-edit-ops="emit('requestEditOps', $event)"

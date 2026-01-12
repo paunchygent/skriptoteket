@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
-PromptCapability = Literal["inline_completion", "edit_suggestion", "chat_stream", "chat_ops"]
+PromptCapability = Literal["inline_completion", "chat_stream", "chat_ops"]
 
 
 CONTRACT_V2_FRAGMENT = "CONTRACT_V2_FRAGMENT"
@@ -24,18 +24,6 @@ PROMPT_TEMPLATES: dict[str, PromptTemplate] = {
         template_id="inline_completion_v1",
         capability="inline_completion",
         template_path="src/skriptoteket/application/editor/system_prompts/inline_completion_v1.txt",
-        required_placeholders=frozenset(
-            {
-                CONTRACT_V2_FRAGMENT,
-                RUNNER_CONSTRAINTS_FRAGMENT,
-                HELPERS_FRAGMENT,
-            }
-        ),
-    ),
-    "edit_suggestion_v1": PromptTemplate(
-        template_id="edit_suggestion_v1",
-        capability="edit_suggestion",
-        template_path="src/skriptoteket/application/editor/system_prompts/edit_suggestion_v1.txt",
         required_placeholders=frozenset(
             {
                 CONTRACT_V2_FRAGMENT,

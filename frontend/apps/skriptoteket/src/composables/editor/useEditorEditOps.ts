@@ -1,6 +1,7 @@
 import type { EditorView } from "@codemirror/view";
 import { computed, onScopeDispose, ref, watch, type Ref } from "vue";
 
+import { createCorrelationId } from "../../api/correlation";
 import { apiFetch, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import {
@@ -42,6 +43,7 @@ export type EditOpsProposal = {
   activeFile: VirtualFileId;
   selection: EditorEditOpsSelection | null;
   cursor: EditorEditOpsCursor | null;
+  correlationId: string | null;
   createdAt: string;
 };
 
@@ -76,6 +78,7 @@ export type EditOpsPanelState = {
 
 type UseEditorEditOpsOptions = {
   toolId: Readonly<Ref<string>>;
+  allowRemoteFallback: Readonly<Ref<boolean>>;
   isReadOnly: Readonly<Ref<boolean>>;
   editorView: Readonly<Ref<EditorView | null>>;
   fields: {
@@ -94,6 +97,7 @@ type EditOpsRequestResult = {
   activeFile: VirtualFileId;
   selection: EditorEditOpsSelection | null;
   cursor: EditorEditOpsCursor | null;
+  correlationId: string | null;
 };
 
 const DEFAULT_ACTIVE_FILE: VirtualFileId = "tool.py";
@@ -155,6 +159,7 @@ function cloneVirtualFiles(files: VirtualFileTextMap): VirtualFileTextMap {
 export function useEditorEditOps(options: UseEditorEditOpsOptions) {
   const {
     toolId,
+    allowRemoteFallback,
     isReadOnly,
     editorView,
     fields,
@@ -412,6 +417,7 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
     const body: EditorEditOpsRequest = {
       tool_id: toolId.value,
       message: trimmed,
+      allow_remote_fallback: allowRemoteFallback.value,
       active_file: activeFile,
       virtual_files: virtualFiles,
     };
@@ -423,9 +429,11 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
     }
 
     try {
+      const correlationId = createCorrelationId();
       const response = await apiFetch<EditorEditOpsResponse>("/api/v1/editor/edit-ops", {
         method: "POST",
         body,
+        headers: { "X-Correlation-ID": correlationId },
       });
 
       if (response.enabled && response.ops.length > 0) {
@@ -436,6 +444,7 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
           activeFile,
           selection,
           cursor,
+          correlationId,
           createdAt: new Date().toISOString(),
         };
         proposal.value = nextProposal;
@@ -449,7 +458,7 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
         confirmationAccepted.value = false;
       }
 
-      return { response, message: trimmed, activeFile, selection, cursor };
+      return { response, message: trimmed, activeFile, selection, cursor, correlationId };
     } catch (error: unknown) {
       proposal.value = null;
       previewResponse.value = null;

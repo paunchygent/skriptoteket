@@ -9,6 +9,7 @@ from skriptoteket.application.editor.edit_ops_preview_handler import (
     EditOpsApplyHandler,
     EditOpsPreviewHandler,
 )
+from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.protocols.editor_patches import (
@@ -25,6 +26,11 @@ from skriptoteket.protocols.llm import (
     EditOpsReplaceOp,
 )
 from tests.fixtures.identity_fixtures import make_user
+
+
+class StubCaptureStore:
+    async def write_capture(self, *, kind: str, capture_id, payload) -> None:  # type: ignore[no-untyped-def]
+        return
 
 
 class StubPatchApplier:
@@ -74,7 +80,11 @@ class StubPatchApplier:
 @pytest.mark.asyncio
 async def test_preview_requires_confirmation_when_patch_offset_high() -> None:
     actor = make_user(role=Role.CONTRIBUTOR)
-    handler = EditOpsPreviewHandler(patch_applier=StubPatchApplier())
+    handler = EditOpsPreviewHandler(
+        settings=Settings(),
+        capture_store=StubCaptureStore(),
+        patch_applier=StubPatchApplier(),
+    )
 
     result = await handler.handle(
         actor=actor,
@@ -104,7 +114,11 @@ async def test_preview_requires_confirmation_when_patch_offset_high() -> None:
 @pytest.mark.asyncio
 async def test_apply_rejects_when_base_hash_mismatch() -> None:
     actor = make_user(role=Role.CONTRIBUTOR)
-    preview_handler = EditOpsPreviewHandler(patch_applier=MagicMock())
+    preview_handler = EditOpsPreviewHandler(
+        settings=Settings(),
+        capture_store=StubCaptureStore(),
+        patch_applier=MagicMock(),
+    )
     apply_handler = EditOpsApplyHandler(preview=preview_handler)
 
     with pytest.raises(DomainError) as exc_info:
@@ -136,7 +150,11 @@ async def test_apply_rejects_when_base_hash_mismatch() -> None:
 @pytest.mark.asyncio
 async def test_apply_rejects_when_patch_id_mismatch() -> None:
     actor = make_user(role=Role.CONTRIBUTOR)
-    preview_handler = EditOpsPreviewHandler(patch_applier=MagicMock())
+    preview_handler = EditOpsPreviewHandler(
+        settings=Settings(),
+        capture_store=StubCaptureStore(),
+        patch_applier=MagicMock(),
+    )
     apply_handler = EditOpsApplyHandler(preview=preview_handler)
 
     tool_id = uuid4()
@@ -184,7 +202,11 @@ async def test_apply_rejects_when_patch_id_mismatch() -> None:
 @pytest.mark.asyncio
 async def test_apply_returns_preview_result_when_tokens_match() -> None:
     actor = make_user(role=Role.CONTRIBUTOR)
-    preview_handler = EditOpsPreviewHandler(patch_applier=MagicMock())
+    preview_handler = EditOpsPreviewHandler(
+        settings=Settings(),
+        capture_store=StubCaptureStore(),
+        patch_applier=MagicMock(),
+    )
     apply_handler = EditOpsApplyHandler(preview=preview_handler)
 
     tool_id = uuid4()

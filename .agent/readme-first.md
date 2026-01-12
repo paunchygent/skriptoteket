@@ -26,12 +26,12 @@ Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future H
 
 ## Current sprint dashboard (keep current only)
 
-- Sprint: `SPR-2026-01-05` (EPIC-14 editor sandbox vertical slice) — done (completed 2026-01-01)
-- Focus: ST-14-03..08 (sandbox next_actions parity, preview snapshots, settings isolation, draft locks)
+- Sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA (SSR/HTMX removed)
-- Done: EPIC-11 (SPA migration)
 - Active: EPIC-14 admin tool authoring — `docs/backlog/epics/epic-14-admin-tool-authoring.md`
+- Active: EPIC-08 contextual help + AI editor — `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md`
 - Active: EPIC-16 catalog discovery — ST-16-08 pending
+- Done: EPIC-11 (SPA migration)
 
 ## Current EPIC-04 decisions (dynamic scripts)
 
@@ -122,3 +122,17 @@ Most EPIC-02 stories are complete (self-registration, profiles, lockout). ST-02-
 - AI infra runbooks: `docs/runbooks/runbook-gpu-ai-workloads.md`, `docs/runbooks/runbook-tabby-codemirror.md`
 - LLM ops note: `llama-server-hip` disabled; `llama-server-vulkan` enabled for A/B testing (see `.agent/handoff.md`).
 - Ops runbooks: `docs/runbooks/runbook-home-server.md`, `docs/runbooks/runbook-observability.md`
+
+### AI editor debugging quicklinks (EPIC-08)
+- Baseline ADR: `docs/adr/adr-0051-chat-first-ai-editing.md` (accepted).
+- Edit-ops v2 (patch/anchor): `docs/backlog/reviews/review-epic-08-ai-edit-ops-v2.md`,
+  `docs/backlog/stories/story-08-24-ai-edit-ops-anchor-patch-v2.md`.
+- Provider failover (local primary → OpenAI fallback): `docs/backlog/stories/story-08-26-ai-chat-provider-failover.md`.
+- Metadata-only logs: `ai_chat_ops_result` (edit-ops generation) + `edit_ops_preview` (preview/apply classification).
+- Correlation id: returned as `X-Correlation-ID` and surfaced to contributors as `Korrelation-ID: <uuid>` on failures.
+- Log search: `docker logs --tail 20000 skriptoteket_web 2>&1 | rg 'ai_chat_ops_result|edit_ops_preview'`.
+- Platform-only captures (Option A): enable `LLM_CAPTURE_ON_ERROR_ENABLED=true`; inspect `${ARTIFACTS_ROOT}/llm-captures/`.
+- Capture + access runbook: `docs/runbooks/runbook-observability-logging.md`.
+
+### DevOps note (2026-01-11)
+- kdump/amdgpu report: `docs/reference/reports/ref-hemma-kdump-amdgpu-blacklist-dc0-test-2026-01-11.md`

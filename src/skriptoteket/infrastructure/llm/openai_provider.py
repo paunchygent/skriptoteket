@@ -10,14 +10,11 @@ from skriptoteket.config import Settings
 from skriptoteket.protocols.llm import (
     ChatOpsProviderProtocol,
     ChatStreamProviderProtocol,
-    EditSuggestionProviderProtocol,
     InlineCompletionProviderProtocol,
     LLMChatOpsResponse,
     LLMChatRequest,
     LLMCompletionRequest,
     LLMCompletionResponse,
-    LLMEditRequest,
-    LLMEditResponse,
 )
 
 
@@ -121,19 +118,19 @@ def _merge_headers(*, api_key: str, extra_headers: Mapping[str, str]) -> dict[st
     return headers
 
 
-def _is_gpt52_model(model: str) -> bool:
+def _is_gpt5_family_model(model: str) -> bool:
     normalized = model.strip().lower()
     if not normalized:
         return False
 
-    for token in ("gpt-5-2", "gpt-5.2"):
-        for prefix in (token, f"openai/{token}"):
-            idx = normalized.find(prefix)
-            if idx < 0:
-                continue
-            end = idx + len(prefix)
-            if end == len(normalized) or normalized[end] in "-_.":
-                return True
+    prefixes = ("gpt-5", "openai/gpt-5")
+    for prefix in prefixes:
+        if not normalized.startswith(prefix):
+            continue
+        end = len(prefix)
+        if end == len(normalized) or normalized[end] in "-_.":
+            return True
+
     return False
 
 
@@ -143,6 +140,7 @@ def _build_chat_payload(
     messages: list[dict[str, str]],
     max_tokens: int,
     temperature: float,
+    reasoning_effort: str | None,
     stream: bool,
     stop: list[str] | None = None,
     cache_prompt: bool = False,
@@ -156,8 +154,10 @@ def _build_chat_payload(
         "stream": stream,
     }
 
-    if _is_gpt52_model(model):
+    if _is_gpt5_family_model(model):
         payload["max_completion_tokens"] = max_tokens
+        if reasoning_effort:
+            payload["reasoning_effort"] = reasoning_effort
     else:
         payload["max_tokens"] = max_tokens
         payload["temperature"] = temperature
@@ -184,6 +184,7 @@ class OpenAIInlineCompletionProvider(InlineCompletionProviderProtocol):
         self._extra_headers = settings.LLM_COMPLETION_EXTRA_HEADERS
         self._allow_prompt_cache_params = not _is_local_llama_server(self._base_url)
         self._model = settings.LLM_COMPLETION_MODEL.strip()
+        self._reasoning_effort = settings.LLM_COMPLETION_REASONING_EFFORT
         self._max_tokens = settings.LLM_COMPLETION_MAX_TOKENS
         self._temperature = settings.LLM_COMPLETION_TEMPERATURE
         self._timeout = settings.LLM_COMPLETION_TIMEOUT_SECONDS
@@ -212,6 +213,7 @@ class OpenAIInlineCompletionProvider(InlineCompletionProviderProtocol):
             ],
             max_tokens=self._max_tokens,
             temperature=self._temperature,
+            reasoning_effort=self._reasoning_effort,
             stream=False,
             stop=["\n```"],
             prompt_cache_retention=self._prompt_cache_retention,
@@ -234,80 +236,27 @@ class OpenAIInlineCompletionProvider(InlineCompletionProviderProtocol):
         return LLMCompletionResponse(completion=content, finish_reason=finish_reason)
 
 
-class OpenAIEditSuggestionProvider(EditSuggestionProviderProtocol):
-    def __init__(self, *, settings: Settings, client: httpx.AsyncClient) -> None:
-        self._base_url = _normalize_base_url(settings.LLM_EDIT_BASE_URL)
-        self._api_key = settings.OPENAI_LLM_EDIT_API_KEY.strip()
-        self._prompt_cache_key = settings.LLM_EDIT_PROMPT_CACHE_KEY.strip()
-        self._prompt_cache_retention = settings.LLM_EDIT_PROMPT_CACHE_RETENTION
-        self._extra_headers = settings.LLM_EDIT_EXTRA_HEADERS
-        self._allow_prompt_cache_params = not _is_local_llama_server(self._base_url)
-        self._model = settings.LLM_EDIT_MODEL.strip()
-        self._max_tokens = settings.LLM_EDIT_MAX_TOKENS
-        self._temperature = settings.LLM_EDIT_TEMPERATURE
-        self._timeout = settings.LLM_EDIT_TIMEOUT_SECONDS
-        self._client = client
-
-    async def suggest_edits(
+class OpenAIChatStreamProvider(ChatStreamProviderProtocol):
+    def __init__(
         self,
         *,
-        request: LLMEditRequest,
-        system_prompt: str,
-    ) -> LLMEditResponse:
-        url = f"{self._base_url}/chat/completions"
-        headers = _merge_headers(api_key=self._api_key, extra_headers=self._extra_headers)
-
-        instruction = request.instruction or ""
-        user_prompt = (
-            "Instruction:\n"
-            f"{instruction}\n\n"
-            "Selected text:\n"
-            f"{request.selection}\n\n"
-            "Context before selection:\n"
-            f"{request.prefix}\n\n"
-            "Context after selection:\n"
-            f"{request.suffix}\n"
-        )
-
-        payload = _build_chat_payload(
-            model=self._model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            max_tokens=self._max_tokens,
-            temperature=self._temperature,
-            stream=False,
-            stop=["\n```"],
-            prompt_cache_retention=self._prompt_cache_retention,
-            prompt_cache_key=self._prompt_cache_key,
-            allow_prompt_cache_params=self._allow_prompt_cache_params,
-        )
-
-        response = await self._client.post(
-            url,
-            headers=headers,
-            json=payload,
-            timeout=self._timeout,
-        )
-        response.raise_for_status()
-        payload = response.json()
-        if not isinstance(payload, dict):
-            raise ValueError("Upstream LLM response is not an object")
-
-        content, finish_reason = _extract_first_choice_content(payload)
-        return LLMEditResponse(suggestion=content, finish_reason=finish_reason)
-
-
-class OpenAIChatStreamProvider(ChatStreamProviderProtocol):
-    def __init__(self, *, settings: Settings, client: httpx.AsyncClient) -> None:
-        self._base_url = _normalize_base_url(settings.LLM_CHAT_BASE_URL)
-        self._api_key = settings.OPENAI_LLM_CHAT_API_KEY.strip()
+        settings: Settings,
+        client: httpx.AsyncClient,
+        base_url: str | None = None,
+        api_key: str | None = None,
+        model: str | None = None,
+        reasoning_effort: str | None = None,
+    ) -> None:
+        self._base_url = _normalize_base_url(base_url or settings.LLM_CHAT_BASE_URL)
+        self._api_key = (settings.OPENAI_LLM_CHAT_API_KEY if api_key is None else api_key).strip()
         self._prompt_cache_key = settings.LLM_CHAT_PROMPT_CACHE_KEY.strip()
         self._prompt_cache_retention = settings.LLM_CHAT_PROMPT_CACHE_RETENTION
         self._extra_headers = settings.LLM_CHAT_EXTRA_HEADERS
         self._allow_prompt_cache_params = not _is_local_llama_server(self._base_url)
-        self._model = settings.LLM_CHAT_MODEL.strip()
+        self._model = (settings.LLM_CHAT_MODEL if model is None else model).strip()
+        self._reasoning_effort = (
+            settings.LLM_CHAT_REASONING_EFFORT if reasoning_effort is None else reasoning_effort
+        )
         self._max_tokens = settings.LLM_CHAT_MAX_TOKENS
         self._temperature = settings.LLM_CHAT_TEMPERATURE
         self._timeout = settings.LLM_CHAT_TIMEOUT_SECONDS
@@ -333,6 +282,7 @@ class OpenAIChatStreamProvider(ChatStreamProviderProtocol):
             messages=response_messages,
             max_tokens=self._max_tokens,
             temperature=self._temperature,
+            reasoning_effort=self._reasoning_effort,
             stream=True,
             cache_prompt=self._use_prompt_cache,
             prompt_cache_retention=self._prompt_cache_retention,
@@ -374,15 +324,33 @@ class OpenAIChatStreamProvider(ChatStreamProviderProtocol):
 
 
 class OpenAIChatOpsProvider(ChatOpsProviderProtocol):
-    def __init__(self, *, settings: Settings, client: httpx.AsyncClient) -> None:
-        self._base_url = _normalize_base_url(settings.LLM_CHAT_OPS_BASE_URL)
-        self._api_key = settings.OPENAI_LLM_CHAT_OPS_API_KEY.strip()
+    def __init__(
+        self,
+        *,
+        settings: Settings,
+        client: httpx.AsyncClient,
+        base_url: str | None = None,
+        api_key: str | None = None,
+        model: str | None = None,
+        reasoning_effort: str | None = None,
+    ) -> None:
+        self._base_url = _normalize_base_url(base_url or settings.LLM_CHAT_OPS_BASE_URL)
+        self._api_key = (
+            settings.OPENAI_LLM_CHAT_OPS_API_KEY if api_key is None else api_key
+        ).strip()
         self._prompt_cache_key = settings.LLM_CHAT_OPS_PROMPT_CACHE_KEY.strip()
         self._prompt_cache_retention = settings.LLM_CHAT_OPS_PROMPT_CACHE_RETENTION
         self._extra_headers = settings.LLM_CHAT_OPS_EXTRA_HEADERS
         self._allow_prompt_cache_params = not _is_local_llama_server(self._base_url)
-        self._model = settings.LLM_CHAT_OPS_MODEL.strip()
-        self._max_tokens = settings.LLM_CHAT_OPS_MAX_TOKENS
+        self._model = (settings.LLM_CHAT_OPS_MODEL if model is None else model).strip()
+        self._reasoning_effort = (
+            settings.LLM_CHAT_OPS_REASONING_EFFORT if reasoning_effort is None else reasoning_effort
+        )
+        self._max_tokens = (
+            settings.LLM_CHAT_OPS_GPT5_MAX_TOKENS
+            if _is_gpt5_family_model(self._model)
+            else settings.LLM_CHAT_OPS_MAX_TOKENS
+        )
         self._temperature = settings.LLM_CHAT_OPS_TEMPERATURE
         self._timeout = settings.LLM_CHAT_OPS_TIMEOUT_SECONDS
         self._client = client
@@ -407,6 +375,7 @@ class OpenAIChatOpsProvider(ChatOpsProviderProtocol):
             messages=response_messages,
             max_tokens=self._max_tokens,
             temperature=self._temperature,
+            reasoning_effort=self._reasoning_effort,
             stream=False,
             cache_prompt=self._use_prompt_cache,
             prompt_cache_retention=self._prompt_cache_retention,
@@ -426,4 +395,8 @@ class OpenAIChatOpsProvider(ChatOpsProviderProtocol):
             raise ValueError("Upstream LLM response is not an object")
 
         content, finish_reason = _extract_first_choice_content(payload)
-        return LLMChatOpsResponse(content=content, finish_reason=finish_reason)
+        return LLMChatOpsResponse(
+            content=content,
+            finish_reason=finish_reason,
+            raw_payload=dict(payload),
+        )

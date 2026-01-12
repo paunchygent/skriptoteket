@@ -2,7 +2,7 @@
 type: pr
 id: PR-0016
 title: "Editor AI: edit-ops v2 hardening (backend patching + controlled fuzz + UX)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-10
 updated: 2026-01-11

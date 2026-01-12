@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -11,6 +12,7 @@ from uuid import UUID
 import httpx
 import structlog
 from pydantic import BaseModel, ConfigDict, ValidationError
+from structlog.contextvars import get_contextvars
 
 from skriptoteket.application.editor.prompt_budget import apply_chat_ops_budget
 from skriptoteket.application.editor.prompt_composer import (
@@ -24,9 +26,12 @@ from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
+    ChatFailoverRouterProtocol,
     ChatInFlightGuardProtocol,
     ChatMessage,
-    ChatOpsProviderProtocol,
+    ChatOpsBudget,
+    ChatOpsBudgetResolverProtocol,
+    ChatOpsProvidersProtocol,
     EditOpsCommand,
     EditOpsHandlerProtocol,
     EditOpsOp,
@@ -35,6 +40,7 @@ from skriptoteket.protocols.llm import (
     PromptEvalMeta,
     VirtualFileId,
 )
+from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
@@ -45,6 +51,9 @@ _THREAD_CONTEXT = "editor_chat"
 _THREAD_TTL = timedelta(days=30)
 _IN_FLIGHT_MESSAGE = "En chatförfrågan pågår redan. Försök igen om en stund."
 _DISABLED_MESSAGE = "AI-redigering är inte tillgänglig just nu. Försök igen senare."
+_REMOTE_FALLBACK_REQUIRED_MESSAGE = (
+    "Lokala AI-modellen är inte tillgänglig. Tillåt externa API:er (OpenAI) för att fortsätta."
+)
 _MESSAGE_TOO_LONG = "För långt meddelande: korta ned eller starta en ny chatt."
 _GENERATION_ERROR = "Jag kunde inte skapa ett ändringsförslag just nu. Försök igen."
 _INVALID_OPS_ERROR = "Jag kunde inte skapa ett giltigt ändringsförslag. Försök igen."
@@ -108,8 +117,11 @@ class EditOpsHandler(EditOpsHandlerProtocol):
         self,
         *,
         settings: Settings,
-        provider: ChatOpsProviderProtocol,
+        providers: ChatOpsProvidersProtocol,
+        budget_resolver: ChatOpsBudgetResolverProtocol,
         guard: ChatInFlightGuardProtocol,
+        failover: ChatFailoverRouterProtocol,
+        capture_store: LlmCaptureStoreProtocol,
         uow: UnitOfWorkProtocol,
         sessions: ToolSessionRepositoryProtocol,
         messages: ToolSessionMessageRepositoryProtocol,
@@ -118,8 +130,11 @@ class EditOpsHandler(EditOpsHandlerProtocol):
         system_prompt_loader: Callable[[str], str] | None = None,
     ) -> None:
         self._settings = settings
-        self._provider = provider
+        self._providers = providers
+        self._budget_resolver = budget_resolver
         self._guard = guard
+        self._failover = failover
+        self._capture_store = capture_store
         self._uow = uow
         self._sessions = sessions
         self._messages = messages
@@ -203,7 +218,8 @@ class EditOpsHandler(EditOpsHandlerProtocol):
         command: EditOpsCommand,
         system_prompt: str,
         user_payload: str,
-    ) -> _PreparedOpsRequest | None:
+        budget: ChatOpsBudget,
+    ) -> tuple[_PreparedOpsRequest | None, int]:
         async with self._uow:
             session = await self._sessions.get(
                 tool_id=command.tool_id,
@@ -240,13 +256,14 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                 system_prompt=system_prompt,
                 messages=existing_messages,
                 user_payload=user_payload,
-                context_window_tokens=self._settings.LLM_CHAT_OPS_CONTEXT_WINDOW_TOKENS,
-                max_output_tokens=self._settings.LLM_CHAT_OPS_MAX_TOKENS,
+                context_window_tokens=budget.context_window_tokens,
+                max_output_tokens=budget.max_output_tokens,
                 safety_margin_tokens=self._settings.LLM_CHAT_OPS_CONTEXT_SAFETY_MARGIN_TOKENS,
                 system_prompt_max_tokens=self._settings.LLM_CHAT_OPS_SYSTEM_PROMPT_MAX_TOKENS,
             )
+            prompt_messages_count = len(budgeted_messages) + 1
             if not fits:
-                return None
+                return None, prompt_messages_count
 
             user_message_id = self._id_generator.new_uuid()
             await self._messages.append_message(
@@ -256,11 +273,14 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                 content=command.message,
             )
 
-        return _PreparedOpsRequest(
-            messages=budgeted_messages,
-            user_payload=user_payload,
-            user_message_id=user_message_id,
-            tool_session_id=session.id,
+        return (
+            _PreparedOpsRequest(
+                messages=budgeted_messages,
+                user_payload=user_payload,
+                user_message_id=user_message_id,
+                tool_session_id=session.id,
+            ),
+            prompt_messages_count,
         )
 
     async def _persist_assistant_message(
@@ -289,14 +309,119 @@ class EditOpsHandler(EditOpsHandlerProtocol):
         if not guard_acquired:
             raise DomainError(code=ErrorCode.CONFLICT, message=_IN_FLIGHT_MESSAGE)
 
+        started_at = time.monotonic()
+        message_len = len(command.message)
+        virtual_files_bytes = sum(
+            len(text.encode("utf-8")) for text in command.virtual_files.values()
+        )
+        raw_correlation_id = get_contextvars().get("correlation_id")
+        capture_id: UUID | None = None
+        if isinstance(raw_correlation_id, str) and raw_correlation_id:
+            try:
+                capture_id = UUID(raw_correlation_id)
+            except ValueError:
+                capture_id = None
+
         try:
             template_id = self._settings.LLM_CHAT_OPS_TEMPLATE_ID
             base_fingerprints = self._build_base_fingerprints(virtual_files=command.virtual_files)
 
+            def log_result(
+                *,
+                provider: str,
+                failover_reason: str | None,
+                system_prompt_chars: int,
+                prompt_messages_count: int,
+                finish_reason: str | None,
+                parse_ok: bool,
+                ops_count: int,
+                outcome: str,
+            ) -> None:
+                elapsed_ms = int((time.monotonic() - started_at) * 1000)
+                logger.info(
+                    "ai_chat_ops_result",
+                    template_id=template_id,
+                    user_id=str(actor.id),
+                    tool_id=str(command.tool_id),
+                    provider=provider,
+                    fallback_is_remote=self._providers.fallback_is_remote,
+                    allow_remote_fallback=command.allow_remote_fallback,
+                    failover_reason=failover_reason,
+                    message_len=message_len,
+                    virtual_files_bytes=virtual_files_bytes,
+                    system_prompt_chars=system_prompt_chars,
+                    prompt_messages_count=prompt_messages_count,
+                    finish_reason=finish_reason,
+                    parse_ok=parse_ok,
+                    ops_count=ops_count,
+                    outcome=outcome,
+                    elapsed_ms=elapsed_ms,
+                )
+
+            async def capture_on_error(*, payload: dict[str, object]) -> None:
+                if not self._settings.LLM_CAPTURE_ON_ERROR_ENABLED:
+                    return
+                if capture_id is None:
+                    return
+                try:
+                    await self._capture_store.write_capture(
+                        kind="chat_ops_response",
+                        capture_id=capture_id,
+                        payload=payload,
+                    )
+                except Exception as exc:  # noqa: BLE001 - never break requests for debug capture
+                    logger.warning(
+                        "llm_capture_write_failed",
+                        kind="chat_ops_response",
+                        capture_id=str(capture_id),
+                        error_type=type(exc).__name__,
+                    )
+
             if not self._settings.LLM_CHAT_OPS_ENABLED:
+                log_result(
+                    provider="primary",
+                    failover_reason="feature_disabled",
+                    system_prompt_chars=0,
+                    prompt_messages_count=0,
+                    finish_reason=None,
+                    parse_ok=False,
+                    ops_count=0,
+                    outcome="error",
+                )
                 return EditOpsResult(
                     enabled=False,
                     assistant_message=_DISABLED_MESSAGE,
+                    ops=[],
+                    base_fingerprints=base_fingerprints,
+                    eval_meta=PromptEvalMeta(
+                        template_id=template_id,
+                        outcome="error",
+                        system_prompt_chars=0,
+                    ),
+                )
+
+            allow_remote_fallback = command.allow_remote_fallback
+            decision = await self._failover.decide_route(
+                user_id=actor.id,
+                tool_id=command.tool_id,
+                allow_remote_fallback=allow_remote_fallback,
+                fallback_available=self._providers.fallback is not None,
+                fallback_is_remote=self._providers.fallback_is_remote,
+            )
+            if decision.blocked == "remote_fallback_required":
+                log_result(
+                    provider=decision.provider,
+                    failover_reason=decision.reason,
+                    system_prompt_chars=0,
+                    prompt_messages_count=0,
+                    finish_reason=None,
+                    parse_ok=False,
+                    ops_count=0,
+                    outcome="error",
+                )
+                return EditOpsResult(
+                    enabled=False,
+                    assistant_message=_REMOTE_FALLBACK_REQUIRED_MESSAGE,
                     ops=[],
                     base_fingerprints=base_fingerprints,
                     eval_meta=PromptEvalMeta(
@@ -313,6 +438,16 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                     "ai_chat_ops_system_prompt_unavailable",
                     template_id=template_id,
                 )
+                log_result(
+                    provider=decision.provider,
+                    failover_reason=decision.reason,
+                    system_prompt_chars=0,
+                    prompt_messages_count=0,
+                    finish_reason=None,
+                    parse_ok=False,
+                    ops_count=0,
+                    outcome="error",
+                )
                 return EditOpsResult(
                     enabled=False,
                     assistant_message=_DISABLED_MESSAGE,
@@ -326,14 +461,44 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                 )
 
             user_payload = self._build_user_payload(command=command)
+            budget = self._budget_resolver.resolve_chat_ops_budget(provider=decision.provider)
 
-            prepared = await self._prepare_request(
+            prepared, prompt_messages_count = await self._prepare_request(
                 actor=actor,
                 command=command,
                 system_prompt=system_prompt,
                 user_payload=user_payload,
+                budget=budget,
             )
             if prepared is None:
+                log_result(
+                    provider=decision.provider,
+                    failover_reason=decision.reason,
+                    system_prompt_chars=len(system_prompt),
+                    prompt_messages_count=prompt_messages_count,
+                    finish_reason=None,
+                    parse_ok=False,
+                    ops_count=0,
+                    outcome="over_budget",
+                )
+                await capture_on_error(
+                    payload={
+                        "outcome": "over_budget",
+                        "stage": "preflight_budget",
+                        "template_id": template_id,
+                        "user_id": str(actor.id),
+                        "tool_id": str(command.tool_id),
+                        "provider": decision.provider,
+                        "failover_reason": decision.reason,
+                        "fallback_is_remote": self._providers.fallback_is_remote,
+                        "allow_remote_fallback": command.allow_remote_fallback,
+                        "message_len": message_len,
+                        "virtual_files_bytes": virtual_files_bytes,
+                        "system_prompt_chars": len(system_prompt),
+                        "prompt_messages_count": prompt_messages_count,
+                        "elapsed_ms": int((time.monotonic() - started_at) * 1000),
+                    }
+                )
                 return EditOpsResult(
                     enabled=True,
                     assistant_message=_MESSAGE_TOO_LONG,
@@ -357,48 +522,223 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                 template_id=template_id,
                 user_id=str(actor.id),
                 tool_id=str(command.tool_id),
-                message_len=len(command.message),
-                virtual_files_bytes=sum(len(text) for text in command.virtual_files.values()),
+                message_len=message_len,
+                virtual_files_bytes=virtual_files_bytes,
             )
 
             assistant_message = _GENERATION_ERROR
             ops: list[EditOpsOp] = []
-            outcome = "error"
+            eval_outcome = "error"
+            log_outcome = "error"
+            finish_reason: str | None = None
+            parse_ok = False
+            provider_key = decision.provider
+            failover_reason: str | None = decision.reason
+            upstream_error: dict[str, object] | None = None
 
-            try:
-                response = await self._provider.complete_chat_ops(
-                    request=request,
-                    system_prompt=system_prompt,
+            async def complete(provider_key: str):
+                provider = (
+                    self._providers.primary
+                    if provider_key == "primary"
+                    else self._providers.fallback
                 )
-            except httpx.TimeoutException:
-                outcome = "timeout"
+                if provider is None:
+                    raise ValueError("Fallback provider is not configured")
+
+                await self._failover.acquire_inflight(provider=provider_key)  # type: ignore[arg-type]
+                try:
+                    return await provider.complete_chat_ops(
+                        request=request,
+                        system_prompt=system_prompt,
+                    )
+                finally:
+                    await self._failover.release_inflight(provider=provider_key)  # type: ignore[arg-type]
+
+            def is_retryable_status(exc: httpx.HTTPStatusError) -> bool:
+                if exc.response is None:
+                    return False
+                status = exc.response.status_code
+                return status == 429 or status >= 500
+
+            if provider_key == "fallback":
+                await self._failover.mark_fallback_used(user_id=actor.id, tool_id=command.tool_id)
+
+            response = None
+            first_error: Exception | None = None
+            try:
+                response = await complete(provider_key)
+            except httpx.TimeoutException as exc:
+                first_error = exc
+                eval_outcome = "timeout"
+                log_outcome = "timeout"
+                await self._failover.record_failure(provider=provider_key)
             except httpx.HTTPStatusError as exc:
-                if _is_context_window_error(exc):
-                    outcome = "over_budget"
-                else:
-                    outcome = "error"
-            except (httpx.RequestError, ValueError):
-                outcome = "error"
+                first_error = exc
+                eval_outcome = "over_budget" if _is_context_window_error(exc) else "error"
+                log_outcome = eval_outcome
+                upstream_error = {
+                    "error_type": type(exc).__name__,
+                    "status_code": exc.response.status_code if exc.response is not None else None,
+                }
+                if exc.response is not None:
+                    try:
+                        upstream_error["payload"] = exc.response.json()
+                    except ValueError:
+                        upstream_error["payload"] = exc.response.text[:2000]
+                if is_retryable_status(exc):
+                    await self._failover.record_failure(provider=provider_key)
+            except (httpx.RequestError, ValueError) as exc:
+                first_error = exc
+                eval_outcome = "error"
+                log_outcome = "error"
+                upstream_error = {
+                    "error_type": type(exc).__name__,
+                }
+                await self._failover.record_failure(provider=provider_key)
             else:
+                await self._failover.record_success(provider=provider_key)
+
+            can_use_fallback = self._providers.fallback is not None and (
+                allow_remote_fallback or not self._providers.fallback_is_remote
+            )
+            retryable_primary_failure = (
+                response is None
+                and provider_key == "primary"
+                and (
+                    isinstance(
+                        first_error, (httpx.TimeoutException, httpx.RequestError, ValueError)
+                    )
+                    or (
+                        isinstance(first_error, httpx.HTTPStatusError)
+                        and is_retryable_status(first_error)
+                    )
+                )
+            )
+            if (
+                retryable_primary_failure
+                and self._providers.fallback is not None
+                and self._providers.fallback_is_remote
+                and not allow_remote_fallback
+            ):
+                log_result(
+                    provider="fallback",
+                    failover_reason="retryable_primary_failure",
+                    system_prompt_chars=len(system_prompt),
+                    prompt_messages_count=prompt_messages_count,
+                    finish_reason=None,
+                    parse_ok=False,
+                    ops_count=0,
+                    outcome="error",
+                )
+                return EditOpsResult(
+                    enabled=False,
+                    assistant_message=_REMOTE_FALLBACK_REQUIRED_MESSAGE,
+                    ops=[],
+                    base_fingerprints=base_fingerprints,
+                    eval_meta=PromptEvalMeta(
+                        template_id=template_id,
+                        outcome="error",
+                        system_prompt_chars=len(system_prompt),
+                    ),
+                )
+            should_failover = retryable_primary_failure and can_use_fallback
+            if should_failover:
+                provider_key = "fallback"
+                failover_reason = "retryable_primary_failure"
+                await self._failover.mark_fallback_used(user_id=actor.id, tool_id=command.tool_id)
+                try:
+                    response = await complete(provider_key)
+                except httpx.TimeoutException:
+                    eval_outcome = "timeout"
+                    log_outcome = "timeout"
+                    upstream_error = {"error_type": "TimeoutException"}
+                    await self._failover.record_failure(provider=provider_key)
+                except httpx.HTTPStatusError as exc:
+                    eval_outcome = "over_budget" if _is_context_window_error(exc) else "error"
+                    log_outcome = eval_outcome
+                    upstream_error = {
+                        "error_type": type(exc).__name__,
+                        "status_code": exc.response.status_code
+                        if exc.response is not None
+                        else None,
+                    }
+                    if exc.response is not None:
+                        try:
+                            upstream_error["payload"] = exc.response.json()
+                        except ValueError:
+                            upstream_error["payload"] = exc.response.text[:2000]
+                    if is_retryable_status(exc):
+                        await self._failover.record_failure(provider=provider_key)
+                except (httpx.RequestError, ValueError):
+                    eval_outcome = "error"
+                    log_outcome = "error"
+                    upstream_error = {"error_type": "RequestError"}
+                    await self._failover.record_failure(provider=provider_key)
+                else:
+                    await self._failover.record_success(provider=provider_key)
+
+            if response is not None:
+                finish_reason = response.finish_reason
                 if response.finish_reason == "length":
-                    outcome = "truncated"
+                    eval_outcome = "truncated"
+                    log_outcome = "truncated"
                 else:
                     parsed = self._parse_payload(response.content)
-                    if parsed is not None:
-                        if self._ops_compatible_with_request(command=command, ops=parsed.ops):
-                            ops = parsed.ops
-                            assistant_message = (
-                                parsed.assistant_message.strip() or assistant_message
-                            )
-                            outcome = "ok" if ops else "empty"
-                        else:
-                            ops = []
-                            assistant_message = _INVALID_OPS_ERROR
-                            outcome = "error"
+                    parse_ok = parsed is not None
+                    if parsed is None:
+                        assistant_message = _INVALID_OPS_ERROR
+                        eval_outcome = "error"
+                        log_outcome = "parse_failed"
+                    elif self._ops_compatible_with_request(command=command, ops=parsed.ops):
+                        ops = parsed.ops
+                        assistant_message = parsed.assistant_message.strip() or assistant_message
+                        eval_outcome = "ok" if ops else "empty"
+                        log_outcome = eval_outcome
+                    else:
+                        ops = []
+                        assistant_message = _INVALID_OPS_ERROR
+                        eval_outcome = "error"
+                        log_outcome = "invalid_ops"
 
             await self._persist_assistant_message(
                 tool_session_id=prepared.tool_session_id,
                 assistant_message=assistant_message,
+            )
+
+            if log_outcome not in {"ok", "empty"}:
+                await capture_on_error(
+                    payload={
+                        "outcome": log_outcome,
+                        "template_id": template_id,
+                        "user_id": str(actor.id),
+                        "tool_id": str(command.tool_id),
+                        "provider": provider_key,
+                        "failover_reason": failover_reason,
+                        "fallback_is_remote": self._providers.fallback_is_remote,
+                        "allow_remote_fallback": command.allow_remote_fallback,
+                        "message_len": message_len,
+                        "virtual_files_bytes": virtual_files_bytes,
+                        "system_prompt_chars": len(system_prompt),
+                        "prompt_messages_count": prompt_messages_count,
+                        "finish_reason": finish_reason,
+                        "parse_ok": parse_ok,
+                        "ops_count": len(ops),
+                        "upstream_error": upstream_error,
+                        "raw_payload": response.raw_payload if response is not None else None,
+                        "extracted_content": response.content if response is not None else None,
+                        "elapsed_ms": int((time.monotonic() - started_at) * 1000),
+                    }
+                )
+
+            log_result(
+                provider=provider_key,
+                failover_reason=failover_reason,
+                system_prompt_chars=len(system_prompt),
+                prompt_messages_count=prompt_messages_count,
+                finish_reason=finish_reason,
+                parse_ok=parse_ok,
+                ops_count=len(ops),
+                outcome=log_outcome,
             )
 
             return EditOpsResult(
@@ -408,7 +748,7 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                 base_fingerprints=base_fingerprints,
                 eval_meta=PromptEvalMeta(
                     template_id=template_id,
-                    outcome=outcome,
+                    outcome=eval_outcome,
                     system_prompt_chars=len(system_prompt),
                 ),
             )

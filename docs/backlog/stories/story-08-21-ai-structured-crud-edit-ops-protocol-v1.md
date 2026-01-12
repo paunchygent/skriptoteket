@@ -2,10 +2,10 @@
 type: story
 id: ST-08-21
 title: "AI: structured CRUD edit ops protocol v1 (insert/replace/delete)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-01
-updated: 2026-01-07
+updated: 2026-01-11
 epic: "EPIC-08"
 acceptance_criteria:
   - "Given the user requests an edit in chat, when the frontend calls `POST /api/v1/editor/edit-ops`, then the backend requests a response in a strict, schema-validated edit-ops format (JSON only; no markdown)."
@@ -18,7 +18,7 @@ acceptance_criteria:
   - "Given the upstream provider indicates truncation (finish_reason=length), when an edit is requested, then the backend returns an empty operation list (no partial edits)."
   - "Given the request is over budget, when an edit is requested, then the backend returns an empty operation list and exposes eval-only metadata (template id + outcome) when eval mode is enabled."
   - "Given an edit is requested, then the backend logs metadata only (no prompts, no code, no model output text)."
-  - "Given edit-ops is configured, then it uses a dedicated `LLM_CHAT_OPS_*` profile (does not reuse `LLM_COMPLETION_*` and does not reuse the legacy `LLM_EDIT_*` prompts)."
+  - "Given edit-ops is configured, then it uses a dedicated `LLM_CHAT_OPS_*` profile (does not reuse `LLM_COMPLETION_*`)."
 
 dependencies:
   - "ST-08-18"

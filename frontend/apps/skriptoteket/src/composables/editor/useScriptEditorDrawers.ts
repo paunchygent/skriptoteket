@@ -10,6 +10,7 @@ type UseScriptEditorDrawersOptions = {
 };
 
 const HISTORY_SWITCH_MESSAGE = "Du har osparade ändringar. Vill du byta version?";
+const CHAT_COLUMN_BREAKPOINT_QUERY = "(min-width: 1024px)";
 
 export function useScriptEditorDrawers({
   route,
@@ -48,7 +49,7 @@ export function useScriptEditorDrawers({
     }
 
     if (!viewportQuery) {
-      viewportQuery = window.matchMedia("(min-width: 768px)");
+      viewportQuery = window.matchMedia(CHAT_COLUMN_BREAKPOINT_QUERY);
     }
 
     if (!viewportQuery.matches) {
@@ -103,7 +104,7 @@ export function useScriptEditorDrawers({
 
   onMounted(() => {
     window.addEventListener("keydown", handleKeydown);
-    viewportQuery = window.matchMedia("(min-width: 768px)");
+    viewportQuery = window.matchMedia(CHAT_COLUMN_BREAKPOINT_QUERY);
     syncChatCollapsedForViewport();
     viewportQuery.addEventListener?.("change", handleViewportQueryChange);
     viewportQuery.addListener?.(handleViewportQueryChange);

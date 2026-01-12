@@ -5,6 +5,7 @@ type EditorWorkspaceToolbarProps = {
   isSaving: boolean;
   isReadOnly: boolean;
   hasDirtyChanges: boolean;
+  isChatCollapsed: boolean;
   saveLabel: string;
   saveTitle: string;
   changeSummary: string;
@@ -30,6 +31,7 @@ const emit = defineEmits<{
   (event: "openHistoryDrawer"): void;
   (event: "createCheckpoint", label: string): void;
   (event: "update:changeSummary", value: string): void;
+  (event: "toggleChatCollapsed"): void;
   (event: "undoAi"): void;
   (event: "redoAi"): void;
 }>();
@@ -270,6 +272,54 @@ function formatDateTime(value: string | number): string {
           </div>
         </div>
       </div>
+
+      <button
+        type="button"
+        class="btn-ghost h-[28px] w-[28px] p-0 text-[12px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none lg:hidden"
+        :aria-label="props.isChatCollapsed ? 'Öppna kodassistenten' : 'Stäng kodassistenten'"
+        @click="emit('toggleChatCollapsed')"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          class="h-4 w-4"
+          aria-hidden="true"
+        >
+          <rect
+            x="5"
+            y="7"
+            width="14"
+            height="10"
+            rx="2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          />
+          <circle
+            cx="9"
+            cy="12"
+            r="1"
+            fill="currentColor"
+          />
+          <circle
+            cx="15"
+            cy="12"
+            r="1"
+            fill="currentColor"
+          />
+          <path
+            d="M9 16h6"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+          <path
+            d="M8 5h8"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
 
       <div
         v-if="props.aiStatus"

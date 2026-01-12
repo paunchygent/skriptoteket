@@ -21,6 +21,10 @@ acceptance_criteria:
 
 ## Context
 
+**Update (2026-01-11):** The legacy edit-suggestion capability (`LLM_EDIT_*`, `edit_suggestion_v1`) was removed in favor
+of chat-first edit ops (ADR-0051). The prompt system remains, but is now used by inline completions, chat streaming, and
+chat edit-ops only.
+
 Skriptoteket’s AI editor capabilities (inline completions + edit suggestions) depend on system prompts being:
 
 - **Deterministic** (same inputs → same prompt structure)
@@ -37,7 +41,8 @@ Today we have ad hoc prompt text in templates. This story formalizes prompt comp
 ## Delivered (implementation)
 
 - **Template registry + IDs:** `src/skriptoteket/application/editor/prompt_templates.py`
-  - IDs selected via env vars: `LLM_COMPLETION_TEMPLATE_ID`, `LLM_EDIT_TEMPLATE_ID` (`src/skriptoteket/config.py`)
+  - IDs selected via env vars: `LLM_COMPLETION_TEMPLATE_ID`, `LLM_CHAT_TEMPLATE_ID`, `LLM_CHAT_OPS_TEMPLATE_ID`
+    (`src/skriptoteket/config.py`)
 - **Code-owned fragments (single source of truth):** `src/skriptoteket/application/editor/prompt_fragments.py`
   - Contract v2 + policy budgets/caps sourced from `src/skriptoteket/domain/scripting/ui/contract_v2.py` and
     `src/skriptoteket/domain/scripting/ui/policy.py`
@@ -50,7 +55,8 @@ Today we have ad hoc prompt text in templates. This story formalizes prompt comp
 - **Templates migrated to placeholders:** `src/skriptoteket/application/editor/system_prompts/*.txt`
 - **Observability (metadata only):** template IDs logged per request in:
   - `src/skriptoteket/application/editor/completion_handler.py`
-  - `src/skriptoteket/application/editor/edit_suggestion_handler.py`
+  - `src/skriptoteket/application/editor/chat_handler.py`
+  - `src/skriptoteket/application/editor/edit_ops_handler.py`
 
 ## Scope
 
@@ -58,11 +64,12 @@ Today we have ad hoc prompt text in templates. This story formalizes prompt comp
 
 - Introduce a registry of prompt templates with stable IDs, e.g.:
   - `inline_completion_v1`
-  - `edit_suggestion_v1`
+  - `editor_chat_v1`
+  - `editor_chat_ops_v1`
 - Each template has:
   - ID
   - file path
-  - capability (inline/edit)
+  - capability (inline/chat/chat_ops)
   - required fragment placeholders
 
 ### 2) Code-owned fragments (Contract v2 + runner constraints)

@@ -5,7 +5,7 @@ title: "Runbook: Observability Logging"
 status: active
 owners: "olof"
 created: 2025-12-16
-updated: 2026-01-01
+updated: 2026-01-11
 system: "skriptoteket"
 ---
 
@@ -21,6 +21,7 @@ Environment variables:
 - `ENVIRONMENT` (default: `development`)
 - `LOG_LEVEL` (default: `INFO`)
 - `LOG_FORMAT` (`json` or `console`)
+- `LLM_CAPTURE_ON_ERROR_ENABLED` (default: `false`; platform-only, not logs)
 
 Recommended defaults:
 
@@ -148,3 +149,55 @@ When adding new log statements, verify:
 - [ ] No raw request/response body logging
 - [ ] Error messages don't expose internal system details
 - [ ] File paths don't reveal user-specific information
+
+## Platform-only LLM debug captures (Option A)
+
+Skriptoteket can optionally persist **sensitive** “full model response” debug captures for edit-ops generation and
+preview failures.
+
+- This is **NOT observability logging**: normal logs remain metadata-only.
+- Captures may include tool code and raw model output; treat them as sensitive platform data.
+- Captures are retrievable only via filesystem/SSH (no tool-developer-facing API/UI).
+
+### Enable
+
+- Set `LLM_CAPTURE_ON_ERROR_ENABLED=true` (default is `false`).
+
+### Capture id (correlation id)
+
+- Capture id is the request `X-Correlation-ID` (also logged as `correlation_id`).
+- The UI/API appends `Korrelation-ID: <uuid>` on edit-ops/preview/apply failures to make reporting easier.
+
+### Location
+
+Captures are written under:
+
+```text
+${ARTIFACTS_ROOT}/llm-captures/<kind>/<capture_id>/capture.json
+```
+
+Known kinds:
+
+- `chat_ops_response` (edit-ops generation failures)
+- `edit_ops_preview_failure` (preview failures)
+
+### JSON shape
+
+Each `capture.json` is a small envelope:
+
+```json
+{
+  "version": 1,
+  "kind": "<kind>",
+  "capture_id": "<uuid>",
+  "captured_at": "<iso8601>",
+  "payload": { }
+}
+```
+
+Payload contents are kind-specific and may contain sensitive data (model output, tool code, diffs/snippets).
+
+### Access
+
+- Local dev: inspect `${ARTIFACTS_ROOT}/llm-captures/`.
+- Home server (prod): see `docs/runbooks/runbook-home-server.md` for `ssh` + `docker exec` commands.

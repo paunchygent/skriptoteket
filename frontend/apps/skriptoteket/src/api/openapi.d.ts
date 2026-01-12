@@ -460,23 +460,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/editor/edits": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create Edit Suggestion */
-        post: operations["create_edit_suggestion_api_v1_editor_edits_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/editor/tool-runs/{run_id}": {
         parameters: {
             query?: never;
@@ -1603,6 +1586,11 @@ export interface components {
         };
         /** EditorChatRequest */
         EditorChatRequest: {
+            /**
+             * Allow Remote Fallback
+             * @default false
+             */
+            allow_remote_fallback: boolean;
             /** Base Version Id */
             base_version_id?: string | null;
             /** Message */
@@ -1861,6 +1849,11 @@ export interface components {
              * @enum {string}
              */
             active_file: "tool.py" | "entrypoint.txt" | "settings_schema.json" | "input_schema.json" | "usage_instructions.md";
+            /**
+             * Allow Remote Fallback
+             * @default false
+             */
+            allow_remote_fallback: boolean;
             cursor?: components["schemas"]["EditorEditOpsCursor"] | null;
             /** Message */
             message: string;
@@ -1899,24 +1892,6 @@ export interface components {
              * @enum {string}
              */
             kind: "selection";
-        };
-        /** EditorEditSuggestionRequest */
-        EditorEditSuggestionRequest: {
-            /** Instruction */
-            instruction?: string | null;
-            /** Prefix */
-            prefix: string;
-            /** Selection */
-            selection: string;
-            /** Suffix */
-            suffix: string;
-        };
-        /** EditorEditSuggestionResponse */
-        EditorEditSuggestionResponse: {
-            /** Enabled */
-            enabled: boolean;
-            /** Suggestion */
-            suggestion: string;
         };
         /** EditorInlineCompletionRequest */
         EditorInlineCompletionRequest: {
@@ -4289,42 +4264,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EditorEditOpsPreviewResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_edit_suggestion_api_v1_editor_edits_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                "X-Skriptoteket-Eval"?: string | null;
-                "X-CSRF-Token"?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["EditorEditSuggestionRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EditorEditSuggestionResponse"];
                 };
             };
             /** @description Validation Error */

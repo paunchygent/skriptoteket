@@ -16,6 +16,8 @@ from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
+    ChatFailoverDecision,
+    ChatFailoverRouterProtocol,
     ChatInFlightGuardProtocol,
     ChatStreamProviderProtocol,
     EditorChatCommand,
@@ -47,6 +49,34 @@ class BlockChatGuard(ChatInFlightGuardProtocol):
         return False
 
     async def release(self, *, user_id: UUID, tool_id: UUID) -> None:
+        return None
+
+
+class DummyFailover(ChatFailoverRouterProtocol):
+    async def decide_route(
+        self,
+        *,
+        user_id: UUID,
+        tool_id: UUID,
+        allow_remote_fallback: bool,
+        fallback_available: bool,
+        fallback_is_remote: bool,
+    ) -> ChatFailoverDecision:
+        return ChatFailoverDecision(provider="primary", reason="primary_default")
+
+    async def acquire_inflight(self, *, provider: str) -> None:
+        return None
+
+    async def release_inflight(self, *, provider: str) -> None:
+        return None
+
+    async def record_success(self, *, provider: str) -> None:
+        return None
+
+    async def record_failure(self, *, provider: str) -> None:
+        return None
+
+    async def mark_fallback_used(self, *, user_id: UUID, tool_id: UUID) -> None:
         return None
 
 
@@ -107,10 +137,16 @@ async def test_editor_chat_guard_rejects_concurrent_request() -> None:
     clock = MagicMock(spec=ClockProtocol)
     id_generator = MagicMock(spec=IdGeneratorProtocol)
 
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
     handler = EditorChatHandler(
         settings=settings,
-        provider=provider,
+        providers=providers,
         guard=BlockChatGuard(),
+        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         messages=messages,
@@ -144,10 +180,16 @@ async def test_persist_assistant_marks_orphaned_when_user_missing() -> None:
     assistant_message_id = uuid4()
     id_generator.new_uuid.return_value = assistant_message_id
 
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
     handler = EditorChatHandler(
         settings=settings,
-        provider=provider,
+        providers=providers,
         guard=AllowChatGuard(),
+        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         messages=messages,
@@ -219,10 +261,16 @@ async def test_duplicate_user_messages_persist_distinct_assistant_rows() -> None
         )
     )
 
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
     handler = EditorChatHandler(
         settings=settings,
-        provider=provider,
+        providers=providers,
         guard=AllowChatGuard(),
+        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         messages=messages,

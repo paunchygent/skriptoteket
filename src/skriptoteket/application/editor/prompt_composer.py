@@ -57,8 +57,6 @@ def _replace_placeholders(*, template_text: str, fragments: Mapping[str, str]) -
 def _system_prompt_max_tokens(*, settings: Settings, capability: PromptCapability) -> int:
     if capability == "inline_completion":
         return settings.LLM_COMPLETION_SYSTEM_PROMPT_MAX_TOKENS
-    if capability == "edit_suggestion":
-        return settings.LLM_EDIT_SYSTEM_PROMPT_MAX_TOKENS
     if capability == "chat_stream":
         return settings.LLM_CHAT_SYSTEM_PROMPT_MAX_TOKENS
     if capability == "chat_ops":

@@ -6,6 +6,8 @@ from typing import Literal
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+LlmReasoningEffort = Literal["none", "minimal", "low", "medium", "high", "xhigh"]
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
@@ -47,6 +49,10 @@ class Settings(BaseSettings):
     ARTIFACTS_ROOT: Path = Path("/var/lib/skriptoteket/artifacts")
     ARTIFACTS_RETENTION_DAYS: int = 7
 
+    # Platform-only debug capture (OFF by default; see ADR-0051).
+    # Captures are written under ARTIFACTS_ROOT and may contain tool code/model output.
+    LLM_CAPTURE_ON_ERROR_ENABLED: bool = False
+
     LOGIN_EVENTS_RETENTION_DAYS: int = 90
 
     RUN_OUTPUT_MAX_STDOUT_BYTES: int = 200_000
@@ -54,7 +60,7 @@ class Settings(BaseSettings):
     RUN_OUTPUT_MAX_HTML_BYTES: int = 500_000
     RUN_OUTPUT_MAX_ERROR_SUMMARY_BYTES: int = 20_000
 
-    UPLOAD_MAX_FILES: int = 10
+    UPLOAD_MAX_FILES: int = 20
     UPLOAD_MAX_FILE_BYTES: int = 20_000_000
     UPLOAD_MAX_TOTAL_BYTES: int = 50_000_000
 
@@ -84,7 +90,6 @@ class Settings(BaseSettings):
 
     # LLM API
     LLM_COMPLETION_TEMPLATE_ID: str = "inline_completion_v1"
-    LLM_EDIT_TEMPLATE_ID: str = "edit_suggestion_v1"
     LLM_CHAT_TEMPLATE_ID: str = "editor_chat_v1"
     LLM_CHAT_OPS_TEMPLATE_ID: str = "editor_chat_ops_v1"
 
@@ -95,6 +100,7 @@ class Settings(BaseSettings):
     LLM_COMPLETION_PROMPT_CACHE_RETENTION: Literal["in_memory", "24h"] | None = None
     LLM_COMPLETION_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
     LLM_COMPLETION_MODEL: str = "Devstral-Small-2-24B"
+    LLM_COMPLETION_REASONING_EFFORT: LlmReasoningEffort | None = None
     LLM_COMPLETION_MAX_TOKENS: int = 256
     LLM_COMPLETION_TEMPERATURE: float = 0.2
     LLM_COMPLETION_TIMEOUT_SECONDS: int = 30
@@ -104,24 +110,6 @@ class Settings(BaseSettings):
     LLM_COMPLETION_PREFIX_MAX_TOKENS: int = 2048
     LLM_COMPLETION_SUFFIX_MAX_TOKENS: int = 512
 
-    LLM_EDIT_ENABLED: bool = False
-    LLM_EDIT_BASE_URL: str = "http://localhost:8082"
-    OPENAI_LLM_EDIT_API_KEY: str = ""
-    LLM_EDIT_PROMPT_CACHE_KEY: str = ""
-    LLM_EDIT_PROMPT_CACHE_RETENTION: Literal["in_memory", "24h"] | None = None
-    LLM_EDIT_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
-    LLM_EDIT_MODEL: str = "Devstral-Small-2-24B"
-    LLM_EDIT_MAX_TOKENS: int = 512
-    LLM_EDIT_TEMPERATURE: float = 0.2
-    LLM_EDIT_TIMEOUT_SECONDS: int = 60
-    LLM_EDIT_CONTEXT_WINDOW_TOKENS: int = 4096
-    LLM_EDIT_CONTEXT_SAFETY_MARGIN_TOKENS: int = 256
-    LLM_EDIT_SYSTEM_PROMPT_MAX_TOKENS: int = 1024
-    LLM_EDIT_INSTRUCTION_MAX_TOKENS: int = 128
-    LLM_EDIT_SELECTION_MAX_TOKENS: int = 896
-    LLM_EDIT_PREFIX_MAX_TOKENS: int = 1024
-    LLM_EDIT_SUFFIX_MAX_TOKENS: int = 256
-
     LLM_CHAT_ENABLED: bool = False
     LLM_CHAT_BASE_URL: str = "http://localhost:8082"
     OPENAI_LLM_CHAT_API_KEY: str = ""
@@ -129,13 +117,19 @@ class Settings(BaseSettings):
     LLM_CHAT_PROMPT_CACHE_RETENTION: Literal["in_memory", "24h"] | None = None
     LLM_CHAT_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
     LLM_CHAT_MODEL: str = "Devstral-Small-2-24B"
-    LLM_CHAT_MAX_TOKENS: int = 1500
+    LLM_CHAT_REASONING_EFFORT: LlmReasoningEffort | None = None
+    LLM_CHAT_MAX_TOKENS: int = 2048
     LLM_CHAT_TEMPERATURE: float = 0.2
     LLM_CHAT_TIMEOUT_SECONDS: int = 60
     LLM_CHAT_CONTEXT_WINDOW_TOKENS: int = 16384
     LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS: int = 256
     LLM_CHAT_SYSTEM_PROMPT_MAX_TOKENS: int = 1024
     LLM_CHAT_TAIL_MAX_MESSAGES: int = 60
+
+    # Chat failover (primary -> fallback). Defaults keep failover disabled.
+    LLM_CHAT_FALLBACK_BASE_URL: str = ""
+    LLM_CHAT_FALLBACK_MODEL: str = ""
+    LLM_CHAT_FALLBACK_REASONING_EFFORT: LlmReasoningEffort | None = None
 
     LLM_CHAT_OPS_ENABLED: bool = False
     LLM_CHAT_OPS_BASE_URL: str = "http://localhost:8082"
@@ -144,9 +138,23 @@ class Settings(BaseSettings):
     LLM_CHAT_OPS_PROMPT_CACHE_RETENTION: Literal["in_memory", "24h"] | None = None
     LLM_CHAT_OPS_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
     LLM_CHAT_OPS_MODEL: str = "Devstral-Small-2-24B"
-    LLM_CHAT_OPS_MAX_TOKENS: int = 1500
+    LLM_CHAT_OPS_REASONING_EFFORT: LlmReasoningEffort | None = None
+    # Output token budgets vary significantly between local llama.cpp and GPT-5 thinking models.
+    LLM_CHAT_OPS_MAX_TOKENS: int = 2 * 1024
+    LLM_CHAT_OPS_GPT5_MAX_TOKENS: int = 8 * 1024
     LLM_CHAT_OPS_TEMPERATURE: float = 0.2
     LLM_CHAT_OPS_TIMEOUT_SECONDS: int = 120
-    LLM_CHAT_OPS_CONTEXT_WINDOW_TOKENS: int = 16384
+    LLM_CHAT_OPS_CONTEXT_WINDOW_TOKENS: int = 16 * 1024
+    LLM_CHAT_OPS_GPT5_CONTEXT_WINDOW_TOKENS: int = 64 * 1024
     LLM_CHAT_OPS_CONTEXT_SAFETY_MARGIN_TOKENS: int = 256
     LLM_CHAT_OPS_SYSTEM_PROMPT_MAX_TOKENS: int = 2048
+
+    LLM_CHAT_OPS_FALLBACK_BASE_URL: str = ""
+    LLM_CHAT_OPS_FALLBACK_MODEL: str = ""
+    LLM_CHAT_OPS_FALLBACK_REASONING_EFFORT: LlmReasoningEffort | None = None
+
+    LLM_CHAT_FAILOVER_STICKY_TTL_SECONDS: int = 60 * 10  # 10 minutes
+    LLM_CHAT_FAILOVER_BREAKER_FAILURE_THRESHOLD: int = 2
+    LLM_CHAT_FAILOVER_BREAKER_WINDOW_SECONDS: int = 30
+    LLM_CHAT_FAILOVER_BREAKER_COOLDOWN_SECONDS: int = 90
+    LLM_CHAT_FAILOVER_PRIMARY_MAX_INFLIGHT: int = 0  # 0 = disabled
