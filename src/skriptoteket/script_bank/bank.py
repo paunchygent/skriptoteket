@@ -5,11 +5,13 @@ from skriptoteket.domain.scripting.tool_inputs import (
     ToolInputEnumField,
     ToolInputEnumOption,
     ToolInputFileField,
+    ToolInputIntegerField,
     ToolInputStringField,
+    ToolInputTextField,
 )
-from skriptoteket.domain.scripting.ui.contract_v2 import UiStringField
+from skriptoteket.domain.scripting.ui.contract_v2 import UiStringField, UiTextField
 
-from .models import ScriptBankEntry
+from .models import ScriptBankEntry, ScriptBankSeedGroup
 
 SCRIPT_BANK: list[ScriptBankEntry] = [
     ScriptBankEntry(
@@ -42,6 +44,7 @@ SCRIPT_BANK: list[ScriptBankEntry] = [
 Adresserna är semikolonseparerade och fungerar direkt i Outlook.""",
         profession_slugs=["larare"],
         category_slugs=["administration"],
+        seed_group=ScriptBankSeedGroup.CURATED,
         source_filename="ist_vh_mejl_bcc.py",
         input_schema=[
             ToolInputFileField(name="files", label="Filer", min=1, max=10),
@@ -80,6 +83,7 @@ Adresserna är semikolonseparerade och fungerar direkt i Outlook.""",
 """,
         profession_slugs=["gemensamt"],
         category_slugs=["administration", "ovrigt"],
+        seed_group=ScriptBankSeedGroup.CURATED,
         source_filename="markdown_to_docx.py",
         input_schema=[
             ToolInputFileField(
@@ -156,6 +160,7 @@ Det här är ett **demoverktyg** för att testa hur interaktiva verktyg fungerar
 - **artifacts**: Varje körning skapar en textfil som kan laddas ner.""",
         profession_slugs=["gemensamt"],
         category_slugs=["ovrigt"],
+        seed_group=ScriptBankSeedGroup.TEST,
         source_filename="demo_next_actions.py",
         input_schema=[
             ToolInputFileField(name="files", label="Filer", min=1, max=10),
@@ -202,9 +207,68 @@ Det här verktyget visar alla Skriptoteket-funktioner:
 - **state**: Spåra arbetsflödessteg""",
         profession_slugs=["gemensamt"],
         category_slugs=["ovrigt"],
+        seed_group=ScriptBankSeedGroup.CURATED,
         source_filename="html_to_pdf_preview.py",
         input_schema=[
             ToolInputFileField(name="files", label="Filer", min=1, max=10),
+        ],
+    ),
+    ScriptBankEntry(
+        slug="gruppgeneratorn",
+        title="Gruppgeneratorn",
+        summary=(
+            "Skapar elevgrupper från klasslistor (CSV/XLSX) med valbar gruppstorlek och "
+            "stöd för tidigare grupper."
+        ),
+        usage_instructions="""\
+## Snabbstart
+
+1. Ladda upp en klasslista (CSV eller XLSX).
+2. Ange **Gruppstorlek** (t.ex. 3 eller 4).
+3. Ange **Klassnamn** (för att kunna spara klassen i settings).
+4. Klicka **Kör**.
+
+## Använd sparade klasser
+
+Vill du återanvända en klasslista utan att ladda upp filen igen?
+
+1. Lägg in dina klasser i **Settings** (fältet *Sparade klasser (JSON)*).
+2. Kör verktyget utan filuppladdning.
+3. Skriv in **Klassnamn** som matchar en sparad klass.
+
+## Tidigare grupper (valfritt)
+
+Klistra in tidigare grupper (JSON eller text) i fältet *Tidigare grupper* för att
+minska upprepade par.
+""",
+        profession_slugs=["larare"],
+        category_slugs=["administration"],
+        seed_group=ScriptBankSeedGroup.CURATED,
+        source_filename="gruppgenerator.py",
+        settings_schema=[
+            UiTextField(name="saved_classes_json", label="Sparade klasser (JSON)"),
+        ],
+        input_schema=[
+            ToolInputFileField(
+                name="files",
+                label="Klasslista (CSV/XLSX)",
+                accept=[".csv", ".xlsx"],
+                min=0,
+                max=1,
+            ),
+            ToolInputIntegerField(name="group_size", label="Gruppstorlek"),
+            ToolInputStringField(
+                name="class_name",
+                label="Klassnamn (för sparad klass eller för att spara nya)",
+            ),
+            ToolInputStringField(
+                name="group_set_name",
+                label="Namn på gruppindelningen",
+            ),
+            ToolInputTextField(
+                name="previous_groups",
+                label="Tidigare grupper (valfritt)",
+            ),
         ],
     ),
     ScriptBankEntry(
@@ -213,6 +277,7 @@ Det här verktyget visar alla Skriptoteket-funktioner:
         summary="Playwright E2E test tool for table column order regression (ST-11-07).",
         profession_slugs=["gemensamt"],
         category_slugs=["ovrigt"],
+        seed_group=ScriptBankSeedGroup.TEST,
         source_filename="demo_regression_table.py",
     ),
     ScriptBankEntry(
@@ -221,6 +286,7 @@ Det här verktyget visar alla Skriptoteket-funktioner:
         summary="Playwright E2E test tool for personalized tool settings (ST-12-03).",
         profession_slugs=["gemensamt"],
         category_slugs=["ovrigt"],
+        seed_group=ScriptBankSeedGroup.TEST,
         source_filename="demo_settings_test.py",
         settings_schema=[
             UiStringField(name="theme_color", label="Färgtema"),
@@ -232,6 +298,7 @@ Det här verktyget visar alla Skriptoteket-funktioner:
         summary="Demoverktyg för ST-12-04: text/dropdown inputs utan filuppladdning.",
         profession_slugs=["gemensamt"],
         category_slugs=["ovrigt"],
+        seed_group=ScriptBankSeedGroup.CURATED,
         source_filename="demo_inputs.py",
         input_schema=[
             ToolInputStringField(name="title", label="Titel"),
@@ -251,6 +318,7 @@ Det här verktyget visar alla Skriptoteket-funktioner:
         summary="Demoverktyg för ST-12-04: inputs + file-fält med accept/min/max.",
         profession_slugs=["gemensamt"],
         category_slugs=["ovrigt"],
+        seed_group=ScriptBankSeedGroup.CURATED,
         source_filename="demo_inputs.py",
         input_schema=[
             ToolInputStringField(name="title", label="Titel"),
@@ -272,6 +340,7 @@ Det här verktyget visar alla Skriptoteket-funktioner:
         ),
         profession_slugs=["gemensamt"],
         category_slugs=["ovrigt"],
+        seed_group=ScriptBankSeedGroup.CURATED,
         source_filename="yrkesgenerator.py",
         input_schema=[
             ToolInputStringField(

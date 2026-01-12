@@ -24,6 +24,12 @@ CLI-kommando:
 
 - `pdm run seed-script-bank`
 
+## Seed-profiler (viktigt)
+
+- `--profile dev` (default): seedar **curated + test**.
+- `--profile prod`: seedar **endast curated** (testverktyg seedas inte alls).
+- `--group <curated|test>`: explicit override (repeatable), ignorerar `--profile`.
+
 ## Förutsättningar
 
 - Du har en **admin/superuser**-användare (för audit fields och behörighet).
@@ -39,33 +45,33 @@ CLI-kommando:
 
 ```bash
 # Först: torrkörning
-pdm run seed-script-bank --dry-run
+pdm run seed-script-bank --dry-run --profile dev
 
 # Seed allt (interaktiv prompt för admin/superuser credentials)
-pdm run seed-script-bank
+pdm run seed-script-bank --profile dev
 
 # Seed en specifik slug
-pdm run seed-script-bank --slug ist-vh-mejl-bcc
+pdm run seed-script-bank --slug ist-vh-mejl-bcc --profile dev
 ```
 
 ### Opt-in sync (uppdatera redan existerande)
 
 ```bash
 # Uppdatera tools.title/tools.summary till att matcha repo:t
-pdm run seed-script-bank --sync-metadata
+pdm run seed-script-bank --sync-metadata --profile dev
 
 # Om ACTIVE-versionen skiljer sig: publicera en ny version från repo-scriptet
-pdm run seed-script-bank --sync-code
+pdm run seed-script-bank --sync-code --profile dev
 ```
 
 ### Kontroll av katalog-publicering
 
 ```bash
 # Standard: publicerar tool om den har ACTIVE version
-pdm run seed-script-bank
+pdm run seed-script-bank --profile dev
 
 # Om du vill att verktyget inte ska synas i Katalog
-pdm run seed-script-bank --no-publish
+pdm run seed-script-bank --no-publish --profile dev
 ```
 
 ## Körning (produktion via Docker)
@@ -73,8 +79,8 @@ pdm run seed-script-bank --no-publish
 Kör i `skriptoteket-web`-containern (så att du får rätt `DATABASE_URL` och samma runtime deps som tjänsten):
 
 ```bash
-sudo docker exec -it skriptoteket-web pdm run seed-script-bank --dry-run
-sudo docker exec -it skriptoteket-web pdm run seed-script-bank
+sudo docker exec -it skriptoteket-web pdm run seed-script-bank --dry-run --profile prod
+sudo docker exec -it skriptoteket-web pdm run seed-script-bank --profile prod
 ```
 
 Tips: Kör `--slug ...` när du bara vill uppdatera ett specifikt verktyg.

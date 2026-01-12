@@ -25,10 +25,14 @@ from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
 from time import perf_counter
-from typing import TypedDict
+from typing import TypedDict, cast
 from urllib.parse import unquote, urlparse
 
-from skriptoteket_toolkit import get_action_parts  # type: ignore[import-not-found]
+from skriptoteket_toolkit import (  # type: ignore[import-not-found]
+    get_action_parts,
+    list_input_files,
+    read_settings,
+)
 
 
 class ManifestFile(TypedDict):
@@ -89,34 +93,8 @@ def _perf_event(
     perf.append(entry)
 
 
-def _read_input_manifest_files() -> list[ManifestFile]:
-    raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
-    if not raw.strip():
-        return []
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError:
-        return []
-    if not isinstance(payload, dict):
-        return []
-    files = payload.get("files")
-    if not isinstance(files, list):
-        return []
-
-    result: list[ManifestFile] = []
-    for item in files:
-        if not isinstance(item, dict):
-            continue
-        name = item.get("name")
-        path = item.get("path")
-        bytes_ = item.get("bytes")
-        if isinstance(name, str) and isinstance(path, str) and isinstance(bytes_, int):
-            result.append({"name": name, "path": path, "bytes": bytes_})
-    return result
-
-
 def _select_input_files(*, input_dir: Path) -> list[ManifestFile]:
-    manifest_files = _read_input_manifest_files()
+    manifest_files = cast(list[ManifestFile], list_input_files())
     if manifest_files:
         return manifest_files
 
@@ -203,17 +181,7 @@ def _wrap_pdf_html(*, html: str) -> str:
 
 
 def _read_user_settings() -> dict[str, object]:
-    memory_path = os.environ.get("SKRIPTOTEKET_MEMORY_PATH")
-    if not memory_path:
-        return {}
-    path = Path(memory_path)
-    if not path.exists():
-        return {}
-    try:
-        memory = json.loads(path.read_text(encoding="utf-8"))
-        return memory.get("settings", {}) if isinstance(memory, dict) else {}
-    except (json.JSONDecodeError, OSError):
-        return {}
+    return cast(dict[str, object], read_settings())
 
 
 @contextmanager

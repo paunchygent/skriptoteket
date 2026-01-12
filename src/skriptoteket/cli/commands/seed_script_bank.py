@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from enum import StrEnum
 from importlib.resources import files as resource_files
 
 import typer
@@ -45,6 +46,12 @@ from skriptoteket.infrastructure.repositories.tool_version_repository import (
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
 from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordHasher
 from skriptoteket.script_bank.bank import SCRIPT_BANK
+from skriptoteket.script_bank.models import ScriptBankSeedGroup
+
+
+class SeedProfile(StrEnum):
+    DEV = "dev"
+    PROD = "prod"
 
 
 def seed_script_bank(
@@ -71,6 +78,15 @@ def seed_script_bank(
         [],
         "--slug",
         help="Seed only these tool slugs (repeatable). Defaults to all script-bank entries.",
+    ),
+    profile: SeedProfile = typer.Option(
+        SeedProfile.DEV,
+        help="Seed profile: dev (curated + test) or prod (curated only).",
+    ),
+    group: list[ScriptBankSeedGroup] = typer.Option(
+        [],
+        "--group",
+        help="Seed only these script-bank groups (repeatable). Overrides --profile.",
     ),
     publish: bool = typer.Option(
         True,
@@ -102,13 +118,15 @@ def seed_script_bank(
         ssh hemma
         cd ~/apps/skriptoteket
         docker exec -e PYTHONPATH=/app/src skriptoteket-web \\
-            pdm run python -m skriptoteket.cli seed-script-bank --dry-run
+            pdm run python -m skriptoteket.cli seed-script-bank --dry-run --profile prod
     """
     asyncio.run(
         _seed_script_bank_async(
             actor_email=actor_email,
             actor_password=actor_password,
             slugs=slug,
+            profile=profile,
+            groups=group,
             publish=publish,
             sync_metadata=sync_metadata,
             sync_code=sync_code,
@@ -122,6 +140,8 @@ async def _seed_script_bank_async(
     actor_email: str,
     actor_password: str,
     slugs: list[str],
+    profile: SeedProfile,
+    groups: list[ScriptBankSeedGroup],
     publish: bool,
     sync_metadata: bool,
     sync_code: bool,
@@ -187,11 +207,20 @@ async def _seed_script_bank_async(
         )
 
         slug_set = set(slugs)
-        selected_entries = (
-            [entry for entry in SCRIPT_BANK if entry.slug in slug_set] if slugs else SCRIPT_BANK
-        )
+        if groups:
+            allowed_groups = set(groups)
+        elif profile is SeedProfile.PROD:
+            allowed_groups = {ScriptBankSeedGroup.CURATED}
+        else:
+            allowed_groups = {ScriptBankSeedGroup.CURATED, ScriptBankSeedGroup.TEST}
+
+        selected_entries = [entry for entry in SCRIPT_BANK if entry.seed_group in allowed_groups]
+        if slugs:
+            selected_entries = [entry for entry in selected_entries if entry.slug in slug_set]
         if slugs and not selected_entries:
             raise SystemExit(f"No script-bank entries found for slugs: {', '.join(slugs)}")
+        if not selected_entries:
+            raise SystemExit("No script-bank entries found for the selected profile/groups.")
 
         for entry in selected_entries:
             await _seed_one_entry(

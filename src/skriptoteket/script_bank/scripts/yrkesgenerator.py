@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import hashlib
-import json
-import os
 import random
 from pathlib import Path
 from typing import Any, Dict, List
 
 from pdf_helper import save_as_pdf
+from skriptoteket_toolkit import get_action_parts, read_inputs  # type: ignore[import-not-found]
 
 # ──────────────────────────────────────────────────────────────────────────────
 # SKRIPTOTEKET_INPUTS
@@ -311,58 +310,6 @@ CAREER_PREFIXES = [
 ]
 
 
-def _read_json_env(name: str, *, default: object) -> object:
-    raw = os.environ.get(name, "")
-    if not raw.strip():
-        return default
-    try:
-        return json.loads(raw)
-    except json.JSONDecodeError:
-        return default
-
-
-def _read_action_payload(input_dir: Path) -> dict[str, Any] | None:
-    manifest = _read_json_env("SKRIPTOTEKET_INPUT_MANIFEST", default={"files": []})
-    if isinstance(manifest, dict):
-        files = manifest.get("files", [])
-        if isinstance(files, list):
-            for item in files:
-                if not isinstance(item, dict):
-                    continue
-                if item.get("name") != "action.json":
-                    continue
-                raw_path = item.get("path")
-                if not isinstance(raw_path, str):
-                    continue
-                path = Path(raw_path)
-                if path.exists():
-                    try:
-                        return json.loads(path.read_text(encoding="utf-8"))
-                    except json.JSONDecodeError:
-                        return None
-
-    action_path = input_dir / "action.json"
-    if action_path.exists():
-        try:
-            return json.loads(action_path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            return None
-    return None
-
-
-def _normalize_action_payload(payload: dict[str, Any] | None) -> tuple[str | None, dict, dict]:
-    if not payload:
-        return None, {}, {}
-    action_id = payload.get("action_id")
-    if isinstance(action_id, str):
-        action_id = action_id.strip() or None
-    else:
-        action_id = None
-    action_input = payload.get("input") if isinstance(payload.get("input"), dict) else {}
-    action_state = payload.get("state") if isinstance(payload.get("state"), dict) else {}
-    return action_id, action_input, action_state
-
-
 def _coerce_int(value: object, *, default: int = 0) -> int:
     if isinstance(value, bool):
         return default
@@ -618,9 +565,10 @@ def _build_diploma_html(full_name: str, profile: dict[str, str], reroll_count: i
 def run_tool(input_dir: str, output_dir: str) -> dict:
     Path(output_dir).mkdir(parents=True, exist_ok=True)
 
-    inputs = _read_json_env("SKRIPTOTEKET_INPUTS", default={})
-    action_payload = _read_action_payload(Path(input_dir))
-    action_id, action_input, action_state = _normalize_action_payload(action_payload)
+    del input_dir
+
+    inputs = read_inputs()
+    action_id, action_input, action_state = get_action_parts()
 
     full_name = ""
     if isinstance(inputs, dict):

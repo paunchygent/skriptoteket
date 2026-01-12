@@ -14,13 +14,13 @@ Runner-kontrakt:
 
 from __future__ import annotations
 
-import json
-import os
 import re
 from collections.abc import Iterable
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import TypedDict
+
+from skriptoteket_toolkit import list_input_files  # type: ignore[import-not-found]
 
 EMAIL_RE = re.compile(r"([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,15})")
 
@@ -61,34 +61,8 @@ EMAIL_HINTS = [
 ]
 
 
-def _read_input_manifest_files() -> list[ManifestFile]:
-    raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
-    if not raw.strip():
-        return []
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError:
-        return []
-    if not isinstance(payload, dict):
-        return []
-    files = payload.get("files")
-    if not isinstance(files, list):
-        return []
-
-    result: list[ManifestFile] = []
-    for item in files:
-        if not isinstance(item, dict):
-            continue
-        name = item.get("name")
-        path = item.get("path")
-        bytes_ = item.get("bytes")
-        if isinstance(name, str) and isinstance(path, str) and isinstance(bytes_, int):
-            result.append({"name": name, "path": path, "bytes": bytes_})
-    return result
-
-
 def _select_input_files(*, input_dir: Path) -> list[ManifestFile]:
-    manifest_files: list[ManifestFile] = _read_input_manifest_files()
+    manifest_files: list[ManifestFile] = list_input_files()
     if manifest_files:
         supported = [
             file

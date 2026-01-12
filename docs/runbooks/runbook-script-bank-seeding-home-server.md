@@ -50,6 +50,7 @@ Common flags:
 - `--slug <slug>`
 - `--sync-metadata`
 - `--sync-code`
+- `--profile prod` (seedar endast curated verktyg)
 
 ## Examples
 
@@ -62,7 +63,7 @@ ssh hemma 'cd ~/apps/skriptoteket \
        -e PYTHONPATH=/app/src \
        -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL \
        -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD \
-       web pdm run python -m skriptoteket.cli seed-script-bank --dry-run'
+       web pdm run python -m skriptoteket.cli seed-script-bank --dry-run --profile prod'
 ```
 
 Sync code changes from repo to existing tools:
@@ -74,7 +75,7 @@ ssh hemma 'cd ~/apps/skriptoteket \
        -e PYTHONPATH=/app/src \
        -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL \
        -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD \
-       web pdm run python -m skriptoteket.cli seed-script-bank --sync-code'
+       web pdm run python -m skriptoteket.cli seed-script-bank --sync-code --profile prod'
 ```
 
 ## Verification

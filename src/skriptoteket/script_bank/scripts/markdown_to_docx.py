@@ -1,10 +1,11 @@
-import json
 import os
 import re
 import shutil
 import tempfile
 from pathlib import Path
 from typing import Any
+
+from skriptoteket_toolkit import read_inputs, read_settings  # type: ignore[import-not-found]
 
 # Optional preinstalled libs
 try:
@@ -94,47 +95,11 @@ def _profile_desc(profile: str) -> str:
 
 def _load_settings_from_memory() -> tuple[dict, str]:
     memory_path = os.environ.get("SKRIPTOTEKET_MEMORY_PATH", "/work/memory.json")
-    p = Path(memory_path)
-    if not p.exists():
-        return ({}, memory_path)
-    try:
-        memory = json.loads(p.read_text(encoding="utf-8"))
-    except Exception:
-        return ({}, memory_path)
-    if not isinstance(memory, dict):
-        return ({}, memory_path)
-
-    raw = memory.get("settings")
-    if not isinstance(raw, dict):
-        raw = memory.get("config")
-    if not isinstance(raw, dict):
-        raw = memory.get("tool_settings")
-
-    return (raw if isinstance(raw, dict) else {}, memory_path)
+    return (read_settings(), memory_path)
 
 
 def _load_inputs_from_env() -> tuple[dict, str]:
-    raw = os.environ.get("SKRIPTOTEKET_INPUTS", "")
-    src = "SKRIPTOTEKET_INPUTS"
-    if not raw:
-        return ({}, src)
-
-    s = raw.strip()
-
-    # Robust fallback: if env var is a file path, load JSON from it
-    try:
-        maybe_path = Path(s)
-        if maybe_path.exists() and maybe_path.is_file():
-            s = maybe_path.read_text(encoding="utf-8")
-            src = f"{src} (file)"
-    except Exception:
-        pass
-
-    try:
-        data = json.loads(s)
-        return (data if isinstance(data, dict) else {}, src)
-    except Exception:
-        return ({}, src)
+    return (read_inputs(), "SKRIPTOTEKET_INPUTS")
 
 
 # =========================
