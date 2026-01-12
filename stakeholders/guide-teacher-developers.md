@@ -103,6 +103,59 @@ Här är ett exempel på hur ett riktigt behov i skolan kan översättas till en
 
 ---
 
+### Exempel: "Gruppgeneratorn"
+
+**Problem:** Du har en klasslista och vill snabbt skapa elevgrupper. Du vill också återanvända en klass utan att ladda upp filen varje gång, och ge varje gruppindelning ett namn.
+
+**Så här fyller du i mallen för att skapa verktyget:**
+
+```text
+**Verktygets namn:** Gruppgeneratorn
+
+**Input:**
+- Filuppladdning (`file`) som accepterar `.csv` och `.xlsx` (valfri om klass finns i settings).
+- Ett heltalsfält (`integer`) för gruppstorlek.
+- Ett textfält (`string`) för klassnamn.
+- Ett textfält (`string`) för namn på gruppindelningen.
+- Ett textfält (`text`) för tidigare grupper (valfritt).
+
+**Arbetsuppgift:**
+1. Vid första körning: visa status (uppladdad fil eller sparade klasser) och returnera `next_actions`.
+2. Vid action-körning: läs elevnamn från CSV/XLSX eller sparad klass.
+3. Rensa dubbletter och tomma rader.
+4. Skapa grupper med vald storlek.
+5. Om tidigare grupper finns, försök minimera upprepade par.
+6. Skapa en artefakt (textfil) med grupperna.
+
+**Output:**
+- Visa grupperna i en tabell.
+- Visa en kort sammanfattning (antal elever, gruppstorlek, antal grupper).
+- Returnera `next_actions` så användaren kan generera igen utan ny uppladdning.
+- Visa en JSON-blocket med “Sparade klasser (JSON)” om fil laddats upp (så att användaren kan spara klassen).
+```
+
+**Settings som behövs (Sparade klasser):**
+
+I settings sparar du klasserna som JSON:
+
+```json
+{
+  "7A": ["Anna Andersson", "Bo Berg", "Cecilia Carlsson"],
+  "7B": ["Daniel Dahl", "Eva Ek", "Filip Fors"]
+}
+```
+
+**Tips:** Om du vill undvika upprepade par, klistra in tidigare grupper som JSON:
+
+```json
+[
+  ["Anna Andersson", "Bo Berg", "Cecilia Carlsson"],
+  ["Daniel Dahl", "Eva Ek", "Filip Fors"]
+]
+```
+
+---
+
 ## Resurser för AI-assistenten
 
 Här är de texter du behöver för att instruera en extern AI (som ChatGPT).

@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from skriptoteket_toolkit import (  # type: ignore[import-not-found]
+    get_action_parts,
     list_input_files,
     read_inputs,
     read_settings,
@@ -188,6 +189,58 @@ def _parse_previous_groups(raw: str) -> tuple[list[list[str]], str | None]:
     return (groups, None)
 
 
+def _build_action_fields(saved_classes: dict[str, list[str]]) -> list[dict[str, object]]:
+    fields: list[dict[str, object]] = []
+    if saved_classes:
+        options = [
+            {"value": key, "label": key} for key in sorted(saved_classes.keys(), key=str.casefold)
+        ]
+        fields.append(
+            {
+                "name": "saved_class",
+                "label": "Sparad klass (valfri)",
+                "kind": "enum",
+                "options": options,
+            }
+        )
+    fields.extend(
+        [
+            {
+                "name": "group_size",
+                "label": "Gruppstorlek",
+                "kind": "integer",
+            },
+            {
+                "name": "class_name",
+                "label": "Klassnamn (för sparad klass eller för att spara ny)",
+                "kind": "string",
+            },
+            {
+                "name": "group_set_name",
+                "label": "Namn på gruppindelningen",
+                "kind": "string",
+            },
+            {
+                "name": "previous_groups",
+                "label": "Tidigare grupper (valfritt)",
+                "kind": "text",
+            },
+        ]
+    )
+    return fields
+
+
+def _build_actions(saved_classes: dict[str, list[str]]) -> list[dict[str, object]]:
+    return [
+        {
+            "action_id": "generate",
+            "label": "Skapa grupper",
+            "kind": "form",
+            "fields": _build_action_fields(saved_classes),
+        }
+    ]
+
+
 def _pairs_for_groups(groups: list[list[str]]) -> set[tuple[str, str]]:
     pairs: set[tuple[str, str]] = set()
     for group in groups:
@@ -259,54 +312,99 @@ def _select_roster_file(input_dir: Path) -> Path | None:
 def run_tool(input_dir: str, output_dir: str) -> dict:
     inputs = read_inputs()
     settings = read_settings()
+    action_id, action_input, _ = get_action_parts()
 
-    group_size = int(inputs.get("group_size") or settings.get("default_group_size") or 0)
+    payload = action_input if action_id == "generate" else inputs
+
+    group_size = int(payload.get("group_size") or settings.get("default_group_size") or 0)
     if group_size < 2:
         group_size = DEFAULT_GROUP_SIZE
 
-    class_name = str(inputs.get("class_name") or "").strip()
-    group_set_name = str(inputs.get("group_set_name") or "").strip()
-    previous_groups_raw = str(inputs.get("previous_groups") or "")
+    class_name = str(payload.get("class_name") or "").strip()
+    group_set_name = str(payload.get("group_set_name") or "").strip()
+    previous_groups_raw = str(payload.get("previous_groups") or "")
 
     saved_classes, saved_error = _parse_saved_classes(settings)
     if saved_error:
+        saved_classes = {}
+
+    roster_path = _select_roster_file(Path(input_dir))
+    if action_id is None:
+        outputs: list[dict[str, object]] = []
+        if saved_error:
+            outputs.append(_notice("warning", saved_error))
+        if roster_path is not None:
+            students, roster_error = _parse_roster_file(roster_path)
+            if roster_error:
+                outputs.append(_notice("error", roster_error))
+            else:
+                outputs.append(
+                    _notice(
+                        "info",
+                        f"Hittade {len(students)} elever i '{roster_path.name}'.",
+                    )
+                )
+                if students:
+                    preview = ", ".join(students[:10])
+                    outputs.append(_markdown(f"Exempel på namn: {preview}"))
+        elif saved_classes:
+            outputs.append(
+                _notice(
+                    "info",
+                    "Inga filer uppladdade. Välj en sparad klass i formuläret nedan.",
+                )
+            )
+        else:
+            outputs.append(
+                _notice(
+                    "error",
+                    "Ingen klasslista hittades. Ladda upp en fil eller spara en klass i settings.",
+                )
+            )
+
+        outputs.append(_markdown("Fyll i formuläret nedan och klicka **Skapa grupper**."))
+        return {"outputs": outputs, "next_actions": _build_actions(saved_classes), "state": None}
+
+    if action_id != "generate":
         return {
-            "outputs": [
-                _notice("error", saved_error),
-                _markdown(
-                    "Kontrollera att **Sparade klasser (JSON)** i settings är ett JSON-objekt."
-                ),
-            ],
-            "next_actions": [],
+            "outputs": [_notice("error", f"Okänd action_id: '{action_id}'.")],
+            "next_actions": _build_actions(saved_classes),
             "state": None,
         }
 
-    roster_path = _select_roster_file(Path(input_dir))
+    selected_saved = str(payload.get("saved_class") or "").strip()
     students: list[str] = []
     roster_error: str | None = None
+    source_label = ""
 
-    if roster_path is not None:
+    if selected_saved and selected_saved in saved_classes:
+        students = saved_classes[selected_saved]
+        class_name = selected_saved
+        source_label = f"Sparad klass: {selected_saved}"
+    elif class_name and class_name in saved_classes:
+        students = saved_classes[class_name]
+        source_label = f"Sparad klass: {class_name}"
+    elif roster_path is not None:
         students, roster_error = _parse_roster_file(roster_path)
         if not class_name:
             class_name = roster_path.stem
+        source_label = f"Uppladdad fil: {roster_path.name}"
     elif class_name:
-        students = saved_classes.get(class_name, [])
-        if not students:
-            roster_error = f"Hittade ingen sparad klass med namnet '{class_name}'."
+        roster_error = f"Hittade ingen sparad klass med namnet '{class_name}'."
     else:
         roster_error = (
             "Ingen klasslista hittades. Ladda upp en fil eller ange ett sparat klassnamn."
         )
 
-    if roster_error:
+    if roster_error or not students:
         return {
             "outputs": [
-                _notice("error", roster_error),
+                _notice("error", roster_error or "Inga elever hittades i klasslistan."),
                 _markdown(
                     "Tips: Lägg klasslistor i settings som JSON för att kunna återanvända dem."
                 ),
             ],
-            "next_actions": [],
+            "next_actions": _build_actions(saved_classes),
             "state": None,
         }
 
@@ -318,7 +416,7 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
                     f"Gruppstorlek ({group_size}) är större än antalet elever ({len(students)}).",
                 )
             ],
-            "next_actions": [],
+            "next_actions": _build_actions(saved_classes),
             "state": None,
         }
 
@@ -328,7 +426,7 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
     groups, repeats = _build_groups(students, group_size, previous_pairs)
 
     group_label = group_set_name or "Grupp"
-    rows = []
+    rows: list[dict[str, object]] = []
     markdown_lines = [f"**{group_set_name or 'Gruppindelning'}**\n"]
     for idx, group in enumerate(groups, start=1):
         name = f"{group_label} {idx}".strip()
@@ -347,11 +445,14 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
             "info",
             f"Elever: {len(students)} | Gruppstorlek: {group_size} | Grupper: {len(groups)}",
         ),
+        _notice("info", source_label),
         _markdown("\n".join(markdown_lines)),
         _table("Gruppindelning", rows),
         _notice("info", f"Artefakt skapad: {artifact_name}"),
     ]
 
+    if saved_error:
+        outputs.append(_notice("warning", saved_error))
     if previous_error:
         outputs.append(_notice("warning", previous_error))
     if previous_pairs:
@@ -376,4 +477,4 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
             _markdown("Tillgängliga sparade klasser: " + ", ".join(sorted(saved_classes.keys())))
         )
 
-    return {"outputs": outputs, "next_actions": [], "state": None}
+    return {"outputs": outputs, "next_actions": _build_actions(saved_classes), "state": None}
