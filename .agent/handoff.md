@@ -20,6 +20,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Current Session (2026-01-12)
 
+- Added ADR + story for settings suggestions from tool runs: `docs/adr/adr-0057-settings-suggestions-from-tool-runs.md`, `docs/backlog/stories/story-14-34-settings-suggestions-from-tool-runs.md`, linked in `docs/index.md` + `docs/backlog/epics/epic-14-admin-tool-authoring.md` (docs-only).
 - Drafted docs for script bank curation + group generator tool: `docs/adr/adr-0056-script-bank-seed-profiles.md`, `docs/backlog/stories/story-14-33-script-bank-curation-and-group-generator.md`, `docs/backlog/prs/pr-0025-script-bank-curation-and-group-generator.md`; linked in `docs/index.md` + `docs/backlog/epics/epic-14-admin-tool-authoring.md`. Verification: not run (docs-only).
 - Handoff compression: moved detailed “shipped AI editor work + verification recipes” to `.agent/readme-first.md`.
 - Contract decision prep (EPIC-14 / ST-14-19): recorded decision to move action payload transport to `SKRIPTOTEKET_ACTION` (ADRs updated) + added PR doc `docs/backlog/prs/pr-0024-action-payload-skriptoteket-action-docs-prompt-alignment.md`; `pdm run docs-validate` OK.

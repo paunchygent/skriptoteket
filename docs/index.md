@@ -85,6 +85,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0054-editor-chat-virtual-file-context.md`
 - `docs/adr/adr-0055-tokenizer-backed-prompt-budgeting.md`
 - `docs/adr/adr-0056-script-bank-seed-profiles.md`
+- `docs/adr/adr-0057-settings-suggestions-from-tool-runs.md`
 
 ### PRDs
 
@@ -339,6 +340,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-14-31-editor-focus-mode-collapse-sidebar.md`
 - `docs/backlog/stories/story-14-32-editor-cohesion-pass-input-selectors.md`
 - `docs/backlog/stories/story-14-33-script-bank-curation-and-group-generator.md`
+- `docs/backlog/stories/story-14-34-settings-suggestions-from-tool-runs.md`
 - `docs/backlog/stories/story-15-01-user-profile-redesign.md`
 - `docs/backlog/stories/story-15-02-avatar-upload.md`
 - `docs/backlog/stories/story-16-01-favorites-domain-and-database.md`

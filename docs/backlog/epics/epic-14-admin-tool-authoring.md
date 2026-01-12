@@ -63,6 +63,7 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 - [ST-14-30: Editor: working copy persistence (IndexedDB) + checkpoints + restore](../stories/story-14-30-editor-working-copy-persistence-indexeddb.md)
 - [ST-14-32: Editor: cohesion pass (panel language + input selectors across modes)](../stories/story-14-32-editor-cohesion-pass-input-selectors.md)
 - [ST-14-33: Script bank curation + group generator tool](../stories/story-14-33-script-bank-curation-and-group-generator.md)
+- [ST-14-34: Settings suggestions from tool runs](../stories/story-14-34-settings-suggestions-from-tool-runs.md)
 
 ## References
 
