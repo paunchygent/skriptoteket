@@ -9,6 +9,7 @@ from uuid import uuid4
 
 import pytest
 from docker.errors import DockerException, NotFound
+from pydantic import JsonValue
 from requests.exceptions import ReadTimeout
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -172,6 +173,7 @@ async def test_execute_success(
         input_files=[("input.txt", b"input")],
         input_values={},
         memory_json=b'{"settings":{}}',
+        action_payload=None,
     )
 
     assert result.status is RunStatus.SUCCEEDED
@@ -188,10 +190,63 @@ async def test_execute_success(
     assert "SKRIPTOTEKET_INPUT_PATH" not in env
     assert env["SKRIPTOTEKET_MEMORY_PATH"] == "/work/memory.json"
     assert env["SKRIPTOTEKET_INPUTS"] == "{}"
+    assert "SKRIPTOTEKET_ACTION" not in env
     manifest = json.loads(env["SKRIPTOTEKET_INPUT_MANIFEST"])
     assert manifest == {
         "files": [{"name": "input.txt", "path": "/work/input/input.txt", "bytes": 5}]
     }
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_execute_injects_action_payload_env_var(
+    runner: DockerToolRunner,
+    mock_docker_client: MagicMock,
+    tool_version: ToolVersion,
+) -> None:
+    client_instance = mock_docker_client.return_value
+
+    volume = MagicMock()
+    volume.name = "work-volume"
+    client_instance.volumes.create.return_value = volume
+
+    container = MagicMock()
+    client_instance.containers.create.return_value = container
+
+    container.logs.side_effect = [b"stdout", b"stderr"]
+    container.wait.return_value = {"StatusCode": 0}
+
+    result_tar = create_result_tar(
+        status="succeeded",
+        outputs=[{"kind": "notice", "level": "info", "message": "ok"}],
+    )
+
+    def get_archive_side_effect(*, path: str):
+        if path == "/work/result.json":
+            return [result_tar], {}
+        if path == "/work/output":
+            return [b"tar_stream"], {}
+        raise NotFound("Not found")
+
+    container.get_archive.side_effect = get_archive_side_effect
+
+    action_payload: dict[str, JsonValue] = {
+        "action_id": "confirm",
+        "input": {"x": 1},
+        "state": {"y": 2},
+    }
+    await runner.execute(
+        run_id=uuid4(),
+        version=tool_version,
+        context=RunContext.SANDBOX,
+        input_files=[("input.txt", b"input")],
+        input_values={},
+        memory_json=b'{"settings":{}}',
+        action_payload=action_payload,
+    )
+
+    env = client_instance.containers.create.call_args.kwargs["environment"]
+    assert json.loads(env["SKRIPTOTEKET_ACTION"]) == action_payload
 
 
 @pytest.mark.unit
@@ -221,6 +276,7 @@ async def test_execute_missing_result_json_returns_failed(
             input_files=[("input.txt", b"input")],
             input_values={},
             memory_json=b'{"settings":{}}',
+            action_payload=None,
         )
 
     assert exc_info.value.code is ErrorCode.INTERNAL_ERROR
@@ -253,6 +309,7 @@ async def test_execute_timeout_returns_timed_out(
         input_files=[("input.txt", b"input")],
         input_values={},
         memory_json=b'{"settings":{}}',
+        action_payload=None,
     )
 
     assert result.status is RunStatus.TIMED_OUT
@@ -305,6 +362,7 @@ async def test_execute_artifact_extraction_violation_returns_failed(
             input_files=[("input.txt", b"input")],
             input_values={},
             memory_json=b'{"settings":{}}',
+            action_payload=None,
         )
 
     assert exc_info.value.code is ErrorCode.INTERNAL_ERROR
@@ -342,6 +400,7 @@ async def test_execute_returns_service_unavailable_when_docker_sock_missing(
             input_files=[("input.txt", b"input")],
             input_values={},
             memory_json=b'{"settings":{}}',
+            action_payload=None,
         )
 
     assert exc_info.value.code is ErrorCode.SERVICE_UNAVAILABLE

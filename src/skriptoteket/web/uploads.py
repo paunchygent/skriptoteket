@@ -4,8 +4,6 @@ from fastapi import UploadFile
 
 from skriptoteket.domain.errors import validation_error
 
-_RESERVED_UPLOAD_FILENAMES = {"action.json"}
-
 
 async def _read_upload_file_with_limit(*, file: UploadFile, max_bytes: int) -> bytes:
     data = await file.read(max_bytes + 1)
@@ -41,12 +39,6 @@ async def read_upload_files(
 
     for upload in files:
         filename = upload.filename or default_filename
-        normalized_filename = filename.strip()
-        if normalized_filename in _RESERVED_UPLOAD_FILENAMES:
-            raise validation_error(
-                "Filename is reserved; rename the file.",
-                details={"filename": normalized_filename},
-            )
         content = await _read_upload_file_with_limit(file=upload, max_bytes=max_file_bytes)
 
         total_bytes += len(content)

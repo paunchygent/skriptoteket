@@ -20,7 +20,6 @@ from skriptoteket.protocols.session_files import (
 )
 
 _META_FILENAME = "meta.json"
-_RESERVED_FILENAMES = {"action.json"}
 
 
 @dataclass(frozen=True)
@@ -117,12 +116,6 @@ class LocalSessionFileStorage(SessionFileStorageProtocol):
 
         key = self._key(tool_id=tool_id, user_id=user_id, context=context)
         normalized_files = normalize_input_files(input_files=files)[0]
-        for name, _content in normalized_files:
-            if name in _RESERVED_FILENAMES:
-                raise validation_error(
-                    "Filename is reserved; rename the file.",
-                    details={"filename": name},
-                )
 
         session_dir = self._session_dir(key)
         parent_dir = session_dir.parent

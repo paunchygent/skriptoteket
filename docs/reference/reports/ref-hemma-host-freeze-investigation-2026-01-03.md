@@ -383,7 +383,8 @@ Notes:
 
 ## Next steps (recommended)
 
-1. **Enable a real hardware watchdog** (not just “logs only”), so the host can reboot itself on deep hangs.
+1. **Enable a real hardware watchdog** (DONE 2026-01-12; `sp5100_tco` + systemd `RuntimeWatchdogSec=3min`), so the
+   host can reboot itself on deep hangs.
 2. **Run an A/B isolation trial** for 24–48h each:
    - A: stop/disable `llama-server` (and/or `tabby`) temporarily
    - B: re-enable one service at a time

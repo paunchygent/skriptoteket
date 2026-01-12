@@ -146,7 +146,7 @@ def start_curated_app_run(
     context: RunContext,
     requested_by_user_id: UUID,
     workdir_path: str,
-    input_filename: str,
+    input_filename: str | None,
     input_size_bytes: int,
     input_manifest: InputManifest,
     now: datetime,
@@ -162,9 +162,12 @@ def start_curated_app_run(
     normalized_workdir_path = workdir_path.strip()
     if not normalized_workdir_path:
         raise validation_error("workdir_path is required")
-    normalized_input_filename = input_filename.strip()
-    if not normalized_input_filename:
-        raise validation_error("input_filename is required")
+    normalized_input_filename: str | None = None
+    if input_filename is not None:
+        stripped = input_filename.strip()
+        if not stripped:
+            raise validation_error("input_filename must not be blank")
+        normalized_input_filename = stripped
     if input_size_bytes < 0:
         raise validation_error(
             "input_size_bytes must be >= 0", details={"input_size_bytes": input_size_bytes}

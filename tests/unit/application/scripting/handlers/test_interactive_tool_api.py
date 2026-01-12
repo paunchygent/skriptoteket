@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from datetime import datetime
 from unittest.mock import AsyncMock, Mock
 from uuid import UUID, uuid4
@@ -32,7 +31,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
-from skriptoteket.domain.scripting.input_files import InputFileEntry, InputManifest
+from skriptoteket.domain.scripting.input_files import InputManifest
 from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolRun
 from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result, UiPayloadV2
@@ -96,9 +95,9 @@ def make_tool_run(
         started_at=now,
         finished_at=now,
         workdir_path="/tmp/run",
-        input_filename="action.json",
+        input_filename=None,
         input_size_bytes=0,
-        input_manifest=InputManifest(files=[InputFileEntry(name="action.json", bytes=0)]),
+        input_manifest=InputManifest(),
         html_output=None,
         stdout="",
         stderr="",
@@ -188,13 +187,11 @@ async def test_start_action_executes_with_session_state_and_updates_state_rev(
         del actor
         assert uow.active is False
         assert ("original.txt", b"hello") in command.input_files
-        action_bytes = next(
-            content for name, content in command.input_files if name == "action.json"
-        )
-        payload = json.loads(action_bytes.decode("utf-8"))
-        assert payload["action_id"] == "confirm_flags"
-        assert payload["input"] == {"notify_guardians": True}
-        assert payload["state"] == {"step": "one"}
+        assert command.action_payload == {
+            "action_id": "confirm_flags",
+            "input": {"notify_guardians": True},
+            "state": {"step": "one"},
+        }
         return ExecuteToolVersionResult(run=run, normalized_state={"step": "two"})
 
     execute.handle.side_effect = _execute

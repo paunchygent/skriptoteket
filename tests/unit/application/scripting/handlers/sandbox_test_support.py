@@ -6,7 +6,7 @@ from datetime import datetime
 from unittest.mock import Mock
 from uuid import UUID, uuid4
 
-from skriptoteket.domain.scripting.input_files import InputFileEntry, InputManifest
+from skriptoteket.domain.scripting.input_files import InputManifest
 from skriptoteket.domain.scripting.models import (
     RunContext,
     RunStatus,
@@ -118,9 +118,9 @@ def make_tool_run(
         started_at=now,
         finished_at=now,
         workdir_path="/tmp/run",
-        input_filename="action.json",
+        input_filename=None,
         input_size_bytes=0,
-        input_manifest=InputManifest(files=[InputFileEntry(name="action.json", bytes=0)]),
+        input_manifest=InputManifest(),
         html_output=None,
         stdout="",
         stderr="",

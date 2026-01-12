@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from datetime import datetime
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
@@ -140,7 +139,7 @@ async def test_start_sandbox_action_builds_correct_payload_structure(
     clock: Mock,
     snapshots: AsyncMock,
 ) -> None:
-    """Verify action.json payload has {action_id, input, state}."""
+    """Verify SKRIPTOTEKET_ACTION payload has {action_id, input, state}."""
     outer_actor = make_user(role=Role.ADMIN)
     tool_id = uuid4()
     version_id = uuid4()
@@ -230,10 +229,9 @@ async def test_start_sandbox_action_builds_correct_payload_structure(
     )
 
     assert captured_command is not None
-    # action.json (no persisted files in this test)
-    filename, content = captured_command.input_files[0]
-    assert filename == "action.json"
-    payload = json.loads(content.decode("utf-8"))
-    assert payload["action_id"] == "confirm_action"
-    assert payload["input"] == {"user_choice": "yes"}
-    assert payload["state"] == {"existing": "state"}
+    assert captured_command.input_files == []
+    assert captured_command.action_payload == {
+        "action_id": "confirm_action",
+        "input": {"user_choice": "yes"},
+        "state": {"existing": "state"},
+    }

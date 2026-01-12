@@ -110,7 +110,7 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
                 "requested_by_user_id": user_id,
                 "status": "succeeded",
                 "workdir_path": str(run_id),
-                "input_filename": "action.json",
+                "input_filename": None,
                 "input_size_bytes": 0,
                 "artifacts_manifest": json.dumps({"artifacts": []}),
             },

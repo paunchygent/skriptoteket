@@ -15,10 +15,12 @@ Behavior:
 
 {{HELPERS_FRAGMENT}}
 
-## Inputs (env vars; no input JSON files)
+## Inputs (env vars; plus SKRIPTOTEKET_ACTION for next_actions)
 
-- Files: `SKRIPTOTEKET_INPUT_MANIFEST` (JSON). Use `files[].path`; do NOT read manifest/inputs from disk.
-- Form values (incl. action inputs): `SKRIPTOTEKET_INPUTS` (JSON object; no files).
+- Files: `SKRIPTOTEKET_INPUT_MANIFEST` (JSON). Use `files[].path`; do NOT read the manifest from disk.
+- `files[].path` is an absolute path under `SKRIPTOTEKET_INPUT_DIR` (e.g. `/work/input/<filename>`).
+- Form values (initial run only): `SKRIPTOTEKET_INPUTS` (JSON object; no files).
+- Action runs (next_actions): read `SKRIPTOTEKET_ACTION` (env JSON with `{action_id, input, state}`).
 - Settings: `SKRIPTOTEKET_MEMORY_PATH` (JSON) under `memory["settings"]`.
 - Contract v2 is outputs/actions/state only (no inputs).
 

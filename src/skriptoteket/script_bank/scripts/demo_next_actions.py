@@ -8,15 +8,18 @@ Syfte:
 Runner-kontrakt:
 - Entrypoint: run_tool(input_dir: str, output_dir: str) -> dict
 - Input: filer i /work/input/ (hämta filvägar via input manifest)
-- Action input: action.json (skapad av Skriptoteket start_action)
+- Action input: SKRIPTOTEKET_ACTION (env JSON med {action_id, input, state})
 """
 
 from __future__ import annotations
 
-import json
-import os
 from datetime import datetime, timezone
 from pathlib import Path
+
+from skriptoteket_toolkit import (  # type: ignore[import-not-found]
+    get_action_parts,
+    list_input_files,
+)
 
 
 def _safe_int(value: object, default: int = 0) -> int:
@@ -24,38 +27,6 @@ def _safe_int(value: object, default: int = 0) -> int:
         return int(value)  # noqa: PLC1901
     except (TypeError, ValueError):
         return default
-
-
-def _read_input_manifest() -> dict[str, object] | None:
-    raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST")
-    if not raw:
-        return None
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError:
-        return None
-    return payload if isinstance(payload, dict) else None
-
-
-def _read_manifest_files() -> list[dict[str, object]]:
-    manifest = _read_input_manifest()
-    if manifest is None:
-        return []
-
-    raw_files = manifest.get("files")
-    if not isinstance(raw_files, list):
-        return []
-
-    files: list[dict[str, object]] = []
-    for item in raw_files:
-        if not isinstance(item, dict):
-            continue
-        name = item.get("name")
-        path = item.get("path")
-        bytes_ = item.get("bytes")
-        if isinstance(name, str) and isinstance(path, str) and isinstance(bytes_, int):
-            files.append({"name": name, "path": path, "bytes": bytes_})
-    return files
 
 
 def _write_artifact(*, output_dir: Path, name: str, content: str) -> str:
@@ -88,12 +59,13 @@ def _action_with_note(label: str, action_id: str) -> dict:
     }
 
 
-def _handle_action(*, action_path: Path, output_dir: Path) -> dict:
-    payload = json.loads(action_path.read_text(encoding="utf-8"))
-    action_id = str(payload.get("action_id") or "").strip()
-    input_data = payload.get("input") if isinstance(payload.get("input"), dict) else {}
-    state = payload.get("state") if isinstance(payload.get("state"), dict) else {}
-
+def _handle_action(
+    *,
+    action_id: str,
+    input_data: dict[str, object],
+    state: dict[str, object],
+    output_dir: Path,
+) -> dict:
     step = _safe_int(state.get("step"), 0)
     note = input_data.get("note") if isinstance(input_data.get("note"), str) else ""
 
@@ -149,19 +121,18 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
     input_root = Path(input_dir)
     out = Path(output_dir)
 
-    manifest_files = _read_manifest_files()
-    action_file = next(
-        (item for item in manifest_files if item.get("name") == "action.json"),
-        None,
-    )
-    if action_file is not None:
-        return _handle_action(action_path=Path(str(action_file["path"])), output_dir=out)
-    action_path = input_root / "action.json"
-    if action_path.is_file():
-        return _handle_action(action_path=action_path, output_dir=out)
+    action_id, action_input, state = get_action_parts()
+    if action_id is not None:
+        return _handle_action(
+            action_id=action_id,
+            input_data=action_input,
+            state=state,
+            output_dir=out,
+        )
 
+    manifest_files = list_input_files()
     primary_file = next(
-        (item for item in manifest_files if item.get("name") != "action.json"),
+        iter(manifest_files),
         None,
     )
     if primary_file is not None:
@@ -170,11 +141,7 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
         input_files_count = len(manifest_files)
     else:
         primary_path = next(
-            (
-                file
-                for file in sorted(input_root.glob("*"))
-                if file.is_file() and file.name != "action.json"
-            ),
+            (file for file in sorted(input_root.glob("*")) if file.is_file()),
             None,
         )
         if primary_path is None:

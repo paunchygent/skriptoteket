@@ -25,6 +25,8 @@ Research is captured in:
   - No resend when unchanged and retained.
   - Refresh when dropped by budget or changed.
   - Prioritize `active_file → tool.py → schemas → docs` when budget is tight.
+- **Budgeting rule:** trimming may drop leading assistant messages **except** those that are marked as
+  virtual file context (`meta.kind="virtual_file_context"` or `virtual_file_context` envelope).
 - Filter hidden context messages out of the chat history API response.
 - Implement context persistence behind a protocol so a future swap to blob-backed storage (Option C) is trivial.
 

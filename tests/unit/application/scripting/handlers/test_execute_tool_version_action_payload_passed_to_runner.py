@@ -47,10 +47,10 @@ class FakeUow(UnitOfWorkProtocol):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_execute_tool_version_ignores_action_json_for_input_schema_file_count(
+async def test_execute_tool_version_passes_action_payload_without_affecting_file_count(
     now: datetime,
 ) -> None:
-    """Action runs always include action.json, even when the tool schema has no file field."""
+    """Action runs use SKRIPTOTEKET_ACTION (env), not synthetic input files."""
     actor = make_user(role=Role.USER)
     tool_id = uuid4()
     version_id = uuid4()
@@ -125,15 +125,18 @@ async def test_execute_tool_version_ignores_action_json_for_input_schema_file_co
         id_generator=id_generator,
     )
 
+    action_payload = {"action_id": "step", "input": {"x": 1}, "state": {"y": 2}}
     await handler.handle(
         actor=actor,
         command=ExecuteToolVersionCommand(
             tool_id=tool_id,
             version_id=version_id,
             context=RunContext.PRODUCTION,
-            input_files=[("action.json", b"{}")],
             input_values={},
+            input_files=[],
+            action_payload=action_payload,
         ),
     )
 
     runner.execute.assert_awaited_once()
+    assert runner.execute.call_args.kwargs["action_payload"] == action_payload

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import pytest
@@ -250,19 +249,6 @@ def test_handle_action_writes_error_artifact_and_short_table_message(
 
     output_dir = tmp_path / "out"
 
-    action_path = tmp_path / "action.json"
-    action_path.write_text(
-        json.dumps(
-            {
-                "action_id": "convert",
-                "input": {"page_size": "a4", "orientation": "portrait"},
-                "state": {"html_files": [str(source)]},
-            },
-            ensure_ascii=False,
-        ),
-        encoding="utf-8",
-    )
-
     long_a = "A" * 2_000
 
     def _fail_weasyprint(
@@ -291,7 +277,9 @@ def test_handle_action_writes_error_artifact_and_short_table_message(
     )
 
     payload = html_to_pdf_preview._handle_action(
-        action_path=action_path,
+        action_id="convert",
+        input_data={"page_size": "a4", "orientation": "portrait"},
+        state={"html_files": [str(source)]},
         output_dir=output_dir,
     )
 
@@ -320,19 +308,6 @@ def test_handle_action_success_does_not_write_error_artifact(
 
     output_dir = tmp_path / "out"
 
-    action_path = tmp_path / "action.json"
-    action_path.write_text(
-        json.dumps(
-            {
-                "action_id": "convert",
-                "input": {"page_size": "a4", "orientation": "portrait"},
-                "state": {"html_files": [str(source)]},
-            },
-            ensure_ascii=False,
-        ),
-        encoding="utf-8",
-    )
-
     def _ok_weasyprint(
         *,
         source: Path,
@@ -348,7 +323,9 @@ def test_handle_action_success_does_not_write_error_artifact(
     monkeypatch.setattr(html_to_pdf_preview, "_try_weasyprint", _ok_weasyprint)
 
     payload = html_to_pdf_preview._handle_action(
-        action_path=action_path,
+        action_id="convert",
+        input_data={"page_size": "a4", "orientation": "portrait"},
+        state={"html_files": [str(source)]},
         output_dir=output_dir,
     )
 

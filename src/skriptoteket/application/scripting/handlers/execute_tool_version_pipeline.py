@@ -49,12 +49,6 @@ if TYPE_CHECKING:
 
 logger = structlog.get_logger(__name__)
 
-_ACTION_INPUT_FILENAME = "action.json"
-
-
-def _count_user_input_files(*, input_files: list[tuple[str, bytes]]) -> int:
-    return sum(1 for name, _content in input_files if name != _ACTION_INPUT_FILENAME)
-
 
 def _format_syntax_error(exc: SyntaxError) -> str:
     parts: list[str] = [f"SyntaxError: {exc.msg}"]
@@ -104,7 +98,7 @@ async def execute_tool_version_pipeline(
     input_schema = normalize_tool_input_schema(input_schema=version.input_schema)
     validate_input_files_count(
         input_schema=input_schema,
-        files_count=_count_user_input_files(input_files=command.input_files),
+        files_count=len(command.input_files),
     )
     normalized_input_values = normalize_tool_input_values(
         input_schema=input_schema,
@@ -204,6 +198,7 @@ async def execute_tool_version_pipeline(
             input_files=normalized_input_files,
             input_values=normalized_input_values,
             memory_json=memory_json,
+            action_payload=command.action_payload,
         )
     except SyntaxError as exc:
         logger.warning(

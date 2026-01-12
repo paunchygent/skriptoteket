@@ -6,14 +6,14 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-25
-updated: 2025-12-26
-links: ["ADR-0022", "ADR-0024", "ADR-0031", "EPIC-12"]
+updated: 2026-01-12
+links: ["ADR-0022", "ADR-0024", "ADR-0031", "EPIC-12", "EPIC-14"]
 ---
 
 ## Context
 
 Multi-step tools (using `next_actions`) run each step in an isolated container. Currently, uploaded files are only
-available in the initial run - action runs receive only `action.json` (with `{action_id, input, state}`).
+available in the initial run - action runs receive only the action payload (with `{action_id, input, state}`).
 
 This creates a design conflict:
 
@@ -33,7 +33,7 @@ Add a `session_files` storage layer that:
 
 - Associates files with `(tool_id, user_id, context)` - same key structure as `tool_sessions`
 - Persists files uploaded in the initial run
-- Injects files into `/work/input/` for action runs (alongside `action.json`)
+- Injects files into `/work/input/` for action runs
 - Clears files when a new session starts (new initial run with files)
 - Keeps existing session files when a new initial run starts without file uploads
 - Works for both production and editor sandbox contexts
@@ -58,7 +58,6 @@ Future: migrate to object storage (S3/MinIO) for horizontal scaling.
 - Upload limits are settings-driven (same caps used for input uploads):
   - `UPLOAD_MAX_FILE_BYTES` (default: 20MB)
   - `UPLOAD_MAX_TOTAL_BYTES` (default: 50MB)
-- `action.json` is a reserved filename (uploads must not include it).
 - TTL is settings-driven (default: 24 hours) and is counted from `last_accessed_at`.
   - Access is defined as “session files were injected into a run” (initial run or action run).
   - Storage MUST update `last_accessed_at` on access.
@@ -66,11 +65,12 @@ Future: migrate to object storage (S3/MinIO) for horizontal scaling.
 
 ### 4) Runner contract (no new extension)
 
-The runner receives session files in `/work/input/` for action runs:
+The runner receives session files in `/work/input/` for action runs (while the action payload is provided via
+`SKRIPTOTEKET_ACTION`; ADR-0024):
 
 - Initial run: uploaded files → `/work/input/`
 - Initial run (no uploads): do not implicitly inject prior session files; keep them for subsequent action runs
-- Action run: session files + `action.json` → `/work/input/`
+- Action run: session files → `/work/input/`
 
 Tools see consistent file access across action runs; initial-run reuse is explicit (no implicit reuse).
 

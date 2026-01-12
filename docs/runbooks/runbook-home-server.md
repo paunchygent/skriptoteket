@@ -5,7 +5,7 @@ title: "Runbook: Home Server Operations"
 status: active
 owners: "olof"
 created: 2025-12-16
-updated: 2026-01-11
+updated: 2026-01-12
 system: "hemma.hule.education"
 ---
 
@@ -126,42 +126,24 @@ Use the local helper script to tunnel GPU services to localhost:
 
 On `hemma`, the AI services run on the host (not in Docker) as systemd units:
 
-- `llama-server-vulkan.service` (llama.cpp Vulkan backend, port `8082`)
-- `llama-server-hip.service` (llama.cpp ROCm/HIP backend, port `8082`)
-- `tabby.service` (Tabby, port `8083`)
+- llama.cpp server (one of):
+  - `llama-server-vulkan.service` (Vulkan backend, port `8082`)
+  - `llama-server-hip.service` (ROCm/HIP backend, port `8082`)
+- `tabby.service` (Tabby completion proxy, port `8083`)
 
 Only one llama.cpp service should be enabled at a time (both bind `:8082`).
 
-Current default (as of 2026-01-06):
+Canonical runbooks:
 
-- **Primary stack:** `llama-server-hip.service` (enabled)
-- **Vulkan fallback:** `llama-server-vulkan.service` (disabled)
-- **Model:** `/home/paunchygent/models/Devstral-Small-2-24B-Instruct-2512-Q8_0.gguf`
+- `docs/runbooks/runbook-tabby-codemirror.md` (llama-server + Tabby ops)
+- `docs/runbooks/runbook-gpu-ai-workloads.md` (GPU/ROCm ops + HIP/Vulkan switching)
+
+Quick checks:
 
 ```bash
-# Status
-ssh hemma "sudo systemctl status --no-pager llama-server-vulkan.service"
-ssh hemma "sudo systemctl status --no-pager llama-server-hip.service"
-ssh hemma "sudo systemctl status --no-pager tabby.service"
-
-# Health checks
+ssh hemma "sudo systemctl status --no-pager llama-server-hip.service llama-server-vulkan.service tabby.service | head -n 60"
 ssh hemma "curl -s http://127.0.0.1:8082/health"
 ssh hemma "curl -s http://127.0.0.1:8083/v1/health"
-
-# Verify whether HIP/KFD is in use (expected in Vulkan mode: \"No KFD PIDs currently running\")
-ssh hemma "rocm-smi --showpids details"
-```
-
-Switch between HIP and Vulkan:
-
-```bash
-# Vulkan (fallback for stability testing)
-ssh hemma "sudo systemctl disable --now llama-server-hip.service"
-ssh hemma "sudo systemctl enable --now llama-server-vulkan.service"
-
-# HIP/ROCm (default)
-ssh hemma "sudo systemctl disable --now llama-server-vulkan.service"
-ssh hemma "sudo systemctl enable --now llama-server-hip.service"
 ```
 
 ### AMDGPU Release Watch (hemma)
@@ -232,7 +214,27 @@ Kernel/sysctl settings:
 - Reduced kdump dumps enabled: `MAKEDUMP_ARGS="-c -d 31"` in `/etc/default/kdump-tools`
   - Faster + smaller kernel-only dumps; user-space cores handled by `systemd-coredump`
 - Savecore timeout guard: `KDUMP_SAVECORE_TIMEOUT=40s` in `/etc/default/kdump-tools`
-  - `/etc/init.d/kdump-tools` wraps `kdump-config savecore` with `timeout --preserve-status` when set
+  - The kdump savecore wrapper uses `timeout --preserve-status` when set (prevents infinite hang)
+- Post-kdump reboot hardening (avoid hanging `systemctl reboot` path):
+  - Unit override: `/etc/systemd/system/kdump-tools-dump.service.d/10-sysrq-reboot.conf`
+  - Wrapper: `/usr/local/sbin/kdump-savecore-and-sysrq-reboot`
+    - Runs `kdump-config savecore` (with `KDUMP_SAVECORE_TIMEOUT`)
+    - Forces reboot via SysRq: `echo b > /proc/sysrq-trigger` (falls back to `reboot -f` if needed)
+- Hardware watchdog (hard reset if the host wedges, including crash-kernel hang):
+  - Driver: `sp5100_tco` (SP5100/SB800 TCO watchdog)
+  - Module loader (explicit, because `systemd-modules-load` deny-lists this driver via kmod): `/etc/systemd/system/sp5100-tco-watchdog.service`
+  - systemd watchdog config: `/etc/systemd/system.conf.d/99-watchdog.conf`
+    - `RuntimeWatchdogSec=3min` (plus reboot/shutdown watchdog at 3min)
+  - Verify watchdog is active:
+    - `systemctl show -p WatchdogDevice -p RuntimeWatchdogUSec`
+    - `sudo journalctl -b --no-pager | rg -i 'Using hardware watchdog|Watchdog running'`
+- Controlled crash testing (maintenance window only):
+  - Trigger: `ssh hemma "sudo sh -c 'echo 1 > /proc/sys/kernel/sysrq; echo c > /proc/sysrq-trigger'"`
+  - Verify dump + crash boot:
+    - `ssh hemma "journalctl --list-boots | tail -n 10"`
+    - `ssh hemma "sudo journalctl -b -1 -u kdump-tools-dump.service --no-pager | tail -n 200"`
+    - `ssh hemma "ls -lah /var/crash | tail -n 20"`
+  - If it was a test, rename the dump directory to `*-test` to avoid confusion.
 
 One-time DC-off test boot (headless):
 
@@ -547,33 +549,20 @@ ssh hemma "sudo docker exec -it shared-postgres psql -U postgres -c 'CREATE DATA
 # Restart and run migrations
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d"
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec web pdm run db-upgrade"
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli bootstrap-superuser --email admin@hule.education --password 'CHANGE_THIS_PASSWORD'"
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli seed-script-bank --actor-email admin@hule.education --actor-password 'CHANGE_THIS_PASSWORD'"
 ```
+
+Then follow:
+
+- [runbook-user-management.md](runbook-user-management.md) (bootstrap superuser / provision)
+- [runbook-script-bank-seeding-home-server.md](runbook-script-bank-seeding-home-server.md) (seed script bank)
 
 ### User Management
 
 See [runbook-user-management.md](runbook-user-management.md) for details.
 
-```bash
-# Bootstrap superuser (first-time setup only)
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli bootstrap-superuser --email 'admin@example.com' --password 'SECURE_PASSWORD'"
-
-# Provision additional user
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli provision-user --actor-email 'admin@example.com' --actor-password 'ADMIN_PASSWORD' --email 'user@example.com' --password 'USER_PASSWORD' --role user"
-```
-
 ### Script Bank Seeding
 
 See [runbook-script-bank-seeding-home-server.md](runbook-script-bank-seeding-home-server.md).
-
-```bash
-# Seed all scripts from repository
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli seed-script-bank --actor-email admin@hule.education --actor-password 'PASSWORD'"
-
-# Sync code changes from repo to existing tools
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli seed-script-bank --actor-email admin@hule.education --actor-password 'PASSWORD' --sync-code"
-```
 
 ## Observability
 

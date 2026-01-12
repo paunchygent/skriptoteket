@@ -63,6 +63,7 @@ class ExecuteToolVersionCommand(BaseModel):
     version_override: ToolVersionOverride | None = None
     input_files: list[InputFile] = Field(default_factory=list)
     input_values: dict[str, JsonValue] = Field(default_factory=dict)
+    action_payload: dict[str, JsonValue] | None = None
 
 
 class ExecuteToolVersionResult(BaseModel):

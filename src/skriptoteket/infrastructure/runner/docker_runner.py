@@ -194,6 +194,7 @@ class DockerToolRunner(ToolRunnerProtocol):
         input_files: list[tuple[str, bytes]],
         input_values: dict[str, JsonValue],
         memory_json: bytes,
+        action_payload: dict[str, JsonValue] | None,
     ) -> ToolExecutionResult:
         if not await self._capacity.try_acquire():
             logger.warning(
@@ -217,6 +218,7 @@ class DockerToolRunner(ToolRunnerProtocol):
                 input_files=input_files,
                 input_values=input_values,
                 memory_json=memory_json,
+                action_payload=action_payload,
             )
         finally:
             await self._capacity.release()
@@ -230,6 +232,7 @@ class DockerToolRunner(ToolRunnerProtocol):
         input_files: list[tuple[str, bytes]],
         input_values: dict[str, JsonValue],
         memory_json: bytes,
+        action_payload: dict[str, JsonValue] | None,
     ) -> ToolExecutionResult:
         import docker
         from docker.errors import DockerException, NotFound
@@ -280,6 +283,18 @@ class DockerToolRunner(ToolRunnerProtocol):
             "SKRIPTOTEKET_OUTPUT_DIR": "/work/output",
             "SKRIPTOTEKET_RESULT_PATH": "/work/result.json",
         }
+        if action_payload is not None:
+            try:
+                env["SKRIPTOTEKET_ACTION"] = json.dumps(
+                    action_payload,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                )
+            except TypeError as exc:
+                raise DomainError(
+                    code=ErrorCode.INTERNAL_ERROR,
+                    message="Failed to encode action payload as JSON.",
+                ) from exc
 
         try:
             client = docker.from_env()

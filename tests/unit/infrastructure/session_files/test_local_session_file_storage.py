@@ -5,7 +5,6 @@ from uuid import uuid4
 
 import pytest
 
-from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.session_files.local_session_file_storage import (
     LocalSessionFileStorage,
 )
@@ -78,21 +77,21 @@ async def test_store_files_replaces_existing_session_files(tmp_path) -> None:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_store_files_rejects_action_json_reserved_name(tmp_path) -> None:
+async def test_store_files_allows_action_json_filename(tmp_path) -> None:
     tool_id = uuid4()
     user_id = uuid4()
     clock = FakeClock(datetime(2025, 1, 1, tzinfo=timezone.utc))
     storage = LocalSessionFileStorage(sessions_root=tmp_path, ttl_seconds=60, clock=clock)
 
-    with pytest.raises(DomainError) as exc_info:
-        await storage.store_files(
-            tool_id=tool_id,
-            user_id=user_id,
-            context="default",
-            files=[("action.json", b"{}")],
-        )
+    await storage.store_files(
+        tool_id=tool_id,
+        user_id=user_id,
+        context="default",
+        files=[("action.json", b"{}")],
+    )
 
-    assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+    files = await storage.get_files(tool_id=tool_id, user_id=user_id, context="default")
+    assert files == [("action.json", b"{}")]
 
 
 @pytest.mark.unit

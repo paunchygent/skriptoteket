@@ -59,7 +59,7 @@ We must implement sandbox interactivity using the same invariants as production:
   - `expected_state_rev: int`
 - Handler:
   - loads session state for `sandbox:{version_id}`
-  - builds `action.json` bytes `{action_id, input, state}`
+  - builds `SKRIPTOTEKET_ACTION` payload `{action_id, input, state}`
   - executes the draft `version_id` in `RunContext.SANDBOX`
   - updates `tool_sessions` with the new normalized state using `expected_state_rev`
   - returns `{run_id, state_rev}`
@@ -89,10 +89,10 @@ We must implement sandbox interactivity using the same invariants as production:
 ### Demo tool alignment (html_to_pdf_preview)
 
 With session-scoped file persistence (ADR-0039 / ST-12-05), sandbox action runs receive the original uploaded files in
-`/work/input/` alongside `action.json`.
+`/work/input/`, while the action payload is provided via `SKRIPTOTEKET_ACTION`.
 
 - The demo tool may rely on stable `/work/input/...` paths across sandbox actions.
-- The demo tool MUST ignore `action.json` when discovering user-provided input files.
+- The demo tool MUST detect action runs via `SKRIPTOTEKET_ACTION` (not by looking for a synthetic input file).
 
 ## Superseded behavior note
 

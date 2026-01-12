@@ -5,6 +5,7 @@ title: "Hemma critical paths and operations inventory (2026-01-06)"
 status: active
 owners: "agents"
 created: 2026-01-06
+updated: 2026-01-12
 topic: "devops"
 ---
 
@@ -14,7 +15,7 @@ This reference lists critical paths, configs, and operational dependencies for
 the Hemma host. It is meant to support restores, reimages, and fast audits.
 
 Host snapshot context:
-- Hostname: `paunchygentserver`
+- Hostname: `paunchygent-server`
 - OS: Ubuntu 24.04.3 LTS (Noble)
 - Backup snapshot: `/mnt/backup/hemma-root-20260106/` (~110G)
 
@@ -42,6 +43,10 @@ Host snapshot context:
 - SSH watchdog:
   - Service: `ssh-watchdog.service`
   - Timer: `ssh-watchdog.timer`
+- Hardware watchdog (hard reset on wedges):
+  - Driver: `sp5100_tco` (SP5100/SB800 TCO watchdog)
+  - Module loader: `/etc/systemd/system/sp5100-tco-watchdog.service`
+  - systemd watchdog config: `/etc/systemd/system.conf.d/99-watchdog.conf`
 
 ### UFW rules (snapshot: 2026-01-06)
 
@@ -111,7 +116,22 @@ Anywhere (v6) on cali+     ALLOW IN    Anywhere (v6)
 - `tailscaled.service`
 - `fail2ban.service`
 - `ssh.socket` (with `ssh.service`)
+- `kdump-tools.service` (loads crash kernel; enabled)
+- `sp5100-tco-watchdog.service` (loads watchdog module)
 - `nginx.service` (installed, currently disabled)
+
+## Crash capture (kdump) (current)
+
+- Config:
+  - `/etc/default/kdump-tools`
+  - `/etc/default/grub.d/kdump-tools.cfg`
+  - `/etc/sysctl.d/99-crash-capture.conf`
+- Units:
+  - `kdump-tools.service` (normal boot; loads crash kernel)
+  - `kdump-tools-dump.service` (crash-kernel boot; saves vmcore)
+- Post-savecore reboot hardening:
+  - Unit override: `/etc/systemd/system/kdump-tools-dump.service.d/10-sysrq-reboot.conf`
+  - Wrapper: `/usr/local/sbin/kdump-savecore-and-sysrq-reboot` (forces reboot via SysRq)
 
 ## Skriptoteket App
 

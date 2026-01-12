@@ -266,10 +266,14 @@ onMounted(async () => {
         <h1
           class="font-serif text-5xl md:text-6xl font-bold text-navy tracking-tighter leading-tight"
         >
-          Verktyg för lärare
+          Skriptoteket
         </h1>
-        <p class="mt-4 text-lg text-navy/70 max-w-xl mx-auto">
-          Ladda upp en fil, välj ett verktyg, ladda ned resultatet.
+        <p class="mt-2 text-xl text-navy/80 font-medium">
+          Verktyg av lärare, för lärande
+        </p>
+        <p class="mt-4 text-lg text-navy/70 max-w-2xl mx-auto">
+          Ta koden i egna händer. Beskriv din idé och vad du vill uppnå –
+          kodassistenten omsätter den till ett fungerande skript och plattformen sköter resten.
         </p>
         <p class="mt-10">
           <button
@@ -284,51 +288,68 @@ onMounted(async () => {
 
       <!-- Features Section -->
       <section class="py-16 border-t border-navy/10">
-        <div class="grid gap-12 md:grid-cols-3 max-w-5xl mx-auto">
-          <!-- Card 1 -->
+        <div class="grid gap-12 md:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto">
+          <!-- Card 1: Skriv utan tekniska hinder -->
           <div class="relative">
             <div
               class="absolute -top-3 -left-2 w-8 h-8 bg-burgundy border border-navy flex items-center justify-center"
             >
               <span class="text-canvas font-bold text-sm">1</span>
             </div>
-            <div class="pt-6 pl-5 border-l-2 border-navy min-h-[120px]">
-              <h3 class="font-semibold text-navy text-lg">Dela och återanvänd</h3>
+            <div class="pt-6 pl-5 border-l-2 border-navy min-h-[140px]">
+              <h3 class="font-semibold text-navy text-lg">Skapa utan tekniska hinder</h3>
               <p class="mt-2 text-sm text-navy/70 leading-relaxed">
-                Hitta redan färdiga skript, kom med förslag på nya verktyg till din verksamhet,
-                eller skapa dina egna och dela med dina kollegor.
+                Du behöver inte installera några program. Beskriv din idé och vad du vill uppnå.
+                Kodassistenten omsätter din idé till ett fungerande skript och plattformen sköter resten.
               </p>
             </div>
           </div>
 
-          <!-- Card 2 -->
+          <!-- Card 2: Dela inom professionen -->
           <div class="relative">
             <div
               class="absolute -top-3 -left-2 w-8 h-8 bg-burgundy border border-navy flex items-center justify-center"
             >
               <span class="text-canvas font-bold text-sm">2</span>
             </div>
-            <div class="pt-6 pl-5 border-l-2 border-navy min-h-[120px]">
-              <h3 class="font-semibold text-navy text-lg">Sätt igång direkt</h3>
+            <div class="pt-6 pl-5 border-l-2 border-navy min-h-[140px]">
+              <h3 class="font-semibold text-navy text-lg">Dela med dina kollegor</h3>
               <p class="mt-2 text-sm text-navy/70 leading-relaxed">
-                Välj ett verktyg eller skapa ett nytt, ladda upp en fil, ladda ned resultatet.
-                En AI-assistent hjälper dig att skriva ditt första skript.
+                Publicera verktyg till kollegor och ta del av andras lösningar.
+                Varje skript granskas innan publicering. Föreslå förbättringar, diskutera idéer –
+                skripten växer tillsammans.
               </p>
             </div>
           </div>
 
-          <!-- Card 3 -->
+          <!-- Card 3: Kör verktyg direkt -->
           <div class="relative">
             <div
               class="absolute -top-3 -left-2 w-8 h-8 bg-burgundy border border-navy flex items-center justify-center"
             >
               <span class="text-canvas font-bold text-sm">3</span>
             </div>
-            <div class="pt-6 pl-5 border-l-2 border-navy min-h-[120px]">
-              <h3 class="font-semibold text-navy text-lg">Tryggt och lokalt</h3>
+            <div class="pt-6 pl-5 border-l-2 border-navy min-h-[140px]">
+              <h3 class="font-semibold text-navy text-lg">Kom igång direkt</h3>
               <p class="mt-2 text-sm text-navy/70 leading-relaxed">
-                Alla dina filer och chattar behandlas säkert och lokalt.
-                Varje verktyg granskas före publicering.
+                Testa andras appar och verktyg direkt och kom med förslag på nya verktyg.
+                Ingen installation krävs och all upp- och nedladdad data stannar på plattformen.
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 4: GDPR-säkrad datahantering -->
+          <div class="relative">
+            <div
+              class="absolute -top-3 -left-2 w-8 h-8 bg-burgundy border border-navy flex items-center justify-center"
+            >
+              <span class="text-canvas font-bold text-sm">4</span>
+            </div>
+            <div class="pt-6 pl-5 border-l-2 border-navy min-h-[140px]">
+              <h3 class="font-semibold text-navy text-lg">GDPR-säkrad datahantering</h3>
+              <p class="mt-2 text-sm text-navy/70 leading-relaxed">
+                All databehandling sker lokalt och ingen data kan lämna servern utan aktivt samtycke.
+                Datahanteringen följer GDPR, med tydliga regler för gallring.
               </p>
             </div>
           </div>

@@ -31,4 +31,5 @@ class ToolRunnerProtocol(Protocol):
         input_files: list[tuple[str, bytes]],
         input_values: dict[str, JsonValue],
         memory_json: bytes,
+        action_payload: dict[str, JsonValue] | None,
     ) -> ToolExecutionResult: ...

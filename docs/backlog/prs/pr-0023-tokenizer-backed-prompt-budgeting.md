@@ -11,7 +11,9 @@ stories:
 tags: ["backend", "ai", "infra"]
 acceptance_criteria:
   - "Chat/edit-ops/completions budgeting uses a TokenCounter abstraction with GPT-5 + devstral implementations."
+  - "Token counting accounts for chat template/role overhead (devstral in particular), not just raw message content."
   - "Tokenizer assets are configurable via env and missing assets fall back to heuristic estimation with warnings."
+  - "All estimate_text_tokens call sites are replaced or removed in favor of TokenCounter (prompt_budget, prompt_composer, chat handler prechecks)."
   - "Budgeting behavior remains deterministic and metadata-only logging is preserved."
 ---
 
@@ -38,13 +40,15 @@ messages, this becomes inaccurate and can cause over-budget failures or underuti
 3. devstral-2-small: use Tekken tokenizer assets (or llama.cpp tokenizer when served via llama.cpp).
 4. Add config/env for tokenizer selection + asset paths.
 5. Add fallback logic: missing assets -> heuristic estimate + increased safety margin + metadata-only warnings.
-6. Update chat/edit-ops/completions to use the new token counter consistently.
+6. Replace all estimate_text_tokens call sites (prompt_budget, prompt_composer, chat handler prechecks) with TokenCounter.
+7. Ensure devstral token counting includes chat template overhead (rendered template or explicit per-message overhead).
 
 ## Test plan
 
 - Unit tests for TokenCounter implementations (GPT-5 + devstral).
 - Budgeting tests verifying counts and overflow behavior.
 - Integration test ensuring missing assets fall back gracefully.
+- Tests that devstral counting includes template overhead (fixture assets or deterministic overhead constant).
 
 ## Rollback plan
 

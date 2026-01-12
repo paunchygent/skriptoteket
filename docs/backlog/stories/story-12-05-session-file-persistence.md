@@ -7,11 +7,11 @@ owners: "agents"
 created: 2025-12-25
 epic: "EPIC-12"
 acceptance_criteria:
-  - "Given a user uploads files and runs a tool with next_actions, when the user submits an action (production or editor sandbox), then the original uploaded files are available in /work/input/ alongside action.json."
+  - "Given a user uploads files and runs a tool with next_actions, when the user submits an action (production or editor sandbox), then the original uploaded files are available in /work/input/ and the action payload is provided via SKRIPTOTEKET_ACTION."
   - "Given a user starts a new initial run with new file uploads for the same (tool_id, user_id, context), when the run starts, then the previous session files are cleared and replaced with the new uploads."
   - "Given a user starts a new initial run without any file uploads, when the run starts, then the previous session files remain available for subsequent action runs."
   - "Given uploaded files exceed the configured upload limits (defaults: 20MB per file, 50MB total), when upload is attempted, then the user sees a clear validation error and session files are not modified."
-  - "Given a user attempts to upload a file named action.json, when upload is attempted, then the request is rejected with a clear validation error instructing the user to rename the file."
+  - "Given a user uploads a file named action.json, when upload is attempted, then it is treated as a normal input file (not blocked)."
   - "Given session files have not been accessed for the configured TTL (default: 24 hours), when cleanup_expired() is invoked, then the files are deleted."
   - "Given html_to_pdf_preview.py is run in production or sandbox, when the user clicks 'Konvertera till PDF', then the conversion succeeds using the original uploaded HTML file."
 dependencies: ["ADR-0039", "ADR-0024"]
@@ -21,8 +21,8 @@ data_impact: "Yes (new session_files storage; no schema change)"
 
 ## Context
 
-Multi-step tools need access to originally uploaded files across action runs. Currently, action runs only receive
-`action.json` - no files.
+Multi-step tools need access to originally uploaded files across action runs. Action runs must also receive action
+payload via `SKRIPTOTEKET_ACTION` (ADR-0024).
 
 This story implements session-scoped file persistence per ADR-0039.
 
@@ -39,7 +39,6 @@ to `tool_sessions` when it returns `next_actions`, otherwise the first action ru
    - Implementation: `LocalSessionFileStorage` (filesystem-based)
    - Methods: `store_files()`, `get_files()`, `clear_session()`, `cleanup_expired()`
    - MUST track `last_accessed_at` for TTL cleanup (touch on get / injection into a run).
-   - MUST treat `action.json` as a reserved filename (reject uploads that collide with it).
    - MUST use a filesystem-safe encoding for `context` when mapping session keys to storage paths (ADR-0039).
 
 2) Extend initial run flow
@@ -59,16 +58,14 @@ to `tool_sessions` when it returns `next_actions`, otherwise the first action ru
 
    - In `start_action` / `start_sandbox_action`, fetch session files for the matching `(tool_id, user_id, context)`.
    - Execute the action run with a single input snapshot containing:
-     - the persisted session files, and
-     - `action.json` (platform-generated)
+     - the persisted session files
    - This is snapshot semantics: session files are copied into the run’s `/work/input/` (not mounted writable).
 
 4) Runner contract (no new extension)
 
    - Reuse the existing multi-file contract (ADR-0031 / ST-12-01): the runner places all `input_files` in
      `/work/input/` and sets `SKRIPTOTEKET_INPUT_MANIFEST` accordingly.
-   - `SKRIPTOTEKET_INPUT_MANIFEST` includes both original files and `action.json`; tools MUST ignore `action.json` when
-     selecting user-provided inputs.
+   - Tools MUST detect action runs via `SKRIPTOTEKET_ACTION` (not by looking for a synthetic input file).
 
 5) Cleanup (job owned by ST-12-06)
 
@@ -82,8 +79,8 @@ Session files are transparent to the user - they upload files once and they pers
 ## Test plan
 
 - Unit: session file storage service (store, retrieve, clear/replace on new upload, TTL + last_accessed_at updates)
-- Unit: reserved filename behavior (`action.json` rejected on upload)
-- Integration: multi-step tool run where action step sees original uploaded files + `action.json` in `/work/input/`
+- Unit: uploading/storing files with any filename (including `action.json`) is allowed
+- Integration: multi-step tool run where action step sees original uploaded files in `/work/input/`
 - E2E: html_to_pdf_preview.py works in sandbox and production
 
 ## Implementation (done)
@@ -93,7 +90,6 @@ Session files are transparent to the user - they upload files once and they pers
 - Initial run persistence:
   - Production: `src/skriptoteket/application/scripting/handlers/run_active_tool.py` (context `"default"`)
   - Sandbox: `src/skriptoteket/application/scripting/handlers/run_sandbox.py` (context `sandbox:{version_id}`)
-- Action run injection (persisted files + platform `action.json`): `src/skriptoteket/application/scripting/handlers/start_action.py`,
+- Action run injection (persisted files + action payload via `SKRIPTOTEKET_ACTION`): `src/skriptoteket/application/scripting/handlers/start_action.py`,
   `src/skriptoteket/application/scripting/handlers/start_sandbox_action.py`
-- Upload guard: reject user file named `action.json` in `src/skriptoteket/web/uploads.py`
 - ADR-0024 gap fix: persist `normalized_state` on initial production run when `next_actions` exist (`run_active_tool.py`)

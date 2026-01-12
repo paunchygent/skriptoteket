@@ -28,6 +28,8 @@ from time import perf_counter
 from typing import TypedDict
 from urllib.parse import unquote, urlparse
 
+from skriptoteket_toolkit import get_action_parts  # type: ignore[import-not-found]
+
 
 class ManifestFile(TypedDict):
     name: str
@@ -812,12 +814,13 @@ def _handle_preview(*, input_files: list[ManifestFile]) -> dict[str, object]:
 # ─── STEG 2: KONVERTERING ───
 
 
-def _handle_action(*, action_path: Path, output_dir: Path) -> dict[str, object]:
-    payload = json.loads(action_path.read_text(encoding="utf-8"))
-    action_id = str(payload.get("action_id") or "").strip()
-    input_data = payload.get("input") if isinstance(payload.get("input"), dict) else {}
-    state = payload.get("state") if isinstance(payload.get("state"), dict) else {}
-
+def _handle_action(
+    *,
+    action_id: str,
+    input_data: dict[str, object],
+    state: dict[str, object],
+    output_dir: Path,
+) -> dict[str, object]:
     # Hantera "börja om"
     if action_id == "reset":
         return {
@@ -841,7 +844,12 @@ def _handle_action(*, action_path: Path, output_dir: Path) -> dict[str, object]:
     pdf_css_fingerprint = hashlib.sha256(page_css.encode("utf-8")).hexdigest()[:8]
 
     # Hämta filinfo från state
-    html_file_paths = state.get("html_files", [])
+    raw_html_files = state.get("html_files")
+    html_file_paths = (
+        [path for path in raw_html_files if isinstance(path, str)]
+        if isinstance(raw_html_files, list)
+        else []
+    )
 
     if not html_file_paths:
         return {
@@ -1039,31 +1047,23 @@ def run_tool(input_dir: str, output_dir: str) -> dict[str, object]:
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
 
+    action_id, action_input, action_state = get_action_parts()
+    if action_id is not None:
+        return _handle_action(
+            action_id=action_id,
+            input_data=action_input,
+            state=action_state,
+            output_dir=output,
+        )
+
     input_files = _select_input_files(input_dir=input_root)
 
-    # Kolla om detta är en action-körning (från next_actions)
-    action_file = next(
-        (item for item in input_files if item.get("name") == "action.json"),
-        None,
-    )
-
-    if action_file is not None:
-        return _handle_action(action_path=Path(str(action_file["path"])), output_dir=output)
-
-    # Fallback: kolla om action.json finns i input_dir
-    action_path = input_root / "action.json"
-    if action_path.is_file():
-        return _handle_action(action_path=action_path, output_dir=output)
-
     # Vanlig körning: visa förhandsgranskning
-    # Filtrera bort action.json från input_files
-    filtered_files = [f for f in input_files if f.get("name") != "action.json"]
-
-    if not filtered_files:
+    if not input_files:
         return {
             "outputs": [_notice("error", "Ingen fil uppladdad. Ladda upp minst en HTML-fil.")],
             "next_actions": [],
             "state": None,
         }
 
-    return _handle_preview(input_files=filtered_files)
+    return _handle_preview(input_files=input_files)

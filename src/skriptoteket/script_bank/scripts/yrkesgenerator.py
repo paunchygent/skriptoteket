@@ -275,12 +275,13 @@ WEAKNESSES = [
 
 SIDE_HUSTLES = [
     "Driver en podd ingen bett om",
-    "Skapar memes som bara du gillar",
-    "Säljer drömmar på Blocket",
-    "Gör listor över listor över listor",
-    "Organiserar hemliga Spotify-listor för dramatik",
+    "Skapar NTF-konst",
+    "Säljer dropshippade fidget spinners på Blocket",
+    "Scrapbooking",
+    "Organiserar hemliga Spotify-listor som 'många har favoritmarkerat'",
     "Deltidskonstnär i kreativ panik",
     "Instagram-analytiker åt sig själv",
+    "Pyramidspel",
 ]
 
 AURAS = [

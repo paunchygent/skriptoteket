@@ -5,7 +5,6 @@ Similar to start_action.py but for sandbox context with version-specific executi
 
 from __future__ import annotations
 
-import json
 from uuid import UUID
 
 from skriptoteket.application.scripting.commands import (
@@ -72,7 +71,7 @@ def _ensure_snapshot_is_valid(
 class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
     """Start an interactive sandbox action (ADR-0038).
 
-    The tool receives JSON input bytes with the shape:
+    The tool receives `SKRIPTOTEKET_ACTION` (JSON) with the shape:
     {"action_id": str, "input": {...}, "state": {...}}.
     """
 
@@ -210,13 +209,11 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
 
             current_state = session.state
 
-        # Build action.json payload
-        payload = {
+        action_payload = {
             "action_id": command.action_id,
             "input": command.input,
             "state": current_state,
         }
-        input_bytes = json.dumps(payload, ensure_ascii=False).encode("utf-8")
 
         persisted_files = await self._session_files.get_files(
             tool_id=command.tool_id,
@@ -247,7 +244,8 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
                     input_schema=snapshot.input_schema,
                     usage_instructions=snapshot.usage_instructions,
                 ),
-                input_files=[*persisted_files, ("action.json", input_bytes)],
+                input_files=persisted_files,
+                action_payload=action_payload,
             ),
         )
 

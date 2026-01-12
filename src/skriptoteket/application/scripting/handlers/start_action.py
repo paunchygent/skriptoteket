@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from uuid import UUID
 
 from pydantic import JsonValue
@@ -15,7 +14,7 @@ from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
-from skriptoteket.domain.scripting.input_files import InputFileEntry, InputManifest
+from skriptoteket.domain.scripting.input_files import InputManifest
 from skriptoteket.domain.scripting.models import (
     RunContext,
     RunStatus,
@@ -54,7 +53,7 @@ from skriptoteket.protocols.uow import UnitOfWorkProtocol
 class StartActionHandler(StartActionHandlerProtocol):
     """Start an interactive tool action (ADR-0024).
 
-    The tool receives JSON input bytes with the shape:
+    The tool receives `SKRIPTOTEKET_ACTION` (JSON) with the shape:
     {"action_id": str, "input": {...}, "state": {...}}.
     """
 
@@ -96,7 +95,6 @@ class StartActionHandler(StartActionHandlerProtocol):
         tool_id: UUID,
         current_state: dict[str, JsonValue],
         command: StartActionCommand,
-        input_bytes: bytes,
     ) -> tuple[UUID, dict[str, JsonValue]]:
         app = self._curated_apps.get_by_tool_id(tool_id=tool_id)
         if app is None:
@@ -125,11 +123,9 @@ class StartActionHandler(StartActionHandlerProtocol):
             context=RunContext.PRODUCTION,
             requested_by_user_id=actor.id,
             workdir_path=str(run_id),
-            input_filename="action.json",
-            input_size_bytes=len(input_bytes),
-            input_manifest=InputManifest(
-                files=[InputFileEntry(name="action.json", bytes=len(input_bytes))]
-            ),
+            input_filename=None,
+            input_size_bytes=0,
+            input_manifest=InputManifest(),
             now=now,
         )
 
@@ -300,7 +296,6 @@ class StartActionHandler(StartActionHandlerProtocol):
             "input": command.input,
             "state": current_state,
         }
-        input_bytes = json.dumps(payload, ensure_ascii=False).encode("utf-8")
 
         run_id: UUID
         normalized_state: dict[str, JsonValue]
@@ -310,7 +305,6 @@ class StartActionHandler(StartActionHandlerProtocol):
                 tool_id=command.tool_id,
                 current_state=current_state,
                 command=command,
-                input_bytes=input_bytes,
             )
         else:
             if active_version_id is None:
@@ -329,7 +323,8 @@ class StartActionHandler(StartActionHandlerProtocol):
                     tool_id=command.tool_id,
                     version_id=active_version_id,
                     context=RunContext.PRODUCTION,
-                    input_files=[*persisted_files, ("action.json", input_bytes)],
+                    input_files=persisted_files,
+                    action_payload=payload,
                 ),
             )
             run_id = result.run.id

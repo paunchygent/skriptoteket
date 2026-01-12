@@ -124,7 +124,7 @@ The items below come up frequently when authoring or using multi-step interactiv
 ### High value, mostly solvable via DX/conventions (no UI contract change)
 
 - **Collect-only step semantic**: model as a regular run that only emits outputs/validation + sets `state` for next step.
-- **State handoff clarity**: address via runner toolkit helpers (read/write `action.json` + `state`) and docs.
+- **State handoff clarity**: address via runner toolkit helpers (read `SKRIPTOTEKET_ACTION` + merge/validate `state`) and docs.
 - **File reference in actions**: address via input manifest + documented conventions (store selected file name(s) in
   `state`, resolve to `/work/input/...` in the runner using a helper).
 - **Progress indication**: address via a documented `state.progress` convention and a small UI renderer (opt-in).

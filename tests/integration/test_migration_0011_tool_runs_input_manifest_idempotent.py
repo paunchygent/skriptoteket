@@ -82,7 +82,7 @@ async def _seed_pre_0011_run(*, engine: AsyncEngine) -> tuple[str, int]:
                 "requested_by_user_id": user_id,
                 "status": "succeeded",
                 "workdir_path": str(run_id),
-                "input_filename": "action.json",
+                "input_filename": "input.bin",
                 "input_size_bytes": input_size_bytes,
                 "artifacts_manifest": json.dumps({"artifacts": []}),
             },
@@ -149,7 +149,7 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
                 "requested_by_user_id": user_id,
                 "status": "succeeded",
                 "workdir_path": str(run_id),
-                "input_filename": "action.json",
+                "input_filename": "input.bin",
                 "input_size_bytes": 0,
                 "artifacts_manifest": json.dumps({"artifacts": []}),
             },
@@ -216,7 +216,7 @@ async def _smoke_schema_from_url(
             if isinstance(manifest, str):
                 manifest = json.loads(manifest)
             assert manifest == {
-                "files": [{"name": "action.json", "bytes": seeded_run_input_bytes}],
+                "files": [{"name": "input.bin", "bytes": seeded_run_input_bytes}],
             }
     finally:
         await engine.dispose()

@@ -88,9 +88,7 @@ def _read_input_manifest_files() -> list[ManifestFile]:
 
 
 def _select_input_files(*, input_dir: Path) -> list[ManifestFile]:
-    manifest_files: list[ManifestFile] = [
-        file for file in _read_input_manifest_files() if file["name"] != "action.json"
-    ]
+    manifest_files: list[ManifestFile] = _read_input_manifest_files()
     if manifest_files:
         supported = [
             file
@@ -105,7 +103,7 @@ def _select_input_files(*, input_dir: Path) -> list[ManifestFile]:
     scanned: list[ManifestFile] = [
         {"name": path.name, "path": str(path), "bytes": path.stat().st_size}
         for path in sorted(input_dir.glob("*"))
-        if path.is_file() and path.name != "action.json"
+        if path.is_file()
     ]
     supported = [
         file for file in scanned if Path(file["name"]).suffix.lower() in SUPPORTED_INPUT_SUFFIXES

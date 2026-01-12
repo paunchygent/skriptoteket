@@ -48,42 +48,6 @@ Adresserna är semikolonseparerade och fungerar direkt i Outlook.""",
         ],
     ),
     ScriptBankEntry(
-        slug="html-to-pdf",
-        title="HTML → PDF-konverterare",
-        summary=(
-            "Omvandlar en uppladdad HTML-fil till en PDF. Stöder externa assets (CSS/bilder) "
-            "om de laddas upp tillsammans och refereras med relativa filnamn."
-        ),
-        usage_instructions="""\
-## Enkel konvertering
-
-1. Klicka på **Välj filer** och välj din HTML-fil (.html eller .htm).
-2. Klicka **Kör**.
-3. Ladda ner den genererade PDF-filen.
-
-## Med bilder och CSS
-
-Om din HTML-fil använder externa CSS-filer eller bilder:
-
-1. Välj **alla filer** (HTML, CSS, bilder) i samma filväljardialog.
-2. Se till att HTML-filen refererar till resurserna med **relativa filnamn**, t.ex.:
-   - `<link rel="stylesheet" href="style.css">`
-   - `<img src="bild.png">`
-3. Klicka **Kör** - verktyget hittar automatiskt resurserna.
-
-## Tips
-
-- Flera HTML-filer? Alla konverteras till separata PDF:er.
-- Bildformat: PNG, JPG, GIF och SVG stöds.
-- CSS: De flesta webbstandarder fungerar, men avancerade layouter kan skilja sig något.""",
-        profession_slugs=["gemensamt"],
-        category_slugs=["ovrigt"],
-        source_filename="html_to_pdf.py",
-        input_schema=[
-            ToolInputFileField(name="files", label="Filer", min=1, max=10),
-        ],
-    ),
-    ScriptBankEntry(
         slug="filkonverterare-markdown-md-till-word-docx",
         title="Filkonverterare: Markdown (.md) till Word (.docx)",
         summary=(

@@ -12,7 +12,8 @@ tags: ["backend", "frontend", "ai"]
 acceptance_criteria:
   - "Editor chat requests may include optional `active_file` + `virtual_files`, and the backend uses them without breaking existing clients."
   - "Hidden per-file context messages are persisted and filtered from chat history responses."
-  - "Resend rules are enforced via post-user-message retention + refresh, with priority order and deterministic behavior."
+  - "Resend rules are enforced via post-user-message retention + refresh, with priority order and deterministic behavior (latest-per-file only)."
+  - "Prompt assembly explicitly handles context message ordering/roles so virtual files are retained even when the budget window starts with context messages."
   - "Observability logs remain metadata-only and never include file contents."
 ---
 
@@ -40,10 +41,14 @@ resending unchanged context and while respecting the rolling context window.
    - Persist per-file hidden context messages with `meta.hidden` and `meta.kind`.
    - Run post-user-message retention check and refresh dropped/changed contexts.
    - Apply priority order (`active_file → tool.py → schemas → docs`).
+   - **Deduplicate latest per file** when composing the prompt (avoid conflicting contexts).
 3. Add a small protocol boundary for context persistence to keep Option C swappable.
 4. History: filter hidden context messages from `EditorChatHistoryHandler`.
 5. Frontend: include optional `active_file` + `virtual_files` in chat requests (reuse virtual file mapping helper).
-6. Update system prompt guidance to treat virtual file context as data.
+6. Resolve **context message role + ordering** explicitly:
+   - Either store context messages as `role="user"` (hidden) to avoid `apply_chat_budget` stripping, **or**
+   - update chat budgeting to preserve leading assistant context messages by explicit marker.
+7. Update system prompt guidance to treat virtual file context as data.
 
 ## Test plan
 
@@ -52,6 +57,8 @@ resending unchanged context and while respecting the rolling context window.
   - unchanged + dropped ⇒ refresh
   - changed ⇒ refresh
   - tight budget ⇒ priority order enforced
+- Unit test for prompt assembly ensures only latest context per file is included.
+- Unit test for context message role/ordering so contexts survive `apply_chat_budget` trimming.
 - Unit/integration tests for history filtering (hidden messages not returned).
 - Frontend unit test for request payload fields.
 - Manual: open editor chat and confirm model can reference `tool.py` content without showing JSON in history.

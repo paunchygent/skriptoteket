@@ -6,8 +6,8 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-19
-updated: 2025-12-26
-links: ["ADR-0022", "ADR-0023", "ADR-0027", "PRD-script-hub-v0.2", "EPIC-10"]
+updated: 2026-01-12
+links: ["ADR-0022", "ADR-0023", "ADR-0027", "PRD-script-hub-v0.2", "EPIC-10", "EPIC-14"]
 ---
 
 ## Context
@@ -100,9 +100,30 @@ action run receives the correct server-owned state.
 - This applies to both:
   - the **initial run** started from the main tool execution endpoint (e.g. upload → run), and
   - subsequent **action runs** started via `start_action` (which uses `expected_state_rev`).
-- Rationale: `start_action` injects `tool_sessions.state` into `action.json` as server-owned state. If the initial run
-  does not update `tool_sessions`, the first action run will receive stale/empty state and workflows that rely on state
-  handoff between steps will fail (e.g. preview → convert flows).
+- Rationale: `start_action` MUST supply the current server-owned state to the action run (see action payload transport
+  below). If the initial run does not update `tool_sessions`, the first action run will receive stale/empty state and
+  workflows that rely on state handoff between steps will fail (e.g. preview → convert flows).
+
+### 6) Action payload transport: `SKRIPTOTEKET_ACTION`
+
+Action runs need both:
+
+- client-provided `action_id` + `input`, and
+- server-owned session `state` (from `tool_sessions`, guarded by `expected_state_rev`).
+
+To keep the tool mental model clean and avoid confusing synthetic files in `/work/input/`, action runs MUST provide the
+action payload via an explicit environment variable:
+
+```bash
+SKRIPTOTEKET_ACTION={"action_id":"...","input":{...},"state":{...}}
+```
+
+Notes:
+
+- This applies to both production action runs and editor sandbox action runs.
+- Uploaded/session files remain in `/work/input/` and are listed in `SKRIPTOTEKET_INPUT_MANIFEST`; the action payload is
+  not a file.
+- Tool authors SHOULD prefer helper functions from the runner toolkit (ST-14-19) rather than hand-parsing env vars.
 
 ## API shape (minimal, sketch)
 

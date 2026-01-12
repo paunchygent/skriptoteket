@@ -239,6 +239,7 @@ testpaths = [
 pythonpath = [
     "src",
     ".",
+    "runner",
 ]
 python_files = "test_*.py *_test.py"
 python_classes = "Test*"
