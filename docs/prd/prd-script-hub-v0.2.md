@@ -145,6 +145,46 @@ Scripts can declare configurable style options (color, layout, font size). The p
 ### User Story
 > "As a User with low vision, I want to set the 'Font Size' to 'Large' for the 'Weekly Letter' tool and have it remember that preference every time I generate a PDF."
 
+## Feature: Tool-Managed Datasets (Saved Rosters & Reusable Lists)
+
+### Context & Problem
+Tool settings are a single key-value dict. That works for defaults, but not for reusable lists such as class rosters,
+group sets, or templates. Users need CRUD-style data that can be selected per run.
+
+### Solution
+Add a per-user **dataset library** scoped to a tool. A tool can:
+
+- Read a named dataset (e.g., "Class 9B roster")
+- Offer a "Save as dataset" suggestion after a run
+- Allow the user to choose which dataset to use for the next run
+
+### Technical Requirements
+1. **Storage**: New table (e.g., `tool_datasets`) keyed by (`tool_id`, `user_id`, `name`) with JSON payload + size caps.
+2. **API**: CRUD endpoints for dataset list/read/write/delete; optimistic concurrency for edits.
+3. **UI**: Dataset picker in tool run view + save prompts (ties to "settings suggestions" UX).
+4. **Runner injection**: Include selected dataset(s) under `memory` for deterministic reads.
+
+### User Story
+> "As a Teacher, I want to save my class roster once and reuse it in multiple tools without re-uploading the same list."
+
+## Feature: User File Vault (Reusable Uploads & Artifacts)
+
+### Context & Problem
+Users often re-upload the same files (rosters, templates, reports). Artifacts are produced, but not reusable as inputs.
+
+### Solution
+Introduce a **user file vault** so users can select prior uploads or outputs as inputs for new runs.
+This pairs naturally with first-class file references (ST-14-24).
+
+### Technical Requirements
+1. **Storage**: Metadata table for user-owned files + lifecycle policies.
+2. **UI**: File picker in tool run view ("Choose from vault") and in action forms when file references are allowed.
+3. **Runner**: Stage selected files into `/work/input/` using safe paths; no direct filesystem paths in UI.
+4. **Security**: Access scoped to user (and shared links, if enabled).
+
+### User Story
+> "As a Counselor, I want to reuse last month's roster file without uploading it again."
+
 ## Feature: Integrated NLP Services (Grammar & Text Analysis)
 
 ### Context & Problem
@@ -169,8 +209,68 @@ This keeps the runner network-isolated and centralizes access control, quotas, a
 ### User Story
 > "As a Language Teacher, I want to upload a folder of student essays and get a summary table showing the LIX score and common grammar mistakes for each student, without me having to check them manually."
 
-## Feature: Enhanced Observability (Placeholder)
-*To be defined: Better logging and error tracking for tool maintainers.*
+## Feature: Automation & Secure Connectors (Scheduled Runs + External Data)
+
+### Context & Problem
+Some tools should run on a schedule or pull data from external systems (Sheets, LMS, HR). The runner is intentionally
+network-isolated, so direct access from scripts is not viable.
+
+### Solution
+Add a **platform-managed automation layer**:
+
+- Scheduled/batch runs that execute tools at defined times
+- Allowlisted connectors (Sheets/Drive/SSO APIs) mediated by backend services
+- Secrets stored and injected only into the connector layer, never into runner containers
+
+### Technical Requirements
+1. **Scheduler**: A job service with queues and run history.
+2. **Connectors**: Proxy layer with allowlists + auditing; no general outbound network from runner.
+3. **Secrets**: Store per-tenant/connector credentials with audit trails and rotation.
+4. **Runs**: Scheduled runs still produce normal tool runs + artifacts for the user.
+
+### User Story
+> "As a Principal, I want a weekly absence report generated automatically from a Google Sheet without manual uploads."
+
+## Feature: Author Analytics & Health Metrics
+
+### Context & Problem
+Tool authors and admins lack visibility into usage and failure patterns, making it hard to iterate safely.
+
+### Solution
+Expose a lightweight analytics panel for maintainers and admins:
+
+- Run volume trends (per tool/version)
+- Success/failure rate with top error summaries
+- Common inputs/settings (aggregated, privacy-safe)
+
+### Technical Requirements
+1. **Aggregation**: Query/rollup over `tool_runs` (and errors) with indexes.
+2. **UI**: Admin/maintainer dashboard views (no PII exposure).
+3. **Policy**: Only maintainers/admins can view analytics; no end-user tracking.
+
+### User Story
+> "As a Maintainer, I want to see if a new version caused a spike in failures so I can roll back quickly."
+
+## Feature: Collaboration Primitives (Share Runs, Templates, Settings)
+
+### Context & Problem
+Teachers often need to share a run result or a starting template with colleagues. Today, settings and runs are
+per-user and not shareable.
+
+### Solution
+Provide opt-in sharing of:
+
+- A run result (read-only link)
+- A settings template (copy into my settings)
+- A dataset snapshot (copy into my datasets)
+
+### Technical Requirements
+1. **Sharing model**: Share tokens or ACL-based access with expiration.
+2. **UI**: "Share" action in run details + "Copy to my settings/datasets" flows.
+3. **Security**: Explicit owner consent; audit trail of shares.
+
+### User Story
+> "As a Special Educator, I want to share a grouped seating plan with a colleague who supports the same class."
 
 ## Feature: Interactive Inputs (Placeholder)
 *To be defined: Support for text/dropdown inputs in addition to file uploads.*

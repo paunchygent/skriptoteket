@@ -299,8 +299,8 @@ onMounted(async () => {
             <div class="pt-6 pl-5 border-l-2 border-navy min-h-[140px]">
               <h3 class="font-semibold text-navy text-lg">Skapa utan tekniska hinder</h3>
               <p class="mt-2 text-sm text-navy/70 leading-relaxed">
-                Du behöver inte installera några program. Beskriv din idé och vad du vill uppnå.
-                Kodassistenten omsätter din idé till ett fungerande skript och plattformen sköter resten.
+                Automatisera det som tar tid; skapa verktyg för dokumentation, lektionsplanering
+                eller experimentera fritt – plattformen har inga åsikter om vad du behöver.
               </p>
             </div>
           </div>
@@ -332,8 +332,8 @@ onMounted(async () => {
             <div class="pt-6 pl-5 border-l-2 border-navy min-h-[140px]">
               <h3 class="font-semibold text-navy text-lg">Kom igång direkt</h3>
               <p class="mt-2 text-sm text-navy/70 leading-relaxed">
-                Testa andras appar och verktyg direkt och kom med förslag på nya verktyg.
-                Ingen installation krävs och all upp- och nedladdad data stannar på plattformen.
+                Du behöver inte kunna programmera. Har du en bra idé och kan beskriva den,
+                hjälper kodassistenten dig att bygga helt fungerande appar och verktyg.
               </p>
             </div>
           </div>

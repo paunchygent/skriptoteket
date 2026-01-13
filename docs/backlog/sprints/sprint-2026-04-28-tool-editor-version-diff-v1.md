@@ -2,9 +2,10 @@
 type: sprint
 id: SPR-2026-04-28
 title: "Sprint 2026-04-28: Tool editor version diff v1"
-status: planned
+status: done
 owners: "agents"
 created: 2025-12-29
+updated: 2026-01-12
 starts: 2026-04-28
 ends: 2026-05-11
 objective: "Improve review/publish confidence by adding a first-class diff/compare view across tool versions."

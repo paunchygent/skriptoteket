@@ -5,7 +5,7 @@ title: "Admin tool authoring (draft-first workflow)"
 status: active
 owners: "agents"
 created: 2025-12-25
-updated: 2026-01-09
+updated: 2026-01-12
 outcome: "Admins can quickly create draft tools directly from /admin/tools, iterate without contributor-only hoops, and publish only when slug and taxonomy are finalized."
 ---
 
@@ -64,6 +64,8 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 - [ST-14-32: Editor: cohesion pass (panel language + input selectors across modes)](../stories/story-14-32-editor-cohesion-pass-input-selectors.md)
 - [ST-14-33: Script bank curation + group generator tool](../stories/story-14-33-script-bank-curation-and-group-generator.md)
 - [ST-14-34: Settings suggestions from tool runs](../stories/story-14-34-settings-suggestions-from-tool-runs.md)
+- [ST-14-35: Tool datasets: per-user CRUD + picker](../stories/story-14-35-tool-datasets-crud-and-picker.md)
+- [ST-14-36: User file vault: reusable uploads + picker](../stories/story-14-36-user-file-vault-and-picker.md)
 
 ## References
 
@@ -81,10 +83,11 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
   - ST-11-17 (metadata editor)
   - ST-11-20 (tool taxonomy editor)
 
-## Implementation Summary (as of 2026-01-06)
+## Implementation Summary (as of 2026-01-12)
 
 - ST-14-09 shipped: `input_schema` is schema-only (never `null`); file picking is represented as a `{"kind":"file"}` field with `min/max`.
 - ST-14-10 shipped (foundation-only): shared schema JSON parsing helper + save blocking on invalid schema JSON; schema editor UI actions (prettify/snippets) deferred to ST-14-14.
+- ST-14-11/12 shipped: editor run details include stdout/stderr (truncated + caps) and SandboxRunner debug panel exposes copyable JSON/text bundles with missing-details + empty-output states.
 - ST-14-13/14 shipped: CodeMirror JSON editors for `settings_schema`/`input_schema` with inline parse diagnostics + preset guidance + prettify + snippet insertion.
 - ST-14-15 shipped: backend schema validation endpoint (`POST /api/v1/editor/tools/{tool_id}/validate-schemas`) returns `{valid, issues[]}` and enforces upload limits (`UPLOAD_MAX_FILES`).
 - ST-14-16 shipped: debounced backend schema validation UI; shows structured issues per schema and blocks Save + sandbox run when schemas are parseable but backend-invalid.

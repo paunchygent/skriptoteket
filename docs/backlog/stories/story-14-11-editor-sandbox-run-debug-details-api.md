@@ -2,10 +2,10 @@
 type: story
 id: ST-14-11
 title: "Editor: sandbox run debug details API (stdout/stderr, gated)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-29
-updated: 2026-01-01
+updated: 2026-01-12
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given a sandbox run exists, when an authorized user fetches the editor run details endpoint, then the response includes stdout/stderr (truncated) along with explicit truncation flags."

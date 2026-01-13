@@ -2,9 +2,10 @@
 type: sprint
 id: SPR-2026-04-14
 title: "Sprint 2026-04-14: Tool editor schema validation v1"
-status: planned
+status: done
 owners: "agents"
 created: 2025-12-29
+updated: 2026-01-12
 starts: 2026-04-14
 ends: 2026-04-27
 objective: "Add fast, accurate schema validation feedback in the editor via a dedicated backend validation endpoint."

@@ -2,10 +2,10 @@
 type: story
 id: ST-14-12
 title: "Editor: sandbox debug panel UX (copyable diagnostics)"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-29
-updated: 2026-01-02
+updated: 2026-01-12
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given a sandbox run has debug details available, when viewing sandbox results in the editor, then the user can expand a Debug panel showing stdout/stderr plus truncation badges."

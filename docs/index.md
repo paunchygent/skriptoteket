@@ -86,6 +86,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0055-tokenizer-backed-prompt-budgeting.md`
 - `docs/adr/adr-0056-script-bank-seed-profiles.md`
 - `docs/adr/adr-0057-settings-suggestions-from-tool-runs.md`
+- `docs/adr/adr-0058-tool-datasets-library.md`
+- `docs/adr/adr-0059-user-file-vault.md`
 
 ### PRDs
 
@@ -128,6 +130,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-08-llm-response-capture.md`
 - `docs/backlog/reviews/review-epic-09-security-hardening.md`
 - `docs/backlog/reviews/review-epic-14-editor-sandbox-preview.md`
+- `docs/backlog/reviews/review-epic-14-tool-data-libraries.md`
 - `docs/backlog/reviews/review-epic-16-catalog-discovery.md`
 - `docs/backlog/reviews/review-epic-17-observability-visualization.md`
 
@@ -140,6 +143,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/sprints/sprint-2026-01-20-ssr-typed-ui-rendering.md`
 - `docs/backlog/sprints/sprint-2026-02-03-spa-toolchain-and-editor-island.md`
 - `docs/backlog/sprints/sprint-2026-02-17-runtime-spa-island-mvp.md`
+- `docs/backlog/sprints/sprint-2026-02-24-tool-data-libraries-v1.md`
 - `docs/backlog/sprints/sprint-2026-03-03-tool-editor-dx-quick-wins.md`
 - `docs/backlog/sprints/sprint-2026-03-17-tool-editor-sandbox-debug-details.md`
 - `docs/backlog/sprints/sprint-2026-03-31-tool-editor-schema-editor-v1.md`
@@ -342,6 +346,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-14-32-editor-cohesion-pass-input-selectors.md`
 - `docs/backlog/stories/story-14-33-script-bank-curation-and-group-generator.md`
 - `docs/backlog/stories/story-14-34-settings-suggestions-from-tool-runs.md`
+- `docs/backlog/stories/story-14-35-tool-datasets-crud-and-picker.md`
+- `docs/backlog/stories/story-14-36-user-file-vault-and-picker.md`
 - `docs/backlog/stories/story-15-01-user-profile-redesign.md`
 - `docs/backlog/stories/story-15-02-avatar-upload.md`
 - `docs/backlog/stories/story-16-01-favorites-domain-and-database.md`

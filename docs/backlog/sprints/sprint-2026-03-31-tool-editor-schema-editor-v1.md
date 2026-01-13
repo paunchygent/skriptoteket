@@ -2,9 +2,10 @@
 type: sprint
 id: SPR-2026-03-31
 title: "Sprint 2026-03-31: Tool editor schema editor v1"
-status: planned
+status: done
 owners: "agents"
 created: 2025-12-29
+updated: 2026-01-12
 starts: 2026-03-31
 ends: 2026-04-13
 objective: "Replace schema textareas with a JSON-aware editor experience (CodeMirror) to reduce schema authoring errors."

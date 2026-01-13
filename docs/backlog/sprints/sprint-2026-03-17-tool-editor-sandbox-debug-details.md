@@ -2,9 +2,10 @@
 type: sprint
 id: SPR-2026-03-17
 title: "Sprint 2026-03-17: Tool editor sandbox debug details"
-status: planned
+status: done
 owners: "agents"
 created: 2025-12-29
+updated: 2026-01-12
 starts: 2026-03-17
 ends: 2026-03-30
 objective: "Make sandbox failures actionable for authors by exposing safe debug details (stdout/stderr) in the editor."
