@@ -48,9 +48,13 @@ const editorTheme = EditorView.theme(
     "&": {
       fontSize: "13px",
       fontFamily: "var(--huleedu-font-mono)",
+      height: "100%",
     },
     ".cm-content": {
       padding: "8px 0",
+    },
+    ".cm-scroller": {
+      height: "100%",
     },
   },
   { dark: false },
@@ -98,6 +102,8 @@ function mountMergeView(parent: HTMLElement): void {
   mergeView.dom.style.height = "100%";
   mergeView.dom.style.width = "100%";
   mergeView.dom.style.overflow = "auto";
+  mergeView.a.dom.style.height = "100%";
+  mergeView.b.dom.style.height = "100%";
 }
 
 function destroyMergeView(): void {
@@ -161,3 +167,13 @@ onBeforeUnmount(() => {
   destroyMergeView();
 });
 </script>
+
+<style scoped>
+:global(.cm-mergeView) {
+  height: 100%;
+}
+
+:global(.cm-mergeView .cm-editor) {
+  height: 100%;
+}
+</style>

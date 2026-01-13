@@ -92,7 +92,7 @@ const diffItems = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-col min-h-0 gap-3">
+  <div class="flex flex-col min-h-0 gap-3 h-full">
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div class="min-w-0">
         <p class="text-sm text-navy/70">
@@ -135,29 +135,33 @@ const diffItems = computed(() => {
       </div>
     </div>
 
-    <div
-      v-if="isLoading"
-      class="flex items-center gap-3 p-4 panel-inset text-sm text-navy/70"
-    >
-      <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
-      <span>Laddar diffversion...</span>
-    </div>
+    <div class="flex-1 min-h-0">
+      <div
+        v-if="isLoading"
+        class="h-full w-full flex items-center justify-center gap-3 p-4 panel-inset text-sm text-navy/70"
+        data-editor-state="diff-loading"
+      >
+        <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+        <span>Laddar diffversion...</span>
+      </div>
 
-    <div
-      v-else-if="errorMessage"
-      class="p-4 border-2 border-burgundy/40 bg-white shadow-none text-sm text-burgundy"
-    >
-      {{ errorMessage }}
-    </div>
+      <div
+        v-else-if="errorMessage"
+        class="h-full w-full flex items-center justify-center p-4 panel-inset text-sm text-burgundy"
+        data-editor-state="diff-error"
+      >
+        {{ errorMessage }}
+      </div>
 
-    <VirtualFileDiffViewer
-      v-else
-      class="flex-1 min-h-0"
-      :items="diffItems"
-      :active-file-id="props.activeFileId"
-      :before-label="compareLabel"
-      :after-label="baseLabel"
-      @update:active-file-id="emit('updateActiveFileId', $event)"
-    />
+      <VirtualFileDiffViewer
+        v-else
+        class="h-full"
+        :items="diffItems"
+        :active-file-id="props.activeFileId"
+        :before-label="compareLabel"
+        :after-label="baseLabel"
+        @update:active-file-id="emit('updateActiveFileId', $event)"
+      />
+    </div>
   </div>
 </template>

@@ -1,15 +1,15 @@
-	<script setup lang="ts">
-	import type { EditorView } from "@codemirror/view";
-	import { computed, ref, shallowRef, watch } from "vue";
+<script setup lang="ts">
+import type { EditorView } from "@codemirror/view";
+import { computed, onErrorCaptured, ref, shallowRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import type { components } from "../../api/openapi";
 import DraftLockBanner from "../../components/editor/DraftLockBanner.vue";
 import EditorWorkspacePanel from "../../components/editor/EditorWorkspacePanel.vue";
+import ScriptEditorAiPanel from "../../components/editor/ScriptEditorAiPanel.vue";
 import SystemMessage from "../../components/ui/SystemMessage.vue";
 import WorkflowActionModal from "../../components/editor/WorkflowActionModal.vue";
 import WorkingCopyRestorePrompt from "../../components/editor/WorkingCopyRestorePrompt.vue";
-import { useEditorChat } from "../../composables/editor/useEditorChat";
 import {
   resolveDefaultCompareTarget,
   resolveMostRecentRejectedReviewVersionId,
@@ -17,7 +17,6 @@ import {
 import { useEditorCompareState, type EditorCompareTarget } from "../../composables/editor/useEditorCompareState";
 import { useEditorSchemaParsing } from "../../composables/editor/useEditorSchemaParsing";
 import { useEditorSchemaValidation } from "../../composables/editor/useEditorSchemaValidation";
-import { useEditorEditOps } from "../../composables/editor/useEditorEditOps";
 import { useEditorWorkingCopy } from "../../composables/editor/useEditorWorkingCopy";
 import { useEditorWorkflowActions } from "../../composables/editor/useEditorWorkflowActions";
 import { useDraftLock } from "../../composables/editor/useDraftLock";
@@ -26,7 +25,7 @@ import { useScriptEditor } from "../../composables/editor/useScriptEditor";
 import { useToolMaintainers } from "../../composables/editor/useToolMaintainers";
 import { useToolTaxonomy } from "../../composables/editor/useToolTaxonomy";
 import { useUnsavedChangesGuards } from "../../composables/editor/useUnsavedChangesGuards";
-	import { isVirtualFileId, virtualFileTextFromEditorFields } from "../../composables/editor/virtualFiles";
+	import { isVirtualFileId } from "../../composables/editor/virtualFiles";
 import type { UiNotifier } from "../../composables/notify";
 import { useToast } from "../../composables/useToast";
 import { useAuthStore } from "../../stores/auth";
@@ -43,6 +42,7 @@ const toast = useToast();
 const help = useHelp();
 const { focusMode } = storeToRefs(layout);
 const { allowRemoteFallback } = storeToRefs(ai);
+const renderError = ref<string | null>(null);
 const notify: UiNotifier = {
   info: (message: string) => toast.info(message),
   success: (message: string) => toast.success(message),
@@ -378,78 +378,7 @@ const {
   restoreCheckpoint,
   removeCheckpoint,
   workingCopyProvider,
-	} = workingCopy;
-
-	const chatVirtualFiles = computed(() => {
-	  if (!editor.value) return null;
-	  return virtualFileTextFromEditorFields({
-	    entrypoint: entrypoint.value,
-	    sourceCode: sourceCode.value,
-	    settingsSchemaText: settingsSchemaText.value,
-	    inputSchemaText: inputSchemaText.value,
-	    usageInstructions: usageInstructions.value,
-	  });
-	});
-	const chatActiveFileId = computed(() => compareActiveFileId.value ?? "tool.py");
-	const editorChat = useEditorChat({
-	  toolId: editorToolId,
-	  baseVersionId: computed(() => selectedVersion.value?.id ?? null),
-	  allowRemoteFallback,
-	  activeFile: chatActiveFileId,
-	  virtualFiles: chatVirtualFiles,
-	});
-
-const editOps = useEditorEditOps({
-  toolId: editorToolId,
-  allowRemoteFallback,
-  isReadOnly,
-  editorView,
-  fields: {
-    entrypoint,
-    sourceCode,
-    settingsSchemaText,
-    inputSchemaText,
-    usageInstructions,
-  },
-  createBeforeApplyCheckpoint: createBeforeAiApplyCheckpoint,
-});
-
-const editOpsDisabledMessage = ref<string | null>(null);
-const editOpsClearDraftToken = ref(0);
-
-const {
-  messages: chatMessages,
-  streaming: chatStreaming,
-  disabledMessage: chatDisabledMessage,
-  error: chatError,
-  noticeMessage: chatNoticeMessage,
-  noticeVariant: chatNoticeVariant,
-  loadHistory: loadChatHistory,
-  sendMessage: sendChatMessage,
-  cancel: cancelChat,
-  clear: clearChat,
-  clearError: clearChatError,
-  clearDisabledMessage: clearChatDisabled,
-  clearNoticeMessage: clearChatNotice,
-} = editorChat;
-
-watch(
-  () => isChatDrawerOpen.value,
-  (open) => {
-    if (!open) return;
-    void loadChatHistory();
-  },
-  { immediate: true },
-);
-
-watch(
-  () => editorToolId.value,
-  (value, previous) => {
-    if (!value || value === previous) return;
-    if (!isChatDrawerOpen.value) return;
-    void loadChatHistory();
-  },
-);
+} = workingCopy;
 
 watch(
   () => isChatDrawerOpen.value,
@@ -495,81 +424,18 @@ watch(
   { immediate: true },
 );
 
-watch(
-  () => editOps.proposal.value,
-  (value) => {
-    if (!value) return;
-    if (editorMode.value !== "source") {
-      editorMode.value = "source";
-    }
-  },
-);
+const aiFields = {
+  entrypoint,
+  sourceCode,
+  settingsSchemaText,
+  inputSchemaText,
+  usageInstructions,
+};
 
-function createLocalChatId(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
+function handleAiProposalReady(): void {
+  if (editorMode.value !== "source") {
+    editorMode.value = "source";
   }
-  return `chat-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function appendChatMessage(
-  role: "user" | "assistant",
-  content: string,
-  correlationId: string | null = null,
-): void {
-  chatMessages.value = [
-    ...chatMessages.value,
-    {
-      id: createLocalChatId(),
-      role,
-      content,
-      createdAt: new Date().toISOString(),
-      isStreaming: false,
-      correlationId,
-    },
-  ];
-}
-
-async function handleRequestEditOps(message: string): Promise<void> {
-  if (chatStreaming.value || editOps.isRequesting.value) return;
-  editOpsDisabledMessage.value = null;
-  const result = await editOps.requestEditOps(message);
-  if (!result) return;
-
-  if (!result.response.enabled) {
-    editOpsDisabledMessage.value = result.response.assistant_message
-      ? `AI-redigering: ${result.response.assistant_message}`
-      : "AI-redigering är inte tillgänglig.";
-    return;
-  }
-
-  appendChatMessage("user", result.message);
-  appendChatMessage("assistant", result.response.assistant_message, result.correlationId);
-
-  if (editOps.proposal.value && !editOps.previewError.value) {
-    editOpsClearDraftToken.value += 1;
-  }
-}
-
-async function handleApplyEditOps(): Promise<void> {
-  const applied = await editOps.applyProposal();
-  if (applied) {
-    toast.success("AI-förslaget är tillämpat.");
-  }
-}
-
-function handleUndoEditOps(): void {
-  editOps.undoLastApply();
-}
-
-function handleRedoEditOps(): void {
-  editOps.redoLastApply();
-}
-
-async function handleRegenerateEditOps(): Promise<void> {
-  const message = editOps.proposal.value?.message;
-  if (!message) return;
-  await handleRequestEditOps(message);
 }
 
 function handleRestoreServerVersion(): void {
@@ -662,13 +528,22 @@ const lockBadge = computed(() => {
   }
   return null;
 });
+
+onErrorCaptured((error) => {
+  renderError.value = error instanceof Error ? error.message : String(error);
+  return false;
+});
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 min-h-0 h-full">
+  <div class="flex flex-col gap-4 min-h-0 flex-1 h-full">
     <!-- Inline errors (validation / blocking states) -->
     <SystemMessage
       v-model="errorMessage"
+      variant="error"
+    />
+    <SystemMessage
+      v-model="renderError"
       variant="error"
     />
     <SystemMessage
@@ -696,7 +571,7 @@ const lockBadge = computed(() => {
     <!-- Main content -->
     <template v-else>
       <!-- PANEL 1: Editor + Test -->
-      <div class="flex flex-col gap-3 min-h-0">
+      <div class="flex flex-col gap-3 min-h-0 flex-1">
         <WorkingCopyRestorePrompt
           v-if="isRestorePromptOpen"
           :is-open="isRestorePromptOpen"
@@ -717,130 +592,144 @@ const lockBadge = computed(() => {
         />
 
         <div class="flex-1 min-h-0">
-          <EditorWorkspacePanel
-            v-model:slug-error="slugError"
-            v-model:taxonomy-error="taxonomyError"
-            v-model:maintainers-error="maintainersError"
-            v-model:change-summary="changeSummary"
-            v-model:entrypoint="entrypoint"
-            v-model:source-code="sourceCode"
-            v-model:settings-schema-text="settingsSchemaText"
-            v-model:input-schema-text="inputSchemaText"
-            v-model:usage-instructions="usageInstructions"
-            v-model:metadata-title="metadataTitle"
-            v-model:metadata-slug="metadataSlug"
-            v-model:metadata-summary="metadataSummary"
-            v-model:selected-profession-ids="selectedProfessionIds"
-            v-model:selected-category-ids="selectedCategoryIds"
-            :tool-id="editor.tool.id"
-            :versions="editor.versions"
-            :selected-version="selectedVersion"
-            :entrypoint-options="entrypointOptions"
-            :settings-schema="settingsSchema"
-            :settings-schema-error="settingsSchemaError"
-            :input-schema="inputSchema"
-            :input-schema-error="inputSchemaError"
-            :schema-issues-by-schema="schemaIssuesBySchema"
-            :has-blocking-schema-issues="hasBlockingSchemaIssues"
-            :is-schema-validating="isSchemaValidating"
-            :schema-validation-error="schemaValidationError"
-            :validate-schemas-now="validateSchemasNow"
-            :can-edit-taxonomy="canEditTaxonomy"
-            :can-edit-maintainers="canEditMaintainers"
-            :can-edit-slug="canEditSlug"
-            :can-rollback-versions="canRollbackVersions"
-            :is-workflow-submitting="isWorkflowSubmitting"
-            :is-saving="isSaving"
-            :save-label="saveButtonLabel"
-            :save-title="saveButtonTitle"
-            :status-line="statusLine"
-            :is-title-saving="isTitleSaving"
-            :is-summary-saving="isSummarySaving"
-            :active-mode="editorMode"
-            :can-enter-diff="canEnterDiff"
-            :open-compare-title="openCompareTitle"
-            :has-dirty-changes="hasDirtyChanges"
-            :is-read-only="isReadOnly"
-            :is-history-drawer-open="isHistoryDrawerOpen"
-            :is-chat-drawer-open="isChatDrawerOpen"
-            :is-chat-collapsed="isChatCollapsed"
+          <ScriptEditorAiPanel
+            v-slot="aiPanel"
+            :tool-id="editorToolId"
+            :base-version-id="selectedVersion?.id ?? null"
             :allow-remote-fallback="allowRemoteFallback"
-            :can-compare-versions="canCompareVersions"
-            :compare-target="compareTarget"
+            :is-read-only="isReadOnly"
+            :editor-view="editorView"
             :compare-active-file-id="compareActiveFileId"
-            :can-compare-working-copy="hasWorkingCopyHead"
-            :working-copy-provider="workingCopyProvider"
-            :local-checkpoints="checkpointSummaries"
-            :pinned-checkpoint-count="pinnedCheckpointCount"
-            :pinned-checkpoint-limit="pinnedCheckpointLimit"
-            :is-checkpoint-busy="isCheckpointBusy"
-            :lock-badge-label="lockBadge?.label ?? null"
-            :lock-badge-tone="lockBadge?.tone ?? 'neutral'"
-            :can-submit-review="canSubmitReview"
-            :submit-review-tooltip="submitReviewTooltip"
-            :can-publish="canPublish"
-            :can-request-changes="canRequestChanges"
-            :can-rollback="canRollback"
-            :chat-messages="chatMessages"
-            :chat-is-streaming="chatStreaming"
-            :chat-disabled-message="chatDisabledMessage"
-            :chat-error="chatError"
-            :chat-notice-message="chatNoticeMessage"
-            :chat-notice-variant="chatNoticeVariant"
-            :edit-ops-request-error="editOps.requestError.value"
-            :edit-ops-disabled-message="editOpsDisabledMessage"
-            :edit-ops-clear-draft-token="editOpsClearDraftToken"
-            :edit-ops-state="editOps.panelState.value"
-            :is-edit-ops-requesting="editOps.isRequesting.value"
-            :is-edit-ops-slow="editOps.isSlowRequest.value"
-            :professions="professions"
-            :categories="categories"
-            :is-taxonomy-loading="isTaxonomyLoading"
-            :is-saving-all-metadata="isSavingAllMetadata"
-            :maintainers="maintainers"
-            :owner-user-id="ownerUserId"
-            :is-maintainers-loading="isMaintainersLoading"
-            :is-maintainers-saving="isMaintainersSaving"
-            @save="handleSave"
-            @open-history-drawer="toggleHistoryDrawer"
-            @select-mode="setEditorMode"
-            @toggle-chat-collapsed="toggleChatCollapsed"
-            @workflow-action="openWorkflowAction"
-            @close-drawer="closeDrawer"
-            @select-history-version="selectHistoryVersion"
-            @compare-version="handleCompareVersion"
-            @rollback-version="openRollbackForVersion"
-            @save-all-metadata="saveAllMetadata"
-            @suggest-slug-from-title="applySlugSuggestionFromTitle"
-            @add-maintainer="addMaintainer"
-            @remove-maintainer="removeMaintainer"
-            @close-compare="handleCloseCompare"
-            @update:compare-target="handleCompareTargetUpdate($event)"
-            @update:compare-active-file-id="handleCompareActiveFileIdUpdate($event)"
-            @create-checkpoint="createPinnedCheckpoint"
-            @commit-title="saveTitle"
-            @commit-summary="saveSummary"
-            @restore-checkpoint="restoreCheckpoint"
-            @remove-checkpoint="removeCheckpoint"
-            @restore-server-version="handleRestoreServerVersion"
-            @editor-view-ready="editorView = $event"
-            @send-chat-message="sendChatMessage"
-            @cancel-chat-stream="cancelChat"
-            @clear-chat="clearChat"
-            @clear-chat-error="clearChatError"
-            @clear-chat-disabled="clearChatDisabled"
-            @clear-chat-notice="clearChatNotice"
-            @set-allow-remote-fallback="ai.setAllowRemoteFallback($event)"
-            @clear-edit-ops-error="editOps.clearRequestError()"
-            @clear-edit-ops-disabled="editOpsDisabledMessage = null"
-            @request-edit-ops="handleRequestEditOps"
-            @set-edit-ops-confirmation-accepted="editOps.setConfirmationAccepted($event)"
-            @apply-edit-ops="handleApplyEditOps"
-            @discard-edit-ops="editOps.discardProposal"
-            @regenerate-edit-ops="handleRegenerateEditOps"
-            @undo-edit-ops="handleUndoEditOps"
-            @redo-edit-ops="handleRedoEditOps"
-          />
+            :fields="aiFields"
+            :create-before-apply-checkpoint="createBeforeAiApplyCheckpoint"
+            :is-chat-drawer-open="isChatDrawerOpen"
+            @proposal-ready="handleAiProposalReady"
+          >
+            <EditorWorkspacePanel
+              v-model:slug-error="slugError"
+              v-model:taxonomy-error="taxonomyError"
+              v-model:maintainers-error="maintainersError"
+              v-model:change-summary="changeSummary"
+              v-model:entrypoint="entrypoint"
+              v-model:source-code="sourceCode"
+              v-model:settings-schema-text="settingsSchemaText"
+              v-model:input-schema-text="inputSchemaText"
+              v-model:usage-instructions="usageInstructions"
+              v-model:metadata-title="metadataTitle"
+              v-model:metadata-slug="metadataSlug"
+              v-model:metadata-summary="metadataSummary"
+              v-model:selected-profession-ids="selectedProfessionIds"
+              v-model:selected-category-ids="selectedCategoryIds"
+              :tool-id="editor.tool.id"
+              :versions="editor.versions"
+              :selected-version="selectedVersion"
+              :entrypoint-options="entrypointOptions"
+              :settings-schema="settingsSchema"
+              :settings-schema-error="settingsSchemaError"
+              :input-schema="inputSchema"
+              :input-schema-error="inputSchemaError"
+              :schema-issues-by-schema="schemaIssuesBySchema"
+              :has-blocking-schema-issues="hasBlockingSchemaIssues"
+              :is-schema-validating="isSchemaValidating"
+              :schema-validation-error="schemaValidationError"
+              :validate-schemas-now="validateSchemasNow"
+              :can-edit-taxonomy="canEditTaxonomy"
+              :can-edit-maintainers="canEditMaintainers"
+              :can-edit-slug="canEditSlug"
+              :can-rollback-versions="canRollbackVersions"
+              :is-workflow-submitting="isWorkflowSubmitting"
+              :is-saving="isSaving"
+              :save-label="saveButtonLabel"
+              :save-title="saveButtonTitle"
+              :status-line="statusLine"
+              :is-title-saving="isTitleSaving"
+              :is-summary-saving="isSummarySaving"
+              :active-mode="editorMode"
+              :can-enter-diff="canEnterDiff"
+              :open-compare-title="openCompareTitle"
+              :has-dirty-changes="hasDirtyChanges"
+              :is-read-only="isReadOnly"
+              :is-history-drawer-open="isHistoryDrawerOpen"
+              :is-chat-drawer-open="isChatDrawerOpen"
+              :is-chat-collapsed="isChatCollapsed"
+              :allow-remote-fallback="allowRemoteFallback"
+              :can-compare-versions="canCompareVersions"
+              :compare-target="compareTarget"
+              :compare-active-file-id="compareActiveFileId"
+              :can-compare-working-copy="hasWorkingCopyHead"
+              :working-copy-provider="workingCopyProvider"
+              :local-checkpoints="checkpointSummaries"
+              :pinned-checkpoint-count="pinnedCheckpointCount"
+              :pinned-checkpoint-limit="pinnedCheckpointLimit"
+              :is-checkpoint-busy="isCheckpointBusy"
+              :lock-badge-label="lockBadge?.label ?? null"
+              :lock-badge-tone="lockBadge?.tone ?? 'neutral'"
+              :can-submit-review="canSubmitReview"
+              :submit-review-tooltip="submitReviewTooltip"
+              :can-publish="canPublish"
+              :can-request-changes="canRequestChanges"
+              :can-rollback="canRollback"
+              :chat-messages="aiPanel.chatMessages"
+              :chat-is-streaming="aiPanel.chatStreaming"
+              :chat-disabled-message="aiPanel.chatDisabledMessage"
+              :chat-error="aiPanel.chatError"
+              :chat-notice-message="aiPanel.chatNoticeMessage"
+              :chat-notice-variant="aiPanel.chatNoticeVariant"
+              :edit-ops-request-error="aiPanel.editOpsRequestError"
+              :edit-ops-disabled-message="aiPanel.editOpsDisabledMessage"
+              :edit-ops-clear-draft-token="aiPanel.editOpsClearDraftToken"
+              :edit-ops-state="aiPanel.editOpsState"
+              :is-edit-ops-requesting="aiPanel.isEditOpsRequesting"
+              :is-edit-ops-slow="aiPanel.isEditOpsSlow"
+              :professions="professions"
+              :categories="categories"
+              :is-taxonomy-loading="isTaxonomyLoading"
+              :is-saving-all-metadata="isSavingAllMetadata"
+              :maintainers="maintainers"
+              :owner-user-id="ownerUserId"
+              :is-maintainers-loading="isMaintainersLoading"
+              :is-maintainers-saving="isMaintainersSaving"
+              @save="handleSave"
+              @open-history-drawer="toggleHistoryDrawer"
+              @select-mode="setEditorMode"
+              @toggle-chat-collapsed="toggleChatCollapsed"
+              @workflow-action="openWorkflowAction"
+              @close-drawer="closeDrawer"
+              @select-history-version="selectHistoryVersion"
+              @compare-version="handleCompareVersion"
+              @rollback-version="openRollbackForVersion"
+              @save-all-metadata="saveAllMetadata"
+              @suggest-slug-from-title="applySlugSuggestionFromTitle"
+              @add-maintainer="addMaintainer"
+              @remove-maintainer="removeMaintainer"
+              @close-compare="handleCloseCompare"
+              @update:compare-target="handleCompareTargetUpdate($event)"
+              @update:compare-active-file-id="handleCompareActiveFileIdUpdate($event)"
+              @create-checkpoint="createPinnedCheckpoint"
+              @commit-title="saveTitle"
+              @commit-summary="saveSummary"
+              @restore-checkpoint="restoreCheckpoint"
+              @remove-checkpoint="removeCheckpoint"
+              @restore-server-version="handleRestoreServerVersion"
+              @editor-view-ready="editorView = $event"
+              @send-chat-message="aiPanel.sendChatMessage"
+              @cancel-chat-stream="aiPanel.cancelChat"
+              @clear-chat="aiPanel.clearChat"
+              @clear-chat-error="aiPanel.clearChatError"
+              @clear-chat-disabled="aiPanel.clearChatDisabled"
+              @clear-chat-notice="aiPanel.clearChatNotice"
+              @set-allow-remote-fallback="ai.setAllowRemoteFallback($event)"
+              @clear-edit-ops-error="aiPanel.clearEditOpsRequestError"
+              @clear-edit-ops-disabled="aiPanel.clearEditOpsDisabledMessage"
+              @request-edit-ops="aiPanel.requestEditOps"
+              @set-edit-ops-confirmation-accepted="aiPanel.setEditOpsConfirmationAccepted($event)"
+              @apply-edit-ops="aiPanel.applyEditOps"
+              @discard-edit-ops="aiPanel.discardEditOps"
+              @regenerate-edit-ops="aiPanel.regenerateEditOps"
+              @undo-edit-ops="aiPanel.undoEditOps"
+              @redo-edit-ops="aiPanel.redoEditOps"
+            />
+          </ScriptEditorAiPanel>
         </div>
       </div>
     </template>

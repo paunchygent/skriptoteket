@@ -1,20 +1,30 @@
 import { ref, watch, type Ref } from "vue";
 
 import { createCorrelationId } from "../../api/correlation";
-import { apiFetch, apiGet, isApiError } from "../../api/client";
-import type { components } from "../../api/openapi";
+import { isApiError } from "../../api/client";
 import { useAuthStore } from "../../stores/auth";
-import { createSseParser } from "./sseParser";
-
-type EditorChatHistoryResponse = components["schemas"]["EditorChatHistoryResponse"];
-type EditorChatHistoryMessage = components["schemas"]["EditorChatHistoryMessage"];
-type EditorChatRequest = components["schemas"]["EditorChatRequest"];
-type EditorVirtualFiles = components["schemas"]["EditorVirtualFiles"];
-type VirtualFileId = keyof EditorVirtualFiles;
-
-type ChatRole = "user" | "assistant";
-type NoticeVariant = "info" | "warning";
-type ChatTurnStatus = "pending" | "complete" | "failed" | "cancelled";
+import {
+  clearChatHistory,
+  fetchChatHistory,
+  postChatStream,
+  readChatErrorMessage,
+} from "./chat/editorChatApi";
+import { consumeChatStream } from "./chat/editorChatStreamClient";
+import {
+  appendMessage,
+  createUserMessage,
+  ensureAssistantMessage,
+  finalizeAssistant,
+  finalizeTurn,
+  mapHistoryMessage,
+} from "./chat/editorChatReducer";
+import type {
+  EditorChatMessage,
+  EditorChatRequest,
+  EditorVirtualFiles,
+  NoticeVariant,
+  VirtualFileId,
+} from "./chat/editorChatTypes";
 
 type UseEditorChatOptions = {
   toolId: Readonly<Ref<string>>;
@@ -24,74 +34,12 @@ type UseEditorChatOptions = {
   virtualFiles?: Readonly<Ref<EditorVirtualFiles | null>>;
 };
 
-export type EditorChatMessage = {
-  id: string;
-  role: ChatRole;
-  content: string;
-  createdAt: string;
-  isStreaming?: boolean;
-  correlationId?: string | null;
-  turnId?: string | null;
-  status?: ChatTurnStatus;
-  failureOutcome?: string | null;
-};
-
-type ApiErrorEnvelope = {
-  error?: { code?: string; message?: string };
-  detail?: unknown;
-};
-
 const STREAM_ERROR_MESSAGE = "Det gick inte att läsa AI-svaret.";
 const STREAM_PARTIAL_ERROR_MESSAGE = "Svaret kan vara ofullständigt. Skicka igen om något saknas.";
 const SEND_ERROR_MESSAGE = "Det gick inte att skicka meddelandet.";
 const HISTORY_ERROR_MESSAGE = "Det gick inte att hamta chatthistorik.";
 const CLEAR_ERROR_MESSAGE = "Det gick inte att rensa chatten.";
 const EMPTY_MESSAGE_ERROR = "Skriv ett meddelande forst.";
-
-function createLocalMessageId(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  return `chat-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function mapHistoryMessage(message: EditorChatHistoryMessage): EditorChatMessage {
-  return {
-    id: message.message_id,
-    turnId: message.turn_id,
-    role: message.role,
-    content: message.content,
-    createdAt: message.created_at,
-    isStreaming: false,
-    correlationId: message.correlation_id ?? null,
-    status: message.status,
-    failureOutcome: message.failure_outcome ?? null,
-  };
-}
-
-async function readErrorMessage(response: Response): Promise<string> {
-  const contentType = response.headers.get("content-type") ?? "";
-  const fallback = response.statusText || `Request failed (${response.status})`;
-
-  if (!contentType.includes("application/json")) {
-    return fallback;
-  }
-
-  const payload = (await response.json().catch(() => null)) as ApiErrorEnvelope | null;
-  if (!payload || typeof payload !== "object") {
-    return fallback;
-  }
-
-  if (payload.error?.message) {
-    return payload.error.message;
-  }
-
-  if (payload.detail) {
-    return "Validation error";
-  }
-
-  return fallback;
-}
 
 export function useEditorChat({
   toolId,
@@ -155,9 +103,7 @@ export function useEditorChat({
     clearNoticeMessage();
 
     try {
-      const response = await apiGet<EditorChatHistoryResponse>(
-        `/api/v1/editor/tools/${encodeURIComponent(toolId.value)}/chat?limit=60`,
-      );
+      const response = await fetchChatHistory(toolId.value, 60);
       messages.value = (response.messages ?? []).map(mapHistoryMessage);
     } catch (err: unknown) {
       if (isApiError(err)) {
@@ -188,17 +134,8 @@ export function useEditorChat({
     disabledMessage.value = null;
     clearNoticeMessage();
 
-    const userMessage: EditorChatMessage = {
-      id: createLocalMessageId(),
-      role: "user",
-      content: trimmed,
-      createdAt: new Date().toISOString(),
-      correlationId: null,
-      turnId: null,
-      status: "pending",
-      failureOutcome: null,
-    };
-    messages.value = [...messages.value, userMessage];
+    const userMessage = createUserMessage(trimmed);
+    messages.value = appendMessage(messages.value, userMessage);
 
     activeAssistantMessage = null;
     streaming.value = true;
@@ -225,88 +162,13 @@ export function useEditorChat({
     let sawDone = false;
     let sawDelta = false;
 
-    function ensureAssistantMessage(options?: {
-      messageId?: string | null;
-      correlationId?: string | null;
-      turnId?: string | null;
-    }): EditorChatMessage {
-      if (activeAssistantMessage) {
-        if (options?.correlationId) {
-          activeAssistantMessage.correlationId = options.correlationId;
-        }
-        if (options?.turnId) {
-          activeAssistantMessage.turnId = options.turnId;
-        }
-        return activeAssistantMessage;
-      }
-      const assistantMessage: EditorChatMessage = {
-        id: options?.messageId || createLocalMessageId(),
-        role: "assistant",
-        content: "",
-        createdAt: new Date().toISOString(),
-        isStreaming: true,
-        correlationId: options?.correlationId ?? correlationId,
-        turnId: options?.turnId ?? null,
-        status: "pending",
-        failureOutcome: null,
-      };
-      activeAssistantMessage = assistantMessage;
-      messages.value = [...messages.value, assistantMessage];
-      return assistantMessage;
-    }
-
-    function finalizeAssistant(): void {
-      if (activeAssistantMessage) {
-        activeAssistantMessage.isStreaming = false;
-      }
-      activeAssistantMessage = null;
-    }
-
-    function finalizeTurn(status: ChatTurnStatus, failureOutcome?: string | null): void {
-      const turnId = activeAssistantMessage?.turnId ?? userMessage.turnId;
-      if (turnId) {
-        for (const item of messages.value) {
-          if (item.turnId === turnId) {
-            item.status = status;
-            if (failureOutcome) {
-              item.failureOutcome = failureOutcome;
-            }
-          }
-        }
-        userMessage.status = status;
-        if (failureOutcome) {
-          userMessage.failureOutcome = failureOutcome;
-        }
-        return;
-      }
-      userMessage.status = status;
-      if (failureOutcome) {
-        userMessage.failureOutcome = failureOutcome;
-      }
-      if (activeAssistantMessage) {
-        activeAssistantMessage.status = status;
-        if (failureOutcome) {
-          activeAssistantMessage.failureOutcome = failureOutcome;
-        }
-      }
-    }
-
     try {
       await auth.ensureCsrfToken();
-      const headers = new Headers({
-        Accept: "text/event-stream",
-        "Content-Type": "application/json",
-      });
-      if (auth.csrfToken) {
-        headers.set("X-CSRF-Token", auth.csrfToken);
-      }
-      headers.set("X-Correlation-ID", correlationId);
-
-      const response = await fetch(`/api/v1/editor/tools/${encodeURIComponent(toolId.value)}/chat`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body),
-        credentials: "include",
+      const response = await postChatStream({
+        toolId: toolId.value,
+        body,
+        correlationId,
+        csrfToken: auth.csrfToken ?? undefined,
         signal: controller.signal,
       });
 
@@ -315,125 +177,144 @@ export function useEditorChat({
       }
 
       if (!response.ok || !response.body) {
-        const messageText = await readErrorMessage(response);
+        const messageText = await readChatErrorMessage(response);
         error.value = messageText || SEND_ERROR_MESSAGE;
         messages.value = messages.value.filter((item) => item.id !== userMessage.id);
         return;
       }
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-      const parser = createSseParser();
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) {
-          break;
-        }
-        if (streamToken !== activeStreamToken || controller.signal.aborted) {
-          continue;
-        }
-        const chunk = decoder.decode(value, { stream: true });
-        const events = parser.push(chunk);
-        for (const event of events) {
+      const streamResult = await consumeChatStream({
+        response,
+        signal: controller.signal,
+        onEvent: (event) => {
           if (streamToken !== activeStreamToken || controller.signal.aborted) {
-            break;
+            return;
           }
 
-          let payload: unknown;
-          try {
-            payload = JSON.parse(event.data);
-          } catch {
-            continue;
-          }
-
-          if (event.event === "delta") {
-            if (payload && typeof payload === "object" && "text" in payload) {
-              const text = String((payload as { text?: string }).text ?? "");
-              if (text) {
-                const assistant = ensureAssistantMessage();
-                assistant.content += text;
-                sawDelta = true;
-              }
-            }
-          }
-
-          if (event.event === "meta") {
-            if (payload && typeof payload === "object") {
-              const meta = payload as {
-                assistant_message_id?: string;
-                turn_id?: string;
-                correlation_id?: string;
-              };
-              const assistant = ensureAssistantMessage({
-                messageId: meta.assistant_message_id ?? null,
-                correlationId: meta.correlation_id ?? correlationId,
-                turnId: meta.turn_id ?? null,
+          switch (event.kind) {
+            case "delta": {
+              const result = ensureAssistantMessage({
+                messages: messages.value,
+                activeAssistantMessage,
+                correlationId,
               });
-              if (meta.turn_id) {
-                userMessage.turnId = meta.turn_id;
-                assistant.turnId = meta.turn_id;
-              }
-              if (meta.correlation_id) {
-                assistant.correlationId = meta.correlation_id;
-              }
+              messages.value = result.messages;
+              activeAssistantMessage = result.activeAssistantMessage;
+              activeAssistantMessage.content += event.text;
+              sawDelta = true;
+              break;
             }
-          }
-
-          if (event.event === "notice") {
-            if (payload && typeof payload === "object" && "message" in payload) {
-              noticeMessage.value = String(
-                (payload as { message?: string }).message ?? "",
-              ).trim();
-              const nextVariant = String(
-                (payload as { variant?: string }).variant ?? "info",
-              );
-              noticeVariant.value = nextVariant === "warning" ? "warning" : "info";
+            case "meta": {
+              const result = ensureAssistantMessage({
+                messages: messages.value,
+                activeAssistantMessage,
+                correlationId: event.correlationId ?? correlationId,
+                messageId: event.assistantMessageId ?? null,
+                turnId: event.turnId ?? null,
+              });
+              messages.value = result.messages;
+              activeAssistantMessage = result.activeAssistantMessage;
+              if (event.turnId) {
+                userMessage.turnId = event.turnId;
+                activeAssistantMessage.turnId = event.turnId;
+              }
+              if (event.correlationId) {
+                activeAssistantMessage.correlationId = event.correlationId;
+              }
+              break;
             }
-          }
-
-          if (event.event === "done") {
-            if (payload && typeof payload === "object" && "enabled" in payload) {
-              const enabled = Boolean((payload as { enabled?: boolean }).enabled);
-              if (!enabled) {
-                const messageText = String(
-                  (payload as { message?: string }).message ?? "",
-                ).trim();
+            case "notice": {
+              noticeMessage.value = event.message;
+              noticeVariant.value = event.variant ?? "info";
+              break;
+            }
+            case "done": {
+              if (typeof event.enabled === "boolean" && !event.enabled) {
+                const messageText = String(event.message ?? "").trim();
                 disabledMessage.value = messageText || null;
-                const code = String((payload as { code?: string }).code ?? "").trim();
+                const code = String(event.code ?? "").trim();
+                if (!activeAssistantMessage) {
+                  const result = ensureAssistantMessage({
+                    messages: messages.value,
+                    activeAssistantMessage,
+                    correlationId,
+                  });
+                  messages.value = result.messages;
+                  activeAssistantMessage = result.activeAssistantMessage;
+                }
+                finalizeTurn({
+                  messages: messages.value,
+                  userMessage,
+                  activeAssistantMessage,
+                  status: "failed",
+                  failureOutcome: code || null,
+                });
                 if (activeAssistantMessage) {
-                  finalizeTurn("failed", code || null);
-                } else {
-                  const assistant = ensureAssistantMessage();
-                  finalizeTurn("failed", code || null);
-                  assistant.isStreaming = false;
+                  activeAssistantMessage.isStreaming = false;
                 }
-              } else if ((payload as { reason?: string }).reason === "error") {
+              } else if (event.reason === "error") {
                 if (!activeAssistantMessage) {
-                  ensureAssistantMessage();
+                  const result = ensureAssistantMessage({
+                    messages: messages.value,
+                    activeAssistantMessage,
+                    correlationId,
+                  });
+                  messages.value = result.messages;
+                  activeAssistantMessage = result.activeAssistantMessage;
                 }
-                finalizeTurn("failed");
+                finalizeTurn({
+                  messages: messages.value,
+                  userMessage,
+                  activeAssistantMessage,
+                  status: "failed",
+                });
                 error.value = sawDelta ? STREAM_PARTIAL_ERROR_MESSAGE : STREAM_ERROR_MESSAGE;
-              } else if ((payload as { reason?: string }).reason === "cancelled") {
+              } else if (event.reason === "cancelled") {
                 if (!activeAssistantMessage) {
-                  ensureAssistantMessage();
+                  const result = ensureAssistantMessage({
+                    messages: messages.value,
+                    activeAssistantMessage,
+                    correlationId,
+                  });
+                  messages.value = result.messages;
+                  activeAssistantMessage = result.activeAssistantMessage;
                 }
-                finalizeTurn("cancelled");
+                finalizeTurn({
+                  messages: messages.value,
+                  userMessage,
+                  activeAssistantMessage,
+                  status: "cancelled",
+                });
               } else {
-                finalizeTurn("complete");
+                finalizeTurn({
+                  messages: messages.value,
+                  userMessage,
+                  activeAssistantMessage,
+                  status: "complete",
+                });
               }
+              sawDone = true;
+              break;
             }
-            sawDone = true;
           }
-        }
-      }
+        },
+      });
+
+      sawDelta = sawDelta || streamResult.sawDelta;
+      sawDone = sawDone || streamResult.sawDone;
 
       if (!sawDone && !controller.signal.aborted && streamToken === activeStreamToken) {
         // Stream ended before done; treat as cancelled.
         if (activeAssistantMessage) {
-          finalizeTurn("cancelled");
+          finalizeTurn({
+            messages: messages.value,
+            userMessage,
+            activeAssistantMessage,
+            status: "cancelled",
+          });
         }
-        finalizeAssistant();
+        finalizeAssistant(activeAssistantMessage);
+        activeAssistantMessage = null;
       }
     } catch (err: unknown) {
       const isAbort =
@@ -453,7 +334,8 @@ export function useEditorChat({
       if (streamToken === activeStreamToken) {
         streaming.value = false;
         activeController = null;
-        finalizeAssistant();
+        finalizeAssistant(activeAssistantMessage);
+        activeAssistantMessage = null;
       }
     }
   }
@@ -488,9 +370,7 @@ export function useEditorChat({
     clearNoticeMessage();
 
     try {
-      await apiFetch<void>(`/api/v1/editor/tools/${encodeURIComponent(toolId.value)}/chat`, {
-        method: "DELETE",
-      });
+      await clearChatHistory(toolId.value);
       messages.value = [];
     } catch (err: unknown) {
       if (isApiError(err)) {

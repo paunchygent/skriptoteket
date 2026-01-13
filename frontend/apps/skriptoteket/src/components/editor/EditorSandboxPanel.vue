@@ -42,7 +42,9 @@ const emit = defineEmits<{
   <div
     :class="[
       'flex flex-col min-h-0',
-      props.variant === 'mode' ? 'space-y-3' : 'border-t border-navy/20 pt-4 space-y-3',
+      props.variant === 'mode'
+        ? 'h-full space-y-3'
+        : 'border-t border-navy/20 pt-4 space-y-3',
     ]"
   >
     <h2
@@ -62,36 +64,57 @@ const emit = defineEmits<{
       />
     </div>
 
-    <Suspense v-if="props.selectedVersion">
-      <template #default>
-        <SandboxRunner
-          :version-id="props.selectedVersion.id"
-          :tool-id="props.toolId"
-          :is-read-only="props.isReadOnly"
-          :entrypoint="props.entrypoint"
-          :source-code="props.sourceCode"
-          :settings-schema="props.settingsSchema"
-          :settings-schema-error="props.settingsSchemaError"
-          :input-schema="props.inputSchema"
-          :input-schema-error="props.inputSchemaError"
-          :has-blocking-schema-issues="props.hasBlockingSchemaIssues"
-          :schema-validation-error="props.schemaValidationError"
-          :validate-schemas-now="props.validateSchemasNow"
-          :usage-instructions="props.usageInstructions"
-        />
-      </template>
-      <template #fallback>
-        <div class="flex items-center gap-3 p-4 panel-inset text-sm text-navy/70">
-          <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
-          <span>Laddar testkörning...</span>
-        </div>
-      </template>
-    </Suspense>
-    <p
-      v-else
-      class="text-sm text-navy/60"
+    <div
+      :class="props.variant === 'mode' ? 'flex-1 min-h-0 flex flex-col' : ''"
+      data-editor-panel="test"
     >
-      Spara ett utkast för att kunna testa.
-    </p>
+      <Suspense v-if="props.selectedVersion">
+        <template #default>
+          <div :class="props.variant === 'mode' ? 'flex-1 min-h-0 overflow-y-auto' : ''">
+            <SandboxRunner
+              :version-id="props.selectedVersion.id"
+              :tool-id="props.toolId"
+              :is-read-only="props.isReadOnly"
+              :entrypoint="props.entrypoint"
+              :source-code="props.sourceCode"
+              :settings-schema="props.settingsSchema"
+              :settings-schema-error="props.settingsSchemaError"
+              :input-schema="props.inputSchema"
+              :input-schema-error="props.inputSchemaError"
+              :has-blocking-schema-issues="props.hasBlockingSchemaIssues"
+              :schema-validation-error="props.schemaValidationError"
+              :validate-schemas-now="props.validateSchemasNow"
+              :usage-instructions="props.usageInstructions"
+            />
+          </div>
+        </template>
+        <template #fallback>
+          <div
+            class="panel-inset p-4 text-sm text-navy/70"
+            :class="[
+              props.variant === 'mode'
+                ? 'flex-1 min-h-0 flex items-center justify-center gap-3'
+                : 'flex items-center gap-3',
+            ]"
+            data-editor-state="test-loading"
+          >
+            <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+            <span>Laddar testkörning...</span>
+          </div>
+        </template>
+      </Suspense>
+      <div
+        v-else
+        :class="[
+          'text-sm text-navy/60',
+          props.variant === 'mode'
+            ? 'flex-1 min-h-0 panel-inset p-4 flex items-center justify-center'
+            : '',
+        ]"
+        data-editor-empty="test"
+      >
+        Spara ett utkast för att kunna testa.
+      </div>
+    </div>
   </div>
 </template>

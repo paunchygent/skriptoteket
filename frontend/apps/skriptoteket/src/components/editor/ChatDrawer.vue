@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch, withDefaults } from "vue";
 
-import type { EditorChatMessage } from "../../composables/editor/useEditorChat";
+import type { EditorChatMessage } from "../../composables/editor/chat/editorChatTypes";
 import SystemMessage from "../ui/SystemMessage.vue";
 import type { SystemMessageVariant } from "../ui/SystemMessage.vue";
 

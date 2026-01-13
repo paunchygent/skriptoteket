@@ -2,79 +2,39 @@ import type { EditorView } from "@codemirror/view";
 import { computed, onScopeDispose, ref, watch, type Ref } from "vue";
 
 import { createCorrelationId } from "../../api/correlation";
-import { apiFetch, isApiError } from "../../api/client";
-import type { components } from "../../api/openapi";
+import { isApiError } from "../../api/client";
+import {
+  applyEditOps,
+  previewEditOps,
+  requestEditOps as requestEditOpsApi,
+  type EditorEditOpsOpInput,
+  type EditorEditOpsPreviewResponse,
+  type EditorEditOpsResponse,
+} from "./editOps/editorEditOpsApi";
+import { buildDiffItems, uniqueTargetFiles } from "./editOps/editOpsDiff";
+import { resolveEditOpsSelection } from "./editOps/editOpsSelection";
+import {
+  applyVirtualFiles,
+  cloneVirtualFiles,
+  createAppliedSnapshot,
+  virtualFilesFingerprint,
+  type AppliedEditOpsSnapshot,
+} from "./editOps/editOpsSnapshots";
+import {
+  buildEditOpsPanelState,
+  type EditOpsDiffItem,
+  type EditOpsPanelState,
+  type EditOpsProposal,
+  type EditorEditOpsCursor,
+  type EditorEditOpsPreviewErrorDetails,
+  type EditorEditOpsSelection,
+  type EditorEditOpsOpOutput,
+} from "./editOps/editOpsState";
 import {
   virtualFileTextFromEditorFields,
   type VirtualFileId,
   type VirtualFileTextMap,
 } from "./virtualFiles";
-
-type EditorEditOpsResponse = components["schemas"]["EditorEditOpsResponse"];
-type EditorEditOpsRequest = components["schemas"]["EditorEditOpsRequest"];
-type EditorEditOpsSelection = components["schemas"]["EditorEditOpsSelection"];
-type EditorEditOpsCursor = components["schemas"]["EditorEditOpsCursor"];
-type EditorEditOpsPreviewRequest = components["schemas"]["EditorEditOpsPreviewRequest"];
-type EditorEditOpsPreviewResponse = components["schemas"]["EditorEditOpsPreviewResponse"];
-type EditorEditOpsApplyRequest = components["schemas"]["EditorEditOpsApplyRequest"];
-type EditorEditOpsPreviewMeta = components["schemas"]["EditorEditOpsPreviewMeta"];
-type EditorEditOpsPreviewErrorDetails = components["schemas"]["EditorEditOpsPreviewErrorDetails"];
-type EditorEditOpsOpInput =
-  | components["schemas"]["EditorEditOpsInsertOp-Input"]
-  | components["schemas"]["EditorEditOpsReplaceOp-Input"]
-  | components["schemas"]["EditorEditOpsDeleteOp-Input"]
-  | components["schemas"]["EditorEditOpsPatchOp"];
-type EditorEditOpsOpOutput =
-  | components["schemas"]["EditorEditOpsInsertOp-Output"]
-  | components["schemas"]["EditorEditOpsReplaceOp-Output"]
-  | components["schemas"]["EditorEditOpsDeleteOp-Output"]
-  | components["schemas"]["EditorEditOpsPatchOp"];
-
-export type EditOpsDiffItem = {
-  virtualFileId: VirtualFileId;
-  beforeText: string;
-  afterText: string;
-};
-
-export type EditOpsProposal = {
-  message: string;
-  assistantMessage: string;
-  ops: EditorEditOpsOpOutput[];
-  activeFile: VirtualFileId;
-  selection: EditorEditOpsSelection | null;
-  cursor: EditorEditOpsCursor | null;
-  correlationId: string | null;
-  createdAt: string;
-};
-
-type AppliedEditOpsSnapshot = {
-  beforeFiles: VirtualFileTextMap;
-  afterFiles: VirtualFileTextMap;
-  beforeFingerprint: string;
-  afterFingerprint: string;
-  appliedAt: string;
-};
-
-export type EditOpsPanelState = {
-  proposal: EditOpsProposal | null;
-  diffItems: EditOpsDiffItem[];
-  previewMeta: EditorEditOpsPreviewMeta | null;
-  previewErrorDetails: EditorEditOpsPreviewErrorDetails | null;
-  previewError: string | null;
-  applyError: string | null;
-  undoError: string | null;
-  canApply: boolean;
-  applyDisabledReason: string | null;
-  canUndo: boolean;
-  undoDisabledReason: string | null;
-  canRedo: boolean;
-  redoDisabledReason: string | null;
-  aiStatus: "applied" | "undone" | null;
-  aiAppliedAt: string | null;
-  isApplying: boolean;
-  requiresConfirmation: boolean;
-  confirmationAccepted: boolean;
-};
 
 type UseEditorEditOpsOptions = {
   toolId: Readonly<Ref<string>>;
@@ -102,59 +62,6 @@ type EditOpsRequestResult = {
 
 const DEFAULT_ACTIVE_FILE: VirtualFileId = "tool.py";
 const EXPLICIT_CURSOR_TTL_MS = 45_000;
-
-function virtualFilesFingerprint(files: VirtualFileTextMap): string {
-  return [
-    files["entrypoint.txt"],
-    files["tool.py"],
-    files["settings_schema.json"],
-    files["input_schema.json"],
-    files["usage_instructions.md"],
-  ].join("\u0000");
-}
-
-function uniqueTargetFiles(ops: EditorEditOpsOpOutput[]): VirtualFileId[] {
-  const seen = new Set<VirtualFileId>();
-  const ordered: VirtualFileId[] = [];
-  for (const op of ops) {
-    if (!seen.has(op.target_file)) {
-      seen.add(op.target_file);
-      ordered.push(op.target_file);
-    }
-  }
-  return ordered;
-}
-
-function resolveSelection(params: {
-  view: EditorView | null;
-  includeCursorWhenNoSelection: boolean;
-}): {
-  selection: EditorEditOpsSelection | null;
-  cursor: EditorEditOpsCursor | null;
-} {
-  const { view, includeCursorWhenNoSelection } = params;
-
-  if (!view) {
-    return { selection: null, cursor: null };
-  }
-
-  const main = view.state.selection.main;
-  if (!main.empty) {
-    return {
-      selection: { from: main.from, to: main.to },
-      cursor: { pos: main.to },
-    };
-  }
-
-  return {
-    selection: null,
-    cursor: includeCursorWhenNoSelection ? { pos: main.from } : null,
-  };
-}
-
-function cloneVirtualFiles(files: VirtualFileTextMap): VirtualFileTextMap {
-  return { ...files };
-}
 
 export function useEditorEditOps(options: UseEditorEditOpsOptions) {
   const {
@@ -211,13 +118,7 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
     if (!previewResponse.value.ok) return [];
     const beforeFiles = previewBaseFiles.value;
     const afterFiles = previewResponse.value.after_virtual_files as unknown as VirtualFileTextMap;
-    return targetFiles.value
-      .filter((fileId) => beforeFiles[fileId] !== afterFiles[fileId])
-      .map((fileId) => ({
-        virtualFileId: fileId,
-        beforeText: beforeFiles[fileId],
-        afterText: afterFiles[fileId],
-      }));
+    return buildDiffItems({ targetFiles: targetFiles.value, beforeFiles, afterFiles });
   });
 
   const hasChanges = computed(() => diffItems.value.length > 0);
@@ -319,23 +220,14 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
     previewErrorDetails.value = null;
     applyError.value = null;
 
-    const body: EditorEditOpsPreviewRequest = {
-      tool_id: toolId.value,
-      active_file: params.proposal.activeFile,
-      virtual_files: params.virtualFiles,
-      ops: params.proposal.ops as unknown as EditorEditOpsOpInput[],
-    };
-    if (params.proposal.selection) {
-      body.selection = params.proposal.selection;
-    }
-    if (params.proposal.cursor) {
-      body.cursor = params.proposal.cursor;
-    }
-
     try {
-      const response = await apiFetch<EditorEditOpsPreviewResponse>("/api/v1/editor/edit-ops/preview", {
-        method: "POST",
-        body,
+      const response = await previewEditOps({
+        toolId: toolId.value,
+        activeFile: params.proposal.activeFile,
+        virtualFiles: params.virtualFiles,
+        ops: params.proposal.ops as unknown as EditorEditOpsOpInput[],
+        selection: params.proposal.selection,
+        cursor: params.proposal.cursor,
       });
 
       previewResponse.value = response;
@@ -378,14 +270,6 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
     return await loadPreview({ proposal: proposal.value, virtualFiles: currentFiles.value });
   }
 
-  function applyVirtualFiles(nextFiles: VirtualFileTextMap): void {
-    fields.entrypoint.value = nextFiles["entrypoint.txt"];
-    fields.sourceCode.value = nextFiles["tool.py"];
-    fields.settingsSchemaText.value = nextFiles["settings_schema.json"];
-    fields.inputSchemaText.value = nextFiles["input_schema.json"];
-    fields.usageInstructions.value = nextFiles["usage_instructions.md"];
-  }
-
   async function requestEditOps(message: string): Promise<EditOpsRequestResult | null> {
     const trimmed = message.trim();
     if (!trimmed) {
@@ -407,33 +291,24 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       lastExplicitCursorInteractionAt.value !== null &&
       Date.now() - lastExplicitCursorInteractionAt.value <= EXPLICIT_CURSOR_TTL_MS;
 
-    const { selection, cursor } = resolveSelection({
+    const { selection, cursor } = resolveEditOpsSelection({
       view: editorView.value,
       includeCursorWhenNoSelection: hasExplicitCursor,
     });
     const activeFile = DEFAULT_ACTIVE_FILE;
     const virtualFiles = currentFiles.value;
 
-    const body: EditorEditOpsRequest = {
-      tool_id: toolId.value,
-      message: trimmed,
-      allow_remote_fallback: allowRemoteFallback.value,
-      active_file: activeFile,
-      virtual_files: virtualFiles,
-    };
-    if (selection) {
-      body.selection = selection;
-    }
-    if (cursor) {
-      body.cursor = cursor;
-    }
-
     try {
       const correlationId = createCorrelationId();
-      const response = await apiFetch<EditorEditOpsResponse>("/api/v1/editor/edit-ops", {
-        method: "POST",
-        body,
-        headers: { "X-Correlation-ID": correlationId },
+      const response = await requestEditOpsApi({
+        toolId: toolId.value,
+        message: trimmed,
+        allowRemoteFallback: allowRemoteFallback.value,
+        activeFile,
+        virtualFiles,
+        selection,
+        cursor,
+        correlationId,
       });
 
       if (response.enabled && response.ops.length > 0) {
@@ -518,24 +393,15 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
 
     isApplying.value = true;
     try {
-      const body: EditorEditOpsApplyRequest = {
-        tool_id: toolId.value,
-        active_file: proposalValue.activeFile,
-        virtual_files: beforeFiles,
+      const response = await applyEditOps({
+        toolId: toolId.value,
+        activeFile: proposalValue.activeFile,
+        virtualFiles: beforeFiles,
         ops: proposalValue.ops as unknown as EditorEditOpsOpInput[],
-        base_hash: previewResponse.value.meta.base_hash,
-        patch_id: previewResponse.value.meta.patch_id,
-      };
-      if (proposalValue.selection) {
-        body.selection = proposalValue.selection;
-      }
-      if (proposalValue.cursor) {
-        body.cursor = proposalValue.cursor;
-      }
-
-      const response = await apiFetch<EditorEditOpsPreviewResponse>("/api/v1/editor/edit-ops/apply", {
-        method: "POST",
-        body,
+        baseHash: previewResponse.value.meta.base_hash,
+        patchId: previewResponse.value.meta.patch_id,
+        selection: proposalValue.selection,
+        cursor: proposalValue.cursor,
       });
 
       if (!response.ok) {
@@ -552,14 +418,8 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
 
       await createBeforeApplyCheckpoint();
       const afterFiles = response.after_virtual_files as unknown as VirtualFileTextMap;
-      applyVirtualFiles(afterFiles);
-      lastApplied.value = {
-        beforeFiles,
-        afterFiles,
-        beforeFingerprint: virtualFilesFingerprint(beforeFiles),
-        afterFingerprint: virtualFilesFingerprint(afterFiles),
-        appliedAt: new Date().toISOString(),
-      };
+      applyVirtualFiles(fields, afterFiles);
+      lastApplied.value = createAppliedSnapshot(beforeFiles, afterFiles);
       aiPosition.value = "after";
       proposal.value = null;
       previewResponse.value = null;
@@ -606,7 +466,7 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       return false;
     }
 
-    applyVirtualFiles(lastApplied.value.beforeFiles);
+    applyVirtualFiles(fields, lastApplied.value.beforeFiles);
     aiPosition.value = "before";
     return true;
   }
@@ -619,7 +479,7 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       return false;
     }
 
-    applyVirtualFiles(lastApplied.value.afterFiles);
+    applyVirtualFiles(fields, lastApplied.value.afterFiles);
     aiPosition.value = "after";
     return true;
   }
@@ -696,26 +556,28 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
     { immediate: true },
   );
 
-  const panelState = computed<EditOpsPanelState>(() => ({
-    proposal: proposal.value,
-    diffItems: diffItems.value,
-    previewMeta: previewMeta.value,
-    previewError: previewError.value,
-    previewErrorDetails: previewErrorDetails.value,
-    applyError: applyError.value,
-    undoError: undoError.value,
-    canApply: canApply.value,
-    applyDisabledReason: applyDisabledReason.value,
-    canUndo: canUndo.value,
-    undoDisabledReason: undoDisabledReason.value,
-    canRedo: canRedo.value,
-    redoDisabledReason: redoDisabledReason.value,
-    aiStatus: lastApplied.value ? (aiPosition.value === "after" ? "applied" : "undone") : null,
-    aiAppliedAt: lastApplied.value?.appliedAt ?? null,
-    isApplying: isApplying.value,
-    requiresConfirmation: requiresConfirmation.value,
-    confirmationAccepted: confirmationAccepted.value,
-  }));
+  const panelState = computed<EditOpsPanelState>(() =>
+    buildEditOpsPanelState({
+      proposal: proposal.value,
+      diffItems: diffItems.value,
+      previewMeta: previewMeta.value,
+      previewError: previewError.value,
+      previewErrorDetails: previewErrorDetails.value,
+      applyError: applyError.value,
+      undoError: undoError.value,
+      canApply: canApply.value,
+      applyDisabledReason: applyDisabledReason.value,
+      canUndo: canUndo.value,
+      undoDisabledReason: undoDisabledReason.value,
+      canRedo: canRedo.value,
+      redoDisabledReason: redoDisabledReason.value,
+      lastApplied: lastApplied.value,
+      aiPosition: aiPosition.value,
+      isApplying: isApplying.value,
+      requiresConfirmation: requiresConfirmation.value,
+      confirmationAccepted: confirmationAccepted.value,
+    }),
+  );
 
   return {
     proposal,

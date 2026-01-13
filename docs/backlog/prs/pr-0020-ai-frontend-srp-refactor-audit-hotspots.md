@@ -84,3 +84,87 @@ harder to refactor safely.
 ## Rollback plan
 
 - Revert the PR; this is a refactor-only change with no data migrations.
+
+## Files touched (plan + checklist)
+
+This section must be updated after each subtask (1-6) below. When all checkboxes are checked, the PR is done.
+
+### Planned files and responsibility boundaries (with performance intent)
+
+#### New modules (pure + reusable)
+
+- `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatApi.ts`
+  - Owns chat history/clear/stream requests (no state).
+  - Performance: keeps network logic out of reactive UI state.
+- `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatStreamClient.ts`
+  - Owns SSE read loop + parsing (uses `sseParser`).
+  - Performance: isolates streaming from UI reactivity.
+- `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatReducer.ts`
+  - Pure reducer for messages/notice/error transitions.
+  - Performance: deterministic updates, smaller reactive graph.
+- `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatTypes.ts`
+  - Shared chat types/constants to avoid cross-import sprawl.
+
+- `frontend/apps/skriptoteket/src/composables/editor/editOps/editorEditOpsApi.ts`
+  - Owns request/preview/apply endpoints + correlation headers.
+- `frontend/apps/skriptoteket/src/composables/editor/editOps/editOpsSelection.ts`
+  - Pure selection/cursor helpers.
+- `frontend/apps/skriptoteket/src/composables/editor/editOps/editOpsDiff.ts`
+  - Diff item derivation + target file ordering.
+- `frontend/apps/skriptoteket/src/composables/editor/editOps/editOpsSnapshots.ts`
+  - Apply/undo/redo snapshot handling.
+- `frontend/apps/skriptoteket/src/composables/editor/editOps/editOpsState.ts`
+  - Panel state shape + derived flags (UI reads, not computes).
+
+#### Existing composables (refactor into thin facades)
+
+- `frontend/apps/skriptoteket/src/composables/editor/useEditorChat.ts`
+  - Thin orchestrator; delegates API/stream/reducer.
+  - Performance: enables lazy instantiation on AI panel mount.
+- `frontend/apps/skriptoteket/src/composables/editor/useEditorEditOps.ts`
+  - Thin orchestrator; delegates helpers and API.
+
+#### View + orchestration split (reduce initial load + reactivity)
+
+- `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`
+  - Remove AI orchestration logic; wire AI panel component only.
+  - Performance: editor core no longer re-renders on chat/edit-ops changes.
+- `frontend/apps/skriptoteket/src/components/editor/ScriptEditorAiPanel.vue`
+  - New: owns AI orchestration (chat + edit-ops), emits UI-only events.
+  - Performance: async-loadable, isolates AI reactive state.
+
+#### Workspace split (reduce prop surface + re-render scope)
+
+- `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`
+  - Trim AI/chat/edit-ops props; keep editor core UI only.
+- `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.types.ts`
+  - Move large prop/emits types out of SFC.
+- `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceChatColumn.vue`
+  - Optional: dedicated chat column to keep chat state updates isolated.
+
+#### AI UI components (lazy + smaller responsibility)
+
+- `frontend/apps/skriptoteket/src/components/editor/EditorEditOpsPanel.vue`
+  - Lazy-load diff viewer; UI only.
+- `frontend/apps/skriptoteket/src/components/editor/diff/AiVirtualFileDiffViewer.vue`
+  - Defer CodeMirror language loading via dynamic import.
+- `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceDrawers.vue`
+  - Optional: lazy-load `ChatDrawer` for initial bundle reduction.
+- `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`
+  - Optional split: `ChatMessageList.vue`, `ChatComposer.vue`, `ChatNoticeStack.vue`.
+
+#### Tests
+
+- `frontend/apps/skriptoteket/src/composables/editor/useEditorEditOps.spec.ts`
+  - Split by behavior area (request/preview/apply/undo/redo).
+- `frontend/apps/skriptoteket/src/composables/editor/useEditorChat.spec.ts`
+  - Split into reducer + stream client specs, keep facade integration thin.
+
+### Progress checklist (update after each subtask)
+
+- [x] 1. Create chat/edit-ops module folders and move pure logic + API calls into new modules.
+- [x] 2. Refactor `useEditorChat.ts` and `useEditorEditOps.ts` into thin facades using the new modules.
+- [x] 3. Extract AI orchestration out of `ScriptEditorView.vue` into `ScriptEditorAiPanel.vue` (or equivalent).
+- [x] 4. Make AI UI lazy where possible (edit-ops panel, diff viewer, optional chat drawer).
+- [x] 5. Split AI-related tests into smaller specs aligned with new modules.
+- [x] 6. Verify and record: `pdm run fe-test` (+ lint/typecheck if configured) and manual editor AI smoke in `.agent/handoff.md`.

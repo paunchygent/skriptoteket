@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import type { EditorChatMessage } from "../../composables/editor/useEditorChat";
+import { defineAsyncComponent } from "vue";
 
-import ChatDrawer from "./ChatDrawer.vue";
+import type { EditorChatMessage } from "../../composables/editor/chat/editorChatTypes";
+
+const ChatDrawer = defineAsyncComponent(() => import("./ChatDrawer.vue"));
 
 type EditorWorkspaceDrawersProps = {
   isChatDrawerOpen: boolean;

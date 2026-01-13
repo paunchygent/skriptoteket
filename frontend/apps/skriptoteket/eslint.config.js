@@ -5,6 +5,7 @@ import eslintPluginVue from "eslint-plugin-vue";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 import vueParser from "vue-eslint-parser";
+import noTemplateRefValue from "../../eslint-rules/no-template-ref-value.js";
 
 export default tseslint.config(
   {
@@ -45,6 +46,16 @@ export default tseslint.config(
         sourceType: "module",
         extraFileExtensions: [".vue"],
       },
+    },
+    plugins: {
+      skriptoteket: {
+        rules: {
+          "no-template-ref-value": noTemplateRefValue,
+        },
+      },
+    },
+    rules: {
+      "skriptoteket/no-template-ref-value": "error",
     },
   },
 );

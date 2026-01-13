@@ -111,6 +111,43 @@ def _open_editor(page: object, *, base_url: str, artifacts_dir: Path | None = No
         raise
 
 
+def _assert_panel_fill(
+    page: object,
+    *,
+    panel_state_selector: str,
+    panel_selector: str,
+    min_ratio: float,
+    artifacts_dir: Path | None,
+    screenshot_name: str,
+    label: str,
+) -> bool:
+    panel_state = page.locator(panel_state_selector)
+    if panel_state.count() == 0:
+        return False
+
+    panel_state = panel_state.first
+    if not panel_state.is_visible():
+        return False
+
+    panel = page.locator(panel_selector).first
+    expect(panel).to_be_visible()
+
+    empty_box = panel_state.bounding_box()
+    panel_box = panel.bounding_box()
+    if not empty_box or not panel_box or panel_box["height"] == 0:
+        raise RuntimeError(f"{label} layout could not be measured.")
+
+    ratio = empty_box["height"] / panel_box["height"]
+    if ratio < min_ratio:
+        if artifacts_dir:
+            page.screenshot(path=str(artifacts_dir / screenshot_name), full_page=True)
+        raise RuntimeError(
+            f"{label} empty state height ratio too small: {ratio:.2f} < {min_ratio:.2f}."
+        )
+
+    return True
+
+
 def main() -> None:
     config = get_config()
     base_url = config.base_url.rstrip("/")
@@ -131,9 +168,51 @@ def main() -> None:
         editor = page.locator(".cm-editor").first
         expect(editor).to_be_visible(timeout=30_000)
 
+        chat_input = page.locator("textarea[placeholder^='Beskriv']").first
+        try:
+            expect(chat_input).to_be_editable()
+            chat_input.fill("Ping")
+            expect(chat_input).to_have_value("Ping")
+            chat_input.fill("")
+            expect(page.locator(".chat-body--collapsed")).to_have_count(0)
+        except AssertionError:
+            page.screenshot(path=str(artifacts_dir / "chat-input-not-editable.png"), full_page=True)
+            raise
+
+        diff_mode_button = page.get_by_role("button", name=re.compile(r"^Diff$", re.IGNORECASE))
+        if diff_mode_button.count() > 0:
+            diff_mode_button.first.click()
+            page.screenshot(path=str(artifacts_dir / "diff-mode.png"), full_page=True)
+            close_diff_button = page.get_by_role(
+                "button", name=re.compile(r"Stäng diff", re.IGNORECASE)
+            )
+            if close_diff_button.count() > 0:
+                close_diff_button.first.click()
+                page.screenshot(path=str(artifacts_dir / "diff-empty-state.png"), full_page=True)
+            _assert_panel_fill(
+                page,
+                panel_state_selector=".cm-mergeView",
+                panel_selector="[data-editor-panel='mode']",
+                min_ratio=0.75,
+                artifacts_dir=artifacts_dir,
+                screenshot_name="diff-merge-height.png",
+                label="Diff",
+            )
+
         test_mode_button = page.get_by_role("button", name="Testkör").first
         expect(test_mode_button).to_be_visible()
         test_mode_button.click()
+        page.screenshot(path=str(artifacts_dir / "test-mode.png"), full_page=True)
+
+        _assert_panel_fill(
+            page,
+            panel_state_selector="[data-editor-panel='test']",
+            panel_selector="[data-editor-panel='mode']",
+            min_ratio=0.55,
+            artifacts_dir=artifacts_dir,
+            screenshot_name="test-panel-height.png",
+            label="Testkör",
+        )
 
         entrypoint_select = page.get_by_label("Startfunktion", exact=True)
         expect(entrypoint_select).to_be_visible()

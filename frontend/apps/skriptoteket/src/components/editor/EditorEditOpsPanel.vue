@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, defineAsyncComponent, ref } from "vue";
 
-import type { EditOpsPanelState } from "../../composables/editor/useEditorEditOps";
-import AiVirtualFileDiffViewer from "./diff/AiVirtualFileDiffViewer.vue";
+import type { EditOpsPanelState } from "../../composables/editor/editOps/editOpsState";
+
+const AiVirtualFileDiffViewer = defineAsyncComponent(() => import("./diff/AiVirtualFileDiffViewer.vue"));
 
 const props = defineProps<{
   state: EditOpsPanelState;

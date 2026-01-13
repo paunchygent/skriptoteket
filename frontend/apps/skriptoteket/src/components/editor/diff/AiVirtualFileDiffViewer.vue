@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { json } from "@codemirror/lang-json";
-import { python } from "@codemirror/lang-python";
 import type { Extension } from "@codemirror/state";
-import { computed, ref, watch } from "vue";
+import { computed, ref, shallowRef, watch } from "vue";
 
 import type { VirtualFileId } from "../../../composables/editor/virtualFiles";
 import { virtualFileLabel, virtualFileLanguage } from "../../../composables/editor/virtualFiles";
@@ -86,20 +84,45 @@ const activeItem = computed(() => {
   return props.items.find((item) => item.virtualFileId === selected) ?? null;
 });
 
-const activeLanguage = computed<Extension | null>(() => {
-  const fileId = activeItem.value?.virtualFileId;
-  if (!fileId) return null;
+const activeLanguage = shallowRef<Extension | null>(null);
+let languageToken = 0;
+
+async function resolveLanguage(fileId: VirtualFileId | null): Promise<void> {
+  const token = ++languageToken;
+  if (!fileId) {
+    activeLanguage.value = null;
+    return;
+  }
 
   const language = virtualFileLanguage(fileId);
-  switch (language) {
-    case "python":
-      return python();
-    case "json":
-      return json();
-    default:
-      return null;
+  if (language === "python") {
+    const module = await import("@codemirror/lang-python");
+    if (token === languageToken) {
+      activeLanguage.value = module.python();
+    }
+    return;
   }
-});
+
+  if (language === "json") {
+    const module = await import("@codemirror/lang-json");
+    if (token === languageToken) {
+      activeLanguage.value = module.json();
+    }
+    return;
+  }
+
+  if (token === languageToken) {
+    activeLanguage.value = null;
+  }
+}
+
+watch(
+  () => activeItem.value?.virtualFileId ?? null,
+  (fileId) => {
+    void resolveLanguage(fileId);
+  },
+  { immediate: true },
+);
 
 const activeTabSize = computed(() => {
   const fileId = activeItem.value?.virtualFileId;
