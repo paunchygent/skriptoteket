@@ -13,7 +13,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2026-01-13
-- Branch: `main` + local changes
+- Branch: `main`
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: recent — ST-14-11/12 done; ST-08-24 done; ST-08-28 done (history: `.agent/readme-first.md`)
