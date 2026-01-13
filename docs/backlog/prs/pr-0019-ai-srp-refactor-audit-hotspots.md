@@ -2,10 +2,10 @@
 type: pr
 id: PR-0019
 title: "AI: SRP/DI refactor audit follow-ups (LLM hotspots)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-11
-updated: 2026-01-11
+updated: 2026-01-13
 stories:
   - "ST-08-23"
   - "ST-08-24"
