@@ -15,6 +15,7 @@ from fastapi import FastAPI
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.tool_session_messages import ToolSessionMessage
+from skriptoteket.domain.scripting.tool_session_turns import ToolSessionTurn
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.identity import (
@@ -177,14 +178,30 @@ async def test_editor_chat_history_returns_messages(
 
     tool_id = uuid4()
     base_version_id = uuid4()
+    turn_id = uuid4()
+    correlation_id = uuid4()
     first_message_id = uuid4()
     second_message_id = uuid4()
 
     handler.handle.return_value = EditorChatHistoryResult(
+        turns=[
+            ToolSessionTurn(
+                id=turn_id,
+                tool_session_id=uuid4(),
+                status="complete",
+                failure_outcome=None,
+                provider="primary",
+                correlation_id=correlation_id,
+                sequence=1,
+                created_at=now,
+                updated_at=now,
+            )
+        ],
         messages=[
             ToolSessionMessage(
                 id=uuid4(),
                 tool_session_id=uuid4(),
+                turn_id=turn_id,
                 message_id=first_message_id,
                 role="user",
                 content="Hej",
@@ -195,6 +212,7 @@ async def test_editor_chat_history_returns_messages(
             ToolSessionMessage(
                 id=uuid4(),
                 tool_session_id=uuid4(),
+                turn_id=turn_id,
                 message_id=second_message_id,
                 role="assistant",
                 content="Svar",
@@ -216,15 +234,23 @@ async def test_editor_chat_history_returns_messages(
     assert payload["messages"] == [
         {
             "message_id": str(first_message_id),
+            "turn_id": str(turn_id),
             "role": "user",
             "content": "Hej",
             "created_at": expected_timestamp,
+            "status": "complete",
+            "correlation_id": str(correlation_id),
+            "failure_outcome": None,
         },
         {
             "message_id": str(second_message_id),
+            "turn_id": str(turn_id),
             "role": "assistant",
             "content": "Svar",
             "created_at": expected_timestamp,
+            "status": "complete",
+            "correlation_id": str(correlation_id),
+            "failure_outcome": None,
         },
     ]
 

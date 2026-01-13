@@ -23,6 +23,7 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
+from skriptoteket.domain.scripting.tool_session_turns import ToolSessionTurnStatus
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
@@ -41,7 +42,9 @@ from skriptoteket.protocols.llm import (
     VirtualFileId,
 )
 from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
+from skriptoteket.protocols.token_counter import TokenCounterProtocol, TokenCounterResolverProtocol
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
+from skriptoteket.protocols.tool_session_turns import ToolSessionTurnRepositoryProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
@@ -49,6 +52,7 @@ logger = structlog.get_logger(__name__)
 
 _THREAD_CONTEXT = "editor_chat"
 _THREAD_TTL = timedelta(days=30)
+_PENDING_TURN_ABANDONED_OUTCOME = "abandoned_by_new_request"
 _IN_FLIGHT_MESSAGE = "En chatförfrågan pågår redan. Försök igen om en stund."
 _DISABLED_MESSAGE = "AI-redigering är inte tillgänglig just nu. Försök igen senare."
 _REMOTE_FALLBACK_REQUIRED_MESSAGE = (
@@ -76,9 +80,15 @@ def _is_context_window_error(exc: httpx.HTTPStatusError) -> bool:
         return False
     try:
         payload = response.json()
-    except ValueError:
+    except (ValueError, httpx.ResponseNotRead):
         payload = None
-    haystack = str(payload) if payload is not None else response.text
+    if payload is not None:
+        haystack = str(payload)
+    else:
+        try:
+            haystack = response.text
+        except httpx.ResponseNotRead:
+            return False
     return "exceed_context_size_error" in haystack.lower()
 
 
@@ -108,8 +118,10 @@ class _EditOpsPayload(BaseModel):
 class _PreparedOpsRequest:
     messages: list[ChatMessage]
     user_payload: str
-    user_message_id: UUID
     tool_session_id: UUID
+    turn_id: UUID
+    assistant_message_id: UUID
+    correlation_id: UUID | None
 
 
 class EditOpsHandler(EditOpsHandlerProtocol):
@@ -124,9 +136,11 @@ class EditOpsHandler(EditOpsHandlerProtocol):
         capture_store: LlmCaptureStoreProtocol,
         uow: UnitOfWorkProtocol,
         sessions: ToolSessionRepositoryProtocol,
+        turns: ToolSessionTurnRepositoryProtocol,
         messages: ToolSessionMessageRepositoryProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
+        token_counters: TokenCounterResolverProtocol,
         system_prompt_loader: Callable[[str], str] | None = None,
     ) -> None:
         self._settings = settings
@@ -137,15 +151,12 @@ class EditOpsHandler(EditOpsHandlerProtocol):
         self._capture_store = capture_store
         self._uow = uow
         self._sessions = sessions
+        self._turns = turns
         self._messages = messages
         self._clock = clock
         self._id_generator = id_generator
-        self._system_prompt_loader = system_prompt_loader or (
-            lambda template_id: compose_system_prompt(
-                template_id=template_id,
-                settings=settings,
-            ).text
-        )
+        self._token_counters = token_counters
+        self._system_prompt_loader = system_prompt_loader
 
     def _is_thread_expired(self, *, last_message_at: datetime) -> bool:
         return self._clock.now() - last_message_at > _THREAD_TTL
@@ -219,7 +230,13 @@ class EditOpsHandler(EditOpsHandlerProtocol):
         system_prompt: str,
         user_payload: str,
         budget: ChatOpsBudget,
+        token_counter: TokenCounterProtocol,
+        correlation_id: UUID | None,
     ) -> tuple[_PreparedOpsRequest | None, int]:
+        turn_id = self._id_generator.new_uuid()
+        user_message_id = self._id_generator.new_uuid()
+        assistant_message_id = self._id_generator.new_uuid()
+
         async with self._uow:
             session = await self._sessions.get(
                 tool_id=command.tool_id,
@@ -234,22 +251,32 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                     context=_THREAD_CONTEXT,
                 )
 
-            tail = await self._messages.list_tail(
+            tail_turns = await self._turns.list_tail(
                 tool_session_id=session.id,
-                limit=self._settings.LLM_CHAT_TAIL_MAX_MESSAGES,
+                limit=max(20, self._settings.LLM_CHAT_TAIL_MAX_MESSAGES),
             )
-            if tail and self._is_thread_expired(last_message_at=tail[-1].created_at):
-                await self._messages.delete_all(tool_session_id=session.id)
+            if tail_turns and self._is_thread_expired(last_message_at=tail_turns[-1].created_at):
+                await self._turns.delete_all(tool_session_id=session.id)
                 if session.state:
                     await self._sessions.clear_state(
                         tool_id=command.tool_id,
                         user_id=actor.id,
                         context=_THREAD_CONTEXT,
                     )
-                tail = []
+                tail_turns = []
 
+            await self._turns.cancel_pending_turn(
+                tool_session_id=session.id,
+                failure_outcome=_PENDING_TURN_ABANDONED_OUTCOME,
+            )
+
+            completed_turn_ids = [turn.id for turn in tail_turns if turn.status == "complete"]
+            existing_rows = await self._messages.list_by_turn_ids(
+                tool_session_id=session.id,
+                turn_ids=completed_turn_ids,
+            )
             existing_messages = [
-                ChatMessage(role=message.role, content=message.content) for message in tail
+                ChatMessage(role=row.role, content=row.content) for row in existing_rows
             ]
 
             _, budgeted_messages, fits = apply_chat_ops_budget(
@@ -260,42 +287,46 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                 max_output_tokens=budget.max_output_tokens,
                 safety_margin_tokens=self._settings.LLM_CHAT_OPS_CONTEXT_SAFETY_MARGIN_TOKENS,
                 system_prompt_max_tokens=self._settings.LLM_CHAT_OPS_SYSTEM_PROMPT_MAX_TOKENS,
+                token_counter=token_counter,
             )
             prompt_messages_count = len(budgeted_messages) + 1
             if not fits:
                 return None, prompt_messages_count
 
-            user_message_id = self._id_generator.new_uuid()
-            await self._messages.append_message(
+            await self._turns.create_turn(
+                turn_id=turn_id,
                 tool_session_id=session.id,
+                status="pending",
+                provider=None,
+                correlation_id=correlation_id,
+            )
+            await self._messages.create_message(
+                tool_session_id=session.id,
+                turn_id=turn_id,
                 message_id=user_message_id,
                 role="user",
                 content=command.message,
+            )
+            await self._messages.create_message(
+                tool_session_id=session.id,
+                turn_id=turn_id,
+                message_id=assistant_message_id,
+                role="assistant",
+                content="",
+                meta={"in_reply_to": str(user_message_id)},
             )
 
         return (
             _PreparedOpsRequest(
                 messages=budgeted_messages,
                 user_payload=user_payload,
-                user_message_id=user_message_id,
                 tool_session_id=session.id,
+                turn_id=turn_id,
+                assistant_message_id=assistant_message_id,
+                correlation_id=correlation_id,
             ),
             prompt_messages_count,
         )
-
-    async def _persist_assistant_message(
-        self,
-        *,
-        tool_session_id: UUID,
-        assistant_message: str,
-    ) -> None:
-        async with self._uow:
-            await self._messages.append_message(
-                tool_session_id=tool_session_id,
-                message_id=self._id_generator.new_uuid(),
-                role="assistant",
-                content=assistant_message,
-            )
 
     async def handle(
         self,
@@ -431,8 +462,24 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                     ),
                 )
 
+            if decision.provider == "fallback":
+                model_for_counting = (
+                    self._settings.LLM_CHAT_OPS_FALLBACK_MODEL.strip()
+                    or self._settings.LLM_CHAT_OPS_MODEL
+                )
+            else:
+                model_for_counting = self._settings.LLM_CHAT_OPS_MODEL
+            token_counter = self._token_counters.for_model(model=model_for_counting)
+
             try:
-                system_prompt = self._system_prompt_loader(template_id)
+                if self._system_prompt_loader is not None:
+                    system_prompt = self._system_prompt_loader(template_id)
+                else:
+                    system_prompt = compose_system_prompt(
+                        template_id=template_id,
+                        settings=self._settings,
+                        token_counter=token_counter,
+                    ).text
             except (OSError, PromptTemplateError):
                 logger.warning(
                     "ai_chat_ops_system_prompt_unavailable",
@@ -469,6 +516,8 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                 system_prompt=system_prompt,
                 user_payload=user_payload,
                 budget=budget,
+                token_counter=token_counter,
+                correlation_id=capture_id,
             )
             if prepared is None:
                 log_result(
@@ -620,6 +669,21 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                 and self._providers.fallback_is_remote
                 and not allow_remote_fallback
             ):
+                async with self._uow:
+                    await self._messages.update_message_content_if_pending_turn(
+                        tool_session_id=prepared.tool_session_id,
+                        turn_id=prepared.turn_id,
+                        message_id=prepared.assistant_message_id,
+                        content=_REMOTE_FALLBACK_REQUIRED_MESSAGE,
+                        correlation_id=prepared.correlation_id,
+                    )
+                    await self._turns.update_status(
+                        turn_id=prepared.turn_id,
+                        status="failed",
+                        correlation_id=prepared.correlation_id,
+                        failure_outcome="remote_fallback_required",
+                        provider=provider_key,
+                    )
                 log_result(
                     provider="fallback",
                     failover_reason="retryable_primary_failure",
@@ -694,16 +758,31 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                         assistant_message = parsed.assistant_message.strip() or assistant_message
                         eval_outcome = "ok" if ops else "empty"
                         log_outcome = eval_outcome
-                    else:
-                        ops = []
-                        assistant_message = _INVALID_OPS_ERROR
-                        eval_outcome = "error"
-                        log_outcome = "invalid_ops"
+            else:
+                ops = []
+                assistant_message = _INVALID_OPS_ERROR
+                eval_outcome = "error"
+                log_outcome = "invalid_ops"
 
-            await self._persist_assistant_message(
-                tool_session_id=prepared.tool_session_id,
-                assistant_message=assistant_message,
+            turn_status: ToolSessionTurnStatus = (
+                "complete" if log_outcome in {"ok", "empty"} else "failed"
             )
+            failure_outcome = None if turn_status == "complete" else log_outcome
+            async with self._uow:
+                await self._messages.update_message_content_if_pending_turn(
+                    tool_session_id=prepared.tool_session_id,
+                    turn_id=prepared.turn_id,
+                    message_id=prepared.assistant_message_id,
+                    content=assistant_message,
+                    correlation_id=prepared.correlation_id,
+                )
+                await self._turns.update_status(
+                    turn_id=prepared.turn_id,
+                    status=turn_status,
+                    correlation_id=prepared.correlation_id,
+                    failure_outcome=failure_outcome,
+                    provider=provider_key,
+                )
 
             if log_outcome not in {"ok", "empty"}:
                 await capture_on_error(

@@ -14,17 +14,22 @@ from skriptoteket.application.editor.prompt_templates import (
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.scripting.ui.policy import DEFAULT_UI_POLICY
+from tests.fixtures.application_fixtures import FakeTokenCounter
 
 
 @pytest.mark.unit
 def test_validate_prompt_templates_passes() -> None:
-    validate_prompt_templates(settings=Settings())
+    validate_prompt_templates(settings=Settings(), token_counter=FakeTokenCounter())
 
 
 @pytest.mark.unit
 def test_compose_system_prompt_resolves_all_placeholders_and_includes_policy_values() -> None:
     settings = Settings()
-    composed = compose_system_prompt(template_id="inline_completion_v1", settings=settings)
+    composed = compose_system_prompt(
+        template_id="inline_completion_v1",
+        settings=settings,
+        token_counter=FakeTokenCounter(),
+    )
 
     assert "{{" not in composed.text
     assert "## Contract v2 (Skriptoteket UI)" in composed.text
@@ -51,6 +56,7 @@ def test_compose_system_prompt_raises_when_required_placeholder_missing() -> Non
             template=template,
             settings=settings,
             template_text_loader=lambda _path: "Hello world",
+            token_counter=FakeTokenCounter(),
         )
 
 
@@ -69,6 +75,7 @@ def test_compose_system_prompt_raises_when_unknown_placeholder_used() -> None:
             template=template,
             settings=settings,
             template_text_loader=lambda _path: "Hello {{UNKNOWN_FRAGMENT}} world",
+            token_counter=FakeTokenCounter(),
         )
 
 
@@ -87,4 +94,5 @@ def test_compose_system_prompt_raises_when_budget_exceeded() -> None:
             template=template,
             settings=settings,
             template_text_loader=lambda _path: "{{CONTRACT_V2_FRAGMENT}}",
+            token_counter=FakeTokenCounter(),
         )

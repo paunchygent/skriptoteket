@@ -14,6 +14,7 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.tool_session_messages import ToolSessionMessage
+from skriptoteket.domain.scripting.tool_session_turns import ToolSessionTurn
 from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -28,10 +29,13 @@ from skriptoteket.protocols.llm import (
     EditorChatDoneDisabledData,
     EditorChatDoneEnabledData,
     EditorChatDoneEvent,
+    EditorChatMetaEvent,
 )
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
+from skriptoteket.protocols.tool_session_turns import ToolSessionTurnRepositoryProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+from tests.fixtures.application_fixtures import FakeTokenCounter, FakeTokenCounterResolver
 from tests.fixtures.identity_fixtures import make_user
 
 
@@ -100,18 +104,49 @@ def _make_tool_session(
     )
 
 
+def _make_turn(
+    *,
+    turn_id: UUID,
+    tool_session_id: UUID,
+    status: str,
+    created_at: datetime,
+) -> ToolSessionTurn:
+    return ToolSessionTurn(
+        id=turn_id,
+        tool_session_id=tool_session_id,
+        status=status,  # type: ignore[arg-type]
+        failure_outcome=None,
+        provider=None,
+        correlation_id=None,
+        sequence=1,
+        created_at=created_at,
+        updated_at=created_at,
+    )
+
+
+def _dummy_message(*, tool_session_id: UUID, turn_id: UUID, message_id: UUID) -> ToolSessionMessage:
+    now = datetime(2025, 1, 1, tzinfo=timezone.utc)
+    return ToolSessionMessage(
+        id=uuid4(),
+        tool_session_id=tool_session_id,
+        turn_id=turn_id,
+        message_id=message_id,
+        role="user",
+        content="",
+        meta=None,
+        sequence=1,
+        created_at=now,
+    )
+
+
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_editor_chat_returns_done_disabled_when_disabled() -> None:
     settings = Settings(LLM_CHAT_ENABLED=False)
     provider = MagicMock(spec=ChatStreamProviderProtocol)
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
-    sessions.get = AsyncMock()
-    sessions.get_or_create = AsyncMock()
-    sessions.clear_state = AsyncMock()
+    turns = MagicMock(spec=ToolSessionTurnRepositoryProtocol)
     messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
-    messages.list_tail = AsyncMock()
-    messages.append_message = AsyncMock()
     clock = MagicMock(spec=ClockProtocol)
     id_generator = MagicMock(spec=IdGeneratorProtocol)
 
@@ -127,9 +162,11 @@ async def test_editor_chat_returns_done_disabled_when_disabled() -> None:
         failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
+        turns=turns,
         messages=messages,
         clock=clock,
         id_generator=id_generator,
+        token_counters=FakeTokenCounterResolver(),
     )
     actor = make_user(role=Role.CONTRIBUTOR)
 
@@ -150,7 +187,8 @@ async def test_editor_chat_returns_done_disabled_when_disabled() -> None:
     assert isinstance(events[0].data, EditorChatDoneDisabledData)
     provider.stream_chat.assert_not_called()
     sessions.get.assert_not_called()
-    messages.append_message.assert_not_called()
+    turns.create_turn.assert_not_called()
+    messages.create_message.assert_not_called()
 
 
 @pytest.mark.unit
@@ -159,11 +197,8 @@ async def test_editor_chat_returns_done_disabled_when_system_prompt_unavailable(
     settings = Settings(LLM_CHAT_ENABLED=True)
     provider = MagicMock(spec=ChatStreamProviderProtocol)
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
-    sessions.get = AsyncMock()
-    sessions.get_or_create = AsyncMock()
+    turns = MagicMock(spec=ToolSessionTurnRepositoryProtocol)
     messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
-    messages.list_tail = AsyncMock()
-    messages.append_message = AsyncMock()
     clock = MagicMock(spec=ClockProtocol)
     id_generator = MagicMock(spec=IdGeneratorProtocol)
 
@@ -183,10 +218,12 @@ async def test_editor_chat_returns_done_disabled_when_system_prompt_unavailable(
         failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
+        turns=turns,
         messages=messages,
         clock=clock,
         id_generator=id_generator,
         system_prompt_loader=system_prompt_loader,
+        token_counters=FakeTokenCounterResolver(),
     )
     actor = make_user(role=Role.CONTRIBUTOR)
 
@@ -207,81 +244,78 @@ async def test_editor_chat_returns_done_disabled_when_system_prompt_unavailable(
     assert isinstance(events[0].data, EditorChatDoneDisabledData)
     provider.stream_chat.assert_not_called()
     sessions.get.assert_not_called()
-    messages.append_message.assert_not_called()
+    turns.create_turn.assert_not_called()
+    messages.create_message.assert_not_called()
 
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_editor_chat_streams_meta_delta_done_and_persists_thread() -> None:
+async def test_editor_chat_streams_meta_delta_done_and_persists_turn() -> None:
     settings = Settings(LLM_CHAT_ENABLED=True)
     provider = MagicMock(spec=ChatStreamProviderProtocol)
+
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
-    sessions.get = AsyncMock()
+    sessions.get = AsyncMock(return_value=None)
     sessions.get_or_create = AsyncMock()
+
+    turns = MagicMock(spec=ToolSessionTurnRepositoryProtocol)
+    turns.list_tail = AsyncMock(return_value=[])
+    turns.cancel_pending_turn = AsyncMock(return_value=None)
+    turns.create_turn = AsyncMock()
+    turns.update_status = AsyncMock()
+
     messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
-    messages.list_tail = AsyncMock()
-    messages.append_message = AsyncMock()
-    messages.get_by_message_id = AsyncMock()
+    messages.list_by_turn_ids = AsyncMock(return_value=[])
+    messages.create_message = AsyncMock()
+    messages.update_message_content_if_pending_turn = AsyncMock(return_value=True)
+
     clock = MagicMock(spec=ClockProtocol)
     id_generator = MagicMock(spec=IdGeneratorProtocol)
-    user_message_id = uuid4()
-    new_session_id = uuid4()
-    assistant_message_id = uuid4()
-    id_generator.new_uuid.side_effect = [user_message_id, new_session_id, assistant_message_id]
-
-    async def stream() -> AsyncIterator[str]:
-        yield "Hej"
-        yield " världen"
-
-    user_persisted = {"ok": False}
 
     tool_id = uuid4()
     actor = make_user(role=Role.CONTRIBUTOR)
-
-    session_empty = _make_tool_session(
+    session = _make_tool_session(
         tool_id=tool_id,
         user_id=actor.id,
         state={},
         state_rev=0,
         updated_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
     )
-    session_id = session_empty.id
+    sessions.get_or_create.return_value = session
 
-    sessions.get.return_value = None
-    sessions.get_or_create.return_value = session_empty
-    messages.list_tail.return_value = []
+    turn_id = uuid4()
+    user_message_id = uuid4()
+    assistant_message_id = uuid4()
+    new_session_id = uuid4()
+    id_generator.new_uuid.side_effect = [
+        turn_id,
+        user_message_id,
+        assistant_message_id,
+        new_session_id,
+    ]
 
-    async def append_message(**kwargs):
-        if kwargs.get("role") == "user":
-            user_persisted["ok"] = True
-        return ToolSessionMessage(
-            id=uuid4(),
-            tool_session_id=session_id,
-            message_id=kwargs.get("message_id"),
-            role=kwargs.get("role"),
-            content=kwargs.get("content"),
-            meta=kwargs.get("meta"),
-            sequence=1,
-            created_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
-        )
-
-    messages.append_message.side_effect = append_message
-    messages.get_by_message_id.return_value = ToolSessionMessage(
-        id=uuid4(),
-        tool_session_id=session_id,
-        message_id=user_message_id,
-        role="user",
-        content="Hej",
-        meta=None,
-        sequence=1,
-        created_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
+    turns.create_turn.return_value = _make_turn(
+        turn_id=turn_id,
+        tool_session_id=session.id,
+        status="pending",
+        created_at=session.created_at,
+    )
+    turns.update_status.return_value = _make_turn(
+        turn_id=turn_id,
+        tool_session_id=session.id,
+        status="complete",
+        created_at=session.created_at,
     )
 
-    def stream_chat(**_kwargs) -> AsyncIterator[str]:
-        assert user_persisted["ok"] is True
-        return stream()
+    messages.create_message.return_value = _dummy_message(
+        tool_session_id=session.id, turn_id=turn_id, message_id=user_message_id
+    )
 
-    provider.stream_chat.side_effect = stream_chat
+    async def stream() -> AsyncIterator[str]:
+        yield "Hej"
+        yield " världen"
+
+    provider.stream_chat.return_value = stream()
 
     providers = MagicMock()
     providers.primary = provider
@@ -295,10 +329,12 @@ async def test_editor_chat_streams_meta_delta_done_and_persists_thread() -> None
         failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
+        turns=turns,
         messages=messages,
         clock=clock,
         id_generator=id_generator,
         system_prompt_loader=lambda _template_id: "system prompt",
+        token_counters=FakeTokenCounterResolver(),
     )
 
     events = [
@@ -313,6 +349,9 @@ async def test_editor_chat_streams_meta_delta_done_and_persists_thread() -> None
     ]
 
     assert [event.event for event in events] == ["meta", "delta", "delta", "done"]
+    assert isinstance(events[0], EditorChatMetaEvent)
+    assert events[0].data.turn_id == turn_id
+    assert events[0].data.assistant_message_id == assistant_message_id
 
     deltas: list[str] = []
     for event in events:
@@ -326,55 +365,99 @@ async def test_editor_chat_streams_meta_delta_done_and_persists_thread() -> None
     assert isinstance(events[-1].data, EditorChatDoneEnabledData)
     assert events[-1].data.reason == "stop"
 
-    assert messages.append_message.call_count == 2
-    first_call = messages.append_message.call_args_list[0].kwargs
-    assert first_call["role"] == "user"
-    assert first_call["content"] == "Hej"
-    assert first_call["message_id"] == user_message_id
+    assert turns.create_turn.call_count == 1
+    assert messages.create_message.call_count == 2
 
-    second_call = messages.append_message.call_args_list[1].kwargs
-    assert second_call["role"] == "assistant"
-    assert second_call["content"] == "Hej världen"
-    assert second_call["message_id"] == assistant_message_id
-    assert second_call["meta"]["in_reply_to"] == str(user_message_id)
+    user_call = messages.create_message.call_args_list[0].kwargs
+    assert user_call["turn_id"] == turn_id
+    assert user_call["message_id"] == user_message_id
+    assert user_call["role"] == "user"
+    assert user_call["content"] == "Hej"
+
+    assistant_call = messages.create_message.call_args_list[1].kwargs
+    assert assistant_call["turn_id"] == turn_id
+    assert assistant_call["message_id"] == assistant_message_id
+    assert assistant_call["role"] == "assistant"
+    assert assistant_call["content"] == ""
+    assert assistant_call["meta"]["in_reply_to"] == str(user_message_id)
+
+    messages.update_message_content_if_pending_turn.assert_called()
+    assert (
+        messages.update_message_content_if_pending_turn.call_args.kwargs["content"] == "Hej världen"
+    )
+
+    turns.update_status.assert_called_once()
+    assert turns.update_status.call_args.kwargs["turn_id"] == turn_id
+    assert turns.update_status.call_args.kwargs["status"] == "complete"
 
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_editor_chat_emits_done_error_on_timeout_and_persists_user_message() -> None:
+async def test_editor_chat_emits_done_error_on_timeout_and_marks_turn_failed() -> None:
     settings = Settings(LLM_CHAT_ENABLED=True)
     provider = MagicMock(spec=ChatStreamProviderProtocol)
+
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
-    sessions.get = AsyncMock()
+    sessions.get = AsyncMock(return_value=None)
     sessions.get_or_create = AsyncMock()
+
+    turns = MagicMock(spec=ToolSessionTurnRepositoryProtocol)
+    turns.list_tail = AsyncMock(return_value=[])
+    turns.cancel_pending_turn = AsyncMock(return_value=None)
+    turns.create_turn = AsyncMock()
+    turns.update_status = AsyncMock()
+
     messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
-    messages.list_tail = AsyncMock()
-    messages.append_message = AsyncMock()
-    messages.get_by_message_id = AsyncMock()
+    messages.list_by_turn_ids = AsyncMock(return_value=[])
+    messages.create_message = AsyncMock()
+    messages.update_message_content_if_pending_turn = AsyncMock(return_value=True)
+
     clock = MagicMock(spec=ClockProtocol)
     id_generator = MagicMock(spec=IdGeneratorProtocol)
-    user_message_id = uuid4()
-    session_id = uuid4()
-    id_generator.new_uuid.side_effect = [user_message_id, session_id]
-
-    provider.stream_chat.side_effect = httpx.ReadTimeout(
-        "timeout",
-        request=httpx.Request("POST", "http://test"),
-    )
 
     tool_id = uuid4()
     actor = make_user(role=Role.CONTRIBUTOR)
-    session_empty = _make_tool_session(
+    session = _make_tool_session(
         tool_id=tool_id,
         user_id=actor.id,
         state={},
         state_rev=0,
         updated_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
     )
+    sessions.get_or_create.return_value = session
 
-    sessions.get.return_value = None
-    sessions.get_or_create.return_value = session_empty
-    messages.list_tail.return_value = []
+    turn_id = uuid4()
+    user_message_id = uuid4()
+    assistant_message_id = uuid4()
+    new_session_id = uuid4()
+    id_generator.new_uuid.side_effect = [
+        turn_id,
+        user_message_id,
+        assistant_message_id,
+        new_session_id,
+    ]
+
+    turns.create_turn.return_value = _make_turn(
+        turn_id=turn_id,
+        tool_session_id=session.id,
+        status="pending",
+        created_at=session.created_at,
+    )
+    turns.update_status.return_value = _make_turn(
+        turn_id=turn_id,
+        tool_session_id=session.id,
+        status="failed",
+        created_at=session.created_at,
+    )
+
+    messages.create_message.return_value = _dummy_message(
+        tool_session_id=session.id, turn_id=turn_id, message_id=user_message_id
+    )
+
+    provider.stream_chat.side_effect = httpx.ReadTimeout(
+        "timeout",
+        request=httpx.Request("POST", "http://test"),
+    )
 
     providers = MagicMock()
     providers.primary = provider
@@ -388,10 +471,12 @@ async def test_editor_chat_emits_done_error_on_timeout_and_persists_user_message
         failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
+        turns=turns,
         messages=messages,
         clock=clock,
         id_generator=id_generator,
         system_prompt_loader=lambda _template_id: "system prompt",
+        token_counters=FakeTokenCounterResolver(),
     )
 
     events = [
@@ -409,8 +494,10 @@ async def test_editor_chat_emits_done_error_on_timeout_and_persists_user_message
     assert isinstance(events[-1], EditorChatDoneEvent)
     assert isinstance(events[-1].data, EditorChatDoneEnabledData)
     assert events[-1].data.reason == "error"
-    messages.append_message.assert_called_once()
-    messages.get_by_message_id.assert_not_called()
+
+    turns.update_status.assert_called_once()
+    assert turns.update_status.call_args.kwargs["status"] == "failed"
+    assert turns.update_status.call_args.kwargs["failure_outcome"] == "timeout"
 
 
 @pytest.mark.unit
@@ -418,49 +505,69 @@ async def test_editor_chat_emits_done_error_on_timeout_and_persists_user_message
 async def test_editor_chat_persists_partial_assistant_message_on_timeout_after_deltas() -> None:
     settings = Settings(LLM_CHAT_ENABLED=True)
     provider = MagicMock(spec=ChatStreamProviderProtocol)
+
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
-    sessions.get = AsyncMock()
+    sessions.get = AsyncMock(return_value=None)
     sessions.get_or_create = AsyncMock()
+
+    turns = MagicMock(spec=ToolSessionTurnRepositoryProtocol)
+    turns.list_tail = AsyncMock(return_value=[])
+    turns.cancel_pending_turn = AsyncMock(return_value=None)
+    turns.create_turn = AsyncMock()
+    turns.update_status = AsyncMock()
+
     messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
-    messages.list_tail = AsyncMock()
-    messages.append_message = AsyncMock()
-    messages.get_by_message_id = AsyncMock()
+    messages.list_by_turn_ids = AsyncMock(return_value=[])
+    messages.create_message = AsyncMock()
+    messages.update_message_content_if_pending_turn = AsyncMock(return_value=True)
+
     clock = MagicMock(spec=ClockProtocol)
     id_generator = MagicMock(spec=IdGeneratorProtocol)
-    user_message_id = uuid4()
-    session_id = uuid4()
-    assistant_message_id = uuid4()
-    id_generator.new_uuid.side_effect = [user_message_id, session_id, assistant_message_id]
 
     tool_id = uuid4()
     actor = make_user(role=Role.CONTRIBUTOR)
-    session_empty = _make_tool_session(
+    session = _make_tool_session(
         tool_id=tool_id,
         user_id=actor.id,
         state={},
         state_rev=0,
         updated_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
     )
-    sessions.get.return_value = None
-    sessions.get_or_create.return_value = session_empty
-    messages.list_tail.return_value = []
+    sessions.get_or_create.return_value = session
+
+    turn_id = uuid4()
+    user_message_id = uuid4()
+    assistant_message_id = uuid4()
+    new_session_id = uuid4()
+    id_generator.new_uuid.side_effect = [
+        turn_id,
+        user_message_id,
+        assistant_message_id,
+        new_session_id,
+    ]
+
+    turns.create_turn.return_value = _make_turn(
+        turn_id=turn_id,
+        tool_session_id=session.id,
+        status="pending",
+        created_at=session.created_at,
+    )
+    turns.update_status.return_value = _make_turn(
+        turn_id=turn_id,
+        tool_session_id=session.id,
+        status="failed",
+        created_at=session.created_at,
+    )
+
+    messages.create_message.return_value = _dummy_message(
+        tool_session_id=session.id, turn_id=turn_id, message_id=user_message_id
+    )
 
     async def stream() -> AsyncIterator[str]:
         yield "Hej"
         raise httpx.ReadTimeout("timeout", request=httpx.Request("POST", "http://test"))
 
     provider.stream_chat.return_value = stream()
-
-    messages.get_by_message_id.return_value = ToolSessionMessage(
-        id=uuid4(),
-        tool_session_id=session_empty.id,
-        message_id=user_message_id,
-        role="user",
-        content="Hej",
-        meta=None,
-        sequence=1,
-        created_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
-    )
 
     providers = MagicMock()
     providers.primary = provider
@@ -474,10 +581,12 @@ async def test_editor_chat_persists_partial_assistant_message_on_timeout_after_d
         failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
+        turns=turns,
         messages=messages,
         clock=clock,
         id_generator=id_generator,
         system_prompt_loader=lambda _template_id: "system prompt",
+        token_counters=FakeTokenCounterResolver(),
     )
 
     events = [
@@ -496,12 +605,10 @@ async def test_editor_chat_persists_partial_assistant_message_on_timeout_after_d
     assert isinstance(events[-1].data, EditorChatDoneEnabledData)
     assert events[-1].data.reason == "error"
 
-    assert messages.append_message.call_count == 2
-    assistant_call = messages.append_message.call_args_list[1].kwargs
-    assert assistant_call["role"] == "assistant"
-    assert assistant_call["content"] == "Hej"
-    assert assistant_call["message_id"] == assistant_message_id
-    assert assistant_call["meta"]["partial"] is True
+    messages.update_message_content_if_pending_turn.assert_called()
+    assert messages.update_message_content_if_pending_turn.call_args.kwargs["content"] == "Hej"
+    turns.update_status.assert_called_once()
+    assert turns.update_status.call_args.kwargs["failure_outcome"] == "timeout"
 
 
 @pytest.mark.unit
@@ -520,6 +627,7 @@ def test_apply_chat_budget_drops_oldest_turns_and_never_truncates_system_prompt(
         max_output_tokens=0,
         safety_margin_tokens=0,
         system_prompt_max_tokens=1,
+        token_counter=FakeTokenCounter(),
     )
 
     assert system_prompt_trimmed == system_prompt
@@ -539,11 +647,8 @@ async def test_editor_chat_raises_validation_error_when_message_too_long() -> No
     )
     provider = MagicMock(spec=ChatStreamProviderProtocol)
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
-    sessions.get = AsyncMock()
-    sessions.get_or_create = AsyncMock()
+    turns = MagicMock(spec=ToolSessionTurnRepositoryProtocol)
     messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
-    messages.list_tail = AsyncMock()
-    messages.append_message = AsyncMock()
     clock = MagicMock(spec=ClockProtocol)
     id_generator = MagicMock(spec=IdGeneratorProtocol)
 
@@ -559,10 +664,12 @@ async def test_editor_chat_raises_validation_error_when_message_too_long() -> No
         failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
+        turns=turns,
         messages=messages,
         clock=clock,
         id_generator=id_generator,
         system_prompt_loader=lambda _template_id: "S" * 4,
+        token_counters=FakeTokenCounterResolver(),
     )
     actor = make_user(role=Role.CONTRIBUTOR)
 
@@ -579,7 +686,8 @@ async def test_editor_chat_raises_validation_error_when_message_too_long() -> No
     assert exc_info.value.code == ErrorCode.VALIDATION_ERROR
     assert "För långt meddelande" in exc_info.value.message
     sessions.get.assert_not_called()
-    messages.append_message.assert_not_called()
+    turns.create_turn.assert_not_called()
+    messages.create_message.assert_not_called()
     provider.stream_chat.assert_not_called()
 
 
@@ -591,17 +699,22 @@ async def test_editor_chat_drops_expired_thread_history() -> None:
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
     sessions.get = AsyncMock()
     sessions.get_or_create = AsyncMock()
+    sessions.clear_state = AsyncMock()
+
+    turns = MagicMock(spec=ToolSessionTurnRepositoryProtocol)
+    turns.list_tail = AsyncMock()
+    turns.delete_all = AsyncMock()
+    turns.cancel_pending_turn = AsyncMock(return_value=None)
+    turns.create_turn = AsyncMock()
+    turns.update_status = AsyncMock()
+
     messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
-    messages.list_tail = AsyncMock()
-    messages.append_message = AsyncMock()
-    messages.delete_all = AsyncMock()
-    messages.get_by_message_id = AsyncMock()
+    messages.list_by_turn_ids = AsyncMock(return_value=[])
+    messages.create_message = AsyncMock()
+    messages.update_message_content_if_pending_turn = AsyncMock(return_value=True)
+
     clock = MagicMock(spec=ClockProtocol)
     id_generator = MagicMock(spec=IdGeneratorProtocol)
-    user_message_id = uuid4()
-    session_id = uuid4()
-    assistant_message_id = uuid4()
-    id_generator.new_uuid.side_effect = [user_message_id, session_id, assistant_message_id]
 
     tool_id = uuid4()
     actor = make_user(role=Role.CONTRIBUTOR)
@@ -611,39 +724,20 @@ async def test_editor_chat_drops_expired_thread_history() -> None:
     expired_session = _make_tool_session(
         tool_id=tool_id,
         user_id=actor.id,
-        state={
-            "messages": [
-                {"role": "user", "content": "Old"},
-                {"role": "assistant", "content": "History"},
-            ]
-        },
+        state={"base_version_id": str(uuid4())},
         state_rev=5,
         updated_at=now - timedelta(days=31),
     )
     sessions.get.return_value = expired_session
     sessions.clear_state.return_value = expired_session
-    messages.list_tail.return_value = [
-        ToolSessionMessage(
-            id=uuid4(),
+    turns.list_tail.return_value = [
+        _make_turn(
+            turn_id=uuid4(),
             tool_session_id=expired_session.id,
-            message_id=uuid4(),
-            role="user",
-            content="Old",
-            meta=None,
-            sequence=1,
+            status="complete",
             created_at=now - timedelta(days=31),
         )
     ]
-    messages.get_by_message_id.return_value = ToolSessionMessage(
-        id=uuid4(),
-        tool_session_id=expired_session.id,
-        message_id=user_message_id,
-        role="user",
-        content="Hej",
-        meta=None,
-        sequence=2,
-        created_at=now,
-    )
 
     async def stream() -> AsyncIterator[str]:
         yield "Hej"
@@ -655,6 +749,11 @@ async def test_editor_chat_drops_expired_thread_history() -> None:
     providers.fallback = None
     providers.fallback_is_remote = False
 
+    turn_id = uuid4()
+    user_message_id = uuid4()
+    assistant_message_id = uuid4()
+    id_generator.new_uuid.side_effect = [turn_id, user_message_id, assistant_message_id]
+
     handler = EditorChatHandler(
         settings=settings,
         providers=providers,
@@ -662,10 +761,12 @@ async def test_editor_chat_drops_expired_thread_history() -> None:
         failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
+        turns=turns,
         messages=messages,
         clock=clock,
         id_generator=id_generator,
         system_prompt_loader=lambda _template_id: "system prompt",
+        token_counters=FakeTokenCounterResolver(),
     )
 
     events = [
@@ -680,12 +781,9 @@ async def test_editor_chat_drops_expired_thread_history() -> None:
     ]
 
     assert [event.event for event in events] == ["meta", "delta", "done"]
-    messages.delete_all.assert_called_once_with(tool_session_id=expired_session.id)
+    turns.delete_all.assert_called_once_with(tool_session_id=expired_session.id)
     sessions.clear_state.assert_called_once_with(
         tool_id=tool_id,
         user_id=actor.id,
         context="editor_chat",
     )
-    assert messages.append_message.call_count == 2
-    first_call = messages.append_message.call_args_list[0].kwargs
-    assert first_call["message_id"] == user_message_id

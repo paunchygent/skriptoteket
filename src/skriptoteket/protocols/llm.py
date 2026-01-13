@@ -6,10 +6,11 @@ from collections.abc import AsyncIterator
 from typing import Annotated, Literal, Protocol
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.tool_session_messages import ToolSessionMessage
+from skriptoteket.domain.scripting.tool_session_turns import ToolSessionTurn
 
 PromptEvalOutcome = Literal["ok", "empty", "truncated", "over_budget", "timeout", "error"]
 ChatStreamDoneReason = Literal["stop", "cancelled", "error"]
@@ -62,6 +63,7 @@ class ChatMessage(BaseModel):
     content: str
     message_id: UUID | None = None
     in_reply_to: UUID | None = None
+    meta: dict[str, JsonValue] | None = None
 
 
 class LLMChatRequest(BaseModel):
@@ -365,6 +367,8 @@ class EditorChatCommand(BaseModel):
     message: str
     base_version_id: UUID | None = None
     allow_remote_fallback: bool = False
+    active_file: VirtualFileId | None = None
+    virtual_files: dict[VirtualFileId, str] | None = None
 
 
 class EditorChatHistoryQuery(BaseModel):
@@ -377,6 +381,7 @@ class EditorChatHistoryQuery(BaseModel):
 class EditorChatHistoryResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
+    turns: list[ToolSessionTurn]
     messages: list[ToolSessionMessage]
     base_version_id: UUID | None = None
 
@@ -391,6 +396,9 @@ class EditorChatMetaData(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     enabled: Literal[True] = True
+    correlation_id: UUID | None = None
+    turn_id: UUID | None = None
+    assistant_message_id: UUID | None = None
 
 
 class EditorChatDeltaData(BaseModel):

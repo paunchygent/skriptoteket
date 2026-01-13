@@ -14,6 +14,7 @@ class ToolSessionMessage(BaseModel):
 
     id: UUID
     tool_session_id: UUID
+    turn_id: UUID
     message_id: UUID
     role: ChatMessageRole
     content: str

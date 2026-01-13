@@ -289,15 +289,30 @@ class EditorChatRequest(BaseModel):
     message: str = Field(min_length=1)
     base_version_id: UUID | None = None
     allow_remote_fallback: bool = False
+    active_file: VirtualFileId | None = None
+    virtual_files: EditorVirtualFiles | None = None
+
+    @model_validator(mode="after")
+    def validate_virtual_file_context(self) -> "EditorChatRequest":
+        if self.active_file is not None and self.virtual_files is None:
+            raise ValueError("virtual_files is required when active_file is provided")
+        if self.virtual_files is not None and self.active_file is not None:
+            if self.active_file not in self.virtual_files.as_map():
+                raise ValueError("Active file is missing from virtual_files")
+        return self
 
 
 class EditorChatHistoryMessage(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     message_id: UUID
+    turn_id: UUID
     role: Literal["user", "assistant"]
     content: str
     created_at: datetime
+    status: Literal["pending", "complete", "failed", "cancelled"]
+    correlation_id: UUID | None = None
+    failure_outcome: str | None = None
 
 
 class EditorChatHistoryResponse(BaseModel):

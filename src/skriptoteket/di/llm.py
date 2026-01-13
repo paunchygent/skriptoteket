@@ -34,6 +34,7 @@ from skriptoteket.infrastructure.llm.provider_sets import (
     ChatStreamProviders,
     is_remote_llm_endpoint,
 )
+from skriptoteket.infrastructure.llm.token_counter_resolver import SettingsBasedTokenCounterResolver
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.editor_patches import UnifiedDiffApplierProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -53,7 +54,9 @@ from skriptoteket.protocols.llm import (
     InlineCompletionProviderProtocol,
 )
 from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
+from skriptoteket.protocols.token_counter import TokenCounterResolverProtocol
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
+from skriptoteket.protocols.tool_session_turns import ToolSessionTurnRepositoryProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
@@ -66,6 +69,10 @@ class LlmProvider(Provider):
     @provide(scope=Scope.APP)
     def llm_capture_store(self, settings: Settings) -> LlmCaptureStoreProtocol:
         return ArtifactsLlmCaptureStore(settings=settings)
+
+    @provide(scope=Scope.APP)
+    def token_counter_resolver(self, settings: Settings) -> TokenCounterResolverProtocol:
+        return SettingsBasedTokenCounterResolver(settings=settings)
 
     @provide(scope=Scope.APP)
     async def llm_http_client(self, settings: Settings) -> AsyncIterator[httpx.AsyncClient]:
@@ -150,8 +157,13 @@ class LlmProvider(Provider):
         self,
         settings: Settings,
         provider: InlineCompletionProviderProtocol,
+        token_counters: TokenCounterResolverProtocol,
     ) -> InlineCompletionHandlerProtocol:
-        return InlineCompletionHandler(settings=settings, provider=provider)
+        return InlineCompletionHandler(
+            settings=settings,
+            provider=provider,
+            token_counters=token_counters,
+        )
 
     @provide(scope=Scope.REQUEST)
     def edit_ops_handler(
@@ -164,9 +176,11 @@ class LlmProvider(Provider):
         capture_store: LlmCaptureStoreProtocol,
         uow: UnitOfWorkProtocol,
         sessions: ToolSessionRepositoryProtocol,
+        turns: ToolSessionTurnRepositoryProtocol,
         messages: ToolSessionMessageRepositoryProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
+        token_counters: TokenCounterResolverProtocol,
     ) -> EditOpsHandlerProtocol:
         return EditOpsHandler(
             settings=settings,
@@ -177,9 +191,11 @@ class LlmProvider(Provider):
             capture_store=capture_store,
             uow=uow,
             sessions=sessions,
+            turns=turns,
             messages=messages,
             clock=clock,
             id_generator=id_generator,
+            token_counters=token_counters,
         )
 
     @provide(scope=Scope.REQUEST)
@@ -211,9 +227,11 @@ class LlmProvider(Provider):
         failover: ChatFailoverRouterProtocol,
         uow: UnitOfWorkProtocol,
         sessions: ToolSessionRepositoryProtocol,
+        turns: ToolSessionTurnRepositoryProtocol,
         messages: ToolSessionMessageRepositoryProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
+        token_counters: TokenCounterResolverProtocol,
     ) -> EditorChatHandlerProtocol:
         return EditorChatHandler(
             settings=settings,
@@ -222,9 +240,11 @@ class LlmProvider(Provider):
             failover=failover,
             uow=uow,
             sessions=sessions,
+            turns=turns,
             messages=messages,
             clock=clock,
             id_generator=id_generator,
+            token_counters=token_counters,
         )
 
     @provide(scope=Scope.REQUEST)
@@ -232,21 +252,24 @@ class LlmProvider(Provider):
         self,
         uow: UnitOfWorkProtocol,
         sessions: ToolSessionRepositoryProtocol,
+        turns: ToolSessionTurnRepositoryProtocol,
         messages: ToolSessionMessageRepositoryProtocol,
     ) -> EditorChatClearHandlerProtocol:
-        return EditorChatClearHandler(uow=uow, sessions=sessions, messages=messages)
+        return EditorChatClearHandler(uow=uow, sessions=sessions, turns=turns, messages=messages)
 
     @provide(scope=Scope.REQUEST)
     def editor_chat_history_handler(
         self,
         uow: UnitOfWorkProtocol,
         sessions: ToolSessionRepositoryProtocol,
+        turns: ToolSessionTurnRepositoryProtocol,
         messages: ToolSessionMessageRepositoryProtocol,
         clock: ClockProtocol,
     ) -> EditorChatHistoryHandlerProtocol:
         return EditorChatHistoryHandler(
             uow=uow,
             sessions=sessions,
+            turns=turns,
             messages=messages,
             clock=clock,
         )

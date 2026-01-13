@@ -22,6 +22,7 @@ from skriptoteket.protocols.llm import (
     LLMCompletionRequest,
     PromptEvalMeta,
 )
+from skriptoteket.protocols.token_counter import TokenCounterResolverProtocol
 
 logger = structlog.get_logger(__name__)
 
@@ -85,13 +86,17 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
         *,
         settings: Settings,
         provider: InlineCompletionProviderProtocol,
+        token_counters: TokenCounterResolverProtocol,
         system_prompt_loader: Callable[[str], str] | None = None,
     ) -> None:
         self._settings = settings
         self._provider = provider
+        self._token_counters = token_counters
         self._system_prompt_loader = system_prompt_loader or (
             lambda template_id: compose_system_prompt(
-                template_id=template_id, settings=settings
+                template_id=template_id,
+                settings=settings,
+                token_counter=self._token_counters.for_model(model=settings.LLM_COMPLETION_MODEL),
             ).text
         )
 
@@ -117,6 +122,7 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
             )
 
         template_id = self._settings.LLM_COMPLETION_TEMPLATE_ID
+        token_counter = self._token_counters.for_model(model=self._settings.LLM_COMPLETION_MODEL)
         try:
             system_prompt = self._system_prompt_loader(template_id)
         except (OSError, PromptTemplateError):
@@ -146,6 +152,7 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
             system_prompt_max_tokens=self._settings.LLM_COMPLETION_SYSTEM_PROMPT_MAX_TOKENS,
             prefix_max_tokens=self._settings.LLM_COMPLETION_PREFIX_MAX_TOKENS,
             suffix_max_tokens=self._settings.LLM_COMPLETION_SUFFIX_MAX_TOKENS,
+            token_counter=token_counter,
         )
         request = LLMCompletionRequest(prefix=prefix, suffix=suffix)
         logger.info(

@@ -3,6 +3,7 @@ from __future__ import annotations
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.llm import EditorChatClearCommand, EditorChatClearHandlerProtocol
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
+from skriptoteket.protocols.tool_session_turns import ToolSessionTurnRepositoryProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
@@ -15,10 +16,12 @@ class EditorChatClearHandler(EditorChatClearHandlerProtocol):
         *,
         uow: UnitOfWorkProtocol,
         sessions: ToolSessionRepositoryProtocol,
+        turns: ToolSessionTurnRepositoryProtocol,
         messages: ToolSessionMessageRepositoryProtocol,
     ) -> None:
         self._uow = uow
         self._sessions = sessions
+        self._turns = turns
         self._messages = messages
 
     async def handle(self, *, actor: User, command: EditorChatClearCommand) -> None:
@@ -31,7 +34,7 @@ class EditorChatClearHandler(EditorChatClearHandlerProtocol):
             if session is None:
                 return
 
-            await self._messages.delete_all(tool_session_id=session.id)
+            await self._turns.delete_all(tool_session_id=session.id)
             if session.state:
                 await self._sessions.clear_state(
                     tool_id=command.tool_id,

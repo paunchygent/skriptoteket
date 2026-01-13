@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock
@@ -11,6 +10,7 @@ import pytest
 from skriptoteket.application.editor.edit_ops_handler import EditOpsHandler
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.scripting.tool_session_turns import ToolSessionTurn
 from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -22,14 +22,16 @@ from skriptoteket.protocols.llm import (
     ChatOpsBudgetResolverProtocol,
     ChatOpsProviderProtocol,
     EditOpsCommand,
-    EditOpsResult,
+    EditOpsCursor,
     LLMChatOpsResponse,
     VirtualFileId,
 )
 from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
+from skriptoteket.protocols.tool_session_turns import ToolSessionTurnRepositoryProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+from tests.fixtures.application_fixtures import FakeTokenCounterResolver
 from tests.fixtures.identity_fixtures import make_user
 
 
@@ -82,6 +84,7 @@ class DummyChatOpsBudgetResolver(ChatOpsBudgetResolverProtocol):
         self._settings = settings
 
     def resolve_chat_ops_budget(self, *, provider: str) -> ChatOpsBudget:
+        del provider
         return ChatOpsBudget(
             context_window_tokens=self._settings.LLM_CHAT_OPS_CONTEXT_WINDOW_TOKENS,
             max_output_tokens=self._settings.LLM_CHAT_OPS_MAX_TOKENS,
@@ -102,6 +105,23 @@ def _make_tool_session(*, tool_id: UUID, user_id: UUID) -> ToolSession:
     )
 
 
+def _make_turn(
+    *, turn_id: UUID, tool_session_id: UUID, correlation_id: UUID | None
+) -> ToolSessionTurn:
+    now = datetime(2025, 1, 1, tzinfo=timezone.utc)
+    return ToolSessionTurn(
+        id=turn_id,
+        tool_session_id=tool_session_id,
+        status="pending",
+        failure_outcome=None,
+        provider=None,
+        correlation_id=correlation_id,
+        sequence=1,
+        created_at=now,
+        updated_at=now,
+    )
+
+
 def _virtual_files() -> dict[VirtualFileId, str]:
     return {
         "tool.py": "print('hi')\n",
@@ -112,28 +132,12 @@ def _virtual_files() -> dict[VirtualFileId, str]:
     }
 
 
-def _fingerprint(text: str) -> str:
-    return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
-def _stub_capture_store() -> LlmCaptureStoreProtocol:
-    store = MagicMock(spec=LlmCaptureStoreProtocol)
-    store.write_capture = AsyncMock()
-    return store
-
-
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_edit_ops_returns_disabled_when_disabled() -> None:
+async def test_edit_ops_returns_disabled_without_writing_turn() -> None:
     settings = Settings(LLM_CHAT_OPS_ENABLED=False)
-    provider = MagicMock(spec=ChatOpsProviderProtocol)
-    sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
-    messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
-    clock = MagicMock(spec=ClockProtocol)
-    id_generator = MagicMock(spec=IdGeneratorProtocol)
-
     providers = MagicMock()
-    providers.primary = provider
+    providers.primary = MagicMock(spec=ChatOpsProviderProtocol)
     providers.fallback = None
     providers.fallback_is_remote = False
 
@@ -143,64 +147,96 @@ async def test_edit_ops_returns_disabled_when_disabled() -> None:
         budget_resolver=DummyChatOpsBudgetResolver(settings),
         guard=DummyChatGuard(),
         failover=DummyFailover(),
-        capture_store=_stub_capture_store(),
+        capture_store=MagicMock(spec=LlmCaptureStoreProtocol),
         uow=DummyUow(),
-        sessions=sessions,
-        messages=messages,
-        clock=clock,
-        id_generator=id_generator,
+        sessions=MagicMock(spec=ToolSessionRepositoryProtocol),
+        turns=MagicMock(spec=ToolSessionTurnRepositoryProtocol),
+        messages=MagicMock(spec=ToolSessionMessageRepositoryProtocol),
+        clock=MagicMock(spec=ClockProtocol),
+        id_generator=MagicMock(spec=IdGeneratorProtocol),
+        token_counters=FakeTokenCounterResolver(),
         system_prompt_loader=lambda _: "prompt",
     )
+
     actor = make_user(role=Role.CONTRIBUTOR)
     tool_id = uuid4()
-
     result = await handler.handle(
         actor=actor,
         command=EditOpsCommand(
             tool_id=tool_id,
             message="Hej",
             active_file="tool.py",
-            selection=None,
-            cursor=None,
+            cursor=EditOpsCursor(pos=0),
             virtual_files=_virtual_files(),
         ),
     )
 
-    assert isinstance(result, EditOpsResult)
     assert result.enabled is False
-    assert result.ops == []
-    provider.complete_chat_ops.assert_not_called()
-    messages.append_message.assert_not_called()
 
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_edit_ops_over_budget_does_not_mutate_thread() -> None:
-    settings = Settings(
-        LLM_CHAT_OPS_ENABLED=True,
-        LLM_CHAT_OPS_CONTEXT_WINDOW_TOKENS=8,
-        LLM_CHAT_OPS_MAX_TOKENS=8,
-        LLM_CHAT_OPS_CONTEXT_SAFETY_MARGIN_TOKENS=2,
-    )
+async def test_edit_ops_creates_turn_and_finalizes_on_success() -> None:
+    settings = Settings(LLM_CHAT_OPS_ENABLED=True)
+
+    response_payload = {
+        "assistant_message": "OK",
+        "ops": [
+            {
+                "op": "insert",
+                "target_file": "tool.py",
+                "target": {"kind": "cursor"},
+                "content": "# inserted\n",
+            }
+        ],
+    }
     provider = MagicMock(spec=ChatOpsProviderProtocol)
-    sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
-    sessions.get = AsyncMock(return_value=None)
-    sessions.get_or_create = AsyncMock()
-    messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
-    messages.list_tail = AsyncMock(return_value=[])
-    messages.append_message = AsyncMock()
-    clock = MagicMock(spec=ClockProtocol)
-    id_generator = MagicMock(spec=IdGeneratorProtocol)
-
-    actor = make_user(role=Role.CONTRIBUTOR)
-    tool_id = uuid4()
-    session = _make_tool_session(tool_id=tool_id, user_id=actor.id)
-    sessions.get_or_create.return_value = session
-
+    provider.complete_chat_ops = AsyncMock(
+        return_value=LLMChatOpsResponse(
+            content=json.dumps(response_payload, ensure_ascii=False),
+            finish_reason=None,
+            raw_payload={"choices": []},
+        )
+    )
     providers = MagicMock()
     providers.primary = provider
     providers.fallback = None
     providers.fallback_is_remote = False
+
+    tool_id = uuid4()
+    actor = make_user(role=Role.CONTRIBUTOR)
+    session = _make_tool_session(tool_id=tool_id, user_id=actor.id)
+
+    sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
+    sessions.get = AsyncMock(return_value=None)
+    sessions.get_or_create = AsyncMock(return_value=session)
+
+    turns = MagicMock(spec=ToolSessionTurnRepositoryProtocol)
+    turns.list_tail = AsyncMock(return_value=[])
+    turns.cancel_pending_turn = AsyncMock(return_value=None)
+    turns.update_status = AsyncMock(return_value=None)
+    turns.create_turn = AsyncMock()
+
+    messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
+    messages.list_by_turn_ids = AsyncMock(return_value=[])
+    messages.create_message = AsyncMock()
+    messages.update_message_content_if_pending_turn = AsyncMock(return_value=True)
+
+    clock = MagicMock(spec=ClockProtocol)
+    clock.now.return_value = datetime(2025, 1, 1, tzinfo=timezone.utc)
+
+    id_generator = MagicMock(spec=IdGeneratorProtocol)
+    turn_id = uuid4()
+    user_message_id = uuid4()
+    assistant_message_id = uuid4()
+    session_id = uuid4()
+    id_generator.new_uuid.side_effect = [turn_id, user_message_id, assistant_message_id, session_id]
+
+    turns.create_turn.return_value = _make_turn(
+        turn_id=turn_id,
+        tool_session_id=session.id,
+        correlation_id=None,
+    )
 
     handler = EditOpsHandler(
         settings=settings,
@@ -208,12 +244,14 @@ async def test_edit_ops_over_budget_does_not_mutate_thread() -> None:
         budget_resolver=DummyChatOpsBudgetResolver(settings),
         guard=DummyChatGuard(),
         failover=DummyFailover(),
-        capture_store=_stub_capture_store(),
+        capture_store=MagicMock(spec=LlmCaptureStoreProtocol),
         uow=DummyUow(),
         sessions=sessions,
+        turns=turns,
         messages=messages,
         clock=clock,
         id_generator=id_generator,
+        token_counters=FakeTokenCounterResolver(),
         system_prompt_loader=lambda _: "prompt",
     )
 
@@ -223,181 +261,75 @@ async def test_edit_ops_over_budget_does_not_mutate_thread() -> None:
             tool_id=tool_id,
             message="Hej",
             active_file="tool.py",
-            selection=None,
-            cursor=None,
+            cursor=EditOpsCursor(pos=0),
             virtual_files=_virtual_files(),
         ),
     )
 
     assert result.enabled is True
-    assert result.ops == []
-    provider.complete_chat_ops.assert_not_called()
-    messages.append_message.assert_not_called()
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_edit_ops_parses_valid_response_and_persists_messages() -> None:
-    settings = Settings(LLM_CHAT_OPS_ENABLED=True)
-    provider = MagicMock(spec=ChatOpsProviderProtocol)
-    sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
-    sessions.get = AsyncMock(return_value=None)
-    sessions.get_or_create = AsyncMock()
-    messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
-    messages.list_tail = AsyncMock(return_value=[])
-    messages.append_message = AsyncMock()
-    clock = MagicMock(spec=ClockProtocol)
-    id_generator = MagicMock(spec=IdGeneratorProtocol)
-
-    actor = make_user(role=Role.CONTRIBUTOR)
-    tool_id = uuid4()
-    session = _make_tool_session(tool_id=tool_id, user_id=actor.id)
-    sessions.get_or_create.return_value = session
-    id_generator.new_uuid.side_effect = [uuid4(), uuid4(), uuid4()]
-
-    response_payload = (
-        '{"assistant_message":"Klart.","ops":[{"op":"replace","target_file":"tool.py",'
-        '"target":{"kind":"document"},"content":"print(\\"hej\\")\\n"}]}'
-    )
-    provider.complete_chat_ops = AsyncMock(
-        return_value=LLMChatOpsResponse(content=response_payload, finish_reason=None)
-    )
-
-    providers = MagicMock()
-    providers.primary = provider
-    providers.fallback = None
-    providers.fallback_is_remote = False
-
-    handler = EditOpsHandler(
-        settings=settings,
-        providers=providers,
-        budget_resolver=DummyChatOpsBudgetResolver(settings),
-        guard=DummyChatGuard(),
-        failover=DummyFailover(),
-        capture_store=_stub_capture_store(),
-        uow=DummyUow(),
-        sessions=sessions,
-        messages=messages,
-        clock=clock,
-        id_generator=id_generator,
-        system_prompt_loader=lambda _: "prompt",
-    )
-
-    result = await handler.handle(
-        actor=actor,
-        command=EditOpsCommand(
-            tool_id=tool_id,
-            message="Uppdatera koden",
-            active_file="tool.py",
-            selection=None,
-            cursor=None,
-            virtual_files=_virtual_files(),
-        ),
-    )
-
-    assert result.enabled is True
-    assert result.assistant_message == "Klart."
+    assert result.assistant_message == "OK"
     assert len(result.ops) == 1
-    assert result.ops[0].op == "replace"
-    assert messages.append_message.await_count == 2
-    assert result.base_fingerprints["tool.py"] == _fingerprint("print('hi')\n")
+
+    turns.create_turn.assert_awaited_once()
+    assert messages.create_message.await_count == 2
+    messages.update_message_content_if_pending_turn.assert_awaited_once()
+    turns.update_status.assert_awaited_once()
+
+    update_kwargs = turns.update_status.await_args.kwargs
+    assert update_kwargs["turn_id"] == turn_id
+    assert update_kwargs["status"] == "complete"
 
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_edit_ops_requires_remote_fallback_opt_in_when_primary_fails() -> None:
+async def test_edit_ops_finalizes_turn_as_remote_fallback_required_after_retryable_failure() -> (
+    None
+):
     settings = Settings(LLM_CHAT_OPS_ENABLED=True)
+
     primary = MagicMock(spec=ChatOpsProviderProtocol)
     primary.complete_chat_ops = AsyncMock(side_effect=ValueError("boom"))
     fallback = MagicMock(spec=ChatOpsProviderProtocol)
-
-    sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
-    sessions.get = AsyncMock(return_value=None)
-    sessions.get_or_create = AsyncMock()
-    messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
-    messages.list_tail = AsyncMock(return_value=[])
-    messages.append_message = AsyncMock()
-    clock = MagicMock(spec=ClockProtocol)
-    id_generator = MagicMock(spec=IdGeneratorProtocol)
-
-    actor = make_user(role=Role.CONTRIBUTOR)
-    tool_id = uuid4()
-    session = _make_tool_session(tool_id=tool_id, user_id=actor.id)
-    sessions.get_or_create.return_value = session
-    id_generator.new_uuid.side_effect = [uuid4(), uuid4()]
 
     providers = MagicMock()
     providers.primary = primary
     providers.fallback = fallback
     providers.fallback_is_remote = True
 
-    handler = EditOpsHandler(
-        settings=settings,
-        providers=providers,
-        budget_resolver=DummyChatOpsBudgetResolver(settings),
-        guard=DummyChatGuard(),
-        failover=DummyFailover(),
-        capture_store=_stub_capture_store(),
-        uow=DummyUow(),
-        sessions=sessions,
-        messages=messages,
-        clock=clock,
-        id_generator=id_generator,
-        system_prompt_loader=lambda _: "prompt",
-    )
+    tool_id = uuid4()
+    actor = make_user(role=Role.CONTRIBUTOR)
+    session = _make_tool_session(tool_id=tool_id, user_id=actor.id)
 
-    result = await handler.handle(
-        actor=actor,
-        command=EditOpsCommand(
-            tool_id=tool_id,
-            message="Uppdatera koden",
-            active_file="tool.py",
-            selection=None,
-            cursor=None,
-            virtual_files=_virtual_files(),
-        ),
-    )
-
-    assert result.enabled is False
-    assert "Tillåt externa API:er (OpenAI)" in result.assistant_message
-    assert result.ops == []
-    primary.complete_chat_ops.assert_awaited_once()
-    fallback.complete_chat_ops.assert_not_called()
-    assert messages.append_message.await_count == 1
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_edit_ops_rejects_cursor_ops_when_cursor_missing() -> None:
-    settings = Settings(LLM_CHAT_OPS_ENABLED=True)
-    provider = MagicMock(spec=ChatOpsProviderProtocol)
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
     sessions.get = AsyncMock(return_value=None)
-    sessions.get_or_create = AsyncMock()
+    sessions.get_or_create = AsyncMock(return_value=session)
+
+    turns = MagicMock(spec=ToolSessionTurnRepositoryProtocol)
+    turns.list_tail = AsyncMock(return_value=[])
+    turns.cancel_pending_turn = AsyncMock(return_value=None)
+    turns.update_status = AsyncMock(return_value=None)
+    turns.create_turn = AsyncMock()
+
     messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
-    messages.list_tail = AsyncMock(return_value=[])
-    messages.append_message = AsyncMock()
+    messages.list_by_turn_ids = AsyncMock(return_value=[])
+    messages.create_message = AsyncMock()
+    messages.update_message_content_if_pending_turn = AsyncMock(return_value=True)
+
     clock = MagicMock(spec=ClockProtocol)
+    clock.now.return_value = datetime(2025, 1, 1, tzinfo=timezone.utc)
+
     id_generator = MagicMock(spec=IdGeneratorProtocol)
+    turn_id = uuid4()
+    user_message_id = uuid4()
+    assistant_message_id = uuid4()
+    session_id = uuid4()
+    id_generator.new_uuid.side_effect = [turn_id, user_message_id, assistant_message_id, session_id]
 
-    actor = make_user(role=Role.CONTRIBUTOR)
-    tool_id = uuid4()
-    session = _make_tool_session(tool_id=tool_id, user_id=actor.id)
-    sessions.get_or_create.return_value = session
-    id_generator.new_uuid.side_effect = [uuid4(), uuid4(), uuid4()]
-
-    response_payload = (
-        '{"assistant_message":"Klart.","ops":[{"op":"insert","target_file":"tool.py",'
-        '"target":{"kind":"cursor"},"content":"# TODO\\n"}]}'
+    turns.create_turn.return_value = _make_turn(
+        turn_id=turn_id,
+        tool_session_id=session.id,
+        correlation_id=None,
     )
-    provider.complete_chat_ops = AsyncMock(
-        return_value=LLMChatOpsResponse(content=response_payload, finish_reason=None)
-    )
-
-    providers = MagicMock()
-    providers.primary = provider
-    providers.fallback = None
-    providers.fallback_is_remote = False
 
     handler = EditOpsHandler(
         settings=settings,
@@ -405,153 +337,14 @@ async def test_edit_ops_rejects_cursor_ops_when_cursor_missing() -> None:
         budget_resolver=DummyChatOpsBudgetResolver(settings),
         guard=DummyChatGuard(),
         failover=DummyFailover(),
-        capture_store=_stub_capture_store(),
+        capture_store=MagicMock(spec=LlmCaptureStoreProtocol),
         uow=DummyUow(),
         sessions=sessions,
+        turns=turns,
         messages=messages,
         clock=clock,
         id_generator=id_generator,
-        system_prompt_loader=lambda _: "prompt",
-    )
-
-    result = await handler.handle(
-        actor=actor,
-        command=EditOpsCommand(
-            tool_id=tool_id,
-            message="Lägg till en rad",
-            active_file="tool.py",
-            selection=None,
-            cursor=None,
-            virtual_files=_virtual_files(),
-        ),
-    )
-
-    assert result.enabled is True
-    assert result.ops == []
-    assert (
-        result.assistant_message == "Jag kunde inte skapa ett giltigt ändringsförslag. Försök igen."
-    )
-    assert messages.append_message.await_count == 2
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_edit_ops_parses_valid_patch_ops() -> None:
-    settings = Settings(LLM_CHAT_OPS_ENABLED=True)
-    provider = MagicMock(spec=ChatOpsProviderProtocol)
-    sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
-    sessions.get = AsyncMock(return_value=None)
-    sessions.get_or_create = AsyncMock()
-    messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
-    messages.list_tail = AsyncMock(return_value=[])
-    messages.append_message = AsyncMock()
-    clock = MagicMock(spec=ClockProtocol)
-    id_generator = MagicMock(spec=IdGeneratorProtocol)
-
-    actor = make_user(role=Role.CONTRIBUTOR)
-    tool_id = uuid4()
-    session = _make_tool_session(tool_id=tool_id, user_id=actor.id)
-    sessions.get_or_create.return_value = session
-    id_generator.new_uuid.side_effect = [uuid4(), uuid4(), uuid4()]
-
-    patch = (
-        "diff --git a/tool.py b/tool.py\n"
-        "--- a/tool.py\n"
-        "+++ b/tool.py\n"
-        "@@ -1,1 +1,1 @@\n"
-        "-print('hi')\n"
-        "+print('hej')\n"
-    )
-    response_payload = json.dumps(
-        {
-            "assistant_message": "Klart.",
-            "ops": [{"op": "patch", "target_file": "tool.py", "patch": patch}],
-        },
-        ensure_ascii=False,
-    )
-    provider.complete_chat_ops = AsyncMock(
-        return_value=LLMChatOpsResponse(content=response_payload, finish_reason=None)
-    )
-
-    providers = MagicMock()
-    providers.primary = provider
-    providers.fallback = None
-    providers.fallback_is_remote = False
-
-    handler = EditOpsHandler(
-        settings=settings,
-        providers=providers,
-        budget_resolver=DummyChatOpsBudgetResolver(settings),
-        guard=DummyChatGuard(),
-        failover=DummyFailover(),
-        capture_store=_stub_capture_store(),
-        uow=DummyUow(),
-        sessions=sessions,
-        messages=messages,
-        clock=clock,
-        id_generator=id_generator,
-        system_prompt_loader=lambda _: "prompt",
-    )
-
-    result = await handler.handle(
-        actor=actor,
-        command=EditOpsCommand(
-            tool_id=tool_id,
-            message="Byt texten",
-            active_file="tool.py",
-            selection=None,
-            cursor=None,
-            virtual_files=_virtual_files(),
-        ),
-    )
-
-    assert result.enabled is True
-    assert len(result.ops) == 1
-    assert result.ops[0].op == "patch"
-    assert messages.append_message.await_count == 2
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_edit_ops_invalid_json_returns_empty_ops() -> None:
-    settings = Settings(LLM_CHAT_OPS_ENABLED=True)
-    provider = MagicMock(spec=ChatOpsProviderProtocol)
-    sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
-    sessions.get = AsyncMock(return_value=None)
-    sessions.get_or_create = AsyncMock()
-    messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
-    messages.list_tail = AsyncMock(return_value=[])
-    messages.append_message = AsyncMock()
-    clock = MagicMock(spec=ClockProtocol)
-    id_generator = MagicMock(spec=IdGeneratorProtocol)
-
-    actor = make_user(role=Role.CONTRIBUTOR)
-    tool_id = uuid4()
-    session = _make_tool_session(tool_id=tool_id, user_id=actor.id)
-    sessions.get_or_create.return_value = session
-    id_generator.new_uuid.side_effect = [uuid4(), uuid4(), uuid4()]
-
-    provider.complete_chat_ops = AsyncMock(
-        return_value=LLMChatOpsResponse(content="not-json", finish_reason=None)
-    )
-
-    providers = MagicMock()
-    providers.primary = provider
-    providers.fallback = None
-    providers.fallback_is_remote = False
-
-    handler = EditOpsHandler(
-        settings=settings,
-        providers=providers,
-        budget_resolver=DummyChatOpsBudgetResolver(settings),
-        guard=DummyChatGuard(),
-        failover=DummyFailover(),
-        capture_store=_stub_capture_store(),
-        uow=DummyUow(),
-        sessions=sessions,
-        messages=messages,
-        clock=clock,
-        id_generator=id_generator,
+        token_counters=FakeTokenCounterResolver(),
         system_prompt_loader=lambda _: "prompt",
     )
 
@@ -561,13 +354,19 @@ async def test_edit_ops_invalid_json_returns_empty_ops() -> None:
             tool_id=tool_id,
             message="Hej",
             active_file="tool.py",
-            selection=None,
-            cursor=None,
+            cursor=EditOpsCursor(pos=0),
             virtual_files=_virtual_files(),
+            allow_remote_fallback=False,
         ),
     )
 
-    assert result.enabled is True
-    assert result.ops == []
-    assert result.assistant_message != ""
-    assert messages.append_message.await_count == 2
+    assert result.enabled is False
+    assert "Tillåt externa API" in result.assistant_message
+
+    fallback.complete_chat_ops.assert_not_called()
+
+    turns.update_status.assert_awaited_once()
+    update_kwargs = turns.update_status.await_args.kwargs
+    assert update_kwargs["turn_id"] == turn_id
+    assert update_kwargs["status"] == "failed"
+    assert update_kwargs["failure_outcome"] == "remote_fallback_required"

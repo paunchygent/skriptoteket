@@ -123,7 +123,7 @@ class Settings(BaseSettings):
     LLM_CHAT_TIMEOUT_SECONDS: int = 60
     LLM_CHAT_CONTEXT_WINDOW_TOKENS: int = 16384
     LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS: int = 256
-    LLM_CHAT_SYSTEM_PROMPT_MAX_TOKENS: int = 1024
+    LLM_CHAT_SYSTEM_PROMPT_MAX_TOKENS: int = 2048
     LLM_CHAT_TAIL_MAX_MESSAGES: int = 60
 
     # Chat failover (primary -> fallback). Defaults keep failover disabled.
@@ -158,3 +158,17 @@ class Settings(BaseSettings):
     LLM_CHAT_FAILOVER_BREAKER_WINDOW_SECONDS: int = 30
     LLM_CHAT_FAILOVER_BREAKER_COOLDOWN_SECONDS: int = 90
     LLM_CHAT_FAILOVER_PRIMARY_MAX_INFLIGHT: int = 0  # 0 = disabled
+
+    # Tokenizers / prompt budgeting (ST-08-27 / ADR-0055)
+    # Devstral (Tekken) tokenizer assets are deploy-time mounted; missing assets fall back to
+    # heuristic counting.
+    LLM_DEVSTRAL_TEKKEN_JSON_PATH: Path | None = None
+
+    # Chat template overhead (tokens). These are intentionally conservative defaults and are added
+    # in addition to tokenizing message content.
+    LLM_GPT5_MESSAGE_OVERHEAD_TOKENS: int = 3
+    LLM_GPT5_SYSTEM_MESSAGE_OVERHEAD_TOKENS: int = 3
+    LLM_DEVSTRAL_MESSAGE_OVERHEAD_TOKENS: int = 4
+    LLM_DEVSTRAL_SYSTEM_MESSAGE_OVERHEAD_TOKENS: int = 4
+    LLM_HEURISTIC_MESSAGE_OVERHEAD_TOKENS: int = 4
+    LLM_HEURISTIC_SYSTEM_MESSAGE_OVERHEAD_TOKENS: int = 4

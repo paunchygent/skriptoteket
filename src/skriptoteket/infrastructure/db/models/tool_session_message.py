@@ -7,6 +7,7 @@ from sqlalchemy import (
     BigInteger,
     DateTime,
     ForeignKey,
+    ForeignKeyConstraint,
     Identity,
     Index,
     String,
@@ -26,10 +27,23 @@ class ToolSessionMessageModel(Base):
     __table_args__ = (
         Index("ix_tool_session_messages_session_sequence", "tool_session_id", "sequence"),
         Index("ix_tool_session_messages_session_message_id", "tool_session_id", "message_id"),
+        Index("ix_tool_session_messages_session_turn_id", "tool_session_id", "turn_id"),
         UniqueConstraint(
             "tool_session_id",
             "message_id",
             name="uq_tool_session_messages_session_message_id",
+        ),
+        UniqueConstraint(
+            "tool_session_id",
+            "turn_id",
+            "role",
+            name="uq_tool_session_messages_turn_role",
+        ),
+        ForeignKeyConstraint(
+            ["tool_session_id", "turn_id"],
+            ["tool_session_turns.tool_session_id", "tool_session_turns.id"],
+            ondelete="CASCADE",
+            name="fk_tool_session_messages_turn",
         ),
     )
 
@@ -39,6 +53,7 @@ class ToolSessionMessageModel(Base):
         ForeignKey("tool_sessions.id", ondelete="CASCADE"),
         nullable=False,
     )
+    turn_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
     message_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
     role: Mapped[str] = mapped_column(String(16), nullable=False)
     content: Mapped[str] = mapped_column(Text(), nullable=False)

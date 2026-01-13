@@ -13,6 +13,7 @@ from skriptoteket.protocols.llm import (
     InlineCompletionProviderProtocol,
     LLMCompletionResponse,
 )
+from tests.fixtures.application_fixtures import FakeTokenCounterResolver
 from tests.fixtures.identity_fixtures import make_user
 
 
@@ -21,7 +22,11 @@ from tests.fixtures.identity_fixtures import make_user
 async def test_inline_completion_returns_enabled_false_when_disabled() -> None:
     settings = Settings(LLM_COMPLETION_ENABLED=False)
     provider = AsyncMock(spec=InlineCompletionProviderProtocol)
-    handler = InlineCompletionHandler(settings=settings, provider=provider)
+    handler = InlineCompletionHandler(
+        settings=settings,
+        provider=provider,
+        token_counters=FakeTokenCounterResolver(),
+    )
     actor = make_user(role=Role.CONTRIBUTOR)
 
     result = await handler.handle(
@@ -47,6 +52,7 @@ async def test_inline_completion_returns_enabled_false_when_kb_unavailable() -> 
     handler = InlineCompletionHandler(
         settings=settings,
         provider=provider,
+        token_counters=FakeTokenCounterResolver(),
         system_prompt_loader=system_prompt_loader,
     )
     actor = make_user(role=Role.CONTRIBUTOR)
@@ -71,7 +77,11 @@ async def test_inline_completion_returns_empty_on_timeout() -> None:
         request=httpx.Request("POST", "http://test"),
     )
 
-    handler = InlineCompletionHandler(settings=settings, provider=provider)
+    handler = InlineCompletionHandler(
+        settings=settings,
+        provider=provider,
+        token_counters=FakeTokenCounterResolver(),
+    )
     actor = make_user(role=Role.CONTRIBUTOR)
 
     result = await handler.handle(
@@ -94,7 +104,11 @@ async def test_inline_completion_discards_truncated_upstream_response() -> None:
         finish_reason="length",
     )
 
-    handler = InlineCompletionHandler(settings=settings, provider=provider)
+    handler = InlineCompletionHandler(
+        settings=settings,
+        provider=provider,
+        token_counters=FakeTokenCounterResolver(),
+    )
     actor = make_user(role=Role.CONTRIBUTOR)
 
     result = await handler.handle(
@@ -127,6 +141,7 @@ async def test_inline_completion_trims_prefix_and_suffix_to_budget() -> None:
     handler = InlineCompletionHandler(
         settings=settings,
         provider=provider,
+        token_counters=FakeTokenCounterResolver(),
         system_prompt_loader=lambda _template_id: "system prompt",
     )
     actor = make_user(role=Role.CONTRIBUTOR)
@@ -140,8 +155,8 @@ async def test_inline_completion_trims_prefix_and_suffix_to_budget() -> None:
 
     assert provider.complete_inline.await_count == 1
     request = provider.complete_inline.call_args.kwargs["request"]
-    assert request.prefix == "A" * 10
-    assert request.suffix == "B" * 8
+    assert request.prefix == "A" * 20
+    assert request.suffix == "B" * 16
 
 
 @pytest.mark.unit
@@ -165,6 +180,7 @@ async def test_inline_completion_returns_empty_on_context_window_http_error() ->
     handler = InlineCompletionHandler(
         settings=settings,
         provider=provider,
+        token_counters=FakeTokenCounterResolver(),
         system_prompt_loader=lambda _template_id: "system prompt",
     )
     actor = make_user(role=Role.CONTRIBUTOR)
@@ -188,7 +204,11 @@ async def test_inline_completion_unwraps_fenced_response() -> None:
         finish_reason=None,
     )
 
-    handler = InlineCompletionHandler(settings=settings, provider=provider)
+    handler = InlineCompletionHandler(
+        settings=settings,
+        provider=provider,
+        token_counters=FakeTokenCounterResolver(),
+    )
     actor = make_user(role=Role.CONTRIBUTOR)
 
     result = await handler.handle(
@@ -210,7 +230,11 @@ async def test_inline_completion_unwraps_unclosed_fence() -> None:
         finish_reason=None,
     )
 
-    handler = InlineCompletionHandler(settings=settings, provider=provider)
+    handler = InlineCompletionHandler(
+        settings=settings,
+        provider=provider,
+        token_counters=FakeTokenCounterResolver(),
+    )
     actor = make_user(role=Role.CONTRIBUTOR)
 
     result = await handler.handle(

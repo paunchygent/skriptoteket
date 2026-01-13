@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from typing import Mapping
 
 from skriptoteket.application.editor.ai_prompt import load_system_prompt_text
-from skriptoteket.application.editor.prompt_budget import estimate_text_tokens
 from skriptoteket.application.editor.prompt_fragments import (
     contract_v2_fragment,
     helpers_fragment,
@@ -21,6 +20,7 @@ from skriptoteket.application.editor.prompt_templates import (
     get_prompt_template,
 )
 from skriptoteket.config import Settings
+from skriptoteket.protocols.token_counter import TokenCounterProtocol
 
 _PLACEHOLDER_PATTERN = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
 
@@ -72,13 +72,19 @@ def build_default_fragments(*, settings: Settings) -> dict[str, str]:
     }
 
 
-def compose_system_prompt(*, template_id: str, settings: Settings) -> ComposedSystemPrompt:
+def compose_system_prompt(
+    *, template_id: str, settings: Settings, token_counter: TokenCounterProtocol
+) -> ComposedSystemPrompt:
     try:
         template = get_prompt_template(template_id=template_id)
     except ValueError as exc:
         raise PromptTemplateError(str(exc)) from exc
 
-    return compose_system_prompt_from_template(template=template, settings=settings)
+    return compose_system_prompt_from_template(
+        template=template,
+        settings=settings,
+        token_counter=token_counter,
+    )
 
 
 def compose_system_prompt_from_template(
@@ -86,6 +92,7 @@ def compose_system_prompt_from_template(
     template: PromptTemplate,
     settings: Settings,
     template_text_loader: TemplateTextLoader | None = None,
+    token_counter: TokenCounterProtocol,
 ) -> ComposedSystemPrompt:
     def default_loader(prompt_path: str) -> str:
         return load_system_prompt_text(prompt_path=prompt_path)
@@ -127,7 +134,7 @@ def compose_system_prompt_from_template(
         settings=settings,
         capability=template.capability,
     )
-    estimated_tokens = estimate_text_tokens(composed)
+    estimated_tokens = token_counter.count_system_prompt(content=composed)
     if estimated_tokens > system_prompt_max_tokens:
         raise PromptTemplateError(
             "Composed system prompt exceeds budget "
@@ -142,7 +149,7 @@ def compose_system_prompt_from_template(
     )
 
 
-def validate_prompt_templates(*, settings: Settings) -> None:
+def validate_prompt_templates(*, settings: Settings, token_counter: TokenCounterProtocol) -> None:
     """Validate that all prompt templates compose cleanly under current settings.
 
     Intended for unit tests (fail fast) and optional startup diagnostics.
@@ -151,4 +158,6 @@ def validate_prompt_templates(*, settings: Settings) -> None:
     from skriptoteket.application.editor.prompt_templates import PROMPT_TEMPLATES
 
     for template_id in PROMPT_TEMPLATES:
-        compose_system_prompt(template_id=template_id, settings=settings)
+        compose_system_prompt(
+            template_id=template_id, settings=settings, token_counter=token_counter
+        )

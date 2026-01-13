@@ -63,6 +63,9 @@ from skriptoteket.infrastructure.repositories.tool_session_message_repository im
 from skriptoteket.infrastructure.repositories.tool_session_repository import (
     PostgreSQLToolSessionRepository,
 )
+from skriptoteket.infrastructure.repositories.tool_session_turn_repository import (
+    PostgreSQLToolSessionTurnRepository,
+)
 from skriptoteket.infrastructure.repositories.tool_version_repository import (
     PostgreSQLToolVersionRepository,
 )
@@ -124,6 +127,7 @@ from skriptoteket.protocols.suggestions import (
 )
 from skriptoteket.protocols.token_generator import TokenGeneratorProtocol
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
+from skriptoteket.protocols.tool_session_turns import ToolSessionTurnRepositoryProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
@@ -313,6 +317,10 @@ class InfrastructureProvider(Provider):
         self, session: AsyncSession
     ) -> ToolSessionMessageRepositoryProtocol:
         return PostgreSQLToolSessionMessageRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def tool_session_turn_repo(self, session: AsyncSession) -> ToolSessionTurnRepositoryProtocol:
+        return PostgreSQLToolSessionTurnRepository(session)
 
     @provide(scope=Scope.REQUEST)
     def draft_lock_repo(self, session: AsyncSession) -> DraftLockRepositoryProtocol:

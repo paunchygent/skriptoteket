@@ -11,6 +11,7 @@ from structlog.contextvars import bind_contextvars, clear_contextvars
 from skriptoteket.application.editor.edit_ops_handler import EditOpsHandler
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.scripting.tool_session_turns import ToolSessionTurn
 from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -27,8 +28,10 @@ from skriptoteket.protocols.llm import (
 )
 from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
+from skriptoteket.protocols.tool_session_turns import ToolSessionTurnRepositoryProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+from tests.fixtures.application_fixtures import FakeTokenCounterResolver
 from tests.fixtures.identity_fixtures import make_user
 
 
@@ -111,6 +114,23 @@ def _make_tool_session(*, tool_id: UUID, user_id: UUID) -> ToolSession:
     )
 
 
+def _make_turn(
+    *, turn_id: UUID, tool_session_id: UUID, correlation_id: UUID | None
+) -> ToolSessionTurn:
+    now = datetime(2025, 1, 1, tzinfo=timezone.utc)
+    return ToolSessionTurn(
+        id=turn_id,
+        tool_session_id=tool_session_id,
+        status="pending",
+        failure_outcome=None,
+        provider=None,
+        correlation_id=correlation_id,
+        sequence=1,
+        created_at=now,
+        updated_at=now,
+    )
+
+
 def _virtual_files() -> dict[VirtualFileId, str]:
     return {
         "tool.py": "print('hi')\n",
@@ -145,18 +165,40 @@ async def test_edit_ops_writes_capture_on_parse_failed_when_enabled() -> None:
         sessions.get = AsyncMock(return_value=None)
         sessions.get_or_create = AsyncMock()
 
+        turns = MagicMock(spec=ToolSessionTurnRepositoryProtocol)
+        turns.list_tail = AsyncMock(return_value=[])
+        turns.cancel_pending_turn = AsyncMock(return_value=None)
+        turns.create_turn = AsyncMock()
+        turns.update_status = AsyncMock(return_value=None)
+
         messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
-        messages.list_tail = AsyncMock(return_value=[])
-        messages.append_message = AsyncMock()
+        messages.list_by_turn_ids = AsyncMock(return_value=[])
+        messages.create_message = AsyncMock()
+        messages.update_message_content_if_pending_turn = AsyncMock(return_value=True)
 
         clock = MagicMock(spec=ClockProtocol)
         clock.now.return_value = datetime(2025, 1, 1, tzinfo=timezone.utc)
         id_generator = MagicMock(spec=IdGeneratorProtocol)
-        id_generator.new_uuid.side_effect = [uuid4(), uuid4(), uuid4()]
+        turn_id = uuid4()
+        user_message_id = uuid4()
+        assistant_message_id = uuid4()
+        session_id = uuid4()
+        id_generator.new_uuid.side_effect = [
+            turn_id,
+            user_message_id,
+            assistant_message_id,
+            session_id,
+        ]
 
         actor = make_user(role=Role.CONTRIBUTOR)
         tool_id = uuid4()
-        sessions.get_or_create.return_value = _make_tool_session(tool_id=tool_id, user_id=actor.id)
+        session = _make_tool_session(tool_id=tool_id, user_id=actor.id)
+        sessions.get_or_create.return_value = session
+        turns.create_turn.return_value = _make_turn(
+            turn_id=turn_id,
+            tool_session_id=session.id,
+            correlation_id=correlation_id,
+        )
 
         capture_store = MagicMock(spec=LlmCaptureStoreProtocol)
         capture_store.write_capture = AsyncMock()
@@ -170,9 +212,11 @@ async def test_edit_ops_writes_capture_on_parse_failed_when_enabled() -> None:
             capture_store=capture_store,
             uow=DummyUow(),
             sessions=sessions,
+            turns=turns,
             messages=messages,
             clock=clock,
             id_generator=id_generator,
+            token_counters=FakeTokenCounterResolver(),
             system_prompt_loader=lambda _: "prompt",
         )
 
@@ -190,6 +234,9 @@ async def test_edit_ops_writes_capture_on_parse_failed_when_enabled() -> None:
 
         assert result.enabled is True
         assert result.ops == []
+
+        messages.update_message_content_if_pending_turn.assert_awaited_once()
+        turns.update_status.assert_awaited_once()
 
         capture_store.write_capture.assert_awaited_once()
         kwargs = capture_store.write_capture.await_args.kwargs
