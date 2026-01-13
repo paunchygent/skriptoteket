@@ -7,26 +7,11 @@ from pathlib import Path
 import structlog
 
 from skriptoteket.config import Settings
+from skriptoteket.infrastructure.llm.model_families import is_gpt5_family_model
 from skriptoteket.protocols.llm import ChatMessageRole
 from skriptoteket.protocols.token_counter import TokenCounterProtocol, TokenCounterResolverProtocol
 
 logger = structlog.get_logger(__name__)
-
-
-def _is_gpt5_family_model(model: str) -> bool:
-    normalized = model.strip().lower()
-    if not normalized:
-        return False
-
-    prefixes = ("gpt-5", "openai/gpt-5")
-    for prefix in prefixes:
-        if not normalized.startswith(prefix):
-            continue
-        end = len(prefix)
-        if end == len(normalized) or normalized[end] in "-_.":
-            return True
-
-    return False
 
 
 def _looks_like_devstral_model(model: str) -> bool:
@@ -194,7 +179,7 @@ class SettingsBasedTokenCounterResolver(TokenCounterResolverProtocol):
     @lru_cache(maxsize=32)
     def for_model(self, *, model: str) -> TokenCounterProtocol:
         normalized = model.strip()
-        if _is_gpt5_family_model(normalized):
+        if is_gpt5_family_model(model=normalized):
             return TiktokenTokenCounter(model=normalized, overheads=self._gpt5_overheads)
 
         if _looks_like_devstral_model(normalized):

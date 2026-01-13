@@ -8,6 +8,9 @@ from uuid import UUID, uuid4
 import pytest
 
 from skriptoteket.application.editor.chat_handler import EditorChatHandler
+from skriptoteket.application.editor.chat_prompt_builder import SettingsBasedEditorChatPromptBuilder
+from skriptoteket.application.editor.chat_stream_orchestrator import EditorChatStreamOrchestrator
+from skriptoteket.application.editor.chat_turn_preparer import EditorChatTurnPreparer
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
@@ -83,6 +86,51 @@ class DummyFailover(ChatFailoverRouterProtocol):
         return None
 
 
+def _make_handler(
+    *,
+    settings: Settings,
+    providers,
+    guard: ChatInFlightGuardProtocol,
+    failover: ChatFailoverRouterProtocol,
+    uow: UnitOfWorkProtocol,
+    sessions: ToolSessionRepositoryProtocol,
+    turns: ToolSessionTurnRepositoryProtocol,
+    messages: ToolSessionMessageRepositoryProtocol,
+    clock: ClockProtocol,
+    id_generator: IdGeneratorProtocol,
+    system_prompt_loader=None,
+    token_counters: FakeTokenCounterResolver,
+) -> EditorChatHandler:
+    prompt_builder = SettingsBasedEditorChatPromptBuilder(settings=settings)
+    turn_preparer = EditorChatTurnPreparer(
+        settings=settings,
+        prompt_builder=prompt_builder,
+        uow=uow,
+        sessions=sessions,
+        turns=turns,
+        messages=messages,
+        clock=clock,
+        id_generator=id_generator,
+    )
+    stream_orchestrator = EditorChatStreamOrchestrator(
+        providers=providers,
+        failover=failover,
+        uow=uow,
+        turns=turns,
+        messages=messages,
+    )
+    return EditorChatHandler(
+        settings=settings,
+        providers=providers,
+        guard=guard,
+        failover=failover,
+        turn_preparer=turn_preparer,
+        stream_orchestrator=stream_orchestrator,
+        token_counters=token_counters,
+        system_prompt_loader=system_prompt_loader,
+    )
+
+
 def _make_session(*, tool_id: UUID, user_id: UUID) -> ToolSession:
     now = datetime(2025, 1, 1, tzinfo=timezone.utc)
     return ToolSession(
@@ -143,7 +191,7 @@ async def test_editor_chat_guard_rejects_concurrent_request() -> None:
     providers.fallback = None
     providers.fallback_is_remote = False
 
-    handler = EditorChatHandler(
+    handler = _make_handler(
         settings=settings,
         providers=providers,
         guard=BlockChatGuard(),
@@ -231,7 +279,7 @@ async def test_editor_chat_cancels_pending_turn_when_starting_new_request() -> N
     providers.fallback = None
     providers.fallback_is_remote = False
 
-    handler = EditorChatHandler(
+    handler = _make_handler(
         settings=settings,
         providers=providers,
         guard=AllowChatGuard(),

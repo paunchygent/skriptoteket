@@ -5,7 +5,7 @@ from collections.abc import AsyncIterator
 import httpx
 import pytest
 
-from skriptoteket.application.editor.chat_handler import _is_context_window_error
+from skriptoteket.application.editor.chat_stream_orchestrator import _is_context_window_error
 
 
 class _StreamingBody(httpx.AsyncByteStream):

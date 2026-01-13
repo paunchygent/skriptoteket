@@ -9,6 +9,7 @@ import pytest
 from structlog.contextvars import bind_contextvars, clear_contextvars
 
 from skriptoteket.application.editor.edit_ops_handler import EditOpsHandler
+from skriptoteket.application.editor.edit_ops_payload_parser import DefaultEditOpsPayloadParser
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.tool_session_turns import ToolSessionTurn
@@ -207,6 +208,7 @@ async def test_edit_ops_writes_capture_on_parse_failed_when_enabled() -> None:
             settings=settings,
             providers=providers,
             budget_resolver=DummyChatOpsBudgetResolver(settings),
+            payload_parser=DefaultEditOpsPayloadParser(),
             guard=DummyChatGuard(),
             failover=DummyFailover(),
             capture_store=capture_store,

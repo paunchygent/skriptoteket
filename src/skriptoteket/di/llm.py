@@ -9,9 +9,13 @@ from dishka import Provider, Scope, provide
 
 from skriptoteket.application.editor.chat_handler import EditorChatHandler
 from skriptoteket.application.editor.chat_history_handler import EditorChatHistoryHandler
+from skriptoteket.application.editor.chat_prompt_builder import SettingsBasedEditorChatPromptBuilder
+from skriptoteket.application.editor.chat_stream_orchestrator import EditorChatStreamOrchestrator
+from skriptoteket.application.editor.chat_turn_preparer import EditorChatTurnPreparer
 from skriptoteket.application.editor.clear_chat_handler import EditorChatClearHandler
 from skriptoteket.application.editor.completion_handler import InlineCompletionHandler
 from skriptoteket.application.editor.edit_ops_handler import EditOpsHandler
+from skriptoteket.application.editor.edit_ops_payload_parser import DefaultEditOpsPayloadParser
 from skriptoteket.application.editor.edit_ops_preview_handler import (
     EditOpsApplyHandler,
     EditOpsPreviewHandler,
@@ -36,6 +40,12 @@ from skriptoteket.infrastructure.llm.provider_sets import (
 )
 from skriptoteket.infrastructure.llm.token_counter_resolver import SettingsBasedTokenCounterResolver
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.edit_ops_payload_parser import EditOpsPayloadParserProtocol
+from skriptoteket.protocols.editor_chat import (
+    EditorChatPromptBuilderProtocol,
+    EditorChatStreamOrchestratorProtocol,
+    EditorChatTurnPreparerProtocol,
+)
 from skriptoteket.protocols.editor_patches import UnifiedDiffApplierProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
@@ -73,6 +83,14 @@ class LlmProvider(Provider):
     @provide(scope=Scope.APP)
     def token_counter_resolver(self, settings: Settings) -> TokenCounterResolverProtocol:
         return SettingsBasedTokenCounterResolver(settings=settings)
+
+    @provide(scope=Scope.APP)
+    def edit_ops_payload_parser(self) -> EditOpsPayloadParserProtocol:
+        return DefaultEditOpsPayloadParser()
+
+    @provide(scope=Scope.APP)
+    def editor_chat_prompt_builder(self, settings: Settings) -> EditorChatPromptBuilderProtocol:
+        return SettingsBasedEditorChatPromptBuilder(settings=settings)
 
     @provide(scope=Scope.APP)
     async def llm_http_client(self, settings: Settings) -> AsyncIterator[httpx.AsyncClient]:
@@ -171,6 +189,7 @@ class LlmProvider(Provider):
         settings: Settings,
         providers: ChatOpsProvidersProtocol,
         budget_resolver: ChatOpsBudgetResolverProtocol,
+        payload_parser: EditOpsPayloadParserProtocol,
         guard: ChatInFlightGuardProtocol,
         failover: ChatFailoverRouterProtocol,
         capture_store: LlmCaptureStoreProtocol,
@@ -186,6 +205,7 @@ class LlmProvider(Provider):
             settings=settings,
             providers=providers,
             budget_resolver=budget_resolver,
+            payload_parser=payload_parser,
             guard=guard,
             failover=failover,
             capture_store=capture_store,
@@ -225,12 +245,8 @@ class LlmProvider(Provider):
         providers: ChatStreamProvidersProtocol,
         guard: ChatInFlightGuardProtocol,
         failover: ChatFailoverRouterProtocol,
-        uow: UnitOfWorkProtocol,
-        sessions: ToolSessionRepositoryProtocol,
-        turns: ToolSessionTurnRepositoryProtocol,
-        messages: ToolSessionMessageRepositoryProtocol,
-        clock: ClockProtocol,
-        id_generator: IdGeneratorProtocol,
+        turn_preparer: EditorChatTurnPreparerProtocol,
+        stream_orchestrator: EditorChatStreamOrchestratorProtocol,
         token_counters: TokenCounterResolverProtocol,
     ) -> EditorChatHandlerProtocol:
         return EditorChatHandler(
@@ -238,13 +254,49 @@ class LlmProvider(Provider):
             providers=providers,
             guard=guard,
             failover=failover,
+            turn_preparer=turn_preparer,
+            stream_orchestrator=stream_orchestrator,
+            token_counters=token_counters,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def editor_chat_turn_preparer(
+        self,
+        settings: Settings,
+        prompt_builder: EditorChatPromptBuilderProtocol,
+        uow: UnitOfWorkProtocol,
+        sessions: ToolSessionRepositoryProtocol,
+        turns: ToolSessionTurnRepositoryProtocol,
+        messages: ToolSessionMessageRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> EditorChatTurnPreparerProtocol:
+        return EditorChatTurnPreparer(
+            settings=settings,
+            prompt_builder=prompt_builder,
             uow=uow,
             sessions=sessions,
             turns=turns,
             messages=messages,
             clock=clock,
             id_generator=id_generator,
-            token_counters=token_counters,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def editor_chat_stream_orchestrator(
+        self,
+        providers: ChatStreamProvidersProtocol,
+        failover: ChatFailoverRouterProtocol,
+        uow: UnitOfWorkProtocol,
+        turns: ToolSessionTurnRepositoryProtocol,
+        messages: ToolSessionMessageRepositoryProtocol,
+    ) -> EditorChatStreamOrchestratorProtocol:
+        return EditorChatStreamOrchestrator(
+            providers=providers,
+            failover=failover,
+            uow=uow,
+            turns=turns,
+            messages=messages,
         )
 
     @provide(scope=Scope.REQUEST)

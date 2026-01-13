@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import re
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -11,7 +10,6 @@ from uuid import UUID
 
 import httpx
 import structlog
-from pydantic import BaseModel, ConfigDict, ValidationError
 from structlog.contextvars import get_contextvars
 
 from skriptoteket.application.editor.prompt_budget import apply_chat_ops_budget
@@ -25,6 +23,7 @@ from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.domain.scripting.tool_session_turns import ToolSessionTurnStatus
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.edit_ops_payload_parser import EditOpsPayloadParserProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
     ChatFailoverRouterProtocol,
@@ -62,7 +61,6 @@ _MESSAGE_TOO_LONG = "För långt meddelande: korta ned eller starta en ny chatt.
 _GENERATION_ERROR = "Jag kunde inte skapa ett ändringsförslag just nu. Försök igen."
 _INVALID_OPS_ERROR = "Jag kunde inte skapa ett giltigt ändringsförslag. Försök igen."
 
-_CODE_FENCE_PATTERN = re.compile(r"```[a-zA-Z0-9_-]*\n(.*?)```", re.DOTALL)
 _VIRTUAL_FILE_IDS: tuple[VirtualFileId, ...] = (
     "tool.py",
     "entrypoint.txt",
@@ -92,28 +90,6 @@ def _is_context_window_error(exc: httpx.HTTPStatusError) -> bool:
     return "exceed_context_size_error" in haystack.lower()
 
 
-def _extract_first_fenced_block(text: str) -> str | None:
-    match = _CODE_FENCE_PATTERN.search(text)
-    if not match:
-        return None
-    return match.group(1)
-
-
-def _extract_json_object(text: str) -> str | None:
-    start = text.find("{")
-    end = text.rfind("}")
-    if start == -1 or end == -1 or end <= start:
-        return None
-    return text[start : end + 1]
-
-
-class _EditOpsPayload(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    assistant_message: str
-    ops: list[EditOpsOp]
-
-
 @dataclass(frozen=True, slots=True)
 class _PreparedOpsRequest:
     messages: list[ChatMessage]
@@ -131,6 +107,7 @@ class EditOpsHandler(EditOpsHandlerProtocol):
         settings: Settings,
         providers: ChatOpsProvidersProtocol,
         budget_resolver: ChatOpsBudgetResolverProtocol,
+        payload_parser: EditOpsPayloadParserProtocol,
         guard: ChatInFlightGuardProtocol,
         failover: ChatFailoverRouterProtocol,
         capture_store: LlmCaptureStoreProtocol,
@@ -146,6 +123,7 @@ class EditOpsHandler(EditOpsHandlerProtocol):
         self._settings = settings
         self._providers = providers
         self._budget_resolver = budget_resolver
+        self._payload_parser = payload_parser
         self._guard = guard
         self._failover = failover
         self._capture_store = capture_store
@@ -181,28 +159,6 @@ class EditOpsHandler(EditOpsHandlerProtocol):
         if command.cursor is not None:
             payload["cursor"] = {"pos": command.cursor.pos}
         return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
-
-    def _parse_payload(self, raw: str) -> _EditOpsPayload | None:
-        candidates = [raw.strip()]
-        fenced = _extract_first_fenced_block(raw)
-        if fenced:
-            candidates.append(fenced.strip())
-        extracted = _extract_json_object(raw)
-        if extracted:
-            candidates.append(extracted.strip())
-
-        for candidate in candidates:
-            if not candidate:
-                continue
-            try:
-                payload = json.loads(candidate)
-            except json.JSONDecodeError:
-                continue
-            try:
-                return _EditOpsPayload.model_validate(payload)
-            except ValidationError:
-                continue
-        return None
 
     def _ops_compatible_with_request(
         self, *, command: EditOpsCommand, ops: list[EditOpsOp]
@@ -751,7 +707,7 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                     eval_outcome = "truncated"
                     log_outcome = "truncated"
                 else:
-                    parsed = self._parse_payload(response.content)
+                    parsed = self._payload_parser.parse(raw=response.content)
                     parse_ok = parsed is not None
                     if parsed is None:
                         assistant_message = _INVALID_OPS_ERROR

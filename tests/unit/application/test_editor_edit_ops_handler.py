@@ -8,6 +8,7 @@ from uuid import UUID, uuid4
 import pytest
 
 from skriptoteket.application.editor.edit_ops_handler import EditOpsHandler
+from skriptoteket.application.editor.edit_ops_payload_parser import DefaultEditOpsPayloadParser
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.tool_session_turns import ToolSessionTurn
@@ -145,6 +146,7 @@ async def test_edit_ops_returns_disabled_without_writing_turn() -> None:
         settings=settings,
         providers=providers,
         budget_resolver=DummyChatOpsBudgetResolver(settings),
+        payload_parser=DefaultEditOpsPayloadParser(),
         guard=DummyChatGuard(),
         failover=DummyFailover(),
         capture_store=MagicMock(spec=LlmCaptureStoreProtocol),
@@ -242,6 +244,7 @@ async def test_edit_ops_creates_turn_and_finalizes_on_success() -> None:
         settings=settings,
         providers=providers,
         budget_resolver=DummyChatOpsBudgetResolver(settings),
+        payload_parser=DefaultEditOpsPayloadParser(),
         guard=DummyChatGuard(),
         failover=DummyFailover(),
         capture_store=MagicMock(spec=LlmCaptureStoreProtocol),
@@ -335,6 +338,7 @@ async def test_edit_ops_finalizes_turn_as_remote_fallback_required_after_retryab
         settings=settings,
         providers=providers,
         budget_resolver=DummyChatOpsBudgetResolver(settings),
+        payload_parser=DefaultEditOpsPayloadParser(),
         guard=DummyChatGuard(),
         failover=DummyFailover(),
         capture_store=MagicMock(spec=LlmCaptureStoreProtocol),

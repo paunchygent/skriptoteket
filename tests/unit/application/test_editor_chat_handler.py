@@ -9,6 +9,9 @@ import httpx
 import pytest
 
 from skriptoteket.application.editor.chat_handler import EditorChatHandler
+from skriptoteket.application.editor.chat_prompt_builder import SettingsBasedEditorChatPromptBuilder
+from skriptoteket.application.editor.chat_stream_orchestrator import EditorChatStreamOrchestrator
+from skriptoteket.application.editor.chat_turn_preparer import EditorChatTurnPreparer
 from skriptoteket.application.editor.prompt_budget import apply_chat_budget
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -83,6 +86,51 @@ class DummyFailover(ChatFailoverRouterProtocol):
         return None
 
 
+def _make_handler(
+    *,
+    settings: Settings,
+    providers,
+    guard: ChatInFlightGuardProtocol,
+    failover: ChatFailoverRouterProtocol,
+    uow: UnitOfWorkProtocol,
+    sessions: ToolSessionRepositoryProtocol,
+    turns: ToolSessionTurnRepositoryProtocol,
+    messages: ToolSessionMessageRepositoryProtocol,
+    clock: ClockProtocol,
+    id_generator: IdGeneratorProtocol,
+    token_counters: FakeTokenCounterResolver,
+    system_prompt_loader=None,
+) -> EditorChatHandler:
+    prompt_builder = SettingsBasedEditorChatPromptBuilder(settings=settings)
+    turn_preparer = EditorChatTurnPreparer(
+        settings=settings,
+        prompt_builder=prompt_builder,
+        uow=uow,
+        sessions=sessions,
+        turns=turns,
+        messages=messages,
+        clock=clock,
+        id_generator=id_generator,
+    )
+    stream_orchestrator = EditorChatStreamOrchestrator(
+        providers=providers,
+        failover=failover,
+        uow=uow,
+        turns=turns,
+        messages=messages,
+    )
+    return EditorChatHandler(
+        settings=settings,
+        providers=providers,
+        guard=guard,
+        failover=failover,
+        turn_preparer=turn_preparer,
+        stream_orchestrator=stream_orchestrator,
+        token_counters=token_counters,
+        system_prompt_loader=system_prompt_loader,
+    )
+
+
 def _make_tool_session(
     *,
     tool_id: UUID,
@@ -155,7 +203,7 @@ async def test_editor_chat_returns_done_disabled_when_disabled() -> None:
     providers.fallback = None
     providers.fallback_is_remote = False
 
-    handler = EditorChatHandler(
+    handler = _make_handler(
         settings=settings,
         providers=providers,
         guard=DummyChatGuard(),
@@ -211,7 +259,7 @@ async def test_editor_chat_returns_done_disabled_when_system_prompt_unavailable(
     providers.fallback = None
     providers.fallback_is_remote = False
 
-    handler = EditorChatHandler(
+    handler = _make_handler(
         settings=settings,
         providers=providers,
         guard=DummyChatGuard(),
@@ -222,8 +270,8 @@ async def test_editor_chat_returns_done_disabled_when_system_prompt_unavailable(
         messages=messages,
         clock=clock,
         id_generator=id_generator,
-        system_prompt_loader=system_prompt_loader,
         token_counters=FakeTokenCounterResolver(),
+        system_prompt_loader=system_prompt_loader,
     )
     actor = make_user(role=Role.CONTRIBUTOR)
 
@@ -322,7 +370,7 @@ async def test_editor_chat_streams_meta_delta_done_and_persists_turn() -> None:
     providers.fallback = None
     providers.fallback_is_remote = False
 
-    handler = EditorChatHandler(
+    handler = _make_handler(
         settings=settings,
         providers=providers,
         guard=DummyChatGuard(),
@@ -333,8 +381,8 @@ async def test_editor_chat_streams_meta_delta_done_and_persists_turn() -> None:
         messages=messages,
         clock=clock,
         id_generator=id_generator,
-        system_prompt_loader=lambda _template_id: "system prompt",
         token_counters=FakeTokenCounterResolver(),
+        system_prompt_loader=lambda _template_id: "system prompt",
     )
 
     events = [
@@ -464,7 +512,7 @@ async def test_editor_chat_emits_done_error_on_timeout_and_marks_turn_failed() -
     providers.fallback = None
     providers.fallback_is_remote = False
 
-    handler = EditorChatHandler(
+    handler = _make_handler(
         settings=settings,
         providers=providers,
         guard=DummyChatGuard(),
@@ -475,8 +523,8 @@ async def test_editor_chat_emits_done_error_on_timeout_and_marks_turn_failed() -
         messages=messages,
         clock=clock,
         id_generator=id_generator,
-        system_prompt_loader=lambda _template_id: "system prompt",
         token_counters=FakeTokenCounterResolver(),
+        system_prompt_loader=lambda _template_id: "system prompt",
     )
 
     events = [
@@ -574,7 +622,7 @@ async def test_editor_chat_persists_partial_assistant_message_on_timeout_after_d
     providers.fallback = None
     providers.fallback_is_remote = False
 
-    handler = EditorChatHandler(
+    handler = _make_handler(
         settings=settings,
         providers=providers,
         guard=DummyChatGuard(),
@@ -585,8 +633,8 @@ async def test_editor_chat_persists_partial_assistant_message_on_timeout_after_d
         messages=messages,
         clock=clock,
         id_generator=id_generator,
-        system_prompt_loader=lambda _template_id: "system prompt",
         token_counters=FakeTokenCounterResolver(),
+        system_prompt_loader=lambda _template_id: "system prompt",
     )
 
     events = [
@@ -647,8 +695,17 @@ async def test_editor_chat_raises_validation_error_when_message_too_long() -> No
     )
     provider = MagicMock(spec=ChatStreamProviderProtocol)
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
+    sessions.get = AsyncMock()
+    sessions.get_or_create = AsyncMock()
+
     turns = MagicMock(spec=ToolSessionTurnRepositoryProtocol)
+    turns.list_tail = AsyncMock()
+    turns.cancel_pending_turn = AsyncMock()
+    turns.create_turn = AsyncMock()
+
     messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
+    messages.list_by_turn_ids = AsyncMock()
+    messages.create_message = AsyncMock()
     clock = MagicMock(spec=ClockProtocol)
     id_generator = MagicMock(spec=IdGeneratorProtocol)
 
@@ -657,7 +714,7 @@ async def test_editor_chat_raises_validation_error_when_message_too_long() -> No
     providers.fallback = None
     providers.fallback_is_remote = False
 
-    handler = EditorChatHandler(
+    handler = _make_handler(
         settings=settings,
         providers=providers,
         guard=DummyChatGuard(),
@@ -754,7 +811,7 @@ async def test_editor_chat_drops_expired_thread_history() -> None:
     assistant_message_id = uuid4()
     id_generator.new_uuid.side_effect = [turn_id, user_message_id, assistant_message_id]
 
-    handler = EditorChatHandler(
+    handler = _make_handler(
         settings=settings,
         providers=providers,
         guard=DummyChatGuard(),
