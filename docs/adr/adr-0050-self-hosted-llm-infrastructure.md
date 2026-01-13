@@ -6,7 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-30
-updated: 2026-01-02
+updated: 2026-01-13
 supersedes: []
 ---
 
@@ -81,12 +81,13 @@ Qwen3-Coder-30B-A3B uses Mixture-of-Experts (MoE):
 
 ### Service Configuration
 
-| Service      | Port  | Binary/Config                                         |
-|--------------|-------|-------------------------------------------------------|
-| llama-server | 8082  | `/home/paunchygent/llama.cpp/build/bin/llama-server`  |
-| tabby        | 8083  | `/usr/local/bin/tabby serve --port 8083 --no-webserver` |
+| Service      | Port  | Runtime/Config |
+|--------------|-------|----------------|
+| llama-server | 8082  | Docker container `llama-server-rocm` (image `llama.cpp-rocm:7.1.1`) managed by `llama-server-rocm.service` |
+| tabby        | 8083  | `/usr/local/bin/tabby serve --port 8083 --no-webserver` (systemd: `tabby.service`) |
 
-Both run as systemd services (`llama-server.service`, `tabby.service`).
+llama.cpp runs via Docker (systemd wrapper) to match ROCm + llama.cpp recommended operations and to avoid accidental
+host-level instability from legacy units.
 
 ### Build Notes (RDNA 4 / gfx1201)
 

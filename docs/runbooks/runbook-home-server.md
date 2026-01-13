@@ -5,7 +5,7 @@ title: "Runbook: Home Server Operations"
 status: active
 owners: "olof"
 created: 2025-12-16
-updated: 2026-01-12
+updated: 2026-01-13
 system: "hemma.hule.education"
 ---
 
@@ -62,10 +62,22 @@ Security hardening (sshd settings, Fail2ban jails, nginx-proxy probe jail) is do
 ### SSH/Network Watchdog (Active Remediation)
 
 Runs every 2 minutes and remediates SSH/network drift. It restarts `systemd-networkd`,
-`systemd-resolved`, and `tailscaled` if route/ping checks fail, and reboots after 3
-consecutive failures.
+`systemd-resolved`, and `tailscaled` if route/ping checks fail. If SSH/network is still
+unhealthy after remediation, it increments a failure counter and forces recovery once
+the threshold is reached:
+
+- Default action: SysRq crash (`echo c`) to capture kdump, then reboot on completion.
+- Alternative action: SysRq reboot (`echo b`) if explicitly configured.
 
 Script: `/usr/local/bin/ssh-watchdog.sh`
+
+Configuration (optional, persisted via systemd env file):
+
+```bash
+# /etc/default/ssh-watchdog
+SSH_WATCHDOG_FORCE_MODE=crash   # crash|reboot (default: crash)
+SSH_WATCHDOG_FORCE_AFTER=3      # failures before forcing action
+```
 
 ```bash
 sudo systemctl status ssh-watchdog.timer --no-pager
@@ -122,26 +134,26 @@ Use the local helper script to tunnel GPU services to localhost:
 ~/bin/hemma-gpu-tunnel status       # show tunnel status
 ```
 
-### Host GPU AI Services (systemd)
+### Host GPU AI Services (systemd + Docker)
 
-On `hemma`, the AI services run on the host (not in Docker) as systemd units:
+On `hemma`, llama.cpp runs in Docker (ROCm) but is controlled via a systemd wrapper unit (ROCm + llama.cpp recommended
+operations):
 
-- llama.cpp server (one of):
-  - `llama-server-vulkan.service` (Vulkan backend, port `8082`)
-  - `llama-server-hip.service` (ROCm/HIP backend, port `8082`)
+- llama.cpp server: `llama-server-rocm.service` (container `llama-server-rocm`, port `8082`, host network)
 - `tabby.service` (Tabby completion proxy, port `8083`)
 
-Only one llama.cpp service should be enabled at a time (both bind `:8082`).
+Legacy llama-server units (`llama-server.service`, `llama-server-hip.service`, `llama-server-vulkan.service`) are
+retired and must remain disabled/masked to avoid accidental instability.
 
 Canonical runbooks:
 
-- `docs/runbooks/runbook-tabby-codemirror.md` (llama-server + Tabby ops)
-- `docs/runbooks/runbook-gpu-ai-workloads.md` (GPU/ROCm ops + HIP/Vulkan switching)
+- `docs/runbooks/runbook-gpu-ai-workloads.md` (llama.cpp Docker runtime + context/parallel tuning)
+- `docs/runbooks/runbook-tabby-codemirror.md` (Tabby ops)
 
 Quick checks:
 
 ```bash
-ssh hemma "sudo systemctl status --no-pager llama-server-hip.service llama-server-vulkan.service tabby.service | head -n 60"
+ssh hemma "sudo systemctl status --no-pager llama-server-rocm.service tabby.service | head -n 60"
 ssh hemma "curl -s http://127.0.0.1:8082/health"
 ssh hemma "curl -s http://127.0.0.1:8083/v1/health"
 ```

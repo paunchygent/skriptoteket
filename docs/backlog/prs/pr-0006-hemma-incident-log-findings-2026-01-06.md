@@ -5,7 +5,7 @@ title: "Hemma incident log findings (2026-01-04 to 2026-01-06)"
 status: ready
 owners: "agents"
 created: 2026-01-06
-updated: 2026-01-07
+updated: 2026-01-13
 stories: []
 tags: ["devops", "incident", "ops"]
 acceptance_criteria:
@@ -15,6 +15,10 @@ acceptance_criteria:
      errors, AMD-Vi invalid device requests, MCE hardware errors)."
   - "Crash/reboot windows are summarized from journalctl list-boots output."
 ---
+
+> Update (2026-01-13): Hemma now runs llama.cpp via Docker using `llama-server-rocm.service` (container
+> `llama-server-rocm`). References to `llama-server-hip.service` / `llama-server-vulkan.service` in this PR are
+> historical and should not be treated as current run instructions.
 
 ## Problem
 

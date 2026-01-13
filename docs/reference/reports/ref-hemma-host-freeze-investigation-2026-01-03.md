@@ -5,7 +5,7 @@ title: "Investigation: hemma host hard hangs (Jan 2026)"
 status: active
 owners: "agents"
 created: 2026-01-03
-updated: 2026-01-04
+updated: 2026-01-13
 topic: "devops"
 ---
 
@@ -13,6 +13,12 @@ This report summarizes what we know so far about two **host-level hard hangs** o
 physical intervention.
 
 **Important:** This report contains *sanitized* log excerpts. IPs, MACs, SSIDs, and local IPv6 addresses were redacted.
+
+## Update (2026-01-13)
+
+Hemma now runs llama.cpp via Docker using `llama-server-rocm.service` (container `llama-server-rocm`). References in
+this report to `llama-server.service`, `llama-server-hip.service`, or `llama-server-vulkan.service` reflect the
+historical state during Jan 2026 debugging and should not be re-enabled.
 
 ## Executive summary
 

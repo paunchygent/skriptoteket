@@ -5,7 +5,7 @@ title: "Canonical chat v3 run (Devstral, runpm=0) - 2026-01-05"
 status: active
 owners: "agents"
 created: 2026-01-05
-updated: 2026-01-05
+updated: 2026-01-13
 topic: "devops"
 links:
   - docs/reference/reports/ref-hemma-runpm0-before-after-2026-01-05.md
@@ -14,6 +14,11 @@ links:
 ---
 
 Controlled inference run using the canonical chat v3 prompts after enabling `amdgpu.runpm=0`.
+
+## Update (2026-01-13)
+
+Hemma now runs llama.cpp via Docker using `llama-server-rocm.service` (container `llama-server-rocm`). The
+`llama-server-vulkan` references in this report reflect the historical runtime during Jan 2026 debugging.
 
 ## Run details
 

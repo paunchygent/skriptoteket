@@ -5,7 +5,7 @@ title: "Runbook: GPU AI Workloads (AMD Radeon AI PRO R9700)"
 status: active
 owners: "olof"
 created: 2025-12-30
-updated: 2026-01-07
+updated: 2026-01-13
 system: "hemma.hule.education"
 ---
 
@@ -125,59 +125,52 @@ ssh hemma "source ~/ai-env/bin/activate && pip install torch torchvision torchau
 ssh hemma "source ~/ai-env/bin/activate && python -c 'import torch; print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0))'"
 ```
 
-### llama.cpp with ROCm
+### llama.cpp server (Docker, ROCm) — canonical on hemma
+
+On `hemma`, llama.cpp is run via Docker and managed by a systemd wrapper unit. This is the **only supported**
+runtime path for llama.cpp on this host (ROCm + llama.cpp recommended operations). Do not run or enable legacy
+host-binary llama-server units.
+
+- Systemd unit: `llama-server-rocm.service`
+- Container: `llama-server-rocm` (image `llama.cpp-rocm:7.1.1`)
+- Endpoint: `http://127.0.0.1:8082` (`/health`, `/v1/*`)
+
+#### Current settings (as of 2026-01-13)
+
+- `--ctx-size 32768`
+- `--parallel 2` → effective per-slot context is `n_ctx_seq = 16384`
+
+#### Quick checks
 
 ```bash
-# Clone and build
-ssh hemma "git clone https://github.com/ggerganov/llama.cpp ~/llama.cpp"
-ssh hemma "cd ~/llama.cpp && make clean && make GGML_HIP=1 -j$(nproc)"
-
-# Verify build
-ssh hemma "~/llama.cpp/llama-cli --version"
-
-# Run inference (example)
-ssh hemma "cd ~/llama.cpp && ./llama-cli -m models/model.gguf -p 'Hello' -n 50 --gpu-layers 99"
-```
-
-Notes:
-
-- The HIP/ROCm backend uses the kernel compute stack (KFD). You can see active ROCm processes via:
-
-```bash
-ssh hemma "rocm-smi --showpids details"
-```
-
-- Current default on hemma (as of 2026-01-06):
-  - Service: `llama-server-hip.service` (enabled)
-  - Model: `/home/paunchygent/models/Devstral-Small-2-24B-Instruct-2512-Q8_0.gguf`
-  - Vulkan service: `llama-server-vulkan.service` (disabled)
-- If you are A/B testing stability due to host hangs, prefer the Vulkan backend + `llama-server-vulkan.service` (below)
-  and keep the HIP service disabled.
-
-### llama.cpp with Vulkan (recommended for stability testing)
-
-This avoids the HIP/KFD compute path while still using the GPU via Vulkan.
-
-```bash
-# Build (CMake)
-ssh hemma "cd ~/llama.cpp && cmake -B build-vulkan -DGGML_VULKAN=1 -DCMAKE_BUILD_TYPE=Release && cmake --build build-vulkan -j$(nproc)"
-
-# Run server (example, direct)
-ssh hemma "cd ~/llama.cpp && ./build-vulkan/bin/llama-server --model models/model.gguf --port 8082 --device Vulkan0"
-```
-
-If you are using the host systemd units on hemma, switch services like this:
-
-```bash
-# Disable HIP service and enable Vulkan service (only one should be enabled; both use :8082)
-ssh hemma "sudo systemctl disable --now llama-server-hip.service"
-ssh hemma "sudo systemctl enable --now llama-server-vulkan.service"
-
-# Verify server health
+ssh hemma "sudo systemctl status --no-pager llama-server-rocm.service | head -n 60"
 ssh hemma "curl -s http://127.0.0.1:8082/health"
+ssh hemma "sudo journalctl -u llama-server-rocm.service -n 200 --no-pager"
+```
 
-# Verify HIP/KFD is not in use (expected: \"No KFD PIDs currently running\")
-ssh hemma "rocm-smi --showpids details"
+#### Change model/context (safe workflow)
+
+1. Edit the unit: `ssh hemma "sudo nano /etc/systemd/system/llama-server-rocm.service"`
+2. Apply: `ssh hemma "sudo systemctl daemon-reload && sudo systemctl restart llama-server-rocm.service"`
+3. Verify effective context (note `n_ctx_seq` when `--parallel > 1`):
+
+```bash
+ssh hemma "sudo journalctl -u llama-server-rocm.service -n 200 --no-pager | grep -E 'n_ctx =|n_ctx_seq =|KV buffer size'"
+```
+
+#### Safety: keep legacy units disabled/masked
+
+These units are retired and must remain disabled/masked:
+
+- `llama-server.service`
+- `llama-server-hip.service`
+- `llama-server-vulkan.service`
+
+Optional hardening (prevents accidental enable/start):
+
+```bash
+ssh hemma "sudo systemctl disable --now llama-server.service llama-server-hip.service llama-server-vulkan.service"
+ssh hemma "sudo systemctl mask llama-server.service llama-server-hip.service llama-server-vulkan.service"
 ```
 
 ### Ollama with ROCm
@@ -392,22 +385,27 @@ ssh hemma "/opt/rocm/bin/rocm-bandwidth-test"
 ssh hemma "/opt/rocm/hip/bin/hipDeviceQuery"
 ```
 
-### AI Inference Benchmark (llama.cpp)
+### AI Inference Smoke (llama.cpp)
 
 ```bash
-# Benchmark with a model
-ssh hemma "cd ~/llama.cpp && ./llama-bench -m models/model.gguf -p 512 -n 128 -ngl 99"
+# Health
+ssh hemma "curl -s http://127.0.0.1:8082/health"
+
+# Quick generation smoke (non-OpenAI endpoint)
+ssh hemma 'curl -s http://127.0.0.1:8082/completion \
+  -H "Content-Type: application/json" \
+  -d "{\"prompt\": \"def hello(name):\\n    \", \"n_predict\": 32}"'
 ```
 
-### Canonical Chat Burn (llama.cpp HIP service)
+### Canonical Chat Burn (llama.cpp service)
 
-Use the canonical chat fixtures to stress the live `llama-server-hip.service`
+Use the canonical chat fixtures to stress the live `llama-server-rocm.service`
 for 10 minutes (review + diff requests). This is the preferred stability burn
 when netconsole is enabled.
 
 ```bash
-# Ensure llama-server-hip is running (port 8082)
-ssh hemma "sudo systemctl status llama-server-hip --no-pager | head -n 20"
+# Ensure llama-server is running (port 8082)
+ssh hemma "sudo systemctl status llama-server-rocm.service --no-pager | head -n 20"
 
 # Run the 10-minute burn (logs to /root/logs/)
 ssh hemma "cd ~/apps/skriptoteket && sudo python3 scripts/ai_prompt_eval/llama_canonical_chat_burn.py \
@@ -443,7 +441,7 @@ ssh hemma "rm -rf ~/.config/miopen ~/.cache/miopen"
 
 ## Docker Integration
 
-GPU inference runs as systemd services on the host. Docker containers reach them via `host.docker.internal`.
+llama.cpp inference runs in Docker (managed by systemd). Docker containers reach it via `host.docker.internal`.
 
 ### Container Access to Host GPU Services
 

@@ -5,7 +5,7 @@ title: "Runbook: AI Code Completion Services"
 status: active
 owners: "olof"
 created: 2025-12-30
-updated: 2025-12-30
+updated: 2026-01-13
 system: "hemma.hule.education"
 links: ["RUN-gpu-ai-workloads", "REF-ai-completion-architecture"]
 ---
@@ -21,7 +21,7 @@ For architecture, models, and integration details, see
 
 | Service | Port | Purpose | Systemd Unit |
 | ------- | ---- | ------- | ------------ |
-| llama-server | 8082 | ROCm GPU inference | `llama-server.service` |
+| llama-server | 8082 | ROCm GPU inference (Docker via systemd) | `llama-server-rocm.service` |
 | Tabby | 8083 | Completion API proxy | `tabby.service` |
 
 **Current model:** Qwen3-Coder-30B-A3B (Q4_K_M, ~18.5 GB VRAM)
@@ -34,7 +34,7 @@ For architecture, models, and integration details, see
 
 ```bash
 # Service status
-ssh hemma "sudo systemctl status llama-server tabby --no-pager | head -30"
+ssh hemma "sudo systemctl status llama-server-rocm.service tabby.service --no-pager | head -30"
 
 # Tabby health endpoint
 ssh hemma "curl -s http://localhost:8083/v1/health | jq .model"
@@ -67,20 +67,20 @@ ssh hemma 'curl -s http://localhost:8083/v1/completions \
 ### Start Services
 
 ```bash
-ssh hemma "sudo systemctl start llama-server tabby"
+ssh hemma "sudo systemctl start llama-server-rocm.service tabby.service"
 ```
 
 ### Stop Services
 
 ```bash
-ssh hemma "sudo systemctl stop tabby llama-server"
+ssh hemma "sudo systemctl stop tabby.service llama-server-rocm.service"
 ```
 
 ### Restart Services
 
 ```bash
 # After config change or model swap
-ssh hemma "sudo systemctl restart llama-server && sleep 5 && sudo systemctl restart tabby"
+ssh hemma "sudo systemctl restart llama-server-rocm.service && sleep 5 && sudo systemctl restart tabby.service"
 ```
 
 ### Reload After Service File Edit
@@ -95,13 +95,13 @@ ssh hemma "sudo systemctl daemon-reload"
 
 ```bash
 # llama-server logs
-ssh hemma "journalctl -u llama-server -f"
+ssh hemma "journalctl -u llama-server-rocm.service -f"
 
 # Tabby logs
 ssh hemma "journalctl -u tabby -f"
 
 # Last 50 lines
-ssh hemma "journalctl -u llama-server -n 50 --no-pager"
+ssh hemma "journalctl -u llama-server-rocm.service -n 50 --no-pager"
 ```
 
 ---
@@ -111,7 +111,7 @@ ssh hemma "journalctl -u llama-server -n 50 --no-pager"
 1. Stop services:
 
    ```bash
-   ssh hemma "sudo systemctl stop tabby llama-server"
+   ssh hemma "sudo systemctl stop tabby.service llama-server-rocm.service"
    ```
 
 2. Download new model (if needed):
@@ -120,16 +120,16 @@ ssh hemma "journalctl -u llama-server -n 50 --no-pager"
    ssh hemma "cd ~/models && wget <model-url>"
    ```
 
-3. Edit llama-server.service to change `--model` path:
+3. For model/context changes, edit `llama-server-rocm.service` (Docker wrapper):
 
    ```bash
-   ssh hemma "sudo nano /etc/systemd/system/llama-server.service"
+   ssh hemma "sudo nano /etc/systemd/system/llama-server-rocm.service"
    ```
 
 4. Reload and restart:
 
    ```bash
-   ssh hemma "sudo systemctl daemon-reload && sudo systemctl start llama-server tabby"
+   ssh hemma "sudo systemctl daemon-reload && sudo systemctl start llama-server-rocm.service tabby.service"
    ```
 
 5. Verify:
@@ -157,7 +157,7 @@ ssh hemma "rocm-smi --showtemp"
 ### llama-server Won't Start
 
 ```bash
-ssh hemma "journalctl -u llama-server -n 50"
+ssh hemma "journalctl -u llama-server-rocm.service -n 50"
 ```
 
 Common causes:
@@ -214,17 +214,12 @@ Even with external HTTP backend, Tabby needs its bundled llama-server for embedd
 
 ## Service Files
 
-### llama-server.service
+### llama-server-rocm.service (Docker wrapper)
 
-Location: `/etc/systemd/system/llama-server.service`
+Location: `/etc/systemd/system/llama-server-rocm.service`
 
-Key parameters:
-
-- `--model`: Path to GGUF file
-- `--port 8082`: API port
-- `--ctx-size 8192`: Context window
-- `--n-gpu-layers 99`: Offload all to GPU
-- `HSA_OVERRIDE_GFX_VERSION=12.0.1`: RDNA 4 compatibility
+This unit runs the `llama-server-rocm` Docker container and binds `:8082` on the host network. For the canonical
+settings and context/parallel tuning, see `docs/runbooks/runbook-gpu-ai-workloads.md`.
 
 ### tabby.service
 

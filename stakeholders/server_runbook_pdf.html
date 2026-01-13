@@ -436,22 +436,21 @@ systemctl status ddclient -&gt; active
 ~/bin/hemma-gpu-tunnel stop-tabby   # stop only tabby tunnel (:8083)
 ~/bin/hemma-gpu-tunnel status       # show tunnel status
 </code></pre>
-<h3 id="host-gpu-ai-services-systemd">Host GPU AI Services (systemd)</h3>
-<p>On <code>hemma</code>, the AI services run on the host (not in Docker) as systemd units:</p>
+<h3 id="host-gpu-ai-services-systemd">Host GPU AI Services (systemd + Docker)</h3>
+<p>On <code>hemma</code>, llama.cpp runs in Docker (ROCm) but is controlled via a systemd wrapper unit:</p>
 <ul>
-<li>llama.cpp server (one of):</li>
-<li><code>llama-server-vulkan.service</code> (Vulkan backend, port <code>8082</code>)</li>
-<li><code>llama-server-hip.service</code> (ROCm/HIP backend, port <code>8082</code>)</li>
+<li><code>llama-server-rocm.service</code> (Docker-based llama.cpp server, port <code>8082</code>)</li>
 <li><code>tabby.service</code> (Tabby completion proxy, port <code>8083</code>)</li>
 </ul>
-<p>Only one llama.cpp service should be enabled at a time (both bind <code>:8082</code>).</p>
+<p>Legacy llama-server units (<code>llama-server.service</code>, <code>llama-server-hip.service</code>,
+<code>llama-server-vulkan.service</code>) are retired and must remain disabled/masked.</p>
 <p>Canonical runbooks:</p>
 <ul>
-<li><code>docs/runbooks/runbook-tabby-codemirror.md</code> (llama-server + Tabby ops)</li>
-<li><code>docs/runbooks/runbook-gpu-ai-workloads.md</code> (GPU/ROCm ops + HIP/Vulkan switching)</li>
+<li><code>docs/runbooks/runbook-gpu-ai-workloads.md</code> (llama.cpp Docker runtime + context/parallel tuning)</li>
+<li><code>docs/runbooks/runbook-tabby-codemirror.md</code> (Tabby ops)</li>
 </ul>
 <p>Quick checks:</p>
-<pre><code class="language-bash">ssh hemma &quot;sudo systemctl status --no-pager llama-server-hip.service llama-server-vulkan.service tabby.service | head -n 60&quot;
+<pre><code class="language-bash">ssh hemma &quot;sudo systemctl status --no-pager llama-server-rocm.service tabby.service | head -n 60&quot;
 ssh hemma &quot;curl -s http://127.0.0.1:8082/health&quot;
 ssh hemma &quot;curl -s http://127.0.0.1:8083/v1/health&quot;
 </code></pre>
