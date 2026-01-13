@@ -183,6 +183,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0024-action-payload-skriptoteket-action-docs-prompt-alignment.md`
 - `docs/backlog/prs/pr-0025-script-bank-curation-and-group-generator.md`
 - `docs/backlog/prs/pr-0026-settings-suggestions-from-tool-runs.md`
+- `docs/backlog/prs/pr-0027-ai-chat-ops-system-prompt-budget-followups.md`
 
 ### Backlog Stories
 
