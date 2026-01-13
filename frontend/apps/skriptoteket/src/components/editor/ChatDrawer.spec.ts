@@ -60,4 +60,48 @@ describe("ChatDrawer", () => {
     expect(wrapper.text()).toContain("Skapar förslag...");
     expect(wrapper.text()).toContain("Tar lite längre tid");
   });
+
+  it("renders a failed assistant state with correlation-id even when content is empty", async () => {
+    const wrapper = mountWithContext(ChatDrawer, {
+      props: {
+        variant: "column",
+        isOpen: true,
+        isCollapsed: false,
+        messages: [
+          {
+            id: "user-1",
+            role: "user",
+            content: "Hej",
+            createdAt: "2025-01-01T00:00:00Z",
+            status: "complete",
+          },
+          {
+            id: "assistant-1",
+            role: "assistant",
+            content: "",
+            createdAt: "2025-01-01T00:00:01Z",
+            status: "failed",
+            correlationId: "corr-123",
+          },
+        ],
+        isStreaming: false,
+        isEditOpsLoading: false,
+        allowRemoteFallback: false,
+        disabledMessage: null,
+        error: null,
+        clearDraftToken: 0,
+      },
+    });
+
+    expect(wrapper.text()).toContain("Misslyckades");
+    expect(wrapper.text()).toContain("Misslyckades. Försök igen.");
+
+    const debugButton = wrapper.find('button[aria-label="Visa correlation-id"]');
+    expect(debugButton.exists()).toBe(true);
+
+    await debugButton.trigger("click");
+    await nextTick();
+
+    expect(wrapper.text()).toContain("correlation-id: corr-123");
+  });
 });

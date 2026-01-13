@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, afterEach } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { ref } from "vue";
 import { createPinia, setActivePinia } from "pinia";
 
@@ -6,7 +6,7 @@ import { apiFetch } from "../../api/client";
 import { useAuthStore } from "../../stores/auth";
 import { useEditorChat } from "./useEditorChat";
 
-const originalFetch = global.fetch;
+const originalFetch = globalThis.fetch;
 
 vi.mock("../../api/client", () => ({
   apiFetch: vi.fn(),
@@ -38,31 +38,37 @@ async function flushPromises(): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
+function setupAuth(): void {
+  setActivePinia(createPinia());
+  const auth = useAuthStore();
+  auth.user = {
+    id: "user-1",
+    email: "user@example.com",
+    email_verified: true,
+    role: "contributor",
+    auth_provider: "local",
+    external_id: null,
+    is_active: true,
+    failed_login_attempts: 0,
+    created_at: "2025-01-01T00:00:00Z",
+    updated_at: "2025-01-01T00:00:00Z",
+  };
+  auth.csrfToken = "csrf";
+}
+
 afterEach(() => {
   vi.restoreAllMocks();
   if (originalFetch) {
-    global.fetch = originalFetch;
+    globalThis.fetch = originalFetch;
   }
 });
 
 describe("useEditorChat", () => {
   it("shows a partial warning when the stream ends with done.reason=error after deltas", async () => {
-    setActivePinia(createPinia());
-    const auth = useAuthStore();
-    auth.user = {
-      id: "user-1",
-      email: "user@example.com",
-      role: "contributor",
-      auth_provider: "local",
-      external_id: null,
-      is_active: true,
-      created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    };
-    auth.csrfToken = "csrf";
+    setupAuth();
 
     const { stream, push, close } = createControlledStream();
-    global.fetch = vi.fn().mockResolvedValue(
+    globalThis.fetch = vi.fn().mockResolvedValue(
       new Response(stream, {
         status: 200,
         headers: { "Content-Type": "text/event-stream" },
@@ -93,22 +99,10 @@ describe("useEditorChat", () => {
   });
 
   it("shows an error when the stream ends with done.reason=error before any deltas", async () => {
-    setActivePinia(createPinia());
-    const auth = useAuthStore();
-    auth.user = {
-      id: "user-1",
-      email: "user@example.com",
-      role: "contributor",
-      auth_provider: "local",
-      external_id: null,
-      is_active: true,
-      created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    };
-    auth.csrfToken = "csrf";
+    setupAuth();
 
     const { stream, push, close } = createControlledStream();
-    global.fetch = vi.fn().mockResolvedValue(
+    globalThis.fetch = vi.fn().mockResolvedValue(
       new Response(stream, {
         status: 200,
         headers: { "Content-Type": "text/event-stream" },
@@ -132,24 +126,52 @@ describe("useEditorChat", () => {
 
     await sendPromise;
 
-    expect(messages.value.length).toBe(1);
+    expect(messages.value.length).toBe(2);
     expect(error.value).toContain("läsa");
   });
 
+  it("creates an assistant message for disabled responses and preserves correlation-id", async () => {
+    setupAuth();
+
+    const { stream, push, close } = createControlledStream();
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(stream, {
+        status: 200,
+        headers: { "Content-Type": "text/event-stream" },
+      }),
+    );
+
+    const toolId = ref("tool-1");
+    const baseVersionId = ref<string | null>(null);
+    const allowRemoteFallback = ref(false);
+    const { disabledMessage, messages, sendMessage } = useEditorChat({
+      toolId,
+      baseVersionId,
+      allowRemoteFallback,
+    });
+
+    const sendPromise = sendMessage("Hej");
+
+    push(
+      "event: meta\ndata: {\"enabled\": true, \"correlation_id\": \"corr-123\", \"turn_id\": \"turn-123\", \"assistant_message_id\": \"assistant-123\"}\n\n",
+    );
+    push(
+      "event: done\ndata: {\"enabled\": false, \"message\": \"Lokala AI-modellen är inte tillgänglig.\", \"code\": \"remote_fallback_required\"}\n\n",
+    );
+    close();
+
+    await sendPromise;
+
+    expect(disabledMessage.value).toContain("Lokala AI-modellen");
+    expect(messages.value.length).toBe(2);
+    expect(messages.value[1].role).toBe("assistant");
+    expect(messages.value[1].correlationId).toBe("corr-123");
+    expect(messages.value[1].status).toBe("failed");
+    expect(messages.value[1].failureOutcome).toBe("remote_fallback_required");
+  });
+
   it("cancels a stream without applying late deltas", async () => {
-    setActivePinia(createPinia());
-    const auth = useAuthStore();
-    auth.user = {
-      id: "user-1",
-      email: "user@example.com",
-      role: "contributor",
-      auth_provider: "local",
-      external_id: null,
-      is_active: true,
-      created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    };
-    auth.csrfToken = "csrf";
+    setupAuth();
 
     const { stream, push, close } = createControlledStream();
     const fetchMock = vi.fn().mockResolvedValue(
@@ -158,7 +180,7 @@ describe("useEditorChat", () => {
         headers: { "Content-Type": "text/event-stream" },
       }),
     );
-    global.fetch = fetchMock;
+    globalThis.fetch = fetchMock;
 
     const toolId = ref("tool-1");
     const baseVersionId = ref<string | null>(null);
@@ -188,19 +210,7 @@ describe("useEditorChat", () => {
   });
 
   it("clears the chat and issues a delete", async () => {
-    setActivePinia(createPinia());
-    const auth = useAuthStore();
-    auth.user = {
-      id: "user-1",
-      email: "user@example.com",
-      role: "contributor",
-      auth_provider: "local",
-      external_id: null,
-      is_active: true,
-      created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    };
-    auth.csrfToken = "csrf";
+    setupAuth();
 
     vi.mocked(apiFetch).mockResolvedValueOnce(undefined);
 
@@ -230,5 +240,57 @@ describe("useEditorChat", () => {
     });
     expect(messages.value).toEqual([]);
     expect(streaming.value).toBe(false);
+  });
+
+  it("includes active_file + virtual_files in the chat request when provided", async () => {
+    setupAuth();
+
+    const { stream, push, close } = createControlledStream();
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(stream, {
+        status: 200,
+        headers: { "Content-Type": "text/event-stream" },
+      }),
+    );
+    globalThis.fetch = fetchMock;
+
+    const toolId = ref("tool-1");
+    const baseVersionId = ref<string | null>("version-1");
+    const allowRemoteFallback = ref(false);
+    const activeFile = ref<"tool.py">("tool.py");
+    const virtualFiles = ref({
+      "tool.py": "print('hi')\n",
+      "entrypoint.txt": "run_tool\n",
+      "settings_schema.json": "{\n  \"type\": \"object\"\n}\n",
+      "input_schema.json": "{\n  \"type\": \"array\"\n}\n",
+      "usage_instructions.md": "Do the thing\n",
+    });
+
+    const { sendMessage } = useEditorChat({
+      toolId,
+      baseVersionId,
+      allowRemoteFallback,
+      activeFile,
+      virtualFiles,
+    });
+
+    const sendPromise = sendMessage("Hej");
+
+    push("event: meta\ndata: {\"enabled\": true}\n\n");
+    push("event: done\ndata: {\"enabled\": true, \"reason\": \"stop\"}\n\n");
+    close();
+
+    await sendPromise;
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const init = fetchMock.mock.calls[0]?.[1] as RequestInit | undefined;
+    expect(init?.body).toBeTruthy();
+
+    const payload = JSON.parse(String(init?.body ?? "")) as Record<string, unknown>;
+    expect(payload.message).toBe("Hej");
+    expect(payload.allow_remote_fallback).toBe(false);
+    expect(payload.base_version_id).toBe("version-1");
+    expect(payload.active_file).toBe("tool.py");
+    expect(payload.virtual_files).toEqual(virtualFiles.value);
   });
 });

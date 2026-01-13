@@ -1561,11 +1561,15 @@ export interface components {
         EditorChatHistoryMessage: {
             /** Content */
             content: string;
+            /** Correlation Id */
+            correlation_id?: string | null;
             /**
              * Created At
              * Format: date-time
              */
             created_at: string;
+            /** Failure Outcome */
+            failure_outcome?: string | null;
             /**
              * Message Id
              * Format: uuid
@@ -1576,6 +1580,16 @@ export interface components {
              * @enum {string}
              */
             role: "user" | "assistant";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "complete" | "failed" | "cancelled";
+            /**
+             * Turn Id
+             * Format: uuid
+             */
+            turn_id: string;
         };
         /** EditorChatHistoryResponse */
         EditorChatHistoryResponse: {
@@ -1586,6 +1600,8 @@ export interface components {
         };
         /** EditorChatRequest */
         EditorChatRequest: {
+            /** Active File */
+            active_file?: ("tool.py" | "entrypoint.txt" | "settings_schema.json" | "input_schema.json" | "usage_instructions.md") | null;
             /**
              * Allow Remote Fallback
              * @default false
@@ -1595,6 +1611,7 @@ export interface components {
             base_version_id?: string | null;
             /** Message */
             message: string;
+            virtual_files?: components["schemas"]["EditorVirtualFiles"] | null;
         };
         /** EditorEditOpsAnchor */
         EditorEditOpsAnchor: {

@@ -9,14 +9,19 @@ import { createSseParser } from "./sseParser";
 type EditorChatHistoryResponse = components["schemas"]["EditorChatHistoryResponse"];
 type EditorChatHistoryMessage = components["schemas"]["EditorChatHistoryMessage"];
 type EditorChatRequest = components["schemas"]["EditorChatRequest"];
+type EditorVirtualFiles = components["schemas"]["EditorVirtualFiles"];
+type VirtualFileId = keyof EditorVirtualFiles;
 
 type ChatRole = "user" | "assistant";
 type NoticeVariant = "info" | "warning";
+type ChatTurnStatus = "pending" | "complete" | "failed" | "cancelled";
 
 type UseEditorChatOptions = {
   toolId: Readonly<Ref<string>>;
   baseVersionId: Readonly<Ref<string | null>>;
   allowRemoteFallback: Readonly<Ref<boolean>>;
+  activeFile?: Readonly<Ref<VirtualFileId | null>>;
+  virtualFiles?: Readonly<Ref<EditorVirtualFiles | null>>;
 };
 
 export type EditorChatMessage = {
@@ -26,6 +31,9 @@ export type EditorChatMessage = {
   createdAt: string;
   isStreaming?: boolean;
   correlationId?: string | null;
+  turnId?: string | null;
+  status?: ChatTurnStatus;
+  failureOutcome?: string | null;
 };
 
 type ApiErrorEnvelope = {
@@ -50,11 +58,14 @@ function createLocalMessageId(): string {
 function mapHistoryMessage(message: EditorChatHistoryMessage): EditorChatMessage {
   return {
     id: message.message_id,
+    turnId: message.turn_id,
     role: message.role,
     content: message.content,
     createdAt: message.created_at,
     isStreaming: false,
-    correlationId: null,
+    correlationId: message.correlation_id ?? null,
+    status: message.status,
+    failureOutcome: message.failure_outcome ?? null,
   };
 }
 
@@ -86,6 +97,8 @@ export function useEditorChat({
   toolId,
   baseVersionId,
   allowRemoteFallback,
+  activeFile,
+  virtualFiles,
 }: UseEditorChatOptions) {
   const auth = useAuthStore();
   const messages = ref<EditorChatMessage[]>([]);
@@ -145,7 +158,7 @@ export function useEditorChat({
       const response = await apiGet<EditorChatHistoryResponse>(
         `/api/v1/editor/tools/${encodeURIComponent(toolId.value)}/chat?limit=60`,
       );
-      messages.value = response.messages.map(mapHistoryMessage);
+      messages.value = (response.messages ?? []).map(mapHistoryMessage);
     } catch (err: unknown) {
       if (isApiError(err)) {
         error.value = err.message;
@@ -181,6 +194,9 @@ export function useEditorChat({
       content: trimmed,
       createdAt: new Date().toISOString(),
       correlationId: null,
+      turnId: null,
+      status: "pending",
+      failureOutcome: null,
     };
     messages.value = [...messages.value, userMessage];
 
@@ -199,21 +215,40 @@ export function useEditorChat({
     if (baseVersionId.value) {
       body.base_version_id = baseVersionId.value;
     }
+    if (virtualFiles?.value) {
+      body.virtual_files = virtualFiles.value;
+      if (activeFile?.value) {
+        body.active_file = activeFile.value;
+      }
+    }
 
     let sawDone = false;
     let sawDelta = false;
 
-    function ensureAssistantMessage(): EditorChatMessage {
+    function ensureAssistantMessage(options?: {
+      messageId?: string | null;
+      correlationId?: string | null;
+      turnId?: string | null;
+    }): EditorChatMessage {
       if (activeAssistantMessage) {
+        if (options?.correlationId) {
+          activeAssistantMessage.correlationId = options.correlationId;
+        }
+        if (options?.turnId) {
+          activeAssistantMessage.turnId = options.turnId;
+        }
         return activeAssistantMessage;
       }
       const assistantMessage: EditorChatMessage = {
-        id: createLocalMessageId(),
+        id: options?.messageId || createLocalMessageId(),
         role: "assistant",
         content: "",
         createdAt: new Date().toISOString(),
         isStreaming: true,
-        correlationId,
+        correlationId: options?.correlationId ?? correlationId,
+        turnId: options?.turnId ?? null,
+        status: "pending",
+        failureOutcome: null,
       };
       activeAssistantMessage = assistantMessage;
       messages.value = [...messages.value, assistantMessage];
@@ -225,6 +260,35 @@ export function useEditorChat({
         activeAssistantMessage.isStreaming = false;
       }
       activeAssistantMessage = null;
+    }
+
+    function finalizeTurn(status: ChatTurnStatus, failureOutcome?: string | null): void {
+      const turnId = activeAssistantMessage?.turnId ?? userMessage.turnId;
+      if (turnId) {
+        for (const item of messages.value) {
+          if (item.turnId === turnId) {
+            item.status = status;
+            if (failureOutcome) {
+              item.failureOutcome = failureOutcome;
+            }
+          }
+        }
+        userMessage.status = status;
+        if (failureOutcome) {
+          userMessage.failureOutcome = failureOutcome;
+        }
+        return;
+      }
+      userMessage.status = status;
+      if (failureOutcome) {
+        userMessage.failureOutcome = failureOutcome;
+      }
+      if (activeAssistantMessage) {
+        activeAssistantMessage.status = status;
+        if (failureOutcome) {
+          activeAssistantMessage.failureOutcome = failureOutcome;
+        }
+      }
     }
 
     try {
@@ -294,6 +358,28 @@ export function useEditorChat({
             }
           }
 
+          if (event.event === "meta") {
+            if (payload && typeof payload === "object") {
+              const meta = payload as {
+                assistant_message_id?: string;
+                turn_id?: string;
+                correlation_id?: string;
+              };
+              const assistant = ensureAssistantMessage({
+                messageId: meta.assistant_message_id ?? null,
+                correlationId: meta.correlation_id ?? correlationId,
+                turnId: meta.turn_id ?? null,
+              });
+              if (meta.turn_id) {
+                userMessage.turnId = meta.turn_id;
+                assistant.turnId = meta.turn_id;
+              }
+              if (meta.correlation_id) {
+                assistant.correlationId = meta.correlation_id;
+              }
+            }
+          }
+
           if (event.event === "notice") {
             if (payload && typeof payload === "object" && "message" in payload) {
               noticeMessage.value = String(
@@ -314,8 +400,27 @@ export function useEditorChat({
                   (payload as { message?: string }).message ?? "",
                 ).trim();
                 disabledMessage.value = messageText || null;
+                const code = String((payload as { code?: string }).code ?? "").trim();
+                if (activeAssistantMessage) {
+                  finalizeTurn("failed", code || null);
+                } else {
+                  const assistant = ensureAssistantMessage();
+                  finalizeTurn("failed", code || null);
+                  assistant.isStreaming = false;
+                }
               } else if ((payload as { reason?: string }).reason === "error") {
+                if (!activeAssistantMessage) {
+                  ensureAssistantMessage();
+                }
+                finalizeTurn("failed");
                 error.value = sawDelta ? STREAM_PARTIAL_ERROR_MESSAGE : STREAM_ERROR_MESSAGE;
+              } else if ((payload as { reason?: string }).reason === "cancelled") {
+                if (!activeAssistantMessage) {
+                  ensureAssistantMessage();
+                }
+                finalizeTurn("cancelled");
+              } else {
+                finalizeTurn("complete");
               }
             }
             sawDone = true;
@@ -325,6 +430,9 @@ export function useEditorChat({
 
       if (!sawDone && !controller.signal.aborted && streamToken === activeStreamToken) {
         // Stream ended before done; treat as cancelled.
+        if (activeAssistantMessage) {
+          finalizeTurn("cancelled");
+        }
         finalizeAssistant();
       }
     } catch (err: unknown) {
@@ -359,6 +467,7 @@ export function useEditorChat({
     streaming.value = false;
     if (activeAssistantMessage) {
       activeAssistantMessage.isStreaming = false;
+      activeAssistantMessage.status = "cancelled";
     }
     activeAssistantMessage = null;
   }

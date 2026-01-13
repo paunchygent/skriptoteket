@@ -297,6 +297,18 @@ watch(
                       {{ labelForRole(message.role) }}
                     </span>
                     <span
+                      v-if="message.role === 'assistant' && message.status === 'failed'"
+                      class="text-[11px] font-semibold text-burgundy/70"
+                    >
+                      Misslyckades
+                    </span>
+                    <span
+                      v-else-if="message.role === 'assistant' && message.status === 'cancelled'"
+                      class="text-[11px] font-semibold text-navy/50"
+                    >
+                      Avbruten
+                    </span>
+                    <span
                       v-if="message.correlationId"
                       class="relative inline-flex group"
                     >
@@ -325,7 +337,15 @@ watch(
                   </span>
                 </div>
                 <div class="mt-2 text-sm text-navy whitespace-pre-wrap">
-                  {{ message.content }}
+                  <template v-if="message.content">
+                    {{ message.content }}
+                  </template>
+                  <template v-else-if="message.role === 'assistant' && message.status === 'failed'">
+                    Misslyckades. Försök igen.
+                  </template>
+                  <template v-else-if="message.role === 'assistant' && message.status === 'cancelled'">
+                    Avbrutet.
+                  </template>
                 </div>
                 <div
                   v-if="message.correlationId && isDebugOpen(message.id)"

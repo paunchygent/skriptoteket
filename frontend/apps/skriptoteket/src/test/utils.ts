@@ -1,7 +1,7 @@
 import { createTestingPinia } from "@pinia/testing";
 import { mount } from "@vue/test-utils";
 import { createRouter, createWebHistory } from "vue-router";
-import type { Component, DefineComponent } from "vue";
+import type { Component } from "vue";
 import { vi } from "vitest";
 
 // Minimal router for component tests
@@ -12,14 +12,12 @@ export function createTestRouter() {
   });
 }
 
-type AnyComponent = Component | DefineComponent<object, object, object>;
-
 // Standard mount wrapper with Pinia + Router
 export function mountWithContext(
-  component: AnyComponent,
+  component: Component,
   options: Parameters<typeof mount>[1] = {}
 ) {
-  return mount(component as DefineComponent, {
+  return mount(component, {
     global: {
       plugins: [createTestingPinia({ createSpy: vi.fn }), createTestRouter()],
       ...options.global,

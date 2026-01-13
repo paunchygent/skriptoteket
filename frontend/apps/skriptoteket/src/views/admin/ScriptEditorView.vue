@@ -1,6 +1,6 @@
-<script setup lang="ts">
-import type { EditorView } from "@codemirror/view";
-import { computed, ref, watch } from "vue";
+	<script setup lang="ts">
+	import type { EditorView } from "@codemirror/view";
+	import { computed, ref, shallowRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import type { components } from "../../api/openapi";
@@ -26,7 +26,7 @@ import { useScriptEditor } from "../../composables/editor/useScriptEditor";
 import { useToolMaintainers } from "../../composables/editor/useToolMaintainers";
 import { useToolTaxonomy } from "../../composables/editor/useToolTaxonomy";
 import { useUnsavedChangesGuards } from "../../composables/editor/useUnsavedChangesGuards";
-import { isVirtualFileId } from "../../composables/editor/virtualFiles";
+	import { isVirtualFileId, virtualFileTextFromEditorFields } from "../../composables/editor/virtualFiles";
 import type { UiNotifier } from "../../composables/notify";
 import { useToast } from "../../composables/useToast";
 import { useAuthStore } from "../../stores/auth";
@@ -49,7 +49,7 @@ const notify: UiNotifier = {
   warning: (message: string) => toast.warning(message),
   failure: (message: string) => toast.failure(message),
 };
-const editorView = ref<EditorView | null>(null);
+	const editorView = shallowRef<EditorView | null>(null);
 const toolId = computed(() => {
   const param = route.params.toolId;
   return typeof param === "string" ? param : "";
@@ -337,9 +337,9 @@ function setEditorMode(nextMode: EditorWorkspaceMode): void {
     return;
   }
 
-  if (compareTarget.value && nextMode !== "diff") {
-    void handleCloseCompare();
-  }
+	  if (compareTarget.value) {
+	    void handleCloseCompare();
+	  }
 
   editorMode.value = nextMode;
 }
@@ -378,13 +378,26 @@ const {
   restoreCheckpoint,
   removeCheckpoint,
   workingCopyProvider,
-} = workingCopy;
+	} = workingCopy;
 
-const editorChat = useEditorChat({
-  toolId: editorToolId,
-  baseVersionId: computed(() => selectedVersion.value?.id ?? null),
-  allowRemoteFallback,
-});
+	const chatVirtualFiles = computed(() => {
+	  if (!editor.value) return null;
+	  return virtualFileTextFromEditorFields({
+	    entrypoint: entrypoint.value,
+	    sourceCode: sourceCode.value,
+	    settingsSchemaText: settingsSchemaText.value,
+	    inputSchemaText: inputSchemaText.value,
+	    usageInstructions: usageInstructions.value,
+	  });
+	});
+	const chatActiveFileId = computed(() => compareActiveFileId.value ?? "tool.py");
+	const editorChat = useEditorChat({
+	  toolId: editorToolId,
+	  baseVersionId: computed(() => selectedVersion.value?.id ?? null),
+	  allowRemoteFallback,
+	  activeFile: chatActiveFileId,
+	  virtualFiles: chatVirtualFiles,
+	});
 
 const editOps = useEditorEditOps({
   toolId: editorToolId,
