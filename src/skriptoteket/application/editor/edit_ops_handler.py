@@ -480,10 +480,14 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                         settings=self._settings,
                         token_counter=token_counter,
                     ).text
-            except (OSError, PromptTemplateError):
+            except (OSError, PromptTemplateError) as exc:
                 logger.warning(
                     "ai_chat_ops_system_prompt_unavailable",
                     template_id=template_id,
+                    error_type=type(exc).__name__,
+                    error=str(exc),
+                    model=model_for_counting,
+                    system_prompt_max_tokens=self._settings.LLM_CHAT_OPS_SYSTEM_PROMPT_MAX_TOKENS,
                 )
                 log_result(
                     provider=decision.provider,

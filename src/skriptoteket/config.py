@@ -147,7 +147,9 @@ class Settings(BaseSettings):
     LLM_CHAT_OPS_CONTEXT_WINDOW_TOKENS: int = 16 * 1024
     LLM_CHAT_OPS_GPT5_CONTEXT_WINDOW_TOKENS: int = 64 * 1024
     LLM_CHAT_OPS_CONTEXT_SAFETY_MARGIN_TOKENS: int = 256
-    LLM_CHAT_OPS_SYSTEM_PROMPT_MAX_TOKENS: int = 2048
+    # Chat-ops prompts include strict JSON-only schema + rules.
+    # They are larger than chat-stream prompts.
+    LLM_CHAT_OPS_SYSTEM_PROMPT_MAX_TOKENS: int = 4096
 
     LLM_CHAT_OPS_FALLBACK_BASE_URL: str = ""
     LLM_CHAT_OPS_FALLBACK_MODEL: str = ""

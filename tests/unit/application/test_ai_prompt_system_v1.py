@@ -14,12 +14,69 @@ from skriptoteket.application.editor.prompt_templates import (
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.scripting.ui.policy import DEFAULT_UI_POLICY
+from skriptoteket.protocols.llm import ChatMessageRole
 from tests.fixtures.application_fixtures import FakeTokenCounter
+
+
+class ConservativeTokenCounter:
+    def __init__(
+        self,
+        *,
+        system_overhead_tokens: int = 0,
+        message_overhead_tokens: int = 0,
+        chars_per_token: int = 2,
+    ) -> None:
+        self._system_overhead_tokens = system_overhead_tokens
+        self._message_overhead_tokens = message_overhead_tokens
+        self._chars_per_token = max(1, chars_per_token)
+
+    def count_text(self, text: str) -> int:
+        if not text:
+            return 0
+        return (len(text) + self._chars_per_token - 1) // self._chars_per_token
+
+    def truncate_text_head(self, *, text: str, max_tokens: int) -> str:
+        if max_tokens <= 0 or not text:
+            return ""
+        max_chars = max_tokens * self._chars_per_token
+        return text if len(text) <= max_chars else text[:max_chars]
+
+    def truncate_text_tail(self, *, text: str, max_tokens: int) -> str:
+        if max_tokens <= 0 or not text:
+            return ""
+        max_chars = max_tokens * self._chars_per_token
+        return text if len(text) <= max_chars else text[-max_chars:]
+
+    def count_system_prompt(self, *, content: str) -> int:
+        if not content:
+            return 0
+        return self._system_overhead_tokens + self.count_text(content)
+
+    def count_chat_message(self, *, role: ChatMessageRole, content: str) -> int:
+        del role
+        return self._message_overhead_tokens + self.count_text(content)
 
 
 @pytest.mark.unit
 def test_validate_prompt_templates_passes() -> None:
     validate_prompt_templates(settings=Settings(), token_counter=FakeTokenCounter())
+
+
+@pytest.mark.unit
+def test_editor_chat_ops_system_prompt_fits_default_budget() -> None:
+    settings = Settings()
+    token_counter = ConservativeTokenCounter(
+        system_overhead_tokens=settings.LLM_DEVSTRAL_SYSTEM_MESSAGE_OVERHEAD_TOKENS,
+        message_overhead_tokens=settings.LLM_DEVSTRAL_MESSAGE_OVERHEAD_TOKENS,
+        chars_per_token=2,
+    )
+    composed = compose_system_prompt(
+        template_id=settings.LLM_CHAT_OPS_TEMPLATE_ID,
+        settings=settings,
+        token_counter=token_counter,
+    )
+
+    assert composed.estimated_tokens <= settings.LLM_CHAT_OPS_SYSTEM_PROMPT_MAX_TOKENS
 
 
 @pytest.mark.unit
