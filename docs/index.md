@@ -126,6 +126,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-06-linter-architecture-refactor.md`
 - `docs/backlog/reviews/review-epic-08-ai-completion.md`
 - `docs/backlog/reviews/review-epic-08-ai-edit-ops-v2.md`
+- `docs/backlog/reviews/review-epic-08-editor-ai-edit-ops-patch-only-alignment.md`
 - `docs/backlog/reviews/review-epic-08-editor-chat-virtual-files-context.md`
 - `docs/backlog/reviews/review-epic-08-llm-response-capture.md`
 - `docs/backlog/reviews/review-epic-09-security-hardening.md`
@@ -187,6 +188,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0028-editor-focus-mode-and-ai-drawer-density.md`
 - `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md`
 - `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md`
+- `docs/backlog/prs/pr-0031-editor-ai-edit-ops-patch-only-alignment.md`
 
 ### Backlog Stories
 
