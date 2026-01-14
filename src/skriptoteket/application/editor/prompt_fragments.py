@@ -90,6 +90,12 @@ def helpers_fragment() -> str:
         [
             "## Helpers (available in runner)",
             "",
+            "- Prefer `skriptoteket_toolkit` helpers instead of parsing env JSON yourself:",
+            "  - `read_inputs()` → initial form inputs (dict)",
+            "  - `list_input_files()` → validated files from input manifest",
+            "  - `get_action_parts()` → (action_id, action_input, state) for next_actions runs",
+            "  - `read_settings()` → user saved settings from memory.json",
+            "",
             "- `from tool_errors import ToolUserError` → raise a safe user-facing error "
             "(no stacktraces/paths/secrets).",
             "- `from pdf_helper import save_as_pdf` → `save_as_pdf(html, output_dir, filename)` "

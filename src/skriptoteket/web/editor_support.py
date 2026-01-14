@@ -23,10 +23,10 @@ Detta är en mall som visar hur verktyg i Skriptoteket fungerar.
 ERSÄTT denna kod med din egen verktygslogik.
 
 Demonstrerar:
-- Indatafiler via SKRIPTOTEKET_INPUT_MANIFEST
-- Indata via SKRIPTOTEKET_INPUTS (första körningen)
-  och SKRIPTOTEKET_ACTION (uppföljning via next_actions)
-- Användarinställningar via SKRIPTOTEKET_MEMORY_PATH
+- Indatafiler via `list_input_files()` (toolkit)
+- Indata via `read_inputs()` (första körningen) och `get_action_parts()`
+  (uppföljning via next_actions)
+- Användarinställningar via `read_settings()` (toolkit; memory.json)
 - Utdatatyper: notice, markdown, table (+ fler i kommentarer)
 - Skriva artefakter till output_dir
 - next_actions och state
@@ -34,21 +34,10 @@ Demonstrerar:
 from __future__ import annotations
 
 import csv
-import json
-import os
 from pathlib import Path
 
 from pdf_helper import save_as_pdf
-
-
-def _read_json_env(name: str) -> object | None:
-    raw = os.environ.get(name, "").strip()
-    if not raw:
-        return None
-    try:
-        return json.loads(raw)
-    except json.JSONDecodeError:
-        return None
+from skriptoteket_toolkit import get_action_parts, list_input_files, read_inputs, read_settings
 
 
 def run_tool(input_dir: str, output_dir: str) -> dict:
@@ -56,43 +45,21 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
     output_root.mkdir(parents=True, exist_ok=True)
 
     # ─── INDATA (första körningen eller uppföljning) ───
-    # Första körningen: SKRIPTOTEKET_INPUTS (JSON-objekt, inga filer).
-    # Uppföljning (next_actions): SKRIPTOTEKET_ACTION (JSON med {action_id, input, state}).
-    action = _read_json_env("SKRIPTOTEKET_ACTION")
+    # get_action_parts(): (None, {}, {}) om det inte är en action-körning.
+    action_id, action_input, state_in = get_action_parts()
 
-    action_id: str | None = None
-    inputs: dict = {}
-    state_in: dict | None = None
-
-    if isinstance(action, dict) and action:
-        action_id_raw = action.get("action_id")
-        action_id = str(action_id_raw).strip() if action_id_raw else None
-
-        action_input = action.get("input")
-        inputs = action_input if isinstance(action_input, dict) else {}
-
-        action_state = action.get("state")
-        state_in = action_state if isinstance(action_state, dict) else None
-    else:
-        inputs_raw = _read_json_env("SKRIPTOTEKET_INPUTS")
-        inputs = inputs_raw if isinstance(inputs_raw, dict) else {}
+    # Första körningen: read_inputs() (formvärden från input_schema, utan filer).
+    # Uppföljning (next_actions): action_input + state_in från get_action_parts().
+    inputs = action_input if action_id else read_inputs()
     # Exempel: title = inputs.get("title")
 
     # ─── INDATAFILER ───
     # Manifest innehåller: name (originalnamn), path (absolut sökväg), bytes (storlek)
-    manifest = _read_json_env("SKRIPTOTEKET_INPUT_MANIFEST")
-    files = []
-    if isinstance(manifest, dict) and isinstance(manifest.get("files"), list):
-        files = manifest["files"]
+    files = list_input_files()
 
     # ─── ANVÄNDARINSTÄLLNINGAR (valfritt) ───
     # Läs inställningar som användaren sparat via "Inställningar"-panelen
-    settings: dict = {}
-    memory_path = os.environ.get("SKRIPTOTEKET_MEMORY_PATH")
-    if memory_path and Path(memory_path).exists():
-        memory = json.loads(Path(memory_path).read_text())
-        if isinstance(memory, dict) and isinstance(memory.get("settings"), dict):
-            settings = memory["settings"]
+    settings = read_settings()
     # Exempel: threshold = settings.get("threshold", 10)
 
     # ─── BEARBETA FILER ───

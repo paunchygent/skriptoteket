@@ -32,7 +32,8 @@ on execution constraints.
 
 ## Input & environment
 
-- **Input files:** read from `SKRIPTOTEKET_INPUT_MANIFEST` (JSON) or `input_dir`.
+- **Prefer runner helpers:** use `skriptoteket_toolkit` (`list_input_files()`, `read_inputs()`, `get_action_parts()`, `read_settings()`).
+- **Input files:** use `list_input_files()` (from `SKRIPTOTEKET_INPUT_MANIFEST`) or `input_dir`.
 - **Memory:** `SKRIPTOTEKET_MEMORY_PATH` (default `/work/memory.json`) may contain
   user settings under `memory["settings"]`.
 - **Filesystem:** read-only except `/work` and `/tmp`.
@@ -68,14 +69,11 @@ on execution constraints.
 ## Minimal template (recommended)
 
 ```python
-import json
-import os
 from pathlib import Path
+from skriptoteket_toolkit import list_input_files
 
 def run_tool(input_dir: str, output_dir: str) -> dict:
-    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
-    manifest = json.loads(manifest_raw) if manifest_raw else {}
-    files = [Path(f["path"]) for f in manifest.get("files", [])]
+    files = [Path(f["path"]) for f in list_input_files()]
 
     if not files:
         return {

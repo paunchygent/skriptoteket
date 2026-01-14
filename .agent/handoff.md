@@ -16,7 +16,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
-- Completed: recent — ST-14-11/12 done; ST-08-24 done; ST-08-28 done (history: `.agent/readme-first.md`)
+- Completed: recent — ST-14-11/12 done; ST-14-19 done; ST-08-24 done; ST-08-28 done (history: `.agent/readme-first.md`)
 
 ## Current Session (2026-01-14)
 
@@ -37,7 +37,7 @@ Keep this file updated so the next session can pick up work quickly.
 - PR-0029: updated chat empty-state intro + chat placeholder (`frontend/apps/skriptoteket/src/components/editor/ChatMessageList.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatComposer.vue`).
 - PR-0029: smooth “typing” via frontend progressive reveal + fade-in for assistant messages (`frontend/apps/skriptoteket/src/components/editor/ChatMessageContent.vue`, `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatReducer.ts`, `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatTypes.ts`, `frontend/apps/skriptoteket/src/components/editor/ScriptEditorAiPanel.vue`).
 - PR-0029: scrubbed system prompt terminology to avoid internal version labels while keeping constraints/examples (`src/skriptoteket/application/editor/system_prompts/editor_chat_v1.txt`, `src/skriptoteket/application/editor/system_prompts/editor_chat_ops_v1.txt`, `src/skriptoteket/application/editor/system_prompts/inline_completion_v1.txt`, `src/skriptoteket/application/editor/prompt_fragments.py`).
-- PR-0029: refreshed “Skapa nytt skript” starter template (inputs + `SKRIPTOTEKET_ACTION` + `next_actions` + `state`) (`src/skriptoteket/web/editor_support.py`).
+- ST-14-19: made `skriptoteket_toolkit` the canonical way to read inputs/settings/actions/state (docs + starter template + AI KB) (`runner/skriptoteket_toolkit.py`, `runner/README.md`, `src/skriptoteket/web/editor_support.py`, `src/skriptoteket/application/editor/prompt_fragments.py`, `docs/reference/ref-ai-script-generation-kb*.md`).
 - PR-0029 docs: `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md` + indexed in `docs/index.md`.
 - PR-0030: fixed streaming UX by making chat message objects reactive and moving typing reveal pacing into the composable (raw `content` vs rendered `visibleContent`), plus “Tänker...” → “Skriver...” inline status based on first visible batch (`frontend/apps/skriptoteket/src/composables/editor/useEditorChat.ts`, `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatReducer.ts`, `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatMessageList.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatComposer.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatMessageContent.vue`).
 - PR-0030 docs: `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md` + indexed in `docs/index.md` (cross-link added to PR-0029 frontmatter).
@@ -76,7 +76,7 @@ pdm run test
 ## Next Steps
 
 - Deploy: set `LLM_DEVSTRAL_TEKKEN_JSON_PATH` (tekken.json asset path) for accurate devstral token counting.
-- ST-14-19: implement `SKRIPTOTEKET_ACTION` + runner toolkit (no shims); update script bank + tests that currently rely on `action.json`.
+- ST-14-20: wire `skriptoteket_toolkit` into CodeMirror intelligence (imports/completions/hover + lint nudges; fix false-positive `outputs` lint).
 - Decide whether to keep or remove any story-specific Playwright scripts (prefer using `pdm run ui-editor-smoke`).
 - Parallel refactors (optional): PR-0019 (backend LLM hotspots) + PR-0020 (frontend AI hotspots).
 - PR-0028/PR-0029: ready to open PRs once `README.md` (unrelated diff) is resolved.

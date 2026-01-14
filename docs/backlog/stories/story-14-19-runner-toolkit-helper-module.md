@@ -2,10 +2,10 @@
 type: story
 id: ST-14-19
 title: "Runner: toolkit helper module for inputs/settings/actions"
-status: in_progress
+status: done
 owners: "agents"
 created: 2025-12-29
-updated: 2026-01-12
+updated: 2026-01-14
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given a tool script runs in the runner, when it imports the toolkit module, then it can parse SKRIPTOTEKET_INPUTS, SKRIPTOTEKET_INPUT_MANIFEST, SKRIPTOTEKET_ACTION, and memory.json settings via simple helpers."

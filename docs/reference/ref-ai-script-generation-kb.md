@@ -50,16 +50,18 @@ def run_tool(input_dir: str, output_dir: str) -> str | dict:
 
 ```python
 from pathlib import Path
-import json
-import os
+from skriptoteket_toolkit import get_action_parts, list_input_files, read_inputs, read_settings
 
 def run_tool(input_dir: str, output_dir: str) -> dict:
     """Bearbeta den uppladdade filen och returnera resultat."""
 
-    # Hitta filer via input manifest (deterministiskt)
-    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
-    manifest = json.loads(manifest_raw) if manifest_raw else {}
-    files = [Path(f["path"]) for f in manifest.get("files", [])]
+    # Action-körning (next_actions) vs första körning (input_schema-formulär)
+    action_id, action_input, state = get_action_parts()
+    inputs = action_input if action_id else read_inputs()
+    settings = read_settings()
+
+    # Hitta filer via input manifest (deterministiskt; säkra defaultvärden)
+    files = [Path(f["path"]) for f in list_input_files()]
 
     if not files:
         return {
@@ -71,6 +73,9 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
     path = files[0]
 
     # Bearbeta...
+    # Exempel: title = inputs.get("title")
+    # Exempel: threshold = int(settings.get("threshold", 10))
+    # Exempel: steg = int(state.get("step", 0))
 
     # Returnera resultat enligt Contract v2
     return {
@@ -325,14 +330,11 @@ Följande Python-bibliotek finns förinstallerade i körmiljön:
 
 ```python
 import csv
-import json
-import os
 from pathlib import Path
+from skriptoteket_toolkit import list_input_files
 
 def run_tool(input_dir: str, output_dir: str) -> dict:
-    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
-    manifest = json.loads(manifest_raw) if manifest_raw else {}
-    files = [Path(f["path"]) for f in manifest.get("files", [])]
+    files = [Path(f["path"]) for f in list_input_files()]
 
     if not files:
         return {
@@ -369,15 +371,12 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
 
 ```python
 from pathlib import Path
-import json
-import os
 import warnings
 from openpyxl import load_workbook
+from skriptoteket_toolkit import list_input_files
 
 def run_tool(input_dir: str, output_dir: str) -> dict:
-    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
-    manifest = json.loads(manifest_raw) if manifest_raw else {}
-    files = [Path(f["path"]) for f in manifest.get("files", [])]
+    files = [Path(f["path"]) for f in list_input_files()]
     path = files[0] if files else None
 
     if path is None:
@@ -409,14 +408,12 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
 ### 7.3 Multi-fil indata (manifest)
 
 ```python
-import json
-import os
 from pathlib import Path
+from skriptoteket_toolkit import list_input_files, read_input_manifest
 
 def run_tool(input_dir: str, output_dir: str) -> dict:
-    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
-    manifest = json.loads(manifest_raw) if manifest_raw else {}
-    files = [Path(f["path"]) for f in manifest.get("files", [])]
+    manifest = read_input_manifest()
+    files = [Path(f["path"]) for f in list_input_files()]
 
     # Alternativ: lista alla filer i input-katalogen
     input_dir_path = Path(input_dir)
@@ -435,15 +432,10 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
 ### 7.4 Läsa per-användare-inställningar (memory.json)
 
 ```python
-import json
-import os
-from pathlib import Path
+from skriptoteket_toolkit import read_settings
 
 def run_tool(input_dir: str, output_dir: str) -> dict:
-    memory_path = os.environ.get("SKRIPTOTEKET_MEMORY_PATH", "/work/memory.json")
-    memory = json.loads(Path(memory_path).read_text(encoding="utf-8"))
-
-    settings = memory.get("settings", {})
+    settings = read_settings()
     theme_color = settings.get("theme_color", "#000000")
 
     return {
@@ -491,13 +483,10 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
 ```python
 import pandas as pd
 from pathlib import Path
-import json
-import os
+from skriptoteket_toolkit import list_input_files
 
 def run_tool(input_dir: str, output_dir: str) -> dict:
-    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
-    manifest = json.loads(manifest_raw) if manifest_raw else {}
-    files = [Path(f["path"]) for f in manifest.get("files", [])]
+    files = [Path(f["path"]) for f in list_input_files()]
     path = files[0] if files else None
 
     if path is None:
@@ -553,14 +542,11 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
 Returnera ett felmeddelande via outputs:
 
 ```python
-import json
-import os
 from pathlib import Path
+from skriptoteket_toolkit import list_input_files
 
 def run_tool(input_dir: str, output_dir: str) -> dict:
-    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
-    manifest = json.loads(manifest_raw) if manifest_raw else {}
-    files = [Path(f["path"]) for f in manifest.get("files", [])]
+    files = [Path(f["path"]) for f in list_input_files()]
     path = files[0] if files else None
 
     if path is None:
@@ -626,14 +612,11 @@ För rena felmeddelanden som inte behöver ett `outputs`-svar kan du använda `T
 
 ```python
 from tool_errors import ToolUserError
-import json
-import os
 from pathlib import Path
+from skriptoteket_toolkit import list_input_files
 
 def run_tool(input_dir: str, output_dir: str) -> dict:
-    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
-    manifest = json.loads(manifest_raw) if manifest_raw else {}
-    files = [Path(f["path"]) for f in manifest.get("files", [])]
+    files = [Path(f["path"]) for f in list_input_files()]
     path = files[0] if files else None
 
     if path is None:
@@ -712,7 +695,7 @@ cat /tmp/output/result.json | python -m json.tool
 ### 10.2 Under utveckling
 
 - [ ] Definiera `run_tool(input_dir: str, output_dir: str) -> dict`
-- [ ] Hitta filer via `SKRIPTOTEKET_INPUT_MANIFEST` (scripts ska inte anta en “primary file path”)
+- [ ] Hitta filer via `list_input_files()` (scripts ska inte anta en “primary file path”)
 - [ ] Hantera filtypsvalidering tidigt
 - [ ] Returnera alltid en giltig dict med `outputs`, `next_actions`, `state`
 - [ ] Skriv artefakter till `Path(output_dir)`
@@ -780,11 +763,11 @@ Runner-kontrakt:
 - Output: Notice + artefakt med e-postlista
 """
 
-import json
-import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
+
+from skriptoteket_toolkit import list_input_files
 
 EMAIL_RE = re.compile(r"([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,15})")
 
@@ -836,9 +819,7 @@ def harvest_emails(cells: list[str]) -> list[str]:
 
 def run_tool(input_dir: str, output_dir: str) -> dict:
     """Entrypoint: extrahera e-postadresser från uppladdad fil."""
-    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
-    manifest = json.loads(manifest_raw) if manifest_raw else {}
-    files = [Path(f["path"]) for f in manifest.get("files", [])]
+    files = [Path(f["path"]) for f in list_input_files()]
     path = files[0] if files else None
 
     if path is None:

@@ -3,10 +3,46 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Any, TypedDict
+from typing import TypedDict
+
+"""Stable helper API for Skriptoteket tool scripts (runner environment).
+
+Tool scripts run inside the isolated runner container. The platform injects JSON payloads
+via environment variables and a memory JSON file.
+
+Prefer these helpers instead of reading/parsing `os.environ` directly:
+
+- Predictable defaults on missing/malformed JSON (no crashes).
+- A small, stable API surface that can be referenced by editor intelligence and AI assistants.
+
+Typical usage:
+
+```py
+from pathlib import Path
+from skriptoteket_toolkit import get_action_parts, list_input_files, read_inputs, read_settings
+
+action_id, action_input, state = get_action_parts()
+inputs = action_input if action_id else read_inputs()
+settings = read_settings()
+files = [Path(f["path"]) for f in list_input_files()]
+```
+"""
 
 JsonPrimitive = str | int | float | bool | None
 JsonValue = JsonPrimitive | dict[str, "JsonValue"] | list["JsonValue"]
+
+__all__ = [
+    "ActionPayload",
+    "JsonValue",
+    "ManifestFile",
+    "get_action_parts",
+    "list_input_files",
+    "read_action",
+    "read_input_manifest",
+    "read_inputs",
+    "read_memory",
+    "read_settings",
+]
 
 
 class ManifestFile(TypedDict):
@@ -48,7 +84,7 @@ def read_inputs() -> dict[str, JsonValue]:
     return payload if isinstance(payload, dict) else {}
 
 
-def read_input_manifest() -> dict[str, Any]:
+def read_input_manifest() -> dict[str, JsonValue]:
     """Parse SKRIPTOTEKET_INPUT_MANIFEST (JSON). Returns {"files": []} on missing/invalid JSON."""
     payload = _read_json_env("SKRIPTOTEKET_INPUT_MANIFEST")
     if isinstance(payload, dict):

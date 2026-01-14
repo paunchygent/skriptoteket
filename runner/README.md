@@ -36,6 +36,9 @@ Meddelandet visas som `error_summary` utan stacktrace.
 
 Små, stabila hjälpfunktioner för att läsa Skriptotekets runner-env (inputs/manifest/action/memory) på ett säkert sätt.
 
+**Rekommendation:** Använd alltid dessa helpers istället för att läsa/parsa `os.environ` själv. Det gör skript mer
+robusta, mer förutsägbara vid fel (säkra defaultvärden), och enklare att stödja via editor-intelligence och AI.
+
 ```python
 from skriptoteket_toolkit import get_action_parts, list_input_files, read_inputs, read_settings
 
