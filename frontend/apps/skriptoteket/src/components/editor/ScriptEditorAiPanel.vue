@@ -259,6 +259,7 @@ function appendChatMessage(
     createdAt: new Date().toISOString(),
     isStreaming: false,
     correlationId,
+    reveal: role === "assistant" ? "type" : "instant",
   };
   editorChat.messages.value = appendMessage(editorChat.messages.value, message);
 }

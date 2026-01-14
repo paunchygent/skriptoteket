@@ -10,6 +10,7 @@ type VirtualFileId = keyof EditorVirtualFiles;
 type ChatRole = "user" | "assistant";
 type NoticeVariant = "info" | "warning";
 type ChatTurnStatus = "pending" | "complete" | "failed" | "cancelled";
+type ChatRevealMode = "instant" | "type";
 
 type EditorChatMessage = {
   id: string;
@@ -21,10 +22,12 @@ type EditorChatMessage = {
   turnId?: string | null;
   status?: ChatTurnStatus;
   failureOutcome?: string | null;
+  reveal?: ChatRevealMode;
 };
 
 export type {
   ChatRole,
+  ChatRevealMode,
   ChatTurnStatus,
   EditorChatHistoryMessage,
   EditorChatHistoryResponse,

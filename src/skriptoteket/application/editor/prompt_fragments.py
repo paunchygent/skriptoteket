@@ -21,14 +21,14 @@ def contract_v2_fragment(*, policy: UiPolicy = DEFAULT_UI_POLICY) -> str:
 
     return "\n".join(
         [
-            "## Contract v2 (Skriptoteket UI)",
+            "## Skriptoteket UI payload (outputs/next_actions/state)",
             "",
-            "Tool scripts SHOULD return a dict with:",
+            "Tool scripts return a dict with:",
             "- `outputs`: list[UiOutput] (can be empty)",
             "- `next_actions`: list[UiFormAction] (can be empty)",
             "- `state`: dict[str, JSON] or None",
             "",
-            f"Allowed output kinds (policy '{policy.profile_id.value}'): {allowed_output_kinds}.",
+            f"Allowed output kinds (active policy): {allowed_output_kinds}.",
             f"Allowed action field kinds: {allowed_action_field_kinds}.",
             "",
             "UiOutput examples (JSON):",

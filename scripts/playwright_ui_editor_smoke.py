@@ -163,7 +163,22 @@ def main() -> None:
         editor = page.locator(".cm-editor").first
         expect(editor).to_be_visible(timeout=30_000)
 
-        chat_input = page.locator("textarea[placeholder^='Beskriv']").first
+        new_chat_button = page.get_by_role(
+            "button", name=re.compile(r"Ny chatt", re.IGNORECASE)
+        ).first
+        if new_chat_button.is_enabled():
+            new_chat_button.click()
+            expect(new_chat_button).to_be_disabled(timeout=10_000)
+
+        intro_message = page.get_by_text(
+            re.compile(
+                r'Beskriv vad du vill ha hjälp med\.\s*När du är redo att ändra något väljer du "Edit"\.',
+                re.IGNORECASE,
+            )
+        ).first
+        expect(intro_message).to_be_visible()
+
+        chat_input = page.locator("textarea[placeholder='Fråga mig vad du vill']").first
         try:
             expect(chat_input).to_be_editable()
             chat_input.fill("Ping")

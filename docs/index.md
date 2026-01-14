@@ -185,6 +185,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0026-settings-suggestions-from-tool-runs.md`
 - `docs/backlog/prs/pr-0027-ai-chat-ops-system-prompt-budget-followups.md`
 - `docs/backlog/prs/pr-0028-editor-focus-mode-and-ai-drawer-density.md`
+- `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md`
 
 ### Backlog Stories
 

@@ -43,6 +43,7 @@ export function mapHistoryMessage(message: EditorChatHistoryMessage): EditorChat
     correlationId: message.correlation_id ?? null,
     status: message.status,
     failureOutcome: message.failure_outcome ?? null,
+    reveal: "instant",
   };
 }
 
@@ -56,6 +57,7 @@ export function createUserMessage(content: string): EditorChatMessage {
     turnId: null,
     status: "pending",
     failureOutcome: null,
+    reveal: "instant",
   };
 }
 
@@ -93,6 +95,7 @@ export function ensureAssistantMessage({
     turnId: turnId ?? null,
     status: "pending",
     failureOutcome: null,
+    reveal: "type",
   };
 
   return {

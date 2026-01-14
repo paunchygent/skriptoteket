@@ -89,7 +89,7 @@ def test_compose_system_prompt_resolves_all_placeholders_and_includes_policy_val
     )
 
     assert "{{" not in composed.text
-    assert "## Contract v2 (Skriptoteket UI)" in composed.text
+    assert "## Skriptoteket UI payload (outputs/next_actions/state)" in composed.text
     assert f"- max outputs: {DEFAULT_UI_POLICY.caps.max_outputs}" in composed.text
     assert (
         f"- total ui_payload max: {DEFAULT_UI_POLICY.budgets.ui_payload_max_bytes} bytes"

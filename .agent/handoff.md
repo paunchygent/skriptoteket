@@ -20,6 +20,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Current Session (2026-01-14)
 
+- Committed runbook note about kdump watchdog hardening (`docs/runbooks/runbook-home-server.md`).
 - Refactored editor AI frontend into SRP modules + lazy-loaded AI UI (`frontend/apps/skriptoteket/src/composables/editor/chat/`, `frontend/apps/skriptoteket/src/composables/editor/editOps/`, `frontend/apps/skriptoteket/src/components/editor/ScriptEditorAiPanel.vue`, `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`, `frontend/apps/skriptoteket/src/components/editor/diff/AiVirtualFileDiffViewer.vue`).
 - Fixed AI panel slot binding to avoid double `.value` unwrapping that crashed the tool editor (`frontend/apps/skriptoteket/src/components/editor/ScriptEditorAiPanel.vue`).
 - Added ESLint rule to ban `.value` access in Vue templates (`frontend/eslint-rules/no-template-ref-value.js`, `frontend/apps/skriptoteket/eslint.config.js`, `frontend/packages/huleedu-ui/eslint.config.js`).
@@ -33,10 +34,16 @@ Keep this file updated so the next session can pick up work quickly.
 - Added Profile AI settings panel (canonical panel/button primitives) with tri-state remote-fallback preference (server persisted; localStorage migration only): `frontend/apps/skriptoteket/src/components/profile/ProfileAiSettingsPanel.vue`, `frontend/apps/skriptoteket/src/components/profile/ProfileEditAiSettings.vue`, `frontend/apps/skriptoteket/src/views/ProfileView.vue`, `frontend/apps/skriptoteket/src/components/profile/ProfileDisplay.vue`, `frontend/apps/skriptoteket/src/stores/ai.ts`.
 - Split edit-ops specs into smaller files and removed the monolith spec (`frontend/apps/skriptoteket/src/composables/editor/useEditorEditOps.apply.spec.ts`, `.selection.spec.ts`, `.preview.spec.ts`).
 - Completed PR-0028 checklist + verification notes: `docs/backlog/prs/pr-0028-editor-focus-mode-and-ai-drawer-density.md`.
+- PR-0029: updated chat empty-state intro + chat placeholder (`frontend/apps/skriptoteket/src/components/editor/ChatMessageList.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatComposer.vue`).
+- PR-0029: smooth “typing” via frontend progressive reveal + fade-in for assistant messages (`frontend/apps/skriptoteket/src/components/editor/ChatMessageContent.vue`, `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatReducer.ts`, `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatTypes.ts`, `frontend/apps/skriptoteket/src/components/editor/ScriptEditorAiPanel.vue`).
+- PR-0029: scrubbed system prompt terminology to avoid internal version labels while keeping constraints/examples (`src/skriptoteket/application/editor/system_prompts/editor_chat_v1.txt`, `src/skriptoteket/application/editor/system_prompts/editor_chat_ops_v1.txt`, `src/skriptoteket/application/editor/system_prompts/inline_completion_v1.txt`, `src/skriptoteket/application/editor/prompt_fragments.py`).
+- PR-0029: refreshed “Skapa nytt skript” starter template (inputs + `SKRIPTOTEKET_ACTION` + `next_actions` + `state`) (`src/skriptoteket/web/editor_support.py`).
+- PR-0029 docs: `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md` + indexed in `docs/index.md`.
 - Verification:
   - `pdm run db-upgrade`
   - `pdm run fe-gen-api-types`
   - `pdm run fe-type-check` / `pdm run fe-test` / `pdm run fe-build`
+  - `pdm run docs-validate`
   - `BASE_URL=http://localhost:5173 pdm run ui-smoke` (Playwright; requires escalation on macOS)
   - `BASE_URL=http://localhost:5173 pdm run ui-editor-smoke` (Playwright; requires escalation on macOS)
   - Artifacts: `.artifacts/ui-smoke/profile-ai-settings-desktop.png`, `.artifacts/ui-editor-smoke/editor-loaded.png`, `.artifacts/ui-editor-smoke/diff-mode.png`, `.artifacts/ui-editor-smoke/diff-empty-state.png`, `.artifacts/ui-editor-smoke/test-mode.png`
@@ -59,7 +66,7 @@ pdm run test
 
 ## Known Issues / Risks
 
-- Working tree contains out-of-scope docs change: `docs/runbooks/runbook-home-server.md` (do not include without explicit approval).
+- Working tree contains out-of-scope change: `README.md` (confirm intent before including in any PR).
 - Streaming cancellation: client disconnect cancels upstream best-effort; `done.reason="cancelled"` may not be observed client-side if the connection is already closed.
 - Prompt budgeting is tokenizer-backed (GPT-5 via `tiktoken`; devstral via Tekken if configured; heuristic fallback otherwise).
 - If `LLM_CHAT_ENABLED=false` (default) or chat is misconfigured, SSE returns a single `done` event with the Swedish “not available” message.
@@ -70,4 +77,4 @@ pdm run test
 - ST-14-19: implement `SKRIPTOTEKET_ACTION` + runner toolkit (no shims); update script bank + tests that currently rely on `action.json`.
 - Decide whether to keep or remove any story-specific Playwright scripts (prefer using `pdm run ui-editor-smoke`).
 - Parallel refactors (optional): PR-0019 (backend LLM hotspots) + PR-0020 (frontend AI hotspots).
-- PR-0028: ready to open PR once out-of-scope diffs are handled.
+- PR-0028/PR-0029: ready to open PRs once `README.md` (unrelated diff) is resolved.

@@ -29,9 +29,8 @@ Return ONLY a JSON object matching this schema (no markdown, no prose outside JS
 Rules:
 - JSON only. No markdown, no code fences, no comments.
 - Use UTF-8. No trailing commas.
-- The user's payload decides v1 vs v2:
-  - If selection/cursor is present, you MAY use cursor/selection/document targets (v1 behavior).
-  - If BOTH selection and cursor are omitted, treat location as implicit/unknown (v2 behavior): prefer patch/anchor.
+- The user's payload may include `selection` and/or `cursor`.
+- If BOTH selection and cursor are omitted, treat the position as unknown and prefer patch/anchor.
 - Never use target.kind="selection" if selection is omitted.
 - Never use target.kind="cursor" if cursor is omitted.
 
@@ -65,9 +64,9 @@ Patch ops:
 - Form values (initial run only): `SKRIPTOTEKET_INPUTS` (JSON object; no files).
 - Action runs (next_actions): read `SKRIPTOTEKET_ACTION` (env JSON with `{action_id, input, state}`).
 - Settings: `SKRIPTOTEKET_MEMORY_PATH` (JSON) under `memory["settings"]`.
-- Contract v2 is outputs/actions/state only (no inputs).
+- The UI payload is outputs/next_actions/state only (no inputs).
 
 ## Output & artifacts
 
-- Return a Contract v2 dict (see above).
+- Return a dict with outputs/next_actions/state (see above).
 - Write downloadable artifacts under `output_dir`.

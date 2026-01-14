@@ -2,6 +2,7 @@
 import { computed, ref } from "vue";
 
 import type { EditorChatMessage } from "../../composables/editor/chat/editorChatTypes";
+import ChatMessageContent from "./ChatMessageContent.vue";
 
 type ChatMessageListProps = {
   messages: EditorChatMessage[];
@@ -19,7 +20,7 @@ const displayMessages = computed(() => {
     {
       id: "assistant-intro",
       role: "assistant" as const,
-      content: "Beskriv ditt mål eller problem för mig så hjälper jag dig",
+      content: "Beskriv vad du vill ha hjälp med. När du är redo att ändra något väljer du \"Edit\".",
       createdAt: "",
     },
   ] satisfies EditorChatMessage[];
@@ -122,7 +123,10 @@ async function copyText(text: string): Promise<void> {
 
       <div class="mt-2 text-sm text-navy whitespace-pre-wrap">
         <template v-if="message.content">
-          {{ message.content }}
+          <ChatMessageContent
+            :content="message.content"
+            :reveal="message.reveal ?? 'instant'"
+          />
         </template>
         <template v-else-if="message.role === 'assistant' && message.status === 'failed'">
           Misslyckades. Försök igen.

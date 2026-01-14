@@ -19,39 +19,71 @@ DEFAULT_ENTRYPOINT = "run_tool"
 STARTER_TEMPLATE = '''"""
 SKRIPTOTEKET STARTMALL
 ======================
-Detta är en pedagogisk mall som visar hur Skriptoteket-kontrakt fungerar.
+Detta är en mall som visar hur verktyg i Skriptoteket fungerar.
 ERSÄTT denna kod med din egen verktygslogik.
 
 Demonstrerar:
 - Indatafiler via SKRIPTOTEKET_INPUT_MANIFEST
-- Indata via SKRIPTOTEKET_INPUTS (input_schema)
+- Indata via SKRIPTOTEKET_INPUTS (första körningen)
+  och SKRIPTOTEKET_ACTION (uppföljning via next_actions)
 - Användarinställningar via SKRIPTOTEKET_MEMORY_PATH
 - Utdatatyper: notice, markdown, table (+ fler i kommentarer)
 - Skriva artefakter till output_dir
-- next_actions och state (kommenterade exempel)
+- next_actions och state
 """
 from __future__ import annotations
 
+import csv
 import json
 import os
 from pathlib import Path
+
+from pdf_helper import save_as_pdf
+
+
+def _read_json_env(name: str) -> object | None:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return None
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        return None
 
 
 def run_tool(input_dir: str, output_dir: str) -> dict:
     output_root = Path(output_dir)
     output_root.mkdir(parents=True, exist_ok=True)
 
-    # ─── INDATA (valfritt) ───
-    # Form-baserade indata skickas via SKRIPTOTEKET_INPUTS (JSON-objekt).
-    inputs_raw = os.environ.get("SKRIPTOTEKET_INPUTS", "")
-    inputs = json.loads(inputs_raw) if inputs_raw.strip() else {}
+    # ─── INDATA (första körningen eller uppföljning) ───
+    # Första körningen: SKRIPTOTEKET_INPUTS (JSON-objekt, inga filer).
+    # Uppföljning (next_actions): SKRIPTOTEKET_ACTION (JSON med {action_id, input, state}).
+    action = _read_json_env("SKRIPTOTEKET_ACTION")
+
+    action_id: str | None = None
+    inputs: dict = {}
+    state_in: dict | None = None
+
+    if isinstance(action, dict) and action:
+        action_id_raw = action.get("action_id")
+        action_id = str(action_id_raw).strip() if action_id_raw else None
+
+        action_input = action.get("input")
+        inputs = action_input if isinstance(action_input, dict) else {}
+
+        action_state = action.get("state")
+        state_in = action_state if isinstance(action_state, dict) else None
+    else:
+        inputs_raw = _read_json_env("SKRIPTOTEKET_INPUTS")
+        inputs = inputs_raw if isinstance(inputs_raw, dict) else {}
     # Exempel: title = inputs.get("title")
 
     # ─── INDATAFILER ───
     # Manifest innehåller: name (originalnamn), path (absolut sökväg), bytes (storlek)
-    manifest_raw = os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "")
-    manifest = json.loads(manifest_raw) if manifest_raw.strip() else {"files": []}
-    files = manifest.get("files", []) if isinstance(manifest, dict) else []
+    manifest = _read_json_env("SKRIPTOTEKET_INPUT_MANIFEST")
+    files = []
+    if isinstance(manifest, dict) and isinstance(manifest.get("files"), list):
+        files = manifest["files"]
 
     # ─── ANVÄNDARINSTÄLLNINGAR (valfritt) ───
     # Läs inställningar som användaren sparat via "Inställningar"-panelen
@@ -59,27 +91,97 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
     memory_path = os.environ.get("SKRIPTOTEKET_MEMORY_PATH")
     if memory_path and Path(memory_path).exists():
         memory = json.loads(Path(memory_path).read_text())
-        settings = memory.get("settings", {})
+        if isinstance(memory, dict) and isinstance(memory.get("settings"), dict):
+            settings = memory["settings"]
     # Exempel: threshold = settings.get("threshold", 10)
 
     # ─── BEARBETA FILER ───
     file_rows = []
     for f in files:
-        file_rows.append({"name": f["name"], "path": f["path"], "bytes": f["bytes"]})
+        if not isinstance(f, dict):
+            continue
+        file_rows.append(
+            {
+                "name": f.get("name"),
+                "path": f.get("path"),
+                "bytes": f.get("bytes"),
+            }
+        )
+
+    threshold = None
+    if action_id == "refine":
+        try:
+            threshold = int(inputs.get("threshold", 0))
+        except (TypeError, ValueError):
+            threshold = 0
+        file_rows = [
+            row
+            for row in file_rows
+            if isinstance(row.get("bytes"), int) and row["bytes"] >= threshold
+        ]
+
+        export_format = str(inputs.get("format", "")).strip().lower()
+        if export_format == "csv":
+            export_path = output_root / "uppladdade_filer.csv"
+            with export_path.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=["name", "bytes", "path"])
+                writer.writeheader()
+                writer.writerows(file_rows)
+        elif export_format == "pdf":
+            rows_html = "".join(
+                f"<tr><td>{row.get('name','')}</td><td>{row.get('bytes','')}</td></tr>"
+                for row in file_rows
+            )
+            html = f"""
+            <h1>Uppladdade filer</h1>
+            <p>Tröskel: {threshold} byte</p>
+            <table border="1" cellspacing="0" cellpadding="6">
+              <thead><tr><th>Namn</th><th>Storlek (byte)</th></tr></thead>
+              <tbody>{rows_html}</tbody>
+            </table>
+            """
+            save_as_pdf(html, output_dir, "uppladdade_filer.pdf")
 
     # ─── SKRIV ARTEFAKT (valfritt) ───
     # Filer i output_dir blir nedladdningsbara artefakter
     summary_path = output_root / "sammanfattning.txt"
     summary_path.write_text(
-        f"Antal filer: {len(files)}\\nIndata: {inputs}\\nInställningar: {settings}"
+        (
+            f"Åtgärd: {action_id}\\n"
+            f"Antal filer: {len(files)}\\n"
+            f"Indata: {inputs}\\n"
+            f"Inställningar: {settings}"
+        )
     )
+
+    # ─── STATE (valfritt) ───
+    # state sparas mellan körningar och skickas tillbaka vid nästa run
+    # (t.ex. uppföljning via next_actions)
+    state = state_in or {}
+    runs = state.get("runs")
+    state["runs"] = runs + 1 if isinstance(runs, int) else 1
 
     # ─── RETURNERA RESULTAT ───
     outputs = [
         # notice: Snabbmeddelanden (info/warning/error)
-        {"kind": "notice", "level": "info", "message": f"{len(files)} fil(er) mottagna."},
+        {
+            "kind": "notice",
+            "level": "info",
+            "message": (
+                f"{len(files)} fil(er) mottagna."
+                if threshold is None
+                else f"{len(file_rows)} fil(er) matchade tröskel ≥ {threshold}."
+            ),
+        },
         # markdown: Formaterad text
-        {"kind": "markdown", "markdown": "## Resultat\\n\\nErsätt denna mall med din egen logik."},
+        {
+            "kind": "markdown",
+            "markdown": (
+                "## Resultat\\n\\n"
+                "Ersätt denna mall med din egen logik.\\n\\n"
+                f"**Körningar i denna session:** {state['runs']}\\n"
+            ),
+        },
         # table: Strukturerad data
         {
             "kind": "table",
@@ -98,30 +200,28 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
     #
     # html_sandboxed: Rendera HTML i iframe (för specialfall)
     # outputs.append({"kind": "html_sandboxed", "html": "<p>Custom HTML</p>"})
-    #
-    # vega_lite: Diagram/visualiseringar (kräver Vega-Lite-spec)
-    # outputs.append({"kind": "vega_lite", "spec": {"$schema": "...", "data": {...}}})
 
     # ─── AVANCERAT: UPPFÖLJNINGSFORMULÄR (avkommentera vid behov) ───
     # next_actions låter användaren skicka in ytterligare data efter första körningen
-    next_actions = []
-    # next_actions = [{
-    #     "action_id": "refine",
-    #     "label": "Förfina resultat",
-    #     "kind": "form",
-    #     "fields": [
-    #         {"name": "threshold", "label": "Tröskel", "kind": "integer"},
-    #         {"name": "format", "label": "Format", "kind": "enum", "options": [
-    #             {"value": "pdf", "label": "PDF"},
-    #             {"value": "csv", "label": "CSV"},
-    #         ]},
-    #     ],
-    # }]
-
-    # ─── AVANCERAT: STATE FÖR FLERSTEGSFLÖDEN (avkommentera vid behov) ───
-    # state sparas mellan körningar och skickas tillbaka vid nästa run
-    state = None
-    # state = {"step": 1, "previous_results": [...]}
+    next_actions = [
+        {
+            "action_id": "refine",
+            "label": "Förfina resultat",
+            "kind": "form",
+            "fields": [
+                {"name": "threshold", "label": "Tröskel (byte)", "kind": "integer"},
+                {
+                    "name": "format",
+                    "label": "Exportformat",
+                    "kind": "enum",
+                    "options": [
+                        {"value": "pdf", "label": "PDF"},
+                        {"value": "csv", "label": "CSV"},
+                    ],
+                },
+            ],
+        }
+    ]
 
     return {"outputs": outputs, "next_actions": next_actions, "state": state}
 '''
