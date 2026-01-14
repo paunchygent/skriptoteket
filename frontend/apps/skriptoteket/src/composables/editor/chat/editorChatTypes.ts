@@ -16,6 +16,7 @@ type EditorChatMessage = {
   id: string;
   role: ChatRole;
   content: string;
+  visibleContent?: string;
   createdAt: string;
   isStreaming?: boolean;
   correlationId?: string | null;

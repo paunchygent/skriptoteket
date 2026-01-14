@@ -30,6 +30,12 @@ function labelForRole(role: "user" | "assistant"): string {
   return role === "user" ? "Du" : "AI";
 }
 
+function streamingStatusLabel(message: EditorChatMessage): string {
+  const visible =
+    message.reveal === "type" ? (message.visibleContent ?? "") : (message.content ?? "");
+  return visible.length > 0 ? "Skriver..." : "Tänker...";
+}
+
 function toggleDebug(messageId: string): void {
   debugOpenByMessageId.value = {
     ...debugOpenByMessageId.value,
@@ -117,16 +123,16 @@ async function copyText(text: string): Promise<void> {
           v-if="message.isStreaming"
           class="text-xs text-navy/60"
         >
-          Skriver...
+          {{ streamingStatusLabel(message) }}
         </span>
       </div>
 
       <div class="mt-2 text-sm text-navy whitespace-pre-wrap">
-        <template v-if="message.content">
-          <ChatMessageContent
-            :content="message.content"
-            :reveal="message.reveal ?? 'instant'"
-          />
+        <template v-if="message.reveal === 'type' && (message.visibleContent || message.content)">
+          <ChatMessageContent :content="message.visibleContent ?? ''" />
+        </template>
+        <template v-else-if="message.content">
+          {{ message.content }}
         </template>
         <template v-else-if="message.role === 'assistant' && message.status === 'failed'">
           Misslyckades. Försök igen.

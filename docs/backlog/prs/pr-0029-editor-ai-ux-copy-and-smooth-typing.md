@@ -8,7 +8,7 @@ created: 2026-01-14
 updated: 2026-01-14
 stories: []
 tags: ["frontend", "backend", "editor", "ai", "ux", "prompts"]
-links: ["EPIC-08", "PR-0028"]
+links: ["EPIC-08", "PR-0028", "PR-0030"]
 acceptance_criteria:
   - "Tom chatt visar: 'Beskriv vad du vill ha hjälp med. När du är redo att ändra något väljer du \"Edit\".'"
   - "Chat-input placeholder är exakt: 'Fråga mig vad du vill'."

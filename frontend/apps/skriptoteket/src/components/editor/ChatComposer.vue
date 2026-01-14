@@ -4,12 +4,14 @@ import { computed, nextTick, onMounted, ref, watch, withDefaults } from "vue";
 type ChatComposerProps = {
   isStreaming: boolean;
   isEditOpsLoading: boolean;
+  assistantActivity?: "thinking" | "writing" | null;
   canClear?: boolean;
   editOpsIsSlow?: boolean;
   clearDraftToken?: number;
 };
 
 const props = withDefaults(defineProps<ChatComposerProps>(), {
+  assistantActivity: null,
   canClear: false,
   editOpsIsSlow: false,
   clearDraftToken: 0,
@@ -213,7 +215,7 @@ watch(
 
     <div class="text-[10px] text-navy/60">
       <template v-if="props.isStreaming">
-        AI skriver...
+        {{ props.assistantActivity === "writing" ? "Skriver..." : "Tänker..." }}
       </template>
       <template v-else-if="props.isEditOpsLoading">
         <span>Skapar förslag...</span>

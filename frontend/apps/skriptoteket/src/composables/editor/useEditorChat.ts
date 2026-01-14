@@ -1,4 +1,4 @@
-import { ref, watch, type Ref } from "vue";
+import { onBeforeUnmount, ref, watch, type Ref } from "vue";
 
 import { createCorrelationId } from "../../api/correlation";
 import { isApiError } from "../../api/client";
@@ -41,6 +41,15 @@ const HISTORY_ERROR_MESSAGE = "Det gick inte att hamta chatthistorik.";
 const CLEAR_ERROR_MESSAGE = "Det gick inte att rensa chatten.";
 const EMPTY_MESSAGE_ERROR = "Skriv ett meddelande forst.";
 
+type RevealState = {
+  lastTickMs: number;
+  pendingCharBudget: number;
+};
+
+const REVEAL_CHARS_PER_SECOND = 90;
+const REVEAL_MAX_CHUNK_SIZE = 18;
+const REVEAL_INITIAL_BUDGET = 8;
+
 export function useEditorChat({
   toolId,
   baseVersionId,
@@ -60,6 +69,116 @@ export function useEditorChat({
   let activeStreamToken = 0;
   let activeAssistantMessage: EditorChatMessage | null = null;
 
+  const revealStateByMessageId = new Map<string, RevealState>();
+  let revealRafId: number | null = null;
+
+  function stopRevealTick(): void {
+    if (typeof window === "undefined") {
+      return;
+    }
+    if (revealRafId === null) {
+      return;
+    }
+    window.cancelAnimationFrame(revealRafId);
+    revealRafId = null;
+  }
+
+  function hasPendingReveal(): boolean {
+    for (const message of messages.value) {
+      if (message.reveal !== "type") continue;
+      if (message.visibleContent === undefined) {
+        message.visibleContent = "";
+      }
+      if ((message.visibleContent ?? "").length < (message.content ?? "").length) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function scheduleRevealTick(): void {
+    if (typeof window === "undefined") {
+      return;
+    }
+    if (revealRafId !== null) {
+      return;
+    }
+    if (!hasPendingReveal()) {
+      return;
+    }
+    revealRafId = window.requestAnimationFrame(tickReveal);
+  }
+
+  function tickReveal(now: number): void {
+    revealRafId = null;
+    let needsAnother = false;
+
+    const liveIds = new Set(messages.value.map((message) => message.id));
+    for (const id of revealStateByMessageId.keys()) {
+      if (!liveIds.has(id)) {
+        revealStateByMessageId.delete(id);
+      }
+    }
+
+    for (const message of messages.value) {
+      if (message.reveal !== "type") continue;
+
+      const target = message.content ?? "";
+      const current = message.visibleContent ?? "";
+      if (!target) {
+        if (message.visibleContent !== "") {
+          message.visibleContent = "";
+        }
+        revealStateByMessageId.delete(message.id);
+        continue;
+      }
+
+      if (!target.startsWith(current)) {
+        message.visibleContent = "";
+        revealStateByMessageId.delete(message.id);
+        needsAnother = true;
+        continue;
+      }
+
+      if (current.length >= target.length) {
+        revealStateByMessageId.delete(message.id);
+        continue;
+      }
+
+      const state = revealStateByMessageId.get(message.id) ?? {
+        lastTickMs: now,
+        pendingCharBudget: REVEAL_INITIAL_BUDGET,
+      };
+
+      const elapsedMs = Math.max(0, now - state.lastTickMs);
+      state.lastTickMs = now;
+      state.pendingCharBudget += (elapsedMs / 1000) * REVEAL_CHARS_PER_SECOND;
+
+      let chunkSize = Math.floor(state.pendingCharBudget);
+      if (chunkSize <= 0) {
+        revealStateByMessageId.set(message.id, state);
+        needsAnother = true;
+        continue;
+      }
+
+      chunkSize = Math.min(chunkSize, REVEAL_MAX_CHUNK_SIZE);
+      state.pendingCharBudget -= chunkSize;
+      revealStateByMessageId.set(message.id, state);
+
+      const start = current.length;
+      const end = Math.min(target.length, start + chunkSize);
+      message.visibleContent = target.slice(0, end);
+
+      if (end < target.length) {
+        needsAnother = true;
+      }
+    }
+
+    if (needsAnother) {
+      scheduleRevealTick();
+    }
+  }
+
   function resetLocal(): void {
     if (activeController) {
       activeController.abort();
@@ -73,6 +192,8 @@ export function useEditorChat({
     error.value = null;
     noticeMessage.value = null;
     noticeVariant.value = "info";
+    stopRevealTick();
+    revealStateByMessageId.clear();
   }
 
   function clearError(): void {
@@ -92,6 +213,16 @@ export function useEditorChat({
     () => toolId.value,
     () => resetLocal(),
   );
+
+  watch(
+    () => messages.value.length,
+    () => scheduleRevealTick(),
+  );
+
+  onBeforeUnmount(() => {
+    stopRevealTick();
+    revealStateByMessageId.clear();
+  });
 
   async function loadHistory(): Promise<void> {
     if (!toolId.value || streaming.value) {
@@ -202,6 +333,7 @@ export function useEditorChat({
               activeAssistantMessage = result.activeAssistantMessage;
               activeAssistantMessage.content += event.text;
               sawDelta = true;
+              scheduleRevealTick();
               break;
             }
             case "meta": {
@@ -221,6 +353,7 @@ export function useEditorChat({
               if (event.correlationId) {
                 activeAssistantMessage.correlationId = event.correlationId;
               }
+              scheduleRevealTick();
               break;
             }
             case "notice": {
@@ -294,6 +427,7 @@ export function useEditorChat({
                 });
               }
               sawDone = true;
+              scheduleRevealTick();
               break;
             }
           }
@@ -335,6 +469,7 @@ export function useEditorChat({
         streaming.value = false;
         activeController = null;
         finalizeAssistant(activeAssistantMessage);
+        scheduleRevealTick();
         activeAssistantMessage = null;
       }
     }

@@ -67,6 +67,24 @@ const hasStatusPanel = computed(
     Boolean(props.editOpsDisabledMessage) ||
     Boolean(props.remoteFallbackPrompt),
 );
+
+const assistantActivity = computed(() => {
+  if (!props.isStreaming) {
+    return null;
+  }
+
+  for (let index = props.messages.length - 1; index >= 0; index -= 1) {
+    const message = props.messages[index];
+    if (message.role !== "assistant") continue;
+    if (!message.isStreaming) continue;
+
+    const visible =
+      message.reveal === "type" ? (message.visibleContent ?? "") : (message.content ?? "");
+    return visible.length > 0 ? "writing" : "thinking";
+  }
+
+  return "thinking";
+});
 </script>
 
 <template>
@@ -207,6 +225,7 @@ const hasStatusPanel = computed(
             <ChatComposer
               :is-streaming="props.isStreaming"
               :is-edit-ops-loading="props.isEditOpsLoading"
+              :assistant-activity="assistantActivity"
               :can-clear="props.messages.length > 0"
               :edit-ops-is-slow="props.editOpsIsSlow"
               :clear-draft-token="props.clearDraftToken"

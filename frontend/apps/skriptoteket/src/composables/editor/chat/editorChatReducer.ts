@@ -1,3 +1,5 @@
+import { reactive } from "vue";
+
 import type {
   ChatTurnStatus,
   EditorChatHistoryMessage,
@@ -33,7 +35,7 @@ export function createLocalMessageId(): string {
 }
 
 export function mapHistoryMessage(message: EditorChatHistoryMessage): EditorChatMessage {
-  return {
+  return reactive<EditorChatMessage>({
     id: message.message_id,
     turnId: message.turn_id,
     role: message.role,
@@ -44,11 +46,11 @@ export function mapHistoryMessage(message: EditorChatHistoryMessage): EditorChat
     status: message.status,
     failureOutcome: message.failure_outcome ?? null,
     reveal: "instant",
-  };
+  });
 }
 
 export function createUserMessage(content: string): EditorChatMessage {
-  return {
+  return reactive<EditorChatMessage>({
     id: createLocalMessageId(),
     role: "user",
     content,
@@ -58,7 +60,7 @@ export function createUserMessage(content: string): EditorChatMessage {
     status: "pending",
     failureOutcome: null,
     reveal: "instant",
-  };
+  });
 }
 
 export function appendMessage(
@@ -85,10 +87,11 @@ export function ensureAssistantMessage({
     return { messages, activeAssistantMessage };
   }
 
-  const assistantMessage: EditorChatMessage = {
+  const assistantMessage = reactive<EditorChatMessage>({
     id: messageId || createLocalMessageId(),
     role: "assistant",
     content: "",
+    visibleContent: "",
     createdAt: new Date().toISOString(),
     isStreaming: true,
     correlationId,
@@ -96,7 +99,7 @@ export function ensureAssistantMessage({
     status: "pending",
     failureOutcome: null,
     reveal: "type",
-  };
+  });
 
   return {
     messages: [...messages, assistantMessage],

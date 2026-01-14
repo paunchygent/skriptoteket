@@ -39,13 +39,15 @@ Keep this file updated so the next session can pick up work quickly.
 - PR-0029: scrubbed system prompt terminology to avoid internal version labels while keeping constraints/examples (`src/skriptoteket/application/editor/system_prompts/editor_chat_v1.txt`, `src/skriptoteket/application/editor/system_prompts/editor_chat_ops_v1.txt`, `src/skriptoteket/application/editor/system_prompts/inline_completion_v1.txt`, `src/skriptoteket/application/editor/prompt_fragments.py`).
 - PR-0029: refreshed “Skapa nytt skript” starter template (inputs + `SKRIPTOTEKET_ACTION` + `next_actions` + `state`) (`src/skriptoteket/web/editor_support.py`).
 - PR-0029 docs: `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md` + indexed in `docs/index.md`.
+- PR-0030: fixed streaming UX by making chat message objects reactive and moving typing reveal pacing into the composable (raw `content` vs rendered `visibleContent`), plus “Tänker...” → “Skriver...” inline status based on first visible batch (`frontend/apps/skriptoteket/src/composables/editor/useEditorChat.ts`, `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatReducer.ts`, `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatMessageList.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatComposer.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatMessageContent.vue`).
+- PR-0030 docs: `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md` + indexed in `docs/index.md` (cross-link added to PR-0029 frontmatter).
 - Verification:
   - `pdm run db-upgrade`
   - `pdm run fe-gen-api-types`
-  - `pdm run fe-type-check` / `pdm run fe-test` / `pdm run fe-build`
+  - `pdm run fe-type-check` / `pdm run fe-test` / `pdm run fe-build` (rerun for PR-0030: `fe-type-check`, `fe-test`)
   - `pdm run docs-validate`
   - `BASE_URL=http://localhost:5173 pdm run ui-smoke` (Playwright; requires escalation on macOS)
-  - `BASE_URL=http://localhost:5173 pdm run ui-editor-smoke` (Playwright; requires escalation on macOS)
+  - `BASE_URL=http://localhost:5173 pdm run ui-editor-smoke` (Playwright; rerun for PR-0030; requires escalation on macOS)
   - Artifacts: `.artifacts/ui-smoke/profile-ai-settings-desktop.png`, `.artifacts/ui-editor-smoke/editor-loaded.png`, `.artifacts/ui-editor-smoke/diff-mode.png`, `.artifacts/ui-editor-smoke/diff-empty-state.png`, `.artifacts/ui-editor-smoke/test-mode.png`
 
 ## How to Run
