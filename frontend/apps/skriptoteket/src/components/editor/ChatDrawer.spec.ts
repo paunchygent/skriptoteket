@@ -14,7 +14,6 @@ describe("ChatDrawer", () => {
         messages: [],
         isStreaming: false,
         isEditOpsLoading: false,
-        allowRemoteFallback: false,
         disabledMessage: null,
         error: null,
         clearDraftToken: 0,
@@ -25,13 +24,20 @@ describe("ChatDrawer", () => {
     await textarea.setValue("Fixa en bugg");
     await nextTick();
 
-    const requestButton = wrapper
+    const editButton = wrapper
       .findAll("button")
-      .find((button) => button.text().includes("Föreslå"));
+      .find((button) => button.text().includes("Edit"));
 
-    expect(requestButton, "Missing 'Föreslå ändringar' button").toBeTruthy();
+    expect(editButton, "Missing 'Edit' toggle").toBeTruthy();
 
-    await requestButton!.trigger("click");
+    await editButton!.trigger("click");
+    await nextTick();
+    expect(textarea.element.value).toBe("Fixa en bugg");
+
+    const sendButton = wrapper.find('button[aria-label="Föreslå ändringar"]');
+    expect(sendButton.exists(), "Missing edit-mode send button").toBe(true);
+
+    await sendButton.trigger("click");
     expect(textarea.element.value).toBe("Fixa en bugg");
     expect(wrapper.emitted("requestEditOps")?.[0]).toEqual(["Fixa en bugg"]);
 
@@ -50,7 +56,6 @@ describe("ChatDrawer", () => {
         isStreaming: false,
         isEditOpsLoading: true,
         editOpsIsSlow: true,
-        allowRemoteFallback: false,
         disabledMessage: null,
         error: null,
         clearDraftToken: 0,
@@ -86,7 +91,6 @@ describe("ChatDrawer", () => {
         ],
         isStreaming: false,
         isEditOpsLoading: false,
-        allowRemoteFallback: false,
         disabledMessage: null,
         error: null,
         clearDraftToken: 0,
@@ -103,5 +107,49 @@ describe("ChatDrawer", () => {
     await nextTick();
 
     expect(wrapper.text()).toContain("correlation-id: corr-123");
+  });
+
+  it("renders a remote fallback prompt and emits actions", async () => {
+    const wrapper = mountWithContext(ChatDrawer, {
+      props: {
+        variant: "column",
+        isOpen: true,
+        isCollapsed: false,
+        messages: [],
+        isStreaming: false,
+        isEditOpsLoading: false,
+        disabledMessage: null,
+        error: null,
+        clearDraftToken: 0,
+        remoteFallbackPrompt: {
+          source: "chat",
+          message: "Aktivera externa AI-API:er (OpenAI) för att fortsätta.",
+        },
+      },
+    });
+
+    const prompt = wrapper.find("[data-editor-remote-fallback-prompt]");
+    expect(prompt.exists()).toBe(true);
+
+    const allowButton = prompt
+      .findAll("button")
+      .find((button) => button.text().includes("Aktivera"));
+    expect(allowButton, "Missing 'Aktivera' button").toBeTruthy();
+
+    await allowButton!.trigger("click");
+    expect(wrapper.emitted("allowRemoteFallbackPrompt")).toBeTruthy();
+
+    const denyButton = prompt
+      .findAll("button")
+      .find((button) => button.text().includes("Stäng av"));
+    expect(denyButton, "Missing 'Stäng av' button").toBeTruthy();
+
+    await denyButton!.trigger("click");
+    expect(wrapper.emitted("denyRemoteFallbackPrompt")).toBeTruthy();
+
+    const dismissButton = prompt.find('button[aria-label="Stäng"]');
+    expect(dismissButton.exists()).toBe(true);
+    await dismissButton.trigger("click");
+    expect(wrapper.emitted("dismissRemoteFallbackPrompt")).toBeTruthy();
   });
 });

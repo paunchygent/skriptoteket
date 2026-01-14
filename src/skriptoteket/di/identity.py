@@ -22,6 +22,7 @@ from skriptoteket.application.identity.handlers.resend_verification import (
     ResendVerificationHandler,
     ResendVerificationHandlerProtocol,
 )
+from skriptoteket.application.identity.handlers.update_ai_settings import UpdateAiSettingsHandler
 from skriptoteket.application.identity.handlers.update_profile import UpdateProfileHandler
 from skriptoteket.application.identity.handlers.verify_email import (
     VerifyEmailHandler,
@@ -47,6 +48,7 @@ from skriptoteket.protocols.identity import (
     ProvisionLocalUserHandlerProtocol,
     RegisterUserHandlerProtocol,
     SessionRepositoryProtocol,
+    UpdateAiSettingsHandlerProtocol,
     UpdateProfileHandlerProtocol,
     UserRepositoryProtocol,
 )
@@ -195,6 +197,16 @@ class IdentityProvider(Provider):
         clock: ClockProtocol,
     ) -> UpdateProfileHandlerProtocol:
         return UpdateProfileHandler(uow=uow, users=users, profiles=profiles, clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def update_ai_settings_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        users: UserRepositoryProtocol,
+        profiles: ProfileRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> UpdateAiSettingsHandlerProtocol:
+        return UpdateAiSettingsHandler(uow=uow, users=users, profiles=profiles, clock=clock)
 
     @provide(scope=Scope.REQUEST)
     def change_password_handler(

@@ -11,6 +11,7 @@ type UserProfile = {
   first_name: string | null;
   last_name: string | null;
   display_name: string | null;
+  allow_remote_fallback?: boolean | null;
   locale: string;
   created_at: string;
   updated_at: string;
@@ -49,6 +50,7 @@ export function useProfile() {
     const response = await apiGet<ProfileResponse>("/api/v1/profile");
     profile.value = response.profile;
     auth.user = response.user;
+    auth.profile = response.profile;
     return response;
   }
 
@@ -61,6 +63,7 @@ export function useProfile() {
     });
     profile.value = response.profile;
     auth.user = response.user;
+    auth.profile = response.profile;
     return response;
   }
 

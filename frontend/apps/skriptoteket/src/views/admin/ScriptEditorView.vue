@@ -25,31 +25,28 @@ import { useScriptEditor } from "../../composables/editor/useScriptEditor";
 import { useToolMaintainers } from "../../composables/editor/useToolMaintainers";
 import { useToolTaxonomy } from "../../composables/editor/useToolTaxonomy";
 import { useUnsavedChangesGuards } from "../../composables/editor/useUnsavedChangesGuards";
-	import { isVirtualFileId } from "../../composables/editor/virtualFiles";
+import { isVirtualFileId } from "../../composables/editor/virtualFiles";
 import type { UiNotifier } from "../../composables/notify";
 import { useToast } from "../../composables/useToast";
 import { useAuthStore } from "../../stores/auth";
-import { useAiStore } from "../../stores/ai";
 import { useLayoutStore } from "../../stores/layout";
 import { useHelp } from "../../components/help/useHelp";
 type VersionState = components["schemas"]["VersionState"];
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
-const ai = useAiStore();
 const layout = useLayoutStore();
 const toast = useToast();
 const help = useHelp();
 const { focusMode } = storeToRefs(layout);
-const { allowRemoteFallback } = storeToRefs(ai);
 const renderError = ref<string | null>(null);
 const notify: UiNotifier = {
   info: (message: string) => toast.info(message),
   success: (message: string) => toast.success(message),
   warning: (message: string) => toast.warning(message),
-  failure: (message: string) => toast.failure(message),
-};
-	const editorView = shallowRef<EditorView | null>(null);
+	  failure: (message: string) => toast.failure(message),
+	};
+const editorView = shallowRef<EditorView | null>(null);
 const toolId = computed(() => {
   const param = route.params.toolId;
   return typeof param === "string" ? param : "";
@@ -596,7 +593,6 @@ onErrorCaptured((error) => {
             v-slot="aiPanel"
             :tool-id="editorToolId"
             :base-version-id="selectedVersion?.id ?? null"
-            :allow-remote-fallback="allowRemoteFallback"
             :is-read-only="isReadOnly"
             :editor-view="editorView"
             :compare-active-file-id="compareActiveFileId"
@@ -652,7 +648,6 @@ onErrorCaptured((error) => {
               :is-history-drawer-open="isHistoryDrawerOpen"
               :is-chat-drawer-open="isChatDrawerOpen"
               :is-chat-collapsed="isChatCollapsed"
-              :allow-remote-fallback="allowRemoteFallback"
               :can-compare-versions="canCompareVersions"
               :compare-target="compareTarget"
               :compare-active-file-id="compareActiveFileId"
@@ -675,6 +670,7 @@ onErrorCaptured((error) => {
               :chat-error="aiPanel.chatError"
               :chat-notice-message="aiPanel.chatNoticeMessage"
               :chat-notice-variant="aiPanel.chatNoticeVariant"
+              :remote-fallback-prompt="aiPanel.remoteFallbackPrompt"
               :edit-ops-request-error="aiPanel.editOpsRequestError"
               :edit-ops-disabled-message="aiPanel.editOpsDisabledMessage"
               :edit-ops-clear-draft-token="aiPanel.editOpsClearDraftToken"
@@ -718,7 +714,9 @@ onErrorCaptured((error) => {
               @clear-chat-error="aiPanel.clearChatError"
               @clear-chat-disabled="aiPanel.clearChatDisabled"
               @clear-chat-notice="aiPanel.clearChatNotice"
-              @set-allow-remote-fallback="ai.setAllowRemoteFallback($event)"
+              @allow-remote-fallback-prompt="aiPanel.allowRemoteFallbackPrompt"
+              @deny-remote-fallback-prompt="aiPanel.denyRemoteFallbackPrompt"
+              @dismiss-remote-fallback-prompt="aiPanel.dismissRemoteFallbackPrompt"
               @clear-edit-ops-error="aiPanel.clearEditOpsRequestError"
               @clear-edit-ops-disabled="aiPanel.clearEditOpsDisabledMessage"
               @request-edit-ops="aiPanel.requestEditOps"

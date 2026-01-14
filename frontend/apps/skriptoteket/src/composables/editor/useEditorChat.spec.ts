@@ -156,13 +156,13 @@ describe("useEditorChat", () => {
       "event: meta\ndata: {\"enabled\": true, \"correlation_id\": \"corr-123\", \"turn_id\": \"turn-123\", \"assistant_message_id\": \"assistant-123\"}\n\n",
     );
     push(
-      "event: done\ndata: {\"enabled\": false, \"message\": \"Lokala AI-modellen är inte tillgänglig.\", \"code\": \"remote_fallback_required\"}\n\n",
+      "event: done\ndata: {\"enabled\": false, \"message\": \"Den lokala AI-modellen är inte tillgänglig.\", \"code\": \"remote_fallback_required\"}\n\n",
     );
     close();
 
     await sendPromise;
 
-    expect(disabledMessage.value).toContain("Lokala AI-modellen");
+    expect(disabledMessage.value).toContain("Den lokala AI-modellen");
     expect(messages.value.length).toBe(2);
     expect(messages.value[1].role).toBe("assistant");
     expect(messages.value[1].correlationId).toBe("corr-123");

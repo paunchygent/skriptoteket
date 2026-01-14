@@ -33,6 +33,7 @@ class PostgreSQLProfileRepository(ProfileRepositoryProtocol):
             first_name=profile.first_name,
             last_name=profile.last_name,
             display_name=profile.display_name,
+            allow_remote_fallback=profile.allow_remote_fallback,
             locale=profile.locale,
             created_at=profile.created_at,
             updated_at=profile.updated_at,
@@ -50,6 +51,7 @@ class PostgreSQLProfileRepository(ProfileRepositoryProtocol):
         model.first_name = profile.first_name
         model.last_name = profile.last_name
         model.display_name = profile.display_name
+        model.allow_remote_fallback = profile.allow_remote_fallback
         model.locale = profile.locale
         model.updated_at = profile.updated_at
 

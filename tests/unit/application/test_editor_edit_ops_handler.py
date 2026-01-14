@@ -365,7 +365,7 @@ async def test_edit_ops_finalizes_turn_as_remote_fallback_required_after_retryab
     )
 
     assert result.enabled is False
-    assert "Tillåt externa API" in result.assistant_message
+    assert "Aktivera externa AI-API" in result.assistant_message
 
     fallback.complete_chat_ops.assert_not_called()
 

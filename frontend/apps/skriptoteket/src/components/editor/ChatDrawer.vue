@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch, withDefaults } from "vue";
+import { computed, withDefaults } from "vue";
+import { RouterLink } from "vue-router";
 
 import type { EditorChatMessage } from "../../composables/editor/chat/editorChatTypes";
+import type { RemoteFallbackPrompt } from "./remoteFallbackPrompt";
+import ChatComposer from "./ChatComposer.vue";
+import ChatMessageList from "./ChatMessageList.vue";
 import SystemMessage from "../ui/SystemMessage.vue";
 import type { SystemMessageVariant } from "../ui/SystemMessage.vue";
 
@@ -20,7 +24,7 @@ type ChatDrawerProps = {
   error: string | null;
   noticeMessage?: string | null;
   noticeVariant?: Extract<SystemMessageVariant, "info" | "warning">;
-  allowRemoteFallback: boolean;
+  remoteFallbackPrompt?: RemoteFallbackPrompt | null;
 };
 
 const props = withDefaults(defineProps<ChatDrawerProps>(), {
@@ -31,6 +35,7 @@ const props = withDefaults(defineProps<ChatDrawerProps>(), {
   clearDraftToken: 0,
   noticeMessage: null,
   noticeVariant: "info",
+  remoteFallbackPrompt: null,
 });
 
 const emit = defineEmits<{
@@ -45,149 +50,22 @@ const emit = defineEmits<{
   (event: "clearEditOpsDisabled"): void;
   (event: "toggleCollapse"): void;
   (event: "requestEditOps", message: string): void;
-  (event: "setAllowRemoteFallback", value: boolean): void;
+  (event: "allowRemoteFallbackPrompt"): void;
+  (event: "denyRemoteFallbackPrompt"): void;
+  (event: "dismissRemoteFallbackPrompt"): void;
 }>();
 
-const draft = ref("");
-const textarea = ref<HTMLTextAreaElement | null>(null);
-const debugOpenByMessageId = ref<Record<string, boolean>>({});
-
-const canSend = computed(
-  () => !props.isStreaming && !props.isEditOpsLoading && draft.value.trim().length > 0,
-);
-const canRequestOps = computed(() => canSend.value);
 const isColumnVariant = computed(() => props.variant === "column");
 const isRailOnlyOnMobile = computed(() => isColumnVariant.value && props.isCollapsed);
 
-const displayMessages = computed(() => {
-  if (props.messages.length > 0) {
-    return props.messages;
-  }
-  return [
-    {
-      id: "assistant-intro",
-      role: "assistant" as const,
-      content: "Beskriv ditt mål eller problem för mig så hjälper jag dig",
-      createdAt: "",
-    },
-  ] satisfies EditorChatMessage[];
-});
-
-function resetDraftTextarea(): void {
-  const element = textarea.value;
-  if (!element) {
-    return;
-  }
-  element.style.height = "";
-  element.style.overflowY = "";
-}
-
-function resizeDraftTextarea(): void {
-  const element = textarea.value;
-  if (!element) {
-    return;
-  }
-
-  if (!draft.value) {
-    resetDraftTextarea();
-    return;
-  }
-
-  element.style.height = "auto";
-  const maxHeightPx = 260;
-  const nextHeight = Math.min(element.scrollHeight, maxHeightPx);
-  element.style.height = `${nextHeight}px`;
-  element.style.overflowY = element.scrollHeight > maxHeightPx ? "auto" : "hidden";
-}
-
-function handleSend(): void {
-  const message = draft.value.trim();
-  if (!message || props.isStreaming || props.isEditOpsLoading) {
-    return;
-  }
-  emit("send", message);
-  draft.value = "";
-}
-
-function handleRequestEditOps(): void {
-  const message = draft.value.trim();
-  if (!message || props.isStreaming || props.isEditOpsLoading) {
-    return;
-  }
-  emit("requestEditOps", message);
-}
-
-function handleRemoteFallbackToggle(event: Event): void {
-  const target = event.target as HTMLInputElement | null;
-  if (!target) return;
-  emit("setAllowRemoteFallback", target.checked);
-}
-
-function handleKeydown(event: KeyboardEvent): void {
-  if (event.key === "Enter" && !event.shiftKey) {
-    event.preventDefault();
-    handleSend();
-  }
-}
-
-function labelForRole(role: "user" | "assistant"): string {
-  return role === "user" ? "Du" : "AI";
-}
-
-function toggleDebug(messageId: string): void {
-  debugOpenByMessageId.value = {
-    ...debugOpenByMessageId.value,
-    [messageId]: !debugOpenByMessageId.value[messageId],
-  };
-}
-
-function isDebugOpen(messageId: string): boolean {
-  return Boolean(debugOpenByMessageId.value[messageId]);
-}
-
-async function copyText(text: string): Promise<void> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return;
-  } catch {
-    // fall back to the legacy clipboard API (best effort)
-  }
-
-  try {
-    const element = document.createElement("textarea");
-    element.value = text;
-    element.setAttribute("readonly", "true");
-    element.style.position = "absolute";
-    element.style.left = "-9999px";
-    document.body.appendChild(element);
-    element.select();
-    document.execCommand("copy");
-    document.body.removeChild(element);
-  } catch {
-    // ignore clipboard failures
-  }
-}
-
-onMounted(() => {
-  resetDraftTextarea();
-});
-
-watch(
-  () => draft.value,
-  async () => {
-    await nextTick();
-    resizeDraftTextarea();
-  },
-  { flush: "post" },
-);
-
-watch(
-  () => props.clearDraftToken,
-  async () => {
-    draft.value = "";
-    await nextTick();
-    resetDraftTextarea();
-  },
+const hasStatusPanel = computed(
+  () =>
+    Boolean(props.error) ||
+    Boolean(props.disabledMessage) ||
+    Boolean(props.noticeMessage) ||
+    Boolean(props.editOpsError) ||
+    Boolean(props.editOpsDisabledMessage) ||
+    Boolean(props.remoteFallbackPrompt),
 );
 </script>
 
@@ -234,16 +112,10 @@ watch(
           </h2>
         </div>
 
-        <div class="flex-1 min-h-0 overflow-hidden p-4 flex flex-col gap-4">
+        <div class="flex-1 min-h-0 flex flex-col overflow-hidden">
           <div
-            v-if="
-              error ||
-                disabledMessage ||
-                props.noticeMessage ||
-                props.editOpsError ||
-                props.editOpsDisabledMessage
-            "
-            class="space-y-2"
+            v-if="hasStatusPanel"
+            class="shrink-0 border-b border-navy/20 px-3 py-2 space-y-2"
           >
             <SystemMessage
               v-if="props.noticeMessage"
@@ -275,180 +147,74 @@ watch(
               variant="warning"
               @update:model-value="emit('clearEditOpsDisabled')"
             />
-          </div>
 
-          <div class="flex-1 min-h-0 overflow-y-auto border-t border-navy/20 pt-4 pr-3">
-            <ul
-              class="divide-y divide-navy/10"
+            <div
+              v-if="props.remoteFallbackPrompt"
+              class="border border-navy/20 bg-canvas px-3 py-3"
+              data-editor-remote-fallback-prompt
             >
-              <li
-                v-for="message in displayMessages"
-                :key="message.id"
-                :class="[
-                  'py-3 pl-3',
-                  message.role === 'user'
-                    ? 'border-l-2 border-burgundy/60'
-                    : 'border-l-2 border-navy/30',
-                ]"
-              >
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-navy/60">
-                      {{ labelForRole(message.role) }}
-                    </span>
-                    <span
-                      v-if="message.role === 'assistant' && message.status === 'failed'"
-                      class="text-[11px] font-semibold text-burgundy/70"
-                    >
-                      Misslyckades
-                    </span>
-                    <span
-                      v-else-if="message.role === 'assistant' && message.status === 'cancelled'"
-                      class="text-[11px] font-semibold text-navy/50"
-                    >
-                      Avbruten
-                    </span>
-                    <span
-                      v-if="message.correlationId"
-                      class="relative inline-flex group"
-                    >
-                      <button
-                        type="button"
-                        class="text-[11px] font-mono leading-none text-navy/45 hover:text-navy/70"
-                        :aria-expanded="isDebugOpen(message.id)"
-                        aria-label="Visa correlation-id"
-                        @click="toggleDebug(message.id)"
-                      >
-                        ...
-                      </button>
-                      <span
-                        class="pointer-events-none absolute left-0 top-full z-10 mt-1 whitespace-nowrap border border-navy/30 bg-white px-2 py-1 text-[10px] text-navy/70 opacity-0 shadow-brutal-sm transition-opacity group-hover:opacity-100"
-                        aria-hidden="true"
-                      >
-                        Visa correlation-id
-                      </span>
-                    </span>
-                  </div>
-                  <span
-                    v-if="message.isStreaming"
-                    class="text-xs text-navy/60"
+              <div class="flex items-start justify-between gap-3">
+                <div class="space-y-1 min-w-0">
+                  <p class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+                    Externa AI-API:er
+                  </p>
+                  <p class="text-sm text-navy">
+                    {{ props.remoteFallbackPrompt.message }}
+                  </p>
+                  <RouterLink
+                    to="/profile"
+                    class="text-xs text-navy/70 underline decoration-navy/40 hover:text-navy"
                   >
-                    Skriver...
-                  </span>
+                    Öppna Profil och ändra inställningen
+                  </RouterLink>
                 </div>
-                <div class="mt-2 text-sm text-navy whitespace-pre-wrap">
-                  <template v-if="message.content">
-                    {{ message.content }}
-                  </template>
-                  <template v-else-if="message.role === 'assistant' && message.status === 'failed'">
-                    Misslyckades. Försök igen.
-                  </template>
-                  <template v-else-if="message.role === 'assistant' && message.status === 'cancelled'">
-                    Avbrutet.
-                  </template>
-                </div>
-                <div
-                  v-if="message.correlationId && isDebugOpen(message.id)"
-                  class="mt-2 flex flex-wrap items-center justify-between gap-2 border border-navy/20 bg-white px-2 py-1 text-[10px] text-navy/70"
-                >
-                  <span class="font-mono break-all">correlation-id: {{ message.correlationId }}</span>
-                  <button
-                    type="button"
-                    class="text-[10px] font-semibold text-navy/60 hover:text-navy"
-                    @click="copyText(message.correlationId)"
-                  >
-                    Kopiera
-                  </button>
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          <div class="border-t border-navy/20 pt-4 space-y-3">
-            <textarea
-              ref="textarea"
-              v-model="draft"
-              rows="2"
-              class="w-full resize-none border border-navy/30 bg-white px-3 py-2 text-sm text-navy shadow-none"
-              placeholder="Beskriv ditt m&aring;l eller problem..."
-              :disabled="isStreaming"
-              @keydown="handleKeydown"
-            />
-
-            <label class="flex items-start gap-2 text-[10px] text-navy/70">
-              <input
-                type="checkbox"
-                class="mt-0.5"
-                :checked="props.allowRemoteFallback"
-                :disabled="props.isStreaming || props.isEditOpsLoading"
-                @change="handleRemoteFallbackToggle"
-              >
-              <span>
-                Till&aring;t externa API:er (OpenAI) om den lokala modellen &auml;r nere eller
-                &ouml;verbelastad. Detta kan skicka inneh&aring;ll utanf&ouml;r servern.
-              </span>
-            </label>
-
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <span
-                v-if="isStreaming"
-                class="text-xs text-navy/60"
-              >
-                AI skriver...
-              </span>
-              <span
-                v-else-if="props.isEditOpsLoading"
-                class="text-xs text-navy/60"
-              >
-                <span>Skapar f&ouml;rslag...</span>
-                <span
-                  v-if="props.editOpsIsSlow"
-                  class="block pt-1 text-[10px] text-navy/50"
-                >
-                  Tar lite l&auml;ngre tid &auml;n vanligt. Lokala modeller kan ta upp till ~2 min.
-                </span>
-              </span>
-              <span
-                v-else
-                class="text-xs text-navy/60"
-              >
-                Enter skickar, Shift+Enter ny rad.
-              </span>
-              <div class="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  class="btn-ghost shadow-none px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-canvas"
-                  :disabled="messages.length === 0"
-                  @click="emit('clear')"
+                  class="btn-ghost shadow-none px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-white leading-none"
+                  aria-label="Stäng"
+                  @click="emit('dismissRemoteFallbackPrompt')"
                 >
-                  Ny chatt
+                  ×
+                </button>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2 pt-3">
+                <button
+                  type="button"
+                  class="btn-primary shadow-none px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 leading-none"
+                  :disabled="props.isStreaming || props.isEditOpsLoading"
+                  @click="emit('allowRemoteFallbackPrompt')"
+                >
+                  Aktivera
                 </button>
                 <button
                   type="button"
-                  class="btn-ghost shadow-none px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-canvas"
-                  :disabled="!canRequestOps"
-                  @click="handleRequestEditOps"
+                  class="btn-ghost shadow-none px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-white leading-none"
+                  :disabled="props.isStreaming || props.isEditOpsLoading"
+                  @click="emit('denyRemoteFallbackPrompt')"
                 >
-                  F&ouml;resl&aring; &auml;ndringar
-                </button>
-                <button
-                  v-if="isStreaming"
-                  type="button"
-                  class="btn-ghost shadow-none px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-canvas"
-                  @click="emit('cancel')"
-                >
-                  Avbryt
-                </button>
-                <button
-                  type="button"
-                  class="btn-ghost shadow-none px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-canvas"
-                  :disabled="!canSend"
-                  @click="handleSend"
-                >
-                  Skicka
+                  Stäng av
                 </button>
               </div>
             </div>
+          </div>
+
+          <div class="flex-1 min-h-0 overflow-y-auto px-3 py-2">
+            <ChatMessageList :messages="props.messages" />
+          </div>
+
+          <div class="shrink-0 border-t border-navy/20 px-3 py-3">
+            <ChatComposer
+              :is-streaming="props.isStreaming"
+              :is-edit-ops-loading="props.isEditOpsLoading"
+              :can-clear="props.messages.length > 0"
+              :edit-ops-is-slow="props.editOpsIsSlow"
+              :clear-draft-token="props.clearDraftToken"
+              @send="emit('send', $event)"
+              @clear="emit('clear')"
+              @cancel="emit('cancel')"
+              @request-edit-ops="emit('requestEditOps', $event)"
+            />
           </div>
         </div>
       </div>

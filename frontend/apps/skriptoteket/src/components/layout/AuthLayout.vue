@@ -11,6 +11,7 @@ import { useLayoutStore } from "../../stores/layout";
 
 const props = defineProps<{
   user: { id: string; email: string; role: string } | null;
+  profile: { allow_remote_fallback?: boolean | null } | null;
   canSeeContributor: boolean;
   canSeeAdmin: boolean;
   canSeeSuperuser: boolean;
@@ -50,10 +51,10 @@ function toggleFocusMode(): void {
 }
 
 watch(
-  () => props.user?.id ?? null,
-  (userId) => {
+  () => [props.user?.id ?? null, props.profile?.allow_remote_fallback ?? null] as const,
+  ([userId, allowRemoteFallback]) => {
     layout.hydrateForUser(userId);
-    ai.hydrateForUser(userId);
+    ai.hydrateForUser({ userId, serverAllowRemoteFallback: allowRemoteFallback });
   },
   { immediate: true },
 );

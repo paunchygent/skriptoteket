@@ -2,6 +2,8 @@
 import { computed } from "vue";
 
 import type { components } from "../../api/openapi";
+import type { RemoteFallbackPreference } from "../../stores/ai";
+import ProfileAiSettingsPanel from "./ProfileAiSettingsPanel.vue";
 
 type UserProfile = components["schemas"]["UserProfile"];
 
@@ -9,10 +11,11 @@ const props = defineProps<{
   profile: UserProfile | null;
   email: string;
   createdAt?: string;
+  remoteFallbackPreference: RemoteFallbackPreference;
 }>();
 
 const emit = defineEmits<{
-  edit: [section: "personal" | "email" | "password"];
+  edit: [section: "personal" | "email" | "password" | "ai"];
 }>();
 
 const initials = computed(() => {
@@ -150,5 +153,10 @@ const memberSince = computed(() => {
         </div>
       </dl>
     </section>
+
+    <ProfileAiSettingsPanel
+      :remote-fallback-preference="props.remoteFallbackPreference"
+      @edit="emit('edit', 'ai')"
+    />
   </div>
 </template>

@@ -23,6 +23,8 @@ from skriptoteket.application.identity.commands import (
     LogoutCommand,
     RegisterUserCommand,
     RegisterUserResult,
+    UpdateAiSettingsCommand,
+    UpdateAiSettingsResult,
     UpdateProfileCommand,
     UpdateProfileResult,
 )
@@ -92,6 +94,10 @@ class GetProfileHandlerProtocol(Protocol):
 
 class UpdateProfileHandlerProtocol(Protocol):
     async def handle(self, command: UpdateProfileCommand) -> UpdateProfileResult: ...
+
+
+class UpdateAiSettingsHandlerProtocol(Protocol):
+    async def handle(self, command: UpdateAiSettingsCommand) -> UpdateAiSettingsResult: ...
 
 
 class ChangePasswordHandlerProtocol(Protocol):

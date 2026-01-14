@@ -52,6 +52,7 @@ class UserProfile(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
     display_name: str | None = None
+    allow_remote_fallback: bool | None = None
     locale: str = "sv-SE"
     created_at: datetime
     updated_at: datetime

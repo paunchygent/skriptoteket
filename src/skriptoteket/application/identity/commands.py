@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
@@ -91,6 +92,20 @@ class UpdateProfileCommand(BaseModel):
 
 
 class UpdateProfileResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    user: User
+    profile: UserProfile
+
+
+class UpdateAiSettingsCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    user_id: UUID
+    remote_fallback_preference: Literal["unset", "allow", "deny"]
+
+
+class UpdateAiSettingsResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     user: User

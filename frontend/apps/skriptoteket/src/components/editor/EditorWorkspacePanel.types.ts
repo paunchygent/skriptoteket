@@ -8,6 +8,7 @@ import type { EditorWorkingCopyCheckpointSummary } from "../../composables/edito
 import type { SchemaIssuesBySchema } from "../../composables/editor/useEditorSchemaValidation";
 import type { SubmitReviewTooltip } from "../../composables/editor/useEditorWorkflowActions";
 import type { VirtualFileId } from "../../composables/editor/virtualFiles";
+import type { RemoteFallbackPrompt } from "./remoteFallbackPrompt";
 
 type EditorVersionSummary = components["schemas"]["EditorVersionSummary"];
 type ProfessionItem = components["schemas"]["ProfessionItem"];
@@ -68,7 +69,6 @@ type EditorWorkspacePanelProps = {
   isHistoryDrawerOpen: boolean;
   isChatDrawerOpen: boolean;
   isChatCollapsed: boolean;
-  allowRemoteFallback: boolean;
   canCompareVersions: boolean;
   lockBadgeLabel: string | null;
   lockBadgeTone: "success" | "neutral";
@@ -105,6 +105,7 @@ type EditorWorkspacePanelProps = {
   chatError: string | null;
   chatNoticeMessage: string | null;
   chatNoticeVariant: "info" | "warning";
+  remoteFallbackPrompt: RemoteFallbackPrompt | null;
   editOpsRequestError: string | null;
   editOpsDisabledMessage: string | null;
   editOpsClearDraftToken: number;
@@ -158,7 +159,9 @@ type EditorWorkspacePanelEmits = {
   (event: "clearChatError"): void;
   (event: "clearChatDisabled"): void;
   (event: "clearChatNotice"): void;
-  (event: "setAllowRemoteFallback", value: boolean): void;
+  (event: "allowRemoteFallbackPrompt"): void;
+  (event: "denyRemoteFallbackPrompt"): void;
+  (event: "dismissRemoteFallbackPrompt"): void;
   (event: "requestEditOps", message: string): void;
   (event: "clearEditOpsError"): void;
   (event: "clearEditOpsDisabled"): void;

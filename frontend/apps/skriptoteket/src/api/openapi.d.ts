@@ -983,6 +983,23 @@ export interface paths {
         patch: operations["update_profile_api_v1_profile_patch"];
         trace?: never;
     };
+    "/api/v1/profile/ai-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Ai Settings */
+        patch: operations["update_ai_settings_api_v1_profile_ai_settings_patch"];
+        trace?: never;
+    };
     "/api/v1/profile/email": {
         parameters: {
             query?: never;
@@ -3311,6 +3328,14 @@ export interface components {
             kind: "vega_lite";
             spec: components["schemas"]["JsonValue"];
         };
+        /** UpdateAiSettingsRequest */
+        UpdateAiSettingsRequest: {
+            /**
+             * Remote Fallback Preference
+             * @enum {string}
+             */
+            remote_fallback_preference: "unset" | "allow" | "deny";
+        };
         /** UpdateProfileRequest */
         UpdateProfileRequest: {
             /** Display Name */
@@ -3396,6 +3421,8 @@ export interface components {
          * @description User profile data aligned with HuleEdu identity expectations.
          */
         UserProfile: {
+            /** Allow Remote Fallback */
+            allow_remote_fallback?: boolean | null;
             /**
              * Created At
              * Format: date-time
@@ -5501,6 +5528,41 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UpdateProfileRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_ai_settings_api_v1_profile_ai_settings_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAiSettingsRequest"];
             };
         };
         responses: {

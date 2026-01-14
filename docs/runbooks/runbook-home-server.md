@@ -59,30 +59,42 @@ Host hemma-local-root
 Security hardening (sshd settings, Fail2ban jails, nginx-proxy probe jail) is documented in
 [ref-home-server-security-hardening.md](../reference/ref-home-server-security-hardening.md).
 
-### SSH/Network Watchdog (Active Remediation)
+### Health-Gated Hardware Watchdog (Primary Recovery Path)
 
-Runs every 2 minutes and remediates SSH/network drift. It restarts `systemd-networkd`,
-`systemd-resolved`, and `tailscaled` if route/ping checks fail. If SSH/network is still
-unhealthy after remediation, it increments a failure counter and forces recovery once
-the threshold is reached:
+The primary recovery mechanism is a **health-gated hardware watchdog**. The hardware
+watchdog is armed and only petted when key health checks pass. If any health check
+fails, the petter exits and the hardware watchdog hard-resets the host within the
+configured timeout.
 
-- Default action: SysRq crash (`echo c`) to capture kdump, then reboot on completion.
-- Alternative action: SysRq reboot (`echo b`) if explicitly configured.
+- Petter service: `health-watchdog.service`
+- Script: `/usr/local/bin/health-watchdog.sh`
+- Health gate (all must pass after grace period):
+  - `systemctl is-active ssh` and port `22` listening locally
+  - default route present
+  - `enp7s0` link is `UP`
+  - gateway ping (`192.168.0.1`)
+- Grace period (seconds): `HEALTH_WATCHDOG_GRACE_SECONDS` (default `300`)
+- Interval (seconds): `HEALTH_WATCHDOG_INTERVAL_SECONDS` (default `10`)
 
-Script: `/usr/local/bin/ssh-watchdog.sh`
+Config + ownership:
 
-Configuration (optional, persisted via systemd env file):
+- Hardware watchdog driver: `sp5100_tco`
+  - Module options: `/etc/modprobe.d/sp5100_tco.conf`
+    - `options sp5100_tco nowayout=1 heartbeat=60`
+- Disable systemd watchdog petting (PID 1 must not own `/dev/watchdog`):
+  - `/etc/systemd/system.conf.d/99-watchdog.conf`:
+    - `RuntimeWatchdogSec=0`
+    - `RebootWatchdogSec=0`
+- Petter unit: `/etc/systemd/system/health-watchdog.service`
+
+Verification:
 
 ```bash
-# /etc/default/ssh-watchdog
-SSH_WATCHDOG_FORCE_MODE=crash   # crash|reboot (default: crash)
-SSH_WATCHDOG_FORCE_AFTER=3      # failures before forcing action
-```
-
-```bash
-sudo systemctl status ssh-watchdog.timer --no-pager
-sudo journalctl -t ssh-watchdog --since "1 hour ago"
-sudo systemctl disable --now ssh-watchdog.timer
+sudo systemctl status health-watchdog.service --no-pager
+sudo journalctl -t health-watchdog --since "1 hour ago"
+sudo lsof /dev/watchdog
+cat /sys/class/watchdog/watchdog0/nowayout
+cat /sys/class/watchdog/watchdog0/timeout
 ```
 
 ### Heartbeat Log (Hang Correlation)
@@ -234,12 +246,18 @@ Kernel/sysctl settings:
     - Forces reboot via SysRq: `echo b > /proc/sysrq-trigger` (falls back to `reboot -f` if needed)
 - Hardware watchdog (hard reset if the host wedges, including crash-kernel hang):
   - Driver: `sp5100_tco` (SP5100/SB800 TCO watchdog)
-  - Module loader (explicit, because `systemd-modules-load` deny-lists this driver via kmod): `/etc/systemd/system/sp5100-tco-watchdog.service`
-  - systemd watchdog config: `/etc/systemd/system.conf.d/99-watchdog.conf`
-    - `RuntimeWatchdogSec=3min` (plus reboot/shutdown watchdog at 3min)
-  - Verify watchdog is active:
-    - `systemctl show -p WatchdogDevice -p RuntimeWatchdogUSec`
-    - `sudo journalctl -b --no-pager | rg -i 'Using hardware watchdog|Watchdog running'`
+  - Module options: `/etc/modprobe.d/sp5100_tco.conf`
+    - `nowayout=1` (cannot be disabled without reboot)
+    - `heartbeat=60` (seconds)
+  - systemd watchdog is disabled (petting handled by `health-watchdog`):
+    - `/etc/systemd/system.conf.d/99-watchdog.conf`: `RuntimeWatchdogSec=0`, `RebootWatchdogSec=0`
+  - Health-gated petter owns `/dev/watchdog`:
+    - `/etc/systemd/system/health-watchdog.service`
+    - `/usr/local/bin/health-watchdog.sh`
+  - Verify watchdog is active + owned:
+    - `sudo lsof /dev/watchdog`
+    - `cat /sys/class/watchdog/watchdog0/nowayout`
+    - `cat /sys/class/watchdog/watchdog0/timeout`
 - Controlled crash testing (maintenance window only):
   - Trigger: `ssh hemma "sudo sh -c 'echo 1 > /proc/sys/kernel/sysrq; echo c > /proc/sysrq-trigger'"`
   - Verify dump + crash boot:
@@ -601,8 +619,8 @@ Observability operations are documented in the dedicated runbooks:
 ssh hemma "ip -4 addr show enp7s0"
 ssh hemma "ip route | head -n 5"
 
-# If needed, check watchdog + heartbeat logs for evidence:
-ssh hemma "sudo journalctl -t ssh-watchdog --since '2 hours ago'"
+# If needed, check watchdog logs for evidence:
+ssh hemma "sudo journalctl -t health-watchdog --since '2 hours ago'"
 ssh hemma "sudo journalctl -t heartbeat --since '2 hours ago'"
 
 # Incident log captures (if taken):

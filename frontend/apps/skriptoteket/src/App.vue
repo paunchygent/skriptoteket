@@ -144,6 +144,7 @@ async function onLogout(): Promise<void> {
     <AuthLayout
       v-else
       :user="auth.user"
+      :profile="auth.profile"
       :can-see-contributor="canSeeContributor"
       :can-see-admin="canSeeAdmin"
       :can-see-superuser="canSeeSuperuser"

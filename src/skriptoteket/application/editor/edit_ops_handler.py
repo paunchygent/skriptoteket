@@ -55,7 +55,8 @@ _PENDING_TURN_ABANDONED_OUTCOME = "abandoned_by_new_request"
 _IN_FLIGHT_MESSAGE = "En chatförfrågan pågår redan. Försök igen om en stund."
 _DISABLED_MESSAGE = "AI-redigering är inte tillgänglig just nu. Försök igen senare."
 _REMOTE_FALLBACK_REQUIRED_MESSAGE = (
-    "Lokala AI-modellen är inte tillgänglig. Tillåt externa API:er (OpenAI) för att fortsätta."
+    "Den lokala AI-modellen är inte tillgänglig. "
+    "Aktivera externa AI-API:er (OpenAI) för att fortsätta."
 )
 _MESSAGE_TOO_LONG = "För långt meddelande: korta ned eller starta en ny chatt."
 _GENERATION_ERROR = "Jag kunde inte skapa ett ändringsförslag just nu. Försök igen."

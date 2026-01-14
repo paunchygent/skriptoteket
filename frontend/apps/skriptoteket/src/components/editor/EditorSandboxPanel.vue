@@ -104,7 +104,7 @@ const emit = defineEmits<{
         </template>
       </Suspense>
       <div
-        v-else
+        v-if="!props.selectedVersion"
         :class="[
           'text-sm text-navy/60',
           props.variant === 'mode'

@@ -97,11 +97,6 @@ def _open_editor(page: object, *, base_url: str, artifacts_dir: Path | None = No
     chat_title = page.get_by_role("heading", name=re.compile(r"Kodassistenten", re.IGNORECASE))
     try:
         expect(chat_title).to_be_visible(timeout=30_000)
-        chat_drawer = page.locator("aside[role='dialog']:visible")
-        remote_fallback_checkbox = chat_drawer.get_by_label(
-            re.compile(r"Tillåt externa API", re.IGNORECASE),
-        )
-        expect(remote_fallback_checkbox).to_be_visible(timeout=30_000)
     except AssertionError:
         if artifacts_dir:
             page.screenshot(

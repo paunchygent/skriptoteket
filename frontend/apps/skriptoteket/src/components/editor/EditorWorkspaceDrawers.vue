@@ -2,6 +2,7 @@
 import { defineAsyncComponent } from "vue";
 
 import type { EditorChatMessage } from "../../composables/editor/chat/editorChatTypes";
+import type { RemoteFallbackPrompt } from "./remoteFallbackPrompt";
 
 const ChatDrawer = defineAsyncComponent(() => import("./ChatDrawer.vue"));
 
@@ -10,7 +11,7 @@ type EditorWorkspaceDrawersProps = {
   isChatCollapsed: boolean;
   variant?: "drawer" | "column";
 
-  allowRemoteFallback: boolean;
+  remoteFallbackPrompt?: RemoteFallbackPrompt | null;
   chatMessages: EditorChatMessage[];
   chatIsStreaming: boolean;
   chatDisabledMessage: string | null;
@@ -28,6 +29,7 @@ type EditorWorkspaceDrawersProps = {
 const props = withDefaults(defineProps<EditorWorkspaceDrawersProps>(), {
   variant: "drawer",
   editOpsClearDraftToken: 0,
+  remoteFallbackPrompt: null,
 });
 
 const emit = defineEmits<{
@@ -38,7 +40,9 @@ const emit = defineEmits<{
   (event: "clearChatError"): void;
   (event: "clearChatDisabled"): void;
   (event: "clearChatNotice"): void;
-  (event: "setAllowRemoteFallback", value: boolean): void;
+  (event: "allowRemoteFallbackPrompt"): void;
+  (event: "denyRemoteFallbackPrompt"): void;
+  (event: "dismissRemoteFallbackPrompt"): void;
   (event: "toggleChatCollapsed"): void;
   (event: "requestEditOps", message: string): void;
   (event: "clearEditOpsError"): void;
@@ -58,7 +62,7 @@ const emit = defineEmits<{
     :error="props.chatError"
     :notice-message="props.chatNoticeMessage"
     :notice-variant="props.chatNoticeVariant"
-    :allow-remote-fallback="props.allowRemoteFallback"
+    :remote-fallback-prompt="props.remoteFallbackPrompt ?? null"
     :is-edit-ops-loading="props.isEditOpsLoading"
     :edit-ops-is-slow="props.isEditOpsSlow"
     :edit-ops-error="props.editOpsError"
@@ -72,7 +76,9 @@ const emit = defineEmits<{
     @clear-error="emit('clearChatError')"
     @clear-disabled="emit('clearChatDisabled')"
     @clear-notice="emit('clearChatNotice')"
-    @set-allow-remote-fallback="emit('setAllowRemoteFallback', $event)"
+    @allow-remote-fallback-prompt="emit('allowRemoteFallbackPrompt')"
+    @deny-remote-fallback-prompt="emit('denyRemoteFallbackPrompt')"
+    @dismiss-remote-fallback-prompt="emit('dismissRemoteFallbackPrompt')"
     @clear-edit-ops-error="emit('clearEditOpsError')"
     @clear-edit-ops-disabled="emit('clearEditOpsDisabled')"
     @request-edit-ops="emit('requestEditOps', $event)"

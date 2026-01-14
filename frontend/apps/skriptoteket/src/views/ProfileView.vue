@@ -1,18 +1,23 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
+import { storeToRefs } from "pinia";
 
 import { isApiError } from "../api/client";
 import ProfileDisplay from "../components/profile/ProfileDisplay.vue";
+import ProfileEditAiSettings from "../components/profile/ProfileEditAiSettings.vue";
 import ProfileEditEmail from "../components/profile/ProfileEditEmail.vue";
 import ProfileEditPassword from "../components/profile/ProfileEditPassword.vue";
 import ProfileEditPersonal from "../components/profile/ProfileEditPersonal.vue";
 import SystemMessage from "../components/ui/SystemMessage.vue";
 import { useProfile } from "../composables/useProfile";
+import { useAiStore } from "../stores/ai";
 import { useAuthStore } from "../stores/auth";
 
-type EditingSection = "personal" | "email" | "password" | null;
+type EditingSection = "personal" | "email" | "password" | "ai" | null;
 
 const auth = useAuthStore();
+const ai = useAiStore();
+const { remoteFallbackPreference } = storeToRefs(ai);
 const { profile, load } = useProfile();
 
 const isLoading = ref(true);
@@ -41,7 +46,7 @@ async function loadProfile(): Promise<void> {
   }
 }
 
-function handleEditRequest(section: "personal" | "email" | "password"): void {
+function handleEditRequest(section: "personal" | "email" | "password" | "ai"): void {
   editingSection.value = section;
 }
 
@@ -92,6 +97,7 @@ onMounted(() => {
           :profile="profile"
           :email="currentEmail"
           :created-at="createdAt"
+          :remote-fallback-preference="remoteFallbackPreference"
           @edit="handleEditRequest"
         />
 
@@ -111,6 +117,12 @@ onMounted(() => {
 
         <ProfileEditPassword
           v-else-if="editingSection === 'password'"
+          @cancel="handleCancel"
+          @saved="handleSaved"
+        />
+
+        <ProfileEditAiSettings
+          v-else-if="editingSection === 'ai'"
           @cancel="handleCancel"
           @saved="handleSaved"
         />

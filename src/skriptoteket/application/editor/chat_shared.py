@@ -6,7 +6,8 @@ from skriptoteket.protocols.llm import VirtualFileId
 
 DISABLED_MESSAGE = "Kodassistenten är inte tillgänglig just nu. Försök igen senare."
 REMOTE_FALLBACK_REQUIRED_MESSAGE = (
-    "Den lokala AI-modellen är inte tillgänglig. Tillåt externa API:er (OpenAI) för att fortsätta."
+    "Den lokala AI-modellen är inte tillgänglig. "
+    "Aktivera externa AI-API:er (OpenAI) för att fortsätta."
 )
 REMOTE_FALLBACK_REQUIRED_CODE = "remote_fallback_required"
 MESSAGE_TOO_LONG = "För långt meddelande: korta ned eller starta en ny chatt."

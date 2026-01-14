@@ -63,8 +63,15 @@ def _open_help_panel(page: object) -> object | None:
     help_button.first.click()
     help_panel = page.locator("#help-panel")
     expect(help_panel).to_be_visible()
-    expect(help_panel.get_by_role("heading", name="Hjälp")).to_be_visible()
+    expect(
+        help_panel.get_by_role("heading", name=re.compile(r"^Hjälp$", re.IGNORECASE))
+    ).to_be_visible()
     return help_panel
+
+
+def _wait_for_page_fade_in(page: object) -> None:
+    # RouterView transition uses opacity; Playwright "visible" checks do not consider opacity.
+    page.wait_for_timeout(250)
 
 
 def main() -> None:
@@ -100,6 +107,7 @@ def main() -> None:
         expect(
             page.get_by_role("heading", name=re.compile(r"Välkommen", re.IGNORECASE))
         ).to_be_visible()
+        _wait_for_page_fade_in(page)
         page.screenshot(path=str(artifacts_dir / "home.png"), full_page=True)
 
         # Mobile sidebar help + logout
@@ -122,18 +130,19 @@ def main() -> None:
             expect(nav_link).to_be_visible()
         page.screenshot(path=str(artifacts_dir / "mobile-nav.png"), full_page=True)
 
-        # Browse professions + categories
+        # Browse catalog (mobile)
         page.goto(f"{base_url}/browse", wait_until="domcontentloaded")
         expect(
-            page.get_by_role("heading", name=re.compile(r"Bläddra verktyg", re.IGNORECASE))
+            page.get_by_role("heading", name=re.compile(r"Katalog", re.IGNORECASE))
         ).to_be_visible()
-        page.screenshot(path=str(artifacts_dir / "browse-professions.png"), full_page=True)
+        _wait_for_page_fade_in(page)
+        page.screenshot(path=str(artifacts_dir / "browse-mobile.png"), full_page=True)
 
-        profession_list = page.get_by_role("main").locator("ul").first
-        first_profession = profession_list.get_by_role("link").first
-        first_profession.click()
-        expect(page.get_by_text("Välj en kategori")).to_be_visible()
-        page.screenshot(path=str(artifacts_dir / "browse-categories.png"), full_page=True)
+        curated_checkbox = page.get_by_label(re.compile(r"Enbart kurerade appar", re.IGNORECASE))
+        if curated_checkbox.count() > 0:
+            curated_checkbox.first.check()
+            _wait_for_page_fade_in(page)
+            page.screenshot(path=str(artifacts_dir / "browse-filters-mobile.png"), full_page=True)
 
         context.close()
         browser.close()
@@ -144,6 +153,7 @@ def main() -> None:
         page = context.new_page()
 
         _login(page, base_url=base_url, email=email, password=password)
+        _wait_for_page_fade_in(page)
         help_panel = _open_help_panel(page)
         if help_panel:
             page.screenshot(path=str(artifacts_dir / "help-desktop.png"), full_page=False)
@@ -152,14 +162,30 @@ def main() -> None:
 
         page.goto(f"{base_url}/browse", wait_until="domcontentloaded")
         expect(
-            page.get_by_role("heading", name=re.compile(r"Bläddra verktyg", re.IGNORECASE))
+            page.get_by_role("heading", name=re.compile(r"Katalog", re.IGNORECASE))
         ).to_be_visible()
+        _wait_for_page_fade_in(page)
 
         page.goto(f"{base_url}/admin/tools", wait_until="domcontentloaded")
         expect(
             page.get_by_role("heading", name=re.compile(r"(Verktyg|Testyta)", re.IGNORECASE))
         ).to_be_visible()
+        _wait_for_page_fade_in(page)
         page.screenshot(path=str(artifacts_dir / "admin-tools-desktop.png"), full_page=True)
+
+        page.goto(f"{base_url}/profile", wait_until="domcontentloaded")
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Profil", re.IGNORECASE))
+        ).to_be_visible()
+        ai_settings_heading = page.get_by_role(
+            "heading", name=re.compile(r"AI-inställningar", re.IGNORECASE)
+        ).first
+        expect(ai_settings_heading).to_be_visible()
+        _wait_for_page_fade_in(page)
+        page.screenshot(path=str(artifacts_dir / "profile-desktop.png"), full_page=True)
+        ai_settings_heading.scroll_into_view_if_needed()
+        _wait_for_page_fade_in(page)
+        page.screenshot(path=str(artifacts_dir / "profile-ai-settings-desktop.png"), full_page=True)
 
         context.close()
         browser.close()
