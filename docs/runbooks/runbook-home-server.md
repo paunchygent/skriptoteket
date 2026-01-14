@@ -254,10 +254,22 @@ Kernel/sysctl settings:
   - Health-gated petter owns `/dev/watchdog`:
     - `/etc/systemd/system/health-watchdog.service`
     - `/usr/local/bin/health-watchdog.sh`
+  - Crash-kernel hardening (kdump):
+    - Systemd watchdog disabled in crash initrd:
+      - `/etc/initramfs-tools/hooks/zz-kdump-disable-watchdog`
+      - Verifiable in initrd as `etc/systemd/system.conf.d/zzz-kdump-no-watchdog.conf`
+    - Ensure watchdog module + options in crash initrd:
+      - `/etc/initramfs-tools/hooks/zz-kdump-watchdog-hardening`
+      - Adds `sp5100_tco` module and `/etc/modprobe.d/sp5100_tco.conf` to kdump initrd
+    - Rebuild and reload kdump initrd after changes:
+      - `sudo /etc/kernel/postinst.d/kdump-tools $(uname -r)`
+      - `sudo kdump-config unload && sudo kdump-config load`
   - Verify watchdog is active + owned:
     - `sudo lsof /dev/watchdog`
     - `cat /sys/class/watchdog/watchdog0/nowayout`
     - `cat /sys/class/watchdog/watchdog0/timeout`
+  - Verify crash initrd contents:
+    - `sudo lsinitramfs /var/lib/kdump/initrd.img-$(uname -r) | rg 'sp5100_tco|sp5100_tco.conf|zzz-kdump-no-watchdog'`
 - Controlled crash testing (maintenance window only):
   - Trigger: `ssh hemma "sudo sh -c 'echo 1 > /proc/sys/kernel/sysrq; echo c > /proc/sysrq-trigger'"`
   - Verify dump + crash boot:
