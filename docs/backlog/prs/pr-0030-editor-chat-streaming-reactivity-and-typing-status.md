@@ -43,6 +43,7 @@ We also want the process wording to be more accurate:
 
 1) **Reactive messages (root fix)**
 - Wrap new/mapped `EditorChatMessage` objects with Vue `reactive()` and ensure we only mutate the proxied versions.
+  - Note: Vue reactivity is proxy-based — mutating a raw/original object reference will bypass UI updates.
 
 2) **Composable reveal controller**
 - Track `content` (raw) + `visibleContent` (rendered) and advance `visibleContent` in small batches at a stable pace.
