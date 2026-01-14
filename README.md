@@ -45,7 +45,7 @@ pdm install -G monorepo-tools
 pdm run fe-install
 ```
 
-2) Configure environment
+1) Configure environment
 
 - Copy `.env.example` → `.env` and adjust values as needed.
 - Create a local artifacts dir (required for tool execution):
@@ -54,20 +54,20 @@ pdm run fe-install
 mkdir -p /tmp/skriptoteket/artifacts
 ```
 
-3) Start PostgreSQL + migrate
+1) Start PostgreSQL + migrate
 
 ```bash
 docker compose up -d db
 pdm run db-upgrade
 ```
 
-4) Bootstrap the first superuser (local dev)
+1) Bootstrap the first superuser (local dev)
 
 ```bash
 pdm run bootstrap-superuser
 ```
 
-5) Run backend + SPA (two terminals)
+1) Run backend + SPA (two terminals)
 
 ```bash
 # Terminal A
@@ -96,31 +96,31 @@ Skriptoteket is intended to run as a small “core” with optional add-ons. The
 - `COOKIE_SECURE=true`
 - `EMAIL_VERIFICATION_BASE_URL=https://<your-domain>`
 
-2) **Database**: configure `DATABASE_URL` and ensure backups + PITR align with your policies.
+1) **Database**: configure `DATABASE_URL` and ensure backups + PITR align with your policies.
 
-3) **Artifacts / retention**: mount a persistent directory/volume and set `ARTIFACTS_ROOT`.
+2) **Artifacts / retention**: mount a persistent directory/volume and set `ARTIFACTS_ROOT`.
 
 - Schedule retention jobs (cron/systemd timers) using:
   - `pdm run artifacts-prune`
   - `pdm run cleanup-session-files`
   - `pdm run cleanup-sandbox-snapshots`
 
-4) **Email**: configure `EMAIL_PROVIDER=smtp` and point to your municipal SMTP relay.
+1) **Email**: configure `EMAIL_PROVIDER=smtp` and point to your municipal SMTP relay.
 
-5) **Runner security**: decide how you want to host tool execution.
+2) **Runner security**: decide how you want to host tool execution.
 
 - Same host: mount `/var/run/docker.sock` into the web container.
 - Separate host: point the web service at a dedicated runner Docker Engine using `DOCKER_HOST` (protect it with TLS and
   network policy; it’s equivalent to root on that host).
 
-6) **Observability**:
+1) **Observability**:
 
 - Logs: set `LOG_FORMAT=json` and ship stdout/stderr to your log platform.
 - Metrics: scrape `/metrics`.
 - Health: probe `/healthz`.
 - Tracing (optional): set `OTEL_TRACING_ENABLED=true` and `OTEL_EXPORTER_OTLP_ENDPOINT=...`.
 
-7) **AI features (optional)**:
+1) **AI features (optional)**:
 
 - For air‑gapped environments: set `LLM_*_ENABLED=false`.
 - For self-hosted inference: point `LLM_*_BASE_URL` to your OpenAI‑compatible gateway (llama.cpp, etc.).

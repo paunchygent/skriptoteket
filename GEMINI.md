@@ -29,6 +29,7 @@ Target Python is **3.13–3.14**.
 - `migrations/`, `alembic.ini`: DB migrations (Alembic)
 - **PDM/pyproject changes (incl. migration work)**: use `pdm-migration-specialist` for `pyproject.toml` dependency-group updates (generic skill; don’t import HuleEdu monorepo assumptions).
 - `docs/`: PRD/ADRs/backlog (start at `docs/index.md`); contract-enforced via `docs/_meta/docs-contract.yaml`
+- `docs/backlog/prs/`: technical PR tasks (refactors/structure work) connected to stories; use `docs/templates/template-pr.md`; validated by the docs contract like other doc types.
 - **Docs workflow (REQUIRED)**: follow `docs/reference/ref-sprint-planning-workflow.md` for PRD → ADR → epic → story → sprint planning.
 - **Docs index (REQUIRED)**: when adding new docs, update `docs/index.md` so the full index stays complete.
 - **Epic update workflow (REQUIRED)**: when you mark a story `done`, update its epic in `docs/backlog/epics/`:
@@ -62,6 +63,7 @@ Target Python is **3.13–3.14**.
 - **Dev services are long-running**: do not stop `pdm run dev` or `docker compose up -d db` unless explicitly requested.
 - Docker dev workflow: `pdm run dev-start` / `pdm run dev-stop` / `pdm run dev-build-start` / `pdm run dev-build-start-clean` / `pdm run dev-rebuild` / `pdm run dev-db-reset`
 - Docker dev logs (web + frontend): `pdm run dev-containers-logs`
+- **Docker image builds (REQUIRED)**: run in background, log to `.artifacts/`, and give the user the `tail -f` command.
 - Quality: `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test` (lint runs Ruff + agent-doc budgets + docs contract)
 - Docs: `pdm run docs-validate`
 - Session file ops (prod): `pdm run cleanup-session-files` (TTL cleanup) / `pdm run clear-all-session-files` (danger: deletes all)
@@ -133,9 +135,8 @@ Prefer Playwright for browser automation and screenshots; do not use Puppeteer.
 ## Observability Stack
 
 Public URLs (credentials in `~/apps/skriptoteket/.env` on server):
-
-- <https://grafana.hemma.hule.education> (admin / `GRAFANA_ADMIN_PASSWORD`)
-- <https://prometheus.hemma.hule.education> (admin / `PROMETHEUS_BASIC_AUTH_PASSWORD`)
+- https://grafana.hemma.hule.education (admin / `GRAFANA_ADMIN_PASSWORD`)
+- https://prometheus.hemma.hule.education (admin / `PROMETHEUS_BASIC_AUTH_PASSWORD`)
 
 Reset Grafana password: `ssh hemma "sudo docker exec grafana grafana cli admin reset-admin-password '<pw>'"` (env var only works on first startup).
 Use the appropriate observability skill when troubleshooting (metrics/logs/traces/structured logging).

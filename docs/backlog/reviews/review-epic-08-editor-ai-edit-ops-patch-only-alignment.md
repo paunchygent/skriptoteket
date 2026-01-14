@@ -2,7 +2,7 @@
 type: review
 id: REV-EPIC-08
 title: "Review: PR-0031 Editor AI patch-only edit-ops alignment"
-status: pending
+status: approved
 owners: "agents"
 created: 2026-01-14
 updated: 2026-01-14
@@ -65,13 +65,13 @@ AI IDE workflow without cursor/selection targeting.
 
 ## Review checklist
 
-- [ ] PR-0031 acceptance criteria are correct, testable, and aligned with ADR-0051 intent.
-- [ ] Prompt changes are unambiguous: patch-only output; no cursor/selection targeting requirements.
-- [ ] Proposed backend diff hygiene is safe: rejects dangerous cases; repairs only mechanical mistakes; preserves
+- [x] PR-0031 acceptance criteria are correct, testable, and aligned with ADR-0051 intent.
+- [x] Prompt changes are unambiguous: patch-only output; no cursor/selection targeting requirements.
+- [x] Proposed backend diff hygiene is safe: rejects dangerous cases; repairs only mechanical mistakes; preserves
       deterministic apply/undo semantics.
-- [ ] Correlation propagation plan ensures a single id is visible + usable for debugging across generation/preview/apply.
-- [ ] Failure modes become diagnosable (captures contain enough context; user-visible messages are actionable).
-- [ ] No violations of architecture rules (thin web layer; protocol-first DI; UoW owns transactions; no prompt/code
+- [x] Correlation propagation plan ensures a single id is visible + usable for debugging across generation/preview/apply.
+- [x] Failure modes become diagnosable (captures contain enough context; user-visible messages are actionable).
+- [x] No violations of architecture rules (thin web layer; protocol-first DI; UoW owns transactions; no prompt/code
       content in normal logs).
 
 ## Verification (when PR-0031 is implemented)
@@ -86,10 +86,17 @@ AI IDE workflow without cursor/selection targeting.
 
 ## Output
 
-- Verdict: `approved` | `changes_requested` | `rejected`
-- If not approved: list required fixes with file paths and 2–3 options with pros/cons.
+- Verdict: `approved`
 
-## Close-out (REQUIRED if approved)
+## Review Feedback
 
-- Mark this review doc `status: approved` and add brief “Review Feedback” with the decision.
-- If the decision changes ADR intent, update the relevant ADR(s) (don’t leave anything “pending”).
+The plan to align on **patch-only edit ops** is approved and strongly recommended. The failure evidence confirms that malformed unified diffs (specifically incorrect hunk header counts) are the primary cause of regeneration loops, and the proposed hybrid repair strategy in `unified_diff_applier.py` is the correct mitigation.
+
+### Required Actions (Done)
+
+- **ADR-0051 Updated**: The ADR has been updated to reflect the "patch-only" alignment for v2, removing "Anchor" targeting from the primary flow to avoid ambiguity and hallucinations.
+
+### Implementation Notes
+
+- Ensure `X-Correlation-ID` plumbing is verified end-to-end in the frontend (`useEditorEditOps.ts`).
+- The backend diff repair logic should log a specific metadata flag (e.g. `rewrote_hunk_counts=True`) so we can track how often the model is getting it wrong vs right.

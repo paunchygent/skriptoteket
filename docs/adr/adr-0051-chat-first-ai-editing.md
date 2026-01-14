@@ -7,7 +7,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2026-01-01
-updated: 2026-01-11
+updated: 2026-01-14
 links: ["EPIC-08", "ST-08-20", "ST-08-21", "ST-08-22", "ST-08-24", "ST-14-17",
 "ST-14-30", "ST-08-28", "ADR-0043"]
 ---
@@ -16,8 +16,8 @@ links: ["EPIC-08", "ST-08-20", "ST-08-21", "ST-08-22", "ST-08-24", "ST-14-17",
 
 Skriptoteket’s editor currently has:
 
-- Static “editor intelligence” (lint, hover, completions).
-- AI inline completions (“ghost text”, ST-08-14).
+- Static —editor intelligence— (lint, hover, completions).
+- AI inline completions (—ghost text—, ST-08-14).
 - AI edit suggestions MVP (ST-08-16) that returns raw replacement text for a
   selected range.
 
@@ -26,8 +26,8 @@ This works for experienced script authors, but it is not beginner-friendly:
 - Ghost text assumes the author can already start writing code.
 - The edit MVP depends on the author selecting the correct region and cannot
   naturally express insert/delete operations.
-- The preview is not a diff and does not clearly communicate “what will
-  change”.
+- The preview is not a diff and does not clearly communicate —what will
+  change—.
 
 We want a chat-first authoring experience where a novice can describe intent
 in Swedish and iteratively refine a script,
@@ -59,6 +59,8 @@ safe preview/apply flow.
 
 ### 2) Edit protocol: structured CRUD operations (v1)
 
+*Note: v1 CRUD operations (insert/replace/delete at cursor/selection) remain in the protocol definition for backward compatibility but are **deprecated** for the primary chat-ops workflow. The assistant is instructed to use Patch Ops (v2) exclusively.*
+
 The backend returns a validated list of edit operations that support:
 
 - `insert` (at cursor)
@@ -76,7 +78,7 @@ fail safely (no partial edits).
 
 ### 2.1 Virtual files (multi-document context)
 
-To support tool authoring where “code + schemas + instructions” must be edited
+To support tool authoring where —code + schemas + instructions— must be edited
 together without boundary violations, AI
 edit proposals are expressed against a small set of named **virtual files**:
 
@@ -86,7 +88,7 @@ edit proposals are expressed against a small set of named **virtual files**:
 - `input_schema.json`
 - `usage_instructions.md`
 
-The UI may render these as separate editors or as a combined “Pro mode” bundle
+The UI may render these as separate editors or as a combined —Pro mode— bundle
 view, but the AI protocol targets virtual
 files explicitly so:
 
@@ -95,25 +97,18 @@ files explicitly so:
 - the assistant cannot accidentally mix JSON schema edits into Python (and
   vice versa)
 
-### 2.2 Edit protocol v2: anchor/patch-based targets
+### 2.2 Edit protocol v2: patch-only targets (alignment)
 
-To match coding-assistant expectations when no selection/cursor is provided,
-we add a second, location-aware targeting mode that relies on anchors rather
-than raw cursor offsets.
+To match coding-assistant expectations and reduce ambiguity/hallucination, we align on a **patch-only** strategy. The assistant must use unified diffs to express changes.
 
-- Add `patch` operations that carry a unified diff for a single virtual file.
-  The diff must reference the same canonical virtual file id in the `a/` and
-  `b/` headers, and apply is **strict** (all hunks must match; no fuzzy apply).
-- Add `anchor` targets for insert/replace/delete with an explicit anchor payload
-  (exact match + placement) so the assistant can say “insert after/before this
-  text” without relying on cursor position.
-- If no selection/cursor is supplied, the model must prefer patch/anchor ops
-  and must not emit cursor-only inserts.
+- **Patch only**: The assistant must emit `patch` operations that carry a unified diff for a single virtual file.
+- **Strict apply**: The diff must reference the same canonical virtual file id in the `a/` and `b/` headers, and apply is strict (all hunks must match; bounded fuzz allowed).
+- **No cursor/anchor targeting in v2**: The system prompt excludes v1 CRUD (cursor/selection targets) and v2 anchor targets so the model must think in diffs, which improves coherence and reduces —invalid anchor— errors.
 
 #### 2.2.1 Triggering v2 + request semantics (required)
 
 Because a CodeMirror editor always has an internal cursor, **v2 must be triggered by request semantics**, not by
-“whatever the editor happens to have”.
+—whatever the editor happens to have—.
 
 Definitions:
 
@@ -133,8 +128,7 @@ Frontend rules:
 
 Backend rules:
 
-- When `selection` and `cursor` are omitted, the system prompt MUST instruct the model to use `patch` and/or `anchor`
-  targeting and MUST treat cursor-only ops as invalid (safe-fail).
+- When `selection` and `cursor` are omitted (or when operating in v2 mode), the system prompt MUST instruct the model to use `patch` ONLY and MUST treat other op types (cursor/anchor) as invalid (safe-fail).
 
 #### 2.2.2 Patch op (v2)
 
@@ -156,7 +150,7 @@ Rules:
 - The patch MUST reference the same canonical id in both headers (`a/<id>` and `b/<id>`).
 - Backend MUST sanitize/normalize predictable LLM noise (code fences, indentation, CRLF, invisible chars, missing
   headers) before attempting apply.
-- Apply MUST be atomic (“all hunks or nothing”). Multi-file diffs are rejected.
+- Apply MUST be atomic (—all hunks or nothing—). Multi-file diffs are rejected.
 - Apply uses a **bounded fuzz ladder** to reduce regeneration loops:
   - Stage 0: strict apply (fuzz 0)
   - Stage 0b: whitespace-tolerant strict apply (ignore whitespace in context)
@@ -166,42 +160,21 @@ Rules:
   - If `max_offset > 50` lines, treat the diff as stale and fail with a regenerate message.
   - If `fuzz>0` OR `max_offset>10`, the UI MUST show a warning and require an extra confirmation before apply.
 
-#### 2.2.3 Anchor target (v2)
+#### 2.2.3 Anchor target (v2) - DEPRECATED
 
-Anchor targeting resolves an edit location by exact string match in the base file.
-
-Shape (conceptual):
-
-```json
-{
-  "op": "insert",
-  "target_file": "tool.py",
-  "target": {
-    "kind": "anchor",
-    "anchor": { "match": "def run_tool():\n", "placement": "after" }
-  },
-  "content": "..."
-}
-```
-
-Rules:
-
-- `anchor.match` MUST match the base file **exactly once**.
-- If `anchor.match` has zero matches: safe-fail with a user-actionable error (“hittade inte ankaret”).
-- If `anchor.match` has more than one match: safe-fail with a user-actionable error (“ankaret är otydligt”).
+*Note: Anchor targeting was proposed as an alternative to cursors but proved brittle and ambiguous compared to unified diffs. It is removed from the system prompt in favor of patch-only.*
 
 ### 3) Guardrails: diff preview + atomic apply + undo
 
-- The UI MUST render a diff preview of “current” vs “proposed” before applying
+- The UI MUST render a diff preview of —current— vs —proposed— before applying
   any changes.
 - The diff preview UI SHOULD be purpose-built for AI proposals (minimal controls), even if it reuses the underlying diff
   engine used elsewhere in the editor.
 - Applying a proposal MUST be a single atomic CodeMirror transaction so a
   single undo reverts the change.
-- If the underlying editor content changes after the proposal is generated,
-  apply MUST be blocked and the user prompted
+- If the underlying editor content changes after the proposal is generated, apply MUST be blocked and the user prompted
     to regenerate.
-- Preview and apply MUST be version-gated so “what the user saw is what gets applied”:
+- Preview and apply MUST be version-gated so —what the user saw is what gets applied—:
   - Preview returns `base_hash` + `patch_id` for the exact base + normalized ops/diff.
   - Apply MUST include the same tokens and MUST return `409` on mismatch; the user must re-preview and confirm again.
 
@@ -225,7 +198,7 @@ Rules:
 - Log metadata only (template id, lengths, outcome, provider/model, latency if
   available).
 - Never log prompt text, code text, conversation messages, or model outputs.
-- Platform-only “full model response capture” is allowed **only** as an explicit debug
+- Platform-only —full model response capture— is allowed **only** as an explicit debug
   mechanism when enabled by server config (default: OFF). Captures are written to
   artifact storage with TTL cleanup and are retrievable only via server filesystem access.
   When enabled, captures are written automatically on edit-ops generation and preview failures
@@ -238,11 +211,12 @@ Rules:
 
 ### Positive
 
-- Beginner-friendly entry point (“describe what you want”) without requiring
+- Beginner-friendly entry point (—describe what you want—) without requiring
   region selection expertise.
 - Deterministic, auditable changes via structured ops + diff preview.
-- Lower risk of “AI did something surprising” due to explicit apply and easy
+- Lower risk of —AI did something surprising— due to explicit apply and easy
   undo.
+- **Patch-only alignment**: Reduces model ambiguity (one way to edit) and leverages the strong diff-repair logic in the backend.
 
 ### Negative / trade-offs
 
