@@ -9,9 +9,11 @@ import type { FixIntent } from "../fixIntents";
 import type { LintRule } from "../lintRule";
 import type { LinterContext } from "../linterContext";
 import { stringLiteralValue } from "../utils/pythonStringLiterals";
+import { findInnermostScopeAtPos, lookupVariable } from "../variables";
 
 const ST_CONTRACT_KEYS_MISSING = "ST_CONTRACT_KEYS_MISSING";
 const ST_CONTRACT_OUTPUTS_NOT_LIST = "ST_CONTRACT_OUTPUTS_NOT_LIST";
+const ST_CONTRACT_OUTPUTS_UNVERIFIED = "ST_CONTRACT_OUTPUTS_UNVERIFIED";
 const ST_CONTRACT_OUTPUT_KIND_MISSING = "ST_CONTRACT_OUTPUT_KIND_MISSING";
 const ST_CONTRACT_OUTPUT_KIND_INVALID = "ST_CONTRACT_OUTPUT_KIND_INVALID";
 const ST_NOTICE_FIELDS_MISSING = "ST_NOTICE_FIELDS_MISSING";
@@ -90,7 +92,12 @@ export const ContractRule: LintRule = {
     const match = ctx.facts.entrypoint;
     if (!match) return [];
 
-    const returns = ctx.facts.returns;
+    const entrypointScope = findInnermostScopeAtPos(ctx.facts.variables, match.nameFrom);
+    const returns = entrypointScope
+      ? ctx.facts.returns.filter(
+          (stmt) => findInnermostScopeAtPos(ctx.facts.variables, stmt.from) === entrypointScope,
+        )
+      : ctx.facts.returns;
     if (returns.length === 0) return [];
 
     const literalDictReturns = returns.filter((stmt) => stmt.expression?.name === "DictionaryExpression");
@@ -135,13 +142,51 @@ export const ContractRule: LintRule = {
       if (!outputsEntry) continue;
 
       const outputsValue = outputsEntry.value;
-      if (!outputsValue || outputsValue.name !== "ArrayExpression") {
+
+      if (!outputsValue) continue;
+
+      if (outputsValue.name !== "ArrayExpression") {
+        if (outputsValue.name === "VariableName") {
+          const variableName = ctx.text.slice(outputsValue.from, outputsValue.to);
+          const variable = lookupVariable(ctx.facts.variables, variableName, entrypointScope);
+
+          if (variable?.type === "List") {
+            continue;
+          }
+
+          if (variable && variable.type !== "Unknown") {
+            diagnostics.push({
+              from: outputsEntry.keyFrom,
+              to: outputsEntry.keyTo,
+              severity: "error",
+              source: ST_CONTRACT_OUTPUTS_NOT_LIST,
+              message: "`outputs` måste vara en lista (`[...]`).",
+            });
+            continue;
+          }
+
+          diagnostics.push({
+            from: outputsEntry.keyFrom,
+            to: outputsEntry.keyTo,
+            severity: "hint",
+            source: ST_CONTRACT_OUTPUTS_UNVERIFIED,
+            message:
+              "Kunde inte verifiera att `outputs` är en lista. Sätt `outputs = []` (eller returnera en literal lista) så kan linter validera Contract v2 bättre.",
+          });
+          continue;
+        }
+
+        if (outputsValue.name.startsWith("Array")) {
+          continue;
+        }
+
         diagnostics.push({
           from: outputsEntry.keyFrom,
           to: outputsEntry.keyTo,
-          severity: "error",
-          source: ST_CONTRACT_OUTPUTS_NOT_LIST,
-          message: "`outputs` måste vara en lista (`[...]`).",
+          severity: "hint",
+          source: ST_CONTRACT_OUTPUTS_UNVERIFIED,
+          message:
+            "Kunde inte verifiera att `outputs` är en lista. Returnera en literal lista (`[...]`) eller en list-variabel (t.ex. `outputs = []`) för bästa linter-stöd.",
         });
         continue;
       }

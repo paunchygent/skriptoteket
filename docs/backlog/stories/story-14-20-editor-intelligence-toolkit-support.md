@@ -2,10 +2,10 @@
 type: story
 id: ST-14-20
 title: "Editor intelligence: toolkit completions/hover/lints"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-29
-updated: 2026-01-01
+updated: 2026-01-14
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given the toolkit module exists, when authoring scripts, then the editor provides completions/hover docs for toolkit APIs."

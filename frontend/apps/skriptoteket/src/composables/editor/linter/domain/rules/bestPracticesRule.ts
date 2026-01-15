@@ -7,12 +7,15 @@ import { parsePythonStringLiteralValue } from "../utils/pythonStringLiterals";
 import { findImportInsertPosition } from "../utils/pythonImports";
 
 const ST_BESTPRACTICE_TOOLUSERERROR_IMPORT = "ST_BESTPRACTICE_TOOLUSERERROR_IMPORT";
+const ST_BESTPRACTICE_TOOLKIT_IMPORT = "ST_BESTPRACTICE_TOOLKIT_IMPORT";
+const ST_BESTPRACTICE_TOOLKIT_ENV = "ST_BESTPRACTICE_TOOLKIT_ENV";
 const ST_BESTPRACTICE_ENCODING = "ST_BESTPRACTICE_ENCODING";
 const ST_BESTPRACTICE_WEASYPRINT_DIRECT = "ST_BESTPRACTICE_WEASYPRINT_DIRECT";
 const ST_BESTPRACTICE_MKDIR = "ST_BESTPRACTICE_MKDIR";
 
 const MSG_TOOLUSERERROR_IMPORT =
   "ToolUserError används men import saknas: `from tool_errors import ToolUserError`";
+const MSG_TOOLKIT_ENV = "Använd `skriptoteket_toolkit` istället för att läsa env-JSON direkt.";
 const MSG_ENCODING = "Ange `encoding=\"utf-8\"` vid textläsning/skrivning.";
 const MSG_WEASYPRINT_DIRECT = "Använd `pdf_helper.save_as_pdf` istället för `weasyprint.HTML` direkt.";
 const MSG_MKDIR = "Skapa gärna kataloger innan du skriver filer (särskilt undermappar).";
@@ -183,6 +186,147 @@ export const BestPracticesRule: LintRule = {
             fixes: [toolUserErrorModuleFix],
           });
         }
+      }
+    }
+
+    const toolkitModuleNames = new Set(
+      [...imports.moduleBindings.entries()]
+        .filter(([, modulePath]) => modulePath === "skriptoteket_toolkit")
+        .map(([name]) => name),
+    );
+
+    const toolkitFromNames = new Set(
+      [...imports.fromBindings.entries()]
+        .filter(([, entry]) => entry.modulePath === "skriptoteket_toolkit")
+        .map(([name]) => name),
+    );
+
+    const toolkitExports = new Set([
+      "read_inputs",
+      "read_input_manifest",
+      "list_input_files",
+      "read_action",
+      "get_action_parts",
+      "read_memory",
+      "read_settings",
+    ]);
+
+    const localFunctionNames = new Set(ctx.facts.functions.map((fn) => fn.name));
+
+    const missingToolkitNames = new Map<string, { from: number; to: number }>();
+    for (const call of calls) {
+      if (call.callee.kind !== "variable") continue;
+      if (!toolkitExports.has(call.callee.name)) continue;
+      if (localFunctionNames.has(call.callee.name)) continue;
+      if (toolkitFromNames.has(call.callee.name)) continue;
+
+      const existing = missingToolkitNames.get(call.callee.name);
+      if (!existing || call.callee.nameFrom < existing.from) {
+        missingToolkitNames.set(call.callee.name, { from: call.callee.nameFrom, to: call.callee.nameTo });
+      }
+    }
+
+    if (missingToolkitNames.size > 0) {
+      const toolkitImportAt = findImportInsertPosition(ctx.text);
+      const toolkitImportPrefix =
+        toolkitImportAt > 0 && ctx.text[toolkitImportAt - 1] !== "\n" ? "\n" : "";
+
+      const missing = [...missingToolkitNames.keys()].sort();
+      const importLine = `from skriptoteket_toolkit import ${missing.join(", ")}\n`;
+      const toolkitFix: FixIntent = {
+        kind: "insertText",
+        label: FIX_ADD_IMPORT,
+        at: toolkitImportAt,
+        text: `${toolkitImportPrefix}${importLine}`,
+      };
+
+      const first = [...missingToolkitNames.values()].sort((a, b) => a.from - b.from)[0] ?? null;
+      if (first) {
+        diagnostics.push({
+          from: first.from,
+          to: first.to,
+          severity: "error",
+          source: ST_BESTPRACTICE_TOOLKIT_IMPORT,
+          message: `Skriptoteket toolkit används men import saknas: \`${importLine.trimEnd()}\``,
+          fixes: [toolkitFix],
+        });
+      }
+    }
+
+    if (!toolkitModuleNames.has("skriptoteket_toolkit")) {
+      const firstModuleCall = calls.find(
+        (call) =>
+          call.callee.kind === "member" &&
+          call.callee.objectName === "skriptoteket_toolkit" &&
+          toolkitExports.has(call.callee.propertyName),
+      );
+
+      if (firstModuleCall?.callee.kind === "member") {
+        const toolkitModuleImportAt = findImportInsertPosition(ctx.text);
+        const toolkitModuleImportPrefix =
+          toolkitModuleImportAt > 0 && ctx.text[toolkitModuleImportAt - 1] !== "\n" ? "\n" : "";
+
+        const importLine = "import skriptoteket_toolkit\n";
+        const toolkitModuleFix: FixIntent = {
+          kind: "insertText",
+          label: FIX_ADD_IMPORT,
+          at: toolkitModuleImportAt,
+          text: `${toolkitModuleImportPrefix}${importLine}`,
+        };
+
+        diagnostics.push({
+          from: firstModuleCall.callee.propertyFrom,
+          to: firstModuleCall.callee.propertyTo,
+          severity: "error",
+          source: ST_BESTPRACTICE_TOOLKIT_IMPORT,
+          message: `Skriptoteket toolkit används men import saknas: \`${importLine.trimEnd()}\``,
+          fixes: [toolkitModuleFix],
+        });
+      }
+    }
+
+    function toolkitSuggestionForEnvVar(envVar: string): string | null {
+      if (envVar === "SKRIPTOTEKET_INPUTS") return "Använd `read_inputs()` från `skriptoteket_toolkit`.";
+      if (envVar === "SKRIPTOTEKET_INPUT_MANIFEST") {
+        return "Använd `list_input_files()` (eller `read_input_manifest()`) från `skriptoteket_toolkit`.";
+      }
+      if (envVar === "SKRIPTOTEKET_ACTION") {
+        return "Använd `get_action_parts()` (eller `read_action()`) från `skriptoteket_toolkit`.";
+      }
+      if (envVar === "SKRIPTOTEKET_MEMORY_PATH") {
+        return "Använd `read_settings()` (eller `read_memory()`) från `skriptoteket_toolkit`.";
+      }
+      if (envVar === "SKRIPTOTEKET_INPUT_DIR") return "Använd `input_dir`-parametern i `run_tool`.";
+      if (envVar === "SKRIPTOTEKET_OUTPUT_DIR") return "Använd `output_dir`-parametern i `run_tool`.";
+      return null;
+    }
+
+    const envAccessPattern =
+      /\bos\s*\.\s*(?:environ\s*\.\s*get|getenv)\s*\(\s*(['"])(SKRIPTOTEKET_[A-Z0-9_]+)\1/g;
+    const reportedEnvVars = new Set<string>();
+
+    for (const call of calls) {
+      const callText = ctx.text.slice(call.from, call.to);
+      for (const match of callText.matchAll(envAccessPattern)) {
+        const envVar = match[2] ?? "";
+        if (!envVar || reportedEnvVars.has(envVar)) continue;
+        const suggestion = toolkitSuggestionForEnvVar(envVar);
+        if (!suggestion) continue;
+
+        reportedEnvVars.add(envVar);
+
+        const matchIndex = match.index ?? 0;
+        const envVarFrom = matchIndex + match[0].indexOf(envVar);
+        const from = call.from + envVarFrom;
+        const to = from + envVar.length;
+
+        diagnostics.push({
+          from,
+          to,
+          severity: "info",
+          source: ST_BESTPRACTICE_TOOLKIT_ENV,
+          message: `${MSG_TOOLKIT_ENV} ${suggestion}`,
+        });
       }
     }
 

@@ -16,7 +16,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
-- Completed: recent — ST-14-11/12 done; ST-14-19 done; ST-08-24 done; ST-08-28 done (history: `.agent/readme-first.md`)
+- Completed: recent — ST-14-11/12 done; ST-14-19 done; ST-14-20 done; ST-08-24 done; ST-08-28 done (history: `.agent/readme-first.md`)
 
 ## Current Session (2026-01-14)
 
@@ -38,16 +38,19 @@ Keep this file updated so the next session can pick up work quickly.
 - PR-0029: smooth “typing” via frontend progressive reveal + fade-in for assistant messages (`frontend/apps/skriptoteket/src/components/editor/ChatMessageContent.vue`, `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatReducer.ts`, `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatTypes.ts`, `frontend/apps/skriptoteket/src/components/editor/ScriptEditorAiPanel.vue`).
 - PR-0029: scrubbed system prompt terminology to avoid internal version labels while keeping constraints/examples (`src/skriptoteket/application/editor/system_prompts/editor_chat_v1.txt`, `src/skriptoteket/application/editor/system_prompts/editor_chat_ops_v1.txt`, `src/skriptoteket/application/editor/system_prompts/inline_completion_v1.txt`, `src/skriptoteket/application/editor/prompt_fragments.py`).
 - ST-14-19: made `skriptoteket_toolkit` the canonical way to read inputs/settings/actions/state (docs + starter template + AI KB) (`runner/skriptoteket_toolkit.py`, `runner/README.md`, `src/skriptoteket/web/editor_support.py`, `src/skriptoteket/application/editor/prompt_fragments.py`, `docs/reference/ref-ai-script-generation-kb*.md`).
+- ST-14-20: editor intelligence supports `skriptoteket_toolkit` (completions/hover + lint nudges), fixes `outputs` false-positive for list variables, and adds toolkit import quick-fix (`frontend/apps/skriptoteket/src/composables/editor/skriptoteketMetadata.ts`, `frontend/apps/skriptoteket/src/composables/editor/skriptoteketCompletions.ts`, `frontend/apps/skriptoteket/src/composables/editor/skriptoteketHover.ts`, `frontend/apps/skriptoteket/src/composables/editor/linter/domain/rules/contractRule.ts`, `frontend/apps/skriptoteket/src/composables/editor/linter/domain/rules/bestPracticesRule.ts`).
+- Fixed linter false-positive “ogiltig Python-syntax” for bare `yield` inside generator functions (Lezer parse quirk) + regression test (`frontend/apps/skriptoteket/src/composables/editor/pythonLezer/syntaxErrors.ts`, `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLinter.spec.ts`).
 - PR-0029 docs: `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md` + indexed in `docs/index.md`.
 - PR-0030: fixed streaming UX by making chat message objects reactive and moving typing reveal pacing into the composable (raw `content` vs rendered `visibleContent`), plus “Tänker...” → “Skriver...” inline status based on first visible batch (`frontend/apps/skriptoteket/src/composables/editor/useEditorChat.ts`, `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatReducer.ts`, `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatMessageList.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatComposer.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatMessageContent.vue`).
 - PR-0030 docs: `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md` + indexed in `docs/index.md` (cross-link added to PR-0029 frontmatter).
 - Verification:
   - `pdm run db-upgrade`
   - `pdm run fe-gen-api-types`
-  - `pdm run fe-type-check` / `pdm run fe-test` / `pdm run fe-build` (rerun for PR-0030: `fe-type-check`, `fe-test`)
+  - `pdm run fe-type-check` / `pdm run fe-test` / `pdm run fe-build` (rerun for ST-14-20: `fe-type-check`, `fe-test`)
   - `pdm run docs-validate`
   - `BASE_URL=http://localhost:5173 pdm run ui-smoke` (Playwright; requires escalation on macOS)
-  - `BASE_URL=http://localhost:5173 pdm run ui-editor-smoke` (Playwright; rerun for PR-0030; requires escalation on macOS)
+  - `pdm run dev-local` (backend + Vite)
+  - `BASE_URL=http://127.0.0.1:5173 pdm run ui-editor-smoke` (Playwright; requires escalation on macOS)
   - Artifacts: `.artifacts/ui-smoke/profile-ai-settings-desktop.png`, `.artifacts/ui-editor-smoke/editor-loaded.png`, `.artifacts/ui-editor-smoke/diff-mode.png`, `.artifacts/ui-editor-smoke/diff-empty-state.png`, `.artifacts/ui-editor-smoke/test-mode.png`
 
 ## How to Run
@@ -76,7 +79,7 @@ pdm run test
 ## Next Steps
 
 - Deploy: set `LLM_DEVSTRAL_TEKKEN_JSON_PATH` (tekken.json asset path) for accurate devstral token counting.
-- ST-14-20: wire `skriptoteket_toolkit` into CodeMirror intelligence (imports/completions/hover + lint nudges; fix false-positive `outputs` lint).
+- Plan ST-14-23/24: UI contract v2.x action defaults/prefill + first-class file references (keep `skriptoteket_toolkit` + editor intelligence conventions as baseline).
 - Decide whether to keep or remove any story-specific Playwright scripts (prefer using `pdm run ui-editor-smoke`).
 - Parallel refactors (optional): PR-0019 (backend LLM hotspots) + PR-0020 (frontend AI hotspots).
 - PR-0028/PR-0029: ready to open PRs once `README.md` (unrelated diff) is resolved.

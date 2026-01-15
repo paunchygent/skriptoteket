@@ -18,6 +18,7 @@ import {
 } from "./pythonLezer";
 
 const MODULE_IDS = Array.from(new Set(SKRIPTOTEKET_HELPER_DOCS.map((doc) => doc.moduleId)));
+const MODULE_ID_SET: ReadonlySet<string> = new Set(MODULE_IDS);
 
 const EXPORTS_BY_MODULE = SKRIPTOTEKET_HELPER_DOCS.reduce(
   (acc, doc) => {
@@ -48,7 +49,7 @@ function exportCompletions(moduleId: string, partial: string): Completion[] {
     .filter((entry) => entry.exportId.startsWith(partial))
     .map((entry) => ({
       label: entry.exportId,
-      type: entry.exportId === "ToolUserError" ? "class" : "function",
+      type: /^[A-Z]/.test(entry.exportId) ? "class" : "function",
       detail: entry.signature,
       info: entry.swedishDoc,
       boost: 100,
@@ -75,24 +76,14 @@ function skriptoteketImportCompletions(context: CompletionContext) {
     };
   }
 
-  // 2) `from pdf_helper import <name>`
-  const pdfMatch = prefix.match(/^\s*from\s+pdf_helper\s+import\s+([a-zA-Z0-9_]*)$/);
-  if (pdfMatch) {
-    const partial = pdfMatch[1] ?? "";
-    const options = exportCompletions("pdf_helper", partial).sort(sortByLabel);
-    if (options.length === 0) return null;
-    return {
-      from: pos - partial.length,
-      options,
-      validFor: /^[a-zA-Z0-9_]*$/,
-    };
-  }
+  // 2) `from <known_helper_module> import <name>`
+  const helperExportMatch = prefix.match(/^\s*from\s+([a-zA-Z0-9_]+)\s+import\s+([a-zA-Z0-9_]*)$/);
+  if (helperExportMatch) {
+    const moduleId = helperExportMatch[1] ?? "";
+    if (!MODULE_ID_SET.has(moduleId)) return null;
 
-  // 3) `from tool_errors import <name>`
-  const toolErrorsMatch = prefix.match(/^\s*from\s+tool_errors\s+import\s+([a-zA-Z0-9_]*)$/);
-  if (toolErrorsMatch) {
-    const partial = toolErrorsMatch[1] ?? "";
-    const options = exportCompletions("tool_errors", partial).sort(sortByLabel);
+    const partial = helperExportMatch[2] ?? "";
+    const options = exportCompletions(moduleId, partial).sort(sortByLabel);
     if (options.length === 0) return null;
     return {
       from: pos - partial.length,
@@ -290,7 +281,8 @@ export function skriptoteketCompletions(_config: SkriptoteketIntelligenceConfig)
       if (head >= 7 && update.state.doc.sliceString(head - 7, head) === "import ") {
         const line = update.state.doc.lineAt(head);
         const prefix = line.text.slice(0, head - line.from);
-        if (/^\s*from\s+(pdf_helper|tool_errors)\s+import\s*$/.test(prefix)) {
+        const helperImportMatch = prefix.match(/^\s*from\s+([a-zA-Z0-9_]+)\s+import\s*$/);
+        if (helperImportMatch && MODULE_ID_SET.has(helperImportMatch[1] ?? "")) {
           closeCompletion(update.view);
           startCompletion(update.view);
         }

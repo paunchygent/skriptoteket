@@ -121,6 +121,26 @@ def run_tool(input_dir, output_dir)
     expect(diagnostics.every((diagnostic) => diagnostic.source === "ST_SYNTAX_ERROR")).toBe(true);
   });
 
+  it("does not flag bare yield inside generator functions as syntax error", async () => {
+    const diagnostics = await runLinter(
+      `
+from contextlib import contextmanager
+
+@contextmanager
+def _chdir(path):
+    try:
+        yield
+    finally:
+        pass
+
+def run_tool(input_dir, output_dir):
+    return {"outputs": [], "next_actions": [], "state": {}}
+`,
+    );
+
+    expect(diagnostics.some((diagnostic) => diagnostic.source === "ST_SYNTAX_ERROR")).toBe(false);
+  });
+
   it("supports quick fix: add ToolUserError import", async () => {
     const parent = document.createElement("div");
     document.body.appendChild(parent);
@@ -313,6 +333,108 @@ def run_tool(input_dir, output_dir):
 
       const afterDiagnostics = await collectDiagnostics(view);
       expect(afterDiagnostics.some((entry) => entry.source === "ST_CONTRACT_KEYS_MISSING")).toBe(false);
+    } finally {
+      view.destroy();
+      parent.remove();
+    }
+  });
+
+  it("accepts outputs list variables", async () => {
+    const diagnostics = await runLinter(
+      `
+def run_tool(input_dir, output_dir):
+    outputs = []
+    return {"outputs": outputs, "next_actions": [], "state": {}}
+`,
+    );
+
+    expect(diagnostics.some((diagnostic) => diagnostic.source === "ST_CONTRACT_OUTPUTS_NOT_LIST")).toBe(false);
+    expect(diagnostics.some((diagnostic) => diagnostic.source === "ST_CONTRACT_OUTPUTS_UNVERIFIED")).toBe(false);
+  });
+
+  it("flags toolkit usage without imports", async () => {
+    const diagnostics = await runLinter(
+      `
+def run_tool(input_dir, output_dir):
+    read_inputs()
+    return {"outputs": [], "next_actions": [], "state": {}}
+`,
+    );
+
+    const diagnostic = diagnostics.find((entry) => entry.source === "ST_BESTPRACTICE_TOOLKIT_IMPORT");
+    expect(diagnostic?.severity).toBe("error");
+    expect(diagnostic?.message).toContain("skriptoteket_toolkit");
+  });
+
+  it("supports quick fix: add toolkit import", async () => {
+    const parent = document.createElement("div");
+    document.body.appendChild(parent);
+
+    const view = new EditorView({
+      state: EditorState.create({
+        doc: `
+def run_tool(input_dir, output_dir):
+    read_inputs()
+    return {"outputs": [], "next_actions": [], "state": {}}
+`,
+        extensions: [python(), skriptoteketLinter({ entrypointName: "run_tool" })],
+      }),
+      parent,
+    });
+
+    try {
+      const diagnostics = await collectDiagnostics(view);
+      const diagnostic = diagnostics.find((entry) => entry.source === "ST_BESTPRACTICE_TOOLKIT_IMPORT");
+      expect(diagnostic?.actions?.some((action) => action.name === "Lägg till import")).toBe(true);
+
+      const action = diagnostic?.actions?.find((entry) => entry.name === "Lägg till import");
+      expect(action).toBeTruthy();
+
+      action?.apply(view, diagnostic?.from ?? 0, diagnostic?.to ?? 0);
+      const afterFirst = view.state.doc.toString();
+      expect(afterFirst).toContain("from skriptoteket_toolkit import read_inputs");
+
+      action?.apply(view, diagnostic?.from ?? 0, diagnostic?.to ?? 0);
+      expect(view.state.doc.toString()).toBe(afterFirst);
+
+      const afterDiagnostics = await collectDiagnostics(view);
+      expect(afterDiagnostics.some((entry) => entry.source === "ST_BESTPRACTICE_TOOLKIT_IMPORT")).toBe(false);
+    } finally {
+      view.destroy();
+      parent.remove();
+    }
+  });
+
+  it("supports quick fix: add toolkit module import", async () => {
+    const parent = document.createElement("div");
+    document.body.appendChild(parent);
+
+    const view = new EditorView({
+      state: EditorState.create({
+        doc: `
+def run_tool(input_dir, output_dir):
+    skriptoteket_toolkit.read_inputs()
+    return {"outputs": [], "next_actions": [], "state": {}}
+`,
+        extensions: [python(), skriptoteketLinter({ entrypointName: "run_tool" })],
+      }),
+      parent,
+    });
+
+    try {
+      const diagnostics = await collectDiagnostics(view);
+      const diagnostic = diagnostics.find((entry) => entry.source === "ST_BESTPRACTICE_TOOLKIT_IMPORT");
+      expect(diagnostic?.actions?.some((action) => action.name === "Lägg till import")).toBe(true);
+
+      const action = diagnostic?.actions?.find((entry) => entry.name === "Lägg till import");
+      expect(action).toBeTruthy();
+
+      action?.apply(view, diagnostic?.from ?? 0, diagnostic?.to ?? 0);
+      const afterFirst = view.state.doc.toString();
+      expect(afterFirst).toContain("import skriptoteket_toolkit");
+
+      const afterDiagnostics = await collectDiagnostics(view);
+      expect(afterDiagnostics.some((entry) => entry.source === "ST_BESTPRACTICE_TOOLKIT_IMPORT")).toBe(false);
     } finally {
       view.destroy();
       parent.remove();

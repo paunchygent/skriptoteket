@@ -29,3 +29,18 @@ export function lookupVariable(chain: ScopeChain, name: string, scopeNode: Scope
   }
   return null;
 }
+
+export function findInnermostScopeAtPos(chain: ScopeChain, pos: number): ScopeNode | null {
+  let best: ScopeNode | null = null;
+  let bestSize = Number.POSITIVE_INFINITY;
+
+  for (const scope of chain.keys()) {
+    if (pos < scope.from || pos > scope.to) continue;
+    const size = scope.to - scope.from;
+    if (size > bestSize) continue;
+    best = scope;
+    bestSize = size;
+  }
+
+  return best;
+}

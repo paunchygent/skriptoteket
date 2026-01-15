@@ -86,13 +86,16 @@ Config + ownership:
     - `RuntimeWatchdogSec=0`
     - `RebootWatchdogSec=0`
 - Petter unit: `/etc/systemd/system/health-watchdog.service`
+  - Boot ordering: `/etc/systemd/system/health-watchdog.service.d/10-watchdog-order.conf`
+    - `After=sp5100-tco-watchdog.service dev-watchdog0.device`
+    - `ExecStartPre` waits for `/dev/watchdog0` (or `/dev/watchdog`) to exist to avoid boot-time races
 
 Verification:
 
 ```bash
 sudo systemctl status health-watchdog.service --no-pager
 sudo journalctl -t health-watchdog --since "1 hour ago"
-sudo lsof /dev/watchdog
+sudo lsof /dev/watchdog /dev/watchdog0
 cat /sys/class/watchdog/watchdog0/nowayout
 cat /sys/class/watchdog/watchdog0/timeout
 ```
@@ -254,6 +257,7 @@ Kernel/sysctl settings:
   - Health-gated petter owns `/dev/watchdog`:
     - `/etc/systemd/system/health-watchdog.service`
     - `/usr/local/bin/health-watchdog.sh`
+    - Boot ordering: `/etc/systemd/system/health-watchdog.service.d/10-watchdog-order.conf` (waits for watchdog device node)
   - Crash-kernel hardening (kdump):
     - Systemd watchdog disabled in crash initrd:
       - `/etc/initramfs-tools/hooks/zz-kdump-disable-watchdog`
@@ -261,6 +265,9 @@ Kernel/sysctl settings:
     - Ensure watchdog module + options in crash initrd:
       - `/etc/initramfs-tools/hooks/zz-kdump-watchdog-hardening`
       - Adds `sp5100_tco` module and `/etc/modprobe.d/sp5100_tco.conf` to kdump initrd
+    - Ensure watchdog timer is actually started in crash kernel (not just module loaded):
+      - `kdump-watchdog-arm.service` + `/usr/local/sbin/kdump-watchdog-arm` (opens `/dev/watchdog0` and holds fd; does not pet)
+      - Wired into `kdump-tools-dump.service` via `/etc/systemd/system/kdump-tools-dump.service.d/05-watchdog-arm.conf`
     - Rebuild and reload kdump initrd after changes:
       - `sudo /etc/kernel/postinst.d/kdump-tools $(uname -r)`
       - `sudo kdump-config unload && sudo kdump-config load`
@@ -274,6 +281,7 @@ Kernel/sysctl settings:
   - Trigger: `ssh hemma "sudo sh -c 'echo 1 > /proc/sys/kernel/sysrq; echo c > /proc/sysrq-trigger'"`
   - Verify dump + crash boot:
     - `ssh hemma "journalctl --list-boots | tail -n 10"`
+    - `ssh hemma "sudo journalctl -b -1 -u kdump-watchdog-arm.service --no-pager"`
     - `ssh hemma "sudo journalctl -b -1 -u kdump-tools-dump.service --no-pager | tail -n 200"`
     - `ssh hemma "ls -lah /var/crash | tail -n 20"`
   - If it was a test, rename the dump directory to `*-test` to avoid confusion.
