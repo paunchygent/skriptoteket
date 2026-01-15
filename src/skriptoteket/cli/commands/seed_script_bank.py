@@ -15,6 +15,10 @@ from skriptoteket.application.scripting.commands import (
     PublishVersionCommand,
     SubmitForReviewCommand,
 )
+from skriptoteket.application.scripting.draft_locks import AcquireDraftLockCommand
+from skriptoteket.application.scripting.handlers.acquire_draft_lock import (
+    AcquireDraftLockHandler,
+)
 from skriptoteket.application.scripting.handlers.create_draft_version import (
     CreateDraftVersionHandler,
 )
@@ -24,6 +28,7 @@ from skriptoteket.cli._db import open_session
 from skriptoteket.config import Settings
 from skriptoteket.domain.catalog.models import Tool, update_tool_metadata
 from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.scripting.models import VersionState
 from skriptoteket.infrastructure.clock import UTCClock
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.id_generator import UUID4Generator
@@ -180,6 +185,12 @@ async def _seed_script_bank_async(
             clock=clock,
             id_generator=id_generator,
         )
+        acquire_draft_lock = AcquireDraftLockHandler(
+            settings=settings,
+            uow=uow,
+            locks=locks,
+            clock=clock,
+        )
         submit_for_review = SubmitForReviewHandler(
             uow=uow,
             tools=tools,
@@ -232,6 +243,7 @@ async def _seed_script_bank_async(
                 professions=professions,
                 categories=categories,
                 create_draft_version=create_draft_version,
+                acquire_draft_lock=acquire_draft_lock,
                 submit_for_review=submit_for_review,
                 publish_version=publish_version,
                 publish_tool=publish_tool_handler,
@@ -289,6 +301,7 @@ async def _seed_one_entry(
     professions: PostgreSQLProfessionRepository,
     categories: PostgreSQLCategoryRepository,
     create_draft_version: CreateDraftVersionHandler,
+    acquire_draft_lock: AcquireDraftLockHandler,
     submit_for_review: SubmitForReviewHandler,
     publish_version: PublishVersionHandler,
     publish_tool: PublishToolHandler,
@@ -387,6 +400,14 @@ async def _seed_one_entry(
         if dry_run:
             typer.echo(f"[dry-run] Create + publish initial version: {entry.slug}")
         else:
+            await _acquire_seed_draft_lock(
+                actor=actor,
+                tool_slug=tool.slug,
+                tool_id=tool.id,
+                versions=versions,
+                acquire_draft_lock=acquire_draft_lock,
+                dry_run=dry_run,
+            )
             draft_result = await create_draft_version.handle(
                 actor=actor,
                 command=CreateDraftVersionCommand(
@@ -423,6 +444,14 @@ async def _seed_one_entry(
         if dry_run:
             typer.echo(f"[dry-run] Create + publish updated version: {entry.slug}")
         else:
+            await _acquire_seed_draft_lock(
+                actor=actor,
+                tool_slug=tool.slug,
+                tool_id=tool.id,
+                versions=versions,
+                acquire_draft_lock=acquire_draft_lock,
+                dry_run=dry_run,
+            )
             draft_result = await create_draft_version.handle(
                 actor=actor,
                 command=CreateDraftVersionCommand(
@@ -467,3 +496,35 @@ async def _seed_one_entry(
         typer.echo(f"Seeded tool: {tool.slug} (deduped from {deduped_from_slug})")
     elif not dry_run:
         typer.echo(f"Seeded tool: {entry.slug} (updated)")
+
+
+async def _acquire_seed_draft_lock(
+    *,
+    actor,
+    tool_slug: str,
+    tool_id,
+    versions: PostgreSQLToolVersionRepository,
+    acquire_draft_lock: AcquireDraftLockHandler,
+    dry_run: bool,
+) -> None:
+    draft_versions = await versions.list_for_tool(
+        tool_id=tool_id,
+        states={VersionState.DRAFT},
+        limit=1,
+    )
+    if not draft_versions:
+        return
+
+    draft_head = draft_versions[0]
+    if dry_run:
+        typer.echo(f"[dry-run] Acquire draft lock: {tool_slug}")
+        return
+
+    await acquire_draft_lock.handle(
+        actor=actor,
+        command=AcquireDraftLockCommand(
+            tool_id=tool_id,
+            draft_head_id=draft_head.id,
+            force=False,
+        ),
+    )

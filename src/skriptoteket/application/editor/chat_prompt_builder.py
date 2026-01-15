@@ -12,7 +12,7 @@ from skriptoteket.application.editor.prompt_budget import apply_chat_budget, app
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import validation_error
 from skriptoteket.protocols.editor_chat import EditorChatPromptBuilderProtocol
-from skriptoteket.protocols.llm import ChatMessage, LLMChatRequest, VirtualFileId
+from skriptoteket.protocols.llm import ChatBudget, ChatMessage, LLMChatRequest, VirtualFileId
 from skriptoteket.protocols.token_counter import TokenCounterProtocol
 
 
@@ -37,11 +37,11 @@ class SettingsBasedEditorChatPromptBuilder(EditorChatPromptBuilderProtocol):
         self._settings = settings
 
     def plan_max_user_message_tokens(
-        self, *, system_prompt: str, token_counter: TokenCounterProtocol
+        self, *, system_prompt: str, token_counter: TokenCounterProtocol, budget: ChatBudget
     ) -> int | None:
         prompt_budget_tokens = (
-            self._settings.LLM_CHAT_CONTEXT_WINDOW_TOKENS
-            - self._settings.LLM_CHAT_MAX_TOKENS
+            budget.context_window_tokens
+            - budget.max_output_tokens
             - self._settings.LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS
         )
         if prompt_budget_tokens <= 0:
@@ -134,14 +134,15 @@ class SettingsBasedEditorChatPromptBuilder(EditorChatPromptBuilderProtocol):
         message: str,
         user_payload_message: ChatMessage | None,
         token_counter: TokenCounterProtocol,
+        budget: ChatBudget,
     ) -> LLMChatRequest:
         if user_payload_message is None:
             proposed = [*existing_messages, ChatMessage(role="user", content=message)]
             _, budgeted = apply_chat_budget(
                 system_prompt=system_prompt,
                 messages=proposed,
-                context_window_tokens=self._settings.LLM_CHAT_CONTEXT_WINDOW_TOKENS,
-                max_output_tokens=self._settings.LLM_CHAT_MAX_TOKENS,
+                context_window_tokens=budget.context_window_tokens,
+                max_output_tokens=budget.max_output_tokens,
                 safety_margin_tokens=self._settings.LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS,
                 system_prompt_max_tokens=self._settings.LLM_CHAT_SYSTEM_PROMPT_MAX_TOKENS,
                 token_counter=token_counter,
@@ -154,8 +155,8 @@ class SettingsBasedEditorChatPromptBuilder(EditorChatPromptBuilderProtocol):
             system_prompt=system_prompt,
             messages=existing_messages,
             user_payload=user_payload_message.content,
-            context_window_tokens=self._settings.LLM_CHAT_CONTEXT_WINDOW_TOKENS,
-            max_output_tokens=self._settings.LLM_CHAT_MAX_TOKENS,
+            context_window_tokens=budget.context_window_tokens,
+            max_output_tokens=budget.max_output_tokens,
             safety_margin_tokens=self._settings.LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS,
             system_prompt_max_tokens=self._settings.LLM_CHAT_SYSTEM_PROMPT_MAX_TOKENS,
             token_counter=token_counter,

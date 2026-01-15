@@ -118,12 +118,15 @@ class Settings(BaseSettings):
     LLM_CHAT_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
     LLM_CHAT_MODEL: str = "Devstral-Small-2-24B"
     LLM_CHAT_REASONING_EFFORT: LlmReasoningEffort | None = None
-    LLM_CHAT_MAX_TOKENS: int = 2048
+    # Output token budgets vary significantly between local llama.cpp and GPT-5 thinking models.
+    LLM_CHAT_MAX_TOKENS: int = 4 * 1024
+    LLM_CHAT_GPT5_MAX_TOKENS: int = 8 * 1024
     LLM_CHAT_TEMPERATURE: float = 0.2
     LLM_CHAT_TIMEOUT_SECONDS: int = 60
     LLM_CHAT_CONTEXT_WINDOW_TOKENS: int = 16384
+    LLM_CHAT_GPT5_CONTEXT_WINDOW_TOKENS: int = 64 * 1024
     LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS: int = 256
-    LLM_CHAT_SYSTEM_PROMPT_MAX_TOKENS: int = 2048
+    LLM_CHAT_SYSTEM_PROMPT_MAX_TOKENS: int = 8 * 1024
     LLM_CHAT_TAIL_MAX_MESSAGES: int = 60
 
     # Chat failover (primary -> fallback). Defaults keep failover disabled.
@@ -140,7 +143,7 @@ class Settings(BaseSettings):
     LLM_CHAT_OPS_MODEL: str = "Devstral-Small-2-24B"
     LLM_CHAT_OPS_REASONING_EFFORT: LlmReasoningEffort | None = None
     # Output token budgets vary significantly between local llama.cpp and GPT-5 thinking models.
-    LLM_CHAT_OPS_MAX_TOKENS: int = 2 * 1024
+    LLM_CHAT_OPS_MAX_TOKENS: int = 4 * 1024
     LLM_CHAT_OPS_GPT5_MAX_TOKENS: int = 8 * 1024
     LLM_CHAT_OPS_TEMPERATURE: float = 0.2
     LLM_CHAT_OPS_TIMEOUT_SECONDS: int = 120
@@ -149,7 +152,7 @@ class Settings(BaseSettings):
     LLM_CHAT_OPS_CONTEXT_SAFETY_MARGIN_TOKENS: int = 256
     # Chat-ops prompts include strict JSON-only schema + rules.
     # They are larger than chat-stream prompts.
-    LLM_CHAT_OPS_SYSTEM_PROMPT_MAX_TOKENS: int = 4096
+    LLM_CHAT_OPS_SYSTEM_PROMPT_MAX_TOKENS: int = 8 * 1024
 
     LLM_CHAT_OPS_FALLBACK_BASE_URL: str = ""
     LLM_CHAT_OPS_FALLBACK_MODEL: str = ""
@@ -162,8 +165,9 @@ class Settings(BaseSettings):
     LLM_CHAT_FAILOVER_PRIMARY_MAX_INFLIGHT: int = 0  # 0 = disabled
 
     # Tokenizers / prompt budgeting (ST-08-27 / ADR-0055)
-    # Devstral (Tekken) tokenizer assets are deploy-time mounted; missing assets fall back to
-    # heuristic counting.
+    # Devstral (Tekken) tokenizer assets may be set via env and we also auto-detect
+    # packaged Tekken assets when `mistral-common` is installed. Missing tokenizers fall back
+    # to conservative heuristic counting.
     LLM_DEVSTRAL_TEKKEN_JSON_PATH: Path | None = None
 
     # Chat template overhead (tokens). These are intentionally conservative defaults and are added

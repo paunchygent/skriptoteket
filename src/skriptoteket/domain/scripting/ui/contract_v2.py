@@ -281,6 +281,7 @@ class UiFormAction(BaseModel):
     label: str
     kind: Literal["form"] = "form"
     fields: list[UiActionField] = Field(default_factory=list)
+    prefill: dict[str, JsonValue] = Field(default_factory=dict)
 
     @field_validator("action_id")
     @classmethod

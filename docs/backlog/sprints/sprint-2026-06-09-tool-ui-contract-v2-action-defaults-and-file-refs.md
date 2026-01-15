@@ -11,6 +11,7 @@ objective: "Introduce backwards-compatible UI contract extensions for true actio
 prd: "PRD-tool-authoring-v0.1"
 epics: ["EPIC-14"]
 stories: ["ST-14-23", "ST-14-24"]
+adrs: ["ADR-0060"]
 ---
 
 ## Objective
@@ -38,8 +39,8 @@ Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
 ## Decisions required (ADRs)
 
-- Add an ADR for the specific contract shape and compatibility strategy (e.g. optional fields on v2 payloads vs v2.1
-  version bump).
+- ST-14-23: ADR-0060 (action prefill defaults) — accepted.
+- ST-14-24: separate ADR for file references — required before implementation.
 
 ## Risks / edge cases
 

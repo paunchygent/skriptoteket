@@ -6,6 +6,7 @@ from collections.abc import AsyncIterator
 import httpx
 
 from skriptoteket.config import Settings
+from skriptoteket.infrastructure.llm.model_families import is_gpt5_family_model
 from skriptoteket.infrastructure.llm.openai.common import (
     is_local_llama_server,
     merge_headers,
@@ -40,7 +41,11 @@ class OpenAIChatStreamProvider(ChatStreamProviderProtocol):
         self._reasoning_effort = (
             settings.LLM_CHAT_REASONING_EFFORT if reasoning_effort is None else reasoning_effort
         )
-        self._max_tokens = settings.LLM_CHAT_MAX_TOKENS
+        self._max_tokens = (
+            settings.LLM_CHAT_GPT5_MAX_TOKENS
+            if is_gpt5_family_model(model=self._model)
+            else settings.LLM_CHAT_MAX_TOKENS
+        )
         self._temperature = settings.LLM_CHAT_TEMPERATURE
         self._timeout = settings.LLM_CHAT_TIMEOUT_SECONDS
         self._client = client

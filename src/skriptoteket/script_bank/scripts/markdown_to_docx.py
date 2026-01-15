@@ -1,4 +1,3 @@
-import os
 import re
 import shutil
 import tempfile
@@ -94,8 +93,7 @@ def _profile_desc(profile: str) -> str:
 
 
 def _load_settings_from_memory() -> tuple[dict, str]:
-    memory_path = os.environ.get("SKRIPTOTEKET_MEMORY_PATH", "/work/memory.json")
-    return (read_settings(), memory_path)
+    return (read_settings(), "SKRIPTOTEKET_MEMORY_PATH")
 
 
 def _load_inputs_from_env() -> tuple[dict, str]:

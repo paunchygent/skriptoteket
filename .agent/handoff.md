@@ -12,14 +12,20 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-01-14
+- Date: 2026-01-15
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
-- Completed: recent — ST-14-11/12 done; ST-14-19 done; ST-14-20 done; ST-08-24 done; ST-08-28 done (history: `.agent/readme-first.md`)
+- Completed: recent — ST-14-11/12 done; ST-14-19 done; ST-14-20 done; ST-14-23 done; ST-08-24 done; ST-08-28 done (history: `.agent/readme-first.md`)
 
-## Current Session (2026-01-14)
+## Current Session (2026-01-15)
 
+- ST-14-23 implemented (action defaults/prefill): ADR-0060 + review doc approved; updated story + sprint plan + `docs/index.md` (`docs/adr/adr-0060-ui-contract-v2x-action-prefill.md`, `docs/backlog/reviews/review-epic-14-ui-contract-v2x-action-prefill.md`, `docs/backlog/stories/story-14-23-ui-contract-action-defaults-prefill.md`, `docs/backlog/sprints/sprint-2026-06-09-tool-ui-contract-v2-action-defaults-and-file-refs.md`).
+- Implemented PR-0031 “Editor AI: patch-only edit-ops alignment (prompt + diff hygiene + correlation)”:
+  - Correlation header propagated across edit-ops → preview → apply; selection/cursor omitted in edit-ops requests (`frontend/apps/skriptoteket/src/composables/editor/editOps/editorEditOpsApi.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorEditOps.ts`).
+  - Patch-only system prompt + backend enforcement (safe-fail non-patch ops) (`src/skriptoteket/application/editor/system_prompts/editor_chat_ops_v1.txt`, `src/skriptoteket/application/editor/edit_ops_handler.py`).
+  - Unified diff hunk header count repair + malformed patch message mapping (`src/skriptoteket/infrastructure/editor/unified_diff_applier.py`).
+  - Tests: FE correlation plumbing + request semantics; BE hunk repair + malformed hunk (`frontend/apps/skriptoteket/src/composables/editor/editOps/editorEditOpsApi.spec.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorEditOps.apply.spec.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorEditOps.request.spec.ts`, `tests/unit/infrastructure/test_unified_diff_applier.py`, `tests/unit/application/test_editor_edit_ops_handler.py`).
 - Committed runbook note about kdump watchdog hardening (`docs/runbooks/runbook-home-server.md`).
 - Refactored editor AI frontend into SRP modules + lazy-loaded AI UI (`frontend/apps/skriptoteket/src/composables/editor/chat/`, `frontend/apps/skriptoteket/src/composables/editor/editOps/`, `frontend/apps/skriptoteket/src/components/editor/ScriptEditorAiPanel.vue`, `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`, `frontend/apps/skriptoteket/src/components/editor/diff/AiVirtualFileDiffViewer.vue`).
 - Fixed AI panel slot binding to avoid double `.value` unwrapping that crashed the tool editor (`frontend/apps/skriptoteket/src/components/editor/ScriptEditorAiPanel.vue`).
@@ -43,14 +49,26 @@ Keep this file updated so the next session can pick up work quickly.
 - PR-0029 docs: `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md` + indexed in `docs/index.md`.
 - PR-0030: fixed streaming UX by making chat message objects reactive and moving typing reveal pacing into the composable (raw `content` vs rendered `visibleContent`), plus “Tänker...” → “Skriver...” inline status based on first visible batch (`frontend/apps/skriptoteket/src/composables/editor/useEditorChat.ts`, `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatReducer.ts`, `frontend/apps/skriptoteket/src/components/editor/ChatDrawer.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatMessageList.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatComposer.vue`, `frontend/apps/skriptoteket/src/components/editor/ChatMessageContent.vue`).
 - PR-0030 docs: `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md` + indexed in `docs/index.md` (cross-link added to PR-0029 frontmatter).
+- Logging: replaced substring-based redaction with key/segment/value-aware redaction (keeps `*_tokens` diagnostics visible) and moved logic to `src/skriptoteket/observability/redaction.py` (tests: `tests/unit/observability/test_logging_redaction.py`).
+- Health: increased SMTP health check timeout to 10s so `/healthz` reports healthy in dev when SMTP greeting is slow (`src/skriptoteket/observability/health.py`).
+- REV-EPIC-07 completed: approved ASGI correlation middleware so `uvicorn.access` logs include `correlation_id` for successful + streaming/SSE; ADR accepted; EPIC-07 reopened (active) for ST-07-06 / PR-0032 (`docs/backlog/reviews/review-epic-07-correlation-middleware-asgi.md`, `docs/adr/adr-0061-asgi-correlation-middleware.md`, `docs/backlog/stories/story-07-06-asgi-correlation-middleware.md`, `docs/backlog/prs/pr-0032-asgi-correlation-middleware.md`, `docs/backlog/epics/epic-07-observability-and-operations.md`).
 - Verification:
   - `pdm run db-upgrade`
   - `pdm run fe-gen-api-types`
   - `pdm run fe-type-check` / `pdm run fe-test` / `pdm run fe-build` (rerun for ST-14-20: `fe-type-check`, `fe-test`)
   - `pdm run docs-validate`
+  - `pdm run lint`
+  - `pdm run typecheck`
+  - `pdm run test`
+  - `pdm run fe-test`
   - `BASE_URL=http://localhost:5173 pdm run ui-smoke` (Playwright; requires escalation on macOS)
   - `pdm run dev-local` (backend + Vite)
   - `BASE_URL=http://127.0.0.1:5173 pdm run ui-editor-smoke` (Playwright; requires escalation on macOS)
+  - `pdm run seed-script-bank --slug demo-next-actions --sync-code`
+  - `docker build --progress=plain -f Dockerfile.runner -t skriptoteket-runner:latest .` (log: `.artifacts/runner-build-20260115T122634Z.log`)
+  - `pdm run ui-runtime-smoke --base-url http://127.0.0.1:5173` (Playwright; asserts prefill; screenshot: `.artifacts/ui-runtime-smoke/tool-run-next-actions-prefill.png`)
+  - `curl -i http://127.0.0.1:8000/healthz` (expects 200 + `"smtp":{"status":"healthy"}`)
+  - Manual (PR-0031 correlation): called `/api/v1/editor/edit-ops` → `/preview` → `/apply` with `X-Correlation-ID=72d70ad9-0265-4e7e-94b8-cd0753c87b79`; confirmed response headers + `docker compose logs web --since 10m | rg '72d70ad9-0265-4e7e-94b8-cd0753c87b79|ai_chat_ops_result|edit_ops_preview'`.
   - Artifacts: `.artifacts/ui-smoke/profile-ai-settings-desktop.png`, `.artifacts/ui-editor-smoke/editor-loaded.png`, `.artifacts/ui-editor-smoke/diff-mode.png`, `.artifacts/ui-editor-smoke/diff-empty-state.png`, `.artifacts/ui-editor-smoke/test-mode.png`
 
 ## How to Run
@@ -79,7 +97,7 @@ pdm run test
 ## Next Steps
 
 - Deploy: set `LLM_DEVSTRAL_TEKKEN_JSON_PATH` (tekken.json asset path) for accurate devstral token counting.
-- Plan ST-14-23/24: UI contract v2.x action defaults/prefill + first-class file references (keep `skriptoteket_toolkit` + editor intelligence conventions as baseline).
+- Plan/implement ST-14-23/24: ADR-0060 accepted (action defaults/prefill); write separate ADR for ST-14-24 file references before implementation.
 - Decide whether to keep or remove any story-specific Playwright scripts (prefer using `pdm run ui-editor-smoke`).
 - Parallel refactors (optional): PR-0019 (backend LLM hotspots) + PR-0020 (frontend AI hotspots).
 - PR-0028/PR-0029: ready to open PRs once `README.md` (unrelated diff) is resolved.

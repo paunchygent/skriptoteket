@@ -42,7 +42,43 @@ const allFields = computed(() => {
 const isCompact = computed(() => props.density === "compact");
 
 function ensureDefaults(): void {
+  const prefillByField = (name: string): components["schemas"]["JsonValue"] | undefined => {
+    for (const action of props.actions) {
+      const prefill = action.prefill ?? {};
+      if (prefill[name] !== undefined) return prefill[name];
+    }
+    return undefined;
+  };
+
   for (const field of allFields.value) {
+    const value = prefillByField(field.name);
+
+    if (value !== undefined) {
+      if (field.kind === "boolean") {
+        if (booleanValues[field.name] === undefined && typeof value === "boolean") {
+          booleanValues[field.name] = value;
+        }
+      } else if (field.kind === "multi_enum") {
+        if (
+          multiEnumValues[field.name] === undefined &&
+          Array.isArray(value) &&
+          value.every((item) => typeof item === "string")
+        ) {
+          multiEnumValues[field.name] = value;
+        }
+      } else if (textValues[field.name] === undefined) {
+        if (typeof value === "string") {
+          textValues[field.name] = value;
+        } else if (
+          (field.kind === "integer" || field.kind === "number") &&
+          typeof value === "number" &&
+          Number.isFinite(value)
+        ) {
+          textValues[field.name] = String(value);
+        }
+      }
+    }
+
     if (field.kind === "boolean") {
       if (booleanValues[field.name] === undefined) {
         booleanValues[field.name] = false;

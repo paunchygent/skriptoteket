@@ -507,6 +507,19 @@ class ChatOpsProvidersProtocol(Protocol):
     fallback_is_remote: bool
 
 
+class ChatBudget(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    context_window_tokens: int
+    max_output_tokens: int
+
+
+class ChatBudgetResolverProtocol(Protocol):
+    """Resolve prompt budgeting constraints for streaming chat."""
+
+    def resolve_chat_budget(self, *, provider: "ChatFailoverProvider") -> ChatBudget: ...
+
+
 class ChatOpsBudget(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -521,7 +534,13 @@ class ChatOpsBudgetResolverProtocol(Protocol):
 
 
 ChatFailoverProvider = Literal["primary", "fallback"]
-ChatFailoverReason = Literal["primary_default", "sticky_fallback", "breaker_open", "load_shed"]
+ChatFailoverReason = Literal[
+    "primary_default",
+    "sticky_fallback",
+    "breaker_open",
+    "load_shed",
+    "preflight_over_budget",
+]
 ChatFailoverBlock = Literal["remote_fallback_required"]
 
 

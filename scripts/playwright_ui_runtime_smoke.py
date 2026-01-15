@@ -75,7 +75,7 @@ def _run_curated_app(page: object, *, base_url: str, artifacts_dir: Path) -> Non
 
 
 def _run_demo_tool(page: object, *, base_url: str, artifacts_dir: Path) -> None:
-    page.goto(f"{base_url}/browse/gemensamt/ovrigt", wait_until="domcontentloaded")
+    page.goto(f"{base_url}/browse/professions/gemensamt/ovrigt", wait_until="domcontentloaded")
     expect(page.get_by_role("heading", name=re.compile(r"Övrigt", re.IGNORECASE))).to_be_visible()
 
     tool_row = page.locator("li").filter(has_text="Demo: Interaktiv")
@@ -100,9 +100,12 @@ def _run_demo_tool(page: object, *, base_url: str, artifacts_dir: Path) -> None:
     expect(run_button).to_be_enabled()
     run_button.click()
 
-    expect(page.get_by_role("button", name=re.compile(r"Rensa", re.IGNORECASE))).to_be_visible(
-        timeout=60_000
-    )
+    next_step_button = page.get_by_role("button", name=re.compile(r"Nästa steg", re.IGNORECASE))
+    expect(next_step_button).to_be_visible(timeout=60_000)
+
+    note_input = page.get_by_label(re.compile(r"Anteckning", re.IGNORECASE))
+    expect(note_input).to_have_value("Steg 1")
+    page.screenshot(path=str(artifacts_dir / "tool-run-next-actions-prefill.png"), full_page=True)
     page.screenshot(path=str(artifacts_dir / "tool-run.png"), full_page=True)
 
     download_link = page.locator("a[download]").first
@@ -114,7 +117,7 @@ def _run_demo_tool(page: object, *, base_url: str, artifacts_dir: Path) -> None:
 
 
 def _run_demo_inputs_no_files(page: object, *, base_url: str, artifacts_dir: Path) -> None:
-    page.goto(f"{base_url}/browse/gemensamt/ovrigt", wait_until="domcontentloaded")
+    page.goto(f"{base_url}/browse/professions/gemensamt/ovrigt", wait_until="domcontentloaded")
     expect(page.get_by_role("heading", name=re.compile(r"Övrigt", re.IGNORECASE))).to_be_visible()
 
     tool_row = page.locator("li").filter(has_text="Demo: Indata utan filer")
@@ -139,7 +142,7 @@ def _run_demo_inputs_no_files(page: object, *, base_url: str, artifacts_dir: Pat
 
 
 def _run_demo_inputs_with_files(page: object, *, base_url: str, artifacts_dir: Path) -> None:
-    page.goto(f"{base_url}/browse/gemensamt/ovrigt", wait_until="domcontentloaded")
+    page.goto(f"{base_url}/browse/professions/gemensamt/ovrigt", wait_until="domcontentloaded")
     expect(page.get_by_role("heading", name=re.compile(r"Övrigt", re.IGNORECASE))).to_be_visible()
 
     tool_row = page.locator("li").filter(has_text="Demo: Indata + filer")

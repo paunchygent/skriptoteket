@@ -23,6 +23,7 @@ from skriptoteket.application.editor.edit_ops_preview_handler import (
 from skriptoteket.config import Settings
 from skriptoteket.infrastructure.editor.unified_diff_applier import SubprocessUnifiedDiffApplier
 from skriptoteket.infrastructure.llm.capture_store import ArtifactsLlmCaptureStore
+from skriptoteket.infrastructure.llm.chat_budget_resolver import SettingsBasedChatBudgetResolver
 from skriptoteket.infrastructure.llm.chat_failover_router import InProcessChatFailoverRouter
 from skriptoteket.infrastructure.llm.chat_inflight_guard import InProcessChatInFlightGuard
 from skriptoteket.infrastructure.llm.chat_ops_budget_resolver import (
@@ -49,6 +50,7 @@ from skriptoteket.protocols.editor_chat import (
 from skriptoteket.protocols.editor_patches import UnifiedDiffApplierProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
+    ChatBudgetResolverProtocol,
     ChatFailoverRouterProtocol,
     ChatInFlightGuardProtocol,
     ChatOpsBudgetResolverProtocol,
@@ -113,6 +115,10 @@ class LlmProvider(Provider):
     @provide(scope=Scope.APP)
     def chat_ops_budget_resolver(self, settings: Settings) -> ChatOpsBudgetResolverProtocol:
         return SettingsBasedChatOpsBudgetResolver(settings=settings)
+
+    @provide(scope=Scope.APP)
+    def chat_budget_resolver(self, settings: Settings) -> ChatBudgetResolverProtocol:
+        return SettingsBasedChatBudgetResolver(settings=settings)
 
     @provide(scope=Scope.APP)
     def chat_stream_providers(
@@ -245,6 +251,7 @@ class LlmProvider(Provider):
         providers: ChatStreamProvidersProtocol,
         guard: ChatInFlightGuardProtocol,
         failover: ChatFailoverRouterProtocol,
+        budget_resolver: ChatBudgetResolverProtocol,
         turn_preparer: EditorChatTurnPreparerProtocol,
         stream_orchestrator: EditorChatStreamOrchestratorProtocol,
         token_counters: TokenCounterResolverProtocol,
@@ -254,6 +261,7 @@ class LlmProvider(Provider):
             providers=providers,
             guard=guard,
             failover=failover,
+            budget_resolver=budget_resolver,
             turn_preparer=turn_preparer,
             stream_orchestrator=stream_orchestrator,
             token_counters=token_counters,

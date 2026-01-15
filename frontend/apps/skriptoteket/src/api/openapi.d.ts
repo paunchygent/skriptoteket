@@ -3170,6 +3170,10 @@ export interface components {
             kind: "form";
             /** Label */
             label: string;
+            /** Prefill */
+            prefill?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
         };
         /** UiHtmlSandboxedOutput */
         UiHtmlSandboxedOutput: {

@@ -26,6 +26,7 @@ from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.edit_ops_payload_parser import EditOpsPayloadParserProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
+    ChatFailoverDecision,
     ChatFailoverRouterProtocol,
     ChatInFlightGuardProtocol,
     ChatMessage,
@@ -61,6 +62,10 @@ _REMOTE_FALLBACK_REQUIRED_MESSAGE = (
 _MESSAGE_TOO_LONG = "För långt meddelande: korta ned eller starta en ny chatt."
 _GENERATION_ERROR = "Jag kunde inte skapa ett ändringsförslag just nu. Försök igen."
 _INVALID_OPS_ERROR = "Jag kunde inte skapa ett giltigt ändringsförslag. Försök igen."
+_PATCH_ONLY_REQUIRED_ERROR = (
+    "Jag kunde inte skapa ett giltigt ändringsförslag. "
+    "Förslaget måste vara en patch (unified diff) per fil. Regenerera och försök igen."
+)
 
 _VIRTUAL_FILE_IDS: tuple[VirtualFileId, ...] = (
     "tool.py",
@@ -178,6 +183,9 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                     return False
 
         return True
+
+    def _ops_are_patch_only(self, *, ops: list[EditOpsOp]) -> bool:
+        return all(op.op == "patch" for op in ops)
 
     async def _prepare_request(
         self,
@@ -470,6 +478,9 @@ class EditOpsHandler(EditOpsHandlerProtocol):
 
             user_payload = self._build_user_payload(command=command)
             budget = self._budget_resolver.resolve_chat_ops_budget(provider=decision.provider)
+            can_use_fallback = self._providers.fallback is not None and (
+                allow_remote_fallback or not self._providers.fallback_is_remote
+            )
 
             prepared, prompt_messages_count = await self._prepare_request(
                 actor=actor,
@@ -480,7 +491,103 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                 token_counter=token_counter,
                 correlation_id=capture_id,
             )
+            if prepared is None and decision.provider == "primary" and can_use_fallback:
+                fallback_model_for_counting = (
+                    self._settings.LLM_CHAT_OPS_FALLBACK_MODEL.strip()
+                    or self._settings.LLM_CHAT_OPS_MODEL
+                )
+                fallback_token_counter = self._token_counters.for_model(
+                    model=fallback_model_for_counting
+                )
+                try:
+                    if self._system_prompt_loader is not None:
+                        fallback_system_prompt = self._system_prompt_loader(template_id)
+                    else:
+                        fallback_system_prompt = compose_system_prompt(
+                            template_id=template_id,
+                            settings=self._settings,
+                            token_counter=fallback_token_counter,
+                        ).text
+                except (OSError, PromptTemplateError):
+                    # Keep the original over-budget outcome rather than disabling the feature.
+                    fallback_system_prompt = None
+                else:
+                    if fallback_system_prompt is not None:
+                        fallback_budget = self._budget_resolver.resolve_chat_ops_budget(
+                            provider="fallback"
+                        )
+                        (
+                            fallback_prepared,
+                            fallback_prompt_messages_count,
+                        ) = await self._prepare_request(
+                            actor=actor,
+                            command=command,
+                            system_prompt=fallback_system_prompt,
+                            user_payload=user_payload,
+                            budget=fallback_budget,
+                            token_counter=fallback_token_counter,
+                            correlation_id=capture_id,
+                        )
+                        if fallback_prepared is not None:
+                            decision = ChatFailoverDecision(
+                                provider="fallback", reason="preflight_over_budget"
+                            )
+                            logger.info(
+                                "ai_chat_ops_preflight_failover",
+                                template_id=template_id,
+                                user_id=str(actor.id),
+                                tool_id=str(command.tool_id),
+                                from_provider="primary",
+                                to_provider="fallback",
+                                reason="preflight_over_budget",
+                                fallback_is_remote=self._providers.fallback_is_remote,
+                                allow_remote_fallback=allow_remote_fallback,
+                                primary_model=self._settings.LLM_CHAT_OPS_MODEL,
+                                fallback_model=fallback_model_for_counting,
+                                message_len=message_len,
+                                virtual_files_bytes=virtual_files_bytes,
+                            )
+                            await self._failover.mark_fallback_used(
+                                user_id=actor.id, tool_id=command.tool_id
+                            )
+                            model_for_counting = fallback_model_for_counting
+                            token_counter = fallback_token_counter
+                            system_prompt = fallback_system_prompt
+                            budget = fallback_budget
+                            prepared = fallback_prepared
+                            prompt_messages_count = fallback_prompt_messages_count
             if prepared is None:
+                system_prompt_tokens = token_counter.count_system_prompt(content=system_prompt)
+                user_payload_tokens = token_counter.count_chat_message(
+                    role="user", content=user_payload
+                )
+                prompt_budget_tokens = (
+                    budget.context_window_tokens
+                    - budget.max_output_tokens
+                    - self._settings.LLM_CHAT_OPS_CONTEXT_SAFETY_MARGIN_TOKENS
+                )
+                available_history_tokens = (
+                    prompt_budget_tokens - system_prompt_tokens - user_payload_tokens
+                )
+                logger.warning(
+                    "ai_chat_ops_preflight_over_budget",
+                    template_id=template_id,
+                    user_id=str(actor.id),
+                    tool_id=str(command.tool_id),
+                    provider=decision.provider,
+                    failover_reason=decision.reason,
+                    model=model_for_counting,
+                    context_window_tokens=budget.context_window_tokens,
+                    max_output_tokens=budget.max_output_tokens,
+                    safety_margin_tokens=self._settings.LLM_CHAT_OPS_CONTEXT_SAFETY_MARGIN_TOKENS,
+                    prompt_budget_tokens=prompt_budget_tokens,
+                    system_prompt_tokens=system_prompt_tokens,
+                    user_payload_chars=len(user_payload),
+                    user_payload_tokens=user_payload_tokens,
+                    available_history_tokens=available_history_tokens,
+                    message_len=message_len,
+                    virtual_files_bytes=virtual_files_bytes,
+                )
                 log_result(
                     provider=decision.provider,
                     failover_reason=decision.reason,
@@ -505,6 +612,11 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                         "message_len": message_len,
                         "virtual_files_bytes": virtual_files_bytes,
                         "system_prompt_chars": len(system_prompt),
+                        "system_prompt_tokens": system_prompt_tokens,
+                        "user_payload_chars": len(user_payload),
+                        "user_payload_tokens": user_payload_tokens,
+                        "context_window_tokens": budget.context_window_tokens,
+                        "max_output_tokens": budget.max_output_tokens,
                         "prompt_messages_count": prompt_messages_count,
                         "elapsed_ms": int((time.monotonic() - started_at) * 1000),
                     }
@@ -714,7 +826,17 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                         assistant_message = _INVALID_OPS_ERROR
                         eval_outcome = "error"
                         log_outcome = "parse_failed"
-                    elif self._ops_compatible_with_request(command=command, ops=parsed.ops):
+                    elif not self._ops_compatible_with_request(command=command, ops=parsed.ops):
+                        ops = []
+                        assistant_message = _INVALID_OPS_ERROR
+                        eval_outcome = "error"
+                        log_outcome = "incompatible_ops"
+                    elif not self._ops_are_patch_only(ops=parsed.ops):
+                        ops = []
+                        assistant_message = _PATCH_ONLY_REQUIRED_ERROR
+                        eval_outcome = "error"
+                        log_outcome = "non_patch_ops"
+                    else:
                         ops = parsed.ops
                         assistant_message = parsed.assistant_message.strip() or assistant_message
                         eval_outcome = "ok" if ops else "empty"

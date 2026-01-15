@@ -88,6 +88,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0057-settings-suggestions-from-tool-runs.md`
 - `docs/adr/adr-0058-tool-datasets-library.md`
 - `docs/adr/adr-0059-user-file-vault.md`
+- `docs/adr/adr-0060-ui-contract-v2x-action-prefill.md`
+- `docs/adr/adr-0061-asgi-correlation-middleware.md`
 
 ### PRDs
 
@@ -124,6 +126,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 ### Backlog Reviews
 
 - `docs/backlog/reviews/review-epic-06-linter-architecture-refactor.md`
+- `docs/backlog/reviews/review-epic-07-correlation-middleware-asgi.md`
 - `docs/backlog/reviews/review-epic-08-ai-completion.md`
 - `docs/backlog/reviews/review-epic-08-ai-edit-ops-v2.md`
 - `docs/backlog/reviews/review-epic-08-editor-ai-edit-ops-patch-only-alignment.md`
@@ -132,6 +135,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-09-security-hardening.md`
 - `docs/backlog/reviews/review-epic-14-editor-sandbox-preview.md`
 - `docs/backlog/reviews/review-epic-14-tool-data-libraries.md`
+- `docs/backlog/reviews/review-epic-14-ui-contract-v2x-action-prefill.md`
 - `docs/backlog/reviews/review-epic-16-catalog-discovery.md`
 - `docs/backlog/reviews/review-epic-17-observability-visualization.md`
 
@@ -189,6 +193,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md`
 - `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md`
 - `docs/backlog/prs/pr-0031-editor-ai-edit-ops-patch-only-alignment.md`
+- `docs/backlog/prs/pr-0032-asgi-correlation-middleware.md`
 
 ### Backlog Stories
 
@@ -239,6 +244,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-07-03-opentelemetry-tracing.md`
 - `docs/backlog/stories/story-07-04-logging-redaction-and-policy.md`
 - `docs/backlog/stories/story-07-05-observability-stack-deployment.md`
+- `docs/backlog/stories/story-07-06-asgi-correlation-middleware.md`
 - `docs/backlog/stories/story-08-01-help-framework.md`
 - `docs/backlog/stories/story-08-02-login-help.md`
 - `docs/backlog/stories/story-08-02-robust-email-verification.md`
@@ -379,9 +385,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/ref-ai-script-generation-kb.md`
 - `docs/reference/ref-architecture.md`
 - `docs/reference/ref-codemirror-integration.md`
-- `docs/reference/ref-dynamic-tool-scripts.md`
 - `docs/reference/ref-editor-sandbox-preview-plan.md`
-- `docs/reference/ref-execution-architecture.md`
 - `docs/reference/ref-frontend-test-gaps-2025-12-29.md`
 - `docs/reference/ref-home-server-architecture.md`
 - `docs/reference/ref-home-server-cleanup-timers.md`

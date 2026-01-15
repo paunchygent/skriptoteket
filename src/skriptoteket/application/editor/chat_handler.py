@@ -7,6 +7,7 @@ import structlog
 from skriptoteket.application.editor.chat_shared import (
     DISABLED_MESSAGE,
     IN_FLIGHT_MESSAGE,
+    MESSAGE_TOO_LONG,
     REMOTE_FALLBACK_REQUIRED_CODE,
     REMOTE_FALLBACK_REQUIRED_MESSAGE,
 )
@@ -24,6 +25,8 @@ from skriptoteket.protocols.editor_chat import (
     EditorChatTurnPreparerProtocol,
 )
 from skriptoteket.protocols.llm import (
+    ChatBudgetResolverProtocol,
+    ChatFailoverDecision,
     ChatFailoverRouterProtocol,
     ChatInFlightGuardProtocol,
     ChatStreamProvidersProtocol,
@@ -46,6 +49,7 @@ class EditorChatHandler(EditorChatHandlerProtocol):
         providers: ChatStreamProvidersProtocol,
         guard: ChatInFlightGuardProtocol,
         failover: ChatFailoverRouterProtocol,
+        budget_resolver: ChatBudgetResolverProtocol,
         turn_preparer: EditorChatTurnPreparerProtocol,
         stream_orchestrator: EditorChatStreamOrchestratorProtocol,
         token_counters: TokenCounterResolverProtocol,
@@ -55,6 +59,7 @@ class EditorChatHandler(EditorChatHandlerProtocol):
         self._providers = providers
         self._guard = guard
         self._failover = failover
+        self._budget_resolver = budget_resolver
         self._turn_preparer = turn_preparer
         self._stream_orchestrator = stream_orchestrator
         self._token_counters = token_counters
@@ -110,6 +115,10 @@ class EditorChatHandler(EditorChatHandlerProtocol):
                 model_for_counting = self._settings.LLM_CHAT_MODEL
             token_counter = self._token_counters.for_model(model=model_for_counting)
 
+            can_use_fallback = self._providers.fallback is not None and (
+                command.allow_remote_fallback or not self._providers.fallback_is_remote
+            )
+
             try:
                 if self._system_prompt_loader is not None:
                     system_prompt = self._system_prompt_loader(template_id)
@@ -129,15 +138,134 @@ class EditorChatHandler(EditorChatHandlerProtocol):
                 return
 
             try:
+                budget = self._budget_resolver.resolve_chat_budget(provider=decision.provider)
                 prepared = await self._turn_preparer.prepare(
                     actor=actor,
                     command=command,
                     system_prompt=system_prompt,
                     token_counter=token_counter,
+                    budget=budget,
                 )
             except ChatPromptBudgetUnavailable:
-                yield EditorChatDoneEvent(data=EditorChatDoneDisabledData(message=DISABLED_MESSAGE))
-                return
+                if decision.provider != "primary" or not can_use_fallback:
+                    yield EditorChatDoneEvent(
+                        data=EditorChatDoneDisabledData(message=DISABLED_MESSAGE)
+                    )
+                    return
+
+                decision = ChatFailoverDecision(
+                    provider="fallback",
+                    reason="preflight_over_budget",
+                )
+                fallback_model = (
+                    self._settings.LLM_CHAT_FALLBACK_MODEL.strip() or self._settings.LLM_CHAT_MODEL
+                )
+                logger.info(
+                    "ai_chat_preflight_failover",
+                    template_id=template_id,
+                    user_id=str(actor.id),
+                    tool_id=str(command.tool_id),
+                    from_provider="primary",
+                    to_provider="fallback",
+                    reason="preflight_over_budget",
+                    fallback_is_remote=self._providers.fallback_is_remote,
+                    allow_remote_fallback=command.allow_remote_fallback,
+                    primary_model=model_for_counting,
+                    fallback_model=fallback_model,
+                    message_len=len(command.message),
+                    virtual_files_bytes=(
+                        sum(len(text.encode("utf-8")) for text in command.virtual_files.values())
+                        if command.virtual_files is not None
+                        else 0
+                    ),
+                )
+                token_counter = self._token_counters.for_model(model=fallback_model)
+                try:
+                    if self._system_prompt_loader is not None:
+                        system_prompt = self._system_prompt_loader(template_id)
+                    else:
+                        system_prompt = compose_system_prompt(
+                            template_id=template_id,
+                            settings=self._settings,
+                            token_counter=token_counter,
+                        ).text
+                except (OSError, PromptTemplateError):
+                    yield EditorChatDoneEvent(
+                        data=EditorChatDoneDisabledData(message=DISABLED_MESSAGE)
+                    )
+                    return
+                fallback_budget = self._budget_resolver.resolve_chat_budget(provider="fallback")
+                try:
+                    prepared = await self._turn_preparer.prepare(
+                        actor=actor,
+                        command=command,
+                        system_prompt=system_prompt,
+                        token_counter=token_counter,
+                        budget=fallback_budget,
+                    )
+                except ChatPromptBudgetUnavailable:
+                    yield EditorChatDoneEvent(
+                        data=EditorChatDoneDisabledData(message=DISABLED_MESSAGE)
+                    )
+                    return
+            except DomainError as domain_exc:
+                if (
+                    domain_exc.code != ErrorCode.VALIDATION_ERROR
+                    or domain_exc.message != MESSAGE_TOO_LONG
+                    or decision.provider != "primary"
+                    or not can_use_fallback
+                ):
+                    raise
+
+                decision = ChatFailoverDecision(
+                    provider="fallback",
+                    reason="preflight_over_budget",
+                )
+                fallback_model = (
+                    self._settings.LLM_CHAT_FALLBACK_MODEL.strip() or self._settings.LLM_CHAT_MODEL
+                )
+                logger.info(
+                    "ai_chat_preflight_failover",
+                    template_id=template_id,
+                    user_id=str(actor.id),
+                    tool_id=str(command.tool_id),
+                    from_provider="primary",
+                    to_provider="fallback",
+                    reason="preflight_over_budget",
+                    fallback_is_remote=self._providers.fallback_is_remote,
+                    allow_remote_fallback=command.allow_remote_fallback,
+                    primary_model=model_for_counting,
+                    fallback_model=fallback_model,
+                    message_len=len(command.message),
+                    virtual_files_bytes=(
+                        sum(len(text.encode("utf-8")) for text in command.virtual_files.values())
+                        if command.virtual_files is not None
+                        else 0
+                    ),
+                )
+                token_counter = self._token_counters.for_model(model=fallback_model)
+                try:
+                    if self._system_prompt_loader is not None:
+                        system_prompt = self._system_prompt_loader(template_id)
+                    else:
+                        system_prompt = compose_system_prompt(
+                            template_id=template_id,
+                            settings=self._settings,
+                            token_counter=token_counter,
+                        ).text
+                except (OSError, PromptTemplateError):
+                    raise domain_exc
+                fallback_budget = self._budget_resolver.resolve_chat_budget(provider="fallback")
+                try:
+                    prepared = await self._turn_preparer.prepare(
+                        actor=actor,
+                        command=command,
+                        system_prompt=system_prompt,
+                        token_counter=token_counter,
+                        budget=fallback_budget,
+                    )
+                except ChatPromptBudgetUnavailable:
+                    raise domain_exc
 
             async for event in self._stream_orchestrator.stream(
                 actor=actor,

@@ -13,6 +13,10 @@ vi.mock("../../api/client", () => ({
   isApiError: (error: unknown) => error instanceof Error,
 }));
 
+vi.mock("../../api/correlation", () => ({
+  createCorrelationId: () => "corr-1",
+}));
+
 describe("useEditorEditOps (apply)", () => {
   it("applies, undoes, and redoes a proposal", async () => {
     vi.useFakeTimers();
@@ -100,9 +104,12 @@ describe("useEditorEditOps (apply)", () => {
     await nextTick();
 
     expect(state.proposal.value).not.toBeNull();
+    expect(vi.mocked(apiFetch).mock.calls[0]?.[1]?.headers).toEqual({ "X-Correlation-ID": "corr-1" });
+    expect(vi.mocked(apiFetch).mock.calls[1]?.[1]?.headers).toEqual({ "X-Correlation-ID": "corr-1" });
 
     const applied = await state.applyProposal();
     expect(applied).toBe(true);
+    expect(vi.mocked(apiFetch).mock.calls[2]?.[1]?.headers).toEqual({ "X-Correlation-ID": "corr-1" });
     expect(createBeforeApplyCheckpoint).toHaveBeenCalled();
     expect(sourceCode.value).toContain("print('klar')");
     expect(state.panelState.value.aiStatus).toBe("applied");

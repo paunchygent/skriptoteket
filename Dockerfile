@@ -98,7 +98,7 @@ RUN pip install --no-cache-dir pdm==2.26.2
 COPY pyproject.toml pdm.lock ./
 RUN --mount=type=cache,target=/root/.cache/pdm,sharing=locked \
     pdm config python.use_venv false \
-    && pdm install --frozen-lockfile --prod --no-editable --no-self
+    && pdm install --frozen-lockfile --prod -G llm --no-editable --no-self
 
 
 FROM pandoc-base AS production
@@ -147,6 +147,6 @@ CMD ["pdm", "run", "serve"]
 FROM production AS development
 
 RUN --mount=type=cache,target=/root/.cache/pdm,sharing=locked \
-    pdm install --frozen-lockfile -G monorepo-tools -G dev --no-editable --no-self
+    pdm install --frozen-lockfile -G monorepo-tools -G dev -G llm --no-editable --no-self
 
 CMD ["pdm", "run", "dev-docker"]

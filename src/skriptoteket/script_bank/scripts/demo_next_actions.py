@@ -105,7 +105,10 @@ def _handle_action(
         next_actions: list[dict] = []
     else:
         next_actions = [
-            _action_with_note("Nästa steg", "continue"),
+            {
+                **_action_with_note("Nästa steg", "continue"),
+                "prefill": {"note": f"Steg {step + 1}"},
+            },
             _action("Nollställ", "reset"),
             _action("Avsluta", "finish"),
         ]
@@ -223,7 +226,10 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
     return {
         "outputs": outputs,
         "next_actions": [
-            _action_with_note("Nästa steg", "continue"),
+            {
+                **_action_with_note("Nästa steg", "continue"),
+                "prefill": {"note": "Steg 1"},
+            },
             _action("Nollställ", "reset"),
             _action("Avsluta", "finish"),
         ],

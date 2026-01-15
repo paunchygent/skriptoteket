@@ -1,47 +1,14 @@
 from __future__ import annotations
 
 import logging
-import re
-from collections.abc import Mapping
 from typing import Literal
 
 import structlog
 from structlog.types import EventDict, WrappedLogger
 
+from skriptoteket.observability.redaction import redact_sensitive_data
+
 LogFormat = Literal["json", "console"]
-
-# Keys containing these patterns (case-insensitive) will have their values redacted
-# Supports both underscores and hyphens (e.g., api_key, api-key, x-api-key)
-_SENSITIVE_KEY_PATTERNS = re.compile(
-    r"(password|token|secret|api[_-]?key|authorization|credential|bearer|cookie|session)",
-    re.IGNORECASE,
-)
-_REDACTED = "[REDACTED]"
-
-
-def _redact_value(value: object) -> object:
-    """Recursively redact sensitive values in nested structures."""
-    if isinstance(value, Mapping):
-        redacted: dict[object, object] = {}
-        for key, item in value.items():
-            if isinstance(key, str) and _SENSITIVE_KEY_PATTERNS.search(key):
-                redacted[key] = _REDACTED
-                continue
-            redacted[key] = _redact_value(item)
-        return redacted
-    if isinstance(value, list):
-        return [_redact_value(item) for item in value]
-    return value
-
-
-def _redact_sensitive_data(
-    logger: WrappedLogger, method_name: str, event_dict: EventDict
-) -> EventDict:
-    """Structlog processor that redacts values for sensitive keys."""
-    return {
-        k: _REDACTED if _SENSITIVE_KEY_PATTERNS.search(k) else _redact_value(v)
-        for k, v in event_dict.items()
-    }
 
 
 def _add_service_context(*, service_name: str, environment: str):
@@ -84,7 +51,7 @@ def configure_logging(
 
     shared_processors: list[structlog.types.Processor] = [
         structlog.contextvars.merge_contextvars,
-        _redact_sensitive_data,
+        redact_sensitive_data,
         _add_service_context(service_name=service_name, environment=environment),
         _add_trace_context,
         structlog.processors.TimeStamper(fmt="iso", key="timestamp"),

@@ -20,7 +20,7 @@ review and maps them to the docs-as-code sources of truth (stories, reference sp
 - **Decision:** Adopt
 - **Why:** `entrypoint` is part of the runnable identity; `content_hash` must reflect it to keep deduplication
   meaningful.
-- **Docs:** `REF-dynamic-tool-scripts` and `ST-04-01` define `content_hash` as `sha256("{entrypoint}\\n{source_code}")`.
+- **Docs:** `ST-04-01` defines `content_hash` as `sha256("{entrypoint}\\n{source_code}")`.
 
 ### Version number race
 

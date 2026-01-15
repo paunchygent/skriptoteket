@@ -94,8 +94,9 @@ describe("useEditorChat", () => {
     await sendPromise;
 
     expect(messages.value.length).toBe(2);
-    expect(messages.value[1].content).toBe("Hej");
-    expect(error.value).toContain("ofullständigt");
+    expect(messages.value[1].content).toContain("Hej");
+    expect(messages.value[1].content).toContain("ofullständigt");
+    expect(error.value).toBeNull();
   });
 
   it("shows an error when the stream ends with done.reason=error before any deltas", async () => {
@@ -127,7 +128,8 @@ describe("useEditorChat", () => {
     await sendPromise;
 
     expect(messages.value.length).toBe(2);
-    expect(error.value).toContain("läsa");
+    expect(messages.value[1].content).toContain("läsa");
+    expect(error.value).toBeNull();
   });
 
   it("creates an assistant message for disabled responses and preserves correlation-id", async () => {
@@ -162,9 +164,10 @@ describe("useEditorChat", () => {
 
     await sendPromise;
 
-    expect(disabledMessage.value).toContain("Den lokala AI-modellen");
+    expect(disabledMessage.value).toBeNull();
     expect(messages.value.length).toBe(2);
     expect(messages.value[1].role).toBe("assistant");
+    expect(messages.value[1].content).toContain("Den lokala AI-modellen");
     expect(messages.value[1].correlationId).toBe("corr-123");
     expect(messages.value[1].status).toBe("failed");
     expect(messages.value[1].failureOutcome).toBe("remote_fallback_required");

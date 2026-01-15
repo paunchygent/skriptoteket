@@ -20,7 +20,10 @@ from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
+    ChatBudget,
+    ChatBudgetResolverProtocol,
     ChatFailoverDecision,
+    ChatFailoverProvider,
     ChatFailoverRouterProtocol,
     ChatInFlightGuardProtocol,
     ChatStreamProviderProtocol,
@@ -86,6 +89,18 @@ class DummyFailover(ChatFailoverRouterProtocol):
         return None
 
 
+class DummyChatBudgetResolver(ChatBudgetResolverProtocol):
+    def __init__(self, *, settings: Settings) -> None:
+        self._settings = settings
+
+    def resolve_chat_budget(self, *, provider: ChatFailoverProvider) -> ChatBudget:
+        del provider
+        return ChatBudget(
+            context_window_tokens=self._settings.LLM_CHAT_CONTEXT_WINDOW_TOKENS,
+            max_output_tokens=self._settings.LLM_CHAT_MAX_TOKENS,
+        )
+
+
 def _make_handler(
     *,
     settings: Settings,
@@ -124,6 +139,7 @@ def _make_handler(
         providers=providers,
         guard=guard,
         failover=failover,
+        budget_resolver=DummyChatBudgetResolver(settings=settings),
         turn_preparer=turn_preparer,
         stream_orchestrator=stream_orchestrator,
         token_counters=token_counters,

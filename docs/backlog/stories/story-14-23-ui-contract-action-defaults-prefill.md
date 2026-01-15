@@ -2,10 +2,12 @@
 type: story
 id: ST-14-23
 title: "UI contract v2.x: action defaults / prefill"
-status: ready
+status: done
 owners: "agents"
 created: 2025-12-29
+updated: 2026-01-15
 epic: "EPIC-14"
+links: ["ADR-0060"]
 acceptance_criteria:
   - "Given a tool returns next_actions with field defaults/prefill metadata, when the UI renders the action form, then matching fields are prefilled with those values."
   - "Given a default is invalid for the field schema/type, when normalizing ui_payload, then the server deterministically rejects or strips the invalid default and surfaces an actionable error (no undefined behavior)."

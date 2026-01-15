@@ -48,6 +48,46 @@ files = list_input_files()             # [] om saknas/ogiltig JSON
 action_id, action_input, state = get_action_parts()  # (None, {}, {}) om ej action-körning
 ```
 
+### Exempel: `next_actions` med `prefill` (Contract v2.x)
+
+För interaktiva verktyg kan du returnera `next_actions` där varje action är ett formulär. Varje action kan dessutom ha
+en optional `prefill`-map (`{[field_name]: JsonValue}`) som UI:t använder som **initialvärde** när formuläret renderas.
+
+```python
+from skriptoteket_toolkit import get_action_parts
+
+
+def run_tool(input_dir: str, output_dir: str) -> dict:
+    action_id, action_input, state = get_action_parts()
+    raw_step = state.get("step")
+    try:
+        step = int(raw_step) if isinstance(raw_step, (int, str)) else 0
+    except (TypeError, ValueError):
+        step = 0
+
+    if action_id == "continue":
+        step += 1
+
+    return {
+        "outputs": [{"kind": "notice", "level": "info", "message": f"Steg = {step}"}],
+        "next_actions": [
+            {
+                "action_id": "continue",
+                "label": "Nästa steg",
+                "kind": "form",
+                "fields": [{"name": "note", "kind": "string", "label": "Anteckning (valfri)"}],
+                "prefill": {"note": f"Steg {step + 1}"},
+            }
+        ],
+        "state": {"step": step},
+    }
+```
+
+**Viktigt:**
+
+- `prefill` är “initial-value only” (användarens editeringar ska inte skrivas över).
+- Servern validerar `prefill` mot `fields[]` (okända fält eller fel typ strippas deterministiskt och ger en system-notis).
+
 Environmentvariabler:
 
 - `SKRIPTOTEKET_INPUTS` (JSON object) – formulärvärden för initial körning.

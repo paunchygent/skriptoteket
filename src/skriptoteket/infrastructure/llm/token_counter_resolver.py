@@ -19,6 +19,25 @@ def _looks_like_devstral_model(model: str) -> bool:
     return "devstral" in normalized or "mistral" in normalized
 
 
+@lru_cache(maxsize=1)
+def _find_packaged_tekken_json_path() -> Path | None:
+    try:
+        import mistral_common  # type: ignore[import-not-found]
+    except ImportError:
+        return None
+
+    data_dir = Path(mistral_common.__file__).resolve().parent / "data"
+    if not data_dir.is_dir():
+        return None
+
+    candidates = sorted(data_dir.glob("tekken_*.json"))
+    if not candidates:
+        return None
+
+    # Prefer the newest date-based file name (lexicographically stable).
+    return max(candidates, key=lambda path: path.name)
+
+
 @dataclass(frozen=True, slots=True)
 class _ChatOverheads:
     system_message_tokens: int
@@ -187,6 +206,20 @@ class SettingsBasedTokenCounterResolver(TokenCounterResolverProtocol):
             if tekken_json_path and tekken_json_path.is_file():
                 return TekkenTokenCounter(
                     tekken_json_path=tekken_json_path,
+                    overheads=self._devstral_overheads,
+                )
+
+            inferred_path = _find_packaged_tekken_json_path()
+            if inferred_path and inferred_path.is_file():
+                logger.info(
+                    "llm_tokenizer_assets_auto_selected",
+                    tokenizer="tekken",
+                    model=normalized,
+                    tekken_json_path=inferred_path.name,
+                    source="mistral_common",
+                )
+                return TekkenTokenCounter(
+                    tekken_json_path=inferred_path,
                     overheads=self._devstral_overheads,
                 )
 

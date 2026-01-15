@@ -27,6 +27,8 @@ _HUNK_HEADER_RE = re.compile(
 _FILE_HEADER_RE = re.compile(r"^(?P<kind>---|\+\+\+)\s+(?P<path>\S+)(?:\s+.*)?$")
 _DIFF_GIT_RE = re.compile(r"^diff --git\s+(?P<old>\S+)\s+(?P<new>\S+)\s*$")
 
+_MALFORMED_PATCH_ERROR: Final[str] = "Diffen är felaktigt formaterad (ogiltig @@-hunk). Regenerera."
+
 
 @dataclass(frozen=True, slots=True)
 class _NormalizationResult:
@@ -185,6 +187,66 @@ def _parse_hunks(lines: list[str]) -> list[UnifiedDiffHunk]:
     return hunks
 
 
+def _repair_hunk_header_counts(lines: list[str]) -> tuple[list[str], list[str]]:
+    normalizations: list[str] = []
+    out: list[str] = []
+    idx = 0
+
+    while idx < len(lines):
+        line = lines[idx]
+        match = _HUNK_HEADER_RE.match(line)
+        if not match:
+            out.append(line)
+            idx += 1
+            continue
+
+        old_start = int(match.group("old_start"))
+        old_count_declared = int(match.group("old_count") or "1")
+        new_start = int(match.group("new_start"))
+        new_count_declared = int(match.group("new_count") or "1")
+        header_suffix = line[match.end() :]
+
+        body_start = idx + 1
+        body_end = body_start
+        while body_end < len(lines) and not _HUNK_HEADER_RE.match(lines[body_end]):
+            body_end += 1
+
+        body = lines[body_start:body_end]
+        if not body:
+            raise ValueError(_MALFORMED_PATCH_ERROR)
+
+        old_count = 0
+        new_count = 0
+        for body_line in body:
+            if body_line.startswith("\\"):
+                continue
+            if not body_line:
+                raise ValueError(_MALFORMED_PATCH_ERROR)
+            marker = body_line[0]
+            if marker == " ":
+                old_count += 1
+                new_count += 1
+            elif marker == "-":
+                old_count += 1
+            elif marker == "+":
+                new_count += 1
+            else:
+                raise ValueError(_MALFORMED_PATCH_ERROR)
+
+        if old_count != old_count_declared or new_count != new_count_declared:
+            out.append(f"@@ -{old_start},{old_count} +{new_start},{new_count} @@{header_suffix}")
+            normalizations.append("rewrote_hunk_header_counts")
+        else:
+            out.append(line)
+
+        out.extend(body)
+        idx = body_end
+
+    # Deduplicate normalization flags.
+    normalizations = list(dict.fromkeys(normalizations))
+    return out, normalizations
+
+
 def _standardize_headers(
     *, lines: list[str], target_file: VirtualFileId
 ) -> tuple[list[str], list[str]]:
@@ -323,6 +385,15 @@ def _parse_patch_output_for_hunks(
     return offsets, fuzzes, failed_hunk
 
 
+def _map_patch_output_to_error(output: str) -> str | None:
+    lowered = output.lower()
+    if "malformed patch" in lowered:
+        return _MALFORMED_PATCH_ERROR
+    if "only garbage was found in the patch input" in lowered:
+        return _MALFORMED_PATCH_ERROR
+    return None
+
+
 class SubprocessUnifiedDiffApplier(UnifiedDiffApplierProtocol):
     def prepare(self, *, target_file: VirtualFileId, unified_diff: str) -> PreparedUnifiedDiff:
         normalizations: list[str] = []
@@ -342,6 +413,8 @@ class SubprocessUnifiedDiffApplier(UnifiedDiffApplierProtocol):
             normalizations.extend(result.applied)
 
         lines = text.split("\n")
+        if lines and lines[-1] == "":
+            lines = lines[:-1]
         _reject_multi_file_diff(lines)
         try:
             normalized_lines, header_norm = _standardize_headers(
@@ -350,6 +423,12 @@ class SubprocessUnifiedDiffApplier(UnifiedDiffApplierProtocol):
         except ValueError as exc:
             raise ValueError(str(exc)) from exc
         normalizations.extend(header_norm)
+
+        try:
+            normalized_lines, hunk_norm = _repair_hunk_header_counts(normalized_lines)
+        except ValueError as exc:
+            raise ValueError(str(exc)) from exc
+        normalizations.extend(hunk_norm)
 
         normalized = "\n".join(normalized_lines)
         normalized = _ensure_trailing_newline(normalized).text
@@ -450,6 +529,13 @@ class SubprocessUnifiedDiffApplier(UnifiedDiffApplierProtocol):
                 max_offset = max((abs(o) for o in offsets), default=0)
 
                 if proc.returncode != 0:
+                    last_error_details = None
+                    format_error = (
+                        _map_patch_output_to_error(combined_output) if failed_hunk is None else None
+                    )
+                    if format_error is not None:
+                        last_error = format_error
+                        continue
                     last_error = "Patchen kunde inte appliceras. Regenerera."
                     if failed_hunk is not None and 1 <= failed_hunk <= len(prepared.hunks):
                         hunk = prepared.hunks[failed_hunk - 1]

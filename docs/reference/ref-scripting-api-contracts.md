@@ -14,7 +14,6 @@ This document defines the API contracts for the Admin Script Editor and User Exe
 
 Related documents:
 
-- Design spec: REF-dynamic-tool-scripts
 - ADRs: ADR-0012, ADR-0013, ADR-0014, ADR-0015, ADR-0016
 - Epic: EPIC-04
 

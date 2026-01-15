@@ -197,6 +197,58 @@ Skriptet returnerar en dict med tre fält:
 
 ---
 
+### 3.3 Actions (`next_actions`) + state (interaktiva flöden)
+
+Contract v2 stödjer interaktiva verktyg via:
+
+- `next_actions`: formulär som UI:t renderar som knappar + fält
+- `state`: valfritt JSON-state som sparas mellan körningar och skickas tillbaka vid nästa action-körning
+
+**Rekommenderad läsning i skriptet:**
+
+- Använd `skriptoteket_toolkit.get_action_parts()` för att skilja på:
+  - första körning (ingen action) → läs `read_inputs()`
+  - action-körning → läs `action_input` + `state`
+
+#### 3.3.1 Form actions (schema)
+
+En form-action ser ut så här:
+
+```python
+{
+    "action_id": "continue",
+    "label": "Nästa steg",
+    "kind": "form",
+    "fields": [
+        {"name": "note", "kind": "string", "label": "Anteckning (valfri)"},
+    ],
+    # v2.x: optional prefill (se nedan)
+    "prefill": {"note": "Steg 1"},
+}
+```
+
+#### 3.3.2 `prefill` (action defaults, Contract v2.x)
+
+`prefill` är en optional map: `{[field_name]: JsonValue}`.
+
+UI:t använder `prefill` som **initialvärden** när action-formuläret renderas.
+
+**Validering (server-side):**
+
+- Okända nycklar (som inte matchar ett `fields[].name`) är ogiltiga.
+- Värdet måste matcha fältets `kind`:
+  - `string` / `text` / `enum`: `string`
+  - `integer` / `number`: `number`
+  - `boolean`: `boolean`
+  - `multi_enum`: `string[]`
+
+Ogiltiga `prefill`-entries strippas deterministiskt, och servern lägger till en system-notis i `outputs[]` så att det blir
+actionable för verktygsförfattaren (ingen “tyst” undefined behavior).
+
+**UI-semantik:**
+
+- Prefill är “initial-value only”: när användaren har ändrat ett värde ska UI:t inte skriva över det på re-render.
+
 ## 4. Artefakter (nedladdningsbara filer)
 
 ### 4.1 Skapa artefakter
@@ -737,11 +789,20 @@ NoticeLevel = Literal["info", "warning", "error"]
 # HTML
 {"kind": "html_sandboxed", "html": str}
 
+# Form actions (next_actions)
+{
+    "action_id": str,
+    "label": str,
+    "kind": "form",
+    "fields": list[dict],              # fält enligt UiActionField (string/text/integer/number/boolean/enum/multi_enum)
+    "prefill": dict[str, JsonValue] | None,  # v2.x: optional defaults/prefill
+}
+
 # Returformat
 {
     "outputs": list[Output],
-    "next_actions": list[FormAction],  # Framtida: interaktiva formulär
-    "state": dict | None               # Framtida: spara state mellan körningar
+    "next_actions": list[FormAction],  # Interaktiva formulär (contract v2)
+    "state": dict | None               # Valfritt state mellan körningar (contract v2)
 }
 ```
 

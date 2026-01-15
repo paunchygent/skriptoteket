@@ -185,10 +185,16 @@ async def test_edit_ops_creates_turn_and_finalizes_on_success() -> None:
         "assistant_message": "OK",
         "ops": [
             {
-                "op": "insert",
+                "op": "patch",
                 "target_file": "tool.py",
-                "target": {"kind": "cursor"},
-                "content": "# inserted\n",
+                "patch": (
+                    "diff --git a/tool.py b/tool.py\n"
+                    "--- a/tool.py\n"
+                    "+++ b/tool.py\n"
+                    "@@ -1,1 +1,1 @@\n"
+                    "-print('hej')\n"
+                    "+print('hello')\n"
+                ),
             }
         ],
     }

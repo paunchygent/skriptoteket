@@ -170,6 +170,7 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
 
     # ─── AVANCERAT: UPPFÖLJNINGSFORMULÄR (avkommentera vid behov) ───
     # next_actions låter användaren skicka in ytterligare data efter första körningen
+    # prefill (valfritt) sätter initiala fältvärden i UI:t.
     next_actions = [
         {
             "action_id": "refine",
@@ -187,6 +188,7 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
                     ],
                 },
             ],
+            "prefill": {"threshold": 1000, "format": "pdf"},
         }
     ]
 

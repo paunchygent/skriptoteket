@@ -105,11 +105,13 @@ watch(
   },
 );
 
-function latestAssistantFailureOutcome(): string | null {
+function latestAssistantFailure(): { outcome: string | null; message: string | null } | null {
   for (let index = editorChat.messages.value.length - 1; index >= 0; index -= 1) {
     const message = editorChat.messages.value[index];
     if (message.role !== "assistant") continue;
-    return message.failureOutcome ?? null;
+    const outcome = message.failureOutcome ?? null;
+    const text = (message.content ?? "").trim();
+    return { outcome, message: text || null };
   }
   return null;
 }
@@ -127,11 +129,12 @@ async function sendChatMessage(message: string): Promise<void> {
     return;
   }
 
-  if (latestAssistantFailureOutcome() !== REMOTE_FALLBACK_REQUIRED_CODE) {
+  const latestFailure = latestAssistantFailure();
+  if (latestFailure?.outcome !== REMOTE_FALLBACK_REQUIRED_CODE) {
     return;
   }
 
-  const promptMessage = editorChat.disabledMessage.value ?? "";
+  const promptMessage = latestFailure.message ?? "";
   remoteFallbackPrompt.value = {
     source: "chat",
     message:

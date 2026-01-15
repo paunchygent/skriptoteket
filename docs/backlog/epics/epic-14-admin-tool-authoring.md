@@ -5,7 +5,7 @@ title: "Admin tool authoring (draft-first workflow)"
 status: active
 owners: "agents"
 created: 2025-12-25
-updated: 2026-01-14
+updated: 2026-01-15
 outcome: "Admins can quickly create draft tools directly from /admin/tools, iterate without contributor-only hoops, and publish only when slug and taxonomy are finalized."
 ---
 
@@ -83,7 +83,7 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
   - ST-11-17 (metadata editor)
   - ST-11-20 (tool taxonomy editor)
 
-## Implementation Summary (as of 2026-01-14)
+## Implementation Summary (as of 2026-01-15)
 
 - ST-14-09 shipped: `input_schema` is schema-only (never `null`); file picking is represented as a `{"kind":"file"}` field with `min/max`.
 - ST-14-10 shipped (foundation-only): shared schema JSON parsing helper + save blocking on invalid schema JSON; schema editor UI actions (prettify/snippets) deferred to ST-14-14.
@@ -97,3 +97,4 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 - ST-14-31 shipped: focus mode toggle hides the desktop sidebar and persists per user, with editor + top-bar controls.
 - ST-14-19 shipped: `skriptoteket_toolkit` is the canonical runner helper API for inputs/settings/actions/state, with docs + updated starter template and AI KB.
 - ST-14-20 shipped: editor intelligence now treats `skriptoteket_toolkit` as first-class (import completions + hover docs + best-practice lints) and fixes the `outputs` false-positive for list variables.
+- ST-14-23 shipped: `next_actions[].prefill` supported (validated + deterministic stripping with system notice), and the SPA renders action forms with initial prefill values.

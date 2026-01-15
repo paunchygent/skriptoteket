@@ -33,6 +33,7 @@ type PreviewEditOpsParams = {
   ops: EditorEditOpsOpInput[];
   selection: EditorEditOpsSelection | null;
   cursor: EditorEditOpsCursor | null;
+  correlationId: string;
 };
 
 type ApplyEditOpsParams = {
@@ -44,6 +45,7 @@ type ApplyEditOpsParams = {
   patchId: string;
   selection: EditorEditOpsSelection | null;
   cursor: EditorEditOpsCursor | null;
+  correlationId: string;
 };
 
 export async function requestEditOps(params: RequestEditOpsParams): Promise<EditorEditOpsResponse> {
@@ -85,6 +87,7 @@ export async function previewEditOps(params: PreviewEditOpsParams): Promise<Edit
   return await apiFetch<EditorEditOpsPreviewResponse>("/api/v1/editor/edit-ops/preview", {
     method: "POST",
     body,
+    headers: { "X-Correlation-ID": params.correlationId },
   });
 }
 
@@ -107,6 +110,7 @@ export async function applyEditOps(params: ApplyEditOpsParams): Promise<EditorEd
   return await apiFetch<EditorEditOpsPreviewResponse>("/api/v1/editor/edit-ops/apply", {
     method: "POST",
     body,
+    headers: { "X-Correlation-ID": params.correlationId },
   });
 }
 

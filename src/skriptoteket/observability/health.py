@@ -19,7 +19,7 @@ logger = structlog.get_logger(__name__)
 
 # Database health check timeout (2s to avoid blocking healthcheck)
 DB_HEALTH_CHECK_TIMEOUT = 2.0
-SMTP_HEALTH_CHECK_TIMEOUT = 2.0
+SMTP_HEALTH_CHECK_TIMEOUT = 10.0
 
 HealthStatus = Literal["healthy", "degraded", "unhealthy"]
 

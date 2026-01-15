@@ -1,5 +1,5 @@
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Depends, Header, Request, Response
+from fastapi import APIRouter, Depends, Header, Response
 
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -17,7 +17,6 @@ from skriptoteket.protocols.llm import (
 )
 from skriptoteket.web.auth.api_dependencies import require_contributor_api, require_csrf_token
 from skriptoteket.web.editor_support import require_tool_access
-from skriptoteket.web.request_metadata import get_correlation_id
 
 from .models import (
     EditorEditOpsApplyRequest,
@@ -39,7 +38,6 @@ _EVAL_REQUEST_HEADER = "X-Skriptoteket-Eval"
 @inject
 async def create_edit_ops(
     payload: EditorEditOpsRequest,
-    request: Request,
     response: Response,
     handler: FromDishka[EditOpsHandlerProtocol],
     settings: FromDishka[Settings],
@@ -79,11 +77,7 @@ async def create_edit_ops(
         ),
     )
 
-    correlation_id = get_correlation_id(request)
-    outcome = result.eval_meta.outcome if result.eval_meta is not None else None
     assistant_message = result.assistant_message
-    if correlation_id and outcome in {"error", "timeout", "over_budget", "truncated"}:
-        assistant_message = f"{assistant_message}\n\ncorrelation-id: {correlation_id}"
 
     if eval_mode == "1" and result.eval_meta is not None:
         response.headers["X-Skriptoteket-Eval-Template-Id"] = result.eval_meta.template_id or ""
@@ -112,7 +106,6 @@ async def create_edit_ops(
 @inject
 async def preview_edit_ops(
     payload: EditorEditOpsPreviewRequest,
-    request: Request,
     handler: FromDishka[EditOpsPreviewHandlerProtocol],
     maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     user: User = Depends(require_contributor_api),
@@ -140,9 +133,6 @@ async def preview_edit_ops(
     )
 
     errors = list(result.errors)
-    correlation_id = get_correlation_id(request)
-    if correlation_id and not result.ok:
-        errors.append(f"correlation-id: {correlation_id}")
 
     return EditorEditOpsPreviewResponse(
         ok=result.ok,
@@ -160,7 +150,6 @@ async def preview_edit_ops(
 @inject
 async def apply_edit_ops(
     payload: EditorEditOpsApplyRequest,
-    request: Request,
     handler: FromDishka[EditOpsApplyHandlerProtocol],
     maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     user: User = Depends(require_contributor_api),
@@ -190,9 +179,6 @@ async def apply_edit_ops(
     )
 
     errors = list(result.errors)
-    correlation_id = get_correlation_id(request)
-    if correlation_id and not result.ok:
-        errors.append(f"correlation-id: {correlation_id}")
 
     return EditorEditOpsPreviewResponse(
         ok=result.ok,

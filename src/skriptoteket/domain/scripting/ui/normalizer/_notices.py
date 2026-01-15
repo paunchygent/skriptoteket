@@ -128,6 +128,22 @@ def _build_system_notices(
             )
         )
 
+    if stats.action_prefill_dropped:
+        sorted_dropped = sorted(stats.action_prefill_dropped)
+        examples = sorted_dropped[:3]
+        example_text = "; ".join(
+            f"action_id='{action_id}' field='{field_name}' ({reason})"
+            for action_id, field_name, reason in examples
+        )
+        more = len(sorted_dropped) - len(examples)
+        suffix = f" (+{more} more)" if more else ""
+        notices.append(
+            _system_notice(
+                "Dropped invalid action prefill entries "
+                f"({len(sorted_dropped)}): {example_text}{suffix}."
+            )
+        )
+
     if stats.ui_payload_budget_notice_added:
         notices.append(
             _system_notice(

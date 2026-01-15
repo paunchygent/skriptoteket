@@ -10,7 +10,6 @@ tags: ["governance", "notifications", "epic-05", "epic-06"]
 links:
   - docs/backlog/epics/epic-04-dynamic-tool-scripts.md
   - docs/backlog/stories/story-04-04-governance-audit-rollback.md
-  - docs/reference/ref-dynamic-tool-scripts.md
   - docs/reference/ref-scripting-api-contracts.md
   - docs/adr/adr-0009-auth-local-sessions-admin-provisioned.md
   - docs/adr/adr-0014-versioning-and-single-active.md

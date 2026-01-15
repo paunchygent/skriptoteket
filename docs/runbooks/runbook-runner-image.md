@@ -6,7 +6,7 @@ status: active
 owners: "agents"
 created: 2025-12-24
 system: "skriptoteket-runner"
-links: ["ADR-0013", "ADR-0015", "REF-execution-architecture", "REF-ai-script-generation-kb"]
+links: ["ADR-0013", "ADR-0015", "REF-ai-script-generation-kb", "REF-tool-editor-framework-codemap"]
 ---
 
 ## When to use this runbook
@@ -23,7 +23,7 @@ Use this runbook when you need to:
 - The web app has access to `/var/run/docker.sock` (required to start runner containers).
 - `RUNNER_IMAGE` is set to the intended tag (default: `skriptoteket-runner:latest`).
 
-Reference: `docs/reference/ref-execution-architecture.md`.
+Reference: `docs/reference/ref-ai-script-generation-kb.md`.
 
 ## Procedures
 
@@ -70,5 +70,5 @@ pdm run precommit-run
 
 ### Settings are not applied in the runner
 
-- Confirm `SKRIPTOTEKET_MEMORY_PATH` is present in the runner environment (see `docs/reference/ref-execution-architecture.md`).
+- Confirm `SKRIPTOTEKET_MEMORY_PATH` is present in the runner environment (see `docs/reference/ref-ai-script-generation-kb.md`).
 - Ensure the tool script reads `memory.json` (scripts do not receive settings via function args).

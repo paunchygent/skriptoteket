@@ -32,6 +32,35 @@ const fields = computed(() => props.action.fields ?? []);
 
 function ensureDefaults(): void {
   for (const field of fields.value) {
+    const prefill = props.action.prefill ?? {};
+    if (prefill[field.name] !== undefined) {
+      const value = prefill[field.name];
+
+      if (field.kind === "boolean") {
+        if (booleanValues[field.name] === undefined && typeof value === "boolean") {
+          booleanValues[field.name] = value;
+        }
+      } else if (field.kind === "multi_enum") {
+        if (
+          multiEnumValues[field.name] === undefined &&
+          Array.isArray(value) &&
+          value.every((item) => typeof item === "string")
+        ) {
+          multiEnumValues[field.name] = value;
+        }
+      } else if (textValues[field.name] === undefined) {
+        if (typeof value === "string") {
+          textValues[field.name] = value;
+        } else if (
+          (field.kind === "integer" || field.kind === "number") &&
+          typeof value === "number" &&
+          Number.isFinite(value)
+        ) {
+          textValues[field.name] = String(value);
+        }
+      }
+    }
+
     if (field.kind === "boolean") {
       if (booleanValues[field.name] === undefined) {
         booleanValues[field.name] = false;

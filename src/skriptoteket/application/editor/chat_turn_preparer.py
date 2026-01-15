@@ -4,10 +4,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
+import structlog
 from structlog.contextvars import get_contextvars
 
 from skriptoteket.application.editor.chat_shared import (
     BASE_VERSION_KEY,
+    MESSAGE_TOO_LONG,
     PENDING_TURN_ABANDONED_OUTCOME,
     THREAD_CONTEXT,
     THREAD_TTL,
@@ -23,12 +25,14 @@ from skriptoteket.protocols.editor_chat import (
     PreparedEditorChatRequest,
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
-from skriptoteket.protocols.llm import ChatMessage, EditorChatCommand
+from skriptoteket.protocols.llm import ChatBudget, ChatMessage, EditorChatCommand
 from skriptoteket.protocols.token_counter import TokenCounterProtocol
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
 from skriptoteket.protocols.tool_session_turns import ToolSessionTurnRepositoryProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+
+logger = structlog.get_logger(__name__)
 
 
 class ChatPromptBudgetUnavailable(Exception):
@@ -120,10 +124,12 @@ class EditorChatTurnPreparer(EditorChatTurnPreparerProtocol):
         command: EditorChatCommand,
         system_prompt: str,
         token_counter: TokenCounterProtocol,
+        budget: ChatBudget,
     ) -> _ResolvedUserPayload:
         max_user_message_tokens = self._prompt_builder.plan_max_user_message_tokens(
             system_prompt=system_prompt,
             token_counter=token_counter,
+            budget=budget,
         )
         if max_user_message_tokens is None:
             raise ChatPromptBudgetUnavailable("prompt_budget_unavailable")
@@ -155,17 +161,80 @@ class EditorChatTurnPreparer(EditorChatTurnPreparerProtocol):
         command: EditorChatCommand,
         system_prompt: str,
         token_counter: TokenCounterProtocol,
+        budget: ChatBudget,
     ) -> PreparedEditorChatRequest:
         correlation_id = self._current_correlation_id()
         turn_id = self._id_generator.new_uuid()
         user_message_id = self._id_generator.new_uuid()
         assistant_message_id = self._id_generator.new_uuid()
 
-        resolved = self._resolve_user_payload(
-            command=command,
-            system_prompt=system_prompt,
-            token_counter=token_counter,
-        )
+        try:
+            resolved = self._resolve_user_payload(
+                command=command,
+                system_prompt=system_prompt,
+                token_counter=token_counter,
+                budget=budget,
+            )
+        except ChatPromptBudgetUnavailable:
+            system_prompt_tokens = token_counter.count_system_prompt(content=system_prompt)
+            prompt_budget_tokens = (
+                budget.context_window_tokens
+                - budget.max_output_tokens
+                - self._settings.LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS
+            )
+            logger.warning(
+                "ai_chat_prompt_budget_unavailable",
+                user_id=str(actor.id),
+                tool_id=str(command.tool_id),
+                active_file=command.active_file,
+                has_virtual_files=command.virtual_files is not None,
+                context_window_tokens=budget.context_window_tokens,
+                max_output_tokens=budget.max_output_tokens,
+                safety_margin_tokens=self._settings.LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS,
+                prompt_budget_tokens=prompt_budget_tokens,
+                system_prompt_tokens=system_prompt_tokens,
+                correlation_id=str(correlation_id) if correlation_id else None,
+            )
+            raise
+        except DomainError as exc:
+            if exc.code != ErrorCode.VALIDATION_ERROR or exc.message != MESSAGE_TOO_LONG:
+                raise
+
+            system_prompt_tokens = token_counter.count_system_prompt(content=system_prompt)
+            prompt_budget_tokens = (
+                budget.context_window_tokens
+                - budget.max_output_tokens
+                - self._settings.LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS
+            )
+            message_tokens = token_counter.count_chat_message(role="user", content=command.message)
+            virtual_files_bytes = (
+                sum(len(text.encode("utf-8")) for text in command.virtual_files.values())
+                if command.virtual_files is not None
+                else 0
+            )
+            max_user_message_tokens = (
+                prompt_budget_tokens - system_prompt_tokens - 1
+                if prompt_budget_tokens > system_prompt_tokens + 1
+                else 0
+            )
+            logger.warning(
+                "ai_chat_message_too_long",
+                user_id=str(actor.id),
+                tool_id=str(command.tool_id),
+                message_len=len(command.message),
+                message_tokens=message_tokens,
+                active_file=command.active_file,
+                has_virtual_files=command.virtual_files is not None,
+                virtual_files_bytes=virtual_files_bytes,
+                context_window_tokens=budget.context_window_tokens,
+                max_output_tokens=budget.max_output_tokens,
+                safety_margin_tokens=self._settings.LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS,
+                prompt_budget_tokens=prompt_budget_tokens,
+                system_prompt_tokens=system_prompt_tokens,
+                max_user_message_tokens=max_user_message_tokens,
+                correlation_id=str(correlation_id) if correlation_id else None,
+            )
+            raise
 
         async with self._uow:
             session = await self._sessions.get(
@@ -223,6 +292,7 @@ class EditorChatTurnPreparer(EditorChatTurnPreparerProtocol):
                 message=resolved.raw_message,
                 user_payload_message=resolved.user_payload_message,
                 token_counter=token_counter,
+                budget=budget,
             )
 
             await self._turns.create_turn(

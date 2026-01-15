@@ -100,7 +100,11 @@ def test_normalizer_is_deterministic_across_input_ordering() -> None:
                     "action_id": "tool_b",
                     "label": "B",
                     "kind": "form",
-                    "fields": [{"name": "flag", "kind": "boolean", "label": "Flag"}],
+                    "fields": [
+                        {"name": "flag", "kind": "boolean", "label": "Flag"},
+                        {"name": "note", "kind": "string", "label": "Note"},
+                    ],
+                    "prefill": {"note": "hello", "flag": True},
                 },
                 {
                     "action_id": "tool_a",
@@ -137,7 +141,11 @@ def test_normalizer_is_deterministic_across_input_ordering() -> None:
                     "action_id": "tool_b",
                     "label": "B",
                     "kind": "form",
-                    "fields": [{"name": "flag", "kind": "boolean", "label": "Flag"}],
+                    "fields": [
+                        {"name": "flag", "kind": "boolean", "label": "Flag"},
+                        {"name": "note", "kind": "string", "label": "Note"},
+                    ],
+                    "prefill": {"flag": True, "note": "hello"},
                 },
             ],
             "state": {"a": 2, "b": 1},
@@ -171,6 +179,40 @@ def test_normalizer_is_deterministic_across_input_ordering() -> None:
     bytes2 = _canonical_json_bytes(result2.ui_payload.model_dump(mode="json"))
 
     assert bytes1 == bytes2
+
+
+def test_normalizer_strips_invalid_action_prefill_and_adds_notice() -> None:
+    raw = ToolUiContractV2Result.model_validate(
+        {
+            "contract_version": 2,
+            "status": "succeeded",
+            "error_summary": None,
+            "outputs": [],
+            "next_actions": [
+                {
+                    "action_id": "action_a",
+                    "label": "A",
+                    "kind": "form",
+                    "fields": [{"name": "notify", "kind": "boolean", "label": "Notify"}],
+                    "prefill": {"notify": "yes", "unknown": 1},
+                }
+            ],
+            "state": {},
+            "artifacts": [],
+        }
+    )
+
+    result = DeterministicUiPayloadNormalizer().normalize(
+        raw_result=raw,
+        backend_actions=[],
+        policy=DEFAULT_UI_POLICY,
+    )
+
+    assert result.ui_payload.next_actions[0].prefill == {}
+    assert any(
+        isinstance(o, UiNoticeOutput) and "Dropped invalid action prefill entries" in o.message
+        for o in result.ui_payload.outputs
+    )
 
 
 def test_normalizer_raises_on_action_id_conflict() -> None:

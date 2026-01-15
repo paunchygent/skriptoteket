@@ -12,7 +12,6 @@ import {
   type EditorEditOpsResponse,
 } from "./editOps/editorEditOpsApi";
 import { buildDiffItems, uniqueTargetFiles } from "./editOps/editOpsDiff";
-import { resolveEditOpsSelection } from "./editOps/editOpsSelection";
 import {
   applyVirtualFiles,
   cloneVirtualFiles,
@@ -61,14 +60,12 @@ type EditOpsRequestResult = {
 };
 
 const DEFAULT_ACTIVE_FILE: VirtualFileId = "tool.py";
-const EXPLICIT_CURSOR_TTL_MS = 45_000;
 
 export function useEditorEditOps(options: UseEditorEditOpsOptions) {
   const {
     toolId,
     allowRemoteFallback,
     isReadOnly,
-    editorView,
     fields,
     createBeforeApplyCheckpoint,
   } = options;
@@ -89,7 +86,6 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
   const previewResponse = ref<EditorEditOpsPreviewResponse | null>(null);
   const previewBaseFiles = ref<VirtualFileTextMap | null>(null);
   const confirmationAccepted = ref(false);
-  const lastExplicitCursorInteractionAt = ref<number | null>(null);
   const aiPosition = ref<"after" | "before">("after");
 
   const currentFiles = computed(() =>
@@ -188,8 +184,6 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       !isApplying.value,
   );
 
-  let detachExplicitListeners: (() => void) | null = null;
-
   function clearErrors(): void {
     requestError.value = null;
     previewError.value = null;
@@ -214,6 +208,10 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       previewError.value = "Ingen editor hittades.";
       return null;
     }
+    if (!params.proposal.correlationId) {
+      previewError.value = "Korrelation-ID saknas. Regenerera.";
+      return null;
+    }
 
     isPreviewing.value = true;
     previewError.value = null;
@@ -226,8 +224,9 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
         activeFile: params.proposal.activeFile,
         virtualFiles: params.virtualFiles,
         ops: params.proposal.ops as unknown as EditorEditOpsOpInput[],
-        selection: params.proposal.selection,
-        cursor: params.proposal.cursor,
+        selection: null,
+        cursor: null,
+        correlationId: params.proposal.correlationId,
       });
 
       previewResponse.value = response;
@@ -287,16 +286,10 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
     confirmationAccepted.value = false;
     isRequesting.value = true;
 
-    const hasExplicitCursor =
-      lastExplicitCursorInteractionAt.value !== null &&
-      Date.now() - lastExplicitCursorInteractionAt.value <= EXPLICIT_CURSOR_TTL_MS;
-
-    const { selection, cursor } = resolveEditOpsSelection({
-      view: editorView.value,
-      includeCursorWhenNoSelection: hasExplicitCursor,
-    });
     const activeFile = DEFAULT_ACTIVE_FILE;
     const virtualFiles = currentFiles.value;
+    const selection = null;
+    const cursor = null;
 
     try {
       const correlationId = createCorrelationId();
@@ -357,7 +350,12 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
     applyError.value = null;
     undoError.value = null;
 
-    if (!proposal.value) return false;
+    const proposalValue = proposal.value;
+    if (!proposalValue) return false;
+    if (!proposalValue.correlationId) {
+      applyError.value = "Korrelation-ID saknas. Regenerera.";
+      return false;
+    }
     if (isReadOnly.value) {
       applyError.value = "Editorn är låst för redigering.";
       return false;
@@ -388,7 +386,6 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       return false;
     }
 
-    const proposalValue = proposal.value;
     const beforeFiles = cloneVirtualFiles(currentFiles.value);
 
     isApplying.value = true;
@@ -400,8 +397,9 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
         ops: proposalValue.ops as unknown as EditorEditOpsOpInput[],
         baseHash: previewResponse.value.meta.base_hash,
         patchId: previewResponse.value.meta.patch_id,
-        selection: proposalValue.selection,
-        cursor: proposalValue.cursor,
+        selection: null,
+        cursor: null,
+        correlationId: proposalValue.correlationId,
       });
 
       if (!response.ok) {
@@ -495,10 +493,6 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
   );
 
   onScopeDispose(() => {
-    if (detachExplicitListeners) {
-      detachExplicitListeners();
-      detachExplicitListeners = null;
-    }
     if (requestInterval) {
       clearInterval(requestInterval);
       requestInterval = null;
@@ -524,34 +518,6 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       requestInterval = setInterval(() => {
         requestNow.value = Date.now();
       }, 1000);
-    },
-    { immediate: true },
-  );
-
-  watch(
-    () => editorView.value,
-    (view) => {
-      if (detachExplicitListeners) {
-        detachExplicitListeners();
-        detachExplicitListeners = null;
-      }
-
-      if (!view) {
-        lastExplicitCursorInteractionAt.value = null;
-        return;
-      }
-
-      const markExplicit = () => {
-        lastExplicitCursorInteractionAt.value = Date.now();
-      };
-
-      view.dom.addEventListener("pointerdown", markExplicit);
-      view.dom.addEventListener("keydown", markExplicit);
-
-      detachExplicitListeners = () => {
-        view.dom.removeEventListener("pointerdown", markExplicit);
-        view.dom.removeEventListener("keydown", markExplicit);
-      };
     },
     { immediate: true },
   );

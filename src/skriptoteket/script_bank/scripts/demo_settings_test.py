@@ -8,25 +8,17 @@ Purpose:
 
 Runner contract:
 - Entrypoint: run_tool(input_dir: str, output_dir: str) -> dict
-- Reads settings from SKRIPTOTEKET_MEMORY_PATH environment variable
+- Reads settings via `skriptoteket_toolkit.read_settings()` (memory.json injected by the platform)
 """
 
 from __future__ import annotations
 
-import json
-import os
-from pathlib import Path
+from skriptoteket_toolkit import read_settings  # type: ignore[import-not-found]
 
 
 def run_tool(input_dir: str, output_dir: str) -> dict:
     """Read settings from memory and output them for verification."""
-    memory_path = os.environ.get("SKRIPTOTEKET_MEMORY_PATH", "/work/memory.json")
-    try:
-        memory = json.loads(Path(memory_path).read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        memory = {}
-
-    settings = memory.get("settings", {}) if isinstance(memory, dict) else {}
+    settings = read_settings()
     theme_color = settings.get("theme_color", "")
 
     return {

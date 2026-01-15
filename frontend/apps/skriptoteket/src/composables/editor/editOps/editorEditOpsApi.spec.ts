@@ -55,6 +55,7 @@ describe("editorEditOpsApi", () => {
       ops: [{ op: "replace", target_file: "tool.py", target: { kind: "document" }, content: "" }],
       selection: { from: 3, to: 4 },
       cursor: { pos: 4 },
+      correlationId: "corr-1",
     });
 
     expect(apiFetch).toHaveBeenCalledWith("/api/v1/editor/edit-ops/preview", {
@@ -67,6 +68,7 @@ describe("editorEditOpsApi", () => {
         selection: { from: 3, to: 4 },
         cursor: { pos: 4 },
       },
+      headers: { "X-Correlation-ID": "corr-1" },
     });
   });
 
@@ -82,6 +84,7 @@ describe("editorEditOpsApi", () => {
       patchId: "sha256:patch",
       selection: null,
       cursor: null,
+      correlationId: "corr-1",
     });
 
     expect(apiFetch).toHaveBeenCalledWith("/api/v1/editor/edit-ops/apply", {
@@ -94,6 +97,7 @@ describe("editorEditOpsApi", () => {
         base_hash: "sha256:base",
         patch_id: "sha256:patch",
       },
+      headers: { "X-Correlation-ID": "corr-1" },
     });
   });
 });

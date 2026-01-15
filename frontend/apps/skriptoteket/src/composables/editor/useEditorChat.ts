@@ -309,8 +309,21 @@ export function useEditorChat({
 
       if (!response.ok || !response.body) {
         const messageText = await readChatErrorMessage(response);
-        error.value = messageText || SEND_ERROR_MESSAGE;
-        messages.value = messages.value.filter((item) => item.id !== userMessage.id);
+        const result = ensureAssistantMessage({
+          messages: messages.value,
+          activeAssistantMessage,
+          correlationId,
+        });
+        messages.value = result.messages;
+        activeAssistantMessage = result.activeAssistantMessage;
+        activeAssistantMessage.content = messageText || SEND_ERROR_MESSAGE;
+        activeAssistantMessage.visibleContent = "";
+        finalizeTurn({
+          messages: messages.value,
+          userMessage,
+          activeAssistantMessage,
+          status: "failed",
+        });
         return;
       }
 
@@ -322,7 +335,7 @@ export function useEditorChat({
             return;
           }
 
-          switch (event.kind) {
+              switch (event.kind) {
             case "delta": {
               const result = ensureAssistantMessage({
                 messages: messages.value,
@@ -364,7 +377,6 @@ export function useEditorChat({
             case "done": {
               if (typeof event.enabled === "boolean" && !event.enabled) {
                 const messageText = String(event.message ?? "").trim();
-                disabledMessage.value = messageText || null;
                 const code = String(event.code ?? "").trim();
                 if (!activeAssistantMessage) {
                   const result = ensureAssistantMessage({
@@ -374,6 +386,10 @@ export function useEditorChat({
                   });
                   messages.value = result.messages;
                   activeAssistantMessage = result.activeAssistantMessage;
+                }
+                if (activeAssistantMessage) {
+                  activeAssistantMessage.content = messageText || SEND_ERROR_MESSAGE;
+                  activeAssistantMessage.visibleContent = "";
                 }
                 finalizeTurn({
                   messages: messages.value,
@@ -395,13 +411,24 @@ export function useEditorChat({
                   messages.value = result.messages;
                   activeAssistantMessage = result.activeAssistantMessage;
                 }
+                const failureText = sawDelta ? STREAM_PARTIAL_ERROR_MESSAGE : STREAM_ERROR_MESSAGE;
+                if (activeAssistantMessage) {
+                  const hadContent = activeAssistantMessage.content.trim().length > 0;
+                  if (sawDelta && hadContent) {
+                    activeAssistantMessage.content = `${activeAssistantMessage.content}\n\n${failureText}`;
+                  } else {
+                    activeAssistantMessage.content = failureText;
+                  }
+                  if (!sawDelta || !hadContent) {
+                    activeAssistantMessage.visibleContent = "";
+                  }
+                }
                 finalizeTurn({
                   messages: messages.value,
                   userMessage,
                   activeAssistantMessage,
                   status: "failed",
                 });
-                error.value = sawDelta ? STREAM_PARTIAL_ERROR_MESSAGE : STREAM_ERROR_MESSAGE;
               } else if (event.reason === "cancelled") {
                 if (!activeAssistantMessage) {
                   const result = ensureAssistantMessage({
@@ -455,14 +482,34 @@ export function useEditorChat({
         controller.signal.aborted ||
         (err instanceof DOMException && err.name === "AbortError");
       if (!isAbort) {
-        if (isApiError(err)) {
-          error.value = err.message;
-        } else {
-          error.value = SEND_ERROR_MESSAGE;
+        const failureText = isApiError(err) ? err.message : SEND_ERROR_MESSAGE;
+        if (!activeAssistantMessage) {
+          const result = ensureAssistantMessage({
+            messages: messages.value,
+            activeAssistantMessage,
+            correlationId,
+          });
+          messages.value = result.messages;
+          activeAssistantMessage = result.activeAssistantMessage;
         }
-        if (!sawDelta && !sawDone) {
-          messages.value = messages.value.filter((item) => item.id !== userMessage.id);
+        if (activeAssistantMessage) {
+          const hadContent = activeAssistantMessage.content.trim().length > 0;
+          if (sawDelta && hadContent) {
+            activeAssistantMessage.content = `${activeAssistantMessage.content}\n\n${failureText}`;
+          } else {
+            activeAssistantMessage.content = failureText;
+          }
+          if (!sawDelta || !hadContent) {
+            activeAssistantMessage.visibleContent = "";
+          }
         }
+        finalizeTurn({
+          messages: messages.value,
+          userMessage,
+          activeAssistantMessage,
+          status: "failed",
+        });
+        sawDone = true;
       }
     } finally {
       if (streamToken === activeStreamToken) {

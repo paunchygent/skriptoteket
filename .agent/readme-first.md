@@ -38,7 +38,7 @@ Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future H
 - **Execution**: run scripts in hardened *sibling* Docker containers via `docker.sock` + Python Docker SDK (no host-path bind mounts; archive copy or scoped volumes for I/O). See `docs/adr/adr-0013-execution-ephemeral-docker.md`.
 - **Storage**: hybrid: source + logs/HTML in DB; binary artifacts on disk with retention cleanup; production inputs not retained by default. See `docs/adr/adr-0012-script-source-storage.md`.
 - **Versioning**: append-only; publish is copy-on-activate and archives the reviewed `in_review` version (publish “consumes” it). See `docs/adr/adr-0014-versioning-and-single-active.md`.
-- **Governance**: Admins can publish script versions and tools; Superusers can rollback. “Published implies runnable” (requires `tools.active_version_id`). See `docs/reference/ref-dynamic-tool-scripts.md`.
+- **Governance**: Admins can publish script versions and tools; Superusers can rollback. “Published implies runnable” (requires `tools.active_version_id`). See `docs/backlog/epics/epic-04-dynamic-tool-scripts.md`.
 
 ## Read order (mandatory)
 

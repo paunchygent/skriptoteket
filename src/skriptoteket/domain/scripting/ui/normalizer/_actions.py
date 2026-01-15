@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pydantic import JsonValue
+
 from skriptoteket.domain.errors import validation_error
 from skriptoteket.domain.scripting.ui import contract_v2
 from skriptoteket.domain.scripting.ui.policy import UiPolicy
@@ -15,6 +17,50 @@ def _count_duplicates(values: list[str]) -> set[str]:
             duplicates.add(value)
         seen.add(value)
     return duplicates
+
+
+def _prefill_reason(*, field: contract_v2.UiActionField, value: JsonValue) -> str | None:
+    kind = field.kind
+
+    if kind in (contract_v2.UiActionFieldKind.STRING, contract_v2.UiActionFieldKind.TEXT):
+        return None if isinstance(value, str) else "expected string"
+
+    if kind is contract_v2.UiActionFieldKind.BOOLEAN:
+        return None if isinstance(value, bool) else "expected boolean"
+
+    if kind is contract_v2.UiActionFieldKind.INTEGER:
+        if isinstance(value, bool):
+            return "expected integer"
+        return None if isinstance(value, int) else "expected integer"
+
+    if kind is contract_v2.UiActionFieldKind.NUMBER:
+        if isinstance(value, bool):
+            return "expected number"
+        return None if isinstance(value, (int, float)) else "expected number"
+
+    if kind is contract_v2.UiActionFieldKind.ENUM:
+        if not isinstance(value, str):
+            return "expected string"
+        enum_options: set[str] = set()
+        if isinstance(field, contract_v2.UiEnumField):
+            enum_options = {opt.value for opt in field.options}
+        return None if value in enum_options else "value not in options"
+
+    if kind is contract_v2.UiActionFieldKind.MULTI_ENUM:
+        if not isinstance(value, list):
+            return "expected list"
+        if not all(isinstance(item, str) for item in value):
+            return "expected list[str]"
+        multi_enum_options: set[str] = set()
+        if isinstance(field, contract_v2.UiMultiEnumField):
+            multi_enum_options = {opt.value for opt in field.options}
+        return (
+            None
+            if all(item in multi_enum_options for item in value)
+            else "contains value not in options"
+        )
+
+    return "unsupported field kind"
 
 
 def _normalize_actions(
@@ -84,7 +130,23 @@ def _normalize_actions(
             )
             fields = fields[: policy.caps.max_fields_per_action]
 
-        normalized.append(action.model_copy(update={"fields": fields}))
+        prefill_normalized: dict[str, JsonValue] = {}
+        if action.prefill:
+            field_by_name = {field_item.name: field_item for field_item in fields}
+            for key in sorted(action.prefill.keys(), key=str):
+                if key not in field_by_name:
+                    stats.action_prefill_dropped.append((action.action_id, key, "unknown field"))
+                    continue
+                value = action.prefill[key]
+                reason = _prefill_reason(field=field_by_name[key], value=value)
+                if reason is not None:
+                    stats.action_prefill_dropped.append((action.action_id, key, reason))
+                    continue
+                prefill_normalized[key] = value
+
+        normalized.append(
+            action.model_copy(update={"fields": fields, "prefill": prefill_normalized})
+        )
 
     if len(normalized) > policy.caps.max_next_actions:
         stats.actions_dropped_due_to_max_next_actions += (

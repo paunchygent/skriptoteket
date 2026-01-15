@@ -243,7 +243,8 @@ UiFormAction
 ├─ action_id: string
 ├─ label: string
 ├─ kind: "form"
-└─ fields[]: UiActionField
+├─ fields[]: UiActionField
+└─ prefill?: {[field_name]: JsonValue}  (Contract v2.x)
 ```
 
 Actions are rendered as platform-owned forms and submitted via:
@@ -256,6 +257,14 @@ UI supports step history:
 
 - Production: `ToolRunStepIndicator` in `ToolRunView.vue`
 - Sandbox: step buttons in `SandboxRunnerActions.vue`
+
+Prefill notes (ADR-0060):
+
+- Server-side: `prefill` valideras deterministiskt under normalisering; ogiltiga entries strippas och blir en system-notis
+  (`src/skriptoteket/domain/scripting/ui/normalizer/_actions.py`, `src/skriptoteket/domain/scripting/ui/normalizer/_notices.py`).
+- UI: `prefill` används som initialvärde (skriver inte över användarens egna ändringar) och merge:as deterministiskt per
+  fältnamn (`frontend/apps/skriptoteket/src/components/ui-actions/UiActionForm.vue`,
+  `frontend/apps/skriptoteket/src/components/tool-run/ToolRunActions.vue`).
 
 ### 5) Outputs + artifacts
 
@@ -394,7 +403,7 @@ Grouped by area. Story IDs link to backlog details.
 ### Reference docs
 
 - `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
-- `docs/reference/ref-execution-architecture.md`
+- `docs/reference/ref-ai-script-generation-kb.md`
 - `docs/reference/ref-codemirror-integration.md`
 
 ### Sprints (planned)

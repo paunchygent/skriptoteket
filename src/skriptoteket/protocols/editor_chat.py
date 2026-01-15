@@ -7,6 +7,7 @@ from uuid import UUID
 
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.llm import (
+    ChatBudget,
     ChatFailoverDecision,
     ChatMessage,
     EditorChatCommand,
@@ -30,7 +31,11 @@ class PreparedEditorChatRequest:
 
 class EditorChatPromptBuilderProtocol(Protocol):
     def plan_max_user_message_tokens(
-        self, *, system_prompt: str, token_counter: TokenCounterProtocol
+        self,
+        *,
+        system_prompt: str,
+        token_counter: TokenCounterProtocol,
+        budget: ChatBudget,
     ) -> int | None: ...
 
     def validate_plain_user_message(
@@ -59,6 +64,7 @@ class EditorChatPromptBuilderProtocol(Protocol):
         message: str,
         user_payload_message: ChatMessage | None,
         token_counter: TokenCounterProtocol,
+        budget: ChatBudget,
     ) -> LLMChatRequest: ...
 
 
@@ -70,6 +76,7 @@ class EditorChatTurnPreparerProtocol(Protocol):
         command: EditorChatCommand,
         system_prompt: str,
         token_counter: TokenCounterProtocol,
+        budget: ChatBudget,
     ) -> PreparedEditorChatRequest: ...
 
 

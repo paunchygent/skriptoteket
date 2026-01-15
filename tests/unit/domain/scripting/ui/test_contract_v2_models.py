@@ -21,6 +21,7 @@ def test_contract_v2_validates_markdown_output_and_boolean_field() -> None:
                 "label": "Confirm",
                 "kind": "form",
                 "fields": [{"name": "notify", "kind": "boolean", "label": "Notify guardians"}],
+                "prefill": {"notify": True},
             }
         ],
         "state": {"flags_confirmed": True},
@@ -31,6 +32,7 @@ def test_contract_v2_validates_markdown_output_and_boolean_field() -> None:
 
     assert isinstance(result.outputs[0], UiMarkdownOutput)
     assert isinstance(result.next_actions[0].fields[0], UiBooleanField)
+    assert result.next_actions[0].prefill == {"notify": True}
 
 
 def test_contract_v2_validates_table_output() -> None:
