@@ -39,12 +39,15 @@ def create_app() -> FastAPI:
         docs_url="/docs" if settings.ENABLE_DOCS else None,
     )
 
-    # Middleware order: tracing → metrics → correlation → error_handler
-    # (registered in reverse order of execution)
-    app.add_middleware(CorrelationMiddleware)
+    # Middleware execution order:
+    #   correlation (ASGI) → tracing → metrics → error_handler
+    #
+    # Starlette inserts new middleware at the start of the stack, so we register
+    # innermost-first and add correlation last to ensure it is outermost.
     app.middleware("http")(error_handler_middleware)
     app.middleware("http")(metrics_middleware)
     app.middleware("http")(tracing_middleware)
+    app.add_middleware(CorrelationMiddleware)
 
     static_dir = Path(__file__).resolve().parent / "static"
     app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")

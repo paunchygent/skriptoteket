@@ -360,6 +360,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-14-34-settings-suggestions-from-tool-runs.md`
 - `docs/backlog/stories/story-14-35-tool-datasets-crud-and-picker.md`
 - `docs/backlog/stories/story-14-36-user-file-vault-and-picker.md`
+- `docs/backlog/stories/story-14-37-ui-output-vega-lite.md`
 - `docs/backlog/stories/story-15-01-user-profile-redesign.md`
 - `docs/backlog/stories/story-15-02-avatar-upload.md`
 - `docs/backlog/stories/story-16-01-favorites-domain-and-database.md`

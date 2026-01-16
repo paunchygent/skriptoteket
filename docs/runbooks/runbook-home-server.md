@@ -5,7 +5,7 @@ title: "Runbook: Home Server Operations"
 status: active
 owners: "olof"
 created: 2025-12-16
-updated: 2026-01-13
+updated: 2026-01-16
 system: "hemma.hule.education"
 ---
 
@@ -81,6 +81,11 @@ Config + ownership:
 - Hardware watchdog driver: `sp5100_tco`
   - Module options: `/etc/modprobe.d/sp5100_tco.conf`
     - `options sp5100_tco nowayout=1 heartbeat=60`
+- Keep watchdog running across warm reboots (important after crash-kernel SysRq reboot):
+  - Normal boot cmdline: add `watchdog.stop_on_reboot=0` in `/etc/default/grub` (`GRUB_CMDLINE_LINUX_DEFAULT`),
+    run `sudo update-grub`, then reboot
+  - Crash-kernel cmdline: add `watchdog.stop_on_reboot=0` in `/etc/default/kdump-tools` (`KDUMP_CMDLINE_APPEND`),
+    run `sudo kdump-config unload && sudo kdump-config load`
 - Disable systemd watchdog petting (PID 1 must not own `/dev/watchdog`):
   - `/etc/systemd/system.conf.d/99-watchdog.conf`:
     - `RuntimeWatchdogSec=0`
@@ -96,6 +101,8 @@ Verification:
 sudo systemctl status health-watchdog.service --no-pager
 sudo journalctl -t health-watchdog --since "1 hour ago"
 sudo lsof /dev/watchdog /dev/watchdog0
+cat /proc/cmdline | rg watchdog.stop_on_reboot=0
+cat /sys/module/watchdog/parameters/stop_on_reboot
 cat /sys/class/watchdog/watchdog0/nowayout
 cat /sys/class/watchdog/watchdog0/timeout
 ```
@@ -228,6 +235,7 @@ Kernel/sysctl settings:
   - `kernel.softlockup_panic=1`
   - `kernel.panic_on_warn=1`
 - GRUB cmdline: `log_buf_len=4M`
+- GRUB cmdline: `watchdog.stop_on_reboot=0` (keeps the hardware watchdog running across warm reboots)
 - GPU hang mitigation flags (GRUB cmdline, hemma):
   - `amdgpu.cwsr_enable=0`
   - `amdgpu.mcbp=0`
@@ -252,6 +260,14 @@ Kernel/sysctl settings:
   - Module options: `/etc/modprobe.d/sp5100_tco.conf`
     - `nowayout=1` (cannot be disabled without reboot)
     - `heartbeat=60` (seconds)
+  - Keep watchdog running across warm reboots (prevents disarm during post-kdump reboot):
+    - Set `watchdog.stop_on_reboot=0` in:
+      - `/etc/default/grub` (`GRUB_CMDLINE_LINUX_DEFAULT`) then `sudo update-grub` + reboot
+      - `/etc/default/kdump-tools` (`KDUMP_CMDLINE_APPEND`) then `sudo kdump-config unload && sudo kdump-config load`
+    - Verify:
+      - `cat /proc/cmdline | rg watchdog.stop_on_reboot=0`
+      - `cat /sys/module/watchdog/parameters/stop_on_reboot` (should be `0`)
+      - `sudo kdump-config show | rg watchdog.stop_on_reboot=0`
   - systemd watchdog is disabled (petting handled by `health-watchdog`):
     - `/etc/systemd/system.conf.d/99-watchdog.conf`: `RuntimeWatchdogSec=0`, `RebootWatchdogSec=0`
   - Health-gated petter owns `/dev/watchdog`:

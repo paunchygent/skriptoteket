@@ -6,7 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-19
-updated: 2026-01-12
+updated: 2026-01-16
 links: ["ADR-0022", "ADR-0023", "ADR-0027", "PRD-script-hub-v0.2", "EPIC-10", "EPIC-14"]
 ---
 
@@ -213,11 +213,11 @@ The policy profile is selected per tool/run (see `UiPolicyProviderProtocol` belo
 
 Intended for contributor/admin-authored scripts executed in the runner.
 
-- Output kinds: `notice`, `markdown`, `table`, `json`, `html_sandboxed`
+- Output kinds: `notice`, `markdown`, `table`, `json`, `html_sandboxed`, `vega_lite` (restricted; see below)
 - No arbitrary JS; `html_sandboxed` is always iframe-sandboxed without scripts.
 - Budgets + caps (initial):
   - max `state`: 64 KiB
-  - max `ui_payload`: 256 KiB
+  - max `ui_payload`: 768 KiB
   - max outputs: 50
   - max next_actions: 10
   - action fields: max 25 fields/action
@@ -225,16 +225,17 @@ Intended for contributor/admin-authored scripts executed in the runner.
   - html_sandboxed: max 96 KiB
   - json output: max 96 KiB; max depth 10; max keys 1000; max array length 2000
   - table: max 750 rows; max 40 columns; max 512 bytes/cell
+  - vega_lite: max 512 KiB/spec (restrictions required below)
   - enum: max 100 options; multi_enum: max 200 options
 
 ### Curated policy (owner-authored curated apps)
 
 Intended for curated apps shipped from the repo and not editable via the tool editor workflow.
 
-- Output kinds: default allowlist + `vega_lite` (enabled)
+- Output kinds: default allowlist (including `vega_lite`)
 - Budgets + caps (initial):
   - max `state`: 256 KiB
-  - max `ui_payload`: 512 KiB
+  - max `ui_payload`: 1024 KiB
   - max outputs: 150
   - max next_actions: 25
   - action fields: max 60 fields/action
@@ -242,7 +243,7 @@ Intended for curated apps shipped from the repo and not editable via the tool ed
   - html_sandboxed: max 192 KiB
   - json output: max 256 KiB; max depth 20; max keys 5000; max array length 10000
   - table: max 2500 rows; max 80 columns; max 1024 bytes/cell
-  - vega_lite: max 256 KiB/spec (restrictions required below)
+  - vega_lite: max 512 KiB/spec (restrictions required below)
   - enum: max 300 options; multi_enum: max 600 options
 
 Curated policy is not “unlimited”; it remains capped to protect DB size and UX stability.
@@ -260,11 +261,21 @@ The application validates and normalizes all UI-relevant payloads before storage
 
 If `vega_lite` is enabled by policy, the platform must apply strict restrictions:
 
-- Disallow remote data (`data.url`); allow inline `data.values` only.
-- Cap `data.values` row count and total bytes.
-- Disallow transforms/params that can cause heavy computation or unexpected behavior.
-- Allowlist mark types (e.g. `bar`, `line`, `area`, `point`) and basic encodings.
-- Cap total spec size (bytes) and reject specs that exceed it.
+- Inline-only data:
+  - allow `data.values`
+  - disallow any `data.url`
+- Data caps:
+  - `data.values`: max 4000 rows
+- Spec caps:
+  - max 512 KiB/spec (canonical JSON bytes)
+- Composition caps:
+  - max depth: 8 (nested specs via `layer`/`concat`/`hconcat`/`vconcat`/`facet`/`repeat`)
+  - max layers: 16
+- External resources:
+  - disallow `mark: "image"` / `{"type":"image"}` (image URLs)
+
+If a spec violates restrictions, the platform drops the `vega_lite` output deterministically and adds a system notice
+explaining what was blocked and why.
 
 ## Deterministic UI payload normalizer (sketch)
 
@@ -313,5 +324,5 @@ Implementations live in infrastructure; application handlers depend on protocols
 - Adds DB schema changes (new table + new columns) and migration complexity.
 - Requires careful size budgeting to avoid DB bloat (state/payload caps are mandatory).
 - Requires clear ownership for where actions come from (runner vs backend vs curated).
-- `vega_lite` is enabled in the curated policy profile; the restrictions described above MUST be implemented before the
-  platform accepts and renders vega-lite outputs (security/performance risk).
+- `vega_lite` is enabled by policy; the restrictions described above MUST be implemented before the platform accepts and
+  renders vega_lite outputs (security/performance risk).

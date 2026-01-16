@@ -7,6 +7,8 @@ Return ONLY the code that should be inserted at the cursor.
 - Preserve indentation and newlines
 - Prefer Swedish user-facing messages
 
+IMPORTANT: Skriptoteket tools are standalone Python scripts. Do NOT suggest test files, pytest imports, or IDE-style project structures.
+
 {{RUNNER_CONSTRAINTS_FRAGMENT}}
 
 {{CONTRACT_V2_FRAGMENT}}

@@ -24,6 +24,10 @@ You are working in the `skriptoteket` repo.
 ## Architecture constraints (non-negotiable)
 
 - DDD + Clean Architecture, SRP modules, no god objects, <400–500 LOC per file.
+- If a file is larger than 500 LOC, you must surface this to the user and offer an intermediary refactoring
+  suggestion to modularize the component as robustly as possible. This is not an instruction to break out a helper
+  to achieve sub <500 LOC goal but a comprehensive refactor that makes the file long term maintainable and
+  SRP-compliant.
 - No legacy support/workarounds: do full refactor; delete old paths instead of shims.
 - Protocol-first DI: domain/application must not depend on frameworks or concrete implementations.
 - Async-first, single container; PostgreSQL repositories behind protocols; UoW controls transactions.

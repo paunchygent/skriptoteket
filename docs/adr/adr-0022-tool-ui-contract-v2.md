@@ -6,7 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-19
-updated: 2025-12-21
+updated: 2026-01-16
 links: ["PRD-script-hub-v0.2", "EPIC-10", "ADR-0027"]
 ---
 
@@ -89,7 +89,7 @@ The platform defines an allowlist of output kinds. The initial contract supports
 - `json`: `{title?: string, value: object|array|number|string|boolean|null}` (size-capped)
 - `html_sandboxed`: `{html: string}` rendered in an iframe sandbox without scripts
 
-Optional (policy-gated, likely curated-only at first):
+Optional (policy-gated):
 
 - `vega_lite`: `{spec: object}` rendered by the platform chart component under strict restrictions (see ADR-0024)
 

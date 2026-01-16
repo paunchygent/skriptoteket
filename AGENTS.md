@@ -74,11 +74,12 @@ Target Python is **3.13–3.14**.
 - `ssh hemma` uses non-root user `paunchygent` (key: `~/.ssh/hemma-paunchygent_ed25519`).
 - Root access requires explicit approval; use `ssh hemma-root` when needed.
 - LAN aliases: `ssh hemma-local` (non-root), `ssh hemma-local-root` (root).
+Switch to run bash on hemma via heredocs to avoid nested quoting issues.
 
 ## Skill Usage (REQUIRED)
 
 - Skills are provided at session start from `$CODEX_HOME/skills` (typically `~/.codex/skills/*/SKILL.md`) and repo-local `.claude/skills/*/SKILL.md`.
-- Always load: `skriptoteket-devops` for Hemma/deploy/compose/env; `skriptoteket-frontend-specialist` (and `brutalist-academic-ui` for styling) for SPA work; and the relevant observability skill for Grafana/Prometheus/Loki/Jaeger/structlog.
+- Always load: `skriptoteket-devops` for Hemma/deploy/compose/env; `local-devops` for local development; `skriptoteket-frontend-specialist` (and `brutalist-academic-ui` for styling) for SPA work; and the relevant observability skill for Grafana/Prometheus/Loki/Jaeger/structlog.
 
 ## Tool Execution (Local Dev Only)
 

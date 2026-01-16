@@ -5,7 +5,7 @@ title: "Admin tool authoring (draft-first workflow)"
 status: active
 owners: "agents"
 created: 2025-12-25
-updated: 2026-01-15
+updated: 2026-01-16
 outcome: "Admins can quickly create draft tools directly from /admin/tools, iterate without contributor-only hoops, and publish only when slug and taxonomy are finalized."
 ---
 
@@ -55,6 +55,7 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 - [ST-14-22: Tool run UX conventions for progress + input file references](../stories/story-14-22-tool-run-ux-progress-and-file-references.md)
 - [ST-14-23: UI contract v2.x: action defaults/prefill](../stories/story-14-23-ui-contract-action-defaults-prefill.md)
 - [ST-14-24: UI contract v2.x: first-class file references](../stories/story-14-24-ui-contract-file-references.md)
+- [ST-14-37: UI output: vega_lite charts (restricted, enabled for all tools)](../stories/story-14-37-ui-output-vega-lite.md)
 - [ST-14-25: UI contract v2.x: layout editor output (layout_editor_v1)](../stories/story-14-25-ui-contract-layout-editor-v1-output.md)
 - [ST-14-26: UI renderer: layout editor v1 (click-to-assign + apply)](../stories/story-14-26-ui-renderer-layout-editor-v1-click-assign.md)
 - [ST-14-27: Layout editor v1: drag/drop interactions (library-based)](../stories/story-14-27-layout-editor-v1-drag-drop.md)

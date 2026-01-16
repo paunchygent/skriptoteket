@@ -5,7 +5,7 @@ title: "Investigation: hemma host hard hangs (Jan 2026)"
 status: active
 owners: "agents"
 created: 2026-01-03
-updated: 2026-01-13
+updated: 2026-01-16
 topic: "devops"
 ---
 
@@ -19,6 +19,12 @@ physical intervention.
 Hemma now runs llama.cpp via Docker using `llama-server-rocm.service` (container `llama-server-rocm`). References in
 this report to `llama-server.service`, `llama-server-hip.service`, or `llama-server-vulkan.service` reflect the
 historical state during Jan 2026 debugging and should not be re-enabled.
+
+## Update (2026-01-16)
+
+Hemma now uses `watchdog.stop_on_reboot=0` (normal + crash-kernel cmdlines) so the `sp5100_tco` hardware watchdog keeps
+running across warm reboots (including the post-kdump SysRq reboot path). This reduces the chance that a wedge *during
+reboot* requires a manual hard power cycle.
 
 ## Executive summary
 
@@ -389,8 +395,8 @@ Notes:
 
 ## Next steps (recommended)
 
-1. **Enable a real hardware watchdog** (DONE 2026-01-12; `sp5100_tco` + systemd `RuntimeWatchdogSec=3min`), so the
-   host can reboot itself on deep hangs.
+1. **Enable a real hardware watchdog** (DONE 2026-01-12; `sp5100_tco` + `health-watchdog.service`; updated 2026-01-16
+   with `watchdog.stop_on_reboot=0`), so the host can reboot itself on deep hangs and reboot wedges.
 2. **Run an A/B isolation trial** for 24–48h each:
    - A: stop/disable `llama-server` (and/or `tabby`) temporarily
    - B: re-enable one service at a time

@@ -5,7 +5,7 @@ title: "Hemma critical paths and operations inventory (2026-01-06)"
 status: active
 owners: "agents"
 created: 2026-01-06
-updated: 2026-01-12
+updated: 2026-01-16
 topic: "devops"
 ---
 
@@ -45,6 +45,11 @@ Host snapshot context:
   - Timer: `ssh-watchdog.timer`
 - Hardware watchdog (hard reset on wedges):
   - Driver: `sp5100_tco` (SP5100/SB800 TCO watchdog)
+  - Module options: `/etc/modprobe.d/sp5100_tco.conf` (`nowayout=1 heartbeat=60`)
+  - Health-gated petter: `/etc/systemd/system/health-watchdog.service` + `/usr/local/bin/health-watchdog.sh`
+  - Keep watchdog running across warm reboots: `watchdog.stop_on_reboot=0`
+    - Normal boot cmdline: `/etc/default/grub` (then `update-grub` + reboot)
+    - Crash-kernel cmdline: `/etc/default/kdump-tools` (then `kdump-config unload && kdump-config load`)
   - Module loader: `/etc/systemd/system/sp5100-tco-watchdog.service`
   - systemd watchdog config: `/etc/systemd/system.conf.d/99-watchdog.conf`
 

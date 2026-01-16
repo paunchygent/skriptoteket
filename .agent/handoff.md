@@ -51,7 +51,7 @@ Keep this file updated so the next session can pick up work quickly.
 - PR-0030 docs: `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md` + indexed in `docs/index.md` (cross-link added to PR-0029 frontmatter).
 - Logging: replaced substring-based redaction with key/segment/value-aware redaction (keeps `*_tokens` diagnostics visible) and moved logic to `src/skriptoteket/observability/redaction.py` (tests: `tests/unit/observability/test_logging_redaction.py`).
 - Health: increased SMTP health check timeout to 10s so `/healthz` reports healthy in dev when SMTP greeting is slow (`src/skriptoteket/observability/health.py`).
-- REV-EPIC-07 completed: approved ASGI correlation middleware so `uvicorn.access` logs include `correlation_id` for successful + streaming/SSE; ADR accepted; EPIC-07 reopened (active) for ST-07-06 / PR-0032 (`docs/backlog/reviews/review-epic-07-correlation-middleware-asgi.md`, `docs/adr/adr-0061-asgi-correlation-middleware.md`, `docs/backlog/stories/story-07-06-asgi-correlation-middleware.md`, `docs/backlog/prs/pr-0032-asgi-correlation-middleware.md`, `docs/backlog/epics/epic-07-observability-and-operations.md`).
+- ST-07-06 implemented (PR-0032): pure ASGI correlation middleware + middleware ordering so `uvicorn.access` logs include `correlation_id` for successful + streaming/SSE (`src/skriptoteket/web/middleware/correlation.py`, `src/skriptoteket/web/app.py`, `tests/unit/web/test_correlation_middleware_asgi.py`, docs: `docs/backlog/reviews/review-epic-07-correlation-middleware-asgi.md`, `docs/adr/adr-0061-asgi-correlation-middleware.md`, `docs/backlog/stories/story-07-06-asgi-correlation-middleware.md`, `docs/backlog/prs/pr-0032-asgi-correlation-middleware.md`, `docs/backlog/epics/epic-07-observability-and-operations.md`).
 - Verification:
   - `pdm run db-upgrade`
   - `pdm run fe-gen-api-types`
@@ -68,6 +68,8 @@ Keep this file updated so the next session can pick up work quickly.
   - `docker build --progress=plain -f Dockerfile.runner -t skriptoteket-runner:latest .` (log: `.artifacts/runner-build-20260115T122634Z.log`)
   - `pdm run ui-runtime-smoke --base-url http://127.0.0.1:5173` (Playwright; asserts prefill; screenshot: `.artifacts/ui-runtime-smoke/tool-run-next-actions-prefill.png`)
   - `curl -i http://127.0.0.1:8000/healthz` (expects 200 + `"smtp":{"status":"healthy"}`)
+  - `pdm run pytest tests/unit/web/test_correlation_middleware_asgi.py`
+  - Live (ST-07-06): `pdm run dev-logs` then `curl -s -D - -o /dev/null -H 'X-Correlation-ID: 11111111-1111-1111-1111-111111111111' http://127.0.0.1:8000/healthz` + `rg '11111111-1111-1111-1111-111111111111' .artifacts/dev-backend.log` (expects `uvicorn.access` JSON line includes `correlation_id`)
   - Manual (PR-0031 correlation): called `/api/v1/editor/edit-ops` → `/preview` → `/apply` with `X-Correlation-ID=72d70ad9-0265-4e7e-94b8-cd0753c87b79`; confirmed response headers + `docker compose logs web --since 10m | rg '72d70ad9-0265-4e7e-94b8-cd0753c87b79|ai_chat_ops_result|edit_ops_preview'`.
   - Artifacts: `.artifacts/ui-smoke/profile-ai-settings-desktop.png`, `.artifacts/ui-editor-smoke/editor-loaded.png`, `.artifacts/ui-editor-smoke/diff-mode.png`, `.artifacts/ui-editor-smoke/diff-empty-state.png`, `.artifacts/ui-editor-smoke/test-mode.png`
 

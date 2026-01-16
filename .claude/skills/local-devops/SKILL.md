@@ -1,6 +1,6 @@
 ---
 name: local-devops
-description: Local development + build/devops workflow for Skriptoteket (FastAPI + Vue/Vite) using PDM. Use when setting up or troubleshooting local dev (`pdm install`, `.env`, `pdm run dev`, frontend proxy/logs), or when changing dependency groups/extras and Dockerfile install commands to avoid PDM group/--prod pitfalls.
+description: Local development + build/devops workflow for Skriptoteket (FastAPI + Vue/Vite) using PDM. Use when setting up or troubleshooting local dev (`pdm install`, `.env`, `pdm run dev`, frontend proxy/logs, correlation/logging), or when changing dependency groups/extras and Dockerfile install commands to avoid PDM group/--prod pitfalls.
 ---
 
 # Local development (canonical)
@@ -9,6 +9,20 @@ description: Local development + build/devops workflow for Skriptoteket (FastAPI
 
 - Do **not** run `docker compose up` in this repo unless the user explicitly requests it.
 - Run the backend via `pdm run dev` (host uvicorn), not via Compose.
+
+## PDM script map (most used)
+
+- Backend:
+  - `pdm run dev` / `pdm run dev-logs` (logs to `.artifacts/dev-backend.log`)
+  - `pdm run dev-local` (backend + SPA with log piping)
+  - `pdm run kill-dev` (kills host uvicorn; only when requested)
+- Frontend (SPA):
+  - `pdm run fe-install`
+  - `pdm run fe-dev` / `pdm run fe-dev-logs` (logs to `.artifacts/dev-frontend.log`)
+  - `pdm run fe-build`
+- Quality gates:
+  - `pdm run format` / `pdm run lint` / `pdm run typecheck` / `pdm run test`
+  - `pdm run docs-validate`
 
 ## Quick start checklist (backend)
 
@@ -28,10 +42,34 @@ description: Local development + build/devops workflow for Skriptoteket (FastAPI
 - Run SPA dev server: `pdm run fe-dev`
 - When debugging API calls, check backend logs from the `pdm run dev` terminal (Vite proxies to `127.0.0.1:8000`).
 
+## Docker / containers (only when requested)
+
+- DB-only dev:
+  - `docker compose up -d db`
+  - `pdm run db-upgrade`
+- Full dev containers (long-running; don’t stop unless asked):
+  - `pdm run dev-start` / `pdm run dev-stop`
+  - Logs: `pdm run dev-containers-logs`
+- Destructive resets (explicit approval required):
+  - `pdm run dev-db-reset`
+
 ## Verification (local)
 
 - Health: `curl -sSf http://127.0.0.1:8000/healthz >/dev/null`
 - Tokenizer availability (Devstral/Tekken): `pdm run pytest -q tests/unit/infrastructure/llm/test_token_counter_resolver.py`
+
+## Logging + correlation (local)
+
+- Configure via `.env`:
+  - `LOG_FORMAT=json|console` (default: `json`)
+  - `LOG_LEVEL=INFO|DEBUG|...`
+  - `SERVICE_NAME` / `ENVIRONMENT` (defaults: `skriptoteket` / `development`)
+- For greppable backend logs: `pdm run dev-logs` (writes `.artifacts/dev-backend.log`)
+- Verify correlation end-to-end (access logs + app logs):
+  - `curl -s -D - -o /dev/null -H 'X-Correlation-ID: <uuid>' http://127.0.0.1:8000/healthz`
+  - `rg '<uuid>' .artifacts/dev-backend.log` (expects a `uvicorn.access` JSON line with `correlation_id`)
+- Note: in our pinned Uvicorn (`0.40.0`), `uvicorn.access` is emitted on `http.response.start` (headers sent), so SSE/streaming logs appear when the stream begins.
+- If running the backend via container (only when requested), use: `docker logs -f skriptoteket_web | rg '<uuid>'`
 
 # PDM groups/extras (avoid rebuild surprises)
 

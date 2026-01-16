@@ -275,13 +275,13 @@ Prefill notes (ADR-0060):
 - `table`
 - `json`
 - `html_sandboxed`
-- `vega_lite` (curated-policy only today)
+- `vega_lite` (policy-gated; currently blocked until restrictions + renderer are implemented per ADR-0024)
 
 **UI renderers:** `frontend/apps/skriptoteket/src/components/ui-outputs/*`
 
 - Unknown kinds fall back to `UiOutputUnknown.vue`
 - `html_sandboxed` renders inside a sandboxed iframe
-- `vega_lite` renderer exists but is policy-gated for curated apps
+- `vega_lite` renderer is currently a placeholder component (no real rendering yet)
 
 **Artifacts:** rendered via `ToolRunArtifacts.vue` and downloadable via
 `/api/v1/editor/tool-runs/{run_id}/artifacts/{artifact_id}`.
@@ -301,7 +301,8 @@ Key defaults (excerpt):
 - next_actions: 10 (default) / 25 (curated)
 - fields/action: 25 (default) / 60 (curated)
 
-See ADR-0024 for the full cap list.
+See ADR-0024 for the full cap list (note: ADR-0024 was updated to raise `ui_payload` budgets to support `vega_lite`;
+code changes are tracked in ST-14-37).
 
 ## Current editor behavior (functional detail)
 
