@@ -130,6 +130,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-08-ai-completion.md`
 - `docs/backlog/reviews/review-epic-08-ai-edit-ops-v2.md`
 - `docs/backlog/reviews/review-epic-08-editor-ai-edit-ops-patch-only-alignment.md`
+- `docs/backlog/reviews/review-epic-08-edit-ops-patch-workflow.md`
 - `docs/backlog/reviews/review-epic-08-editor-chat-virtual-files-context.md`
 - `docs/backlog/reviews/review-epic-08-llm-response-capture.md`
 - `docs/backlog/reviews/review-epic-09-security-hardening.md`
@@ -194,6 +195,11 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md`
 - `docs/backlog/prs/pr-0031-editor-ai-edit-ops-patch-only-alignment.md`
 - `docs/backlog/prs/pr-0032-asgi-correlation-middleware.md`
+- `docs/backlog/prs/pr-0033-large-file-srp-refactors-help-panel-docker-runner-edit-ops.md`
+- `docs/backlog/prs/pr-0034-editor-ai-edit-ops-patch-lines-encoding.md`
+- `docs/backlog/prs/pr-0035-editor-ai-edit-ops-gbnf-patch-only-grammar.md`
+- `docs/backlog/prs/pr-0036-editor-ai-edit-ops-layered-diff-repair.md`
+- `docs/backlog/prs/pr-0037-editor-ai-edit-ops-tolerant-diff-matching.md`
 
 ### Backlog Stories
 
@@ -275,6 +281,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-08-26-ai-chat-provider-failover.md`
 - `docs/backlog/stories/story-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md`
 - `docs/backlog/stories/story-08-28-ai-chat-ops-response-capture-on-error.md`
+- `docs/backlog/stories/story-08-29-ai-edit-ops-patch-lines-encoding.md`
 - `docs/backlog/stories/story-09-01-http-security-headers.md`
 - `docs/backlog/stories/story-09-02-content-security-policy.md`
 - `docs/backlog/stories/story-09-03-firewall-audit.md`

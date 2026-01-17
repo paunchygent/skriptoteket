@@ -21,7 +21,7 @@ from skriptoteket.application.editor.edit_ops_preview_handler import (
     EditOpsPreviewHandler,
 )
 from skriptoteket.config import Settings
-from skriptoteket.infrastructure.editor.unified_diff_applier import SubprocessUnifiedDiffApplier
+from skriptoteket.infrastructure.editor.unified_diff_applier import NativeUnifiedDiffApplier
 from skriptoteket.infrastructure.llm.capture_store import ArtifactsLlmCaptureStore
 from skriptoteket.infrastructure.llm.chat_budget_resolver import SettingsBasedChatBudgetResolver
 from skriptoteket.infrastructure.llm.chat_failover_router import InProcessChatFailoverRouter
@@ -76,7 +76,7 @@ from skriptoteket.protocols.uow import UnitOfWorkProtocol
 class LlmProvider(Provider):
     @provide(scope=Scope.APP)
     def unified_diff_applier(self) -> UnifiedDiffApplierProtocol:
-        return SubprocessUnifiedDiffApplier()
+        return NativeUnifiedDiffApplier()
 
     @provide(scope=Scope.APP)
     def llm_capture_store(self, settings: Settings) -> LlmCaptureStoreProtocol:
@@ -293,6 +293,8 @@ class LlmProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def editor_chat_stream_orchestrator(
         self,
+        settings: Settings,
+        capture_store: LlmCaptureStoreProtocol,
         providers: ChatStreamProvidersProtocol,
         failover: ChatFailoverRouterProtocol,
         uow: UnitOfWorkProtocol,
@@ -300,6 +302,8 @@ class LlmProvider(Provider):
         messages: ToolSessionMessageRepositoryProtocol,
     ) -> EditorChatStreamOrchestratorProtocol:
         return EditorChatStreamOrchestrator(
+            settings=settings,
+            capture_store=capture_store,
             providers=providers,
             failover=failover,
             uow=uow,

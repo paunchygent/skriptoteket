@@ -79,7 +79,7 @@ Switch to run bash on hemma via heredocs to avoid nested quoting issues.
 ## Skill Usage (REQUIRED)
 
 - Skills are provided at session start from `$CODEX_HOME/skills` (typically `~/.codex/skills/*/SKILL.md`) and repo-local `.claude/skills/*/SKILL.md`.
-- Always load: `skriptoteket-devops` for Hemma/deploy/compose/env; `local-devops` for local development; `skriptoteket-frontend-specialist` (and `brutalist-academic-ui` for styling) for SPA work; and the relevant observability skill for Grafana/Prometheus/Loki/Jaeger/structlog.
+- Always load: `skriptoteket-devops` for Hemma/deploy/compose/env; `skriptoteket-local-devops` for local development; `skriptoteket-frontend-specialist` (and `brutalist-academic-ui` for styling) for SPA work; and the relevant observability skill for Grafana/Prometheus/Loki/Jaeger/structlog.
 
 ## Tool Execution (Local Dev Only)
 

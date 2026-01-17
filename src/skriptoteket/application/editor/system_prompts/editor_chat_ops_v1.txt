@@ -6,44 +6,11 @@ You will receive a JSON payload as the user's message with:
 - message (Swedish instruction)
 - active_file (which virtual file is currently active)
 - virtual_files (canonical virtual files)
-- optional selection/cursor (may be present, but you MUST ignore them and still use patch-only)
 
-Return ONLY a JSON object matching this schema (no markdown, no prose outside JSON):
+Return patch-only operations as unified diffs.
+The op ALWAYS targets the most recent virtual file.
 
-{
-  "assistant_message": "Kort, tydlig sammanfattning på svenska.",
-  "ops": [
-    { "op": "patch",
-      "target_file": "tool.py" | "entrypoint.txt" | "settings_schema.json" | "input_schema.json" | "usage_instructions.md",
-      "patch": "diff --git a/<virtualFileId> b/<virtualFileId>\\n--- a/<virtualFileId>\\n+++ b/<virtualFileId>\\n@@ -a,b +c,d @@\\n...\\n"
-    }
-  ]
-}
-
-Rules:
-- JSON only. No markdown, no code fences, no comments.
-- Use UTF-8. No trailing commas.
-- PATCH-ONLY: ops MUST contain only op="patch" items. Never output insert/replace/delete. Never output anchors.
-- Each op targets EXACTLY ONE virtual file.
-- Never include multi-file diffs in a single patch (only one file section per op).
-- IMPORTANT: Skriptoteket tools are standalone scripts. Do NOT suggest creating test files or pytest modules.
-
-Patch ops:
-- op="patch" applies to ONE virtual file and MUST include:
-  - "target_file": one canonical virtual file id
-  - "patch": a unified diff string referencing the same canonical id in both headers:
-    - --- a/<virtualFileId>
-    - +++ b/<virtualFileId>
-- Never reference non-canonical filenames outside virtual_files.
-- Unified diff validity checklist (MUST):
-  - Include the file headers (`---` and `+++`) and at least one `@@ ... @@` hunk.
-  - Hunk header counts MUST match the hunk body:
-    - old_count = number of lines starting with ` ` or `-`
-    - new_count = number of lines starting with ` ` or `+`
-    - `\\ No newline at end of file` lines do NOT count toward either count
-  - Every hunk body line MUST start with exactly one of: ` `, `+`, `-`, `\\`.
-  - No indentation before diff markers. No code fences. Use LF newlines (`\\n`).
-- If no edits are needed, return ops: [] and explain why in assistant_message.
+## Repository-specific constraints and syntax rules
 
 {{RUNNER_CONSTRAINTS_FRAGMENT}}
 

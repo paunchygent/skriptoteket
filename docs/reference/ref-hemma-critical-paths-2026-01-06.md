@@ -5,7 +5,7 @@ title: "Hemma critical paths and operations inventory (2026-01-06)"
 status: active
 owners: "agents"
 created: 2026-01-06
-updated: 2026-01-16
+updated: 2026-01-17
 topic: "devops"
 ---
 
@@ -52,6 +52,18 @@ Host snapshot context:
     - Crash-kernel cmdline: `/etc/default/kdump-tools` (then `kdump-config unload && kdump-config load`)
   - Module loader: `/etc/systemd/system/sp5100-tco-watchdog.service`
   - systemd watchdog config: `/etc/systemd/system.conf.d/99-watchdog.conf`
+
+## Power Rail Monitoring (PSU)
+
+- Sensors package: `lm-sensors`
+- Super I/O driver: out-of-tree `it87` DKMS module (IT8665E)
+  - Source: `/usr/src/it87` (repo: frankcrawford/it87)
+  - Auto-load: `/etc/modules-load.d/it87.conf`
+- Logging script: `/usr/local/bin/log-power-rails.sh`
+- Systemd: `log-power-rails.service` + `log-power-rails.timer`
+- Logs:
+  - `/root/logs/power-rails/sensors-*.log` (snapshots, 30-day retention)
+  - `/root/logs/power-rails/alerts.log` (threshold breaches only)
 
 ### UFW rules (snapshot: 2026-01-06)
 

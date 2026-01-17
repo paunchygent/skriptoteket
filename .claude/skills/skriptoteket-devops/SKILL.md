@@ -10,6 +10,8 @@ Compact skill for managing Skriptoteket on home server.
 Source of truth for ops in this repo:
 
 - Home server ops: `docs/runbooks/runbook-home-server.md`
+- GPU AI ops: `docs/runbooks/runbook-gpu-ai-workloads.md`
+- Tabby ops: `docs/runbooks/runbook-tabby-codemirror.md`
 - Observability ops: `docs/runbooks/runbook-observability.md`
 
 ## When to Use
@@ -31,15 +33,19 @@ Activate when the user:
 ### SSH Access (Passwordless)
 
 ```bash
-# Remote admin access is VPN-gated (Tailscale). This host alias should point to MagicDNS:
-ssh hemma              # -> hemma.tail730aa2.ts.net
-
-# Local network break-glass
-ssh hemma-local        # -> 192.168.0.9
+ssh hemma              # paunchygent (non-root default)
+ssh hemma-root         # root (use only with explicit approval)
+ssh hemma-local        # LAN, non-root
+ssh hemma-local-root   # LAN, root
 ```
 
 Notes (hemma):
 
+- Default to non-root (`ssh hemma`); use `ssh hemma-root` only after explicit approval.
+- Non-root key: `~/.ssh/hemma-paunchygent_ed25519` (local).
+- Health-gated hardware watchdog handles recovery: `/usr/local/bin/health-watchdog.sh` + `health-watchdog.service` pets `/dev/watchdog0` only when health checks pass (sshd/port 22, default route, link up, gateway ping). Boot ordering is pinned via `/etc/systemd/system/health-watchdog.service.d/10-watchdog-order.conf` (starts after `sp5100-tco-watchdog.service`; waits for `/dev/watchdog0` node). systemd watchdog is disabled via `/etc/systemd/system.conf.d/99-watchdog.conf`, and `sp5100_tco` is loaded with `nowayout=1 heartbeat=60` via `/etc/modprobe.d/sp5100_tco.conf`. Reboot persistence: `watchdog.stop_on_reboot=0` in `/etc/default/grub` + `/etc/default/kdump-tools`. Logs in `journalctl -t health-watchdog`.
+- Heartbeat log tag: `journalctl -t heartbeat`.
+- Host incident/SMART logs: `/root/logs/incident-*.log`, `/root/logs/smart/` (cleanup via `cleanup-smart-logs.timer`).
 - Docker commands require `sudo` (passwordless sudo is configured). If you use `sudo -n`, the command fails fast instead of prompting.
 - Prefer `rg` (ripgrep) for repo search; if missing: `sudo apt-get install -y ripgrep`.
 - For a friendlier CLI on `hemma`, expect `fd`, `bat`, `fzf`, `jq`, `tree`, and `yq` (mikefarah/yq v4). Ubuntu packages name some of these as `fdfind`/`batcat`, so we symlink `fdfind→fd` and `batcat→bat` (see `docs/runbooks/runbook-home-server.md`).
@@ -49,6 +55,17 @@ Notes (hemma):
 - Edge hardening: nginx-proxy drops common scanner traffic (e.g. `/.env`, `/.git`, `wp-*`, `*.php`, `cgi-bin`, WebDAV methods) at the proxy; see `docs/runbooks/runbook-home-server.md`.
 - Observability: Promtail labels nginx-proxy access logs in Loki (`vhost`, `client_ip`, `method`, `status`); see `docs/runbooks/runbook-observability-logging.md`.
 
+
+### Watchdog / Crash Recovery Guardrails (hemma)
+
+- Separate ISP loss from local SSH/link failure; only count local failures toward reboot unless user explicitly opts in.
+- Always verify runtime state before assumptions: `systemctl status ssh-watchdog.timer ssh-watchdog.service` and `/etc/default/ssh-watchdog`.
+- Keep the hardware watchdog armed; disable systemd watchdog in the kdump initramfs to avoid petting in the crash kernel.
+- Keep watchdog running across warm reboots (especially post-kdump SysRq reboot): `watchdog.stop_on_reboot=0` in `/etc/default/grub` + `/etc/default/kdump-tools`; apply with `update-grub` + reboot and `kdump-config unload && kdump-config load`.
+- Run remote commands via script files (no inline quoting) to avoid shell/escape errors.
+
+- Crash-kernel watchdog hardening uses initramfs hooks: `/etc/initramfs-tools/hooks/zz-kdump-disable-watchdog` (disable systemd petting) and `/etc/initramfs-tools/hooks/zz-kdump-watchdog-hardening` (include `sp5100_tco` module + `/etc/modprobe.d/sp5100_tco.conf`). Rebuild kdump initrd after changes.
+- Crash-kernel watchdog must be *started* (module load alone isn’t enough): `kdump-watchdog-arm.service` + `/usr/local/sbin/kdump-watchdog-arm` opens `/dev/watchdog0` before `kdump-tools-dump.service`. Verify: `sudo journalctl -b -1 -u kdump-watchdog-arm.service --no-pager` includes `kdump-watchdog-arm: opened ... (state=active ...)`.
 ### Production Deployment
 
 ```bash
@@ -61,6 +78,11 @@ ssh hemma "sudo docker exec skriptoteket-web pdm run db-upgrade"
 ```
 
 Note: On `hemma`, systemd units may need absolute docker path (`/snap/bin/docker`) due to PATH differences.
+
+### Background Image Builds (REQUIRED)
+Run builds in background, log to `.artifacts/`, and give the user the `tail -f` command.
+Template:
+`LOG=.artifacts/runner-build-$(date -u +%Y%m%dT%H%M%SZ).log; nohup <build-cmd> > "$LOG" 2>&1 & echo "$LOG"; tail -f <log>`
 
 ### Env changes (prod)
 
@@ -136,6 +158,8 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml ex
 ~/apps/skriptoteket/.env       # Production secrets (never commit)
 ~/infrastructure/              # nginx-proxy, certbot
 ~/backups/                     # Database backups
+/root/logs/incident-*.log      # Incident log captures
+/root/logs/smart/              # SMART snapshots
 ```
 
 ---
@@ -165,12 +189,34 @@ ssh hemma "sudo docker exec shared-postgres pg_dump -U skriptoteket skriptoteket
 ssh hemma "sudo docker exec skriptoteket-web pdm run db-upgrade"
 ```
 
+### Edit-ops context probe (dev, docker backend required)
+
+Use this to verify that chat + edit-ops see the same virtual file base hashes.
+
+```bash
+# Ensure the dev stack is running (docker compose)
+pdm run dev-start
+
+# Run the probe (uses BOOTSTRAP_SUPERUSER_* from .env)
+pdm run python scripts/chat_edit_ops_context_probe.py \
+  --scenario scripts/edit_ops_scenarios/chat_edit_ops_context_example.json
+
+# Inspect the captured summary + raw payloads
+cat .artifacts/chat-edit-ops-context/<timestamp>/capture_summary.json
+```
+
+Notes:
+- The probe talks to the docker-backed API at `http://127.0.0.1:8000`.
+- Captures land under `.artifacts/llm-captures/chat_request_context/` and
+  `.artifacts/llm-captures/chat_ops_response/`.
+
 ### Cleanup timers (systemd)
 
 We enforce TTL-based cleanup using CLI commands + systemd timers (not cron). Examples:
 
 - Sandbox snapshots cleanup: `cleanup-sandbox-snapshots`
 - Login events cleanup (retention): `cleanup-login-events`
+- Host log cleanup: `cleanup-smart-logs.timer` (incident + SMART logs, 30-day retention)
 
 Exact unit definitions and schedules: `docs/runbooks/runbook-home-server.md`.
 
@@ -189,6 +235,13 @@ ssh hemma "sudo docker exec -T -e PYTHONPATH=/app/src skriptoteket-web pdm run p
 ```bash
 ssh hemma "sudo docker logs -f skriptoteket-web"
 ssh hemma "sudo docker logs -f nginx-proxy"
+
+# Host AI services (llama.cpp + tabby)
+ssh hemma "sudo systemctl status --no-pager llama-server-rocm.service tabby.service | head -n 60"
+ssh hemma "sudo journalctl -u llama-server-rocm.service -n 200 --no-pager"
+ssh hemma "sudo journalctl -u tabby.service -n 200 --no-pager"
+ssh hemma "curl -s http://127.0.0.1:8082/health"
+ssh hemma "curl -s http://127.0.0.1:8083/v1/health"
 ```
 
 ### Status
@@ -213,6 +266,20 @@ pdm run dev-containers-logs
 
 # Rebuild containers when deps/reload are flaky
 pdm run dev-rebuild
+```
+
+---
+
+## GPU Tunnels (Local Workstation)
+
+```bash
+~/bin/hemma-gpu-tunnel start        # start llama + tabby tunnels
+~/bin/hemma-gpu-tunnel start-llama  # start only llama tunnel (:8082)
+~/bin/hemma-gpu-tunnel start-tabby  # start only tabby tunnel (:8083)
+~/bin/hemma-gpu-tunnel stop         # stop both tunnels
+~/bin/hemma-gpu-tunnel stop-llama   # stop only llama tunnel (:8082)
+~/bin/hemma-gpu-tunnel stop-tabby   # stop only tabby tunnel (:8083)
+~/bin/hemma-gpu-tunnel status       # show tunnel status
 ```
 
 ---

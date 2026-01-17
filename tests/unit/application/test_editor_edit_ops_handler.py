@@ -187,14 +187,14 @@ async def test_edit_ops_creates_turn_and_finalizes_on_success() -> None:
             {
                 "op": "patch",
                 "target_file": "tool.py",
-                "patch": (
-                    "diff --git a/tool.py b/tool.py\n"
-                    "--- a/tool.py\n"
-                    "+++ b/tool.py\n"
-                    "@@ -1,1 +1,1 @@\n"
-                    "-print('hej')\n"
-                    "+print('hello')\n"
-                ),
+                "patch_lines": [
+                    "diff --git a/tool.py b/tool.py",
+                    "--- a/tool.py",
+                    "+++ b/tool.py",
+                    "@@ -1,1 +1,1 @@",
+                    "-print('hej')",
+                    "+print('hello')",
+                ],
             }
         ],
     }

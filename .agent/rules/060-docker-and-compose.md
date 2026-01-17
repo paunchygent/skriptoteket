@@ -38,6 +38,18 @@ pdm run dev-build-start
 pdm run dev-build-start-clean
 ```
 
+### Edit-ops Context Probe (dev, docker backend only)
+
+When validating chat/edit-ops virtual file alignment, run the probe against the docker dev stack:
+
+```bash
+pdm run dev-start
+pdm run python scripts/chat_edit_ops_context_probe.py \
+  --scenario scripts/edit_ops_scenarios/chat_edit_ops_context_example.json
+```
+
+Do not run a host-only backend for this check; it must hit the docker dev API on `127.0.0.1:8000`.
+
 ## 3. Builds (no requirements.txt)
 
 - **REQUIRED**: The `Dockerfile` **MUST** use PDM-based installs from `pyproject.toml`/`pdm.lock`.

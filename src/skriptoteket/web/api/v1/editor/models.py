@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
@@ -121,106 +121,15 @@ class EditorEditOpsRequest(BaseModel):
         return self
 
 
-class EditorEditOpsAnchor(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    match: str = Field(min_length=1)
-    placement: Literal["before", "after"] | None = None
-
-
-class EditorEditOpsCursorTarget(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    kind: Literal["cursor"]
-
-
-class EditorEditOpsSelectionTarget(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    kind: Literal["selection"]
-
-
-class EditorEditOpsDocumentTarget(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    kind: Literal["document"]
-
-
-class EditorEditOpsAnchorTarget(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    kind: Literal["anchor"]
-    anchor: EditorEditOpsAnchor
-
-
-EditorEditOpsTarget = Annotated[
-    EditorEditOpsCursorTarget
-    | EditorEditOpsSelectionTarget
-    | EditorEditOpsDocumentTarget
-    | EditorEditOpsAnchorTarget,
-    Field(discriminator="kind"),
-]
-
-
-class EditorEditOpsInsertOp(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    op: Literal["insert"]
-    target_file: VirtualFileId
-    target: EditorEditOpsTarget
-    content: str = Field(min_length=1)
-
-    @model_validator(mode="after")
-    def validate_insert(self) -> "EditorEditOpsInsertOp":
-        if self.target.kind not in {"cursor", "anchor"}:
-            raise ValueError("Insert ops must target cursor or anchor")
-        if self.target.kind == "anchor" and self.target.anchor.placement is None:
-            raise ValueError("Anchor placement is required for insert ops")
-        return self
-
-
-class EditorEditOpsReplaceOp(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    op: Literal["replace"]
-    target_file: VirtualFileId
-    target: EditorEditOpsTarget
-    content: str = Field(min_length=1)
-
-    @model_validator(mode="after")
-    def validate_replace(self) -> "EditorEditOpsReplaceOp":
-        if self.target.kind == "cursor":
-            raise ValueError("Replace ops must target selection, document, or anchor")
-        return self
-
-
-class EditorEditOpsDeleteOp(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    op: Literal["delete"]
-    target_file: VirtualFileId
-    target: EditorEditOpsTarget
-    content: None = None
-
-    @model_validator(mode="after")
-    def validate_delete(self) -> "EditorEditOpsDeleteOp":
-        if self.target.kind == "cursor":
-            raise ValueError("Delete ops must target selection, document, or anchor")
-        return self
-
-
 class EditorEditOpsPatchOp(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     op: Literal["patch"]
     target_file: VirtualFileId
-    patch: str = Field(min_length=1)
+    patch_lines: list[str] = Field(min_length=1)
 
 
-EditorEditOpsOp = Annotated[
-    EditorEditOpsInsertOp | EditorEditOpsReplaceOp | EditorEditOpsDeleteOp | EditorEditOpsPatchOp,
-    Field(discriminator="op"),
-]
+EditorEditOpsOp = EditorEditOpsPatchOp
 
 
 class EditorEditOpsResponse(BaseModel):

@@ -5,7 +5,7 @@ title: "Runbook: Home Server Operations"
 status: active
 owners: "olof"
 created: 2025-12-16
-updated: 2026-01-16
+updated: 2026-01-17
 system: "hemma.hule.education"
 ---
 
@@ -205,6 +205,7 @@ Log paths (root):
 
 - `/root/logs/incident-YYYYMMDD-HHMMSS-HHMMSS.log` (incident windows)
 - `/root/logs/smart/` (SMART snapshots)
+- `/root/logs/power-rails/` (lm-sensors rail snapshots + alerts)
 - `/sys/fs/pstore` (kernel crash logs; empty until a crash occurs)
 - `/var/lib/systemd/pstore` (archived pstore logs via systemd-pstore)
 
@@ -681,6 +682,49 @@ Check status:
 ```bash
 ssh hemma "sudo systemctl status --no-pager skriptoteket-incident-capture.timer"
 ssh hemma "sudo ls -1 /root/logs/incident-*.log | tail -n 5"
+```
+
+### Power Rail Logging (PSU / Super I/O)
+
+Tracks PSU rail health via lm-sensors + the IT8665E Super I/O chip. This helps identify power
+loss or rail droop when the host wedges without a clean reboot.
+
+Components:
+
+- Package: `lm-sensors`
+- Driver: out-of-tree `it87` DKMS module (supports **IT8665E**)
+  - Source: `/usr/src/it87` (repo: frankcrawford/it87)
+  - Auto-load: `/etc/modules-load.d/it87.conf`
+- Script: `/usr/local/bin/log-power-rails.sh`
+- Systemd: `log-power-rails.service` + `log-power-rails.timer`
+
+Logs:
+
+- Snapshot logs: `/root/logs/power-rails/sensors-*.log` (30-day retention)
+- Alerts: `/root/logs/power-rails/alerts.log` (append-only; only writes on threshold breach)
+
+Alert thresholds (default):
+
+- `3VSB`: 3.00–3.60 V
+- `+3.3V`: 3.00–3.60 V
+- `Vbat`: 2.70–3.40 V
+- `+12V`: 11.40–12.60 V (computed from `in2` * 6)
+- `+5V`: 4.75–5.25 V (computed from `in3` * 2.5)
+
+Notes:
+
+- The `+12V/+5V` mapping follows the ASUS PRIME B350 config in the it87 repo; verify against
+  PRIME X370-PRO if the rails look off.
+- Avoid `ignore_resource_conflict=1` unless required; it can destabilize the host.
+- DKMS should rebuild on kernel updates. If sensors disappear, re-run:
+  `ssh hemma "cd /usr/src/it87 && sudo ./dkms-install.sh"`
+
+Quick checks:
+
+```bash
+ssh hemma "sudo systemctl status --no-pager log-power-rails.timer"
+ssh hemma "sudo ls -t /root/logs/power-rails | head -n 5"
+ssh hemma "sudo tail -n 20 /root/logs/power-rails/alerts.log"
 ```
 
 ### 502 Bad Gateway

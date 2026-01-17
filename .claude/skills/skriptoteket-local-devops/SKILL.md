@@ -1,5 +1,5 @@
 ---
-name: local-devops
+name: skriptoteket-local-devops
 description: Local development + build/devops workflow for Skriptoteket (FastAPI + Vue/Vite) using PDM. Use when setting up or troubleshooting local dev (`pdm install`, `.env`, `pdm run dev`, frontend proxy/logs, correlation/logging), or when changing dependency groups/extras and Dockerfile install commands to avoid PDM group/--prod pitfalls.
 ---
 

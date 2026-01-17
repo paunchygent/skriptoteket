@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from skriptoteket.infrastructure.editor.unified_diff_applier import SubprocessUnifiedDiffApplier
+from skriptoteket.infrastructure.editor.unified_diff_applier import NativeUnifiedDiffApplier
 
 
 @pytest.mark.unit
 def test_prepare_strips_code_fences_and_injects_headers() -> None:
-    applier = SubprocessUnifiedDiffApplier()
+    applier = NativeUnifiedDiffApplier()
 
     prepared = applier.prepare(
         target_file="tool.py",
@@ -29,7 +29,7 @@ def test_prepare_strips_code_fences_and_injects_headers() -> None:
 
 @pytest.mark.unit
 def test_prepare_rejects_multi_file_diff() -> None:
-    applier = SubprocessUnifiedDiffApplier()
+    applier = NativeUnifiedDiffApplier()
 
     with pytest.raises(ValueError):
         applier.prepare(
@@ -51,7 +51,7 @@ def test_prepare_rejects_multi_file_diff() -> None:
 
 @pytest.mark.unit
 def test_apply_uses_whitespace_stage() -> None:
-    applier = SubprocessUnifiedDiffApplier()
+    applier = NativeUnifiedDiffApplier()
 
     base_text = "def foo():\n\treturn 1\n"
     prepared = applier.prepare(
@@ -83,7 +83,7 @@ def test_apply_uses_whitespace_stage() -> None:
 
 @pytest.mark.unit
 def test_prepare_repairs_hunk_header_counts() -> None:
-    applier = SubprocessUnifiedDiffApplier()
+    applier = NativeUnifiedDiffApplier()
 
     prepared = applier.prepare(
         target_file="tool.py",
@@ -114,7 +114,7 @@ def test_prepare_repairs_hunk_header_counts() -> None:
 
 @pytest.mark.unit
 def test_prepare_rejects_malformed_hunk_body_lines() -> None:
-    applier = SubprocessUnifiedDiffApplier()
+    applier = NativeUnifiedDiffApplier()
 
     with pytest.raises(ValueError, match="Diffen är felaktigt formaterad"):
         applier.prepare(
@@ -126,3 +126,127 @@ def test_prepare_rejects_malformed_hunk_body_lines() -> None:
                 print("hello")
             """,
         )
+
+
+@pytest.mark.unit
+def test_prepare_repairs_bare_hunk_headers() -> None:
+    applier = NativeUnifiedDiffApplier()
+
+    prepared = applier.prepare(
+        target_file="tool.py",
+        base_text='print("hi")\n',
+        unified_diff="""
+            *** Begin Patch
+            *** Update File: tool.py
+            @@
+            -print("hi")
+            +print("hello")
+            *** End Patch
+        """,
+    )
+
+    assert "repaired_missing_hunk_ranges" in prepared.normalizations_applied
+    assert "@@ -1,1 +1,1 @@" in prepared.normalized_diff
+
+    result = applier.apply(
+        target_file="tool.py",
+        base_text='print("hi")\n',
+        prepared=prepared,
+        max_fuzz=2,
+        max_offset_lines=50,
+        enable_whitespace_stage=True,
+    )
+
+    assert result.ok is True
+    assert result.next_text == 'print("hello")\n'
+
+
+@pytest.mark.unit
+def test_prepare_synthesizes_hunk_header_when_missing() -> None:
+    applier = NativeUnifiedDiffApplier()
+
+    prepared = applier.prepare(
+        target_file="tool.py",
+        base_text="foo\n",
+        unified_diff="""
+            --- a/tool.py
+            +++ b/tool.py
+            -foo
+            +bar
+        """,
+    )
+
+    assert "synthesized_hunk_header" in prepared.normalizations_applied
+    assert "@@ -1,1 +1,1 @@" in prepared.normalized_diff
+
+    result = applier.apply(
+        target_file="tool.py",
+        base_text="foo\n",
+        prepared=prepared,
+        max_fuzz=2,
+        max_offset_lines=50,
+        enable_whitespace_stage=True,
+    )
+
+    assert result.ok is True
+    assert result.next_text == "bar\n"
+
+
+@pytest.mark.unit
+def test_apply_tolerates_missing_blank_context_lines() -> None:
+    applier = NativeUnifiedDiffApplier()
+
+    base_text = "a\n\nb\n"
+    prepared = applier.prepare(
+        target_file="tool.py",
+        unified_diff="""
+            --- a/tool.py
+            +++ b/tool.py
+            @@ -1,2 +1,3 @@
+             a
+            +x
+             b
+        """,
+    )
+
+    result = applier.apply(
+        target_file="tool.py",
+        base_text=base_text,
+        prepared=prepared,
+        max_fuzz=2,
+        max_offset_lines=50,
+        enable_whitespace_stage=True,
+    )
+
+    assert result.ok is True
+    assert result.meta is not None
+    assert result.meta.fuzz_level_used >= 1
+    assert result.next_text == "a\nx\n\nb\n"
+
+
+@pytest.mark.unit
+def test_apply_allows_insert_into_empty_file() -> None:
+    applier = NativeUnifiedDiffApplier()
+
+    prepared = applier.prepare(
+        target_file="tool.py",
+        unified_diff="""
+            --- a/tool.py
+            +++ b/tool.py
+            @@ -0,0 +1,2 @@
+            +foo
+            +bar
+        """,
+    )
+
+    result = applier.apply(
+        target_file="tool.py",
+        base_text="",
+        prepared=prepared,
+        max_fuzz=2,
+        max_offset_lines=50,
+        enable_whitespace_stage=True,
+    )
+
+    assert result.ok is True
+    assert result.next_text == "foo\nbar"

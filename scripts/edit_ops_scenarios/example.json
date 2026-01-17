@@ -1,0 +1,9 @@
+{
+  "tool_slug": "replace-me",
+  "message": "Add a short docstring to the main entry function.",
+  "active_file": "tool.py",
+  "allow_remote_fallback": false,
+  "selection": null,
+  "cursor": null,
+  "ops": null
+}

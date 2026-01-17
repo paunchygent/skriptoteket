@@ -233,10 +233,13 @@ async def test_edit_ops_preview_maps_web_ops_to_domain_command(
             "virtual_files": _virtual_files("print('hi')\n"),
             "ops": [
                 {
-                    "op": "replace",
+                    "op": "patch",
                     "target_file": "tool.py",
-                    "target": {"kind": "document"},
-                    "content": "print('preview')\n",
+                    "patch_lines": [
+                        "@@ -1 +1 @@",
+                        "-print('hi')",
+                        "+print('preview')",
+                    ],
                 }
             ],
         },
@@ -246,7 +249,7 @@ async def test_edit_ops_preview_maps_web_ops_to_domain_command(
     assert response.json()["ok"] is True
 
     called = preview_handler.handle.call_args.kwargs["command"]
-    assert called.ops[0].op == "replace"
+    assert called.ops[0].op == "patch"
     assert called.ops[0].target_file == "tool.py"
 
 
@@ -291,10 +294,13 @@ async def test_edit_ops_apply_maps_web_ops_and_includes_gating_tokens(
             "virtual_files": _virtual_files("print('hi')\n"),
             "ops": [
                 {
-                    "op": "replace",
+                    "op": "patch",
                     "target_file": "tool.py",
-                    "target": {"kind": "document"},
-                    "content": "print('applied')\n",
+                    "patch_lines": [
+                        "@@ -1 +1 @@",
+                        "-print('hi')",
+                        "+print('applied')",
+                    ],
                 }
             ],
             "base_hash": "sha256:base",
@@ -308,4 +314,4 @@ async def test_edit_ops_apply_maps_web_ops_and_includes_gating_tokens(
     called = apply_handler.handle.call_args.kwargs["command"]
     assert called.base_hash == "sha256:base"
     assert called.patch_id == "sha256:patch"
-    assert called.ops[0].op == "replace"
+    assert called.ops[0].op == "patch"

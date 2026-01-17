@@ -17,14 +17,12 @@ from skriptoteket.protocols.editor_patches import UnifiedDiffApplierProtocol
 from skriptoteket.protocols.llm import (
     EditOpsApplyCommand,
     EditOpsApplyHandlerProtocol,
-    EditOpsCursor,
     EditOpsOp,
     EditOpsPreviewCommand,
     EditOpsPreviewErrorDetails,
     EditOpsPreviewHandlerProtocol,
     EditOpsPreviewMeta,
     EditOpsPreviewResult,
-    EditOpsSelection,
     VirtualFileId,
 )
 from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
@@ -34,12 +32,18 @@ logger = structlog.get_logger(__name__)
 _MAX_FUZZ_DEFAULT = 2
 _MAX_OFFSET_LINES_DEFAULT = 50
 
-_PATCH_MIX_ERROR = "AI-förslaget blandar patch med andra ändringar i samma fil. Regenerera."
 _PATCH_MULTIPLE_ERROR = "AI-förslaget innehåller flera patchar för samma fil. Regenerera."
 
 
 def _sha256(text: str) -> str:
     return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _join_patch_lines(patch_lines: list[str]) -> str:
+    patch = "\n".join(patch_lines)
+    if not patch.endswith("\n"):
+        patch += "\n"
+    return patch
 
 
 def _target_files(ops: Iterable[EditOpsOp]) -> list[VirtualFileId]:
@@ -61,152 +65,12 @@ def _compute_base_hash(
 
 def _validate_patch_coherency(ops: list[EditOpsOp]) -> str | None:
     patch_counts: dict[VirtualFileId, int] = {}
-    non_patch_files: set[VirtualFileId] = set()
     for op in ops:
-        if op.op == "patch":
-            patch_counts[op.target_file] = patch_counts.get(op.target_file, 0) + 1
-        else:
-            non_patch_files.add(op.target_file)
+        patch_counts[op.target_file] = patch_counts.get(op.target_file, 0) + 1
     for file_id, count in patch_counts.items():
         if count > 1:
             return _PATCH_MULTIPLE_ERROR
-        if file_id in non_patch_files:
-            return _PATCH_MIX_ERROR
     return None
-
-
-def _resolve_anchor(text: str, match: str) -> tuple[int, int] | None:
-    if not match:
-        return None
-    start = text.find(match)
-    if start == -1:
-        return None
-    second = text.find(match, start + len(match))
-    if second != -1:
-        return None
-    return start, start + len(match)
-
-
-def _apply_insert(
-    *,
-    file_id: VirtualFileId,
-    current: str,
-    op: EditOpsOp,
-    selection: EditOpsSelection | None,
-    cursor: EditOpsCursor | None,
-    active_file: VirtualFileId,
-) -> tuple[str | None, str | None]:
-    if op.op != "insert":
-        return None, "Internal error: op mismatch"
-    if not op.content:
-        return None, "AI-förslaget saknar innehåll för insert."
-
-    target = op.target
-    if target.kind == "cursor":
-        if cursor is None:
-            return None, "AI-förslaget använder markör men ingen markör finns."
-        if file_id != active_file:
-            return None, "AI-förslaget använder markör i en annan fil än den aktiva."
-        if cursor.pos < 0 or cursor.pos > len(current):
-            return None, "AI-förslagets markör matchar inte filens innehåll."
-        return current[: cursor.pos] + op.content + current[cursor.pos :], None
-
-    if target.kind == "anchor":
-        resolved = _resolve_anchor(current, target.anchor.match)
-        if resolved is None:
-            return None, "AI-förslaget hittade inte ankaret i filen. Regenerera."
-        start, end = resolved
-        if target.anchor.placement is None:
-            return None, "AI-förslaget saknar placering för ankaret."
-        insert_at = start if target.anchor.placement == "before" else end
-        return current[:insert_at] + op.content + current[insert_at:], None
-
-    return None, f"AI-förslaget använder insert med {target.kind}-mål som inte stöds."
-
-
-def _apply_replace(
-    *,
-    file_id: VirtualFileId,
-    current: str,
-    op: EditOpsOp,
-    selection: EditOpsSelection | None,
-    cursor: EditOpsCursor | None,
-    active_file: VirtualFileId,
-) -> tuple[str | None, str | None]:
-    if op.op != "replace":
-        return None, "Internal error: op mismatch"
-    if not op.content:
-        return None, "AI-förslaget saknar innehåll för replace."
-
-    target = op.target
-    if target.kind == "selection":
-        if selection is None:
-            return None, "AI-förslaget använder markering men ingen markering finns."
-        if file_id != active_file:
-            return None, "AI-förslaget använder markering i en annan fil än den aktiva."
-        if selection.start < 0 or selection.end < 0 or selection.end < selection.start:
-            return None, "AI-förslagets markering matchar inte filens innehåll."
-        if selection.end > len(current):
-            return None, "AI-förslagets markering matchar inte filens innehåll."
-        return current[: selection.start] + op.content + current[selection.end :], None
-
-    if target.kind == "document":
-        return op.content, None
-
-    if target.kind == "anchor":
-        resolved = _resolve_anchor(current, target.anchor.match)
-        if resolved is None:
-            return None, "AI-förslaget hittade inte ankaret i filen. Regenerera."
-        start, end = resolved
-        return current[:start] + op.content + current[end:], None
-
-    if target.kind == "cursor":
-        return None, "AI-förslaget använder replace med cursor-mål som inte stöds."
-
-    return None, "AI-förslaget kunde inte tolkas."
-
-
-def _apply_delete(
-    *,
-    file_id: VirtualFileId,
-    current: str,
-    op: EditOpsOp,
-    selection: EditOpsSelection | None,
-    cursor: EditOpsCursor | None,
-    active_file: VirtualFileId,
-) -> tuple[str | None, str | None]:
-    if op.op != "delete":
-        return None, "Internal error: op mismatch"
-
-    if getattr(op, "content", None) is not None:
-        return None, "AI-förslaget skickade innehåll för delete."
-
-    target = op.target
-    if target.kind == "selection":
-        if selection is None:
-            return None, "AI-förslaget använder markering men ingen markering finns."
-        if file_id != active_file:
-            return None, "AI-förslaget använder markering i en annan fil än den aktiva."
-        if selection.start < 0 or selection.end < 0 or selection.end < selection.start:
-            return None, "AI-förslagets markering matchar inte filens innehåll."
-        if selection.end > len(current):
-            return None, "AI-förslagets markering matchar inte filens innehåll."
-        return current[: selection.start] + current[selection.end :], None
-
-    if target.kind == "document":
-        return "", None
-
-    if target.kind == "anchor":
-        resolved = _resolve_anchor(current, target.anchor.match)
-        if resolved is None:
-            return None, "AI-förslaget hittade inte ankaret i filen. Regenerera."
-        start, end = resolved
-        return current[:start] + current[end:], None
-
-    if target.kind == "cursor":
-        return None, "AI-förslaget använder delete med cursor-mål som inte stöds."
-
-    return None, "AI-förslaget kunde inte tolkas."
 
 
 class EditOpsPreviewHandler(EditOpsPreviewHandlerProtocol):
@@ -306,7 +170,9 @@ class EditOpsPreviewHandler(EditOpsPreviewHandlerProtocol):
             if op.op == "patch":
                 try:
                     prepared = self._patch_applier.prepare(
-                        target_file=file_id, unified_diff=op.patch
+                        target_file=file_id,
+                        unified_diff=_join_patch_lines(op.patch_lines),
+                        base_text=current,
                     )
                 except ValueError as exc:
                     errors.append(str(exc))
@@ -356,52 +222,6 @@ class EditOpsPreviewHandler(EditOpsPreviewHandlerProtocol):
                     max_offset = max(max_offset, result.meta.max_offset)
                     applied_cleanly = applied_cleanly and result.meta.applied_cleanly
                 continue
-
-            # CRUD ops
-            payload = op.model_dump(exclude_none=True)
-            normalized_ops_for_id.append(payload)
-
-            if op.op == "insert":
-                updated, err = _apply_insert(
-                    file_id=file_id,
-                    current=current,
-                    op=op,
-                    selection=command.selection,
-                    cursor=command.cursor,
-                    active_file=command.active_file,
-                )
-            elif op.op == "replace":
-                updated, err = _apply_replace(
-                    file_id=file_id,
-                    current=current,
-                    op=op,
-                    selection=command.selection,
-                    cursor=command.cursor,
-                    active_file=command.active_file,
-                )
-            elif op.op == "delete":
-                updated, err = _apply_delete(
-                    file_id=file_id,
-                    current=current,
-                    op=op,
-                    selection=command.selection,
-                    cursor=command.cursor,
-                    active_file=command.active_file,
-                )
-            else:
-                updated, err = None, "AI-förslaget har en okänd operation."
-
-            if err:
-                errors.append(err)
-                error_details.append(
-                    EditOpsPreviewErrorDetails(op_index=index, target_file=file_id)
-                )
-                error_kind = "crud_failed"
-                failed_op_index = index
-                failed_target_file = file_id
-                break
-            if updated is not None:
-                next_files[file_id] = updated
 
         patch_id_payload = json.dumps(
             normalized_ops_for_id,

@@ -52,6 +52,8 @@ class Settings(BaseSettings):
     # Platform-only debug capture (OFF by default; see ADR-0051).
     # Captures are written under ARTIFACTS_ROOT and may contain tool code/model output.
     LLM_CAPTURE_ON_ERROR_ENABLED: bool = False
+    # Dev-only: capture successful chat-ops responses.
+    LLM_CAPTURE_ON_SUCCESS_ENABLED: bool = False
 
     LOGIN_EVENTS_RETENTION_DAYS: int = 90
 

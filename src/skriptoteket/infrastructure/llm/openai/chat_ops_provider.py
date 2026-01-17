@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import httpx
+import structlog
 
 from skriptoteket.config import Settings
 from skriptoteket.infrastructure.llm.model_families import is_gpt5_family_model
@@ -8,6 +9,11 @@ from skriptoteket.infrastructure.llm.openai.common import (
     is_local_llama_server,
     merge_headers,
     normalize_base_url,
+    supports_gbnf_grammar,
+)
+from skriptoteket.infrastructure.llm.openai.grammars import (
+    EDIT_OPS_PATCH_ONLY_GBNF,
+    EDIT_OPS_PATCH_ONLY_RESPONSE_FORMAT,
 )
 from skriptoteket.infrastructure.llm.openai.parsing import extract_first_choice_content
 from skriptoteket.infrastructure.llm.openai.payloads import build_chat_payload
@@ -29,6 +35,7 @@ class OpenAIChatOpsProvider(ChatOpsProviderProtocol):
         model: str | None = None,
         reasoning_effort: str | None = None,
     ) -> None:
+        self._settings = settings
         self._base_url = normalize_base_url(base_url=base_url or settings.LLM_CHAT_OPS_BASE_URL)
         self._api_key = (
             settings.OPENAI_LLM_CHAT_OPS_API_KEY if api_key is None else api_key
@@ -57,6 +64,7 @@ class OpenAIChatOpsProvider(ChatOpsProviderProtocol):
         request: LLMChatRequest,
         system_prompt: str,
     ) -> LLMChatOpsResponse:
+        logger = structlog.get_logger(__name__)
         url = f"{self._base_url}/chat/completions"
         headers = merge_headers(api_key=self._api_key, extra_headers=self._extra_headers)
 
@@ -77,6 +85,18 @@ class OpenAIChatOpsProvider(ChatOpsProviderProtocol):
             prompt_cache_key=self._prompt_cache_key,
             allow_prompt_cache_params=self._allow_prompt_cache_params,
         )
+        if supports_gbnf_grammar(base_url=self._base_url):
+            payload["grammar"] = EDIT_OPS_PATCH_ONLY_GBNF
+        else:
+            payload["response_format"] = EDIT_OPS_PATCH_ONLY_RESPONSE_FORMAT
+        if self._settings.ENVIRONMENT != "production":
+            logger.info(
+                "chat_ops_structured_output",
+                model=self._model,
+                base_url=self._base_url,
+                grammar="grammar" in payload,
+                response_format="response_format" in payload,
+            )
 
         response = await self._client.post(
             url,

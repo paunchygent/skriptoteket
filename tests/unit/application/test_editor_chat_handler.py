@@ -37,6 +37,7 @@ from skriptoteket.protocols.llm import (
     EditorChatDoneEvent,
     EditorChatMetaEvent,
 )
+from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
 from skriptoteket.protocols.tool_session_turns import ToolSessionTurnRepositoryProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
@@ -117,6 +118,7 @@ def _make_handler(
     system_prompt_loader=None,
 ) -> EditorChatHandler:
     prompt_builder = SettingsBasedEditorChatPromptBuilder(settings=settings)
+    capture_store = MagicMock(spec=LlmCaptureStoreProtocol)
     turn_preparer = EditorChatTurnPreparer(
         settings=settings,
         prompt_builder=prompt_builder,
@@ -128,6 +130,8 @@ def _make_handler(
         id_generator=id_generator,
     )
     stream_orchestrator = EditorChatStreamOrchestrator(
+        settings=settings,
+        capture_store=capture_store,
         providers=providers,
         failover=failover,
         uow=uow,

@@ -42,14 +42,14 @@ async def test_preview_writes_capture_on_coherency_error_when_enabled() -> None:
         actor = make_user(role=Role.CONTRIBUTOR)
         tool_id = uuid4()
 
-        patch = (
-            "diff --git a/tool.py b/tool.py\n"
-            "--- a/tool.py\n"
-            "+++ b/tool.py\n"
-            "@@ -1 +1 @@\n"
-            "-print('hi')\n"
-            "+print('hej')\n"
-        )
+        patch_lines = [
+            "diff --git a/tool.py b/tool.py",
+            "--- a/tool.py",
+            "+++ b/tool.py",
+            "@@ -1 +1 @@",
+            "-print('hi')",
+            "+print('hej')",
+        ]
         result = await handler.handle(
             actor=actor,
             command=EditOpsPreviewCommand(
@@ -59,8 +59,8 @@ async def test_preview_writes_capture_on_coherency_error_when_enabled() -> None:
                 cursor=None,
                 virtual_files={"tool.py": "print('hi')\n"},
                 ops=[
-                    EditOpsPatchOp(op="patch", target_file="tool.py", patch=patch),
-                    EditOpsPatchOp(op="patch", target_file="tool.py", patch=patch),
+                    EditOpsPatchOp(op="patch", target_file="tool.py", patch_lines=patch_lines),
+                    EditOpsPatchOp(op="patch", target_file="tool.py", patch_lines=patch_lines),
                 ],
             ),
         )

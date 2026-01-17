@@ -4,7 +4,11 @@ from collections.abc import Mapping
 from typing import Literal, Protocol
 from uuid import UUID
 
-LlmCaptureKind = Literal["chat_ops_response", "edit_ops_preview_failure"]
+LlmCaptureKind = Literal[
+    "chat_ops_response",
+    "edit_ops_preview_failure",
+    "chat_request_context",
+]
 
 
 class LlmCaptureStoreProtocol(Protocol):

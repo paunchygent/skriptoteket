@@ -59,7 +59,13 @@ class PatchApplyResult(BaseModel):
 
 
 class UnifiedDiffApplierProtocol(Protocol):
-    def prepare(self, *, target_file: VirtualFileId, unified_diff: str) -> PreparedUnifiedDiff: ...
+    def prepare(
+        self,
+        *,
+        target_file: VirtualFileId,
+        unified_diff: str,
+        base_text: str | None = None,
+    ) -> PreparedUnifiedDiff: ...
 
     def apply(
         self,

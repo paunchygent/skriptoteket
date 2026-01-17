@@ -15,6 +15,13 @@ def is_local_llama_server(*, base_url: str) -> bool:
     return parsed.port == 8082 and parsed.hostname in {"localhost", "127.0.0.1"}
 
 
+def supports_gbnf_grammar(*, base_url: str) -> bool:
+    """Whether the upstream supports llama.cpp GBNF via the `grammar` request field."""
+
+    parsed = urlparse(base_url)
+    return parsed.port == 8082
+
+
 def merge_headers(*, api_key: str, extra_headers: dict[str, str]) -> dict[str, str]:
     headers: dict[str, str] = dict(extra_headers) if extra_headers else {}
     if api_key:

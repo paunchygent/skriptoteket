@@ -7,7 +7,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2026-01-01
-updated: 2026-01-14
+updated: 2026-01-16
 links: ["EPIC-08", "ST-08-20", "ST-08-21", "ST-08-22", "ST-08-24", "ST-14-17",
 "ST-14-30", "ST-08-28", "ADR-0043"]
 ---
@@ -101,8 +101,9 @@ files explicitly so:
 
 To match coding-assistant expectations and reduce ambiguity/hallucination, we align on a **patch-only** strategy. The assistant must use unified diffs to express changes.
 
-- **Patch only**: The assistant must emit `patch` operations that carry a unified diff for a single virtual file.
-- **Strict apply**: The diff must reference the same canonical virtual file id in the `a/` and `b/` headers, and apply is strict (all hunks must match; bounded fuzz allowed).
+- **Patch only**: The assistant must emit `patch` operations that carry a unified diff for a single virtual file (encoded
+  as `patch_lines`).
+- **Strict apply**: The diff must reference the same canonical virtual file id in the `a/` and `b/` headers (missing headers are synthesized), and apply is strict (all hunks must match; bounded fuzz allowed).
 - **No cursor/anchor targeting in v2**: The system prompt excludes v1 CRUD (cursor/selection targets) and v2 anchor targets so the model must think in diffs, which improves coherence and reduces —invalid anchor— errors.
 
 #### 2.2.1 Triggering v2 + request semantics (required)
@@ -140,16 +141,30 @@ Shape (conceptual):
 {
   "op": "patch",
   "target_file": "tool.py",
-  "patch": "diff --git a/tool.py b/tool.py\n--- a/tool.py\n+++ b/tool.py\n@@ ...\n"
+  "patch_lines": [
+    "diff --git a/tool.py b/tool.py",
+    "--- a/tool.py",
+    "+++ b/tool.py",
+    "@@ ... @@",
+    "..."
+  ]
 }
 ```
 
 Rules:
 
 - `target_file` MUST be one of the canonical virtual file ids.
+- The patch MUST be represented as `patch_lines` where each element is a single unified-diff line. If the model inserts
+  literal newlines inside a `patch_lines` entry, the backend splits them before validation.
+- Backend reconstructs a unified diff string by joining with `\n` (LF) and applying sanitization/normalization steps
+  before attempting apply.
 - The patch MUST reference the same canonical id in both headers (`a/<id>` and `b/<id>`).
-- Backend MUST sanitize/normalize predictable LLM noise (code fences, indentation, CRLF, invisible chars, missing
-  headers) before attempting apply.
+- Backend MUST sanitize/normalize predictable LLM noise (code fences, indentation, CRLF, invisible chars, patch wrappers,
+  missing headers) before attempting apply.
+- Diff shape handling is layered:
+  - valid `@@ -a,b +c,d @@` hunks → apply directly
+  - bare `@@` or missing hunk ranges → repair hunk headers using base-text anchoring
+  - no hunks or unanchorable hunks → safe-fail with regenerate guidance
 - Apply MUST be atomic (—all hunks or nothing—). Multi-file diffs are rejected.
 - Apply uses a **bounded fuzz ladder** to reduce regeneration loops:
   - Stage 0: strict apply (fuzz 0)
@@ -163,6 +178,15 @@ Rules:
 #### 2.2.3 Anchor target (v2) - DEPRECATED
 
 *Note: Anchor targeting was proposed as an alternative to cursors but proved brittle and ambiguous compared to unified diffs. It is removed from the system prompt in favor of patch-only.*
+
+#### 2.2.4 Constrained decoding (llama.cpp)
+
+To reduce `parse_failed` due to malformed JSON (e.g. unquoted `@@ ... @@` lines in `patch_lines` or stray code fences),
+the backend enforces structured output at decode time:
+- For llama.cpp (`llama-server`), send a **patch-only strict GBNF grammar** via the OpenAI-compatible `grammar` field.
+- For OpenAI, use `response_format` (JSON schema) for patch-only responses.
+
+These guarantees are syntactic (JSON shape). Unified-diff validity is still enforced by backend validation + preview/apply.
 
 ### 3) Guardrails: diff preview + atomic apply + undo
 

@@ -1764,8 +1764,8 @@ export interface components {
              * @enum {string}
              */
             op: "patch";
-            /** Patch */
-            patch: string;
+            /** Patch Lines */
+            patch_lines: string[];
             /**
              * Target File
              * @enum {string}

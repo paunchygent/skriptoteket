@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
-from typing import Annotated, Literal, Protocol
+from typing import Literal, Protocol
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
@@ -23,9 +23,6 @@ VirtualFileId = Literal[
     "input_schema.json",
     "usage_instructions.md",
 ]
-EditOpKind = Literal["insert", "replace", "delete", "patch"]
-EditTargetKind = Literal["cursor", "selection", "document", "anchor"]
-EditAnchorPlacement = Literal["before", "after"]
 
 
 class PromptEvalMeta(BaseModel):
@@ -116,97 +113,12 @@ class EditOpsCursor(BaseModel):
     pos: int
 
 
-class EditOpsAnchor(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    match: str = Field(min_length=1)
-    placement: EditAnchorPlacement | None = None
-
-
-class EditOpsCursorTarget(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    kind: Literal["cursor"]
-
-
-class EditOpsSelectionTarget(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    kind: Literal["selection"]
-
-
-class EditOpsDocumentTarget(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    kind: Literal["document"]
-
-
-class EditOpsAnchorTarget(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    kind: Literal["anchor"]
-    anchor: EditOpsAnchor
-
-
-EditOpsTarget = Annotated[
-    EditOpsCursorTarget | EditOpsSelectionTarget | EditOpsDocumentTarget | EditOpsAnchorTarget,
-    Field(discriminator="kind"),
-]
-
-
-class EditOpsInsertOp(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    op: Literal["insert"]
-    target_file: VirtualFileId
-    target: EditOpsTarget
-    content: str = Field(min_length=1)
-
-    @model_validator(mode="after")
-    def validate_insert(self) -> "EditOpsInsertOp":
-        if self.target.kind not in {"cursor", "anchor"}:
-            raise ValueError("Insert ops must target cursor or anchor")
-        if self.target.kind == "anchor" and self.target.anchor.placement is None:
-            raise ValueError("Anchor placement is required for insert ops")
-        return self
-
-
-class EditOpsReplaceOp(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    op: Literal["replace"]
-    target_file: VirtualFileId
-    target: EditOpsTarget
-    content: str = Field(min_length=1)
-
-    @model_validator(mode="after")
-    def validate_replace(self) -> "EditOpsReplaceOp":
-        if self.target.kind == "cursor":
-            raise ValueError("Replace ops must target selection, document, or anchor")
-        return self
-
-
-class EditOpsDeleteOp(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    op: Literal["delete"]
-    target_file: VirtualFileId
-    target: EditOpsTarget
-    content: None = None
-
-    @model_validator(mode="after")
-    def validate_delete(self) -> "EditOpsDeleteOp":
-        if self.target.kind == "cursor":
-            raise ValueError("Delete ops must target selection, document, or anchor")
-        return self
-
-
 class EditOpsPatchOp(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     op: Literal["patch"]
     target_file: VirtualFileId
-    patch: str = Field(min_length=1)
+    patch_lines: list[str] = Field(min_length=1)
 
     @model_validator(mode="after")
     def validate_patch_shape(self) -> "EditOpsPatchOp":
@@ -216,9 +128,9 @@ class EditOpsPatchOp(BaseModel):
         obvious multi-file diffs and wrong-file targets when headers are present.
         """
 
-        patch = self.patch.replace("\r\n", "\n").replace("\r", "\n")
-        if "@@" not in patch:
-            raise ValueError("Patch must include at least one @@ hunk header")
+        for line in self.patch_lines:
+            if "\n" in line or "\r" in line:
+                raise ValueError("Patch lines must not contain newline characters")
 
         def basename(path: str) -> str:
             cleaned = path
@@ -236,7 +148,7 @@ class EditOpsPatchOp(BaseModel):
         header_old_count = 0
         header_new_count = 0
 
-        for line in patch.split("\n"):
+        for line in self.patch_lines:
             if line.startswith("diff --git "):
                 diff_git_count += 1
                 parts = line.split()
@@ -279,10 +191,7 @@ class EditOpsPatchOp(BaseModel):
         return self
 
 
-EditOpsOp = Annotated[
-    EditOpsInsertOp | EditOpsReplaceOp | EditOpsDeleteOp | EditOpsPatchOp,
-    Field(discriminator="op"),
-]
+EditOpsOp = EditOpsPatchOp
 
 
 class EditOpsCommand(BaseModel):

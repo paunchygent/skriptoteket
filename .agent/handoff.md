@@ -12,15 +12,16 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-01-15
+- Date: 2026-01-16
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
-- Completed: recent — ST-14-11/12 done; ST-14-19 done; ST-14-20 done; ST-14-23 done; ST-08-24 done; ST-08-28 done (history: `.agent/readme-first.md`)
+- Completed: recent — ST-14-11/12 done; ST-14-19 done; ST-14-20 done; ST-14-23 done; ST-08-24 done; ST-08-28 done; ST-08-29 done (history: `.agent/readme-first.md`)
 
-## Current Session (2026-01-15)
+## Current Session (2026-01-16)
 
 - ST-14-23 implemented (action defaults/prefill): ADR-0060 + review doc approved; updated story + sprint plan + `docs/index.md` (`docs/adr/adr-0060-ui-contract-v2x-action-prefill.md`, `docs/backlog/reviews/review-epic-14-ui-contract-v2x-action-prefill.md`, `docs/backlog/stories/story-14-23-ui-contract-action-defaults-prefill.md`, `docs/backlog/sprints/sprint-2026-06-09-tool-ui-contract-v2-action-defaults-and-file-refs.md`).
+- ST-08-29 implemented: edit-ops patch ops now use `patch_lines` encoding (PR-0034) and llama.cpp chat-ops requests are constrained with a patch-only strict GBNF grammar to prevent malformed JSON `parse_failed` (PR-0035). (`docs/adr/adr-0051-chat-first-ai-editing.md`, `src/skriptoteket/infrastructure/llm/openai/chat_ops_provider.py`)
 - Implemented PR-0031 “Editor AI: patch-only edit-ops alignment (prompt + diff hygiene + correlation)”:
   - Correlation header propagated across edit-ops → preview → apply; selection/cursor omitted in edit-ops requests (`frontend/apps/skriptoteket/src/composables/editor/editOps/editorEditOpsApi.ts`, `frontend/apps/skriptoteket/src/composables/editor/useEditorEditOps.ts`).
   - Patch-only system prompt + backend enforcement (safe-fail non-patch ops) (`src/skriptoteket/application/editor/system_prompts/editor_chat_ops_v1.txt`, `src/skriptoteket/application/editor/edit_ops_handler.py`).
@@ -71,6 +72,9 @@ Keep this file updated so the next session can pick up work quickly.
   - `pdm run pytest tests/unit/web/test_correlation_middleware_asgi.py`
   - Live (ST-07-06): `pdm run dev-logs` then `curl -s -D - -o /dev/null -H 'X-Correlation-ID: 11111111-1111-1111-1111-111111111111' http://127.0.0.1:8000/healthz` + `rg '11111111-1111-1111-1111-111111111111' .artifacts/dev-backend.log` (expects `uvicorn.access` JSON line includes `correlation_id`)
   - Manual (PR-0031 correlation): called `/api/v1/editor/edit-ops` → `/preview` → `/apply` with `X-Correlation-ID=72d70ad9-0265-4e7e-94b8-cd0753c87b79`; confirmed response headers + `docker compose logs web --since 10m | rg '72d70ad9-0265-4e7e-94b8-cd0753c87b79|ai_chat_ops_result|edit_ops_preview'`.
+  - Manual (ST-08-29): confirmed `/openapi.json` exposes `EditorEditOpsPatchOp.patch_lines` and `POST /api/v1/editor/edit-ops` returns `ops[0].patch_lines` (no `parse_failed`).
+  - Manual (PR-0035 grammar): called `POST /api/v1/editor/edit-ops` with `X-Correlation-ID=edf309e7-525f-4728-b79f-41ffa6f825ff`; confirmed llama-server request + `ai_chat_ops_result` logs show `parse_ok=true` and `ops_count=1` (no `parse_failed`).
+  - Manual (edit-ops preview/apply blank-skip): `POST /api/v1/editor/edit-ops/preview` + `/apply` with patch op that omits an internal blank line; confirmed ok, `requires_confirmation=true`, `fuzz_level_used=1`, `applied_cleanly=false` (`X-Correlation-ID=ad0a7e3d-60ac-450d-9efe-56b2f2a2948d`).
   - Artifacts: `.artifacts/ui-smoke/profile-ai-settings-desktop.png`, `.artifacts/ui-editor-smoke/editor-loaded.png`, `.artifacts/ui-editor-smoke/diff-mode.png`, `.artifacts/ui-editor-smoke/diff-empty-state.png`, `.artifacts/ui-editor-smoke/test-mode.png`
 
 ## How to Run

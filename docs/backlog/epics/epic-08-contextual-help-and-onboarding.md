@@ -5,7 +5,7 @@ title: "Contextual help (Hjälp) and onboarding"
 status: active
 owners: "agents"
 created: 2025-12-17
-updated: 2026-01-11
+updated: 2026-01-16
 outcome: "Users understand what they can do on each page via concise, Swedish, context-aware help without external documentation."
 ---
 
@@ -56,8 +56,9 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - [ST-08-26: AI: chat/chat-ops provider failover](../stories/story-08-26-ai-chat-provider-failover.md)
 - [ST-08-27: Research: editor chat virtual file context retention + tokenizer budgets](../stories/story-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md)
 - [ST-08-28: AI: platform-only full model response capture on failures](../stories/story-08-28-ai-chat-ops-response-capture-on-error.md)
+- [ST-08-29: AI edit ops: patch_lines encoding for patch ops (avoid parse_failed)](../stories/story-08-29-ai-edit-ops-patch-lines-encoding.md)
 
-## Implementation Summary (as of 2026-01-11)
+## Implementation Summary (as of 2026-01-16)
 
 - AI inline completions (ghost text) are live with backend LLM proxy and CodeMirror integration (ST-08-14).
 - AI edit suggestions MVP (ST-08-16) shipped, then the legacy edit-suggestion flow was removed after cutover to
@@ -71,6 +72,7 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - GPT-5 request shaping is supported and the legacy edit suggestions surface is removed (ST-08-25).
 - Chat/chat-ops provider failover (local primary → OpenAI fallback) is implemented with explicit opt-in for remote fallback (ST-08-26).
 - Platform-only debug capture for edit-ops/preview failures is available under `ARTIFACTS_ROOT/llm-captures/` when `LLM_CAPTURE_ON_ERROR_ENABLED=true` (ST-08-28).
+- Patch ops are encoded as `patch_lines` to avoid `parse_failed` caused by invalid JSON newlines in model output (ST-08-29).
 - Editor AI chat drawer MVP is wired to the tool-scoped chat endpoints with server-side history restore + clear chat (ST-08-20).
 - Remaining work:
   - Tabby provider switch + prompt A/B evaluation for edit suggestions (ST-08-17).

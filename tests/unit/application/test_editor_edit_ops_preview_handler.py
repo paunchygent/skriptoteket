@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
@@ -20,10 +19,8 @@ from skriptoteket.protocols.editor_patches import (
 )
 from skriptoteket.protocols.llm import (
     EditOpsApplyCommand,
-    EditOpsDocumentTarget,
     EditOpsPatchOp,
     EditOpsPreviewCommand,
-    EditOpsReplaceOp,
 )
 from tests.fixtures.identity_fixtures import make_user
 
@@ -34,7 +31,13 @@ class StubCaptureStore:
 
 
 class StubPatchApplier:
-    def prepare(self, *, target_file: str, unified_diff: str) -> PreparedUnifiedDiff:
+    def prepare(
+        self,
+        *,
+        target_file: str,
+        unified_diff: str,
+        base_text: str | None = None,
+    ) -> PreparedUnifiedDiff:
         return PreparedUnifiedDiff(
             target_file=target_file,
             normalized_diff=unified_diff,
@@ -98,7 +101,11 @@ async def test_preview_requires_confirmation_when_patch_offset_high() -> None:
                 EditOpsPatchOp(
                     op="patch",
                     target_file="tool.py",
-                    patch="@@ -1 +1 @@\n-print('hi')\n+print('hello')\n",
+                    patch_lines=[
+                        "@@ -1 +1 @@",
+                        "-print('hi')",
+                        "+print('hello')",
+                    ],
                 )
             ],
         ),
@@ -117,7 +124,7 @@ async def test_apply_rejects_when_base_hash_mismatch() -> None:
     preview_handler = EditOpsPreviewHandler(
         settings=Settings(),
         capture_store=StubCaptureStore(),
-        patch_applier=MagicMock(),
+        patch_applier=StubPatchApplier(),
     )
     apply_handler = EditOpsApplyHandler(preview=preview_handler)
 
@@ -131,11 +138,14 @@ async def test_apply_rejects_when_base_hash_mismatch() -> None:
                 cursor=None,
                 virtual_files={"tool.py": "print('hi')\n"},
                 ops=[
-                    EditOpsReplaceOp(
-                        op="replace",
+                    EditOpsPatchOp(
+                        op="patch",
                         target_file="tool.py",
-                        target=EditOpsDocumentTarget(kind="document"),
-                        content="print('bye')\n",
+                        patch_lines=[
+                            "@@ -1 +1 @@",
+                            "-print('hi')",
+                            "+print('bye')",
+                        ],
                     )
                 ],
                 base_hash="sha256:bad",
@@ -153,19 +163,22 @@ async def test_apply_rejects_when_patch_id_mismatch() -> None:
     preview_handler = EditOpsPreviewHandler(
         settings=Settings(),
         capture_store=StubCaptureStore(),
-        patch_applier=MagicMock(),
+        patch_applier=StubPatchApplier(),
     )
     apply_handler = EditOpsApplyHandler(preview=preview_handler)
 
     tool_id = uuid4()
     virtual_files = {"tool.py": "print('hi')\n"}
     ops = [
-        EditOpsReplaceOp(
-            op="replace",
+        EditOpsPatchOp(
+            op="patch",
             target_file="tool.py",
-            target=EditOpsDocumentTarget(kind="document"),
-            content="print('bye')\n",
-        )
+            patch_lines=[
+                "@@ -1 +1 @@",
+                "-print('hi')",
+                "+print('bye')",
+            ],
+        ),
     ]
 
     preview = await preview_handler.handle(
@@ -205,19 +218,22 @@ async def test_apply_returns_preview_result_when_tokens_match() -> None:
     preview_handler = EditOpsPreviewHandler(
         settings=Settings(),
         capture_store=StubCaptureStore(),
-        patch_applier=MagicMock(),
+        patch_applier=StubPatchApplier(),
     )
     apply_handler = EditOpsApplyHandler(preview=preview_handler)
 
     tool_id = uuid4()
     virtual_files = {"tool.py": "print('hi')\n"}
     ops = [
-        EditOpsReplaceOp(
-            op="replace",
+        EditOpsPatchOp(
+            op="patch",
             target_file="tool.py",
-            target=EditOpsDocumentTarget(kind="document"),
-            content="print('bye')\n",
-        )
+            patch_lines=[
+                "@@ -1 +1 @@",
+                "-print('hi')",
+                "+print('bye')",
+            ],
+        ),
     ]
 
     preview = await preview_handler.handle(
@@ -247,4 +263,4 @@ async def test_apply_returns_preview_result_when_tokens_match() -> None:
     )
 
     assert applied.ok is True
-    assert applied.after_virtual_files["tool.py"] == "print('bye')\n"
+    assert applied.after_virtual_files["tool.py"] == "print('hi')\n# patched\n"

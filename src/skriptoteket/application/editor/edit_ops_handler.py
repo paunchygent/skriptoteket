@@ -96,6 +96,16 @@ def _is_context_window_error(exc: httpx.HTTPStatusError) -> bool:
     return "exceed_context_size_error" in haystack.lower()
 
 
+def _should_capture_success(*, settings: Settings, capture_id: UUID | None) -> bool:
+    if settings.ENVIRONMENT == "production":
+        return False
+    if not settings.LLM_CAPTURE_ON_SUCCESS_ENABLED:
+        return False
+    if capture_id is None:
+        return False
+    return True
+
+
 @dataclass(frozen=True, slots=True)
 class _PreparedOpsRequest:
     messages: list[ChatMessage]
@@ -152,6 +162,20 @@ class EditOpsHandler(EditOpsHandlerProtocol):
         self, *, virtual_files: dict[VirtualFileId, str]
     ) -> dict[VirtualFileId, str]:
         return {file_id: self._fingerprint(virtual_files[file_id]) for file_id in _VIRTUAL_FILE_IDS}
+
+    def _build_base_hashes(
+        self, *, virtual_files: dict[VirtualFileId, str]
+    ) -> dict[VirtualFileId, str]:
+        return {
+            file_id: self._fingerprint(f"{file_id}\u0000{virtual_files[file_id]}")
+            for file_id in _VIRTUAL_FILE_IDS
+        }
+
+    def _build_base_hash(self, *, virtual_files: dict[VirtualFileId, str]) -> str:
+        payload = "\u0000".join(
+            [f"{file_id}\u0000{virtual_files[file_id]}" for file_id in _VIRTUAL_FILE_IDS]
+        )
+        return self._fingerprint(payload)
 
     def _build_user_payload(self, *, command: EditOpsCommand) -> str:
         virtual_files = {file_id: command.virtual_files[file_id] for file_id in _VIRTUAL_FILE_IDS}
@@ -317,10 +341,15 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                 capture_id = UUID(raw_correlation_id)
             except ValueError:
                 capture_id = None
+        capture_success_enabled = _should_capture_success(
+            settings=self._settings, capture_id=capture_id
+        )
 
         try:
             template_id = self._settings.LLM_CHAT_OPS_TEMPLATE_ID
             base_fingerprints = self._build_base_fingerprints(virtual_files=command.virtual_files)
+            base_hashes = self._build_base_hashes(virtual_files=command.virtual_files)
+            base_hash = self._build_base_hash(virtual_files=command.virtual_files)
 
             def log_result(
                 *,
@@ -358,6 +387,23 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                 if not self._settings.LLM_CAPTURE_ON_ERROR_ENABLED:
                     return
                 if capture_id is None:
+                    return
+                try:
+                    await self._capture_store.write_capture(
+                        kind="chat_ops_response",
+                        capture_id=capture_id,
+                        payload=payload,
+                    )
+                except Exception as exc:  # noqa: BLE001 - never break requests for debug capture
+                    logger.warning(
+                        "llm_capture_write_failed",
+                        kind="chat_ops_response",
+                        capture_id=str(capture_id),
+                        error_type=type(exc).__name__,
+                    )
+
+            async def capture_on_success(*, payload: dict[str, object]) -> None:
+                if not capture_success_enabled or capture_id is None:
                     return
                 try:
                     await self._capture_store.write_capture(
@@ -611,6 +657,9 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                         "allow_remote_fallback": command.allow_remote_fallback,
                         "message_len": message_len,
                         "virtual_files_bytes": virtual_files_bytes,
+                        "base_hash": base_hash,
+                        "base_hashes": base_hashes,
+                        "base_fingerprints": base_fingerprints,
                         "system_prompt_chars": len(system_prompt),
                         "system_prompt_tokens": system_prompt_tokens,
                         "user_payload_chars": len(user_payload),
@@ -880,6 +929,9 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                         "allow_remote_fallback": command.allow_remote_fallback,
                         "message_len": message_len,
                         "virtual_files_bytes": virtual_files_bytes,
+                        "base_hash": base_hash,
+                        "base_hashes": base_hashes,
+                        "base_fingerprints": base_fingerprints,
                         "system_prompt_chars": len(system_prompt),
                         "prompt_messages_count": prompt_messages_count,
                         "finish_reason": finish_reason,
@@ -888,6 +940,34 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                         "upstream_error": upstream_error,
                         "raw_payload": response.raw_payload if response is not None else None,
                         "extracted_content": response.content if response is not None else None,
+                        "elapsed_ms": int((time.monotonic() - started_at) * 1000),
+                    }
+                )
+            elif capture_success_enabled:
+                await capture_on_success(
+                    payload={
+                        "outcome": log_outcome,
+                        "template_id": template_id,
+                        "user_id": str(actor.id),
+                        "tool_id": str(command.tool_id),
+                        "provider": provider_key,
+                        "failover_reason": failover_reason,
+                        "fallback_is_remote": self._providers.fallback_is_remote,
+                        "allow_remote_fallback": command.allow_remote_fallback,
+                        "message_len": message_len,
+                        "virtual_files_bytes": virtual_files_bytes,
+                        "base_hash": base_hash,
+                        "base_hashes": base_hashes,
+                        "base_fingerprints": base_fingerprints,
+                        "system_prompt_chars": len(system_prompt),
+                        "prompt_messages_count": prompt_messages_count,
+                        "finish_reason": finish_reason,
+                        "parse_ok": parse_ok,
+                        "ops_count": len(ops),
+                        "raw_payload": response.raw_payload if response is not None else None,
+                        "extracted_content": response.content if response is not None else None,
+                        "assistant_message": assistant_message,
+                        "ops": [op.model_dump(exclude_none=True) for op in ops],
                         "elapsed_ms": int((time.monotonic() - started_at) * 1000),
                     }
                 )
