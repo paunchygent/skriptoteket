@@ -212,7 +212,7 @@ async function copyText(text: string): Promise<void> {
 
       <div
         v-if="props.state.diffItems.length > 0"
-        class="h-[320px] min-h-[240px]"
+        class="min-h-[240px] h-[clamp(240px,40vh,360px)]"
       >
         <AiVirtualFileDiffViewer
           :items="props.state.diffItems"

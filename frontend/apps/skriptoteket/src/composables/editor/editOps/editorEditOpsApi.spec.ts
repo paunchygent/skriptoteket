@@ -52,7 +52,13 @@ describe("editorEditOpsApi", () => {
       toolId: "tool-1",
       activeFile: "tool.py",
       virtualFiles,
-      ops: [{ op: "replace", target_file: "tool.py", target: { kind: "document" }, content: "" }],
+      ops: [
+        {
+          op: "patch",
+          target_file: "tool.py",
+          patch_lines: ["@@ -0,0 +1 @@", "+print('hi')"],
+        },
+      ],
       selection: { from: 3, to: 4 },
       cursor: { pos: 4 },
       correlationId: "corr-1",
@@ -64,7 +70,13 @@ describe("editorEditOpsApi", () => {
         tool_id: "tool-1",
         active_file: "tool.py",
         virtual_files: virtualFiles,
-        ops: [{ op: "replace", target_file: "tool.py", target: { kind: "document" }, content: "" }],
+        ops: [
+          {
+            op: "patch",
+            target_file: "tool.py",
+            patch_lines: ["@@ -0,0 +1 @@", "+print('hi')"],
+          },
+        ],
         selection: { from: 3, to: 4 },
         cursor: { pos: 4 },
       },
@@ -79,7 +91,13 @@ describe("editorEditOpsApi", () => {
       toolId: "tool-1",
       activeFile: "tool.py",
       virtualFiles,
-      ops: [{ op: "replace", target_file: "tool.py", target: { kind: "document" }, content: "" }],
+      ops: [
+        {
+          op: "patch",
+          target_file: "tool.py",
+          patch_lines: ["@@ -0,0 +1 @@", "+print('hi')"],
+        },
+      ],
       baseHash: "sha256:base",
       patchId: "sha256:patch",
       selection: null,
@@ -93,7 +111,13 @@ describe("editorEditOpsApi", () => {
         tool_id: "tool-1",
         active_file: "tool.py",
         virtual_files: virtualFiles,
-        ops: [{ op: "replace", target_file: "tool.py", target: { kind: "document" }, content: "" }],
+        ops: [
+          {
+            op: "patch",
+            target_file: "tool.py",
+            patch_lines: ["@@ -0,0 +1 @@", "+print('hi')"],
+          },
+        ],
         base_hash: "sha256:base",
         patch_id: "sha256:patch",
       },

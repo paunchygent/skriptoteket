@@ -8,12 +8,12 @@ import pytest
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.input_files import sanitize_input_filename
 from skriptoteket.domain.scripting.models import ToolVersion, VersionState
-from skriptoteket.infrastructure.runner.docker_runner import (
-    _build_workdir_archive,
-    _extract_first_file_from_tar_bytes,
-    _truncate_utf8_bytes,
-    _truncate_utf8_str,
+from skriptoteket.infrastructure.runner.docker.container_io import (
+    extract_first_file_from_tar_bytes,
+    truncate_utf8_bytes,
+    truncate_utf8_str,
 )
+from skriptoteket.infrastructure.runner.docker.workdir_archive import build_workdir_archive
 
 # --- sanitize_input_filename tests ---
 
@@ -82,7 +82,7 @@ def test_sanitize_input_filename_at_255_chars_returns_name() -> None:
 def test_truncate_utf8_bytes_under_limit_returns_decoded_string() -> None:
     data = "hello".encode("utf-8")
 
-    result = _truncate_utf8_bytes(data=data, max_bytes=100)
+    result = truncate_utf8_bytes(data=data, max_bytes=100)
 
     assert result == "hello"
 
@@ -90,7 +90,7 @@ def test_truncate_utf8_bytes_under_limit_returns_decoded_string() -> None:
 def test_truncate_utf8_bytes_at_limit_returns_decoded_string() -> None:
     data = "hello".encode("utf-8")
 
-    result = _truncate_utf8_bytes(data=data, max_bytes=5)
+    result = truncate_utf8_bytes(data=data, max_bytes=5)
 
     assert result == "hello"
 
@@ -98,7 +98,7 @@ def test_truncate_utf8_bytes_at_limit_returns_decoded_string() -> None:
 def test_truncate_utf8_bytes_over_limit_truncates() -> None:
     data = "hello world".encode("utf-8")
 
-    result = _truncate_utf8_bytes(data=data, max_bytes=5)
+    result = truncate_utf8_bytes(data=data, max_bytes=5)
 
     assert result == "hello"
 
@@ -107,7 +107,7 @@ def test_truncate_utf8_bytes_with_multibyte_uses_replacement() -> None:
     # "åäö" is 6 bytes in UTF-8 (2 bytes each)
     data = "åäö".encode("utf-8")
 
-    result = _truncate_utf8_bytes(data=data, max_bytes=3)
+    result = truncate_utf8_bytes(data=data, max_bytes=3)
 
     # Truncated at byte 3, may produce replacement char for partial sequence
     assert len(result.encode("utf-8")) <= 3 or "�" in result
@@ -116,7 +116,7 @@ def test_truncate_utf8_bytes_with_multibyte_uses_replacement() -> None:
 def test_truncate_utf8_bytes_with_zero_limit_returns_empty() -> None:
     data = "hello".encode("utf-8")
 
-    result = _truncate_utf8_bytes(data=data, max_bytes=0)
+    result = truncate_utf8_bytes(data=data, max_bytes=0)
 
     assert result == ""
 
@@ -125,33 +125,33 @@ def test_truncate_utf8_bytes_with_zero_limit_returns_empty() -> None:
 
 
 def test_truncate_utf8_str_under_limit_returns_original() -> None:
-    result = _truncate_utf8_str(value="hello", max_bytes=100)
+    result = truncate_utf8_str(value="hello", max_bytes=100)
 
     assert result == "hello"
 
 
 def test_truncate_utf8_str_at_limit_returns_original() -> None:
-    result = _truncate_utf8_str(value="hello", max_bytes=5)
+    result = truncate_utf8_str(value="hello", max_bytes=5)
 
     assert result == "hello"
 
 
 def test_truncate_utf8_str_over_limit_truncates() -> None:
-    result = _truncate_utf8_str(value="hello world", max_bytes=5)
+    result = truncate_utf8_str(value="hello world", max_bytes=5)
 
     assert result == "hello"
 
 
 def test_truncate_utf8_str_with_multibyte_truncates_safely() -> None:
     # "åäö" is 6 bytes in UTF-8
-    result = _truncate_utf8_str(value="åäö", max_bytes=4)
+    result = truncate_utf8_str(value="åäö", max_bytes=4)
 
     # Should truncate to 4 bytes max, preserving valid UTF-8
     assert len(result.encode("utf-8")) <= 4
 
 
 def test_truncate_utf8_str_with_zero_limit_returns_empty() -> None:
-    result = _truncate_utf8_str(value="hello", max_bytes=0)
+    result = truncate_utf8_str(value="hello", max_bytes=0)
 
     assert result == ""
 
@@ -177,7 +177,7 @@ def _make_tool_version(source_code: str = "print('test')") -> ToolVersion:
 def test_build_workdir_archive_contains_script_and_input() -> None:
     version = _make_tool_version(source_code="def run_tool(): pass")
 
-    archive_bytes = _build_workdir_archive(
+    archive_bytes = build_workdir_archive(
         version=version,
         input_files=[("data.csv", b"col1,col2\n1,2")],
         memory_json=b'{"settings":{}}',
@@ -195,7 +195,7 @@ def test_build_workdir_archive_script_has_correct_content() -> None:
     source = "def run_tool(): return '<p>ok</p>'"
     version = _make_tool_version(source_code=source)
 
-    archive_bytes = _build_workdir_archive(
+    archive_bytes = build_workdir_archive(
         version=version,
         input_files=[("file.txt", b"content")],
         memory_json=b'{"settings":{}}',
@@ -212,7 +212,7 @@ def test_build_workdir_archive_input_has_correct_content() -> None:
     version = _make_tool_version()
     input_data = b"test input data"
 
-    archive_bytes = _build_workdir_archive(
+    archive_bytes = build_workdir_archive(
         version=version,
         input_files=[("input.txt", input_data)],
         memory_json=b'{"settings":{}}',
@@ -235,7 +235,7 @@ def test_extract_first_file_from_tar_bytes_returns_file_content() -> None:
         info.size = len(data)
         tar.addfile(info, io.BytesIO(data))
 
-    result = _extract_first_file_from_tar_bytes(tar_bytes=tar_buffer.getvalue())
+    result = extract_first_file_from_tar_bytes(tar_bytes=tar_buffer.getvalue())
 
     assert result == b"file content"
 
@@ -252,7 +252,7 @@ def test_extract_first_file_from_tar_bytes_skips_directories() -> None:
         file_info.size = len(data)
         tar.addfile(file_info, io.BytesIO(data))
 
-    result = _extract_first_file_from_tar_bytes(tar_bytes=tar_buffer.getvalue())
+    result = extract_first_file_from_tar_bytes(tar_bytes=tar_buffer.getvalue())
 
     assert result == b"actual file"
 
@@ -263,4 +263,4 @@ def test_extract_first_file_from_tar_bytes_empty_tar_raises_runtime_error() -> N
         pass
 
     with pytest.raises(RuntimeError, match="No file found"):
-        _extract_first_file_from_tar_bytes(tar_bytes=tar_buffer.getvalue())
+        extract_first_file_from_tar_bytes(tar_bytes=tar_buffer.getvalue())

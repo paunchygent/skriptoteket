@@ -379,7 +379,7 @@ async def test_execute_returns_service_unavailable_when_docker_sock_missing(
 ) -> None:
     import docker
 
-    from skriptoteket.infrastructure.runner import docker_runner
+    from skriptoteket.infrastructure.runner.docker import errors as docker_errors
 
     monkeypatch.setattr(
         docker,
@@ -387,7 +387,7 @@ async def test_execute_returns_service_unavailable_when_docker_sock_missing(
         MagicMock(side_effect=DockerException("Docker is unavailable")),
     )
     monkeypatch.setattr(
-        docker_runner.os.path,
+        docker_errors.os.path,
         "exists",
         lambda path: False if path == "/var/run/docker.sock" else True,
     )

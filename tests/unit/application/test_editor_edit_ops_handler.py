@@ -234,11 +234,11 @@ async def test_edit_ops_creates_turn_and_finalizes_on_success() -> None:
     clock.now.return_value = datetime(2025, 1, 1, tzinfo=timezone.utc)
 
     id_generator = MagicMock(spec=IdGeneratorProtocol)
+    session_id = uuid4()
     turn_id = uuid4()
     user_message_id = uuid4()
     assistant_message_id = uuid4()
-    session_id = uuid4()
-    id_generator.new_uuid.side_effect = [turn_id, user_message_id, assistant_message_id, session_id]
+    id_generator.new_uuid.side_effect = [session_id, turn_id, user_message_id, assistant_message_id]
 
     turns.create_turn.return_value = _make_turn(
         turn_id=turn_id,
@@ -328,11 +328,11 @@ async def test_edit_ops_finalizes_turn_as_remote_fallback_required_after_retryab
     clock.now.return_value = datetime(2025, 1, 1, tzinfo=timezone.utc)
 
     id_generator = MagicMock(spec=IdGeneratorProtocol)
+    session_id = uuid4()
     turn_id = uuid4()
     user_message_id = uuid4()
     assistant_message_id = uuid4()
-    session_id = uuid4()
-    id_generator.new_uuid.side_effect = [turn_id, user_message_id, assistant_message_id, session_id]
+    id_generator.new_uuid.side_effect = [session_id, turn_id, user_message_id, assistant_message_id]
 
     turns.create_turn.return_value = _make_turn(
         turn_id=turn_id,

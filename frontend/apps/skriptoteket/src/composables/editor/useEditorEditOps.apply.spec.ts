@@ -40,10 +40,14 @@ describe("useEditorEditOps (apply)", () => {
       base_fingerprints: baseFingerprints,
       ops: [
         {
-          op: "replace",
+          op: "patch",
           target_file: "tool.py",
-          target: { kind: "document" },
-          content: "print('hej')\nprint('klar')\n",
+          patch_lines: [
+            "@@ -1,1 +1,2 @@",
+            "-print('hej')",
+            "+print('hej')",
+            "+print('klar')",
+          ],
         },
       ],
     };
@@ -151,10 +155,14 @@ describe("useEditorEditOps (apply)", () => {
       base_fingerprints: baseFingerprints,
       ops: [
         {
-          op: "replace",
+          op: "patch",
           target_file: "tool.py",
-          target: { kind: "document" },
-          content: "print('hej')\nprint('klar')\n",
+          patch_lines: [
+            "@@ -1,1 +1,2 @@",
+            "-print('hej')",
+            "+print('hej')",
+            "+print('klar')",
+          ],
         },
       ],
     };

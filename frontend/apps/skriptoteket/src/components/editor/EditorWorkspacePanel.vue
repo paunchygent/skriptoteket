@@ -150,7 +150,7 @@ const chatColumnWidth = computed(() => {
       </div>
 
       <div
-        class="min-h-0 min-w-0 px-3 lg:col-start-1 lg:row-start-2 flex flex-col h-full overflow-hidden"
+        class="min-h-0 min-w-0 px-3 lg:col-start-1 lg:row-start-2 flex flex-col h-full overflow-x-hidden overflow-y-auto"
         :class="{ 'pb-3': !showsSchemaPanels }"
         data-editor-panel="mode"
       >

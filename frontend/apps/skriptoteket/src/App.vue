@@ -1,24 +1,32 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { computed, defineAsyncComponent, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import LoginModal from "./components/auth/LoginModal.vue";
-import HelpPanel from "./components/help/HelpPanel.vue";
 import AuthLayout from "./components/layout/AuthLayout.vue";
 import LandingLayout from "./components/layout/LandingLayout.vue";
 import ToastHost from "./components/ui/ToastHost.vue";
 import { useLoginModal } from "./composables/useLoginModal";
 import { usePageTransition } from "./composables/usePageTransition";
 import { useAuthStore } from "./stores/auth";
+import { useHelp } from "./components/help/useHelp";
 
 const auth = useAuthStore();
 const router = useRouter();
 const route = useRoute();
+const help = useHelp();
 const loginModal = useLoginModal();
 const pageTransition = usePageTransition();
 
 const logoutError = ref<string | null>(null);
 const logoutInProgress = ref(false);
+const helpPanelEnabled = ref(false);
+
+const HelpPanel = defineAsyncComponent(() => import("./components/help/HelpPanel.vue"));
+
+if (help.isOpen.value) {
+  helpPanelEnabled.value = true;
+}
 
 const isAuthenticated = computed(() => auth.isAuthenticated);
 const canSeeContributor = computed(() => auth.hasAtLeastRole("contributor"));
@@ -88,6 +96,15 @@ watch(
     }
 
     loginModal.open(route.fullPath);
+  },
+);
+
+watch(
+  () => help.isOpen.value,
+  (open) => {
+    if (open) {
+      helpPanelEnabled.value = true;
+    }
   },
 );
 
@@ -181,7 +198,7 @@ async function onLogout(): Promise<void> {
       </div>
     </AuthLayout>
 
-    <HelpPanel />
+    <HelpPanel v-if="helpPanelEnabled" />
 
     <ToastHost />
 

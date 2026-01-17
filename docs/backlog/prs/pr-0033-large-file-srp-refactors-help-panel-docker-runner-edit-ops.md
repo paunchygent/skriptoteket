@@ -5,7 +5,7 @@ title: "Refactor: reduce >500 LOC hotspots (HelpPanel + HomeView + ScriptEditorV
 status: ready
 owners: "agents"
 created: 2026-01-16
-updated: 2026-01-16
+updated: 2026-01-17
 stories: []
 tags: ["backend", "frontend", "refactor", "srp", "performance"]
 acceptance_criteria:
@@ -49,16 +49,17 @@ This PR aims to address the highest-impact hotspots and create a prioritized inv
 
 ## Checklist (MUST be kept up-to-date during implementation)
 
-- [ ] **Scope:** the 6 refactor jobs below are still in scope (or de-scopes are explicitly approved and recorded here).
-- [ ] **LOC budget:** each target file is <500 LOC after refactor (record actual LOC next to each item below).
-- [ ] **SRP refactor quality:** no “helper-only” slicing; responsibilities are separated into cohesive modules with clear naming and ownership.
-- [ ] **API stability:** public exports and DI wiring remain stable (or call-site changes are explicitly listed and justified).
-- [ ] **Verification recorded:** exact commands and manual checks are recorded in `.agent/handoff.md`.
-- [ ] **Perf confirmation:** for frontend, confirm Help UI is not in the default initial bundle (document how you verified: chunk inspection / bundle report).
+- [x] **Scope:** the 6 refactor jobs below are still in scope (or de-scopes are explicitly approved and recorded here).
+- [x] **LOC budget:** HelpPanel 142, HomeView 423, ScriptEditorView 7, docker_runner 8, edit_ops_handler 429, unified_diff_applier 45.
+- [x] **SRP refactor quality:** no “helper-only” slicing; responsibilities are separated into cohesive modules with clear naming and ownership.
+- [x] **API stability:** public exports and DI wiring remain stable (or call-site changes are explicitly listed and justified).
+- [x] **Verification recorded:** exact commands and manual checks are recorded in `.agent/handoff.md`.
+- [x] **Perf confirmation:** `pdm run fe-build` output shows separate `HelpPanel-*` + `HelpTopic*` chunks (not bundled into `index-*`).
 
 ### 1) Frontend: Help UI (P0) — lazy-load + SRP split
 
 **Current file:** `frontend/apps/skriptoteket/src/components/help/HelpPanel.vue` (~596 LOC)
+**Status:** Done — `HelpPanel.vue` now 142 LOC; topics extracted into `components/help/topics/`; async registry in `components/help/helpTopics.ts`; lazy-loaded from `App.vue`.
 **Reason:** Always mounted from `frontend/apps/skriptoteket/src/App.vue` → included in the default initial bundle.
 
 **Target outcome**
@@ -95,6 +96,7 @@ This PR aims to address the highest-impact hotspots and create a prioritized inv
 ### 2) Frontend: Home dashboard view (P1) — split view-model + IO (behavior-preserving)
 
 **Current file:** `frontend/apps/skriptoteket/src/views/HomeView.vue` (~677 LOC)
+**Status:** Done — `HomeView.vue` now 423 LOC; dashboard IO moved to `composables/home/useHomeDashboard.ts`; create tool modal/button extracted to `components/home/HomeCreateDraftTool.vue`.
 **Reason:** High-traffic route; mixes API IO, modal/workflow state, and rendering.
 
 **Target outcome**
@@ -126,6 +128,7 @@ This PR aims to address the highest-impact hotspots and create a prioritized inv
 ### 3) Frontend: Admin Script editor view (P1) — extract page orchestration into a view-model composable
 
 **Current file:** `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue` (~753 LOC)
+**Status:** Done — `ScriptEditorView.vue` now 7 LOC; layout moved to `components/editor/ScriptEditorPageShell.vue`; orchestration in `composables/editor/useScriptEditorPageState.ts` (291 LOC) with SRP splits for core/compare/working-copy/metadata/workflow/focus.
 **Reason:** Route-level view is doing a lot of orchestration and reactive wiring; high churn and difficult to review.
 
 **Target outcome**
@@ -154,6 +157,7 @@ This PR aims to address the highest-impact hotspots and create a prioritized inv
 ### 4) Backend: Docker runner (P0) — SRP split + remove redundant work
 
 **Current file:** `src/skriptoteket/infrastructure/runner/docker_runner.py` (~628 LOC)
+**Status:** Done — `docker_runner.py` now 8 LOC; Docker runner split into `infrastructure/runner/docker/*` (protocols, workdir archive, container IO, errors, runner). Redundant input normalization removed (now normalized once before tar + manifest).
 **Reason:** Hot path; mixes Docker client concerns, archive building, contract parsing, output truncation, timeouts, and error mapping.
 
 **Target outcome**
@@ -193,6 +197,7 @@ This PR aims to address the highest-impact hotspots and create a prioritized inv
 ### 5) Backend: Editor AI edit-ops handler (P0) — SRP split into a small `edit_ops/` package
 
 **Current file:** `src/skriptoteket/application/editor/edit_ops_handler.py` (~918 LOC)
+**Status:** Done — split into `application/editor/edit_ops/*` (constants, budgeting, persistence, routing, execution, capture, logging, preflight, preflight_orchestrator, over_budget). `edit_ops_handler.py` now 429 LOC.
 **Reason:** “God handler” mixing:
 
 - UoW + persistence (sessions/turns/messages)
@@ -240,6 +245,7 @@ This PR aims to address the highest-impact hotspots and create a prioritized inv
 ### 6) Backend: Unified diff applier (P1) — split parsing/normalization/apply (behavior-preserving)
 
 **Current file:** `src/skriptoteket/infrastructure/editor/unified_diff_applier.py` (~606 LOC)
+**Status:** Done — `unified_diff_applier.py` now 45 LOC; split into `infrastructure/editor/unified_diff/` (`normalize.py`, `parse.py`, `apply_patch.py`, `errors.py`).
 **Reason:** Mixes multiple responsibilities (diff normalization, parsing/repair, subprocess invocation, error mapping).
 
 **Target outcome**

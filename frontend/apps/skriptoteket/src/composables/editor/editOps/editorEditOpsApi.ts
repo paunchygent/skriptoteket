@@ -9,11 +9,7 @@ type EditorEditOpsCursor = components["schemas"]["EditorEditOpsCursor"];
 type EditorEditOpsPreviewRequest = components["schemas"]["EditorEditOpsPreviewRequest"];
 type EditorEditOpsPreviewResponse = components["schemas"]["EditorEditOpsPreviewResponse"];
 type EditorEditOpsApplyRequest = components["schemas"]["EditorEditOpsApplyRequest"];
-type EditorEditOpsOpInput =
-  | components["schemas"]["EditorEditOpsInsertOp-Input"]
-  | components["schemas"]["EditorEditOpsReplaceOp-Input"]
-  | components["schemas"]["EditorEditOpsDeleteOp-Input"]
-  | components["schemas"]["EditorEditOpsPatchOp"];
+type EditorEditOpsOpInput = components["schemas"]["EditorEditOpsPatchOp"];
 
 type RequestEditOpsParams = {
   toolId: string;

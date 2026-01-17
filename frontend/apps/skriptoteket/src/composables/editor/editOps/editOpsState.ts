@@ -6,11 +6,7 @@ type EditorEditOpsSelection = components["schemas"]["EditorEditOpsSelection"];
 type EditorEditOpsCursor = components["schemas"]["EditorEditOpsCursor"];
 type EditorEditOpsPreviewMeta = components["schemas"]["EditorEditOpsPreviewMeta"];
 type EditorEditOpsPreviewErrorDetails = components["schemas"]["EditorEditOpsPreviewErrorDetails"];
-type EditorEditOpsOpOutput =
-  | components["schemas"]["EditorEditOpsInsertOp-Output"]
-  | components["schemas"]["EditorEditOpsReplaceOp-Output"]
-  | components["schemas"]["EditorEditOpsDeleteOp-Output"]
-  | components["schemas"]["EditorEditOpsPatchOp"];
+type EditorEditOpsOpOutput = components["schemas"]["EditorEditOpsPatchOp"];
 
 type EditOpsDiffItem = {
   virtualFileId: VirtualFileId;

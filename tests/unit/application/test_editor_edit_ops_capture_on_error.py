@@ -180,15 +180,15 @@ async def test_edit_ops_writes_capture_on_parse_failed_when_enabled() -> None:
         clock = MagicMock(spec=ClockProtocol)
         clock.now.return_value = datetime(2025, 1, 1, tzinfo=timezone.utc)
         id_generator = MagicMock(spec=IdGeneratorProtocol)
+        session_id = uuid4()
         turn_id = uuid4()
         user_message_id = uuid4()
         assistant_message_id = uuid4()
-        session_id = uuid4()
         id_generator.new_uuid.side_effect = [
+            session_id,
             turn_id,
             user_message_id,
             assistant_message_id,
-            session_id,
         ]
 
         actor = make_user(role=Role.CONTRIBUTOR)

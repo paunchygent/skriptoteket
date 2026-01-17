@@ -122,6 +122,7 @@ Most EPIC-02 stories are complete (self-registration, profiles, lockout). ST-02-
 - AI infra runbooks: `docs/runbooks/runbook-gpu-ai-workloads.md`, `docs/runbooks/runbook-tabby-codemirror.md`
 - LLM ops note: `llama-server-hip` disabled; `llama-server-vulkan` enabled for A/B testing (see `.agent/handoff.md`).
 - Ops runbooks: `docs/runbooks/runbook-home-server.md`, `docs/runbooks/runbook-observability.md`
+- Execution queue planning: ADR-0062 (proposed) + EPIC-18 + ST-18-01 + PR-0039.
 
 ### AI editor debugging quicklinks (EPIC-08)
 - Baseline ADR: `docs/adr/adr-0051-chat-first-ai-editing.md` (accepted).

@@ -1,257 +1,49 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { computed, onMounted } from "vue";
 
-import { apiGet, apiPost, isApiError } from "../api/client";
-import type { components } from "../api/openapi";
 import FavoritesSection from "../components/home/FavoritesSection.vue";
+import HomeCreateDraftTool from "../components/home/HomeCreateDraftTool.vue";
 import RecentToolsSection from "../components/home/RecentToolsSection.vue";
 import SectionHeader from "../components/home/SectionHeader.vue";
-import CreateDraftToolModal from "../components/admin/CreateDraftToolModal.vue";
 import { IconArrow } from "../components/icons";
-import { useFavorites } from "../composables/useFavorites";
-import { useToast } from "../composables/useToast";
+import { useHomeDashboard } from "../composables/home/useHomeDashboard";
 import { useLoginModal } from "../composables/useLoginModal";
 import { useAuthStore } from "../stores/auth";
-import type { CatalogItem } from "../types/catalog";
-
-type ListMyRunsResponse = components["schemas"]["ListMyRunsResponse"];
-type ListMyToolsResponse = components["schemas"]["ListMyToolsResponse"];
-type ListAdminToolsResponse = components["schemas"]["ListAdminToolsResponse"];
-type ListFavoritesResponse = components["schemas"]["ListFavoritesResponse"];
-type ListRecentToolsResponse = components["schemas"]["ListRecentToolsResponse"];
-type CreateDraftToolResponse = components["schemas"]["CreateDraftToolResponse"];
 
 const auth = useAuthStore();
 const loginModal = useLoginModal();
-const { toggleFavorite, isToggling } = useFavorites();
-const router = useRouter();
-const toast = useToast();
+const {
+  loadDashboard,
+  dashboardError,
+  favorites,
+  recentNonFavorites,
+  isToggling,
+  handleFavoriteToggled,
+  runsLoading,
+  runsCount,
+  currentMonth,
+  runsInList,
+  formatCount,
+  toolsLoading,
+  toolsTotal,
+  toolsPublished,
+  adminPendingReview,
+  adminLoading,
+} = useHomeDashboard();
 
 const isAuthenticated = computed(() => auth.isAuthenticated);
 const canSeeContributor = computed(() => auth.hasAtLeastRole("contributor"));
 const canSeeAdmin = computed(() => auth.hasAtLeastRole("admin"));
 const userName = computed(() => auth.displayName);
 
-// Dashboard data
-const runsCount = ref(0);
-const runsInList = ref(0);
-const runsLoading = ref(false);
-const currentMonth = new Date().toLocaleString("sv-SE", { month: "long" });
-
-function formatCount(n: number): string {
-  if (n >= 1000) {
-    const k = n / 1000;
-    return k % 1 === 0 ? `${k}k` : `${k.toFixed(1)}k`;
-  }
-  return String(n);
-}
-
-const toolsTotal = ref(0);
-const toolsPublished = ref(0);
-const toolsLoading = ref(false);
-
-const adminToolsTotal = ref(0);
-const adminToolsPublished = ref(0);
-const adminPendingReview = ref(0);
-const adminLoading = ref(false);
-
-const dashboardError = ref<string | null>(null);
-
-// Create tool modal state
-const isCreateModalOpen = ref(false);
-const createTitle = ref("");
-const createSummary = ref("");
-const createError = ref<string | null>(null);
-const isCreating = ref(false);
-
-const FAVORITES_LIMIT = 5;
-
-// Favorites and recent tools
-const favorites = ref<CatalogItem[]>([]);
-const recentTools = ref<CatalogItem[]>([]);
-
-function catalogKey(item: CatalogItem): string {
-  return `${item.kind}:${item.id}`;
-}
-
-const favoriteKeys = computed(() => new Set(favorites.value.map(catalogKey)));
-const recentNonFavorites = computed(() =>
-  recentTools.value.filter(
-    (item) => !item.is_favorite && !favoriteKeys.value.has(catalogKey(item))
-  )
-);
-
-function normalizedOptionalString(value: string): string | null {
-  const trimmed = value.trim();
-  return trimmed ? trimmed : null;
-}
-
-function openCreateModal(): void {
-  createTitle.value = "";
-  createSummary.value = "";
-  createError.value = null;
-  isCreateModalOpen.value = true;
-}
-
-function closeCreateModal(): void {
-  isCreateModalOpen.value = false;
-}
-
-async function createDraftTool(): Promise<void> {
-  if (isCreating.value) return;
-
-  const title = createTitle.value.trim();
-  if (!title) {
-    createError.value = "Titel krävs.";
-    return;
-  }
-
-  isCreating.value = true;
-  createError.value = null;
-
-  try {
-    const response = await apiPost<CreateDraftToolResponse>("/api/v1/admin/tools", {
-      title,
-      summary: normalizedOptionalString(createSummary.value),
-    });
-
-    closeCreateModal();
-    toast.success("Verktyg skapat.");
-    await router.push(`/admin/tools/${response.tool.id}`);
-  } catch (error: unknown) {
-    if (isApiError(error)) {
-      createError.value = error.message;
-    } else if (error instanceof Error) {
-      createError.value = error.message;
-    } else {
-      createError.value = "Det gick inte att skapa verktyget.";
-    }
-  } finally {
-    isCreating.value = false;
-  }
-}
-
-async function loadUserDashboard(): Promise<void> {
-  runsLoading.value = true;
-  try {
-    const response = await apiGet<ListMyRunsResponse>("/api/v1/my-runs");
-    runsCount.value = response.total_count;
-    runsInList.value = response.runs.length;
-  } catch (error: unknown) {
-    if (isApiError(error)) {
-      dashboardError.value = error.message;
-    }
-  } finally {
-    runsLoading.value = false;
-  }
-}
-
-async function loadContributorDashboard(): Promise<void> {
-  toolsLoading.value = true;
-  try {
-    const response = await apiGet<ListMyToolsResponse>("/api/v1/my-tools");
-    toolsTotal.value = response.tools.length;
-    toolsPublished.value = response.tools.filter((t) => t.is_published).length;
-  } catch (error: unknown) {
-    if (isApiError(error)) {
-      dashboardError.value = error.message;
-    }
-  } finally {
-    toolsLoading.value = false;
-  }
-}
-
-async function loadAdminDashboard(): Promise<void> {
-  adminLoading.value = true;
-  try {
-    const response = await apiGet<ListAdminToolsResponse>("/api/v1/admin/tools");
-    adminToolsTotal.value = response.tools.length;
-    adminToolsPublished.value = response.tools.filter((t) => t.is_published).length;
-    adminPendingReview.value = response.tools.filter((t) => t.has_pending_review).length;
-  } catch (error: unknown) {
-    if (isApiError(error)) {
-      dashboardError.value = error.message;
-    }
-  } finally {
-    adminLoading.value = false;
-  }
-}
-
-async function loadFavorites(): Promise<void> {
-  try {
-    const response = await apiGet<ListFavoritesResponse>(
-      `/api/v1/favorites?limit=${FAVORITES_LIMIT}`
-    );
-    favorites.value = response.items as CatalogItem[];
-  } catch {
-    // Silent fail - section just won't show
-  }
-}
-
-async function loadRecentTools(): Promise<void> {
-  try {
-    const response = await apiGet<ListRecentToolsResponse>("/api/v1/me/recent-tools?limit=5");
-    recentTools.value = response.items as CatalogItem[];
-  } catch {
-    // Silent fail - section just won't show
-  }
-}
-
-async function handleFavoriteToggled(payload: { id: string; isFavorite: boolean }): Promise<void> {
-  if (isToggling(payload.id)) return;
-
-  const nextIsFavorite = !payload.isFavorite;
-  const targetItem =
-    favorites.value.find((item) => item.id === payload.id) ??
-    recentTools.value.find((item) => item.id === payload.id);
-  const targetKey = targetItem ? catalogKey(targetItem) : null;
-
-  // Optimistic update for favorites list
-  const prevFavorites = favorites.value;
-  if (nextIsFavorite) {
-    if (!targetItem || !targetKey) {
-      favorites.value = prevFavorites;
-    } else {
-      const nextItem = { ...targetItem, is_favorite: true };
-      const nextFavorites = prevFavorites.some((item) => catalogKey(item) === targetKey)
-        ? prevFavorites.map((item) =>
-            catalogKey(item) === targetKey ? { ...item, is_favorite: true } : item
-          )
-        : [nextItem, ...prevFavorites];
-      favorites.value = nextFavorites.slice(0, FAVORITES_LIMIT);
-    }
-  } else if (targetKey) {
-    favorites.value = prevFavorites.filter((item) => catalogKey(item) !== targetKey);
-  }
-
-  // Optimistic update for recent tools list
-  const prevRecent = recentTools.value;
-  recentTools.value = prevRecent.map((item) => {
-    if (targetKey) {
-      return catalogKey(item) === targetKey ? { ...item, is_favorite: nextIsFavorite } : item;
-    }
-    return item.id === payload.id ? { ...item, is_favorite: nextIsFavorite } : item;
-  });
-
-  const finalIsFavorite = await toggleFavorite(payload.id, payload.isFavorite);
-  if (finalIsFavorite !== nextIsFavorite) {
-    favorites.value = prevFavorites;
-    recentTools.value = prevRecent;
-  }
-}
-
 onMounted(async () => {
   if (!isAuthenticated.value) return;
 
   // Load all dashboard data in parallel
-  await Promise.all([
-    loadUserDashboard(),
-    loadFavorites(),
-    loadRecentTools(),
-    canSeeContributor.value ? loadContributorDashboard() : Promise.resolve(),
-    canSeeAdmin.value ? loadAdminDashboard() : Promise.resolve(),
-  ]);
+  await loadDashboard({
+    isContributor: canSeeContributor.value,
+    isAdmin: canSeeAdmin.value,
+  });
 });
 </script>
 
@@ -551,46 +343,17 @@ onMounted(async () => {
             </RouterLink>
 
             <!-- Skapa nytt verktyg -->
-            <button
-              type="button"
-              class="dashboard-card group text-left w-full"
-              @click="openCreateModal"
-            >
-              <div class="card-header">
-                <span class="card-label">Skapa nytt verktyg</span>
-                <IconArrow
-                  :size="18"
-                  class="card-arrow"
-                />
-              </div>
-              <p class="card-description mt-4">
-                Skapa ett nytt verktyg i systemet.
-              </p>
-            </button>
+            <HomeCreateDraftTool />
           </div>
         </section>
       </div>
     </template>
-
-    <!-- Create tool modal -->
-    <CreateDraftToolModal
-      :is-open="isCreateModalOpen"
-      :title="createTitle"
-      :summary="createSummary"
-      :error="createError"
-      :is-submitting="isCreating"
-      @update:title="createTitle = $event"
-      @update:summary="createSummary = $event"
-      @update:error="createError = $event"
-      @close="closeCreateModal"
-      @submit="createDraftTool"
-    />
   </div>
 </template>
 
 <style scoped>
 /* Dashboard card */
-.dashboard-card {
+:deep(.dashboard-card) {
   display: block;
   padding: 1.25rem;
   border: 1px solid var(--color-navy);
@@ -600,60 +363,60 @@ onMounted(async () => {
   transition: all 0.15s ease;
 }
 
-.dashboard-card:hover {
+:deep(.dashboard-card:hover) {
   box-shadow: 6px 6px 0 0 var(--color-navy);
   transform: translate(-2px, -2px);
 }
 
-.card-header {
+:deep(.card-header) {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
 }
 
-.card-label {
+:deep(.card-label) {
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-navy);
   transition: color 0.15s ease;
 }
 
-.dashboard-card:hover .card-label {
+:deep(.dashboard-card:hover .card-label) {
   color: var(--color-burgundy);
 }
 
-.card-arrow {
+:deep(.card-arrow) {
   color: var(--color-navy);
   flex-shrink: 0;
   transition: transform 0.15s ease, color 0.15s ease;
 }
 
-.dashboard-card:hover .card-arrow {
+:deep(.dashboard-card:hover .card-arrow) {
   transform: translateX(4px);
   color: var(--color-burgundy);
 }
 
-.card-stats {
+:deep(.card-stats) {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
   margin-top: 0.75rem;
 }
 
-.stat-number {
+:deep(.stat-number) {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-navy);
   line-height: 1;
 }
 
-.stat-label {
+:deep(.stat-label) {
   font-size: 0.75rem;
   color: var(--color-navy);
   opacity: 0.6;
 }
 
-.card-description {
+:deep(.card-description) {
   margin-top: 0.5rem;
   font-size: 0.8125rem;
   color: var(--color-navy);
@@ -662,16 +425,16 @@ onMounted(async () => {
 }
 
 /* Success color for published counts */
-.text-success {
+:deep(.text-success) {
   color: var(--huleedu-success);
 }
 
 /* Warning color for pending review */
-.text-warning {
+:deep(.text-warning) {
   color: var(--huleedu-warning);
 }
 
-.border-warning {
+:deep(.border-warning) {
   border-color: var(--huleedu-warning);
 }
 </style>

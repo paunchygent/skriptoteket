@@ -90,6 +90,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0059-user-file-vault.md`
 - `docs/adr/adr-0060-ui-contract-v2x-action-prefill.md`
 - `docs/adr/adr-0061-asgi-correlation-middleware.md`
+- `docs/adr/adr-0062-execution-queue-and-worker-loop.md`
 
 ### PRDs
 
@@ -122,6 +123,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-15-user-profile-and-settings.md`
 - `docs/backlog/epics/epic-16-catalog-discovery-and-personalization.md`
 - `docs/backlog/epics/epic-17-observability-visualization-and-operations.md`
+- `docs/backlog/epics/epic-18-execution-queue-and-worker-loop.md`
 
 ### Backlog Reviews
 
@@ -139,6 +141,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-14-ui-contract-v2x-action-prefill.md`
 - `docs/backlog/reviews/review-epic-16-catalog-discovery.md`
 - `docs/backlog/reviews/review-epic-17-observability-visualization.md`
+- `docs/backlog/reviews/review-epic-18-execution-queue.md`
 
 ### Backlog Sprints
 
@@ -200,6 +203,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0035-editor-ai-edit-ops-gbnf-patch-only-grammar.md`
 - `docs/backlog/prs/pr-0036-editor-ai-edit-ops-layered-diff-repair.md`
 - `docs/backlog/prs/pr-0037-editor-ai-edit-ops-tolerant-diff-matching.md`
+- `docs/backlog/prs/pr-0038-editor-ai-diff-preview-scroll-and-states.md`
+- `docs/backlog/prs/pr-0039-execution-queue-worker-loop.md`
 
 ### Backlog Stories
 
@@ -385,6 +390,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-17-05-runbook-verification.md`
 - `docs/backlog/stories/story-17-06-user-session-metrics.md`
 - `docs/backlog/stories/story-17-07-login-events-audit-trail.md`
+- `docs/backlog/stories/story-18-01-execution-queue-worker-loop.md`
 
 ### Reference
 
