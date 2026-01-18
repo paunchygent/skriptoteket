@@ -74,7 +74,7 @@ ssh hemma "cd ~/apps/skriptoteket && git pull && sudo docker compose -f compose.
 
 # With migrations
 ssh hemma "cd ~/apps/skriptoteket && git pull && sudo docker compose -f compose.prod.yaml up -d --build"
-ssh hemma "sudo docker exec skriptoteket-web pdm run db-upgrade"
+ssh hemma "sudo docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run db-upgrade"
 ```
 
 Note: On `hemma`, systemd units may need absolute docker path (`/snap/bin/docker`) due to PATH differences.
@@ -95,10 +95,10 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up
 
 ### Container Names
 
-| Environment | Web Container | DB Container |
-|-------------|---------------|--------------|
-| Production | `skriptoteket-web` | `shared-postgres` (external) |
-| Development | `skriptoteket_web` | `skriptoteket-db-1` |
+| Environment | Web Container | Worker Container | DB Container |
+|-------------|---------------|------------------|--------------|
+| Production | `skriptoteket-web` | `skriptoteket-worker` | `shared-postgres` (external) |
+| Development | `skriptoteket_web` | (host/CLI) | `skriptoteket-db-1` |
 
 ### Database Connection
 
@@ -119,17 +119,28 @@ ssh hemma "sudo docker exec -it skriptoteket-db-1 psql -U postgres -d skriptotek
 ### CLI Command Pattern (ALWAYS USE)
 
 ```bash
-# The -e PYTHONPATH=/app/src is REQUIRED for all CLI commands
+# The -e PYTHONPATH=/app/src is REQUIRED for all CLI commands (web + worker)
 sudo docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run <command>
+sudo docker exec -e PYTHONPATH=/app/src skriptoteket-worker pdm run <command>
 
 # Non-interactive (scripts/CI): add -T
 sudo docker exec -T -e PYTHONPATH=/app/src skriptoteket-web pdm run <command>
+sudo docker exec -T -e PYTHONPATH=/app/src skriptoteket-worker pdm run <command>
 
 # Interactive (prompts): add -it
 sudo docker exec -it -e PYTHONPATH=/app/src skriptoteket-web pdm run <command>
+sudo docker exec -it -e PYTHONPATH=/app/src skriptoteket-worker pdm run <command>
 ```
 
 See also: `docs/runbooks/runbook-home-server.md` (systemd timer patterns use `/snap/bin/docker exec ...`).
+
+### Worker healthcheck
+
+The production worker container exposes a dependency healthcheck (DB + Docker socket + artifacts volume):
+
+```bash
+ssh hemma "sudo docker exec -e PYTHONPATH=/app/src skriptoteket-worker pdm run python -m skriptoteket.cli healthcheck-execution-worker"
+```
 
 ### Admin Credentials (Script Bank Seeding)
 

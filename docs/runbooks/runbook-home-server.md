@@ -5,7 +5,7 @@ title: "Runbook: Home Server Operations"
 status: active
 owners: "olof"
 created: 2025-12-16
-updated: 2026-01-17
+updated: 2026-01-18
 system: "hemma.hule.education"
 ---
 
@@ -354,6 +354,9 @@ Cleanup (30-day retention):
 
 - App repo: `~/apps/skriptoteket/`
 - Production compose: `compose.prod.yaml` (uses `shared-postgres` on `hule-network`)
+- Runtime services (production compose):
+  - `web` (`skriptoteket-web`): FastAPI app
+  - `worker` (`skriptoteket-worker`): Postgres execution queue worker loop (ADR-0062)
 - Observability stack: `compose.observability.yaml`
 - Development compose: `compose.yaml` (local postgres only)
 
@@ -391,6 +394,9 @@ ssh hemma "sudo docker ps"
 
 # Skriptoteket + core services
 ssh hemma "sudo docker ps | grep -E 'skriptoteket|nginx|postgres'"
+
+# Skriptoteket (compose services)
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml ps"
 ```
 
 ### View Logs
@@ -398,6 +404,9 @@ ssh hemma "sudo docker ps | grep -E 'skriptoteket|nginx|postgres'"
 ```bash
 # Web application logs
 ssh hemma "sudo docker logs -f skriptoteket-web"
+
+# Worker logs (execution queue)
+ssh hemma "sudo docker logs -f skriptoteket-worker"
 
 # Nginx access logs
 ssh hemma "sudo docker logs -f nginx-proxy"
@@ -414,6 +423,9 @@ Structured logs + correlation IDs: see [runbook-observability-logging.md](runboo
 # Restart Skriptoteket (preserves network connections)
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml restart"
 
+# Restart only the worker (execution queue)
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml restart worker"
+
 # Restart observability stack
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observability.yaml restart"
 
@@ -424,6 +436,12 @@ Note: `docker compose restart` does **not** re-read `.env`. For env var changes 
 
 ```bash
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --no-deps --force-recreate web"
+```
+
+If the change affects worker configuration, recreate worker too:
+
+```bash
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --no-deps --force-recreate worker"
 ```
 
 ### Disk Space / Session Cleanup

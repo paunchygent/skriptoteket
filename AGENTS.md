@@ -54,6 +54,8 @@ Target Python is **3.13–3.14**.
 - Run: `pdm run dev`
 - Run (local + log piping): `pdm run dev-logs` (writes `.artifacts/dev-backend.log`)
 - Run (local combo): `pdm run dev-local` (backend + SPA with log piping)
+- Execution worker (one-off dev): `PYTHONPATH=src pdm run python -m skriptoteket.cli run-execution-worker --once`
+- Execution worker healthcheck (for containers): `PYTHONPATH=src pdm run python -m skriptoteket.cli healthcheck-execution-worker`
 - Dev logs: when using Vite (`pdm run fe-dev`), API calls proxy to `127.0.0.1:8000` → check the **host** `pdm run dev` terminal for backend errors (container logs only apply if you point the UI at the container port).
 - Frontend deps: `pdm run fe-install` (or `pnpm -C frontend install`)
 - SPA dev: `pdm run fe-dev` (or `pnpm -C frontend --filter @skriptoteket/spa dev`)

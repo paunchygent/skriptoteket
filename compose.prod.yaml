@@ -95,6 +95,45 @@ services:
       retries: 3
       start_period: 10s
 
+  worker:
+    image: skriptoteket-web:latest
+    container_name: skriptoteket-worker
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://skriptoteket:${SKRIPTOTEKET_DB_PASSWORD}@shared-postgres:5432/skriptoteket
+      ENVIRONMENT: production
+      SERVICE_NAME: skriptoteket-worker
+      RUNNER_IMAGE: skriptoteket-runner:latest
+      RUNNER_QUEUE_ENABLED: "true"
+      ARTIFACTS_ROOT: /app/.artifacts
+      PYTHONPATH: /app/src
+      # Observability (requires compose.observability.yaml running)
+      OTEL_TRACING_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+    command: ["pdm", "run", "python", "-m", "skriptoteket.cli", "run-execution-worker", "--queue", "default"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - artifacts_data:/app/.artifacts
+    networks:
+      - hule-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pdm",
+          "run",
+          "python",
+          "-m",
+          "skriptoteket.cli",
+          "healthcheck-execution-worker",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
   # Runner image - built but not run as a service
   # Web app starts runner containers dynamically via Docker API
   runner:

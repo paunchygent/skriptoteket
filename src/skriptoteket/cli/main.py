@@ -7,6 +7,7 @@ from skriptoteket.cli.commands.cleanup_login_events import cleanup_login_events
 from skriptoteket.cli.commands.cleanup_sandbox_snapshots import cleanup_sandbox_snapshots
 from skriptoteket.cli.commands.cleanup_session_files import cleanup_session_files
 from skriptoteket.cli.commands.clear_all_session_files import clear_all_session_files
+from skriptoteket.cli.commands.healthcheck_execution_worker import healthcheck_execution_worker
 from skriptoteket.cli.commands.provision_user import provision_user
 from skriptoteket.cli.commands.prune_artifacts import prune_artifacts
 from skriptoteket.cli.commands.run_execution_worker import run_execution_worker
@@ -23,3 +24,4 @@ app.command()(cleanup_login_events)
 app.command()(clear_all_session_files)
 app.command()(seed_script_bank)
 app.command()(run_execution_worker)
+app.command()(healthcheck_execution_worker)
