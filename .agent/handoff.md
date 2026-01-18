@@ -62,3 +62,4 @@ pdm run test
 ## Next Steps
 
 - Finish PR-0039 checklists + rollout notes, then move ST-18-01 / PR-0039 to `done`.
+- Execute PR-0040 (execution queue test coverage): `docs/backlog/prs/pr-0040-execution-queue-test-coverage.md`.

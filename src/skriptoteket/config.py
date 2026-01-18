@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     # Runner (ST-04-02)
     RUNNER_IMAGE: str = "skriptoteket-runner:latest"
     RUNNER_MAX_CONCURRENCY: int = 1
-    RUNNER_QUEUE_ENABLED: bool = False
+    RUNNER_QUEUE_ENABLED: bool = True
     RUNNER_QUEUE_MAX_ATTEMPTS: int = 1
     RUNNER_QUEUE_LEASE_TTL_SECONDS: int = 60
     RUNNER_QUEUE_HEARTBEAT_INTERVAL_SECONDS: int = 15

@@ -205,6 +205,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0037-editor-ai-edit-ops-tolerant-diff-matching.md`
 - `docs/backlog/prs/pr-0038-editor-ai-diff-preview-scroll-and-states.md`
 - `docs/backlog/prs/pr-0039-execution-queue-worker-loop.md`
+- `docs/backlog/prs/pr-0040-execution-queue-test-coverage.md`
 
 ### Backlog Stories
 

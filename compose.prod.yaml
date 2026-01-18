@@ -25,6 +25,7 @@ services:
       ENVIRONMENT: production
       COOKIE_SECURE: "true"
       RUNNER_IMAGE: skriptoteket-runner:latest
+      RUNNER_QUEUE_ENABLED: "true"
       ARTIFACTS_ROOT: /app/.artifacts
       # Observability (requires compose.observability.yaml running)
       OTEL_TRACING_ENABLED: "true"
