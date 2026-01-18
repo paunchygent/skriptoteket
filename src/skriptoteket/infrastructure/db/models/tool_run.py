@@ -57,7 +57,6 @@ class ToolRunModel(Base):
     )
     started_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
-        server_default=func.now(),
         index=True,
         nullable=True,
     )

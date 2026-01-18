@@ -37,6 +37,9 @@ runner contract intact.
 
 1. Add `tool_run_jobs` table + indexes with TTL leases (`locked_until`); extend `RunStatus` with `queued`/`cancelled`.
 2. Make `tool_runs` lifecycle truthful: add `requested_at` (or `enqueued_at`) and make `started_at` nullable until a worker claims.
+   - IMPORTANT: `tool_runs.started_at` must have **no DB server default**. Queued runs write `started_at=NULL`, and
+     a `DEFAULT now()` will reintroduce the field, causing Pydantic/domain validation failures on re-hydration.
+   - Migration: `migrations/versions/0028_tool_runs_started_at_drop_default.py`
 3. Enqueue job on run start when `RUNNER_QUEUE_ENABLED` is true.
 4. Implement worker loop with `FOR UPDATE SKIP LOCKED` leasing and adopt-first semantics for stale running jobs.
 5. Update run + job states and persist outputs/artifacts on completion.
@@ -48,6 +51,9 @@ runner contract intact.
 - Integration test for end-to-end enqueue → worker execution → run completion.
 - Failure mode test for stale lock recovery.
   - Adopt-first: stale lease cleared → worker adopts existing container and finalizes.
+- Migration idempotency + schema check:
+  - `pdm run pytest -m docker --override-ini addopts=''`
+  - Ensures `tool_runs.started_at` has no server default after upgrade.
 
 ## Rollback plan
 

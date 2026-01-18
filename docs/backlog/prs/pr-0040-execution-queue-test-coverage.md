@@ -11,6 +11,7 @@ stories:
 tags: ["backend", "tests", "db", "infra"]
 acceptance_criteria:
   - "Queue-enabled production runs are enqueued (tool_runs + tool_run_jobs) and return status=queued without calling the runner."
+  - "Queued runs can be persisted without DB-side started_at defaults (migrated schema matches ADR-0062)."
   - "ToolRunJob domain transitions (enqueue/start/finish/requeue) are covered by unit tests (protocol-free, deterministic)."
   - "PostgreSQLToolRunJobRepository leasing semantics (claim/adopt-first/heartbeat/reaper) are covered by integration tests against Postgres."
   - "Worker job processing (process_claim) is covered by unit tests using protocol fakes (no DB, no real Docker)."
@@ -40,6 +41,11 @@ processing behavior — aligned with the repo testing rules:
 - UI tests (SPA already has coverage for queued status rendering/polling).
 
 ## Implementation plan
+
+0. Ensure queued-run timestamps are not overwritten by the database:
+   - `tool_runs.started_at` must be nullable **and** have no `DEFAULT now()`; queued runs write `NULL` until claimed.
+   - Migration: `migrations/versions/0028_tool_runs_started_at_drop_default.py`
+   - Docker-marked idempotency test: `tests/integration/test_migration_0028_tool_runs_started_at_drop_default_idempotent.py`
 
 1. Add domain unit tests for `ToolRunJob` state-machine helpers:
    - New file: `tests/unit/domain/scripting/test_tool_run_jobs.py`
@@ -96,4 +102,4 @@ processing behavior — aligned with the repo testing rules:
 
 ## Rollback plan
 
-- Revert PR-0040 only (tests). No production behavior changes.
+- The schema fix (dropping `tool_runs.started_at` default) is safe and can remain even if tests are reverted.

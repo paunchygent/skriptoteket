@@ -406,3 +406,93 @@ async def test_execute_returns_service_unavailable_when_docker_sock_missing(
     assert exc_info.value.code is ErrorCode.SERVICE_UNAVAILABLE
     assert "pdm run dev-start" in exc_info.value.message
     mock_capacity.release.assert_awaited_once()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+@pytest.mark.parametrize("container_status", ["missing", "created"])
+async def test_try_adopt_returns_none_when_no_adoptable_container(
+    runner: DockerToolRunner,
+    mock_docker_client: MagicMock,
+    tool_version: ToolVersion,
+    container_status: str,
+) -> None:
+    run_id = uuid4()
+    client_instance = mock_docker_client.return_value
+    client_instance.volumes.list.return_value = []
+
+    created_container: MagicMock | None = None
+    if container_status == "missing":
+        client_instance.containers.list.return_value = []
+    elif container_status == "created":
+        created_container = MagicMock()
+        created_container.status = "created"
+        client_instance.containers.list.return_value = [created_container]
+    else:  # pragma: no cover
+        raise AssertionError(f"Unexpected container_status: {container_status}")
+
+    adopted = await runner.try_adopt(
+        run_id=run_id,
+        version=tool_version,
+        context=RunContext.SANDBOX,
+    )
+
+    assert adopted is None
+    if created_container is not None:
+        assert created_container.remove.call_count >= 1
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("case", "expected_status"),
+    [
+        ("success", RunStatus.SUCCEEDED),
+        ("timeout", RunStatus.TIMED_OUT),
+    ],
+)
+async def test_try_adopt_finalizes_container_and_archives_output(
+    runner: DockerToolRunner,
+    mock_docker_client: MagicMock,
+    tool_version: ToolVersion,
+    mock_artifacts: MagicMock,
+    case: str,
+    expected_status: RunStatus,
+) -> None:
+    run_id = uuid4()
+    client_instance = mock_docker_client.return_value
+    client_instance.volumes.list.return_value = []
+
+    container = MagicMock()
+    container.status = "exited" if case == "success" else "running"
+    container.logs.side_effect = [b"stdout", b"stderr"]
+    if case == "success":
+        container.wait.return_value = {"StatusCode": 0}
+        result_tar = create_result_tar(
+            status="succeeded",
+            outputs=[{"kind": "html_sandboxed", "html": "<p>Hi</p>"}],
+            artifacts=[{"path": "output/report.txt", "bytes": 1}],
+        )
+    else:
+        container.wait.side_effect = [ReadTimeout(), {"StatusCode": 137}]
+        result_tar = b""
+
+    def get_archive_side_effect(*, path: str):
+        if case == "success" and path == "/work/result.json":
+            return [result_tar], {}
+        if path == "/work/output":
+            return [b"tar_stream"], {}
+        raise NotFound("Not found")
+
+    container.get_archive.side_effect = get_archive_side_effect
+    client_instance.containers.list.return_value = [container]
+
+    adopted = await runner.try_adopt(
+        run_id=run_id,
+        version=tool_version,
+        context=RunContext.SANDBOX,
+    )
+
+    assert adopted is not None
+    assert adopted.status is expected_status
+    mock_artifacts.store_output_archive.assert_called_once()

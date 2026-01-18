@@ -21,7 +21,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Current Session (2026-01-18)
 
 - Execution queue implementation in progress: ST-18-01 / PR-0039 (Postgres `tool_run_jobs` + worker loop + adopt-first stale-lease recovery); see `docs/backlog/prs/pr-0039-execution-queue-worker-loop.md`.
-  - Key files: `src/skriptoteket/workers/execution_queue_worker.py`, `src/skriptoteket/infrastructure/repositories/tool_run_job_repository.py`, `migrations/versions/0027_tool_run_jobs_execution_queue.py`.
+  - Key files: `src/skriptoteket/workers/execution_queue_worker.py`, `src/skriptoteket/infrastructure/repositories/tool_run_job_repository.py`, `migrations/versions/0027_tool_run_jobs_execution_queue.py`, `migrations/versions/0028_tool_runs_started_at_drop_default.py`.
 - SPA updated for queued runs (polling + status rendering + timestamps); see `frontend/apps/skriptoteket/src/views/MyRunsListView.vue` and `frontend/apps/skriptoteket/src/views/ToolRunView.vue`.
 - Docs status: ADR-0062 accepted, EPIC-18 active, review approved; ST-18-01 / PR-0039 set to `in_progress`.
 - Verification:
@@ -37,6 +37,7 @@ Keep this file updated so the next session can pick up work quickly.
   - Manual: `curl -s -o /dev/null -w '%{http_code} %{content_type}\\n' http://127.0.0.1:5173/`
   - Manual: `curl -s -o /dev/null -w '%{http_code} %{content_type}\\n' http://127.0.0.1:5173/my/runs`
   - Manual: `curl -s -o /dev/null -w '%{http_code} %{content_type}\\n' http://127.0.0.1:8000/openapi.json`
+  - Manual: queued run end-to-end (create via `POST /api/v1/tools/<slug>/run`, process via `pdm run python -m skriptoteket.cli run-execution-worker --once`); verified `tool_runs.started_at` is `NULL` when queued and set on claim.
 
 ## How to Run
 
@@ -58,6 +59,7 @@ pdm run test
 
 - Large local worktree from PR-0033 refactors; verify intent before staging changes outside that scope.
 - Queue-enabled runs require a worker process; if `RUNNER_QUEUE_ENABLED` is enabled without `run-execution-worker` running, runs will remain `queued`.
+- Production needs DB migration `0028_tool_runs_started_at_drop_default` applied to remove `tool_runs.started_at DEFAULT now()` (otherwise queued run creation can 500).
 
 ## Next Steps
 
