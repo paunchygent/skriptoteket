@@ -73,7 +73,8 @@ class MyRunItem(BaseModel):
     tool_slug: str | None
     tool_title: str
     status: RunStatus
-    started_at: datetime
+    requested_at: datetime
+    started_at: datetime | None = None
     finished_at: datetime | None
     input_files: list[InputFileSummary]
     output_files: list[OutputFileSummary]
@@ -129,6 +130,7 @@ async def list_my_runs(
                     tool_slug=tool_slug,
                     tool_title=tool_title,
                     status=run.status,
+                    requested_at=run.requested_at,
                     started_at=run.started_at,
                     finished_at=run.finished_at,
                     input_files=input_files,

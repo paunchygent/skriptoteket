@@ -128,6 +128,12 @@ async def run_sandbox(
         ),
     )
     run = result.run
+    if run.started_at is None:
+        raise DomainError(
+            code=ErrorCode.INTERNAL_ERROR,
+            message="Sandbox run missing started_at",
+            details={"run_id": str(run.id)},
+        )
     return SandboxRunResponse(
         run_id=run.id,
         status=run.status,

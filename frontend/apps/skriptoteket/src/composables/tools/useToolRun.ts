@@ -12,6 +12,7 @@ type StartToolRunResponse = components["schemas"]["StartToolRunResponse"];
 type StartActionResult = components["schemas"]["StartActionResult"];
 type GetSessionStateResult = components["schemas"]["GetSessionStateResult"];
 type RunDetails = components["schemas"]["RunDetails"];
+type RunStatus = components["schemas"]["RunStatus"];
 type JsonValue = components["schemas"]["JsonValue"];
 
 export interface StepResult {
@@ -43,7 +44,9 @@ export function useToolRun({ slug }: UseToolRunOptions) {
 
   const hasFiles = computed(() => selectedFiles.value.length > 0);
   const hasResults = computed(() => currentRun.value !== null);
-  const isRunning = computed(() => currentRun.value?.status === "running");
+  const isRunning = computed(() => {
+    return currentRun.value?.status === "running" || currentRun.value?.status === "queued";
+  });
   const hasNextActions = computed(() => {
     return (currentRun.value?.ui_payload?.next_actions ?? []).length > 0;
   });
@@ -79,8 +82,8 @@ export function useToolRun({ slug }: UseToolRunOptions) {
     return inputsValid.value;
   });
 
-  function isTerminalStatus(status: string): boolean {
-    return status !== "running";
+  function isTerminalStatus(status: RunStatus): boolean {
+    return status !== "running" && status !== "queued";
   }
 
   async function loadTool(): Promise<void> {
@@ -193,14 +196,14 @@ export function useToolRun({ slug }: UseToolRunOptions) {
         run_id: response.run_id,
         tool_id: tool.value.id,
         tool_title: tool.value.title,
-        status: "running",
+        status: "queued",
       };
 
       // Fetch full run details
       await fetchRun(response.run_id);
 
       // Start polling if still running
-      if (currentRun.value?.status === "running") {
+      if (currentRun.value?.status === "running" || currentRun.value?.status === "queued") {
         startPolling(response.run_id);
       }
 
@@ -285,7 +288,7 @@ export function useToolRun({ slug }: UseToolRunOptions) {
       await fetchRun(response.run_id);
 
       // Start polling if still running
-      if (currentRun.value?.status === "running") {
+      if (currentRun.value?.status === "running" || currentRun.value?.status === "queued") {
         startPolling(response.run_id);
       }
     } catch (error: unknown) {

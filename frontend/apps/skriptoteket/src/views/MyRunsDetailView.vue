@@ -151,10 +151,16 @@ watch(runId, () => {
 watch(
   () => run.value?.status,
   (status) => {
-    if (status === "running") {
+    if (status === "running" || status === "queued") {
       startPolling();
     } else {
       stopPolling();
+      if (run.value && hasNextActions.value && stateRev.value === null) {
+        void fetchSessionState(run.value.tool_id).catch((error: unknown) => {
+          stateRev.value = null;
+          actionErrorMessage.value = isApiError(error) ? error.message : "Det gick inte att ladda sessionen just nu.";
+        });
+      }
     }
   },
   { immediate: true },

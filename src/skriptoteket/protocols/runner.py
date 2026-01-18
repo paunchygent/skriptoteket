@@ -33,3 +33,13 @@ class ToolRunnerProtocol(Protocol):
         memory_json: bytes,
         action_payload: dict[str, JsonValue] | None,
     ) -> ToolExecutionResult: ...
+
+
+class ToolRunnerAdoptionProtocol(Protocol):
+    async def try_adopt(
+        self,
+        *,
+        run_id: UUID,
+        version: ToolVersion,
+        context: RunContext,
+    ) -> ToolExecutionResult | None: ...

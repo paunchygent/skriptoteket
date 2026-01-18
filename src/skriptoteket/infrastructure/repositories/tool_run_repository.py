@@ -39,6 +39,7 @@ class PostgreSQLToolRunRepository(ToolRunRepositoryProtocol):
             context=run.context,
             requested_by_user_id=run.requested_by_user_id,
             status=run.status,
+            requested_at=run.requested_at,
             started_at=run.started_at,
             finished_at=run.finished_at,
             workdir_path=run.workdir_path,
@@ -64,6 +65,8 @@ class PostgreSQLToolRunRepository(ToolRunRepositoryProtocol):
             raise not_found("ToolRun", str(run.id))
 
         model.status = run.status
+        model.requested_at = run.requested_at
+        model.started_at = run.started_at
         model.finished_at = run.finished_at
         model.html_output = run.html_output
         model.stdout = run.stdout
@@ -88,7 +91,7 @@ class PostgreSQLToolRunRepository(ToolRunRepositoryProtocol):
             .where(ToolRunModel.requested_by_user_id == user_id)
             .where(ToolRunModel.tool_id == tool_id)
             .where(ToolRunModel.context == context.value)
-            .order_by(ToolRunModel.started_at.desc())
+            .order_by(ToolRunModel.requested_at.desc())
             .limit(1)
         )
         result = await self._session.execute(stmt)
@@ -106,7 +109,7 @@ class PostgreSQLToolRunRepository(ToolRunRepositoryProtocol):
             select(ToolRunModel)
             .where(ToolRunModel.requested_by_user_id == user_id)
             .where(ToolRunModel.context == context.value)
-            .order_by(ToolRunModel.started_at.desc())
+            .order_by(ToolRunModel.requested_at.desc())
             .limit(limit)
         )
         result = await self._session.execute(stmt)
@@ -126,7 +129,7 @@ class PostgreSQLToolRunRepository(ToolRunRepositoryProtocol):
             .select_from(ToolRunModel)
             .where(ToolRunModel.requested_by_user_id == user_id)
             .where(ToolRunModel.context == context.value)
-            .where(ToolRunModel.started_at >= month_start)
+            .where(ToolRunModel.requested_at >= month_start)
         )
         result = await self._session.execute(stmt)
         return result.scalar_one()
@@ -137,7 +140,7 @@ class PostgreSQLToolRunRepository(ToolRunRepositoryProtocol):
         user_id: UUID,
         limit: int = 10,
     ) -> list[RecentRunRow]:
-        last_run = func.max(ToolRunModel.started_at)
+        last_run = func.max(ToolRunModel.requested_at)
         stmt = (
             select(
                 ToolRunModel.source_kind,

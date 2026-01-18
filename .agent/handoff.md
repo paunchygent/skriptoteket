@@ -12,28 +12,31 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-01-17
+- Date: 2026-01-18
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: recent — ST-14-11/12 done; ST-14-19 done; ST-14-20 done; ST-14-23 done; ST-08-24 done; ST-08-28 done; ST-08-29 done (history: `.agent/readme-first.md`)
 
-## Current Session (2026-01-17)
+## Current Session (2026-01-18)
 
-- PR-0033 SRP refactors complete + perf polish (help topic loading/prefetch, diff parse cache + early-exit, redundant newline normalization removed); see `docs/backlog/prs/pr-0033-large-file-srp-refactors-help-panel-docker-runner-edit-ops.md`.
-- Execution queue planning drafted: ADR-0062 (proposed), EPIC-18 (proposed), ST-18-01 (ready), PR-0039 (ready), review pending; `docs/index.md` updated.
+- Execution queue implementation in progress: ST-18-01 / PR-0039 (Postgres `tool_run_jobs` + worker loop + adopt-first stale-lease recovery); see `docs/backlog/prs/pr-0039-execution-queue-worker-loop.md`.
+  - Key files: `src/skriptoteket/workers/execution_queue_worker.py`, `src/skriptoteket/infrastructure/repositories/tool_run_job_repository.py`, `migrations/versions/0027_tool_run_jobs_execution_queue.py`.
+- SPA updated for queued runs (polling + status rendering + timestamps); see `frontend/apps/skriptoteket/src/views/MyRunsListView.vue` and `frontend/apps/skriptoteket/src/views/ToolRunView.vue`.
+- Docs status: ADR-0062 accepted, EPIC-18 active, review approved; ST-18-01 / PR-0039 set to `in_progress`.
 - Verification:
-  - `pdm run fe-gen-api-types`
-  - `pdm run fe-type-check`
+  - `pdm run test`
+  - `pdm run pytest -m docker --override-ini addopts=''`
   - `pdm run fe-test`
-  - `pdm run fe-build`
+  - `pdm run typecheck`
   - `pdm run format`
   - `pdm run lint`
-  - `pdm run test`
   - `pdm run docs-validate`
-  - `BASE_URL=http://127.0.0.1:5173 pdm run ui-smoke` (escalated)
-  - `BASE_URL=http://127.0.0.1:5173 pdm run ui-editor-smoke` (escalated)
-  - Manual (earlier in session): `pdm run dev-local` → verified `/` (Home), opened Help panel, opened `/admin/tools/:toolId` editor view.
+  - Manual: `docker compose up -d db && pdm run db-upgrade`
+  - Manual: `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run dev-local` (backend `http://127.0.0.1:8000`, SPA `http://127.0.0.1:5173`)
+  - Manual: `curl -s -o /dev/null -w '%{http_code} %{content_type}\\n' http://127.0.0.1:5173/`
+  - Manual: `curl -s -o /dev/null -w '%{http_code} %{content_type}\\n' http://127.0.0.1:5173/my/runs`
+  - Manual: `curl -s -o /dev/null -w '%{http_code} %{content_type}\\n' http://127.0.0.1:8000/openapi.json`
 
 ## How to Run
 
@@ -41,8 +44,8 @@ Keep this file updated so the next session can pick up work quickly.
 # Setup
 docker compose up -d db && pdm run db-upgrade
 
-# Development
-pdm run dev                 # Backend 127.0.0.1:8000
+# Development (backend + SPA)
+ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run dev-local
 
 # Quality gates
 pdm run format
@@ -54,10 +57,8 @@ pdm run test
 ## Known Issues / Risks
 
 - Large local worktree from PR-0033 refactors; verify intent before staging changes outside that scope.
-- ADR-0062 / EPIC-18 are proposed and require review approval before implementation.
+- Queue-enabled runs require a worker process; if `RUNNER_QUEUE_ENABLED` is enabled without `run-execution-worker` running, runs will remain `queued`.
 
 ## Next Steps
 
-- Continue PR-0033 SRP refactors and update its PR checklist.
-- Run `pdm run docs-validate` for the new ADR/epic/story/PR/review docs.
-- Start review for EPIC-18; flip ADR-0062 to `accepted` after approval.
+- Finish PR-0039 checklists + rollout notes, then move ST-18-01 / PR-0039 to `done`.

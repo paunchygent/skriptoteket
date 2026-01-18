@@ -83,7 +83,7 @@ export function useEditorSandboxRunExecution({
   }
 
   function isTerminalStatus(status: RunStatus): boolean {
-    return status !== "running";
+    return status !== "running" && status !== "queued";
   }
 
   async function pollRunStatus(runId: string): Promise<void> {

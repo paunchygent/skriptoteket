@@ -10,6 +10,7 @@ from skriptoteket.application.scripting.commands import ExecuteToolVersionComman
 from skriptoteket.application.scripting.handlers.execute_tool_version import (
     ExecuteToolVersionHandler,
 )
+from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest, StoredArtifact
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
@@ -24,7 +25,9 @@ from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result
 from skriptoteket.domain.scripting.ui.normalizer import DeterministicUiPayloadNormalizer
 from skriptoteket.domain.scripting.ui.policy import DEFAULT_UI_POLICY, UiPolicyProfileId
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
 from skriptoteket.protocols.runner import ToolRunnerProtocol
 from skriptoteket.protocols.scripting import (
     ToolRunRepositoryProtocol,
@@ -92,7 +95,13 @@ async def test_execute_tool_version_commits_before_runner_execute(now: datetime)
     versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
     versions_repo.get_by_id.return_value = version
 
+    settings = Mock(spec=Settings)
+    settings.RUNNER_QUEUE_ENABLED = False
+    settings.RUNNER_QUEUE_MAX_ATTEMPTS = 1
+
     runs_repo = AsyncMock(spec=ToolRunRepositoryProtocol)
+    jobs_repo = AsyncMock(spec=ToolRunJobRepositoryProtocol)
+    run_inputs = AsyncMock(spec=RunInputStorageProtocol)
     sessions_repo = AsyncMock(spec=ToolSessionRepositoryProtocol)
 
     id_generator = Mock(spec=IdGeneratorProtocol)
@@ -150,8 +159,11 @@ async def test_execute_tool_version_commits_before_runner_execute(now: datetime)
 
     handler = ExecuteToolVersionHandler(
         uow=uow,
+        settings=settings,
         versions=versions_repo,
         runs=runs_repo,
+        jobs=jobs_repo,
+        run_inputs=run_inputs,
         sessions=sessions_repo,
         runner=runner,
         ui_policy_provider=ui_policy_provider,
@@ -191,7 +203,13 @@ async def test_execute_tool_version_marks_failed_on_capacity_error(now: datetime
     versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
     versions_repo.get_by_id.return_value = version
 
+    settings = Mock(spec=Settings)
+    settings.RUNNER_QUEUE_ENABLED = False
+    settings.RUNNER_QUEUE_MAX_ATTEMPTS = 1
+
     runs_repo = AsyncMock(spec=ToolRunRepositoryProtocol)
+    jobs_repo = AsyncMock(spec=ToolRunJobRepositoryProtocol)
+    run_inputs = AsyncMock(spec=RunInputStorageProtocol)
     sessions_repo = AsyncMock(spec=ToolSessionRepositoryProtocol)
 
     id_generator = Mock(spec=IdGeneratorProtocol)
@@ -216,8 +234,11 @@ async def test_execute_tool_version_marks_failed_on_capacity_error(now: datetime
 
     handler = ExecuteToolVersionHandler(
         uow=uow,
+        settings=settings,
         versions=versions_repo,
         runs=runs_repo,
+        jobs=jobs_repo,
+        run_inputs=run_inputs,
         sessions=sessions_repo,
         runner=runner,
         ui_policy_provider=ui_policy_provider,
@@ -264,7 +285,13 @@ async def test_execute_tool_version_marks_failed_on_syntax_error_and_skips_runne
     versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
     versions_repo.get_by_id.return_value = version
 
+    settings = Mock(spec=Settings)
+    settings.RUNNER_QUEUE_ENABLED = False
+    settings.RUNNER_QUEUE_MAX_ATTEMPTS = 1
+
     runs_repo = AsyncMock(spec=ToolRunRepositoryProtocol)
+    jobs_repo = AsyncMock(spec=ToolRunJobRepositoryProtocol)
+    run_inputs = AsyncMock(spec=RunInputStorageProtocol)
     sessions_repo = AsyncMock(spec=ToolSessionRepositoryProtocol)
 
     id_generator = Mock(spec=IdGeneratorProtocol)
@@ -285,8 +312,11 @@ async def test_execute_tool_version_marks_failed_on_syntax_error_and_skips_runne
 
     handler = ExecuteToolVersionHandler(
         uow=uow,
+        settings=settings,
         versions=versions_repo,
         runs=runs_repo,
+        jobs=jobs_repo,
+        run_inputs=run_inputs,
         sessions=sessions_repo,
         runner=runner,
         ui_policy_provider=ui_policy_provider,

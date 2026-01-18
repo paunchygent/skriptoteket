@@ -14,10 +14,12 @@ const errorMessage = ref<string | null>(null);
 
 function statusLabel(status: RunStatus): string {
   const labels: Record<RunStatus, string> = {
+    queued: "Köad",
     running: "Pågår",
     succeeded: "Lyckades",
     failed: "Misslyckades",
     timed_out: "Tidsgräns",
+    cancelled: "Avbruten",
   };
   return labels[status];
 }
@@ -29,8 +31,11 @@ function statusClass(status: RunStatus): string {
     case "failed":
     case "timed_out":
       return "bg-error/10 text-error border border-error/30";
+    case "queued":
     case "running":
       return "bg-burgundy/10 text-burgundy border border-burgundy/40";
+    case "cancelled":
+      return "bg-canvas text-navy/70 border border-navy/30";
     default:
       return "bg-canvas text-navy/70 border border-navy/30";
   }
@@ -44,8 +49,8 @@ function formatDateTime(value: string): string {
   return date.toLocaleString("sv-SE", { dateStyle: "medium", timeStyle: "short" });
 }
 
-function formatDuration(startedAt: string, finishedAt: string | null): string | null {
-  if (!finishedAt) return null;
+function formatDuration(startedAt: string | null, finishedAt: string | null): string | null {
+  if (!startedAt || !finishedAt) return null;
 
   const start = new Date(startedAt);
   const end = new Date(finishedAt);
@@ -157,7 +162,7 @@ onMounted(() => {
               </td>
               <td class="hidden md:table-cell">
                 <div class="text-xs text-navy/70">
-                  {{ formatDateTime(run.started_at) }}
+                  {{ formatDateTime(run.started_at ?? run.requested_at) }}
                 </div>
                 <div
                   v-if="formatDuration(run.started_at, run.finished_at)"

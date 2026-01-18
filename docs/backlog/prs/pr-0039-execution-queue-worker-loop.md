@@ -2,10 +2,10 @@
 type: pr
 id: PR-0039
 title: "Execution queue + worker loop (Postgres)"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2026-01-17
-updated: 2026-01-17
+updated: 2026-01-18
 stories:
   - "ST-18-01"
 adrs:
@@ -35,17 +35,19 @@ runner contract intact.
 
 ## Implementation plan
 
-1. Add `tool_run_jobs` table + indexes; extend `RunStatus` with `queued`/`cancelled`.
-2. Enqueue job on run start when `RUNNER_QUEUE_ENABLED` is true.
-3. Implement worker loop with `FOR UPDATE SKIP LOCKED` leasing.
-4. Update run + job states and persist outputs/artifacts on completion.
-5. Add reaper for stale locks; expose minimal metrics.
+1. Add `tool_run_jobs` table + indexes with TTL leases (`locked_until`); extend `RunStatus` with `queued`/`cancelled`.
+2. Make `tool_runs` lifecycle truthful: add `requested_at` (or `enqueued_at`) and make `started_at` nullable until a worker claims.
+3. Enqueue job on run start when `RUNNER_QUEUE_ENABLED` is true.
+4. Implement worker loop with `FOR UPDATE SKIP LOCKED` leasing and adopt-first semantics for stale running jobs.
+5. Update run + job states and persist outputs/artifacts on completion.
+6. Add reaper for stale leases (clears lease fields, keeps status running); expose minimal metrics.
 
 ## Test plan
 
 - Unit tests for job claim/release and state transitions.
 - Integration test for end-to-end enqueue → worker execution → run completion.
 - Failure mode test for stale lock recovery.
+  - Adopt-first: stale lease cleared → worker adopts existing container and finalizes.
 
 ## Rollback plan
 

@@ -44,10 +44,12 @@ const artifacts = computed(() => run.value?.artifacts ?? []);
 
 function statusLabel(status: RunStatus): string {
   const labels: Record<RunStatus, string> = {
+    queued: "Köad",
     running: "Pågår",
     succeeded: "Lyckades",
     failed: "Misslyckades",
     timed_out: "Tidsgräns",
+    cancelled: "Avbruten",
   };
   return labels[status];
 }
@@ -198,7 +200,7 @@ async function submitAction(payload: { actionId: string; input: Record<string, c
 watch(
   () => run.value?.status,
   (status) => {
-    if (status === "running") {
+    if (status === "running" || status === "queued") {
       startPolling();
     } else {
       stopPolling();
@@ -313,11 +315,11 @@ onUnmounted(() => {
 
           <!-- Running state -->
           <div
-            v-if="run.status === 'running'"
+            v-if="run.status === 'running' || run.status === 'queued'"
             class="flex items-center gap-2 text-navy/70 text-sm"
           >
             <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
-            <span>Kör...</span>
+            <span>{{ run.status === "queued" ? "Köar..." : "Kör..." }}</span>
           </div>
 
           <!-- Outputs -->

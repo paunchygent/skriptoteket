@@ -2,9 +2,10 @@
 type: epic
 id: EPIC-18
 title: "Execution queue and worker loop"
-status: proposed
+status: active
 owners: "agents"
 created: 2026-01-17
+updated: 2026-01-17
 outcome: "Tool execution runs asynchronously via a durable Postgres queue with worker leasing, removing HTTP request timeouts for long-running tools."
 ---
 

@@ -10,6 +10,7 @@ from skriptoteket.application.scripting.commands import ExecuteToolVersionComman
 from skriptoteket.application.scripting.handlers.execute_tool_version import (
     ExecuteToolVersionHandler,
 )
+from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
@@ -26,7 +27,9 @@ from skriptoteket.domain.scripting.ui.normalizer import DeterministicUiPayloadNo
 from skriptoteket.infrastructure.scripting_ui.backend_actions import NoopBackendActionProvider
 from skriptoteket.infrastructure.scripting_ui.policy_provider import DefaultUiPolicyProvider
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
 from skriptoteket.protocols.runner import ToolRunnerProtocol
 from skriptoteket.protocols.scripting import (
     ToolRunRepositoryProtocol,
@@ -84,7 +87,13 @@ async def test_execute_tool_version_passes_action_payload_without_affecting_file
     versions = AsyncMock(spec=ToolVersionRepositoryProtocol)
     versions.get_by_id.return_value = version
 
+    settings = Mock(spec=Settings)
+    settings.RUNNER_QUEUE_ENABLED = False
+    settings.RUNNER_QUEUE_MAX_ATTEMPTS = 1
+
     runs = AsyncMock(spec=ToolRunRepositoryProtocol)
+    jobs = AsyncMock(spec=ToolRunJobRepositoryProtocol)
+    run_inputs = AsyncMock(spec=RunInputStorageProtocol)
     sessions = AsyncMock(spec=ToolSessionRepositoryProtocol)
     runner = AsyncMock(spec=ToolRunnerProtocol)
     runner.execute.return_value = ToolExecutionResult(
@@ -114,8 +123,11 @@ async def test_execute_tool_version_passes_action_payload_without_affecting_file
 
     handler = ExecuteToolVersionHandler(
         uow=uow,
+        settings=settings,
         versions=versions,
         runs=runs,
+        jobs=jobs,
+        run_inputs=run_inputs,
         sessions=sessions,
         runner=runner,
         ui_policy_provider=ui_policy_provider,

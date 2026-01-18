@@ -118,6 +118,7 @@ async def test_tool_run_create_get_and_update(db_session: AsyncSession) -> None:
         context=RunContext.SANDBOX,
         requested_by_user_id=user_id,
         status=RunStatus.RUNNING,
+        requested_at=now,
         started_at=now,
         finished_at=None,
         workdir_path=f"{run_id}/work",
@@ -186,6 +187,7 @@ async def test_tool_run_update_missing_raises_not_found(db_session: AsyncSession
         context=RunContext.SANDBOX,
         requested_by_user_id=user_id,
         status=RunStatus.RUNNING,
+        requested_at=now,
         started_at=now,
         finished_at=None,
         workdir_path="missing/work",
@@ -238,6 +240,7 @@ async def test_tool_run_complex_fields_roundtrip(db_session: AsyncSession) -> No
         context=RunContext.PRODUCTION,
         requested_by_user_id=user_id,
         status=RunStatus.RUNNING,
+        requested_at=now,
         started_at=now,
         finished_at=None,
         workdir_path=f"{run_id}/work",
@@ -315,6 +318,7 @@ async def test_tool_run_error_summary_roundtrip(db_session: AsyncSession) -> Non
         context=RunContext.SANDBOX,
         requested_by_user_id=user_id,
         status=RunStatus.RUNNING,
+        requested_at=now,
         started_at=now,
         finished_at=None,
         workdir_path=f"{run_id}/work",
@@ -378,8 +382,9 @@ async def test_list_recent_tools_for_user_groups_orders_and_limits(
         context=RunContext.PRODUCTION,
         requested_by_user_id=user_id,
         status=RunStatus.SUCCEEDED,
+        requested_at=now - timedelta(minutes=5),
         started_at=now - timedelta(minutes=5),
-        finished_at=None,
+        finished_at=now - timedelta(minutes=5) + timedelta(seconds=1),
         workdir_path="a-old/work",
         input_filename="input.txt",
         input_size_bytes=1,
@@ -391,10 +396,22 @@ async def test_list_recent_tools_for_user_groups_orders_and_limits(
         error_summary=None,
     )
     tool_a_new = tool_a_old.model_copy(
-        update={"id": uuid.uuid4(), "started_at": now - timedelta(minutes=1)}
+        update={
+            "id": uuid.uuid4(),
+            "requested_at": now - timedelta(minutes=1),
+            "started_at": now - timedelta(minutes=1),
+            "finished_at": now - timedelta(minutes=1) + timedelta(seconds=1),
+        }
     )
     tool_b = tool_a_old.model_copy(
-        update={"id": uuid.uuid4(), "tool_id": tool_id_b, "version_id": version_id_b}
+        update={
+            "id": uuid.uuid4(),
+            "tool_id": tool_id_b,
+            "version_id": version_id_b,
+            "requested_at": now - timedelta(minutes=3),
+            "started_at": now - timedelta(minutes=3),
+            "finished_at": now - timedelta(minutes=3) + timedelta(seconds=1),
+        }
     )
 
     app_id = "demo.counter"
@@ -408,8 +425,9 @@ async def test_list_recent_tools_for_user_groups_orders_and_limits(
         context=RunContext.PRODUCTION,
         requested_by_user_id=user_id,
         status=RunStatus.SUCCEEDED,
+        requested_at=now - timedelta(seconds=30),
         started_at=now - timedelta(seconds=30),
-        finished_at=None,
+        finished_at=now - timedelta(seconds=29),
         workdir_path="app/work",
         input_filename="input.txt",
         input_size_bytes=1,
@@ -422,7 +440,13 @@ async def test_list_recent_tools_for_user_groups_orders_and_limits(
     )
 
     sandbox_run = tool_a_old.model_copy(
-        update={"id": uuid.uuid4(), "context": RunContext.SANDBOX, "started_at": now}
+        update={
+            "id": uuid.uuid4(),
+            "context": RunContext.SANDBOX,
+            "requested_at": now,
+            "started_at": now,
+            "finished_at": now + timedelta(seconds=1),
+        }
     )
 
     for run in [tool_a_old, tool_a_new, tool_b, curated_run, sandbox_run]:
@@ -434,11 +458,11 @@ async def test_list_recent_tools_for_user_groups_orders_and_limits(
         (RunSourceKind.TOOL_VERSION, tool_id_a),
         (RunSourceKind.TOOL_VERSION, tool_id_b),
     ]
-    assert rows[1].last_used_at == tool_a_new.started_at
+    assert rows[1].last_used_at == tool_a_new.requested_at
 
     limited_rows = await repo.list_recent_tools_for_user(user_id=user_id, limit=2)
     assert len(limited_rows) == 2
-    assert limited_rows[0].last_used_at == curated_run.started_at
+    assert limited_rows[0].last_used_at == curated_run.requested_at
 
 
 @pytest.mark.integration
@@ -468,8 +492,9 @@ async def test_count_for_user_this_month_returns_correct_count(
             context=RunContext.PRODUCTION,
             requested_by_user_id=user_id,
             status=RunStatus.SUCCEEDED,
+            requested_at=now - timedelta(minutes=i),
             started_at=now - timedelta(minutes=i),
-            finished_at=None,
+            finished_at=now - timedelta(minutes=i) + timedelta(seconds=1),
             workdir_path=f"prod-{i}/work",
             input_filename="input.txt",
             input_size_bytes=1,
@@ -491,8 +516,9 @@ async def test_count_for_user_this_month_returns_correct_count(
             context=RunContext.PRODUCTION,
             requested_by_user_id=user_id,
             status=RunStatus.SUCCEEDED,
+            requested_at=last_month - timedelta(days=i),
             started_at=last_month - timedelta(days=i),
-            finished_at=None,
+            finished_at=last_month - timedelta(days=i) + timedelta(seconds=1),
             workdir_path=f"last-month-{i}/work",
             input_filename="input.txt",
             input_size_bytes=1,
@@ -513,8 +539,9 @@ async def test_count_for_user_this_month_returns_correct_count(
         context=RunContext.SANDBOX,
         requested_by_user_id=user_id,
         status=RunStatus.SUCCEEDED,
+        requested_at=now,
         started_at=now,
-        finished_at=None,
+        finished_at=now + timedelta(seconds=1),
         workdir_path="sandbox/work",
         input_filename="input.txt",
         input_size_bytes=1,

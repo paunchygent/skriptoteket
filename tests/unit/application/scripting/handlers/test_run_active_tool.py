@@ -103,6 +103,7 @@ def make_tool_run(
         requested_by_user_id=requested_by_user_id,
         context=context,
         status=RunStatus.SUCCEEDED,
+        requested_at=now,
         started_at=now,
         finished_at=now,
         workdir_path="/tmp/run",

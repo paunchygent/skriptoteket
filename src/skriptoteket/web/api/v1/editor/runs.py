@@ -66,6 +66,12 @@ def _resolve_artifact_path(
 
 
 def _build_run_details(*, run: ToolRun, settings: Settings) -> EditorRunDetails:
+    if run.started_at is None:
+        raise DomainError(
+            code=ErrorCode.INTERNAL_ERROR,
+            message="Run missing started_at",
+            details={"run_id": str(run.id)},
+        )
     manifest = ArtifactsManifest.model_validate(run.artifacts_manifest or {"artifacts": []})
     artifacts = [
         ArtifactEntry(

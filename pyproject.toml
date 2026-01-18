@@ -366,6 +366,7 @@ cleanup-session-files = { cmd = "python -m skriptoteket.cli cleanup-session-file
 cleanup-sandbox-snapshots = { cmd = "python -m skriptoteket.cli cleanup-sandbox-snapshots", env = { PYTHONPATH = "src" } }
 clear-all-session-files = { cmd = "python -m skriptoteket.cli clear-all-session-files", env = { PYTHONPATH = "src" } }
 seed-script-bank = { cmd = "python -m skriptoteket.cli seed-script-bank", env = { PYTHONPATH = "src" } }
+run-execution-worker = { cmd = "python -m skriptoteket.cli run-execution-worker", env = { PYTHONPATH = "src" } }
 
 # Docker dev workflow (compose base + dev overrides)
 dev-start = "docker compose -f compose.yaml -f compose.dev.yaml up -d"

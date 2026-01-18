@@ -99,10 +99,12 @@ watch(displayedRun, () => {
 
 function statusLabel(status: RunStatus): string {
   const labels: Record<RunStatus, string> = {
+    queued: "Köad",
     running: "Kör...",
     succeeded: "Lyckades",
     failed: "Misslyckades",
     timed_out: "Tidsgräns",
+    cancelled: "Avbruten",
   };
   return labels[status];
 }
@@ -146,15 +148,15 @@ async function copyDebugText(): Promise<void> {
   <div class="space-y-4">
     <!-- Running state -->
     <div
-      v-if="isRunning && runResult?.status === 'running'"
+      v-if="isRunning && (runResult?.status === 'running' || runResult?.status === 'queued')"
       class="flex items-center gap-2 text-sm text-navy/70"
     >
       <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
-      <span>Kör skriptet...</span>
+      <span>{{ runResult?.status === "queued" ? "Köar skriptet..." : "Kör skriptet..." }}</span>
     </div>
 
     <!-- Results -->
-    <template v-if="runResult && runResult.status !== 'running'">
+    <template v-if="runResult && runResult.status !== 'running' && runResult.status !== 'queued'">
       <!-- Step history indicator -->
       <div
         v-if="completedSteps.length > 0"

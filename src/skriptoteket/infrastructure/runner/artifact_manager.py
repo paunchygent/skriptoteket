@@ -106,6 +106,8 @@ class FilesystemArtifactManager(ArtifactManagerProtocol):
             validate_output_path(path=artifact.path)
 
         run_dir = self._artifacts_root / str(run_id)
+        if run_dir.exists():
+            return build_artifacts_manifest(run_dir=run_dir)
         run_dir.mkdir(parents=True, exist_ok=False)
 
         _safe_extract_tar(tar_stream=output_archive, destination_dir=run_dir)

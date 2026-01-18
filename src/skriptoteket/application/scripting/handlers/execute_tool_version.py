@@ -10,18 +10,29 @@ from skriptoteket.application.scripting.commands import (
 from skriptoteket.application.scripting.handlers.execute_tool_version_pipeline import (
     execute_tool_version_pipeline,
 )
+from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.scripting.models import ToolVersion, compute_content_hash
+from skriptoteket.domain.scripting.input_files import InputManifest, normalize_input_files
+from skriptoteket.domain.scripting.models import (
+    ToolVersion,
+    compute_content_hash,
+    enqueue_tool_version_run,
+)
 from skriptoteket.domain.scripting.tool_inputs import (
     normalize_tool_input_schema,
+    normalize_tool_input_values,
+    validate_input_files_count,
 )
+from skriptoteket.domain.scripting.tool_run_jobs import enqueue_job
 from skriptoteket.domain.scripting.tool_settings import (
     normalize_tool_settings_schema,
 )
 from skriptoteket.observability.tracing import get_tracer, trace_operation
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
 from skriptoteket.protocols.runner import ToolRunnerProtocol
 from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
@@ -87,8 +98,11 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         self,
         *,
         uow: UnitOfWorkProtocol,
+        settings: Settings,
         versions: ToolVersionRepositoryProtocol,
         runs: ToolRunRepositoryProtocol,
+        jobs: ToolRunJobRepositoryProtocol,
+        run_inputs: RunInputStorageProtocol,
         sessions: ToolSessionRepositoryProtocol,
         runner: ToolRunnerProtocol,
         ui_policy_provider: UiPolicyProviderProtocol,
@@ -98,8 +112,11 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         id_generator: IdGeneratorProtocol,
     ) -> None:
         self._uow = uow
+        self._settings = settings
         self._versions = versions
         self._runs = runs
+        self._jobs = jobs
+        self._run_inputs = run_inputs
         self._sessions = sessions
         self._runner = runner
         self._ui_policy_provider = ui_policy_provider
@@ -131,6 +148,72 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         if command.version_override is not None:
             version = _apply_version_override(version=version, override=command.version_override)
 
+        now = self._clock.now()
+        run_id = self._id_generator.new_uuid()
+
+        queue_enabled = bool(self._settings.RUNNER_QUEUE_ENABLED)
+        can_queue = (
+            queue_enabled
+            and command.context.value == "production"
+            and command.action_payload is None
+            and command.version_override is None
+        )
+
+        if can_queue:
+            input_schema = normalize_tool_input_schema(input_schema=version.input_schema)
+            validate_input_files_count(
+                input_schema=input_schema,
+                files_count=len(command.input_files),
+            )
+            normalized_input_values = normalize_tool_input_values(
+                input_schema=input_schema,
+                values=command.input_values,
+            )
+
+            normalized_input_files: list[tuple[str, bytes]] = []
+            input_manifest = InputManifest()
+            if command.input_files:
+                normalized_input_files, input_manifest = normalize_input_files(
+                    input_files=command.input_files
+                )
+
+            primary_filename = normalized_input_files[0][0] if normalized_input_files else None
+            total_size_bytes = sum(len(content) for _, content in normalized_input_files)
+
+            queued_run = enqueue_tool_version_run(
+                run_id=run_id,
+                tool_id=command.tool_id,
+                version_id=command.version_id,
+                snapshot_id=command.snapshot_id,
+                context=command.context,
+                requested_by_user_id=actor.id,
+                workdir_path=str(run_id),
+                input_filename=primary_filename,
+                input_size_bytes=total_size_bytes,
+                input_manifest=input_manifest,
+                input_values=normalized_input_values,
+                now=now,
+            )
+
+            max_attempts = max(1, int(self._settings.RUNNER_QUEUE_MAX_ATTEMPTS))
+            job_id = self._id_generator.new_uuid()
+            queued_job = enqueue_job(
+                job_id=job_id,
+                run_id=run_id,
+                now=now,
+                queue="default",
+                priority=0,
+                max_attempts=max_attempts,
+            )
+
+            async with self._uow:
+                await self._runs.create(run=queued_run)
+                await self._jobs.create(job=queued_job)
+                if normalized_input_files:
+                    await self._run_inputs.store(run_id=run_id, files=normalized_input_files)
+
+            return ExecuteToolVersionResult(run=queued_run, normalized_state={})
+
         profile_id = await self._ui_policy_provider.get_profile_id_for_tool(
             tool_id=command.tool_id,
             actor=actor,
@@ -141,9 +224,6 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
             actor=actor,
             policy=policy,
         )
-
-        now = self._clock.now()
-        run_id = self._id_generator.new_uuid()
 
         # Start tracing span for execution
         tracer = get_tracer("skriptoteket")

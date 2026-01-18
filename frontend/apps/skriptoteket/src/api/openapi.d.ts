@@ -2247,15 +2247,17 @@ export interface components {
             /** Output Files */
             output_files: components["schemas"]["OutputFileSummary"][];
             /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /**
              * Run Id
              * Format: uuid
              */
             run_id: string;
-            /**
-             * Started At
-             * Format: date-time
-             */
-            started_at: string;
+            /** Started At */
+            started_at?: string | null;
             status: components["schemas"]["RunStatus"];
             /**
              * Tool Id
@@ -2455,7 +2457,7 @@ export interface components {
          * RunStatus
          * @enum {string}
          */
-        RunStatus: "running" | "succeeded" | "failed" | "timed_out";
+        RunStatus: "queued" | "running" | "succeeded" | "failed" | "timed_out" | "cancelled";
         /** SandboxRunResponse */
         SandboxRunResponse: {
             /**

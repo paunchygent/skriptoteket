@@ -45,10 +45,12 @@ const emit = defineEmits<{
 
 function statusLabel(status: RunStatus): string {
   const labels: Record<RunStatus, string> = {
+    queued: "Köad",
     running: "Pågår",
     succeeded: "Lyckades",
     failed: "Misslyckades",
     timed_out: "Tidsgräns",
+    cancelled: "Avbruten",
   };
   return labels[status];
 }

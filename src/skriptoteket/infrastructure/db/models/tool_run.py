@@ -49,11 +49,17 @@ class ToolRunModel(Base):
 
     status: Mapped[str] = mapped_column(String(16), index=True, nullable=False)
 
-    started_at: Mapped[datetime] = mapped_column(
+    requested_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
         index=True,
         nullable=False,
+    )
+    started_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        index=True,
+        nullable=True,
     )
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 

@@ -28,6 +28,13 @@ class DockerContainerAdapter(DockerContainerProtocol):
     def __init__(self, container: Any) -> None:
         self._container = container
 
+    @property
+    def status(self) -> str:
+        return str(self._container.status)
+
+    def reload(self) -> None:
+        self._container.reload()
+
     def put_archive(self, *, path: str, data: bytes) -> bool:
         return bool(self._container.put_archive(path=path, data=data))
 
@@ -60,6 +67,9 @@ class DockerVolumesClientAdapter(DockerVolumesClientProtocol):
     def create(self, **kwargs: object) -> DockerVolumeProtocol:
         return DockerVolumeAdapter(self._volumes.create(**kwargs))
 
+    def list(self, **kwargs: object) -> list[DockerVolumeProtocol]:
+        return [DockerVolumeAdapter(volume) for volume in self._volumes.list(**kwargs)]
+
 
 class DockerContainersClientAdapter(DockerContainersClientProtocol):
     def __init__(self, containers: Any) -> None:
@@ -67,6 +77,12 @@ class DockerContainersClientAdapter(DockerContainersClientProtocol):
 
     def create(self, **kwargs: object) -> DockerContainerProtocol:
         return DockerContainerAdapter(self._containers.create(**kwargs))
+
+    def get(self, *args: object, **kwargs: object) -> DockerContainerProtocol:
+        return DockerContainerAdapter(self._containers.get(*args, **kwargs))
+
+    def list(self, **kwargs: object) -> list[DockerContainerProtocol]:
+        return [DockerContainerAdapter(container) for container in self._containers.list(**kwargs)]
 
 
 class DockerClientAdapter(DockerClientProtocol):

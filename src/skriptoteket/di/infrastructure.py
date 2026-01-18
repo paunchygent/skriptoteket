@@ -56,6 +56,9 @@ from skriptoteket.infrastructure.repositories.tool_maintainer_repository import 
     PostgreSQLToolMaintainerRepository,
 )
 from skriptoteket.infrastructure.repositories.tool_repository import PostgreSQLToolRepository
+from skriptoteket.infrastructure.repositories.tool_run_job_repository import (
+    PostgreSQLToolRunJobRepository,
+)
 from skriptoteket.infrastructure.repositories.tool_run_repository import PostgreSQLToolRunRepository
 from skriptoteket.infrastructure.repositories.tool_session_message_repository import (
     PostgreSQLToolSessionMessageRepository,
@@ -76,6 +79,7 @@ from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLU
 from skriptoteket.infrastructure.runner.artifact_manager import FilesystemArtifactManager
 from skriptoteket.infrastructure.runner.capacity import RunnerCapacityLimiter
 from skriptoteket.infrastructure.runner.docker_runner import DockerRunnerLimits, DockerToolRunner
+from skriptoteket.infrastructure.runner.run_input_storage import LocalRunInputStorage
 from skriptoteket.infrastructure.scripting_ui.backend_actions import NoopBackendActionProvider
 from skriptoteket.infrastructure.scripting_ui.policy_provider import DefaultUiPolicyProvider
 from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordHasher
@@ -99,6 +103,7 @@ from skriptoteket.protocols.curated_apps import (
 from skriptoteket.protocols.draft_locks import DraftLockRepositoryProtocol
 from skriptoteket.protocols.email import EmailSenderProtocol, EmailTemplateRendererProtocol
 from skriptoteket.protocols.email_verification import EmailVerificationTokenRepositoryProtocol
+from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
 from skriptoteket.protocols.favorites import FavoritesRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
@@ -108,7 +113,12 @@ from skriptoteket.protocols.identity import (
     UserRepositoryProtocol,
 )
 from skriptoteket.protocols.login_events import LoginEventRepositoryProtocol
-from skriptoteket.protocols.runner import ArtifactManagerProtocol, ToolRunnerProtocol
+from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
+from skriptoteket.protocols.runner import (
+    ArtifactManagerProtocol,
+    ToolRunnerAdoptionProtocol,
+    ToolRunnerProtocol,
+)
 from skriptoteket.protocols.sandbox_snapshots import SandboxSnapshotRepositoryProtocol
 from skriptoteket.protocols.scripting import (
     ToolRunRepositoryProtocol,
@@ -212,6 +222,10 @@ class InfrastructureProvider(Provider):
         )
 
     @provide(scope=Scope.APP)
+    def run_input_storage(self, settings: Settings) -> RunInputStorageProtocol:
+        return LocalRunInputStorage(artifacts_root=settings.ARTIFACTS_ROOT)
+
+    @provide(scope=Scope.APP)
     def tool_runner(
         self,
         settings: Settings,
@@ -235,6 +249,10 @@ class InfrastructureProvider(Provider):
             capacity=capacity,
             artifacts=artifacts,
         )
+
+    @provide(scope=Scope.APP)
+    def tool_runner_adoption(self, runner: ToolRunnerProtocol) -> ToolRunnerAdoptionProtocol:
+        return runner  # type: ignore[return-value]
 
     @provide(scope=Scope.APP)
     def ui_policy_provider(self) -> UiPolicyProviderProtocol:
@@ -307,6 +325,10 @@ class InfrastructureProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def tool_run_repo(self, session: AsyncSession) -> ToolRunRepositoryProtocol:
         return PostgreSQLToolRunRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def tool_run_job_repo(self, session: AsyncSession) -> ToolRunJobRepositoryProtocol:
+        return PostgreSQLToolRunJobRepository(session)
 
     @provide(scope=Scope.REQUEST)
     def tool_session_repo(self, session: AsyncSession) -> ToolSessionRepositoryProtocol:

@@ -34,12 +34,14 @@ from skriptoteket.application.scripting.handlers.update_tool_session_state impor
 from skriptoteket.application.scripting.handlers.update_tool_settings import (
     UpdateToolSettingsHandler,
 )
+from skriptoteket.config import Settings
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import (
     CuratedAppExecutorProtocol,
     CuratedAppRegistryProtocol,
 )
+from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.interactive_tools import (
     GetRunHandlerProtocol,
@@ -48,6 +50,7 @@ from skriptoteket.protocols.interactive_tools import (
     ListSessionFilesHandlerProtocol,
     StartActionHandlerProtocol,
 )
+from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
 from skriptoteket.protocols.runner import ToolRunnerProtocol
 from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
@@ -244,8 +247,11 @@ class ScriptingProvider(Provider):
     def execute_tool_version_handler(
         self,
         uow: UnitOfWorkProtocol,
+        settings: Settings,
         versions: ToolVersionRepositoryProtocol,
         runs: ToolRunRepositoryProtocol,
+        jobs: ToolRunJobRepositoryProtocol,
+        run_inputs: RunInputStorageProtocol,
         sessions: ToolSessionRepositoryProtocol,
         runner: ToolRunnerProtocol,
         ui_policy_provider: UiPolicyProviderProtocol,
@@ -256,8 +262,11 @@ class ScriptingProvider(Provider):
     ) -> ExecuteToolVersionHandlerProtocol:
         return ExecuteToolVersionHandler(
             uow=uow,
+            settings=settings,
             versions=versions,
             runs=runs,
+            jobs=jobs,
+            run_inputs=run_inputs,
             sessions=sessions,
             runner=runner,
             ui_policy_provider=ui_policy_provider,

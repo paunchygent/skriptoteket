@@ -18,6 +18,7 @@ import { useToolSettings } from "../composables/tools/useToolSettings";
 
 type UiOutput = NonNullable<components["schemas"]["UiPayloadV2"]["outputs"]>[number];
 type UiFormAction = components["schemas"]["UiFormAction"];
+type RunStatus = components["schemas"]["RunStatus"];
 
 const route = useRoute();
 
@@ -80,7 +81,9 @@ const allSteps = computed<StepResult[]>(() => {
   const steps = [...completedSteps.value];
   if (currentRun.value) {
     // Determine if this is a terminal step (no more actions to take)
-    const isTerminal = ["succeeded", "failed", "timed_out"].includes(currentRun.value.status);
+    const isTerminal = ["succeeded", "failed", "timed_out", "cancelled"].includes(
+      currentRun.value.status,
+    );
     const hasActions = (currentRun.value.ui_payload?.next_actions?.length ?? 0) > 0;
 
     steps.push({
@@ -114,12 +117,14 @@ function onInputValuesUpdate(next: Record<string, string | boolean>): void {
   inputValues.value = next;
 }
 
-function statusLabel(status: string): string {
-  const labels: Record<string, string> = {
+function statusLabel(status: RunStatus): string {
+  const labels: Record<RunStatus, string> = {
+    queued: "Köad",
     running: "Pågår",
     succeeded: "Lyckades",
     failed: "Misslyckades",
     timed_out: "Tidsgräns",
+    cancelled: "Avbruten",
   };
   return labels[status] ?? status;
 }
@@ -301,15 +306,15 @@ watch(hasSettingsSchema, (hasSchema) => {
 
       <!-- Running state -->
       <div
-        v-if="(isSubmitting && !displayedRun) || displayedRun?.status === 'running'"
+        v-if="(isSubmitting && !displayedRun) || displayedRun?.status === 'running' || displayedRun?.status === 'queued'"
         class="px-4 py-3 flex items-center gap-2 text-navy/70 text-sm"
       >
         <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
-        <span>Kör...</span>
+        <span>{{ displayedRun?.status === "queued" ? "Köar..." : "Kör..." }}</span>
       </div>
 
       <!-- Results section -->
-      <template v-if="displayedRun && displayedRun.status !== 'running'">
+      <template v-if="displayedRun && displayedRun.status !== 'running' && displayedRun.status !== 'queued'">
         <div class="p-4 space-y-4">
           <!-- Viewing past step notice -->
           <div

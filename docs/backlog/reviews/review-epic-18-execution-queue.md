@@ -2,9 +2,10 @@
 type: review
 id: REV-EPIC-18
 title: "Review: Execution queue and worker loop"
-status: pending
+status: approved
 owners: "agents"
 created: 2026-01-17
+updated: 2026-01-17
 reviewer: "lead-developer"
 epic: EPIC-18
 adrs:
@@ -43,14 +44,33 @@ extend run statuses to include `queued/cancelled`. Keep ADR-0016 behavior as a f
 
 | Decision | Rationale | Approve? |
 |----------|-----------|----------|
-| Use Postgres queue with `FOR UPDATE SKIP LOCKED` | Avoid new infra (ADR-0007) while keeping durability | [ ] |
-| Add `queued/cancelled` run statuses | Accurate lifecycle visibility for users and ops | [ ] |
-| Keep ADR-0016 fallback mode | Safe rollout and single-host deployments | [ ] |
+| Use Postgres queue with `FOR UPDATE SKIP LOCKED` | Avoid new infra (ADR-0007) while keeping durability | [x] |
+| Add `queued/cancelled` run statuses | Accurate lifecycle visibility for users and ops | [x] |
+| Adopt-first stale-lease recovery (clear lease, keep `running`) | Minimize duplicate execution risk; allow adoption/finalization | [x] |
+| TTL leases via `locked_until` + heartbeat | Crash-safe leasing; enables reaper and adoption | [x] |
+| Keep ADR-0016 fallback mode | Safe rollout and single-host deployments | [x] |
 
 ## Review Checklist
 
-- [ ] ADR defines clear queue/worker contracts
-- [ ] Epic scope is appropriate (not too broad)
-- [ ] Story acceptance criteria are testable
-- [ ] Risks identified with mitigations
-- [ ] Rollout/fallback strategy is explicit
+- [x] ADR defines clear queue/worker contracts
+- [x] Epic scope is appropriate (not too broad)
+- [x] Story acceptance criteria are testable
+- [x] Risks identified with mitigations
+- [x] Rollout/fallback strategy is explicit
+
+## Review Feedback
+
+**Reviewer:** lead-developer
+**Date:** 2026-01-17
+**Verdict:** approved
+
+### Previously Requested Changes (completed)
+
+1. ADR-0062: make the run lifecycle and timestamps truthful (queued runs are not "started"); define state transitions explicitly.
+2. ADR-0062: specify lease semantics as TTL (`locked_until`) with heartbeat, and define adopt-first stale lease recovery.
+3. ST-18-01 / PR-0039: align acceptance criteria and test plan with TTL leases + adopt-first behavior (including the "container missing" policy).
+
+## Changes Made
+
+- Updated ADR-0062 to document truthful lifecycle (`requested_at`, nullable `started_at`), TTL leases (`locked_until`), adopt-first recovery, and container identity for idempotent adoption/finalization.
+- Updated ST-18-01 and PR-0039 to align acceptance criteria and test plan with TTL leases + adopt-first semantics.

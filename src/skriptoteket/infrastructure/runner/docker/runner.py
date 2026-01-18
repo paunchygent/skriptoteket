@@ -104,6 +104,258 @@ class DockerToolRunner(ToolRunnerProtocol):
         finally:
             await self._capacity.release()
 
+    async def try_adopt(
+        self,
+        *,
+        run_id: UUID,
+        version: ToolVersion,
+        context: RunContext,
+    ) -> ToolExecutionResult | None:
+        if not await self._capacity.try_acquire():
+            logger.warning(
+                "Runner at capacity (adopt)",
+                run_id=str(run_id),
+                tool_id=str(version.tool_id),
+                tool_version_id=str(version.id),
+                context=context.value,
+            )
+            raise DomainError(
+                code=ErrorCode.SERVICE_UNAVAILABLE,
+                message="Runner is at capacity; retry.",
+            )
+
+        try:
+            return await asyncio.to_thread(
+                self._try_adopt_sync,
+                run_id=run_id,
+                version=version,
+                context=context,
+            )
+        finally:
+            await self._capacity.release()
+
+    def _try_adopt_sync(
+        self,
+        *,
+        run_id: UUID,
+        version: ToolVersion,
+        context: RunContext,
+    ) -> ToolExecutionResult | None:
+        import docker
+        from docker.errors import DockerException
+        from requests.exceptions import ReadTimeout
+
+        timeout_seconds = (
+            self._sandbox_timeout_seconds
+            if context is RunContext.SANDBOX
+            else self._production_timeout_seconds
+        )
+
+        client: DockerClientProtocol | None = None
+        container: DockerContainerProtocol | None = None
+
+        try:
+            client = DockerClientAdapter(docker.from_env())
+
+            containers = client.containers.list(
+                all=True,
+                filters={"label": f"skriptoteket.run_id={run_id}"},
+            )
+            if not containers:
+                return None
+
+            # Prefer adopting a running container when multiple exist (defense-in-depth).
+            for candidate in containers:
+                try:
+                    candidate.reload()
+                except DockerException:
+                    continue
+                if candidate.status == "running":
+                    container = candidate
+                    break
+            if container is None:
+                container = containers[0]
+                try:
+                    container.reload()
+                except DockerException:
+                    pass
+
+            if container.status == "created":
+                try:
+                    container.remove(force=True)
+                except DockerException:
+                    pass
+                return None
+
+            start_time = time.monotonic()
+            tracer = get_tracer("skriptoteket")
+            with trace_operation(
+                tracer,
+                "docker_runner.adopt",
+                {
+                    "run.id": str(run_id),
+                    "tool.id": str(version.tool_id),
+                    "version.id": str(version.id),
+                    "run.context": context.value,
+                },
+            ) as span:
+                timed_out = False
+                try:
+                    container.wait(timeout=timeout_seconds)
+                except ReadTimeout:
+                    timed_out = True
+                    try:
+                        container.kill()
+                    except DockerException:
+                        pass
+                    try:
+                        container.wait(timeout=10)
+                    except ReadTimeout:
+                        pass
+
+                span.add_event("container_finished", {"timed_out": str(timed_out)})
+
+                stdout, stderr = fetch_stdout_stderr(
+                    container=container,
+                    max_stdout_bytes=self._output_max_stdout_bytes,
+                    max_stderr_bytes=self._output_max_stderr_bytes,
+                )
+
+                result_json_bytes = fetch_result_json_bytes(container=container)
+
+                if timed_out:
+                    artifacts_manifest = store_output_archive_safely(
+                        container=container,
+                        run_id=run_id,
+                        artifacts=self._artifacts,
+                    )
+                    span.set_attribute("run.status", RunStatus.TIMED_OUT.value)
+                    span.set_attribute(
+                        "run.duration_seconds", round(time.monotonic() - start_time, 6)
+                    )
+                    span.set_attribute("run.artifacts_count", len(artifacts_manifest.artifacts))
+
+                    timed_out_error_summary = truncate_utf8_str(
+                        value="Execution timed out.",
+                        max_bytes=self._output_max_error_summary_bytes,
+                    )
+                    ui_result = ToolUiContractV2Result(
+                        status="timed_out",
+                        error_summary=timed_out_error_summary,
+                        outputs=[],
+                        next_actions=[],
+                        state=None,
+                        artifacts=[],
+                    )
+                    return ToolExecutionResult(
+                        status=RunStatus.TIMED_OUT,
+                        stdout=stdout,
+                        stderr=stderr,
+                        ui_result=ui_result,
+                        artifacts_manifest=artifacts_manifest,
+                    )
+
+                if result_json_bytes is None:
+                    artifacts_manifest = store_output_archive_safely(
+                        container=container,
+                        run_id=run_id,
+                        artifacts=self._artifacts,
+                    )
+                    raise DomainError(
+                        code=ErrorCode.INTERNAL_ERROR,
+                        message="Execution failed (runner contract violation).",
+                        details={
+                            "reason": "missing result.json",
+                            "stdout": stdout,
+                            "stderr": stderr,
+                            "artifacts_manifest": artifacts_manifest.model_dump(),
+                        },
+                    )
+
+                try:
+                    runner_payload = parse_runner_result_json(result_json_bytes=result_json_bytes)
+                except DomainError as exc:
+                    artifacts_manifest = store_output_archive_safely(
+                        container=container,
+                        run_id=run_id,
+                        artifacts=self._artifacts,
+                    )
+                    raise DomainError(
+                        code=ErrorCode.INTERNAL_ERROR,
+                        message="Execution failed (runner contract violation).",
+                        details={
+                            "reason": "invalid result.json",
+                            "validation": exc.details,
+                            "stdout": stdout,
+                            "stderr": stderr,
+                            "artifacts_manifest": artifacts_manifest.model_dump(),
+                        },
+                    ) from exc
+
+                status = RunStatus(runner_payload.status)
+                runner_error_summary: str | None = (
+                    None
+                    if runner_payload.error_summary is None
+                    else truncate_utf8_str(
+                        value=runner_payload.error_summary,
+                        max_bytes=self._output_max_error_summary_bytes,
+                    )
+                )
+                ui_result = (
+                    runner_payload
+                    if runner_payload.error_summary == runner_error_summary
+                    else runner_payload.model_copy(update={"error_summary": runner_error_summary})
+                )
+
+                try:
+                    artifacts_manifest = store_output_archive(
+                        container=container,
+                        run_id=run_id,
+                        reported_artifacts=runner_payload.artifacts,
+                        artifacts=self._artifacts,
+                    )
+                except DomainError as exc:
+                    raise DomainError(
+                        code=ErrorCode.INTERNAL_ERROR,
+                        message="Execution failed (artifact extraction violation).",
+                        details={
+                            "stdout": stdout,
+                            "stderr": stderr,
+                        },
+                    ) from exc
+
+                span.set_attribute("run.status", status.value)
+                span.set_attribute("run.duration_seconds", round(time.monotonic() - start_time, 6))
+                span.set_attribute("run.artifacts_count", len(artifacts_manifest.artifacts))
+                return ToolExecutionResult(
+                    status=status,
+                    stdout=stdout,
+                    stderr=stderr,
+                    ui_result=ui_result,
+                    artifacts_manifest=artifacts_manifest,
+                )
+        finally:
+            if container is not None:
+                try:
+                    container.remove(force=True)
+                except Exception:  # noqa: BLE001
+                    pass
+            if client is not None:
+                try:
+                    for volume in client.volumes.list(
+                        filters={"label": f"skriptoteket.run_id={run_id}"},
+                    ):
+                        try:
+                            volume.remove(force=True)
+                        except Exception:  # noqa: BLE001
+                            pass
+                except Exception:  # noqa: BLE001
+                    pass
+                try:
+                    client.close()
+                except AttributeError:
+                    pass
+
     def _execute_sync(
         self,
         *,
