@@ -134,10 +134,16 @@ class LoginHandler(LoginHandlerProtocol):
                 await self._users.update(user=updated_user)
                 event_user_id = updated_user.id
 
+                profile = await self._profiles.get_by_user_id(user_id=updated_user.id)
+
                 session = Session(
                     id=self._id_generator.new_uuid(),
                     user_id=updated_user.id,
                     csrf_token=self._token_generator.new_token(),
+                    allow_remote_fallback=profile.allow_remote_fallback if profile else None,
+                    inline_completion_provider=profile.inline_completion_provider
+                    if profile
+                    else None,
                     created_at=now,
                     expires_at=now + timedelta(seconds=self._settings.SESSION_TTL_SECONDS),
                     revoked_at=None,
@@ -145,7 +151,6 @@ class LoginHandler(LoginHandlerProtocol):
 
                 await self._sessions.create(session=session)
 
-                profile = await self._profiles.get_by_user_id(user_id=updated_user.id)
                 result = LoginResult(
                     session_id=session.id,
                     csrf_token=session.csrf_token,

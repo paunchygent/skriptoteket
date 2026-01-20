@@ -25,7 +25,7 @@ This repo uses Docker Compose for a local PostgreSQL-backed monolith and support
 Prefer the repo scripts over ad-hoc commands:
 
 ```bash
-# Start dev stack (db + web with hot-reload)
+# Start dev stack (db + web + worker + frontend)
 pdm run dev-start
 
 # Stop dev stack

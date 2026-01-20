@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
@@ -53,6 +54,7 @@ class UserProfile(BaseModel):
     last_name: str | None = None
     display_name: str | None = None
     allow_remote_fallback: bool | None = None
+    inline_completion_provider: Literal["local", "external"] | None = None
     locale: str = "sv-SE"
     created_at: datetime
     updated_at: datetime
@@ -75,6 +77,8 @@ class Session(BaseModel):
     id: UUID
     user_id: UUID
     csrf_token: str
+    allow_remote_fallback: bool | None = None
+    inline_completion_provider: Literal["local", "external"] | None = None
     created_at: datetime
     expires_at: datetime
     revoked_at: datetime | None = None

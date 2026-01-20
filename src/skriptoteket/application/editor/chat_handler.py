@@ -16,6 +16,7 @@ from skriptoteket.application.editor.prompt_composer import (
     PromptTemplateError,
     compose_system_prompt,
 )
+from skriptoteket.application.editor.remote_fallback import RemoteFallbackConsent
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role, User
@@ -91,11 +92,22 @@ class EditorChatHandler(EditorChatHandlerProtocol):
 
             template_id = self._settings.LLM_CHAT_TEMPLATE_ID
 
+            consent = RemoteFallbackConsent(
+                allow_remote_fallback=command.allow_remote_fallback,
+                remote_providers_enabled=self._settings.AI_REMOTE_PROVIDERS_ENABLED,
+            )
+
             decision = await self._failover.decide_route(
                 user_id=actor.id,
                 tool_id=command.tool_id,
                 allow_remote_fallback=command.allow_remote_fallback,
-                fallback_available=self._providers.fallback is not None,
+                fallback_available=(
+                    self._providers.fallback is not None
+                    and (
+                        self._settings.AI_REMOTE_PROVIDERS_ENABLED
+                        or not self._providers.fallback_is_remote
+                    )
+                ),
                 fallback_is_remote=self._providers.fallback_is_remote,
             )
             if decision.blocked == REMOTE_FALLBACK_REQUIRED_CODE:
@@ -116,7 +128,7 @@ class EditorChatHandler(EditorChatHandlerProtocol):
             token_counter = self._token_counters.for_model(model=model_for_counting)
 
             can_use_fallback = self._providers.fallback is not None and (
-                command.allow_remote_fallback or not self._providers.fallback_is_remote
+                consent.remote_allowed or not self._providers.fallback_is_remote
             )
 
             try:
@@ -147,6 +159,21 @@ class EditorChatHandler(EditorChatHandlerProtocol):
                     budget=budget,
                 )
             except ChatPromptBudgetUnavailable:
+                if (
+                    decision.provider == "primary"
+                    and self._providers.fallback is not None
+                    and self._providers.fallback_is_remote
+                    and not can_use_fallback
+                    and consent.should_prompt
+                ):
+                    yield EditorChatDoneEvent(
+                        data=EditorChatDoneDisabledData(
+                            message=REMOTE_FALLBACK_REQUIRED_MESSAGE,
+                            code=REMOTE_FALLBACK_REQUIRED_CODE,
+                        )
+                    )
+                    return
+
                 if decision.provider != "primary" or not can_use_fallback:
                     yield EditorChatDoneEvent(
                         data=EditorChatDoneDisabledData(message=DISABLED_MESSAGE)

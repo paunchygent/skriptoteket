@@ -77,11 +77,9 @@ describe("useEditorChat", () => {
 
     const toolId = ref("tool-1");
     const baseVersionId = ref<string | null>(null);
-    const allowRemoteFallback = ref(false);
     const { error, messages, sendMessage } = useEditorChat({
       toolId,
       baseVersionId,
-      allowRemoteFallback,
     });
 
     const sendPromise = sendMessage("Hej");
@@ -112,11 +110,9 @@ describe("useEditorChat", () => {
 
     const toolId = ref("tool-1");
     const baseVersionId = ref<string | null>(null);
-    const allowRemoteFallback = ref(false);
     const { error, messages, sendMessage } = useEditorChat({
       toolId,
       baseVersionId,
-      allowRemoteFallback,
     });
 
     const sendPromise = sendMessage("Hej");
@@ -145,11 +141,9 @@ describe("useEditorChat", () => {
 
     const toolId = ref("tool-1");
     const baseVersionId = ref<string | null>(null);
-    const allowRemoteFallback = ref(false);
     const { disabledMessage, messages, sendMessage } = useEditorChat({
       toolId,
       baseVersionId,
-      allowRemoteFallback,
     });
 
     const sendPromise = sendMessage("Hej");
@@ -187,11 +181,9 @@ describe("useEditorChat", () => {
 
     const toolId = ref("tool-1");
     const baseVersionId = ref<string | null>(null);
-    const allowRemoteFallback = ref(false);
     const { messages, streaming, sendMessage, cancel } = useEditorChat({
       toolId,
       baseVersionId,
-      allowRemoteFallback,
     });
 
     const sendPromise = sendMessage("Hej");
@@ -219,11 +211,9 @@ describe("useEditorChat", () => {
 
     const toolId = ref("tool-1");
     const baseVersionId = ref<string | null>(null);
-    const allowRemoteFallback = ref(false);
     const { messages, streaming, clear } = useEditorChat({
       toolId,
       baseVersionId,
-      allowRemoteFallback,
     });
 
     messages.value = [
@@ -259,7 +249,6 @@ describe("useEditorChat", () => {
 
     const toolId = ref("tool-1");
     const baseVersionId = ref<string | null>("version-1");
-    const allowRemoteFallback = ref(false);
     const activeFile = ref<"tool.py">("tool.py");
     const virtualFiles = ref({
       "tool.py": "print('hi')\n",
@@ -272,7 +261,6 @@ describe("useEditorChat", () => {
     const { sendMessage } = useEditorChat({
       toolId,
       baseVersionId,
-      allowRemoteFallback,
       activeFile,
       virtualFiles,
     });
@@ -291,7 +279,7 @@ describe("useEditorChat", () => {
 
     const payload = JSON.parse(String(init?.body ?? "")) as Record<string, unknown>;
     expect(payload.message).toBe("Hej");
-    expect(payload.allow_remote_fallback).toBe(false);
+    expect(payload).not.toHaveProperty("allow_remote_fallback");
     expect(payload.base_version_id).toBe("version-1");
     expect(payload.active_file).toBe("tool.py");
     expect(payload.virtual_files).toEqual(virtualFiles.value);

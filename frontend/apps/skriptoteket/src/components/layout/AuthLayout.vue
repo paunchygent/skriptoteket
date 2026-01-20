@@ -6,12 +6,16 @@ import { storeToRefs } from "pinia";
 import BrandLogo from "../brand/BrandLogo.vue";
 import AuthSidebar from "./AuthSidebar.vue";
 import AuthTopBar from "./AuthTopBar.vue";
-import { useAiStore } from "../../stores/ai";
 import { useLayoutStore } from "../../stores/layout";
 
 const props = defineProps<{
   user: { id: string; email: string; role: string } | null;
-  profile: { allow_remote_fallback?: boolean | null } | null;
+  profile: { allow_remote_fallback?: boolean | null; inline_completion_provider?: "local" | "external" | null } | null;
+  aiPolicy: {
+    remote_providers_enabled: boolean;
+    completion_external_available: boolean;
+    completion_local_available: boolean;
+  } | null;
   canSeeContributor: boolean;
   canSeeAdmin: boolean;
   canSeeSuperuser: boolean;
@@ -24,7 +28,6 @@ const emit = defineEmits<{
 }>();
 
 const layout = useLayoutStore();
-const ai = useAiStore();
 const { focusMode } = storeToRefs(layout);
 const route = useRoute();
 
@@ -51,10 +54,9 @@ function toggleFocusMode(): void {
 }
 
 watch(
-  () => [props.user?.id ?? null, props.profile?.allow_remote_fallback ?? null] as const,
-  ([userId, allowRemoteFallback]) => {
+  () => props.user?.id ?? null,
+  (userId) => {
     layout.hydrateForUser(userId);
-    ai.hydrateForUser({ userId, serverAllowRemoteFallback: allowRemoteFallback });
   },
   { immediate: true },
 );

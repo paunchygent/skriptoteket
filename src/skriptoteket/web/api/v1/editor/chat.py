@@ -6,7 +6,7 @@ from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response, StreamingResponse
 
-from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.identity.models import Session, User
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.llm import (
     EditorChatClearCommand,
@@ -17,7 +17,11 @@ from skriptoteket.protocols.llm import (
     EditorChatHistoryQuery,
     EditorChatStreamEvent,
 )
-from skriptoteket.web.auth.api_dependencies import require_contributor_api, require_csrf_token
+from skriptoteket.web.auth.api_dependencies import (
+    require_contributor_api,
+    require_csrf_token,
+    require_session_api,
+)
 from skriptoteket.web.editor_support import require_tool_access
 
 from .models import EditorChatHistoryMessage, EditorChatHistoryResponse, EditorChatRequest
@@ -42,6 +46,7 @@ async def stream_editor_chat(
     handler: FromDishka[EditorChatHandlerProtocol],
     maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     user: User = Depends(require_contributor_api),
+    session: Session = Depends(require_session_api),
     _: None = Depends(require_csrf_token),
 ) -> Response:
     await require_tool_access(actor=user, tool_id=tool_id, maintainers=maintainers)
@@ -50,7 +55,7 @@ async def stream_editor_chat(
         tool_id=tool_id,
         message=payload.message,
         base_version_id=payload.base_version_id,
-        allow_remote_fallback=payload.allow_remote_fallback,
+        allow_remote_fallback=session.allow_remote_fallback,
         active_file=payload.active_file,
         virtual_files=payload.virtual_files.as_map() if payload.virtual_files is not None else None,
     )

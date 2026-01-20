@@ -154,7 +154,7 @@ HULEEDU_INTERNAL_API_KEY=<internal-api-key>
 
 # LLM Providers (for cj_assessment, llm_provider_service)
 ANTHROPIC_API_KEY=<key>
-OPENAI_API_KEY=<key>
+OPENAI_LLM_COMPLETION_API_KEY=<key>
 
 # Local GPU inference
 NLP_SERVICE_LOCAL_LLM_ENABLED=true

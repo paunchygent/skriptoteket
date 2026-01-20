@@ -132,6 +132,7 @@ class IdentityProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def provision_local_user_handler(
         self,
+        settings: Settings,
         uow: UnitOfWorkProtocol,
         users: UserRepositoryProtocol,
         profiles: ProfileRepositoryProtocol,
@@ -140,6 +141,7 @@ class IdentityProvider(Provider):
         id_generator: IdGeneratorProtocol,
     ) -> ProvisionLocalUserHandlerProtocol:
         return ProvisionLocalUserHandler(
+            settings=settings,
             uow=uow,
             users=users,
             profiles=profiles,
@@ -201,12 +203,21 @@ class IdentityProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def update_ai_settings_handler(
         self,
+        settings: Settings,
         uow: UnitOfWorkProtocol,
         users: UserRepositoryProtocol,
         profiles: ProfileRepositoryProtocol,
+        sessions: SessionRepositoryProtocol,
         clock: ClockProtocol,
     ) -> UpdateAiSettingsHandlerProtocol:
-        return UpdateAiSettingsHandler(uow=uow, users=users, profiles=profiles, clock=clock)
+        return UpdateAiSettingsHandler(
+            settings=settings,
+            uow=uow,
+            users=users,
+            profiles=profiles,
+            sessions=sessions,
+            clock=clock,
+        )
 
     @provide(scope=Scope.REQUEST)
     def change_password_handler(

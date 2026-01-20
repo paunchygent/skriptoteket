@@ -7,6 +7,7 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 LlmReasoningEffort = Literal["none", "minimal", "low", "medium", "high", "xhigh"]
+LlmTextVerbosity = Literal["low", "medium", "high"]
 
 
 class Settings(BaseSettings):
@@ -99,8 +100,17 @@ class Settings(BaseSettings):
 
     # LLM API
     LLM_COMPLETION_TEMPLATE_ID: str = "inline_completion_v1"
+    LLM_COMPLETION_GPT5_TEMPLATE_ID: str = "inline_completion_gpt5_v1"
     LLM_CHAT_TEMPLATE_ID: str = "editor_chat_v1"
     LLM_CHAT_OPS_TEMPLATE_ID: str = "editor_chat_ops_v1"
+
+    # AI policy
+    AI_REMOTE_PROVIDERS_ENABLED: bool = True
+    AI_DEFAULT_ALLOW_REMOTE_FALLBACK: bool = False
+
+    # Prompt caching guardrails (OpenAI)
+    LLM_PROMPT_CACHE_RETENTION_MODE: Literal["in_memory", "24h"] = "in_memory"
+    LLM_PROMPT_CACHE_EXTENDED_ALLOWED: bool = True
 
     LLM_COMPLETION_ENABLED: bool = False
     LLM_COMPLETION_BASE_URL: str = "http://localhost:8082"
@@ -109,13 +119,17 @@ class Settings(BaseSettings):
     LLM_COMPLETION_PROMPT_CACHE_RETENTION: Literal["in_memory", "24h"] | None = None
     LLM_COMPLETION_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
     LLM_COMPLETION_MODEL: str = "Devstral-Small-2-24B"
-    LLM_COMPLETION_REASONING_EFFORT: LlmReasoningEffort | None = None
-    LLM_COMPLETION_MAX_TOKENS: int = 256
+    LLM_COMPLETION_REASONING_EFFORT: LlmReasoningEffort | None = "minimal"
+    LLM_COMPLETION_TEXT_VERBOSITY: LlmTextVerbosity | None = "low"
+    LLM_COMPLETION_FALLBACK_BASE_URL: str = ""
+    LLM_COMPLETION_FALLBACK_MODEL: str = ""
+    LLM_COMPLETION_FALLBACK_REASONING_EFFORT: LlmReasoningEffort | None = None
+    LLM_COMPLETION_MAX_TOKENS: int = 64
     LLM_COMPLETION_TEMPERATURE: float = 0.2
     LLM_COMPLETION_TIMEOUT_SECONDS: int = 30
     LLM_COMPLETION_CONTEXT_WINDOW_TOKENS: int = 4096
     LLM_COMPLETION_CONTEXT_SAFETY_MARGIN_TOKENS: int = 256
-    LLM_COMPLETION_SYSTEM_PROMPT_MAX_TOKENS: int = 1024
+    LLM_COMPLETION_SYSTEM_PROMPT_MAX_TOKENS: int = 2048
     LLM_COMPLETION_PREFIX_MAX_TOKENS: int = 2048
     LLM_COMPLETION_SUFFIX_MAX_TOKENS: int = 512
 
@@ -127,6 +141,7 @@ class Settings(BaseSettings):
     LLM_CHAT_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
     LLM_CHAT_MODEL: str = "Devstral-Small-2-24B"
     LLM_CHAT_REASONING_EFFORT: LlmReasoningEffort | None = None
+    LLM_CHAT_TEXT_VERBOSITY: LlmTextVerbosity | None = None
     # Output token budgets vary significantly between local llama.cpp and GPT-5 thinking models.
     LLM_CHAT_MAX_TOKENS: int = 4 * 1024
     LLM_CHAT_GPT5_MAX_TOKENS: int = 8 * 1024
@@ -151,6 +166,7 @@ class Settings(BaseSettings):
     LLM_CHAT_OPS_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
     LLM_CHAT_OPS_MODEL: str = "Devstral-Small-2-24B"
     LLM_CHAT_OPS_REASONING_EFFORT: LlmReasoningEffort | None = None
+    LLM_CHAT_OPS_TEXT_VERBOSITY: LlmTextVerbosity | None = None
     # Output token budgets vary significantly between local llama.cpp and GPT-5 thinking models.
     LLM_CHAT_OPS_MAX_TOKENS: int = 4 * 1024
     LLM_CHAT_OPS_GPT5_MAX_TOKENS: int = 8 * 1024

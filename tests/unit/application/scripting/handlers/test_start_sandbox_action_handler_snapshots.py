@@ -98,7 +98,7 @@ async def test_start_sandbox_action_uses_sandbox_context_format(
         requested_by_user_id=actor.id,
         now=now,
     )
-    execute.handle.return_value = ExecuteToolVersionResult(run=run, normalized_state={})
+    execute.handle.return_value = ExecuteToolVersionResult(run=run)
 
     handler = StartSandboxActionHandler(
         uow=uow,
@@ -191,7 +191,7 @@ async def test_start_sandbox_action_passes_settings_context_override(
         requested_by_user_id=actor.id,
         now=now,
     )
-    execute.handle.return_value = ExecuteToolVersionResult(run=run, normalized_state={})
+    execute.handle.return_value = ExecuteToolVersionResult(run=run)
 
     handler = StartSandboxActionHandler(
         uow=uow,

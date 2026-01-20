@@ -75,7 +75,7 @@ async def test_run_sandbox_reuses_session_files_on_initial_run(
         requested_by_user_id=actor.id,
         now=now,
     )
-    execute.handle.return_value = ExecuteToolVersionResult(run=run, normalized_state={})
+    execute.handle.return_value = ExecuteToolVersionResult(run=run)
 
     handler = RunSandboxHandler(
         uow=uow,
@@ -155,7 +155,7 @@ async def test_run_sandbox_clears_session_files_on_request(
         requested_by_user_id=actor.id,
         now=now,
     )
-    execute.handle.return_value = ExecuteToolVersionResult(run=run, normalized_state={})
+    execute.handle.return_value = ExecuteToolVersionResult(run=run)
 
     handler = RunSandboxHandler(
         uow=uow,

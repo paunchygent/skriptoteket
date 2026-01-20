@@ -72,12 +72,13 @@ class InProcessChatFailoverRouter(ChatFailoverRouterProtocol):
         *,
         user_id: UUID,
         tool_id: UUID,
-        allow_remote_fallback: bool,
+        allow_remote_fallback: bool | None,
         fallback_available: bool,
         fallback_is_remote: bool,
     ) -> ChatFailoverDecision:
         now = self._now()
         key = (user_id, tool_id)
+        remote_allowed = allow_remote_fallback is True
 
         async with self._lock:
             self._prune_sticky(now=now)
@@ -91,24 +92,25 @@ class InProcessChatFailoverRouter(ChatFailoverRouterProtocol):
                 sticky_active
                 and fallback_available
                 and not fallback_breaker_open
-                and (allow_remote_fallback or not fallback_is_remote)
+                and (remote_allowed or not fallback_is_remote)
             ):
                 return ChatFailoverDecision(provider="fallback", reason="sticky_fallback")
 
             if primary_breaker_open and fallback_available and not fallback_breaker_open:
-                if fallback_is_remote and not allow_remote_fallback:
-                    return ChatFailoverDecision(
-                        provider="fallback",
-                        reason="breaker_open",
-                        blocked="remote_fallback_required",
-                    )
+                if fallback_is_remote and not remote_allowed:
+                    if allow_remote_fallback is None:
+                        return ChatFailoverDecision(
+                            provider="fallback",
+                            reason="breaker_open",
+                            blocked="remote_fallback_required",
+                        )
                 return ChatFailoverDecision(provider="fallback", reason="breaker_open")
 
             if (
                 self._primary_is_overloaded()
                 and fallback_available
                 and not fallback_breaker_open
-                and (allow_remote_fallback or not fallback_is_remote)
+                and (remote_allowed or not fallback_is_remote)
             ):
                 return ChatFailoverDecision(provider="fallback", reason="load_shed")
 

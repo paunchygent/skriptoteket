@@ -15,7 +15,7 @@ class EditOpsLogContext:
     user_id: UUID
     tool_id: UUID
     fallback_is_remote: bool
-    allow_remote_fallback: bool
+    allow_remote_fallback: bool | None
     message_len: int
     virtual_files_bytes: int
     started_at: float

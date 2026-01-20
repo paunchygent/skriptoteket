@@ -191,6 +191,7 @@ async def test_run_sandbox_valid_snapshot_payload_calls_handler() -> None:
         snapshot_id=snapshot_id,
         context=RunContext.SANDBOX,
         requested_by_user_id=user.id,
+        session_context=f"sandbox:{snapshot_id}",
         workdir_path=str(run_id),
         input_filename=None,
         input_size_bytes=0,

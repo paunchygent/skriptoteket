@@ -61,7 +61,7 @@ async def maybe_apply_preflight_fallback(
     template_id: str,
     command: EditOpsCommand,
     actor_id: UUID,
-    allow_remote_fallback: bool,
+    remote_allowed: bool,
     failover: ChatFailoverRouterProtocol,
     uow: UnitOfWorkProtocol,
     sessions: ToolSessionRepositoryProtocol,
@@ -85,7 +85,10 @@ async def maybe_apply_preflight_fallback(
             model_for_counting=model_for_counting,
         )
 
-    if not can_use_fallback(providers=providers, allow_remote_fallback=allow_remote_fallback):
+    if not can_use_fallback(
+        providers=providers,
+        allow_remote_fallback=remote_allowed,
+    ):
         return PreflightOutcome(
             decision=decision,
             prepared=prepared,
@@ -161,7 +164,7 @@ async def maybe_apply_preflight_fallback(
         to_provider="fallback",
         reason="preflight_over_budget",
         fallback_is_remote=providers.fallback_is_remote,
-        allow_remote_fallback=allow_remote_fallback,
+        allow_remote_fallback=remote_allowed,
         primary_model=settings.LLM_CHAT_OPS_MODEL,
         fallback_model=fallback_model_for_counting,
         message_len=message_len,

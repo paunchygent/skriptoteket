@@ -144,6 +144,7 @@ async def test_execute_tool_version_passes_action_payload_without_affecting_file
             tool_id=tool_id,
             version_id=version_id,
             context=RunContext.PRODUCTION,
+            session_context="default",
             input_values={},
             input_files=[],
             action_payload=action_payload,

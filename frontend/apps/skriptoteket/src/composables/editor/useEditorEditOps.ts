@@ -37,7 +37,6 @@ import {
 
 type UseEditorEditOpsOptions = {
   toolId: Readonly<Ref<string>>;
-  allowRemoteFallback: Readonly<Ref<boolean>>;
   isReadOnly: Readonly<Ref<boolean>>;
   editorView: Readonly<Ref<EditorView | null>>;
   fields: {
@@ -64,7 +63,6 @@ const DEFAULT_ACTIVE_FILE: VirtualFileId = "tool.py";
 export function useEditorEditOps(options: UseEditorEditOpsOptions) {
   const {
     toolId,
-    allowRemoteFallback,
     isReadOnly,
     fields,
     createBeforeApplyCheckpoint,
@@ -296,7 +294,6 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       const response = await requestEditOpsApi({
         toolId: toolId.value,
         message: trimmed,
-        allowRemoteFallback: allowRemoteFallback.value,
         activeFile,
         virtualFiles,
         selection,

@@ -22,7 +22,6 @@ describe("editorEditOpsApi", () => {
     await requestEditOps({
       toolId: "tool-1",
       message: "Update",
-      allowRemoteFallback: false,
       activeFile: "tool.py",
       virtualFiles,
       selection: { from: 1, to: 2 },
@@ -35,7 +34,6 @@ describe("editorEditOpsApi", () => {
       body: {
         tool_id: "tool-1",
         message: "Update",
-        allow_remote_fallback: false,
         active_file: "tool.py",
         virtual_files: virtualFiles,
         selection: { from: 1, to: 2 },

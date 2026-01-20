@@ -417,6 +417,14 @@ ssh hemma "sudo docker logs -f shared-postgres"
 
 Structured logs + correlation IDs: see [runbook-observability-logging.md](runbook-observability-logging.md).
 
+### Worker Healthcheck
+
+The execution worker has a dependency healthcheck (DB + Docker socket + artifacts volume).
+
+```bash
+ssh hemma "sudo docker exec -e PYTHONPATH=/app/src skriptoteket-worker pdm run python -m skriptoteket.cli healthcheck-execution-worker"
+```
+
 ### Restart Services
 
 ```bash

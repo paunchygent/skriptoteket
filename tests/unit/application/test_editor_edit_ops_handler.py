@@ -17,6 +17,7 @@ from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
     ChatFailoverDecision,
+    ChatFailoverProvider,
     ChatFailoverRouterProtocol,
     ChatInFlightGuardProtocol,
     ChatOpsBudget,
@@ -58,22 +59,22 @@ class DummyFailover(ChatFailoverRouterProtocol):
         *,
         user_id: UUID,
         tool_id: UUID,
-        allow_remote_fallback: bool,
+        allow_remote_fallback: bool | None,
         fallback_available: bool,
         fallback_is_remote: bool,
     ) -> ChatFailoverDecision:
         return ChatFailoverDecision(provider="primary", reason="primary_default")
 
-    async def acquire_inflight(self, *, provider: str) -> None:
+    async def acquire_inflight(self, *, provider: ChatFailoverProvider) -> None:
         return None
 
-    async def release_inflight(self, *, provider: str) -> None:
+    async def release_inflight(self, *, provider: ChatFailoverProvider) -> None:
         return None
 
-    async def record_success(self, *, provider: str) -> None:
+    async def record_success(self, *, provider: ChatFailoverProvider) -> None:
         return None
 
-    async def record_failure(self, *, provider: str) -> None:
+    async def record_failure(self, *, provider: ChatFailoverProvider) -> None:
         return None
 
     async def mark_fallback_used(self, *, user_id: UUID, tool_id: UUID) -> None:
@@ -294,7 +295,7 @@ async def test_edit_ops_creates_turn_and_finalizes_on_success() -> None:
 async def test_edit_ops_finalizes_turn_as_remote_fallback_required_after_retryable_failure() -> (
     None
 ):
-    settings = Settings(LLM_CHAT_OPS_ENABLED=True)
+    settings = Settings(LLM_CHAT_OPS_ENABLED=True, AI_REMOTE_PROVIDERS_ENABLED=True)
 
     primary = MagicMock(spec=ChatOpsProviderProtocol)
     primary.complete_chat_ops = AsyncMock(side_effect=ValueError("boom"))
@@ -366,7 +367,6 @@ async def test_edit_ops_finalizes_turn_as_remote_fallback_required_after_retryab
             active_file="tool.py",
             cursor=EditOpsCursor(pos=0),
             virtual_files=_virtual_files(),
-            allow_remote_fallback=False,
         ),
     )
 

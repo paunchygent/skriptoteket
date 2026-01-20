@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from skriptoteket.infrastructure.llm.openai.types import JsonSchemaResponseFormat
+
 _EDIT_OPS_PATCH_ONLY_GBNF_LINES = [
     "root ::= editops",
     "",
@@ -29,7 +31,7 @@ _EDIT_OPS_PATCH_ONLY_GBNF_LINES = [
 
 EDIT_OPS_PATCH_ONLY_GBNF = "\n".join(_EDIT_OPS_PATCH_ONLY_GBNF_LINES).strip()
 
-EDIT_OPS_PATCH_ONLY_RESPONSE_FORMAT = {
+EDIT_OPS_PATCH_ONLY_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
     "type": "json_schema",
     "json_schema": {
         "name": "edit_ops_patch_only",

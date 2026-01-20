@@ -41,6 +41,7 @@ def _finished_run(
         snapshot_id=uuid4(),
         context=RunContext.SANDBOX,
         requested_by_user_id=requested_by_user_id,
+        session_context="default",
         workdir_path="workdir",
         input_filename=None,
         input_size_bytes=0,

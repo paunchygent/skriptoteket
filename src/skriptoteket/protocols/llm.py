@@ -16,6 +16,7 @@ PromptEvalOutcome = Literal["ok", "empty", "truncated", "over_budget", "timeout"
 ChatStreamDoneReason = Literal["stop", "cancelled", "error"]
 ChatMessageRole = Literal["user", "assistant"]
 SystemMessageVariant = Literal["info", "warning"]
+InlineCompletionProviderPreference = Literal["local", "external"]
 VirtualFileId = Literal[
     "tool.py",
     "entrypoint.txt",
@@ -37,6 +38,14 @@ class PromptEvalMeta(BaseModel):
     suffix_chars: int = 0
     instruction_chars: int = 0
     selection_chars: int = 0
+    raw_chars: int | None = None
+    normalized_chars: int | None = None
+    prefix_overlap_chars: int | None = None
+    suffix_overlap_chars: int | None = None
+    prepare_ms: int | None = None
+    provider_ms: int | None = None
+    normalize_ms: int | None = None
+    total_ms: int | None = None
 
 
 class LLMCompletionRequest(BaseModel):
@@ -44,6 +53,7 @@ class LLMCompletionRequest(BaseModel):
 
     prefix: str
     suffix: str
+    active_file: VirtualFileId = "tool.py"
 
 
 class LLMCompletionResponse(BaseModel):
@@ -84,6 +94,9 @@ class InlineCompletionCommand(BaseModel):
 
     prefix: str
     suffix: str
+    active_file: VirtualFileId = "tool.py"
+    allow_remote_fallback: bool | None = None
+    inline_completion_provider: InlineCompletionProviderPreference | None = None
 
 
 class InlineCompletionResult(BaseModel):
@@ -91,6 +104,9 @@ class InlineCompletionResult(BaseModel):
 
     completion: str
     enabled: bool
+    notice_message: str | None = None
+    notice_variant: SystemMessageVariant | None = None
+    notice_code: str | None = None
     eval_meta: PromptEvalMeta | None = None
 
 
@@ -203,7 +219,7 @@ class EditOpsCommand(BaseModel):
     selection: EditOpsSelection | None = None
     cursor: EditOpsCursor | None = None
     virtual_files: dict[VirtualFileId, str]
-    allow_remote_fallback: bool = False
+    allow_remote_fallback: bool | None = None
 
 
 class EditOpsResult(BaseModel):
@@ -275,7 +291,7 @@ class EditorChatCommand(BaseModel):
     tool_id: UUID
     message: str
     base_version_id: UUID | None = None
-    allow_remote_fallback: bool = False
+    allow_remote_fallback: bool | None = None
     active_file: VirtualFileId | None = None
     virtual_files: dict[VirtualFileId, str] | None = None
 
@@ -410,6 +426,13 @@ class ChatStreamProvidersProtocol(Protocol):
     fallback_is_remote: bool
 
 
+class InlineCompletionProvidersProtocol(Protocol):
+    primary: InlineCompletionProviderProtocol
+    primary_is_remote: bool
+    fallback: InlineCompletionProviderProtocol | None
+    fallback_is_remote: bool
+
+
 class ChatOpsProvidersProtocol(Protocol):
     primary: ChatOpsProviderProtocol
     fallback: ChatOpsProviderProtocol | None
@@ -467,7 +490,7 @@ class ChatFailoverRouterProtocol(Protocol):
         *,
         user_id: UUID,
         tool_id: UUID,
-        allow_remote_fallback: bool,
+        allow_remote_fallback: bool | None,
         fallback_available: bool,
         fallback_is_remote: bool,
     ) -> ChatFailoverDecision: ...

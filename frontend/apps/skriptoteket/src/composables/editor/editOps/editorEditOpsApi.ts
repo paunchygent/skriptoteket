@@ -14,7 +14,6 @@ type EditorEditOpsOpInput = components["schemas"]["EditorEditOpsPatchOp"];
 type RequestEditOpsParams = {
   toolId: string;
   message: string;
-  allowRemoteFallback: boolean;
   activeFile: VirtualFileId;
   virtualFiles: VirtualFileTextMap;
   selection: EditorEditOpsSelection | null;
@@ -48,7 +47,6 @@ export async function requestEditOps(params: RequestEditOpsParams): Promise<Edit
   const body: EditorEditOpsRequest = {
     tool_id: params.toolId,
     message: params.message,
-    allow_remote_fallback: params.allowRemoteFallback,
     active_file: params.activeFile,
     virtual_files: params.virtualFiles,
   };

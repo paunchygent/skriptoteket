@@ -11,7 +11,9 @@ central logging, approved SMTP relays, strict data retention).
 - **UI:** Full **Vue 3 + Vite SPA** served by the FastAPI backend (SPA history fallback in the backend).
 - **Backend:** **FastAPI** monolith with Clean Architecture / DDD layers and protocol-first DI (Dishka).
 - **Database:** **PostgreSQL** (users, sessions, tools, versions, runs, audit-ish event streams).
-- **Tool execution:** Tools run as **ephemeral sibling Docker containers** (runner image) via the Docker API:
+- **Tool execution:** Tools run as **ephemeral sibling Docker containers** (runner image) via the Docker API.
+  Production runs are **queue-backed** by default (`RUNNER_QUEUE_ENABLED=true`) and require the execution worker to be
+  running.
   - `network_mode=none`, `cap_drop=ALL`, read-only root, tmpfs for `/tmp`, resource limits (CPU/mem/pids/timeouts).
 - **Storage:** Outputs/artifacts + ephemeral session files + editor sandbox snapshots are stored on disk under
   `ARTIFACTS_ROOT` (with retention cleanup commands).
@@ -77,6 +79,14 @@ pdm run dev
 pdm run fe-dev
 ```
 
+If you want to run tools in the “production” execution mode locally, run the execution worker too (required when
+`RUNNER_QUEUE_ENABLED=true`):
+
+```bash
+# Terminal C
+pdm run run-execution-worker
+```
+
 Open the SPA at `http://127.0.0.1:5173`.
 
 ## Deployment guide for municipal IT
@@ -123,8 +133,12 @@ Skriptoteket is intended to run as a small “core” with optional add-ons. The
 1) **AI features (optional)**:
 
 - For air‑gapped environments: set `LLM_*_ENABLED=false`.
-- For self-hosted inference: point `LLM_*_BASE_URL` to your OpenAI‑compatible gateway (llama.cpp, etc.).
-- Avoid remote fallback unless you have a clear DPIA/legal basis for sending prompt data to external providers.
+- For self-hosted inference: point `LLM_*_BASE_URL` / `LLM_*_FALLBACK_BASE_URL` to your OpenAI‑compatible gateways
+  (llama.cpp, etc.). The default dev/prod examples use local `Devstral-Small-2-24B` and external OpenAI models
+  (`gpt-5-nano` for completions; `gpt-5.2` for chat/chat-ops).
+- Remote providers are gated by `AI_REMOTE_PROVIDERS_ENABLED` and per-user opt-in (`profile.allow_remote_fallback=true`;
+  NULL counts as deny).
+- Avoid remote providers unless you have a clear DPIA/legal basis for sending prompt data to external services.
 
 ### Production via Docker Compose (starting point)
 
@@ -144,8 +158,8 @@ cp .env.example.prod .env
 docker compose -f compose.prod.yaml build web
 docker compose -f compose.prod.yaml --profile build-only build runner
 
-# Start (web only; DB is expected to be provided externally in compose.prod.yaml)
-docker compose -f compose.prod.yaml up -d web
+# Start (web + worker; DB is expected to be provided externally in compose.prod.yaml)
+docker compose -f compose.prod.yaml up -d --build
 
 # Migrate DB schema
 docker compose -f compose.prod.yaml exec -T web pdm run db-upgrade

@@ -19,6 +19,7 @@ from skriptoteket.application.scripting.interactive_sandbox import (
     StartSandboxActionCommand,
 )
 from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.scripting.ui.state_update import SetStateUpdate
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
@@ -97,7 +98,8 @@ async def test_start_sandbox_action_success_returns_run_id_and_state_rev(
         now=now,
     )
     execute.handle.return_value = ExecuteToolVersionResult(
-        run=run, normalized_state={"step": "two"}
+        run=run,
+        state_update=SetStateUpdate(state={"step": "two"}),
     )
 
     handler = StartSandboxActionHandler(
@@ -200,7 +202,10 @@ async def test_start_sandbox_action_builds_correct_payload_structure(
             requested_by_user_id=outer_actor.id,
             now=now,
         )
-        return ExecuteToolVersionResult(run=run, normalized_state={"new": "state"})
+        return ExecuteToolVersionResult(
+            run=run,
+            state_update=SetStateUpdate(state={"new": "state"}),
+        )
 
     execute.handle.side_effect = _capture_execute
 

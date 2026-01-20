@@ -98,7 +98,7 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up
 | Environment | Web Container | Worker Container | DB Container |
 |-------------|---------------|------------------|--------------|
 | Production | `skriptoteket-web` | `skriptoteket-worker` | `shared-postgres` (external) |
-| Development | `skriptoteket_web` | (host/CLI) | `skriptoteket-db-1` |
+| Development | `skriptoteket_web` | `skriptoteket_worker` | `skriptoteket-db-1` |
 
 ### Database Connection
 

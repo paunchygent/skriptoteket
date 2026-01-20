@@ -37,6 +37,7 @@ from skriptoteket.infrastructure.llm.openai_provider import (
 from skriptoteket.infrastructure.llm.provider_sets import (
     ChatOpsProviders,
     ChatStreamProviders,
+    InlineCompletionProviders,
     is_remote_llm_endpoint,
 )
 from skriptoteket.infrastructure.llm.token_counter_resolver import SettingsBasedTokenCounterResolver
@@ -63,7 +64,7 @@ from skriptoteket.protocols.llm import (
     EditorChatHandlerProtocol,
     EditorChatHistoryHandlerProtocol,
     InlineCompletionHandlerProtocol,
-    InlineCompletionProviderProtocol,
+    InlineCompletionProvidersProtocol,
 )
 from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
 from skriptoteket.protocols.token_counter import TokenCounterResolverProtocol
@@ -101,12 +102,32 @@ class LlmProvider(Provider):
             yield client
 
     @provide(scope=Scope.APP)
-    def inline_completion_provider(
+    def inline_completion_providers(
         self,
         settings: Settings,
         client: httpx.AsyncClient,
-    ) -> InlineCompletionProviderProtocol:
-        return OpenAIInlineCompletionProvider(settings=settings, client=client)
+    ) -> InlineCompletionProvidersProtocol:
+        primary = OpenAIInlineCompletionProvider(settings=settings, client=client)
+
+        fallback = None
+        fallback_base_url = settings.LLM_COMPLETION_FALLBACK_BASE_URL.strip()
+        fallback_model = settings.LLM_COMPLETION_FALLBACK_MODEL.strip()
+        if fallback_base_url and fallback_model:
+            fallback = OpenAIInlineCompletionProvider(
+                settings=settings,
+                client=client,
+                base_url=fallback_base_url,
+                model=fallback_model,
+                reasoning_effort=settings.LLM_COMPLETION_FALLBACK_REASONING_EFFORT,
+            )
+
+        primary_base_url = settings.LLM_COMPLETION_BASE_URL.strip()
+        return InlineCompletionProviders(
+            primary=primary,
+            primary_is_remote=is_remote_llm_endpoint(primary_base_url),
+            fallback=fallback,
+            fallback_is_remote=is_remote_llm_endpoint(fallback_base_url) if fallback else False,
+        )
 
     @provide(scope=Scope.APP)
     def chat_failover_router(self, settings: Settings) -> ChatFailoverRouterProtocol:
@@ -180,12 +201,14 @@ class LlmProvider(Provider):
     def inline_completion_handler(
         self,
         settings: Settings,
-        provider: InlineCompletionProviderProtocol,
+        providers: InlineCompletionProvidersProtocol,
+        capture_store: LlmCaptureStoreProtocol,
         token_counters: TokenCounterResolverProtocol,
     ) -> InlineCompletionHandlerProtocol:
         return InlineCompletionHandler(
             settings=settings,
-            provider=provider,
+            providers=providers,
+            capture_store=capture_store,
             token_counters=token_counters,
         )
 

@@ -18,6 +18,7 @@ from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
     ChatFailoverDecision,
+    ChatFailoverProvider,
     ChatFailoverRouterProtocol,
     ChatInFlightGuardProtocol,
     ChatOpsBudget,
@@ -68,22 +69,22 @@ class DummyFailover(ChatFailoverRouterProtocol):
         *,
         user_id: UUID,
         tool_id: UUID,
-        allow_remote_fallback: bool,
+        allow_remote_fallback: bool | None,
         fallback_available: bool,
         fallback_is_remote: bool,
     ) -> ChatFailoverDecision:
         return ChatFailoverDecision(provider="primary", reason="primary_default")
 
-    async def acquire_inflight(self, *, provider: str) -> None:
+    async def acquire_inflight(self, *, provider: ChatFailoverProvider) -> None:
         return None
 
-    async def release_inflight(self, *, provider: str) -> None:
+    async def release_inflight(self, *, provider: ChatFailoverProvider) -> None:
         return None
 
-    async def record_success(self, *, provider: str) -> None:
+    async def record_success(self, *, provider: ChatFailoverProvider) -> None:
         return None
 
-    async def record_failure(self, *, provider: str) -> None:
+    async def record_failure(self, *, provider: ChatFailoverProvider) -> None:
         return None
 
     async def mark_fallback_used(self, *, user_id: UUID, tool_id: UUID) -> None:

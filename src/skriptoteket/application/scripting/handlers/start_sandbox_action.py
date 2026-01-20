@@ -22,6 +22,7 @@ from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.domain.scripting.models import RunContext, VersionState
 from skriptoteket.domain.scripting.sandbox_snapshots import SandboxSnapshot
 from skriptoteket.domain.scripting.tool_settings import compute_sandbox_settings_context
+from skriptoteket.domain.scripting.ui.state_update import resolve_state_update
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.draft_locks import DraftLockRepositoryProtocol
@@ -236,6 +237,7 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
                 version_id=command.version_id,
                 snapshot_id=command.snapshot_id,
                 context=RunContext.SANDBOX,
+                session_context=context,
                 settings_context=settings_context,
                 version_override=ToolVersionOverride(
                     entrypoint=snapshot.entrypoint,
@@ -250,13 +252,17 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
         )
 
         # Update session with new state
+        state_to_persist = resolve_state_update(
+            update=result.state_update,
+            current_state=current_state,
+        )
         async with self._uow:
             updated_session = await self._sessions.update_state(
                 tool_id=command.tool_id,
                 user_id=actor.id,
                 context=context,
                 expected_state_rev=command.expected_state_rev,
-                state=result.normalized_state,
+                state=state_to_persist,
             )
 
         return StartSandboxActionResult(

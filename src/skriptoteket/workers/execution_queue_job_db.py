@@ -21,6 +21,7 @@ from skriptoteket.domain.scripting.tool_settings import (
 )
 from skriptoteket.domain.scripting.ui.contract_v2 import UiFormAction
 from skriptoteket.domain.scripting.ui.policy import UiPolicy
+from skriptoteket.domain.scripting.ui.state_update import StateUpdate, resolve_state_update
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -147,7 +148,7 @@ async def finalize_job(
     worker_id: str,
     run: ToolRun,
     job: ToolRunJob,
-    normalized_state: dict[str, JsonValue],
+    state_update: StateUpdate,
     id_generator: IdGeneratorProtocol,
 ) -> bool:
     async with container(scope=Scope.REQUEST) as request:
@@ -177,31 +178,49 @@ async def finalize_job(
                 )
                 return False
 
-            await runs.update(run=run)
-            await jobs.update(job=job)
-
             if run.ui_payload is not None and run.ui_payload.next_actions:
+                session_context = run.session_context
                 session = await sessions.get_or_create(
                     session_id=id_generator.new_uuid(),
                     tool_id=run.tool_id,
                     user_id=run.requested_by_user_id,
-                    context="default",
+                    context=session_context,
                 )
                 try:
                     await sessions.update_state(
                         tool_id=run.tool_id,
                         user_id=run.requested_by_user_id,
-                        context="default",
+                        context=session_context,
                         expected_state_rev=session.state_rev,
-                        state=normalized_state,
+                        state=resolve_state_update(
+                            update=state_update,
+                            current_state=session.state,
+                        ),
                     )
                 except DomainError:
                     logger.exception(
-                        "Failed to persist normalized session state",
+                        "Failed to persist tool session state; failing interactive run",
                         run_id=str(run.id),
                         tool_id=str(run.tool_id),
                         user_id=str(run.requested_by_user_id),
+                        session_context=session_context,
                     )
+                    run = run.model_copy(
+                        update={
+                            "status": RunStatus.FAILED,
+                            "error_summary": "Execution failed (session state persistence error).",
+                            "ui_payload": run.ui_payload.model_copy(update={"next_actions": []}),
+                        }
+                    )
+                    job = job.model_copy(
+                        update={
+                            "status": RunStatus.FAILED,
+                            "last_error": "Session state persistence error.",
+                        }
+                    )
+
+            await jobs.update(job=job)
+            await runs.update(run=run)
 
             return True
 

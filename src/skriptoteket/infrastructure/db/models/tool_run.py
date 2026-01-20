@@ -40,6 +40,12 @@ class ToolRunModel(Base):
     curated_app_version: Mapped[str | None] = mapped_column(String(128), nullable=True)
 
     context: Mapped[str] = mapped_column(String(16), index=True, nullable=False)
+    session_context: Mapped[str] = mapped_column(
+        String(64),
+        index=True,
+        nullable=False,
+        server_default="default",
+    )
     requested_by_user_id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True),
         ForeignKey("users.id", ondelete="RESTRICT"),

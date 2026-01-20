@@ -42,6 +42,7 @@ class ToolRun(BaseModel):
     curated_app_version: str | None = None
     context: RunContext
     requested_by_user_id: UUID
+    session_context: str
     status: RunStatus
     requested_at: datetime
     started_at: datetime | None = None
@@ -117,6 +118,15 @@ def _normalize_optional_text(value: str | None) -> str | None:
     return normalized if normalized else None
 
 
+def _normalize_session_context(value: str) -> str:
+    normalized = value.strip()
+    if not normalized:
+        raise validation_error("session_context is required")
+    if len(normalized) > 64:
+        raise validation_error("session_context must be 64 characters or less")
+    return normalized
+
+
 def start_tool_version_run(
     *,
     run_id: UUID,
@@ -125,6 +135,7 @@ def start_tool_version_run(
     snapshot_id: UUID | None = None,
     context: RunContext,
     requested_by_user_id: UUID,
+    session_context: str,
     workdir_path: str,
     input_filename: str | None,
     input_size_bytes: int,
@@ -135,6 +146,7 @@ def start_tool_version_run(
     normalized_workdir_path = workdir_path.strip()
     if not normalized_workdir_path:
         raise validation_error("workdir_path is required")
+    normalized_session_context = _normalize_session_context(session_context)
     normalized_input_filename: str | None = None
     if input_filename is not None:
         stripped = input_filename.strip()
@@ -158,6 +170,7 @@ def start_tool_version_run(
         curated_app_version=None,
         context=context,
         requested_by_user_id=requested_by_user_id,
+        session_context=normalized_session_context,
         status=RunStatus.RUNNING,
         requested_at=now,
         started_at=now,
@@ -178,6 +191,7 @@ def start_curated_app_run(
     curated_app_version: str,
     context: RunContext,
     requested_by_user_id: UUID,
+    session_context: str,
     workdir_path: str,
     input_filename: str | None,
     input_size_bytes: int,
@@ -195,6 +209,7 @@ def start_curated_app_run(
     normalized_workdir_path = workdir_path.strip()
     if not normalized_workdir_path:
         raise validation_error("workdir_path is required")
+    normalized_session_context = _normalize_session_context(session_context)
     normalized_input_filename: str | None = None
     if input_filename is not None:
         stripped = input_filename.strip()
@@ -215,6 +230,7 @@ def start_curated_app_run(
         curated_app_version=normalized_app_version,
         context=context,
         requested_by_user_id=requested_by_user_id,
+        session_context=normalized_session_context,
         status=RunStatus.RUNNING,
         requested_at=now,
         started_at=now,
@@ -278,6 +294,7 @@ def enqueue_tool_version_run(
     snapshot_id: UUID | None = None,
     context: RunContext,
     requested_by_user_id: UUID,
+    session_context: str,
     workdir_path: str,
     input_filename: str | None,
     input_size_bytes: int,
@@ -288,6 +305,7 @@ def enqueue_tool_version_run(
     normalized_workdir_path = workdir_path.strip()
     if not normalized_workdir_path:
         raise validation_error("workdir_path is required")
+    normalized_session_context = _normalize_session_context(session_context)
     normalized_input_filename: str | None = None
     if input_filename is not None:
         stripped = input_filename.strip()
@@ -311,6 +329,7 @@ def enqueue_tool_version_run(
         curated_app_version=None,
         context=context,
         requested_by_user_id=requested_by_user_id,
+        session_context=normalized_session_context,
         status=RunStatus.QUEUED,
         requested_at=now,
         started_at=None,

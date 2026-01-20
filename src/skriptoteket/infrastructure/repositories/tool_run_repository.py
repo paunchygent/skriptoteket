@@ -37,6 +37,7 @@ class PostgreSQLToolRunRepository(ToolRunRepositoryProtocol):
             curated_app_id=run.curated_app_id,
             curated_app_version=run.curated_app_version,
             context=run.context,
+            session_context=run.session_context,
             requested_by_user_id=run.requested_by_user_id,
             status=run.status,
             requested_at=run.requested_at,

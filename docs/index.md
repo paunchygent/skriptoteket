@@ -124,6 +124,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-16-catalog-discovery-and-personalization.md`
 - `docs/backlog/epics/epic-17-observability-visualization-and-operations.md`
 - `docs/backlog/epics/epic-18-execution-queue-and-worker-loop.md`
+- `docs/backlog/epics/epic-19-runner-io-and-file-references-foundations.md`
 
 ### Backlog Reviews
 
@@ -206,6 +207,14 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0038-editor-ai-diff-preview-scroll-and-states.md`
 - `docs/backlog/prs/pr-0039-execution-queue-worker-loop.md`
 - `docs/backlog/prs/pr-0040-execution-queue-test-coverage.md`
+- `docs/backlog/prs/pr-0041-ai-completion-failover-and-model-selection.md`
+- `docs/backlog/prs/pr-0042-openai-prompt-cache-compat.md`
+- `docs/backlog/prs/pr-0044-llm-telemetry-and-stats.md`
+- `docs/backlog/prs/pr-0045-openai-responses-api-migration.md`
+- `docs/backlog/prs/pr-0046-ai-inline-completion-harness.md`
+- `docs/backlog/prs/pr-0047-ai-inline-completion-normalization-and-caps.md`
+- `docs/backlog/prs/pr-0048-execution-queue-session-context-and-state-semantics.md`
+- `docs/backlog/prs/pr-0043-ai-inline-completions-consent-hardening.md`
 
 ### Backlog Stories
 
@@ -288,6 +297,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md`
 - `docs/backlog/stories/story-08-28-ai-chat-ops-response-capture-on-error.md`
 - `docs/backlog/stories/story-08-29-ai-edit-ops-patch-lines-encoding.md`
+- `docs/backlog/stories/story-08-30-ai-completion-failover-and-model-selection.md`
+- `docs/backlog/stories/story-08-31-openai-responses-api-migration.md`
+- `docs/backlog/stories/story-08-32-ai-inline-completion-harness.md`
+- `docs/backlog/stories/story-08-33-ai-inline-completion-normalization-and-caps.md`
 - `docs/backlog/stories/story-09-01-http-security-headers.md`
 - `docs/backlog/stories/story-09-02-content-security-policy.md`
 - `docs/backlog/stories/story-09-03-firewall-audit.md`
@@ -392,10 +405,14 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-17-06-user-session-metrics.md`
 - `docs/backlog/stories/story-17-07-login-events-audit-trail.md`
 - `docs/backlog/stories/story-18-01-execution-queue-worker-loop.md`
+- `docs/backlog/stories/story-19-01-runner-request-envelope.md`
+- `docs/backlog/stories/story-19-02-file-refs-resolver-and-promotion.md`
+- `docs/backlog/stories/story-19-03-runner-contract-v3-structured-errors-state-update-and-promotions.md`
 
 ### Reference
 
 - `docs/reference/ref-ai-completion-architecture.md`
+- `docs/reference/ref-ai-inline-completion-harness.md`
 - `docs/reference/ref-ai-script-generation-kb-llm.md`
 - `docs/reference/ref-ai-script-generation-kb.md`
 - `docs/reference/ref-architecture.md`
@@ -438,6 +455,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/reports/ref-htmx-ux-enhancement-plan.md`
 - `docs/reference/reports/ref-lead-architect-suggestions-post-mvp.md`
 - `docs/reference/reports/ref-lead-developer-assessment-epic-04.md`
+- `docs/reference/reports/ref-runner-tool-code-modularization-map.md`
 - `docs/reference/reports/ref-security-perimeter-vpn-gating-ssh-and-observability.md`
 - `docs/reference/reports/ref-vue-spa-migration-assessment.md`
 - `docs/reference/reports/ref-vue-spa-migration-roadmap.md`
@@ -448,6 +466,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/runbooks/runbook-gpu-ai-workloads.md`
 - `docs/runbooks/runbook-home-server.md`
 - `docs/runbooks/runbook-huleedu-integration.md`
+- `docs/runbooks/runbook-openai-responses-api.md`
 - `docs/runbooks/runbook-observability-grafana.md`
 - `docs/runbooks/runbook-observability-logging.md`
 - `docs/runbooks/runbook-observability-metrics.md`

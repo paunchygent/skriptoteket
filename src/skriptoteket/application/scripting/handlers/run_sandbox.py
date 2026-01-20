@@ -27,6 +27,7 @@ from skriptoteket.domain.scripting.tool_settings import (
     compute_sandbox_settings_context,
     normalize_tool_settings_schema,
 )
+from skriptoteket.domain.scripting.ui.state_update import resolve_state_update
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.draft_locks import DraftLockRepositoryProtocol
@@ -284,6 +285,7 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
                 version_id=command.version_id,
                 snapshot_id=snapshot_id,
                 context=RunContext.SANDBOX,
+                session_context=_sandbox_context(snapshot_id),
                 settings_context=settings_context,
                 version_override=ToolVersionOverride(
                     entrypoint=entrypoint,
@@ -325,7 +327,10 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
                     user_id=actor.id,
                     context=context,
                     expected_state_rev=session.state_rev,
-                    state=result.normalized_state,
+                    state=resolve_state_update(
+                        update=result.state_update,
+                        current_state=session.state,
+                    ),
                 )
                 state_rev = updated_session.state_rev
 

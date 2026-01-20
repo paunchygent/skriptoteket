@@ -27,6 +27,7 @@ from skriptoteket.domain.scripting.models import (
 )
 from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.domain.scripting.ui.contract_v2 import UiFormAction, UiPayloadV2
+from skriptoteket.domain.scripting.ui.state_update import SetStateUpdate
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.scripting import (
@@ -102,6 +103,7 @@ def make_tool_run(
         version_id=version_id,
         requested_by_user_id=requested_by_user_id,
         context=context,
+        session_context="default",
         status=RunStatus.SUCCEEDED,
         requested_at=now,
         started_at=now,
@@ -417,6 +419,7 @@ async def test_run_active_tool_success_returns_tool_run(now: datetime) -> None:
     assert cmd.tool_id == tool.id
     assert cmd.version_id == version.id
     assert cmd.context is RunContext.PRODUCTION
+    assert cmd.session_context == "default"
     assert cmd.input_files == [("test.xlsx", b"test data")]
     session_files.store_files.assert_awaited_once()
 
@@ -461,7 +464,8 @@ async def test_run_active_tool_persists_session_state_when_run_has_next_actions(
     versions.get_by_id.return_value = version
     execute = AsyncMock(spec=ExecuteToolVersionHandlerProtocol)
     execute.handle.return_value = ExecuteToolVersionResult(
-        run=run, normalized_state={"step": "one"}
+        run=run,
+        state_update=SetStateUpdate(state={"step": "one"}),
     )
 
     session_id = uuid4()

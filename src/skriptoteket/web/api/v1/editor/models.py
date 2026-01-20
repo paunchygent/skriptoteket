@@ -108,7 +108,6 @@ class EditorEditOpsRequest(BaseModel):
 
     tool_id: UUID
     message: str = Field(min_length=1)
-    allow_remote_fallback: bool = False
     active_file: VirtualFileId
     selection: EditorEditOpsSelection | None = None
     cursor: EditorEditOpsCursor | None = None
@@ -197,7 +196,6 @@ class EditorChatRequest(BaseModel):
 
     message: str = Field(min_length=1)
     base_version_id: UUID | None = None
-    allow_remote_fallback: bool = False
     active_file: VirtualFileId | None = None
     virtual_files: EditorVirtualFiles | None = None
 
@@ -449,6 +447,7 @@ class EditorInlineCompletionRequest(BaseModel):
 
     prefix: str
     suffix: str
+    active_file: VirtualFileId = "tool.py"
 
 
 class EditorInlineCompletionResponse(BaseModel):
@@ -456,6 +455,9 @@ class EditorInlineCompletionResponse(BaseModel):
 
     completion: str
     enabled: bool
+    notice_message: str | None = None
+    notice_variant: Literal["info", "warning"] | None = None
+    notice_code: str | None = None
 
 
 class StartSandboxActionResponse(BaseModel):

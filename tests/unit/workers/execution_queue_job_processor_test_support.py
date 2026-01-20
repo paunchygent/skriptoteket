@@ -8,6 +8,7 @@ from uuid import UUID, uuid4
 
 from pydantic import JsonValue
 
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import AuthProvider, Role, User
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
 from skriptoteket.domain.scripting.input_files import InputManifest
@@ -134,6 +135,17 @@ class FakeToolSession:
 
 
 class FakeToolSessionRepository:
+    def __init__(
+        self,
+        *,
+        state: dict[str, object] | None = None,
+        state_rev: int = 0,
+        fail_update: bool = False,
+    ) -> None:
+        self._session = FakeToolSession(state={} if state is None else state, state_rev=state_rev)
+        self._fail_update = fail_update
+        self.update_calls: list[dict[str, object]] = []
+
     async def get_or_create(
         self,
         *,
@@ -143,7 +155,7 @@ class FakeToolSessionRepository:
         context: str,
     ) -> Any:
         del session_id, tool_id, user_id, context
-        return FakeToolSession(state={}, state_rev=0)
+        return self._session
 
     async def update_state(
         self,
@@ -154,8 +166,21 @@ class FakeToolSessionRepository:
         expected_state_rev: int,
         state: dict[str, object],
     ) -> None:
-        del tool_id, user_id, context, expected_state_rev, state
-        return None
+        self.update_calls.append(
+            {
+                "tool_id": tool_id,
+                "user_id": user_id,
+                "context": context,
+                "expected_state_rev": expected_state_rev,
+                "state": state,
+            }
+        )
+        if self._fail_update:
+            raise DomainError(
+                code=ErrorCode.INTERNAL_ERROR,
+                message="Failed to persist state",
+            )
+        self._session = FakeToolSession(state=state, state_rev=expected_state_rev + 1)
 
 
 class FakeRunInputStorage(RunInputStorageProtocol):
@@ -337,6 +362,7 @@ class ClaimProcessorHarness:
     job: ToolRunJob
     runs: InMemoryToolRunRepository
     jobs: InMemoryToolRunJobRepository
+    sessions: FakeToolSessionRepository
     run_inputs: FakeRunInputStorage
     runner: FakeRunner
     runner_adoption: FakeRunnerAdoption
@@ -358,6 +384,10 @@ async def make_harness(
     execute_result: ToolExecutionResult,
     adopt_result: ToolExecutionResult | None,
     input_files: list[tuple[str, bytes]] | None = None,
+    session_context: str = "default",
+    session_state: dict[str, object] | None = None,
+    session_state_rev: int = 0,
+    fail_session_update: bool = False,
 ) -> ClaimProcessorHarness:
     tool_id = uuid4()
     version_id = uuid4()
@@ -370,6 +400,7 @@ async def make_harness(
         version_id=version_id,
         context=RunContext.PRODUCTION,
         requested_by_user_id=actor.id,
+        session_context=session_context,
         workdir_path=str(run_id),
         input_filename=None,
         input_size_bytes=0,
@@ -393,7 +424,11 @@ async def make_harness(
         versions={version_id: make_tool_version(version_id=version_id, tool_id=tool_id, now=now)}
     )
     users = InMemoryUserRepository(users={actor.id: actor})
-    sessions = FakeToolSessionRepository()
+    sessions = FakeToolSessionRepository(
+        state=session_state,
+        state_rev=session_state_rev,
+        fail_update=fail_session_update,
+    )
     uow = FakeUow()
     container = ContainerAdapter(
         {
@@ -428,6 +463,7 @@ async def make_harness(
         job=job,
         runs=runs,
         jobs=jobs,
+        sessions=sessions,
         run_inputs=run_inputs,
         runner=runner,
         runner_adoption=runner_adoption,

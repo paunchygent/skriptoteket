@@ -25,6 +25,8 @@ class PostgreSQLSessionRepository(SessionRepositoryProtocol):
             id=session.id,
             user_id=session.user_id,
             csrf_token=session.csrf_token,
+            allow_remote_fallback=session.allow_remote_fallback,
+            inline_completion_provider=session.inline_completion_provider,
             expires_at=session.expires_at,
             revoked_at=session.revoked_at,
         )
@@ -49,3 +51,24 @@ class PostgreSQLSessionRepository(SessionRepositoryProtocol):
         )
         result = await self._session.execute(stmt)
         return int(result.scalar() or 0)
+
+    async def sync_ai_settings_for_user(
+        self,
+        *,
+        user_id: UUID,
+        allow_remote_fallback: bool | None,
+        inline_completion_provider: str | None,
+        now: datetime,
+    ) -> None:
+        await self._session.execute(
+            update(SessionModel)
+            .where(
+                SessionModel.user_id == user_id,
+                SessionModel.revoked_at.is_(None),
+                SessionModel.expires_at > now,
+            )
+            .values(
+                allow_remote_fallback=allow_remote_fallback,
+                inline_completion_provider=inline_completion_provider,
+            )
+        )

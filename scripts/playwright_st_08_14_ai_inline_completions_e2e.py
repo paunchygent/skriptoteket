@@ -85,12 +85,8 @@ def _open_editor(page: object, *, base_url: str, artifacts_dir: Path | None = No
     edit_link.click()
     page.wait_for_url("**/admin/**", wait_until="domcontentloaded")
     try:
-        expect(
-            page.get_by_role(
-                "heading",
-                name=re.compile(r"(Testkör kod|Testkor kod|Källkod|Kallkod)", re.IGNORECASE),
-            ).first
-        ).to_be_visible()
+        editor = page.locator(".cm-editor").first
+        expect(editor).to_be_visible(timeout=30_000)
     except AssertionError:
         if artifacts_dir:
             page.screenshot(

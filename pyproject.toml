@@ -375,7 +375,7 @@ dev-restart = "docker compose -f compose.yaml -f compose.dev.yaml restart"
 dev-recreate = "docker compose -f compose.yaml -f compose.dev.yaml up -d --force-recreate"
 dev-build-start = "docker compose -f compose.yaml -f compose.dev.yaml up -d --build"
 dev-rebuild = "docker compose -f compose.yaml -f compose.dev.yaml up -d --build --force-recreate"
-dev-containers-logs = "docker compose -f compose.yaml -f compose.dev.yaml logs -f web frontend"
+dev-containers-logs = "docker compose -f compose.yaml -f compose.dev.yaml logs -f web worker frontend"
 dev-build-start-clean = { composite = [
     "docker compose -f compose.yaml -f compose.dev.yaml build --no-cache",
     "docker compose -f compose.yaml -f compose.dev.yaml up -d --force-recreate",

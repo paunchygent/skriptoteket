@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+from typing import Literal
 from uuid import UUID, uuid4
 
 import pytest
@@ -33,6 +34,8 @@ def make_session(
     *,
     session_id: UUID | None = None,
     user_id: UUID,
+    allow_remote_fallback: bool | None = None,
+    inline_completion_provider: Literal["local", "external"] | None = None,
     now: datetime | None = None,
     expires_in: timedelta = timedelta(hours=1),
     revoked: bool = False,
@@ -42,6 +45,8 @@ def make_session(
         id=session_id or uuid4(),
         user_id=user_id,
         csrf_token="csrf-token",
+        allow_remote_fallback=allow_remote_fallback,
+        inline_completion_provider=inline_completion_provider,
         created_at=ts,
         expires_at=ts + expires_in,
         revoked_at=ts if revoked else None,

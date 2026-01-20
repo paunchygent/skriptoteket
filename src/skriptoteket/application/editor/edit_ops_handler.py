@@ -7,6 +7,7 @@ import structlog
 from structlog.contextvars import get_contextvars
 
 from skriptoteket.application.editor.prompt_composer import PromptTemplateError
+from skriptoteket.application.editor.remote_fallback import RemoteFallbackConsent
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role, User
@@ -154,12 +155,21 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                     ),
                 )
 
-            allow_remote_fallback = command.allow_remote_fallback
+            consent = RemoteFallbackConsent(
+                allow_remote_fallback=command.allow_remote_fallback,
+                remote_providers_enabled=self._settings.AI_REMOTE_PROVIDERS_ENABLED,
+            )
             decision = await self._failover.decide_route(
                 user_id=actor.id,
                 tool_id=command.tool_id,
-                allow_remote_fallback=allow_remote_fallback,
-                fallback_available=self._providers.fallback is not None,
+                allow_remote_fallback=command.allow_remote_fallback,
+                fallback_available=(
+                    self._providers.fallback is not None
+                    and (
+                        self._settings.AI_REMOTE_PROVIDERS_ENABLED
+                        or not self._providers.fallback_is_remote
+                    )
+                ),
                 fallback_is_remote=self._providers.fallback_is_remote,
             )
             if decision.blocked == "remote_fallback_required":
@@ -210,7 +220,7 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                     system_prompt_loader=self._system_prompt_loader,
                     user_payload=user_payload,
                     capture_id=capture_id,
-                    allow_remote_fallback=allow_remote_fallback,
+                    remote_allowed=consent.remote_allowed,
                     message_len=message_len,
                     virtual_files_bytes=virtual_files_bytes,
                 )
@@ -295,7 +305,7 @@ class EditOpsHandler(EditOpsHandlerProtocol):
                 request=request,
                 system_prompt=system_prompt,
                 decision=decision,
-                allow_remote_fallback=allow_remote_fallback,
+                consent=consent,
                 user_id=actor.id,
             )
 

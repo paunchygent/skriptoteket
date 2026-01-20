@@ -5,8 +5,9 @@ title: "User file vault: reusable uploads + picker"
 status: ready
 owners: "agents"
 created: 2026-01-12
+updated: 2026-01-20
 epic: "EPIC-14"
-dependencies: ["ADR-0059"]
+dependencies: ["ADR-0059", "ST-19-02"]
 acceptance_criteria:
   - "Given a user has vault files, when they start a tool run, then they can select vault files instead of uploading new files (respecting input_schema file constraints)."
   - "Given vault files are selected, when the run executes, then the files are staged into /work/input and appear in the input manifest as normal inputs."
@@ -28,3 +29,11 @@ Many tools rely on repeated uploads of the same files. A per-user file vault red
 
 - Action-form selection of vault files can be added later with ST-14-24 (first-class file references).
 - Vault entries can be created from explicit “save upload” actions; artifact-to-vault saving can be a follow-up.
+
+### Dependency alignment (no parallel mechanisms)
+
+This story should treat vault files as a `FileRef` source (`vault:*`) and rely on ST-19-02 for:
+
+- listing available vault file refs for the picker,
+- validating access to selected vault refs,
+- staging selected vault files into `/work/input/` for a run (no vault-specific staging path).

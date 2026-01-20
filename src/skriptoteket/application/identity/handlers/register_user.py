@@ -97,11 +97,19 @@ class RegisterUserHandler(RegisterUserHandlerProtocol):
             )
 
             now = self._clock.now()
+            allow_remote_fallback = (
+                True
+                if self._settings.AI_REMOTE_PROVIDERS_ENABLED
+                and self._settings.AI_DEFAULT_ALLOW_REMOTE_FALLBACK
+                else None
+            )
             profile = UserProfile(
                 user_id=result.user.id,
                 first_name=first_name,
                 last_name=last_name,
                 display_name=None,
+                allow_remote_fallback=allow_remote_fallback,
+                inline_completion_provider=None,
                 locale="sv-SE",
                 created_at=now,
                 updated_at=now,

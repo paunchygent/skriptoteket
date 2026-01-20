@@ -23,6 +23,7 @@ class UserProfileModel(Base):
     last_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     display_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     allow_remote_fallback: Mapped[bool | None] = mapped_column(Boolean(), nullable=True)
+    inline_completion_provider: Mapped[str | None] = mapped_column(String(16), nullable=True)
     locale: Mapped[str] = mapped_column(
         String(16),
         nullable=False,

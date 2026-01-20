@@ -20,6 +20,15 @@ services:
       - ARTIFACTS_ROOT=/var/lib/skriptoteket/artifacts
       - WATCHFILES_FORCE_POLLING=true
       - WATCHFILES_POLL_DELAY_MS=300
+  worker:
+    volumes:
+      - ./src:/app/src:cached
+      - ./.artifacts:/var/lib/skriptoteket/artifacts:cached
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - ENVIRONMENT=development
+      # Ensure container uses the mounted artifacts dir (avoids relying on host-dev `.env` defaults like `/tmp/...`).
+      - ARTIFACTS_ROOT=/var/lib/skriptoteket/artifacts
   frontend:
     environment:
       - VITE_DEV_POLLING=true

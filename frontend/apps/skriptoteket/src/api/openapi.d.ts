@@ -1273,6 +1273,15 @@ export interface components {
         AdminUserResponse: {
             user: components["schemas"]["User"];
         };
+        /** AiPolicyResponse */
+        AiPolicyResponse: {
+            /** Completion External Available */
+            completion_external_available: boolean;
+            /** Completion Local Available */
+            completion_local_available: boolean;
+            /** Remote Providers Enabled */
+            remote_providers_enabled: boolean;
+        };
         /**
          * AppDetailResponse
          * @description Response payload for a curated app detail lookup.
@@ -1619,11 +1628,6 @@ export interface components {
         EditorChatRequest: {
             /** Active File */
             active_file?: ("tool.py" | "entrypoint.txt" | "settings_schema.json" | "input_schema.json" | "usage_instructions.md") | null;
-            /**
-             * Allow Remote Fallback
-             * @default false
-             */
-            allow_remote_fallback: boolean;
             /** Base Version Id */
             base_version_id?: string | null;
             /** Message */
@@ -1749,11 +1753,6 @@ export interface components {
              * @enum {string}
              */
             active_file: "tool.py" | "entrypoint.txt" | "settings_schema.json" | "input_schema.json" | "usage_instructions.md";
-            /**
-             * Allow Remote Fallback
-             * @default false
-             */
-            allow_remote_fallback: boolean;
             cursor?: components["schemas"]["EditorEditOpsCursor"] | null;
             /** Message */
             message: string;
@@ -1787,6 +1786,12 @@ export interface components {
         };
         /** EditorInlineCompletionRequest */
         EditorInlineCompletionRequest: {
+            /**
+             * Active File
+             * @default tool.py
+             * @enum {string}
+             */
+            active_file: "tool.py" | "entrypoint.txt" | "settings_schema.json" | "input_schema.json" | "usage_instructions.md";
             /** Prefix */
             prefix: string;
             /** Suffix */
@@ -1798,6 +1803,12 @@ export interface components {
             completion: string;
             /** Enabled */
             enabled: boolean;
+            /** Notice Code */
+            notice_code?: string | null;
+            /** Notice Message */
+            notice_message?: string | null;
+            /** Notice Variant */
+            notice_variant?: ("info" | "warning") | null;
         };
         /** EditorRunDetails */
         EditorRunDetails: {
@@ -2190,6 +2201,7 @@ export interface components {
         };
         /** LoginResponse */
         LoginResponse: {
+            ai_policy: components["schemas"]["AiPolicyResponse"];
             /** Csrf Token */
             csrf_token: string;
             profile?: components["schemas"]["UserProfile"] | null;
@@ -2235,6 +2247,7 @@ export interface components {
         };
         /** MeResponse */
         MeResponse: {
+            ai_policy: components["schemas"]["AiPolicyResponse"];
             profile?: components["schemas"]["UserProfile"] | null;
             user: components["schemas"]["User"];
         };
@@ -3194,11 +3207,10 @@ export interface components {
         };
         /** UpdateAiSettingsRequest */
         UpdateAiSettingsRequest: {
-            /**
-             * Remote Fallback Preference
-             * @enum {string}
-             */
-            remote_fallback_preference: "unset" | "allow" | "deny";
+            /** Inline Completion Provider Preference */
+            inline_completion_provider_preference?: ("unset" | "local" | "external") | null;
+            /** Remote Fallback Preference */
+            remote_fallback_preference?: ("unset" | "allow" | "deny") | null;
         };
         /** UpdateProfileRequest */
         UpdateProfileRequest: {
@@ -3296,6 +3308,8 @@ export interface components {
             display_name?: string | null;
             /** First Name */
             first_name?: string | null;
+            /** Inline Completion Provider */
+            inline_completion_provider?: ("local" | "external") | null;
             /** Last Name */
             last_name?: string | null;
             /**

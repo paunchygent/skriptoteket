@@ -213,7 +213,7 @@ async def test_start_sandbox_action_admin_bypasses_maintainer_check(
         requested_by_user_id=actor.id,
         now=now,
     )
-    execute.handle.return_value = ExecuteToolVersionResult(run=run, normalized_state={})
+    execute.handle.return_value = ExecuteToolVersionResult(run=run)
 
     handler = StartSandboxActionHandler(
         uow=uow,

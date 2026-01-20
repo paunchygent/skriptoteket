@@ -314,6 +314,12 @@ async def test_api_v1_auth_login_sets_cookie_and_returns_user_and_csrf(
     settings: Settings,
     login_handler: AsyncMock,
 ) -> None:
+    settings.AI_REMOTE_PROVIDERS_ENABLED = True
+    settings.LLM_COMPLETION_BASE_URL = "https://api.openai.com"
+    settings.LLM_COMPLETION_MODEL = "gpt-5-nano"
+    settings.LLM_COMPLETION_FALLBACK_BASE_URL = "http://localhost:8082"
+    settings.LLM_COMPLETION_FALLBACK_MODEL = "Devstral-Small-2-24B"
+
     user = make_user(role=Role.USER)
     session_id = uuid4()
     login_handler.handle.return_value = LoginResult(
@@ -331,6 +337,11 @@ async def test_api_v1_auth_login_sets_cookie_and_returns_user_and_csrf(
     payload = response.json()
     assert payload["user"]["id"] == str(user.id)
     assert payload["csrf_token"] == "csrf-token"
+    assert payload["ai_policy"] == {
+        "remote_providers_enabled": True,
+        "completion_external_available": True,
+        "completion_local_available": True,
+    }
 
     set_cookie = response.headers.get("set-cookie", "")
     assert f"{settings.SESSION_COOKIE_NAME}=" in set_cookie
@@ -353,6 +364,12 @@ async def test_api_v1_auth_me_returns_user_when_authenticated(
     sessions: AsyncMock,
     current_user_provider: AsyncMock,
 ) -> None:
+    settings.AI_REMOTE_PROVIDERS_ENABLED = True
+    settings.LLM_COMPLETION_BASE_URL = "https://api.openai.com"
+    settings.LLM_COMPLETION_MODEL = "gpt-5-nano"
+    settings.LLM_COMPLETION_FALLBACK_BASE_URL = "http://localhost:8082"
+    settings.LLM_COMPLETION_FALLBACK_MODEL = "Devstral-Small-2-24B"
+
     user = make_user(role=Role.ADMIN)
     session_id = uuid4()
     _setup_valid_auth(
@@ -366,7 +383,13 @@ async def test_api_v1_auth_me_returns_user_when_authenticated(
     client.cookies.set(settings.SESSION_COOKIE_NAME, str(session_id))
     response = await client.get("/api/v1/auth/me")
     assert response.status_code == 200
-    assert response.json()["user"]["id"] == str(user.id)
+    payload = response.json()
+    assert payload["user"]["id"] == str(user.id)
+    assert payload["ai_policy"] == {
+        "remote_providers_enabled": True,
+        "completion_external_available": True,
+        "completion_local_available": True,
+    }
 
 
 @pytest.mark.unit

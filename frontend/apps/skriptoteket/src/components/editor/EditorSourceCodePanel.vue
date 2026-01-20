@@ -3,6 +3,8 @@ import type { EditorView } from "@codemirror/view";
 import { computed, defineAsyncComponent } from "vue";
 
 import { useSkriptoteketIntelligenceExtensions } from "../../composables/editor/useSkriptoteketIntelligenceExtensions";
+import { useToast } from "../../composables/useToast";
+import { useAiStore } from "../../stores/ai";
 
 const CodeMirrorEditor = defineAsyncComponent(() => import("./CodeMirrorEditor.vue"));
 
@@ -19,16 +21,36 @@ const emit = defineEmits<{
   (event: "editorViewReady", value: EditorView | null): void;
 }>();
 
+const toast = useToast();
+const ai = useAiStore();
+
 const entrypointName = computed(() => props.entrypoint);
 const ghostTextEnabled = computed(() => !props.isReadOnly);
 const ghostTextAutoTrigger = computed(() => true);
 const ghostTextDebounceMs = computed(() => 1500);
+
+function handleGhostTextNotice(params: {
+  message: string;
+  variant: "info" | "warning";
+  code?: string | null;
+}): void {
+  if (!ai.shouldShowRemoteFallbackRequiredNotice({ code: params.code })) {
+    return;
+  }
+  if (params.variant === "warning") {
+    toast.warning(params.message);
+    return;
+  }
+  toast.info(params.message);
+}
+
 const { extensions: intelligenceExtensions } = useSkriptoteketIntelligenceExtensions({
   entrypointName,
   ghostText: {
     enabled: ghostTextEnabled,
     autoTrigger: ghostTextAutoTrigger,
     debounceMs: ghostTextDebounceMs,
+    onNotice: handleGhostTextNotice,
   },
 });
 </script>

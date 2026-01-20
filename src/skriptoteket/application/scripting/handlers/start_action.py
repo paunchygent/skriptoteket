@@ -28,6 +28,7 @@ from skriptoteket.domain.scripting.tool_sessions import (
 from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result, UiFormAction
 from skriptoteket.domain.scripting.ui.normalization import UiNormalizationResult
 from skriptoteket.domain.scripting.ui.policy import UiPolicy
+from skriptoteket.domain.scripting.ui.state_update import StateUpdate, resolve_state_update
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import (
@@ -93,9 +94,10 @@ class StartActionHandler(StartActionHandlerProtocol):
         *,
         actor: User,
         tool_id: UUID,
+        session_context: str,
         current_state: dict[str, JsonValue],
         command: StartActionCommand,
-    ) -> tuple[UUID, dict[str, JsonValue]]:
+    ) -> tuple[UUID, StateUpdate]:
         app = self._curated_apps.get_by_tool_id(tool_id=tool_id)
         if app is None:
             raise not_found("Tool", str(tool_id))
@@ -122,6 +124,7 @@ class StartActionHandler(StartActionHandlerProtocol):
             curated_app_version=app.app_version,
             context=RunContext.PRODUCTION,
             requested_by_user_id=actor.id,
+            session_context=session_context,
             workdir_path=str(run_id),
             input_filename=None,
             input_size_bytes=0,
@@ -232,7 +235,7 @@ class StartActionHandler(StartActionHandlerProtocol):
         if domain_error_to_raise is not None:
             raise domain_error_to_raise
 
-        return finished.id, normalization_result.state
+        return finished.id, normalization_result.state_update
 
     def _normalize_result(
         self,
@@ -298,11 +301,12 @@ class StartActionHandler(StartActionHandlerProtocol):
         }
 
         run_id: UUID
-        normalized_state: dict[str, JsonValue]
+        state_update: StateUpdate
         if is_curated_app:
-            run_id, normalized_state = await self._execute_curated_app_action(
+            run_id, state_update = await self._execute_curated_app_action(
                 actor=actor,
                 tool_id=command.tool_id,
+                session_context=context,
                 current_state=current_state,
                 command=command,
             )
@@ -323,20 +327,22 @@ class StartActionHandler(StartActionHandlerProtocol):
                     tool_id=command.tool_id,
                     version_id=active_version_id,
                     context=RunContext.PRODUCTION,
+                    session_context=context,
                     input_files=persisted_files,
                     action_payload=payload,
                 ),
             )
             run_id = result.run.id
-            normalized_state = result.normalized_state
+            state_update = result.state_update
 
+        state_to_persist = resolve_state_update(update=state_update, current_state=current_state)
         async with self._uow:
             updated_session = await self._sessions.update_state(
                 tool_id=command.tool_id,
                 user_id=actor.id,
                 context=context,
                 expected_state_rev=command.expected_state_rev,
-                state=normalized_state,
+                state=state_to_persist,
             )
 
         return StartActionResult(run_id=run_id, state_rev=updated_session.state_rev)

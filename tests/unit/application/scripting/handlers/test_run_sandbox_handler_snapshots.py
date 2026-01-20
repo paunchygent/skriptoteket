@@ -20,6 +20,7 @@ from skriptoteket.domain.scripting.tool_settings import (
     compute_sandbox_settings_context,
 )
 from skriptoteket.domain.scripting.ui.contract_v2 import UiStringField
+from skriptoteket.domain.scripting.ui.state_update import SetStateUpdate
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.scripting import (
@@ -82,7 +83,8 @@ async def test_run_sandbox_persists_session_with_correct_context(
         ui_payload=make_ui_payload_with_next_actions(),
     )
     execute.handle.return_value = ExecuteToolVersionResult(
-        run=run, normalized_state={"data": "value"}
+        run=run,
+        state_update=SetStateUpdate(state={"data": "value"}),
     )
 
     id_generator.new_uuid.side_effect = [snapshot_id, session_id]
@@ -175,7 +177,7 @@ async def test_run_sandbox_creates_snapshot_with_expected_fields(
         now=now,
         ui_payload=None,
     )
-    execute.handle.return_value = ExecuteToolVersionResult(run=run, normalized_state={})
+    execute.handle.return_value = ExecuteToolVersionResult(run=run)
 
     handler = RunSandboxHandler(
         uow=uow,
@@ -270,7 +272,7 @@ async def test_run_sandbox_passes_settings_context_override(
         now=now,
         ui_payload=None,
     )
-    execute.handle.return_value = ExecuteToolVersionResult(run=run, normalized_state={})
+    execute.handle.return_value = ExecuteToolVersionResult(run=run)
 
     handler = RunSandboxHandler(
         uow=uow,

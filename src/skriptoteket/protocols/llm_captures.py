@@ -8,6 +8,7 @@ LlmCaptureKind = Literal[
     "chat_ops_response",
     "edit_ops_preview_failure",
     "chat_request_context",
+    "inline_completion_response",
 ]
 
 

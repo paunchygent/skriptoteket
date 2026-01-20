@@ -45,7 +45,7 @@ const compareActiveFileId = toRef(props, "compareActiveFileId");
 const isChatDrawerOpen = toRef(props, "isChatDrawerOpen");
 const toast = useToast();
 const ai = useAiStore();
-const { allowRemoteFallback, remoteFallbackPreference } = storeToRefs(ai);
+const { remoteFallbackPreference } = storeToRefs(ai);
 
 const REMOTE_FALLBACK_REQUIRED_CODE = "remote_fallback_required";
 const REMOTE_FALLBACK_REQUIRED_TEXT_SNIPPET = "Aktivera externa AI-API:er (OpenAI)";
@@ -66,14 +66,12 @@ const chatActiveFileId = computed(() => compareActiveFileId.value ?? "tool.py");
 const editorChat = useEditorChat({
   toolId,
   baseVersionId,
-  allowRemoteFallback,
   activeFile: chatActiveFileId,
   virtualFiles: chatVirtualFiles,
 });
 
 const editOps = useEditorEditOps({
   toolId,
-  allowRemoteFallback,
   isReadOnly,
   editorView,
   fields: props.fields,
@@ -134,6 +132,10 @@ async function sendChatMessage(message: string): Promise<void> {
     return;
   }
 
+  if (!ai.shouldShowRemoteFallbackRequiredNotice({ code: REMOTE_FALLBACK_REQUIRED_CODE })) {
+    return;
+  }
+
   const promptMessage = latestFailure.message ?? "";
   remoteFallbackPrompt.value = {
     source: "chat",
@@ -148,14 +150,16 @@ async function allowRemoteFallbackPrompt(): Promise<void> {
   const pending = pendingRemoteFallback.value;
   clearRemoteFallbackPrompt();
 
-  ai.setRemoteFallbackPreference("allow");
-  void ai.persistRemoteFallbackPreference("allow").catch((error: unknown) => {
+  try {
+    await ai.persistRemoteFallbackPreference("allow");
+  } catch (error: unknown) {
     toast.failure(
       error instanceof Error
         ? error.message
         : "Kunde inte spara AI-inställningen. Du kan behöva välja igen.",
     );
-  });
+    return;
+  }
 
   if (!pending) return;
 
@@ -173,16 +177,17 @@ async function allowRemoteFallbackPrompt(): Promise<void> {
   }
 }
 
-function denyRemoteFallbackPrompt(): void {
-  ai.setRemoteFallbackPreference("deny");
-  void ai.persistRemoteFallbackPreference("deny").catch((error: unknown) => {
+async function denyRemoteFallbackPrompt(): Promise<void> {
+  clearRemoteFallbackPrompt();
+  try {
+    await ai.persistRemoteFallbackPreference("deny");
+  } catch (error: unknown) {
     toast.failure(
       error instanceof Error
         ? error.message
         : "Kunde inte spara AI-inställningen. Du kan behöva välja igen.",
     );
-  });
-  clearRemoteFallbackPrompt();
+  }
 }
 
 function dismissRemoteFallbackPrompt(): void {
@@ -286,6 +291,9 @@ async function requestEditOps(message: string): Promise<void> {
       remoteFallbackPreference.value === "unset" &&
       assistantMessage.includes(REMOTE_FALLBACK_REQUIRED_TEXT_SNIPPET)
     ) {
+      if (!ai.shouldShowRemoteFallbackRequiredNotice({ code: REMOTE_FALLBACK_REQUIRED_CODE })) {
+        return;
+      }
       remoteFallbackPrompt.value = {
         source: "editOps",
         message: assistantMessage,

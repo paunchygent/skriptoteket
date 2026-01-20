@@ -17,6 +17,7 @@ type GhostTextConfig = {
   enabled: boolean;
   autoTrigger: boolean;
   debounceMs: number;
+  onNotice?: (params: { message: string; variant: "info" | "warning"; code?: string | null }) => void;
 };
 
 type GhostTextState = {
@@ -123,7 +124,13 @@ function triggerManualCompletion(view: EditorView): boolean {
   return true;
 }
 
-type CompletionResponse = { completion: string; enabled: boolean };
+type CompletionResponse = {
+  completion: string;
+  enabled: boolean;
+  notice_message?: string | null;
+  notice_variant?: "info" | "warning" | null;
+  notice_code?: string | null;
+};
 
 function getPrefixSuffix(state: EditorState): { prefix: string; suffix: string; from: number } | null {
   const selection = state.selection.main;
@@ -145,6 +152,8 @@ class GhostTextController {
   private abortController: AbortController | null = null;
   private requestSeq = 0;
   private disabledByServer = false;
+  private lastNoticeAt = 0;
+  private lastNoticeKey: string | null = null;
 
   public constructor(
     private readonly view: EditorView,
@@ -208,6 +217,23 @@ class GhostTextController {
     this.abortController = null;
   }
 
+  private maybeEmitNotice(params: { message: string; variant: "info" | "warning"; code?: string | null }): void {
+    if (!this.config.onNotice) return;
+
+    const now = Date.now();
+    const key = params.code?.trim() || params.message.trim();
+    if (!key) return;
+
+    const cooldownMs = 30_000;
+    if (this.lastNoticeKey === key && now - this.lastNoticeAt < cooldownMs) {
+      return;
+    }
+
+    this.lastNoticeKey = key;
+    this.lastNoticeAt = now;
+    this.config.onNotice(params);
+  }
+
   private async requestCompletion(state: EditorState): Promise<void> {
     if (!this.config.enabled) return;
     if (this.disabledByServer) return;
@@ -228,7 +254,11 @@ class GhostTextController {
     try {
       response = await apiFetch<CompletionResponse>("/api/v1/editor/completions", {
         method: "POST",
-        body: { prefix: slice.prefix, suffix: slice.suffix },
+        body: {
+          active_file: "tool.py",
+          prefix: slice.prefix,
+          suffix: slice.suffix,
+        },
         signal: abortController.signal,
       });
     } catch {
@@ -250,6 +280,14 @@ class GhostTextController {
       this.disabledByServer = true;
       clearGhostText(this.view);
       return;
+    }
+
+    if (response.notice_message) {
+      this.maybeEmitNotice({
+        message: response.notice_message,
+        variant: response.notice_variant === "warning" ? "warning" : "info",
+        code: response.notice_code ?? null,
+      });
     }
 
     if (!response.completion) {

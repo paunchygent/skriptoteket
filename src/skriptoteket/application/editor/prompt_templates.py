@@ -32,6 +32,18 @@ PROMPT_TEMPLATES: dict[str, PromptTemplate] = {
             }
         ),
     ),
+    "inline_completion_gpt5_v1": PromptTemplate(
+        template_id="inline_completion_gpt5_v1",
+        capability="inline_completion",
+        template_path="src/skriptoteket/application/editor/system_prompts/inline_completion_gpt5_v1.txt",
+        required_placeholders=frozenset(
+            {
+                CONTRACT_V2_FRAGMENT,
+                RUNNER_CONSTRAINTS_FRAGMENT,
+                HELPERS_FRAGMENT,
+            }
+        ),
+    ),
     "editor_chat_v1": PromptTemplate(
         template_id="editor_chat_v1",
         capability="chat_stream",

@@ -5,7 +5,7 @@ title: "Admin tool authoring (draft-first workflow)"
 status: active
 owners: "agents"
 created: 2025-12-25
-updated: 2026-01-16
+updated: 2026-01-20
 outcome: "Admins can quickly create draft tools directly from /admin/tools, iterate without contributor-only hoops, and publish only when slug and taxonomy are finalized."
 ---
 
@@ -80,6 +80,7 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 ## Dependencies
 
 - ADR-0037 (tool slug lifecycle)
+- EPIC-19 (proposed): runner I/O + file references foundations (prerequisite for ST-14-24 and ST-14-36)
 - Existing editor + metadata/taxonomy panels:
   - ST-11-17 (metadata editor)
   - ST-11-20 (tool taxonomy editor)

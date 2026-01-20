@@ -5,6 +5,12 @@ from pydantic import JsonValue
 from skriptoteket.domain.scripting.ui import contract_v2
 from skriptoteket.domain.scripting.ui.normalization import UiNormalizationResult
 from skriptoteket.domain.scripting.ui.policy import UiPolicy
+from skriptoteket.domain.scripting.ui.state_update import (
+    ClearStateUpdate,
+    NoChangeStateUpdate,
+    SetStateUpdate,
+    StateUpdate,
+)
 
 from ._actions import _normalize_actions
 from ._json_canonical import _canonicalize_json_value
@@ -28,23 +34,31 @@ class DeterministicUiPayloadNormalizer:
     ) -> UiNormalizationResult:
         stats = _NormalizationStats()
 
-        raw_state = raw_result.state or {}
-        state_canonical: dict[str, JsonValue] = {}
-        for key in sorted(raw_state.keys()):
-            canonical, truncated = _canonicalize_json_value(
-                raw_state[key],
-                max_depth=policy.caps.json_max_depth,
-                max_keys=policy.caps.json_max_keys,
-                max_array_len=policy.caps.json_max_array_len,
-            )
-            state_canonical[key] = canonical
-            stats.state_truncated_to_json_caps = stats.state_truncated_to_json_caps or truncated
+        state_update: StateUpdate = NoChangeStateUpdate()
+        if raw_result.state is not None:
+            raw_state = raw_result.state
+            if not raw_state:
+                state_update = ClearStateUpdate()
+            else:
+                state_canonical: dict[str, JsonValue] = {}
+                for key in sorted(raw_state.keys()):
+                    canonical, truncated = _canonicalize_json_value(
+                        raw_state[key],
+                        max_depth=policy.caps.json_max_depth,
+                        max_keys=policy.caps.json_max_keys,
+                        max_array_len=policy.caps.json_max_array_len,
+                    )
+                    state_canonical[key] = canonical
+                    stats.state_truncated_to_json_caps = (
+                        stats.state_truncated_to_json_caps or truncated
+                    )
 
-        state_normalized, state_keys_dropped = _enforce_state_budget(
-            state_canonical,
-            max_bytes=policy.budgets.state_max_bytes,
-        )
-        stats.state_keys_dropped = state_keys_dropped
+                state_normalized, state_keys_dropped = _enforce_state_budget(
+                    state_canonical,
+                    max_bytes=policy.budgets.state_max_bytes,
+                )
+                stats.state_keys_dropped = state_keys_dropped
+                state_update = SetStateUpdate(state=state_normalized)
 
         tool_outputs = _normalize_outputs(raw_result.outputs, policy=policy, stats=stats)
         actions = _normalize_actions(
@@ -101,4 +115,4 @@ class DeterministicUiPayloadNormalizer:
             outputs=[*tool_outputs, *system_notices],
             next_actions=actions,
         )
-        return UiNormalizationResult(ui_payload=ui_payload, state=state_normalized)
+        return UiNormalizationResult(ui_payload=ui_payload, state_update=state_update)

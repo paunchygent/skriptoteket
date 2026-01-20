@@ -5,6 +5,7 @@ import type { components } from "../api/openapi";
 type ApiRole = components["schemas"]["Role"];
 type ApiUser = components["schemas"]["User"];
 type ApiUserProfile = components["schemas"]["UserProfile"];
+type ApiAiPolicy = components["schemas"]["AiPolicyResponse"];
 type CsrfResponse = components["schemas"]["CsrfResponse"];
 type LoginResponse = components["schemas"]["LoginResponse"];
 type MeResponse = components["schemas"]["MeResponse"];
@@ -56,6 +57,7 @@ export const useAuthStore = defineStore("auth", {
   state: () => ({
     user: null as ApiUser | null,
     profile: null as ApiUserProfile | null,
+    aiPolicy: null as ApiAiPolicy | null,
     csrfToken: null as string | null,
     bootstrapped: false,
     status: "idle" as AuthStatus,
@@ -83,6 +85,7 @@ export const useAuthStore = defineStore("auth", {
     clear(): void {
       this.user = null;
       this.profile = null;
+      this.aiPolicy = null;
       this.csrfToken = null;
       this.status = "ready";
       this.error = null;
@@ -113,6 +116,7 @@ export const useAuthStore = defineStore("auth", {
             const payload = (await response.json()) as MeResponse;
             this.user = payload.user;
             this.profile = payload.profile ?? null;
+            this.aiPolicy = payload.ai_policy ?? null;
 
             if (!this.csrfToken) {
               await this.ensureCsrfToken();
@@ -126,6 +130,7 @@ export const useAuthStore = defineStore("auth", {
           if (response.status === 401) {
             this.user = null;
             this.profile = null;
+            this.aiPolicy = null;
             this.csrfToken = null;
             this.status = "ready";
             this.error = null;
@@ -134,12 +139,14 @@ export const useAuthStore = defineStore("auth", {
 
           this.user = null;
           this.profile = null;
+          this.aiPolicy = null;
           this.csrfToken = null;
           this.status = "error";
           this.error = await readErrorMessage(response);
         } catch (error: unknown) {
           this.user = null;
           this.profile = null;
+          this.aiPolicy = null;
           this.csrfToken = null;
           this.status = "error";
           this.error = error instanceof Error ? error.message : "Failed to bootstrap session";
@@ -212,6 +219,7 @@ export const useAuthStore = defineStore("auth", {
         const payload = (await response.json()) as LoginResponse;
         this.user = payload.user;
         this.profile = payload.profile ?? null;
+        this.aiPolicy = payload.ai_policy ?? null;
         this.csrfToken = payload.csrf_token;
         this.bootstrapped = true;
         this.status = "ready";

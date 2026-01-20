@@ -2,7 +2,7 @@
 type: pr
 id: PR-0039
 title: "Execution queue + worker loop (Postgres)"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-01-17
 updated: 2026-01-18
@@ -44,6 +44,13 @@ runner contract intact.
 4. Implement worker loop with `FOR UPDATE SKIP LOCKED` leasing and adopt-first semantics for stale running jobs.
 5. Update run + job states and persist outputs/artifacts on completion.
 6. Add reaper for stale leases (clears lease fields, keeps status running); expose minimal metrics.
+
+## Deployment notes
+
+- This change requires the execution worker to be running when `RUNNER_QUEUE_ENABLED=true`.
+- Production: `compose.prod.yaml` runs `worker` as a sibling container; its healthcheck command is
+  `python -m skriptoteket.cli healthcheck-execution-worker`.
+- Development: `compose.yaml` includes a `worker` service for parity (run `pdm run dev-start`).
 
 ## Test plan
 

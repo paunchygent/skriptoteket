@@ -2,7 +2,7 @@ from typing import Literal
 
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, status
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from skriptoteket.application.identity.commands import (
     ChangeEmailCommand,
@@ -43,7 +43,17 @@ class UpdateProfileRequest(BaseModel):
 class UpdateAiSettingsRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    remote_fallback_preference: Literal["unset", "allow", "deny"]
+    remote_fallback_preference: Literal["unset", "allow", "deny"] | None = None
+    inline_completion_provider_preference: Literal["unset", "local", "external"] | None = None
+
+    @model_validator(mode="after")
+    def validate_at_least_one_field(self) -> "UpdateAiSettingsRequest":
+        if (
+            self.remote_fallback_preference is None
+            and self.inline_completion_provider_preference is None
+        ):
+            raise ValueError("At least one AI setting is required")
+        return self
 
 
 class ChangePasswordRequest(BaseModel):
@@ -107,6 +117,7 @@ async def update_ai_settings(
         UpdateAiSettingsCommand(
             user_id=user.id,
             remote_fallback_preference=payload.remote_fallback_preference,
+            inline_completion_provider_preference=payload.inline_completion_provider_preference,
         )
     )
     return ProfileResponse(user=result.user, profile=result.profile)

@@ -55,6 +55,14 @@ class SessionRepositoryProtocol(Protocol):
     async def get_by_id(self, session_id: UUID) -> Session | None: ...
     async def revoke(self, *, session_id: UUID) -> None: ...
     async def count_active(self, *, now: datetime) -> int: ...
+    async def sync_ai_settings_for_user(
+        self,
+        *,
+        user_id: UUID,
+        allow_remote_fallback: bool | None,
+        inline_completion_provider: str | None,
+        now: datetime,
+    ) -> None: ...
 
 
 class PasswordHasherProtocol(Protocol):

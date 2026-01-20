@@ -5,7 +5,7 @@ title: "Contextual help (Hjälp) and onboarding"
 status: active
 owners: "agents"
 created: 2025-12-17
-updated: 2026-01-16
+updated: 2026-01-19
 outcome: "Users understand what they can do on each page via concise, Swedish, context-aware help without external documentation."
 ---
 
@@ -57,6 +57,10 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - [ST-08-27: Research: editor chat virtual file context retention + tokenizer budgets](../stories/story-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md)
 - [ST-08-28: AI: platform-only full model response capture on failures](../stories/story-08-28-ai-chat-ops-response-capture-on-error.md)
 - [ST-08-29: AI edit ops: patch_lines encoding for patch ops (avoid parse_failed)](../stories/story-08-29-ai-edit-ops-patch-lines-encoding.md)
+- [ST-08-30: AI: inline completion failover + per-user completion provider selection](../stories/story-08-30-ai-completion-failover-and-model-selection.md)
+- [ST-08-31: AI: migrate OpenAI providers to Responses API](../stories/story-08-31-openai-responses-api-migration.md)
+- [ST-08-32: AI: inline completion harness (gpt-5-nano logic validation)](../stories/story-08-32-ai-inline-completion-harness.md)
+- [ST-08-33: AI: inline completion normalization + 32-token caps](../stories/story-08-33-ai-inline-completion-normalization-and-caps.md)
 
 ## Implementation Summary (as of 2026-01-16)
 

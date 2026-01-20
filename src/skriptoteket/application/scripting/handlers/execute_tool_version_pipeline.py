@@ -120,6 +120,7 @@ async def execute_tool_version_pipeline(
         snapshot_id=command.snapshot_id,
         context=command.context,
         requested_by_user_id=actor.id,
+        session_context=command.session_context,
         workdir_path=str(run_id),
         input_filename=primary_filename,
         input_size_bytes=total_size_bytes,
@@ -382,4 +383,4 @@ async def execute_tool_version_pipeline(
     if domain_error_to_raise is not None:
         raise domain_error_to_raise
 
-    return ExecuteToolVersionResult(run=finished, normalized_state=normalization_result.state)
+    return ExecuteToolVersionResult(run=finished, state_update=normalization_result.state_update)

@@ -456,7 +456,7 @@ Inline completions:
 | `LLM_COMPLETION_TIMEOUT_SECONDS` | `30` | Request timeout |
 | `LLM_COMPLETION_CONTEXT_WINDOW_TOKENS` | `4096` | Context window (prompt + output), matches llama.cpp `n_ctx` |
 | `LLM_COMPLETION_CONTEXT_SAFETY_MARGIN_TOKENS` | `256` | Reserved prompt budget for chat wrapping/variance |
-| `LLM_COMPLETION_SYSTEM_PROMPT_MAX_TOKENS` | `1024` | Target max tokens for system prompt (rules + KB) |
+| `LLM_COMPLETION_SYSTEM_PROMPT_MAX_TOKENS` | `2048` | Target max tokens for system prompt (rules + KB) |
 | `LLM_COMPLETION_PREFIX_MAX_TOKENS` | `2048` | Target max tokens for prefix (keeps tail near cursor) |
 | `LLM_COMPLETION_SUFFIX_MAX_TOKENS` | `512` | Target max tokens for suffix (keeps head after cursor) |
 

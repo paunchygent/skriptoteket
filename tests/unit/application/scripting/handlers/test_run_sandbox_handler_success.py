@@ -15,6 +15,7 @@ from skriptoteket.application.scripting.commands import (
 from skriptoteket.application.scripting.handlers.run_sandbox import RunSandboxHandler
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.ui.contract_v2 import UiPayloadV2
+from skriptoteket.domain.scripting.ui.state_update import SetStateUpdate
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.scripting import (
@@ -77,7 +78,8 @@ async def test_run_sandbox_with_next_actions_returns_state_rev(
         ui_payload=make_ui_payload_with_next_actions(),
     )
     execute.handle.return_value = ExecuteToolVersionResult(
-        run=run, normalized_state={"step": "one"}
+        run=run,
+        state_update=SetStateUpdate(state={"step": "one"}),
     )
 
     id_generator.new_uuid.side_effect = [snapshot_id, session_id]
@@ -168,7 +170,7 @@ async def test_run_sandbox_without_next_actions_returns_none_state_rev(
         now=now,
         ui_payload=None,
     )
-    execute.handle.return_value = ExecuteToolVersionResult(run=run, normalized_state={})
+    execute.handle.return_value = ExecuteToolVersionResult(run=run)
 
     handler = RunSandboxHandler(
         uow=uow,
@@ -237,7 +239,7 @@ async def test_run_sandbox_with_empty_next_actions_returns_none_state_rev(
         now=now,
         ui_payload=UiPayloadV2(next_actions=[]),
     )
-    execute.handle.return_value = ExecuteToolVersionResult(run=run, normalized_state={})
+    execute.handle.return_value = ExecuteToolVersionResult(run=run)
 
     handler = RunSandboxHandler(
         uow=uow,
@@ -306,7 +308,8 @@ async def test_run_sandbox_uses_expected_state_rev_from_session(
         ui_payload=make_ui_payload_with_next_actions(),
     )
     execute.handle.return_value = ExecuteToolVersionResult(
-        run=run, normalized_state={"new": "state"}
+        run=run,
+        state_update=SetStateUpdate(state={"new": "state"}),
     )
 
     id_generator.new_uuid.side_effect = [snapshot_id, session_id]

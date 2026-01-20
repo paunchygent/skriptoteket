@@ -298,7 +298,7 @@ async def process_claim(
                 worker_id=worker_id,
                 run=finished_run,
                 job=finished_job,
-                normalized_state=normalization_result.state,
+                state_update=normalization_result.state_update,
                 id_generator=id_generator,
             )
             if updated:

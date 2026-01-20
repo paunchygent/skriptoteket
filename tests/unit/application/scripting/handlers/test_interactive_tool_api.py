@@ -37,6 +37,7 @@ from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result, UiPayloadV2
 from skriptoteket.domain.scripting.ui.normalization import UiNormalizationResult
 from skriptoteket.domain.scripting.ui.policy import UiPolicyProfileId, get_ui_policy
+from skriptoteket.domain.scripting.ui.state_update import SetStateUpdate
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import (
@@ -91,6 +92,7 @@ def make_tool_run(
         version_id=version_id,
         requested_by_user_id=requested_by_user_id,
         context=RunContext.PRODUCTION,
+        session_context="default",
         status=RunStatus.SUCCEEDED,
         requested_at=now,
         started_at=now,
@@ -193,7 +195,10 @@ async def test_start_action_executes_with_session_state_and_updates_state_rev(
             "input": {"notify_guardians": True},
             "state": {"step": "one"},
         }
-        return ExecuteToolVersionResult(run=run, normalized_state={"step": "two"})
+        return ExecuteToolVersionResult(
+            run=run,
+            state_update=SetStateUpdate(state={"step": "two"}),
+        )
 
     execute.handle.side_effect = _execute
 
@@ -416,7 +421,7 @@ async def test_start_action_executes_curated_app_without_tool_version(now: datet
     ui_normalizer = Mock(spec=UiPayloadNormalizerProtocol)
     ui_normalizer.normalize.return_value = UiNormalizationResult(
         ui_payload=UiPayloadV2(outputs=[], next_actions=[]),
-        state={"count": 2},
+        state_update=SetStateUpdate(state={"count": 2}),
     )
 
     clock = Mock(spec=ClockProtocol)

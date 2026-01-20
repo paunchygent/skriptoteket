@@ -12,6 +12,7 @@ type UserProfile = {
   last_name: string | null;
   display_name: string | null;
   allow_remote_fallback?: boolean | null;
+  inline_completion_provider?: "local" | "external" | null;
   locale: string;
   created_at: string;
   updated_at: string;

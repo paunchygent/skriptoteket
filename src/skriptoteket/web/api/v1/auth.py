@@ -18,6 +18,7 @@ from skriptoteket.application.identity.handlers.verify_email import VerifyEmailH
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Session, User, UserProfile
+from skriptoteket.infrastructure.llm.provider_sets import is_remote_llm_endpoint
 from skriptoteket.protocols.identity import (
     LoginHandlerProtocol,
     LogoutHandlerProtocol,
@@ -35,6 +36,32 @@ from skriptoteket.web.request_metadata import (
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 
+class AiPolicyResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    remote_providers_enabled: bool
+    completion_external_available: bool
+    completion_local_available: bool
+
+
+def _build_ai_policy(settings: Settings) -> AiPolicyResponse:
+    completion_candidates = [
+        (settings.LLM_COMPLETION_BASE_URL.strip(), settings.LLM_COMPLETION_MODEL.strip()),
+        (
+            settings.LLM_COMPLETION_FALLBACK_BASE_URL.strip(),
+            settings.LLM_COMPLETION_FALLBACK_MODEL.strip(),
+        ),
+    ]
+    configured = [(url, model) for url, model in completion_candidates if url and model]
+    completion_external_available = any(is_remote_llm_endpoint(url) for url, _ in configured)
+    completion_local_available = any(not is_remote_llm_endpoint(url) for url, _ in configured)
+    return AiPolicyResponse(
+        remote_providers_enabled=settings.AI_REMOTE_PROVIDERS_ENABLED,
+        completion_external_available=completion_external_available,
+        completion_local_available=completion_local_available,
+    )
+
+
 class LoginRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -48,6 +75,7 @@ class LoginResponse(BaseModel):
     user: User
     profile: UserProfile | None = None
     csrf_token: str
+    ai_policy: AiPolicyResponse
 
 
 class RegisterRequest(BaseModel):
@@ -72,6 +100,7 @@ class MeResponse(BaseModel):
 
     user: User
     profile: UserProfile | None = None
+    ai_policy: AiPolicyResponse
 
 
 class CsrfResponse(BaseModel):
@@ -108,7 +137,12 @@ async def login(
         samesite=settings.COOKIE_SAMESITE,
         path="/",
     )
-    return LoginResponse(user=result.user, profile=result.profile, csrf_token=result.csrf_token)
+    return LoginResponse(
+        user=result.user,
+        profile=result.profile,
+        csrf_token=result.csrf_token,
+        ai_policy=_build_ai_policy(settings),
+    )
 
 
 @router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
@@ -159,10 +193,11 @@ async def logout(
 @inject
 async def me(
     profiles: FromDishka[ProfileRepositoryProtocol],
+    settings: FromDishka[Settings],
     user: User = Depends(require_user_api),
 ) -> MeResponse:
     profile = await profiles.get_by_user_id(user_id=user.id)
-    return MeResponse(user=user, profile=profile)
+    return MeResponse(user=user, profile=profile, ai_policy=_build_ai_policy(settings))
 
 
 @router.get("/csrf", response_model=CsrfResponse)

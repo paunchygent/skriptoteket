@@ -74,7 +74,7 @@ async def prepare_preflight_context(
     system_prompt_loader: Callable[[str], str] | None,
     user_payload: str,
     capture_id: UUID | None,
-    allow_remote_fallback: bool,
+    remote_allowed: bool,
     message_len: int,
     virtual_files_bytes: int,
 ) -> PreflightContext:
@@ -128,7 +128,7 @@ async def prepare_preflight_context(
         template_id=template_id,
         command=command,
         actor_id=actor_id,
-        allow_remote_fallback=allow_remote_fallback,
+        remote_allowed=remote_allowed,
         failover=failover,
         uow=uow,
         sessions=sessions,

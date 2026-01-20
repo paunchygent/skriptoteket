@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, JsonValue
 from skriptoteket.domain.scripting.models import RunContext, ToolRun, ToolVersion
 from skriptoteket.domain.scripting.tool_inputs import ToolInputSchema
 from skriptoteket.domain.scripting.tool_settings import ToolSettingsSchema
+from skriptoteket.domain.scripting.ui.state_update import NoChangeStateUpdate, StateUpdate
 
 type InputFile = tuple[str, bytes]
 
@@ -59,6 +60,7 @@ class ExecuteToolVersionCommand(BaseModel):
     version_id: UUID
     snapshot_id: UUID | None = None
     context: RunContext
+    session_context: str = Field(..., min_length=1, max_length=64)
     settings_context: str | None = None
     version_override: ToolVersionOverride | None = None
     input_files: list[InputFile] = Field(default_factory=list)
@@ -70,7 +72,7 @@ class ExecuteToolVersionResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     run: ToolRun
-    normalized_state: dict[str, JsonValue] = Field(default_factory=dict)
+    state_update: StateUpdate = Field(default_factory=NoChangeStateUpdate)
 
 
 class CreateDraftVersionCommand(BaseModel):

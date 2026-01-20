@@ -187,6 +187,7 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
                 snapshot_id=command.snapshot_id,
                 context=command.context,
                 requested_by_user_id=actor.id,
+                session_context=command.session_context,
                 workdir_path=str(run_id),
                 input_filename=primary_filename,
                 input_size_bytes=total_size_bytes,
@@ -212,7 +213,7 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
                 if normalized_input_files:
                     await self._run_inputs.store(run_id=run_id, files=normalized_input_files)
 
-            return ExecuteToolVersionResult(run=queued_run, normalized_state={})
+            return ExecuteToolVersionResult(run=queued_run)
 
         profile_id = await self._ui_policy_provider.get_profile_id_for_tool(
             tool_id=command.tool_id,

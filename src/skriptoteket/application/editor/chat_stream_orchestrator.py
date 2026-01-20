@@ -18,6 +18,7 @@ from skriptoteket.application.editor.chat_shared import (
     STREAM_FLUSH_MIN_CHARS,
     VIRTUAL_FILE_IDS,
 )
+from skriptoteket.application.editor.remote_fallback import RemoteFallbackConsent
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.editor_chat import (
@@ -163,6 +164,10 @@ class EditorChatStreamOrchestrator(EditorChatStreamOrchestratorProtocol):
         decision: ChatFailoverDecision,
         template_id: str,
     ) -> AsyncIterator[EditorChatStreamEvent]:
+        consent = RemoteFallbackConsent(
+            allow_remote_fallback=command.allow_remote_fallback,
+            remote_providers_enabled=self._settings.AI_REMOTE_PROVIDERS_ENABLED,
+        )
         request = prepared.request
         system_prompt = prepared.system_prompt
         system_prompt_chars = len(system_prompt)
@@ -381,7 +386,7 @@ class EditorChatStreamOrchestrator(EditorChatStreamOrchestratorProtocol):
             and provider_key == "primary"
             and retryable
             and self._providers.fallback is not None
-            and (command.allow_remote_fallback or not self._providers.fallback_is_remote)
+            and (consent.remote_allowed or not self._providers.fallback_is_remote)
         ):
             provider_key = "fallback"
             provider = self._providers.fallback
@@ -455,7 +460,7 @@ class EditorChatStreamOrchestrator(EditorChatStreamOrchestratorProtocol):
             and provider_key == "primary"
             and self._providers.fallback is not None
             and self._providers.fallback_is_remote
-            and not command.allow_remote_fallback
+            and consent.should_prompt
         ):
             await finalize_turn(
                 status="failed",

@@ -135,18 +135,22 @@ async def test_execute_tool_version_queue_enabled_production_enqueues_and_does_n
             tool_id=tool_id,
             version_id=version.id,
             context=RunContext.PRODUCTION,
+            session_context="default",
             input_files=[("input.txt", b"input")],
         ),
     )
 
     assert result.run.status is RunStatus.QUEUED
     assert result.run.started_at is None
-    assert result.normalized_state == {}
+    assert result.state_update.kind == "no_change"
 
     runs.create.assert_awaited_once()
     jobs.create.assert_awaited_once()
     run_inputs.store.assert_awaited_once()
     runner.execute.assert_not_awaited()
+
+    created_run = runs.create.call_args.kwargs["run"]
+    assert created_run.session_context == "default"
 
     stored_call = run_inputs.store.call_args.kwargs
     assert stored_call["run_id"] == run_id
@@ -222,6 +226,7 @@ async def test_execute_tool_version_queue_enabled_without_files_does_not_store_i
             tool_id=tool_id,
             version_id=version.id,
             context=RunContext.PRODUCTION,
+            session_context="default",
         ),
     )
 
@@ -239,17 +244,20 @@ async def test_execute_tool_version_queue_enabled_without_files_does_not_store_i
             tool_id=uuid4(),
             version_id=uuid4(),
             context=RunContext.SANDBOX,
+            session_context="default",
         ),
         ExecuteToolVersionCommand(
             tool_id=uuid4(),
             version_id=uuid4(),
             context=RunContext.PRODUCTION,
+            session_context="default",
             action_payload={"action_id": "step", "input": {}, "state": {}},
         ),
         ExecuteToolVersionCommand(
             tool_id=uuid4(),
             version_id=uuid4(),
             context=RunContext.PRODUCTION,
+            session_context="default",
             version_override=ToolVersionOverride(source_code="print('x')"),
         ),
     ],
@@ -301,13 +309,14 @@ async def test_execute_tool_version_when_not_queueable_does_not_enqueue(
         version_id=version.id,
         context=command.context,
         requested_by_user_id=actor.id,
+        session_context=command.session_context,
         workdir_path="/tmp/run",
         input_filename=None,
         input_size_bytes=0,
         input_manifest=InputManifest(),
         now=now,
     )
-    dummy_pipeline_result = ExecuteToolVersionResult(run=dummy_run, normalized_state={})
+    dummy_pipeline_result = ExecuteToolVersionResult(run=dummy_run)
     pipeline = AsyncMock(return_value=dummy_pipeline_result)
 
     import skriptoteket.application.scripting.handlers.execute_tool_version as handler_module

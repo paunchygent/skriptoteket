@@ -5,6 +5,7 @@ from uuid import UUID
 
 import httpx
 
+from skriptoteket.application.editor.remote_fallback import RemoteFallbackConsent
 from skriptoteket.protocols.edit_ops_payload_parser import EditOpsPayloadParserProtocol
 from skriptoteket.protocols.llm import (
     ChatFailoverDecision,
@@ -96,7 +97,7 @@ async def execute_chat_ops(
     request: LLMChatRequest,
     system_prompt: str,
     decision: ChatFailoverDecision,
-    allow_remote_fallback: bool,
+    consent: RemoteFallbackConsent,
     user_id: UUID,
 ) -> ExecutionResult:
     assistant_message = GENERATION_ERROR
@@ -162,7 +163,7 @@ async def execute_chat_ops(
         await failover.record_success(provider=provider_key)
 
     can_use_fallback = providers.fallback is not None and (
-        allow_remote_fallback or not providers.fallback_is_remote
+        consent.remote_allowed or not providers.fallback_is_remote
     )
     retryable_primary_failure = (
         response is None
@@ -179,7 +180,8 @@ async def execute_chat_ops(
         retryable_primary_failure
         and providers.fallback is not None
         and providers.fallback_is_remote
-        and not allow_remote_fallback
+        and not consent.remote_allowed
+        and consent.should_prompt
     ):
         return ExecutionResult(
             assistant_message=REMOTE_FALLBACK_REQUIRED_MESSAGE,

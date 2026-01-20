@@ -95,6 +95,7 @@ def make_tool_run(
         version_id=version_id,
         requested_by_user_id=requested_by_user_id,
         context=RunContext.PRODUCTION,
+        session_context="default",
         status=RunStatus.SUCCEEDED,
         requested_at=now,
         started_at=now,
@@ -145,7 +146,7 @@ async def test_run_active_tool_reuses_session_files_when_requested(now: datetime
         requested_by_user_id=actor.id,
         now=now,
     )
-    execute.handle.return_value = ExecuteToolVersionResult(run=run, normalized_state={})
+    execute.handle.return_value = ExecuteToolVersionResult(run=run)
 
     handler = RunActiveToolHandler(
         uow=uow,
@@ -201,7 +202,7 @@ async def test_run_active_tool_clears_session_files_when_requested(now: datetime
         requested_by_user_id=actor.id,
         now=now,
     )
-    execute.handle.return_value = ExecuteToolVersionResult(run=run, normalized_state={})
+    execute.handle.return_value = ExecuteToolVersionResult(run=run)
 
     handler = RunActiveToolHandler(
         uow=uow,

@@ -196,6 +196,85 @@ async def test_inline_completion_success(
     assert response.status_code == 200
     assert response.json() == {"completion": "pass\n", "enabled": True}
 
+    handler.handle.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_inline_completion_passes_ai_settings_to_handler(
+    client: httpx.AsyncClient,
+    settings: Settings,
+    current_user_provider: AsyncMock,
+    sessions: AsyncMock,
+    handler: AsyncMock,
+    now: datetime,
+) -> None:
+    user = make_user(role=Role.CONTRIBUTOR)
+    session = make_session(
+        user_id=user.id,
+        now=now,
+        allow_remote_fallback=True,
+        inline_completion_provider="external",
+    )
+
+    current_user_provider.get_current_user.return_value = user
+    sessions.get_by_id.return_value = session
+    handler.handle.return_value = InlineCompletionResult(completion="pass\n", enabled=True)
+
+    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
+    response = await client.post(
+        "/api/v1/editor/completions",
+        headers={"X-CSRF-Token": session.csrf_token},
+        json={
+            "prefix": "def x():\n    ",
+            "suffix": "",
+        },
+    )
+
+    assert response.status_code == 200
+    handler.handle.assert_awaited_once()
+    called = handler.handle.call_args.kwargs["command"]
+    assert called.allow_remote_fallback is True
+    assert called.inline_completion_provider == "external"
+
+
+@pytest.mark.asyncio
+async def test_inline_completion_includes_notice_fields_when_present(
+    client: httpx.AsyncClient,
+    settings: Settings,
+    current_user_provider: AsyncMock,
+    sessions: AsyncMock,
+    handler: AsyncMock,
+    now: datetime,
+) -> None:
+    user = make_user(role=Role.CONTRIBUTOR)
+    session = make_session(user_id=user.id, now=now)
+
+    current_user_provider.get_current_user.return_value = user
+    sessions.get_by_id.return_value = session
+    handler.handle.return_value = InlineCompletionResult(
+        completion="",
+        enabled=True,
+        notice_code="remote_fallback_required",
+        notice_variant="warning",
+        notice_message="Enable external AI",
+    )
+
+    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
+    response = await client.post(
+        "/api/v1/editor/completions",
+        headers={"X-CSRF-Token": session.csrf_token},
+        json={"prefix": "def x():\n    ", "suffix": ""},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "completion": "",
+        "enabled": True,
+        "notice_code": "remote_fallback_required",
+        "notice_variant": "warning",
+        "notice_message": "Enable external AI",
+    }
+
 
 @pytest.mark.asyncio
 async def test_inline_completion_eval_headers_require_admin(
@@ -247,6 +326,14 @@ async def test_inline_completion_includes_eval_headers_for_superuser(
             system_prompt_chars=123,
             prefix_chars=12,
             suffix_chars=0,
+            raw_chars=42,
+            normalized_chars=4,
+            prefix_overlap_chars=12,
+            suffix_overlap_chars=0,
+            prepare_ms=5,
+            provider_ms=321,
+            normalize_ms=2,
+            total_ms=330,
         ),
     )
 
@@ -266,6 +353,14 @@ async def test_inline_completion_includes_eval_headers_for_superuser(
     assert response.headers["X-Skriptoteket-Eval-System-Prompt-Chars"] == "123"
     assert response.headers["X-Skriptoteket-Eval-Prefix-Chars"] == "12"
     assert response.headers["X-Skriptoteket-Eval-Suffix-Chars"] == "0"
+    assert response.headers["X-Skriptoteket-Eval-Raw-Chars"] == "42"
+    assert response.headers["X-Skriptoteket-Eval-Normalized-Chars"] == "4"
+    assert response.headers["X-Skriptoteket-Eval-Prefix-Overlap-Chars"] == "12"
+    assert response.headers["X-Skriptoteket-Eval-Suffix-Overlap-Chars"] == "0"
+    assert response.headers["X-Skriptoteket-Eval-Prepare-Ms"] == "5"
+    assert response.headers["X-Skriptoteket-Eval-Provider-Ms"] == "321"
+    assert response.headers["X-Skriptoteket-Eval-Normalize-Ms"] == "2"
+    assert response.headers["X-Skriptoteket-Eval-Total-Ms"] == "330"
 
 
 @pytest.mark.asyncio

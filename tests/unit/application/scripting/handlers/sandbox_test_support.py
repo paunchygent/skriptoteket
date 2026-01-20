@@ -114,6 +114,7 @@ def make_tool_run(
         version_id=version_id,
         requested_by_user_id=requested_by_user_id,
         context=context,
+        session_context="default",
         status=RunStatus.SUCCEEDED,
         requested_at=now,
         started_at=now,

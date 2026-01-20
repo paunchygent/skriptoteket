@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, Field, JsonValue
+from pydantic import BaseModel, ConfigDict, Field
 
 from skriptoteket.domain.scripting.ui.contract_v2 import UiPayloadV2
+from skriptoteket.domain.scripting.ui.state_update import NoChangeStateUpdate, StateUpdate
 
 
 class UiNormalizationResult(BaseModel):
@@ -11,4 +12,4 @@ class UiNormalizationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     ui_payload: UiPayloadV2
-    state: dict[str, JsonValue] = Field(default_factory=dict)
+    state_update: StateUpdate = Field(default_factory=NoChangeStateUpdate)

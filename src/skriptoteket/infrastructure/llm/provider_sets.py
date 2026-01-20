@@ -9,6 +9,8 @@ from skriptoteket.protocols.llm import (
     ChatOpsProvidersProtocol,
     ChatStreamProviderProtocol,
     ChatStreamProvidersProtocol,
+    InlineCompletionProviderProtocol,
+    InlineCompletionProvidersProtocol,
 )
 
 
@@ -17,7 +19,7 @@ def is_remote_llm_endpoint(base_url: str) -> bool:
     host = parsed.hostname
     if not host:
         return True
-    if host in {"localhost"}:
+    if host in {"localhost", "host.docker.internal", "gateway.docker.internal"}:
         return False
 
     try:
@@ -32,6 +34,14 @@ def is_remote_llm_endpoint(base_url: str) -> bool:
 class ChatStreamProviders(ChatStreamProvidersProtocol):
     primary: ChatStreamProviderProtocol
     fallback: ChatStreamProviderProtocol | None
+    fallback_is_remote: bool
+
+
+@dataclass(frozen=True, slots=True)
+class InlineCompletionProviders(InlineCompletionProvidersProtocol):
+    primary: InlineCompletionProviderProtocol
+    primary_is_remote: bool
+    fallback: InlineCompletionProviderProtocol | None
     fallback_is_remote: bool
 
 

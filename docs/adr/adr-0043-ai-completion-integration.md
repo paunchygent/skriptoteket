@@ -6,6 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-26
+updated: 2026-01-18
 ---
 
 ## Context
@@ -202,6 +203,44 @@ profile (ST-08-16). The product direction has since converged on **chat-first ed
 
 To avoid maintaining two overlapping edit paths, the `/edits` endpoint and related UI code were removed; chat-first
 edit-ops is the canonical editing capability.
+
+## Update (2026-01-18): remote-first completions + local fallback + admin policy + per-user completion provider
+
+We want inline completions to be **remote-first** (OpenAI `gpt-5-nano`) when allowed, to reduce load on local inference,
+while still supporting a **local fallback** (Devstral via llama.cpp) for resilience.
+
+Key behavior:
+
+- **Admin policy**: `AI_REMOTE_PROVIDERS_ENABLED` hard-disables any remote AI usage in the environment (UI disables the
+  settings accordingly; backend never calls remote providers when disabled).
+- **Primary**: external OpenAI-compatible provider via `LLM_COMPLETION_BASE_URL` + `LLM_COMPLETION_MODEL` (recommended:
+  `gpt-5-nano` with `reasoning_effort=minimal`).
+- **Fallback**: local Devstral via `LLM_COMPLETION_FALLBACK_*`.
+- **Privacy / opt-in**: remote AI usage is only allowed when:
+  - `AI_REMOTE_PROVIDERS_ENABLED=true`, and
+  - the user has explicitly enabled `allow_remote_fallback=true` (NULL counts as deny; existing users must opt in).
+- **Per-user choice**: when external completion is configured and allowed, users can choose whether inline completions
+  should use the local or external provider by default. The external option must only be shown when the external provider
+  is configured, and must not be selectable unless `allow_remote_fallback=true`.
+
+Configuration additions:
+
+```bash
+# Admin policy: allow/disallow any remote AI usage
+AI_REMOTE_PROVIDERS_ENABLED=true
+
+# Inline completions primary (recommended: remote)
+LLM_COMPLETION_BASE_URL=https://api.openai.com
+LLM_COMPLETION_MODEL=gpt-5-nano
+LLM_COMPLETION_REASONING_EFFORT=minimal
+
+# Inline completions fallback (recommended: local)
+LLM_COMPLETION_FALLBACK_BASE_URL=http://localhost:8082
+LLM_COMPLETION_FALLBACK_MODEL=Devstral-Small-2-24B
+
+# Default per-user remote fallback preference (used when creating new profiles)
+AI_DEFAULT_ALLOW_REMOTE_FALLBACK=true
+```
 
 ## References
 

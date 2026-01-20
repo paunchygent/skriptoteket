@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Header, Response
 
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.identity.models import Role, User
+from skriptoteket.domain.identity.models import Role, Session, User
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.llm import (
     EditOpsApplyCommand,
@@ -15,7 +15,11 @@ from skriptoteket.protocols.llm import (
     EditOpsPreviewHandlerProtocol,
     EditOpsSelection,
 )
-from skriptoteket.web.auth.api_dependencies import require_contributor_api, require_csrf_token
+from skriptoteket.web.auth.api_dependencies import (
+    require_contributor_api,
+    require_csrf_token,
+    require_session_api,
+)
 from skriptoteket.web.editor_support import require_tool_access
 
 from .models import (
@@ -43,6 +47,7 @@ async def create_edit_ops(
     settings: FromDishka[Settings],
     maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     user: User = Depends(require_contributor_api),
+    session: Session = Depends(require_session_api),
     _: None = Depends(require_csrf_token),
     eval_mode: str | None = Header(default=None, alias=_EVAL_REQUEST_HEADER),
 ) -> EditorEditOpsResponse:
@@ -73,7 +78,7 @@ async def create_edit_ops(
             selection=selection,
             cursor=cursor,
             virtual_files=payload.virtual_files.as_map(),
-            allow_remote_fallback=payload.allow_remote_fallback,
+            allow_remote_fallback=session.allow_remote_fallback,
         ),
     )
 

@@ -12,6 +12,7 @@ export type SkriptoteketIntelligenceConfig = {
     enabled: boolean;
     autoTrigger: boolean;
     debounceMs: number;
+    onNotice?: (params: { message: string; variant: "info" | "warning"; code?: string | null }) => void;
   };
 };
 

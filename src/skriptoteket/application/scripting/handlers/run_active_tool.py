@@ -10,6 +10,7 @@ from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.models import RunContext, VersionState
 from skriptoteket.domain.scripting.tool_sessions import normalize_tool_session_context
+from skriptoteket.domain.scripting.ui.state_update import resolve_state_update
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.scripting import (
@@ -99,6 +100,7 @@ class RunActiveToolHandler(RunActiveToolHandlerProtocol):
                 tool_id=tool.id,
                 version_id=version.id,
                 context=RunContext.PRODUCTION,
+                session_context=session_context,
                 input_files=input_files,
                 input_values=command.input_values,
             ),
@@ -128,7 +130,10 @@ class RunActiveToolHandler(RunActiveToolHandlerProtocol):
                     user_id=actor.id,
                     context=session_context,
                     expected_state_rev=session.state_rev,
-                    state=result.normalized_state,
+                    state=resolve_state_update(
+                        update=result.state_update,
+                        current_state=session.state,
+                    ),
                 )
 
         return RunActiveToolResult(run=run)

@@ -102,7 +102,8 @@ class UpdateAiSettingsCommand(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     user_id: UUID
-    remote_fallback_preference: Literal["unset", "allow", "deny"]
+    remote_fallback_preference: Literal["unset", "allow", "deny"] | None = None
+    inline_completion_provider_preference: Literal["unset", "local", "external"] | None = None
 
 
 class UpdateAiSettingsResult(BaseModel):

@@ -29,7 +29,6 @@ import type {
 type UseEditorChatOptions = {
   toolId: Readonly<Ref<string>>;
   baseVersionId: Readonly<Ref<string | null>>;
-  allowRemoteFallback: Readonly<Ref<boolean>>;
   activeFile?: Readonly<Ref<VirtualFileId | null>>;
   virtualFiles?: Readonly<Ref<EditorVirtualFiles | null>>;
 };
@@ -53,7 +52,6 @@ const REVEAL_INITIAL_BUDGET = 8;
 export function useEditorChat({
   toolId,
   baseVersionId,
-  allowRemoteFallback,
   activeFile,
   virtualFiles,
 }: UseEditorChatOptions) {
@@ -278,7 +276,6 @@ export function useEditorChat({
 
     const body: EditorChatRequest = {
       message: trimmed,
-      allow_remote_fallback: allowRemoteFallback.value,
     };
     if (baseVersionId.value) {
       body.base_version_id = baseVersionId.value;

@@ -1,117 +1,115 @@
 import { defineStore } from "pinia";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 
 import { apiFetch } from "../api/client";
-
-const REMOTE_FALLBACK_STORAGE_PREFIX = "skriptoteket:ai:allow_remote_fallback";
-
-function remoteFallbackStorageKey(userId: string): string {
-  return `${REMOTE_FALLBACK_STORAGE_PREFIX}:${userId}`;
-}
+import type { components } from "../api/openapi";
+import { useAuthStore } from "./auth";
 
 export type RemoteFallbackPreference = "unset" | "allow" | "deny";
+export type InlineCompletionProviderPreference = "unset" | "local" | "external";
 
-type AiSettingsPayload = {
-  remote_fallback_preference: RemoteFallbackPreference;
-};
+type ProfileResponse = components["schemas"]["ProfileResponse"];
 
-type HydrateAiParams = {
-  userId: string | null;
-  serverAllowRemoteFallback: boolean | null | undefined;
-};
+type AiSettingsPayload = components["schemas"]["UpdateAiSettingsRequest"];
+
+const REMOTE_FALLBACK_REQUIRED_CODE = "remote_fallback_required";
+const NOTICE_STORAGE_PREFIX = "skriptoteket:notice:last_seen";
+const REMOTE_FALLBACK_NOTICE_TTL_MS = 24 * 60 * 60 * 1000;
+
+function noticeStorageKey(params: { userId: string; code: string }): string {
+  return `${NOTICE_STORAGE_PREFIX}:${params.userId}:${params.code}`;
+}
 
 export const useAiStore = defineStore("ai", () => {
-  const remoteFallbackPreference = ref<RemoteFallbackPreference>("unset");
-  const activeUserId = ref<string | null>(null);
+  const auth = useAuthStore();
 
-  const allowRemoteFallback = computed(() => remoteFallbackPreference.value === "allow");
+  const remoteProvidersEnabled = computed(
+    () => auth.aiPolicy?.remote_providers_enabled ?? true,
+  );
+  const completionExternalAvailable = computed(
+    () => auth.aiPolicy?.completion_external_available ?? false,
+  );
+  const completionLocalAvailable = computed(
+    () => auth.aiPolicy?.completion_local_available ?? false,
+  );
 
-  function preferenceFromServer(value: boolean | null | undefined): RemoteFallbackPreference {
+  const remoteFallbackPreference = computed<RemoteFallbackPreference>(() => {
+    const value = auth.profile?.allow_remote_fallback;
     if (value === true) return "allow";
     if (value === false) return "deny";
     return "unset";
-  }
+  });
 
-  function preferenceFromStorage(userId: string): RemoteFallbackPreference {
-    const stored = localStorage.getItem(remoteFallbackStorageKey(userId));
-    if (stored === "1") {
-      return "allow";
-    }
-
-    if (stored === "0") {
-      return "deny";
-    }
-
+  const inlineCompletionProviderPreference = computed<InlineCompletionProviderPreference>(() => {
+    const value = auth.profile?.inline_completion_provider;
+    if (value === "local") return "local";
+    if (value === "external") return "external";
     return "unset";
-  }
+  });
 
-  function clearMigrationStorage(userId: string): void {
-    localStorage.removeItem(remoteFallbackStorageKey(userId));
+  const allowRemoteFallback = computed(() => remoteFallbackPreference.value === "allow");
+  const allowRemoteProviders = computed(
+    () => remoteProvidersEnabled.value && allowRemoteFallback.value,
+  );
+
+  async function persistAiSettings(payload: AiSettingsPayload): Promise<ProfileResponse> {
+    const response = await apiFetch<ProfileResponse>("/api/v1/profile/ai-settings", {
+      method: "PATCH",
+      body: payload satisfies AiSettingsPayload,
+    });
+
+    auth.user = response.user;
+    auth.profile = response.profile;
+    return response;
   }
 
   async function persistRemoteFallbackPreference(value: RemoteFallbackPreference): Promise<void> {
-    if (!activeUserId.value) {
-      remoteFallbackPreference.value = value;
-      return;
+    await persistAiSettings({ remote_fallback_preference: value });
+  }
+
+  async function persistInlineCompletionProviderPreference(
+    value: InlineCompletionProviderPreference,
+  ): Promise<void> {
+    await persistAiSettings({ inline_completion_provider_preference: value });
+  }
+
+  function shouldShowRemoteFallbackRequiredNotice(params: { code?: string | null }): boolean {
+    if (params.code !== REMOTE_FALLBACK_REQUIRED_CODE) {
+      return true;
     }
 
-    await apiFetch("/api/v1/profile/ai-settings", {
-      method: "PATCH",
-      body: { remote_fallback_preference: value } satisfies AiSettingsPayload,
-    });
-
-    clearMigrationStorage(activeUserId.value);
-  }
-
-  function hydrateForUser(params: HydrateAiParams): void {
-    activeUserId.value = params.userId;
-    if (!params.userId) {
-      remoteFallbackPreference.value = "unset";
-      return;
+    const userId = auth.user?.id;
+    if (!userId) {
+      return true;
     }
 
-    const serverPreference = preferenceFromServer(params.serverAllowRemoteFallback);
-    if (serverPreference !== "unset") {
-      remoteFallbackPreference.value = serverPreference;
-      clearMigrationStorage(params.userId);
-      return;
+    if (typeof window === "undefined") {
+      return true;
     }
 
-    const storedPreference = preferenceFromStorage(params.userId);
-    remoteFallbackPreference.value = storedPreference;
-
-    if (storedPreference !== "unset") {
-      void persistRemoteFallbackPreference(storedPreference).catch(() => {
-        // keep the local migration key so we can retry later
-      });
+    const key = noticeStorageKey({ userId, code: REMOTE_FALLBACK_REQUIRED_CODE });
+    const now = Date.now();
+    const stored = window.localStorage.getItem(key);
+    const lastSeen = stored ? Number(stored) : 0;
+    if (Number.isFinite(lastSeen) && lastSeen > 0 && now - lastSeen < REMOTE_FALLBACK_NOTICE_TTL_MS) {
+      return false;
     }
-  }
 
-  function setRemoteFallbackPreference(value: RemoteFallbackPreference): void {
-    remoteFallbackPreference.value = value;
-  }
-
-  function setAllowRemoteFallback(value: boolean): void {
-    setRemoteFallbackPreference(value ? "allow" : "deny");
-  }
-
-  function enableRemoteFallback(): void {
-    setAllowRemoteFallback(true);
-  }
-
-  function disableRemoteFallback(): void {
-    setAllowRemoteFallback(false);
+    window.localStorage.setItem(key, String(now));
+    return true;
   }
 
   return {
-    allowRemoteFallback,
+    remoteProvidersEnabled,
+    completionExternalAvailable,
+    completionLocalAvailable,
     remoteFallbackPreference,
-    activeUserId,
-    hydrateForUser,
-    setRemoteFallbackPreference,
+    inlineCompletionProviderPreference,
+    allowRemoteFallback,
+    allowRemoteProviders,
+    persistAiSettings,
     persistRemoteFallbackPreference,
-    setAllowRemoteFallback,
-    enableRemoteFallback,
-    disableRemoteFallback,
+    persistInlineCompletionProviderPreference,
+    shouldShowRemoteFallbackRequiredNotice,
   };
 });
