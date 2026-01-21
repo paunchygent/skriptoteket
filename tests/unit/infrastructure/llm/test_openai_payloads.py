@@ -11,6 +11,7 @@ from skriptoteket.infrastructure.llm.openai.payloads import (
 from skriptoteket.infrastructure.llm.openai.types import (
     ResponsesInputText,
     ResponsesOutputText,
+    ResponsesTextFormat,
 )
 
 
@@ -217,7 +218,8 @@ def test_build_responses_payload_merges_text_format_and_verbosity() -> None:
         stream=False,
         text_format={
             "type": "json_schema",
-            "json_schema": {"name": "test", "schema": {}},
+            "name": "test",
+            "schema": {},
         },
     )
 
@@ -229,6 +231,28 @@ def test_build_responses_payload_merges_text_format_and_verbosity() -> None:
     assert text["format"]["type"] == "json_schema"
     assert text["format"]["name"] == "test"
     assert text["format"]["schema"] == {}
+
+
+@pytest.mark.unit
+def test_build_responses_payload_rejects_chat_response_format_shape() -> None:
+    with pytest.raises(ValueError):
+        build_responses_payload(
+            model="gpt-5.2",
+            messages=[{"role": "user", "content": "hi"}],
+            instructions="sys",
+            max_tokens=64,
+            temperature=0.2,
+            reasoning_effort="low",
+            text_verbosity="high",
+            stream=False,
+            text_format=cast(
+                ResponsesTextFormat,
+                {
+                    "type": "json_schema",
+                    "json_schema": {"name": "test", "schema": {}},
+                },
+            ),
+        )
 
 
 @pytest.mark.unit

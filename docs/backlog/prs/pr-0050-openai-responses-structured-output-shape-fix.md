@@ -48,17 +48,23 @@ the Responses `text.format` field.
    - Define explicit Responses structured output types (distinct from Chat `response_format`).
    - Add docstrings linking canonical API docs.
 
-2. **Payload shaping: normalize before sending**
-   - Implement a small normalizer that accepts either:
-     - Chat style: `{"type":"json_schema","json_schema":{"name":...,"schema":...}}`
-     - Responses style: `{"type":"json_schema","name":...,"schema":...}`
-   - Always emit the Responses style when building `/v1/responses` payloads.
+2. **Constants: split Chat vs Responses shapes (Option B)**
+   - Define explicit constants for each API:
+     - Chat Completions: `*_CHAT_RESPONSE_FORMAT` (for `response_format`)
+     - Responses API: `*_RESPONSES_TEXT_FORMAT` (for `text.format`)
+   - Do not reuse the same dict for both endpoints.
 
-3. **Tests**
+3. **Payload shaping: validate before sending (fail fast)**
+   - Ensure `/v1/responses` payload builder only accepts the Responses `text.format` shape
+     (`{"type":"json_schema","name":...,"schema":...}`).
+   - Reject Chat `response_format` shapes when passed into Responses payloads (raise a clear in-process error)
+     to avoid hard 400s from OpenAI.
+
+4. **Tests**
    - Assert `text.format.name` and `text.format.schema` are present for Responses payloads.
    - Ensure chat-ops provider uses `text.format` (not `response_format`) for OpenAI.
 
-4. **Docs**
+5. **Docs**
    - Update `RUN-openai-responses-api` with a “Structured Output: Chat vs Responses” section.
    - Add `RUN-editor-ai-pipeline` runbook for onboarding + debugging (code pointers + capture workflow).
    - Add new runbook to `docs/index.md`.

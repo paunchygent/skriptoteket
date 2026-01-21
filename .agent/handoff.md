@@ -13,7 +13,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2026-01-21
-- Branch: `main` + local changes
+- Branch: `main`
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: history in `.agent/readme-first.md`
@@ -46,6 +46,15 @@ Keep this file updated so the next session can pick up work quickly.
   `tests/unit/web/test_editor_inline_completion_api.py`, `frontend/apps/skriptoteket/src/composables/editor/skriptoteketGhostText.spec.ts`.
 - PR doc updated with new validation notes + checklist: `docs/backlog/prs/pr-0047-ai-inline-completion-normalization-and-caps.md`.
 - Quality gates run: `pdm run lint`, `pdm run typecheck`, `pdm run test`, `pdm run fe-test`, `pdm run docs-validate`.
+- PR-0050: enforce strict separation of Chat vs Responses structured outputs (Option B).
+  - Code: `src/skriptoteket/infrastructure/llm/openai/grammars.py`,
+    `src/skriptoteket/infrastructure/llm/openai/payloads.py`,
+    `src/skriptoteket/infrastructure/llm/openai/chat_ops_provider.py`,
+    `src/skriptoteket/infrastructure/llm/openai/types.py`.
+  - Tests: `tests/unit/infrastructure/llm/test_openai_payloads.py`,
+    `tests/unit/infrastructure/llm/test_openai_chat_ops_provider_grammar.py`.
+  - Docs: `docs/runbooks/runbook-openai-responses-api.md`,
+    `docs/backlog/prs/pr-0050-openai-responses-structured-output-shape-fix.md`.
 
 ## Verification
 
@@ -63,6 +72,7 @@ Keep this file updated so the next session can pick up work quickly.
   - Local: `.artifacts/inline-completion-verify-local.log` correlation `46a593de-db93-412e-952b-2bc065980e7f` shows `prompt_format="fim"` + `ai_inline_completion_request` (`system_prompt_tokens=1075`, `prefix_tokens=2016`, `suffix_tokens=512`).
   - GPT-5: `.artifacts/inline-completion-verify-gpt5.log` correlation `79bbf574-96d5-4020-af0d-f9ac36b3af5a` shows `prompt_format="delimited"` + `ai_inline_completion_request` (`system_prompt_tokens=875`, `prefix_tokens=1904`, `suffix_tokens=512`).
 - Quality gates:
+  - `pdm run pytest -q tests/unit/infrastructure/llm/test_openai_payloads.py tests/unit/infrastructure/llm/test_openai_chat_ops_provider_grammar.py`
   - `pdm run lint`
   - `pdm run typecheck`
   - `pdm run test`

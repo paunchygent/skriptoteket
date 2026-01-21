@@ -154,9 +154,12 @@ If you send assistant history as `input_text`, OpenAI returns a 400 invalid requ
 ### Implementation notes (Skriptoteket)
 
 - Keep Chat Completions and Responses types separate in code to avoid accidental shape mixups.
-- Normalize schema formats before sending to Responses:
-  - `src/skriptoteket/infrastructure/llm/openai/payloads.py` (`_normalize_responses_text_format`)
-  - `src/skriptoteket/infrastructure/llm/openai/types.py` (`JsonSchemaResponseFormat` vs
+- Use explicit constants for each API shape (don’t reuse one dict for both):
+  - `src/skriptoteket/infrastructure/llm/openai/grammars.py` (`*_CHAT_RESPONSE_FORMAT` vs
+    `*_RESPONSES_TEXT_FORMAT`)
+- Validate before sending to `/v1/responses` (fail fast in-process instead of getting a hard 400):
+  - `src/skriptoteket/infrastructure/llm/openai/payloads.py` (`_validate_responses_text_format`)
+  - `src/skriptoteket/infrastructure/llm/openai/types.py` (`ChatCompletionsJsonSchemaResponseFormat` vs
     `ResponsesTextFormat`)
 
 ## Operational Checklist

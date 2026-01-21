@@ -9,8 +9,9 @@ import pytest
 from skriptoteket.config import Settings
 from skriptoteket.infrastructure.llm.openai.chat_ops_provider import OpenAIChatOpsProvider
 from skriptoteket.infrastructure.llm.openai.grammars import (
+    EDIT_OPS_PATCH_ONLY_CHAT_RESPONSE_FORMAT,
     EDIT_OPS_PATCH_ONLY_GBNF,
-    EDIT_OPS_PATCH_ONLY_RESPONSE_FORMAT,
+    EDIT_OPS_PATCH_ONLY_RESPONSES_TEXT_FORMAT,
 )
 from skriptoteket.infrastructure.llm.openai.types import (
     ResponsesInputMessage,
@@ -134,7 +135,7 @@ async def test_chat_ops_omits_gbnf_grammar_for_non_llama_server() -> None:
         )
 
     assert "grammar" not in captured
-    assert captured["response_format"] == EDIT_OPS_PATCH_ONLY_RESPONSE_FORMAT
+    assert captured["response_format"] == EDIT_OPS_PATCH_ONLY_CHAT_RESPONSE_FORMAT
 
 
 @pytest.mark.unit
@@ -182,8 +183,8 @@ async def test_chat_ops_uses_text_format_for_openai_responses() -> None:
     text = captured["text"]
     assert "format" in text
     assert text["format"]["type"] == "json_schema"
-    assert text["format"]["name"] == EDIT_OPS_PATCH_ONLY_RESPONSE_FORMAT["json_schema"]["name"]
-    assert text["format"]["schema"] == EDIT_OPS_PATCH_ONLY_RESPONSE_FORMAT["json_schema"]["schema"]
+    assert text["format"]["name"] == EDIT_OPS_PATCH_ONLY_RESPONSES_TEXT_FORMAT["name"]
+    assert text["format"]["schema"] == EDIT_OPS_PATCH_ONLY_RESPONSES_TEXT_FORMAT["schema"]
     assert "response_format" not in captured
     assert "grammar" not in captured
     assert captured_url is not None

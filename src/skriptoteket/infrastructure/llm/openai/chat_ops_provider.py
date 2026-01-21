@@ -14,8 +14,9 @@ from skriptoteket.infrastructure.llm.openai.common import (
     supports_gbnf_grammar,
 )
 from skriptoteket.infrastructure.llm.openai.grammars import (
+    EDIT_OPS_PATCH_ONLY_CHAT_RESPONSE_FORMAT,
     EDIT_OPS_PATCH_ONLY_GBNF,
-    EDIT_OPS_PATCH_ONLY_RESPONSE_FORMAT,
+    EDIT_OPS_PATCH_ONLY_RESPONSES_TEXT_FORMAT,
 )
 from skriptoteket.infrastructure.llm.openai.parsing import (
     extract_first_choice_content,
@@ -105,7 +106,7 @@ class OpenAIChatOpsProvider(ChatOpsProviderProtocol):
                     prompt_cache_retention=self._prompt_cache_retention,
                     prompt_cache_key=self._prompt_cache_key,
                     allow_prompt_cache_params=self._allow_prompt_cache_params,
-                    text_format=EDIT_OPS_PATCH_ONLY_RESPONSE_FORMAT,
+                    text_format=EDIT_OPS_PATCH_ONLY_RESPONSES_TEXT_FORMAT,
                 )
             )
         else:
@@ -125,7 +126,7 @@ class OpenAIChatOpsProvider(ChatOpsProviderProtocol):
             if supports_gbnf_grammar(base_url=self._base_url):
                 request_payload["grammar"] = EDIT_OPS_PATCH_ONLY_GBNF
             else:
-                request_payload["response_format"] = EDIT_OPS_PATCH_ONLY_RESPONSE_FORMAT
+                request_payload["response_format"] = EDIT_OPS_PATCH_ONLY_CHAT_RESPONSE_FORMAT
         if self._settings.ENVIRONMENT != "production":
             logger.info(
                 "chat_ops_structured_output",

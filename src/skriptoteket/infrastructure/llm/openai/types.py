@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Literal, NotRequired, TypedDict
 
 
-class JsonSchemaResponseFormat(TypedDict):
+class ChatCompletionsJsonSchemaResponseFormat(TypedDict):
     """Chat Completions structured output format (`response_format`).
 
     Canonical docs:
