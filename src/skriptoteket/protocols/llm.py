@@ -34,8 +34,13 @@ class PromptEvalMeta(BaseModel):
     template_id: str | None
     outcome: PromptEvalOutcome
     system_prompt_chars: int
+    system_prompt_tokens: int | None = None
     prefix_chars: int = 0
     suffix_chars: int = 0
+    prefix_tokens: int | None = None
+    suffix_tokens: int | None = None
+    prompt_tokens_total: int | None = None
+    prompt_budget_tokens: int | None = None
     instruction_chars: int = 0
     selection_chars: int = 0
     raw_chars: int | None = None
@@ -104,6 +109,7 @@ class InlineCompletionResult(BaseModel):
 
     completion: str
     enabled: bool
+    replace_suffix_chars: int | None = None
     notice_message: str | None = None
     notice_variant: SystemMessageVariant | None = None
     notice_code: str | None = None

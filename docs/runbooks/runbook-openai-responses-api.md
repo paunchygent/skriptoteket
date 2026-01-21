@@ -5,7 +5,7 @@ title: "Runbook: OpenAI Responses API + Prompt Caching"
 status: active
 owners: "agents"
 created: 2026-01-18
-updated: 2026-01-18
+updated: 2026-01-21
 system: "skriptoteket"
 ---
 
@@ -102,6 +102,62 @@ Do not assume payload or supported parameters. Use the model card and API refere
 - Model cards: https://platform.openai.com/docs/models
 - Responses API parameters: https://platform.openai.com/docs/api-reference/responses
 - Chat Completions parameters: https://platform.openai.com/docs/api-reference/chat
+
+## Structured Output: Chat Completions vs Responses
+
+OpenAI has two similar-but-not-identical structured output mechanisms. Mixing the shapes will
+cause hard 400s (common symptom: missing required parameter errors).
+
+### Chat Completions (`/v1/chat/completions`)
+
+- Use `response_format`.
+- For JSON schema outputs, the shape is:
+
+```json
+{
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "my_schema_name",
+      "schema": {}
+    }
+  }
+}
+```
+
+### Responses (`/v1/responses`)
+
+- Use `text.format` (nested under `text`).
+- For JSON schema outputs, the shape is:
+
+```json
+{
+  "text": {
+    "format": {
+      "type": "json_schema",
+      "name": "my_schema_name",
+      "schema": {}
+    }
+  }
+}
+```
+
+### Message content item types (Responses)
+
+When sending `input` items to `/v1/responses`, each message `content[]` item has a `type`:
+
+- `user` messages should use `{"type":"input_text","text":"..."}`
+- `assistant` history should use `{"type":"output_text","text":"..."}`
+
+If you send assistant history as `input_text`, OpenAI returns a 400 invalid request error.
+
+### Implementation notes (Skriptoteket)
+
+- Keep Chat Completions and Responses types separate in code to avoid accidental shape mixups.
+- Normalize schema formats before sending to Responses:
+  - `src/skriptoteket/infrastructure/llm/openai/payloads.py` (`_normalize_responses_text_format`)
+  - `src/skriptoteket/infrastructure/llm/openai/types.py` (`JsonSchemaResponseFormat` vs
+    `ResponsesTextFormat`)
 
 ## Operational Checklist
 

@@ -14,6 +14,7 @@ acceptance_criteria:
 dependencies:
   - "ADR-0039"
   - "ST-19-01"
+  - "ADR-0064"
 ui_impact: "No (foundation APIs only)"
 data_impact: "No (session promotion uses existing session_files storage; vault storage is in ST-14-36)"
 ---
@@ -51,6 +52,9 @@ Introduce a single, end-to-end `FileRef` concept that:
 
 The platform is responsible for mapping `FileRef` → bytes → staged `/work/input/<safe_name>`.
 
+**DX invariant:** tools only ever see staged files under `/work/input/` + the manifest. Tools must not branch on file
+source (upload/session/vault).
+
 ## Implementation plan
 
 1) Domain model + protocols
@@ -67,10 +71,12 @@ The platform is responsible for mapping `FileRef` → bytes → staged `/work/in
 
 3) Promotion primitives
 
-- Add a platform-level “promote artifact → session file” operation:
+- Add a platform-level “promote artifact → session file” operation (tool-requestable):
   - source: run artifact (`run_id` + artifact id/path)
   - target: `(tool_id, user_id, session_context)` session file name
 - Promotions must be validated (path safety + access checks) and must be atomic from a user perspective.
+- Vault promotions are explicitly user-initiated (ADR-0059 / ST-14-36) and must reuse the same resolver + validation
+  rules (no vault-specific staging pipeline).
 
 4) Runner integration
 

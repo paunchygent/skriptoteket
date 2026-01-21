@@ -193,6 +193,39 @@ def test_prepare_synthesizes_hunk_header_when_missing() -> None:
 
 
 @pytest.mark.unit
+def test_prepare_repairs_hunk_header_ranges() -> None:
+    applier = NativeUnifiedDiffApplier()
+
+    base_text = 'print("hi")\n'
+    prepared = applier.prepare(
+        target_file="tool.py",
+        base_text=base_text,
+        unified_diff="""
+            --- a/tool.py
+            +++ b/tool.py
+            @@ -100,1 +100,1 @@
+            -print("hi")
+            +print("hello")
+        """,
+    )
+
+    assert "rewrote_hunk_header_ranges" in prepared.normalizations_applied
+    assert "@@ -1,1 +1,1 @@" in prepared.normalized_diff
+
+    result = applier.apply(
+        target_file="tool.py",
+        base_text=base_text,
+        prepared=prepared,
+        max_fuzz=2,
+        max_offset_lines=50,
+        enable_whitespace_stage=True,
+    )
+
+    assert result.ok is True
+    assert result.next_text == 'print("hello")\n'
+
+
+@pytest.mark.unit
 def test_apply_tolerates_missing_blank_context_lines() -> None:
     applier = NativeUnifiedDiffApplier()
 

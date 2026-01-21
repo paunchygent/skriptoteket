@@ -8,7 +8,10 @@ import { vi } from "vitest";
 export function createTestRouter() {
   return createRouter({
     history: createWebHistory(),
-    routes: [{ path: "/", component: { template: "<div />" } }],
+    routes: [
+      { path: "/", component: { template: "<div />" } },
+      { path: "/profile", component: { template: "<div />" } },
+    ],
   });
 }
 

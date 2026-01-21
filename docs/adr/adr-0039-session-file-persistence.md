@@ -7,7 +7,8 @@ owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-25
 updated: 2026-01-12
-links: ["ADR-0022", "ADR-0024", "ADR-0031", "EPIC-12", "EPIC-14"]
+updated: 2026-01-20
+links: ["ADR-0022", "ADR-0024", "ADR-0031", "ADR-0063", "EPIC-12", "EPIC-14"]
 ---
 
 ## Context
@@ -66,7 +67,7 @@ Future: migrate to object storage (S3/MinIO) for horizontal scaling.
 ### 4) Runner contract (no new extension)
 
 The runner receives session files in `/work/input/` for action runs (while the action payload is provided via
-`SKRIPTOTEKET_ACTION`; ADR-0024):
+the request envelope; ADR-0063):
 
 - Initial run: uploaded files → `/work/input/`
 - Initial run (no uploads): do not implicitly inject prior session files; keep them for subsequent action runs

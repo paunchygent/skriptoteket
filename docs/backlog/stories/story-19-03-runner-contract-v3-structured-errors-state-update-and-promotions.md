@@ -9,12 +9,13 @@ epic: "EPIC-19"
 acceptance_criteria:
   - "Given a runner tool completes, when writing `/work/result.json`, then it uses `contract_version: 3` and includes `state_update` with explicit semantics (`no_change|clear|set`)."
   - "Given a runner tool fails, when writing `/work/result.json`, then it includes a structured `error` payload (`kind`, `code`, optional `details`) alongside `error_summary`."
-  - "Given a tool requests promotions, when the run is finalized, then promotions are applied (or the run fails) and no partial interactive state/actions are exposed."
+  - "Given a tool requests session promotions, when the run is finalized, then promotions are applied (or the run fails) and no partial interactive state/actions are exposed."
   - "Given the platform is upgraded, then contract v2 is rejected (no shims) and in-repo scripts are updated."
 dependencies:
   - "ADR-0015"
   - "ADR-0022"
   - "ST-19-02"
+  - "ADR-0065"
 ui_impact: "No"
 data_impact: "No"
 ---
@@ -44,7 +45,10 @@ runner boundary too.
 - `error` (optional on success):
   - `{ "kind": "tool_user_error|tool_runtime_error|contract_violation", "code": "string", "details": {...}? }`
 - `promotions` (optional):
-  - requested promotions and applied promotions (for auditability and strict failure on partial persistence)
+  - requested session promotions and applied promotion outcomes (for auditability and strict failure on partial
+    persistence)
+
+Vault persistence is explicitly user-initiated (ADR-0059 / ST-14-36) and must not be tool-auto-triggered.
 
 ## Implementation plan
 
@@ -70,4 +74,4 @@ runner boundary too.
 
 - Unit: runner contract parsing rejects v2 after cutover.
 - Unit: `state_update` semantics are correct and `state_rev` increments on interactive turns.
-- Integration: promotions requested by a tool result in session/vault availability (or fail run strictly).
+- Integration: session promotions requested by a tool result in session file availability (or fail run strictly).

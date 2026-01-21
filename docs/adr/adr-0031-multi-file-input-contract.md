@@ -6,8 +6,8 @@ status: accepted
 owners: "agents"
 deciders: ["olof"]
 created: 2025-12-21
-updated: 2025-12-24
-links: ["PRD-script-hub-v0.2", "EPIC-12", "ADR-0013", "ADR-0015"]
+updated: 2026-01-20
+links: ["PRD-script-hub-v0.2", "EPIC-12", "ADR-0013", "ADR-0015", "ADR-0063"]
 ---
 
 ## Context
@@ -16,7 +16,7 @@ The current execution model (ADR-0013) injects a **single input file** into the 
 
 - User uploads one file via `<input type="file">`
 - Runner receives `input_filename` + `input_bytes`
-- Script discovers input files via `SKRIPTOTEKET_INPUT_MANIFEST` environment variable
+- Script discovers input files via the request manifest (ADR-0063) and `/work/input/`
 
 This limitation prevents tools that need to correlate multiple files, such as:
 
@@ -66,16 +66,16 @@ All uploaded files are placed in the input directory:
 └── file3.js
 ```
 
-### 4) Input manifest: `SKRIPTOTEKET_INPUT_MANIFEST`
+### 4) Input manifest: request envelope (`/work/request.json`)
 
-A new environment variable provides JSON metadata about all input files:
+The request envelope provides JSON metadata about all staged input files under `files[]`:
 
 ```json
 {
-  "files": [
-    {"name": "file1.html", "path": "/work/input/file1.html", "bytes": 6257},
-    {"name": "file2.css", "path": "/work/input/file2.css", "bytes": 1024}
-  ]
+  "schema_version": 1,
+  "inputs": { "values": {} },
+  "action": null,
+  "files": [{ "name": "file1.html", "path": "/work/input/file1.html", "bytes": 6257 }]
 }
 ```
 
@@ -87,7 +87,6 @@ The runner sets:
 
 ```bash
 SKRIPTOTEKET_INPUT_DIR=/work/input
-SKRIPTOTEKET_INPUT_MANIFEST={"files":[...all files...]}
 ```
 
 The runner also passes `SKRIPTOTEKET_INPUT_DIR` as the first argument to the tool entrypoint.
@@ -97,13 +96,12 @@ The runner also passes `SKRIPTOTEKET_INPUT_DIR` as the first argument to the too
 **Single-file script (select first file from manifest):**
 
 ```python
-import json
-import os
 from pathlib import Path
 
+from skriptoteket_toolkit import list_input_files
+
 def run_tool(input_dir: str, output_dir: str) -> dict:
-    manifest = json.loads(os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "{}"))
-    files = [Path(f["path"]) for f in manifest.get("files", [])]
+    files = [Path(f["path"]) for f in list_input_files()]
     path = files[0]
     # Process path...
 ```
@@ -111,14 +109,13 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
 **Multi-file script:**
 
 ```python
-import json
-import os
 from pathlib import Path
+
+from skriptoteket_toolkit import list_input_files
 
 def run_tool(input_dir: str, output_dir: str) -> dict:
     # Option A: Use manifest
-    manifest = json.loads(os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "{}"))
-    files = {Path(f["name"]).suffix.lower(): Path(f["path"]) for f in manifest.get("files", [])}
+    files = {Path(f["name"]).suffix.lower(): Path(f["path"]) for f in list_input_files()}
     html_file = files.get(".html")
     css_file = files.get(".css")
 

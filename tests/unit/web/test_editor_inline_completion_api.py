@@ -200,6 +200,37 @@ async def test_inline_completion_success(
 
 
 @pytest.mark.asyncio
+async def test_inline_completion_includes_replace_suffix_chars(
+    client: httpx.AsyncClient,
+    settings: Settings,
+    current_user_provider: AsyncMock,
+    sessions: AsyncMock,
+    handler: AsyncMock,
+    now: datetime,
+) -> None:
+    user = make_user(role=Role.CONTRIBUTOR)
+    session = make_session(user_id=user.id, now=now)
+
+    current_user_provider.get_current_user.return_value = user
+    sessions.get_by_id.return_value = session
+    handler.handle.return_value = InlineCompletionResult(
+        completion="rn",
+        enabled=True,
+        replace_suffix_chars=2,
+    )
+
+    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
+    response = await client.post(
+        "/api/v1/editor/completions",
+        headers={"X-CSRF-Token": session.csrf_token},
+        json={"prefix": "retu", "suffix": "rn"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"completion": "rn", "enabled": True, "replace_suffix_chars": 2}
+
+
+@pytest.mark.asyncio
 async def test_inline_completion_passes_ai_settings_to_handler(
     client: httpx.AsyncClient,
     settings: Settings,

@@ -11,9 +11,81 @@ from skriptoteket.infrastructure.llm.model_families import (
 from skriptoteket.infrastructure.llm.openai.types import (
     JsonSchemaResponseFormat,
     ResponsesInputMessage,
+    ResponsesJsonSchemaTextFormat,
+    ResponsesMessageContent,
     ResponsesPayload,
     ResponsesTextConfig,
+    ResponsesTextFormat,
 )
+
+_RESPONSES_TEXT_FORMAT_ERROR = "Invalid structured output format for Responses API (text.format)."
+
+
+def _normalize_responses_text_format(
+    text_format: JsonSchemaResponseFormat | ResponsesTextFormat,
+) -> ResponsesTextFormat:
+    """Normalize text.format for /v1/responses.
+
+    Canonical docs:
+    - Responses API: https://platform.openai.com/docs/api-reference/responses
+    - Chat Completions API: https://platform.openai.com/docs/api-reference/chat
+    - Local runbook: docs/runbooks/runbook-openai-responses-api.md
+
+    OpenAI Chat Completions uses (response_format):
+      {"type":"json_schema","json_schema":{"name":"...","schema":{...}}}
+
+    Responses uses (text.format):
+      {"type":"json_schema","name":"...","schema":{...}}
+    """
+
+    format_type = text_format.get("type")
+    if format_type == "json_object":
+        return {"type": "json_object"}
+    if format_type != "json_schema":
+        raise ValueError(_RESPONSES_TEXT_FORMAT_ERROR)
+
+    if "json_schema" in text_format:
+        nested = text_format.get("json_schema")
+        if not isinstance(nested, dict):
+            raise ValueError(_RESPONSES_TEXT_FORMAT_ERROR)
+        name = nested.get("name")
+        if not isinstance(name, str) or not name:
+            raise ValueError(_RESPONSES_TEXT_FORMAT_ERROR)
+        schema = nested.get("schema")
+        if not isinstance(schema, dict):
+            raise ValueError(_RESPONSES_TEXT_FORMAT_ERROR)
+
+        out_format_nested: ResponsesJsonSchemaTextFormat = {
+            "type": "json_schema",
+            "name": name,
+            "schema": schema,
+        }
+        strict = nested.get("strict")
+        if isinstance(strict, bool):
+            out_format_nested["strict"] = strict
+        description = nested.get("description")
+        if isinstance(description, str) and description:
+            out_format_nested["description"] = description
+        return out_format_nested
+
+    name = text_format.get("name")
+    if not isinstance(name, str) or not name:
+        raise ValueError(_RESPONSES_TEXT_FORMAT_ERROR)
+    schema = text_format.get("schema")
+    if not isinstance(schema, dict):
+        raise ValueError(_RESPONSES_TEXT_FORMAT_ERROR)
+    out_format: ResponsesJsonSchemaTextFormat = {
+        "type": "json_schema",
+        "name": name,
+        "schema": schema,
+    }
+    strict = text_format.get("strict")
+    if isinstance(strict, bool):
+        out_format["strict"] = strict
+    description = text_format.get("description")
+    if isinstance(description, str) and description:
+        out_format["description"] = description
+    return out_format
 
 
 def build_chat_payload(
@@ -73,7 +145,7 @@ def build_responses_payload(
     prompt_cache_retention: str | None = None,
     prompt_cache_key: str | None = None,
     allow_prompt_cache_params: bool = True,
-    text_format: JsonSchemaResponseFormat | None = None,
+    text_format: JsonSchemaResponseFormat | ResponsesTextFormat | None = None,
 ) -> ResponsesPayload:
     input_items: list[ResponsesInputMessage] = []
     for message in messages:
@@ -81,11 +153,15 @@ def build_responses_payload(
         content = message.get("content")
         if not isinstance(role, str) or not isinstance(content, str):
             continue
+        if role == "assistant":
+            content_item: ResponsesMessageContent = {"type": "output_text", "text": content}
+        else:
+            content_item = {"type": "input_text", "text": content}
         input_items.append(
             {
                 "type": "message",
                 "role": role,
-                "content": [{"type": "input_text", "text": content}],
+                "content": [content_item],
             }
         )
 
@@ -112,7 +188,7 @@ def build_responses_payload(
         payload["temperature"] = temperature
 
     if text_format:
-        text_config["format"] = text_format
+        text_config["format"] = _normalize_responses_text_format(text_format)
     if text_config:
         payload["text"] = text_config
 

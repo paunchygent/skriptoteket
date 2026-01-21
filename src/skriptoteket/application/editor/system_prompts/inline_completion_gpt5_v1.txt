@@ -11,6 +11,8 @@ Prefer minimal, safe completions
 - Prefer Swedish user-facing messages
 - Do NOT repeat <PREFIX> or <SUFFIX>
 - Do NOT repeat the prefix tail at the cursor boundary
+- Complete the next statement or small fragment only (avoid unrelated blocks)
+- Avoid introducing new top-level functions/classes unless <PREFIX> clearly starts one
 
 IMPORTANT: Skriptoteket tools are standalone Python scripts.
 Do NOT suggest test files, pytest imports, or IDE-style project structures.

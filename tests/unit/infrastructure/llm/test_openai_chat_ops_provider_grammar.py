@@ -14,16 +14,21 @@ from skriptoteket.infrastructure.llm.openai.grammars import (
 )
 from skriptoteket.infrastructure.llm.openai.types import (
     ResponsesInputMessage,
-    ResponsesInputText,
+    ResponsesMessageContent,
     ResponsesPayload,
 )
 from skriptoteket.protocols.llm import ChatMessage, LLMChatRequest
 
 
-def _is_responses_input_text(value: object) -> TypeGuard[ResponsesInputText]:
+def _is_responses_message_content(value: object) -> TypeGuard[ResponsesMessageContent]:
     if not isinstance(value, dict):
         return False
-    return value.get("type") == "input_text" and isinstance(value.get("text"), str)
+    content_type = value.get("type")
+    if content_type in {"input_text", "output_text"}:
+        return isinstance(value.get("text"), str)
+    if content_type == "refusal":
+        return isinstance(value.get("refusal"), str)
+    return False
 
 
 def _is_responses_input_message(value: object) -> TypeGuard[ResponsesInputMessage]:
@@ -36,7 +41,7 @@ def _is_responses_input_message(value: object) -> TypeGuard[ResponsesInputMessag
     content = value.get("content")
     if not isinstance(content, list):
         return False
-    return all(_is_responses_input_text(item) for item in content)
+    return all(_is_responses_message_content(item) for item in content)
 
 
 def _is_responses_payload(value: object) -> TypeGuard[ResponsesPayload]:
@@ -176,7 +181,9 @@ async def test_chat_ops_uses_text_format_for_openai_responses() -> None:
     assert "text" in captured
     text = captured["text"]
     assert "format" in text
-    assert text["format"] == EDIT_OPS_PATCH_ONLY_RESPONSE_FORMAT
+    assert text["format"]["type"] == "json_schema"
+    assert text["format"]["name"] == EDIT_OPS_PATCH_ONLY_RESPONSE_FORMAT["json_schema"]["name"]
+    assert text["format"]["schema"] == EDIT_OPS_PATCH_ONLY_RESPONSE_FORMAT["json_schema"]["schema"]
     assert "response_format" not in captured
     assert "grammar" not in captured
     assert captured_url is not None

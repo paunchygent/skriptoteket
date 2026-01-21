@@ -4,8 +4,42 @@ from typing import Literal, NotRequired, TypedDict
 
 
 class JsonSchemaResponseFormat(TypedDict):
+    """Chat Completions structured output format (`response_format`).
+
+    Canonical docs:
+    - Chat Completions API: https://platform.openai.com/docs/api-reference/chat
+
+    NOTE: The Responses API uses a different shape under `text.format`.
+    See `ResponsesTextFormat` below.
+    """
+
     type: Literal["json_schema"]
     json_schema: dict[str, object]
+
+
+class ResponsesJsonSchemaTextFormat(TypedDict):
+    """Responses API structured output format (`text.format`).
+
+    Canonical docs:
+    - Responses API: https://platform.openai.com/docs/api-reference/responses
+
+    NOTE: This is intentionally *not* the same as Chat Completions `response_format`:
+      - Chat:     {"type":"json_schema","json_schema":{"name":"...","schema":{...}}}
+      - Responses:{"type":"json_schema","name":"...","schema":{...}}
+    """
+
+    type: Literal["json_schema"]
+    name: str
+    schema: dict[str, object]
+    description: NotRequired[str]
+    strict: NotRequired[bool]
+
+
+class ResponsesJsonObjectTextFormat(TypedDict):
+    type: Literal["json_object"]
+
+
+ResponsesTextFormat = ResponsesJsonSchemaTextFormat | ResponsesJsonObjectTextFormat
 
 
 class ResponsesInputText(TypedDict):
@@ -13,10 +47,23 @@ class ResponsesInputText(TypedDict):
     text: str
 
 
+class ResponsesOutputText(TypedDict):
+    type: Literal["output_text"]
+    text: str
+
+
+class ResponsesRefusal(TypedDict):
+    type: Literal["refusal"]
+    refusal: str
+
+
+ResponsesMessageContent = ResponsesInputText | ResponsesOutputText | ResponsesRefusal
+
+
 class ResponsesInputMessage(TypedDict):
     type: Literal["message"]
     role: str
-    content: list[ResponsesInputText]
+    content: list[ResponsesMessageContent]
 
 
 class ResponsesReasoning(TypedDict):
@@ -25,7 +72,7 @@ class ResponsesReasoning(TypedDict):
 
 class ResponsesTextConfig(TypedDict):
     verbosity: NotRequired[str]
-    format: NotRequired[JsonSchemaResponseFormat]
+    format: NotRequired[ResponsesTextFormat]
 
 
 class ResponsesPayload(TypedDict):

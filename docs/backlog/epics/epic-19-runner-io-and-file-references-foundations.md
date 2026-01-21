@@ -2,7 +2,7 @@
 type: epic
 id: EPIC-19
 title: "Runner I/O + file references foundations"
-status: proposed
+status: active
 owners: "agents"
 created: 2026-01-20
 updated: 2026-01-20
@@ -16,16 +16,27 @@ outcome: "Runner-based tools use a single request envelope and first-class file 
 - Introduce a first-class `FileRef` concept + resolver used end-to-end (validation, staging into `/work/input/`,
   deterministic manifest mapping).
 - Add platform-supported promotion primitives so outputs (run artifacts) can become reusable inputs in:
-  - the current session context (“promote to session”), and
-  - the per-user file vault (“save to vault”).
+  - the current session context (“promote to session”) — tools may request these promotions, and
+  - the per-user file vault (“save to vault”) — explicit user action only (no tool auto-persistence).
 - Upgrade runner output contract to v3 with:
   - explicit `state_update` (no ambiguity between missing/null/empty),
   - structured `error` payload alongside `error_summary`,
-  - explicit promotion requests/results.
+  - explicit promotion requests/results (at minimum: tool-requested session promotions + platform-applied outcomes).
 - Apply **no-migration-path** policy:
   - runner/app/tool scripts are upgraded together,
   - older payload transport is removed (no shims),
   - script bank + starter templates are updated as part of the same work.
+
+## DX / UX gold standard (invariants)
+
+Tool scripts should be able to follow a single, stable mental model:
+
+- Tools read runtime inputs via `skriptoteket_toolkit` only (not `os.environ`), and rely on the request envelope +
+  file manifest for discovery.
+- Every input file is staged under `/work/input/` and appears in the manifest; tools never need to know if a file came
+  from upload/session/vault.
+- Tools never handle platform file paths outside `/work/input/` for inputs. File identity across turns uses `FileRef`
+  values (not paths), and the platform resolves/stages refs for the tool.
 
 ## Out of scope
 
@@ -60,6 +71,9 @@ outcome: "Runner-based tools use a single request envelope and first-class file 
 - ADR-0022 (typed UI contract)
 - ADR-0024 (tool sessions, state, actions)
 - ADR-0039 (session file persistence)
+- ADR-0063 (runner request envelope v1)
+- ADR-0064 (file references + resolver + staging manifest)
+- ADR-0065 (runner contract v3 + promotion semantics)
 - EPIC-14 (UI rendering stories depend on this foundation)
 
 > Note: This epic implies ADR updates (and review) for the contract evolution before implementation.

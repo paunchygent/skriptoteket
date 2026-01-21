@@ -1,4 +1,4 @@
-import { onBeforeUnmount, ref, watch, type Ref } from "vue";
+import { getCurrentScope, onScopeDispose, ref, watch, type Ref } from "vue";
 
 import { createCorrelationId } from "../../api/correlation";
 import { isApiError } from "../../api/client";
@@ -217,10 +217,12 @@ export function useEditorChat({
     () => scheduleRevealTick(),
   );
 
-  onBeforeUnmount(() => {
-    stopRevealTick();
-    revealStateByMessageId.clear();
-  });
+  if (getCurrentScope()) {
+    onScopeDispose(() => {
+      stopRevealTick();
+      revealStateByMessageId.clear();
+    });
+  }
 
   async function loadHistory(): Promise<void> {
     if (!toolId.value || streaming.value) {

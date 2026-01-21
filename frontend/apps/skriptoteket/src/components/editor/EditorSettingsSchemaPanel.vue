@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { json } from "@codemirror/lang-json";
-import { computed, defineAsyncComponent, ref, withDefaults } from "vue";
+import { computed, defineAsyncComponent, ref } from "vue";
 import type { components } from "../../api/openapi";
 
 import {

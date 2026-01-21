@@ -79,6 +79,66 @@ class StubPatchApplier:
         )
 
 
+class StubWideSearchPatchApplier:
+    def __init__(self) -> None:
+        self.calls: list[int] = []
+
+    def prepare(
+        self,
+        *,
+        target_file: str,
+        unified_diff: str,
+        base_text: str | None = None,
+    ) -> PreparedUnifiedDiff:
+        return PreparedUnifiedDiff(
+            target_file=target_file,
+            normalized_diff=unified_diff,
+            patch_id="sha256:stub-wide-search",
+            normalizations_applied=[],
+            hunks=[
+                UnifiedDiffHunk(
+                    index=1,
+                    header="@@ -1 +1 @@",
+                    old_start=1,
+                    old_count=1,
+                    new_start=1,
+                    new_count=1,
+                )
+            ],
+        )
+
+    def apply(
+        self,
+        *,
+        target_file: str,
+        base_text: str,
+        prepared: PreparedUnifiedDiff,
+        max_fuzz: int,
+        max_offset_lines: int,
+        enable_whitespace_stage: bool,
+    ) -> PatchApplyResult:
+        self.calls.append(max_offset_lines)
+        if max_offset_lines <= 50:
+            return PatchApplyResult(
+                ok=False,
+                next_text=base_text,
+                error="Patchen kunde inte appliceras. Regenerera.",
+                meta=None,
+            )
+        return PatchApplyResult(
+            ok=True,
+            next_text=base_text + "# patched\n",
+            meta=PatchApplyMeta(
+                fuzz_level_used=0,
+                hunks_total=len(prepared.hunks),
+                offsets_per_hunk=[max_offset_lines],
+                max_offset=max_offset_lines,
+                whitespace_ignored=False,
+                applied_cleanly=False,
+            ),
+        )
+
+
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_preview_requires_confirmation_when_patch_offset_high() -> None:
@@ -115,6 +175,42 @@ async def test_preview_requires_confirmation_when_patch_offset_high() -> None:
     assert result.meta.requires_confirmation is True
     assert result.meta.max_offset == 11
     assert result.after_virtual_files["tool.py"].endswith("# patched\n")
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_preview_retries_with_wide_offset_search() -> None:
+    actor = make_user(role=Role.CONTRIBUTOR)
+    patch_applier = StubWideSearchPatchApplier()
+    handler = EditOpsPreviewHandler(
+        settings=Settings(),
+        capture_store=StubCaptureStore(),
+        patch_applier=patch_applier,
+    )
+
+    long_tool = "".join(f"line {idx}\n" for idx in range(100))
+    result = await handler.handle(
+        actor=actor,
+        command=EditOpsPreviewCommand(
+            tool_id=uuid4(),
+            active_file="tool.py",
+            selection=None,
+            cursor=None,
+            virtual_files={"tool.py": long_tool},
+            ops=[
+                EditOpsPatchOp(
+                    op="patch",
+                    target_file="tool.py",
+                    patch_lines=["@@ -1 +1 @@", "-x", "+y"],
+                )
+            ],
+        ),
+    )
+
+    assert patch_applier.calls == [50, 100]
+    assert result.ok is True
+    assert result.meta.requires_confirmation is True
+    assert result.meta.max_offset == 100
 
 
 @pytest.mark.unit

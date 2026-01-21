@@ -23,6 +23,7 @@ type GhostTextConfig = {
 type GhostTextState = {
   text: string | null;
   from: number | null;
+  replaceSuffixChars: number;
   decorations: DecorationSet;
 };
 
@@ -32,7 +33,9 @@ const DEFAULT_CONFIG: GhostTextConfig = {
   debounceMs: 1500,
 };
 
-const setGhostTextEffect = StateEffect.define<{ text: string; from: number } | null>();
+const setGhostTextEffect = StateEffect.define<
+  { text: string; from: number; replaceSuffixChars: number } | null
+>();
 const manualTriggerEffect = StateEffect.define<null>();
 
 class GhostTextWidget extends WidgetType {
@@ -66,24 +69,25 @@ function buildDecorations({ text, from }: { text: string; from: number }): Decor
 
 const ghostTextField = StateField.define<GhostTextState>({
   create(): GhostTextState {
-    return { text: null, from: null, decorations: Decoration.none };
+    return { text: null, from: null, replaceSuffixChars: 0, decorations: Decoration.none };
   },
   update(value, tr): GhostTextState {
     let next = value;
 
     if (tr.docChanged) {
-      next = { text: null, from: null, decorations: Decoration.none };
+      next = { text: null, from: null, replaceSuffixChars: 0, decorations: Decoration.none };
     }
 
     for (const effect of tr.effects) {
       if (!effect.is(setGhostTextEffect)) continue;
 
       if (effect.value === null) {
-        next = { text: null, from: null, decorations: Decoration.none };
+        next = { text: null, from: null, replaceSuffixChars: 0, decorations: Decoration.none };
       } else {
         next = {
           text: effect.value.text,
           from: effect.value.from,
+          replaceSuffixChars: effect.value.replaceSuffixChars,
           decorations: buildDecorations(effect.value),
         };
       }
@@ -111,8 +115,12 @@ function acceptGhostText(view: EditorView): boolean {
   if (!selection.empty || selection.head !== current.from) return false;
 
   const insertText = current.text;
+  const replaceTo = Math.min(
+    current.from + Math.max(0, current.replaceSuffixChars),
+    view.state.doc.length,
+  );
   view.dispatch({
-    changes: { from: current.from, to: current.from, insert: insertText },
+    changes: { from: current.from, to: replaceTo, insert: insertText },
     selection: { anchor: current.from + insertText.length },
     effects: setGhostTextEffect.of(null),
   });
@@ -127,6 +135,7 @@ function triggerManualCompletion(view: EditorView): boolean {
 type CompletionResponse = {
   completion: string;
   enabled: boolean;
+  replace_suffix_chars?: number | null;
   notice_message?: string | null;
   notice_variant?: "info" | "warning" | null;
   notice_code?: string | null;
@@ -295,8 +304,13 @@ class GhostTextController {
       return;
     }
 
+    const replaceSuffixChars = Math.max(0, response.replace_suffix_chars ?? 0);
     this.view.dispatch({
-      effects: setGhostTextEffect.of({ text: response.completion, from: expectedFrom }),
+      effects: setGhostTextEffect.of({
+        text: response.completion,
+        from: expectedFrom,
+        replaceSuffixChars,
+      }),
     });
   }
 }

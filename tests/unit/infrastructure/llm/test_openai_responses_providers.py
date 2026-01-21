@@ -15,16 +15,21 @@ from skriptoteket.infrastructure.llm.openai.inline_completion_provider import (
 )
 from skriptoteket.infrastructure.llm.openai.types import (
     ResponsesInputMessage,
-    ResponsesInputText,
+    ResponsesMessageContent,
     ResponsesPayload,
 )
 from skriptoteket.protocols.llm import ChatMessage, LLMChatRequest, LLMCompletionRequest
 
 
-def _is_responses_input_text(value: object) -> TypeGuard[ResponsesInputText]:
+def _is_responses_message_content(value: object) -> TypeGuard[ResponsesMessageContent]:
     if not isinstance(value, dict):
         return False
-    return value.get("type") == "input_text" and isinstance(value.get("text"), str)
+    content_type = value.get("type")
+    if content_type in {"input_text", "output_text"}:
+        return isinstance(value.get("text"), str)
+    if content_type == "refusal":
+        return isinstance(value.get("refusal"), str)
+    return False
 
 
 def _is_responses_input_message(value: object) -> TypeGuard[ResponsesInputMessage]:
@@ -37,7 +42,7 @@ def _is_responses_input_message(value: object) -> TypeGuard[ResponsesInputMessag
     content = value.get("content")
     if not isinstance(content, list):
         return False
-    return all(_is_responses_input_text(item) for item in content)
+    return all(_is_responses_message_content(item) for item in content)
 
 
 def _is_responses_payload(value: object) -> TypeGuard[ResponsesPayload]:
@@ -101,7 +106,10 @@ async def test_inline_completion_uses_responses_api_for_openai() -> None:
     assert captured is not None
     assert "instructions" in captured
     assert captured["instructions"] == "sys"
-    prompt_text = captured["input"][0]["content"][0]["text"]
+    prompt_content = captured["input"][0]["content"][0]
+    assert isinstance(prompt_content, dict)
+    prompt_text = prompt_content.get("text")
+    assert isinstance(prompt_text, str)
     assert "pre" in prompt_text and "suf" in prompt_text
 
 

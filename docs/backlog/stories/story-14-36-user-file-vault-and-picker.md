@@ -10,7 +10,7 @@ epic: "EPIC-14"
 dependencies: ["ADR-0059", "ST-19-02"]
 acceptance_criteria:
   - "Given a user has vault files, when they start a tool run, then they can select vault files instead of uploading new files (respecting input_schema file constraints)."
-  - "Given vault files are selected, when the run executes, then the files are staged into /work/input and appear in the input manifest as normal inputs."
+  - "Given vault files are selected, when the run executes, then the files are staged into /work/input and appear in the request manifest as normal inputs."
   - "Given a user saves a run artifact to the vault, when they confirm, then the artifact is copied into the vault and appears in the picker."
   - "Given a user deletes a vault file, when they confirm, then it is soft-deleted (hidden from the picker) and does not delete historical runs or artifacts."
   - "Given a user restores a soft-deleted vault file within the retention window, when they confirm, then it reappears in the picker."
@@ -28,7 +28,8 @@ Many tools rely on repeated uploads of the same files. A per-user file vault red
 ## Notes
 
 - Action-form selection of vault files can be added later with ST-14-24 (first-class file references).
-- Vault entries can be created from explicit “save upload” actions; artifact-to-vault saving can be a follow-up.
+- Vault entries are created only via explicit user actions (e.g. “save upload”, “save run artifact”); tools must not
+  auto-persist to vault.
 
 ### Dependency alignment (no parallel mechanisms)
 

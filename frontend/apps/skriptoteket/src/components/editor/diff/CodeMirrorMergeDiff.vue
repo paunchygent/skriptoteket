@@ -16,8 +16,7 @@ import {
   highlightActiveLineGutter,
   highlightSpecialChars,
   keymap,
-  lineNumbers,
-} from "@codemirror/view";
+  lineNumbers } from "@codemirror/view";
 import { MergeView } from "@codemirror/merge";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 

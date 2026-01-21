@@ -314,6 +314,100 @@ def _repair_hunk_header_counts(lines: list[str]) -> tuple[list[str], list[str]]:
     return out, normalizations
 
 
+def _repair_hunk_header_ranges(
+    *, lines: list[str], base_text: str | None
+) -> tuple[list[str], list[str]]:
+    if base_text is None:
+        return lines, []
+
+    normalizations: list[str] = []
+    base_text_norm = base_text.replace("\r\n", "\n").replace("\r", "\n")
+    base_lines = base_text_norm.split("\n")
+    if base_text_norm.endswith("\n") and base_lines:
+        base_lines = base_lines[:-1]
+
+    out: list[str] = []
+    idx = 0
+    while idx < len(lines):
+        line = lines[idx]
+        header = parse_hunk_header(line)
+        if not header:
+            out.append(line)
+            idx += 1
+            continue
+
+        body_start = idx + 1
+        body_end = body_start
+        while body_end < len(lines) and not parse_hunk_header(lines[body_end]):
+            body_end += 1
+
+        body = lines[body_start:body_end]
+        if not body:
+            raise ValueError(MALFORMED_PATCH_ERROR)
+
+        parsed_lines: list[ParsedLine] = []
+        for body_line in body:
+            if body_line.startswith("\\"):
+                continue
+            if not body_line:
+                raise ValueError(MALFORMED_PATCH_ERROR)
+            marker = body_line[0]
+            if marker not in {" ", "+", "-"}:
+                raise ValueError(MALFORMED_PATCH_ERROR)
+            parsed_lines.append(ParsedLine(tag=marker, text=body_line[1:]))
+
+        old_lines, _ = build_apply_plan(parsed_lines)
+        if not old_lines:
+            out.append(line)
+            out.extend(body)
+            idx = body_end
+            continue
+
+        expected_index = min(max(header.old_start - 1, 0), len(base_lines))
+        match = find_hunk_match(
+            base_lines=base_lines,
+            old_lines=old_lines,
+            expected_index=expected_index,
+            max_offset_lines=len(base_lines),
+            max_fuzz=0,
+            ignore_ws=False,
+            max_blank_skips=MAX_BLANK_SKIPS_DEFAULT,
+        )
+        if match is None:
+            match = find_hunk_match(
+                base_lines=base_lines,
+                old_lines=old_lines,
+                expected_index=expected_index,
+                max_offset_lines=len(base_lines),
+                max_fuzz=0,
+                ignore_ws=True,
+                max_blank_skips=MAX_BLANK_SKIPS_DEFAULT,
+            )
+
+        if match is None:
+            out.append(line)
+            out.extend(body)
+            idx = body_end
+            continue
+
+        old_start = match.mapping[0] + 1
+        new_start = old_start
+        if old_start == header.old_start and new_start == header.new_start:
+            out.append(line)
+        else:
+            out.append(
+                f"@@ -{old_start},{header.old_count} +{new_start},{header.new_count} @@"
+                f"{header.suffix}"
+            )
+            normalizations.append("rewrote_hunk_header_ranges")
+
+        out.extend(body)
+        idx = body_end
+
+    normalizations = list(dict.fromkeys(normalizations))
+    return out, normalizations
+
+
 def _standardize_headers(
     *, lines: list[str], target_file: VirtualFileId
 ) -> tuple[list[str], list[str]]:
@@ -415,6 +509,11 @@ def prepare_unified_diff(
 
     normalized_lines, hunk_norm = _repair_hunk_header_counts(normalized_lines)
     normalizations.extend(hunk_norm)
+
+    normalized_lines, range_norm = _repair_hunk_header_ranges(
+        lines=normalized_lines, base_text=base_text
+    )
+    normalizations.extend(range_norm)
 
     normalized = "\n".join(normalized_lines)
     normalized = _ensure_trailing_newline(normalized).text

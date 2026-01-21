@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+from typing import cast
+
 import pytest
 
 from skriptoteket.infrastructure.llm.openai.payloads import (
     build_chat_payload,
     build_responses_payload,
+)
+from skriptoteket.infrastructure.llm.openai.types import (
+    ResponsesInputText,
+    ResponsesOutputText,
 )
 
 
@@ -148,8 +154,36 @@ def test_build_responses_payload_maps_messages_and_instructions() -> None:
     assert "verbosity" in text
     assert text["verbosity"] == "low"
     assert payload["input"][0]["type"] == "message"
-    assert payload["input"][0]["content"][0]["text"] == "hi"
+    content = cast(ResponsesInputText, payload["input"][0]["content"][0])
+    assert content["text"] == "hi"
+    assert content["type"] == "input_text"
     assert "temperature" not in payload
+
+
+@pytest.mark.unit
+def test_build_responses_payload_maps_assistant_messages_as_output_text() -> None:
+    payload = build_responses_payload(
+        model="gpt-5-mini",
+        messages=[
+            {"role": "assistant", "content": "previous"},
+            {"role": "user", "content": "hi"},
+        ],
+        instructions="sys",
+        max_tokens=123,
+        temperature=0.2,
+        reasoning_effort="minimal",
+        text_verbosity="low",
+        stream=False,
+    )
+
+    assert payload["input"][0]["role"] == "assistant"
+    assistant_content = cast(ResponsesOutputText, payload["input"][0]["content"][0])
+    assert assistant_content["type"] == "output_text"
+    assert assistant_content["text"] == "previous"
+    assert payload["input"][1]["role"] == "user"
+    user_content = cast(ResponsesInputText, payload["input"][1]["content"][0])
+    assert user_content["type"] == "input_text"
+    assert user_content["text"] == "hi"
 
 
 @pytest.mark.unit
@@ -193,6 +227,8 @@ def test_build_responses_payload_merges_text_format_and_verbosity() -> None:
     assert text["verbosity"] == "high"
     assert "format" in text
     assert text["format"]["type"] == "json_schema"
+    assert text["format"]["name"] == "test"
+    assert text["format"]["schema"] == {}
 
 
 @pytest.mark.unit

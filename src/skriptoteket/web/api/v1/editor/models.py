@@ -455,6 +455,7 @@ class EditorInlineCompletionResponse(BaseModel):
 
     completion: str
     enabled: bool
+    replace_suffix_chars: int | None = Field(default=None, ge=0)
     notice_message: str | None = None
     notice_variant: Literal["info", "warning"] | None = None
     notice_code: str | None = None

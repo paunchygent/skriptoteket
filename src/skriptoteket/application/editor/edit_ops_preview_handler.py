@@ -31,6 +31,7 @@ logger = structlog.get_logger(__name__)
 
 _MAX_FUZZ_DEFAULT = 2
 _MAX_OFFSET_LINES_DEFAULT = 50
+_MAX_OFFSET_LINES_WIDE_CAP = 10_000
 
 _PATCH_MULTIPLE_ERROR = "AI-förslaget innehåller flera patchar för samma fil. Regenerera."
 
@@ -44,6 +45,16 @@ def _join_patch_lines(patch_lines: list[str]) -> str:
     if not patch.endswith("\n"):
         patch += "\n"
     return patch
+
+
+def _count_lines(text: str) -> int:
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+    if normalized == "":
+        return 0
+    lines = normalized.split("\n")
+    if normalized.endswith("\n") and lines:
+        lines = lines[:-1]
+    return len(lines)
 
 
 def _target_files(ops: Iterable[EditOpsOp]) -> list[VirtualFileId]:
@@ -197,6 +208,21 @@ class EditOpsPreviewHandler(EditOpsPreviewHandlerProtocol):
                     max_offset_lines=_MAX_OFFSET_LINES_DEFAULT,
                     enable_whitespace_stage=True,
                 )
+
+                if not result.ok:
+                    wide_max_offset = min(
+                        max(_MAX_OFFSET_LINES_DEFAULT, _count_lines(current)),
+                        _MAX_OFFSET_LINES_WIDE_CAP,
+                    )
+                    if wide_max_offset > _MAX_OFFSET_LINES_DEFAULT:
+                        result = self._patch_applier.apply(
+                            target_file=file_id,
+                            base_text=current,
+                            prepared=prepared,
+                            max_fuzz=_MAX_FUZZ_DEFAULT,
+                            max_offset_lines=wide_max_offset,
+                            enable_whitespace_stage=True,
+                        )
 
                 if not result.ok:
                     errors.append(result.error or "Patchen kunde inte appliceras. Regenerera.")

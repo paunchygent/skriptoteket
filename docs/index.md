@@ -91,6 +91,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0060-ui-contract-v2x-action-prefill.md`
 - `docs/adr/adr-0061-asgi-correlation-middleware.md`
 - `docs/adr/adr-0062-execution-queue-and-worker-loop.md`
+- `docs/adr/adr-0063-runner-request-envelope-v1.md`
+- `docs/adr/adr-0064-file-references-and-resolver.md`
+- `docs/adr/adr-0065-runner-contract-v3-state-update-errors-and-session-promotions.md`
 
 ### PRDs
 
@@ -143,6 +146,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-16-catalog-discovery.md`
 - `docs/backlog/reviews/review-epic-17-observability-visualization.md`
 - `docs/backlog/reviews/review-epic-18-execution-queue.md`
+- `docs/backlog/reviews/review-epic-19-runner-io-and-file-references-foundations.md`
 
 ### Backlog Sprints
 
@@ -194,6 +198,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0025-script-bank-curation-and-group-generator.md`
 - `docs/backlog/prs/pr-0026-settings-suggestions-from-tool-runs.md`
 - `docs/backlog/prs/pr-0027-ai-chat-ops-system-prompt-budget-followups.md`
+- `docs/backlog/prs/pr-0050-openai-responses-structured-output-shape-fix.md`
 - `docs/backlog/prs/pr-0028-editor-focus-mode-and-ai-drawer-density.md`
 - `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md`
 - `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md`
@@ -214,6 +219,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0046-ai-inline-completion-harness.md`
 - `docs/backlog/prs/pr-0047-ai-inline-completion-normalization-and-caps.md`
 - `docs/backlog/prs/pr-0048-execution-queue-session-context-and-state-semantics.md`
+- `docs/backlog/prs/pr-0049-backend-srp-refactor-god-modules.md`
 - `docs/backlog/prs/pr-0043-ai-inline-completions-consent-hardening.md`
 
 ### Backlog Stories
@@ -260,6 +266,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-06-13-gutter-filter-polish.md`
 - `docs/backlog/stories/story-06-14-headless-test-harness.md`
 - `docs/backlog/stories/story-06-15-frontend-critical-test-gaps.md`
+- `docs/backlog/stories/story-06-16-backend-srp-refactor-god-modules.md`
 - `docs/backlog/stories/story-07-01-structured-logging-and-correlation.md`
 - `docs/backlog/stories/story-07-02-healthz-and-metrics-endpoints.md`
 - `docs/backlog/stories/story-07-03-opentelemetry-tracing.md`
@@ -463,6 +470,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 
 ### Runbooks
 
+- `docs/runbooks/runbook-editor-ai-pipeline.md`
 - `docs/runbooks/runbook-gpu-ai-workloads.md`
 - `docs/runbooks/runbook-home-server.md`
 - `docs/runbooks/runbook-huleedu-integration.md`

@@ -132,4 +132,33 @@ describe("skriptoteketGhostText", () => {
       parent.remove();
     }
   });
+
+  it("accepts ghost text with right-side replacement", async () => {
+    vi.mocked(apiFetch).mockResolvedValueOnce({
+      completion: "rn",
+      enabled: true,
+      replace_suffix_chars: 2,
+    });
+
+    const { view, parent } = createEditor("retuXX");
+
+    try {
+      view.dispatch({ selection: { anchor: 4 } });
+      keyDown(view.contentDOM, "Alt-\\");
+      await flushMicrotasks();
+
+      const widget = parent.querySelector(".cm-skriptoteket-ghost-text");
+      expect(widget).toBeTruthy();
+      expect(widget?.textContent).toBe("rn");
+
+      keyDown(view.contentDOM, "Tab");
+      await flushMicrotasks();
+
+      expect(view.state.doc.toString()).toBe("return");
+      expect(parent.querySelector(".cm-skriptoteket-ghost-text")).toBeFalsy();
+    } finally {
+      view.destroy();
+      parent.remove();
+    }
+  });
 });

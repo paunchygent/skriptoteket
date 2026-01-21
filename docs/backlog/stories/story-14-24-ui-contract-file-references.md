@@ -15,6 +15,7 @@ acceptance_criteria:
 dependencies:
   - "ST-19-02"
   - "ST-19-01"
+  - "ST-19-03"
   - "ST-14-19"
 ui_impact: "Yes (inputs/actions UI + runner integration)"
 data_impact: "No (references travel in existing payload/state; no DB migration required)"
@@ -45,3 +46,5 @@ Reference: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
   - adding a file-ref field kind to action schemas,
   - rendering a picker populated by the platform’s “available file refs” API,
   - submitting selected file refs as action input values.
+- Do not introduce a UI-only “file id” or path-based fallback; the only identity is `FileRef` values and the only
+  staging pipeline is the platform resolver.

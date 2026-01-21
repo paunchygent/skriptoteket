@@ -427,6 +427,73 @@ async def test_inline_completion_strips_cursor_boundary_overlap() -> None:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+async def test_inline_completion_strips_token_overlap_with_whitespace() -> None:
+    settings = Settings(LLM_COMPLETION_ENABLED=True)
+    provider = AsyncMock()
+    provider.complete_inline.return_value = LLMCompletionResponse(
+        completion="call_api (payload: dict) -> None",
+        finish_reason=None,
+    )
+
+    handler = InlineCompletionHandler(
+        settings=settings,
+        providers=InlineCompletionProviders(
+            primary=provider,
+            primary_is_remote=False,
+            fallback=None,
+            fallback_is_remote=False,
+        ),
+        capture_store=AsyncMock(),
+        token_counters=FakeTokenCounterResolver(),
+    )
+    actor = make_user(role=Role.CONTRIBUTOR)
+
+    result = await handler.handle(
+        actor=actor,
+        command=InlineCompletionCommand(prefix="call_api(", suffix=""),
+    )
+
+    assert result.enabled is True
+    assert result.completion == "payload: dict) -> None"
+    assert result.eval_meta is not None
+    assert result.eval_meta.prefix_overlap_chars == 10
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_inline_completion_sets_replace_suffix_chars_for_partial_token() -> None:
+    settings = Settings(LLM_COMPLETION_ENABLED=True)
+    provider = AsyncMock()
+    provider.complete_inline.return_value = LLMCompletionResponse(
+        completion="return",
+        finish_reason=None,
+    )
+
+    handler = InlineCompletionHandler(
+        settings=settings,
+        providers=InlineCompletionProviders(
+            primary=provider,
+            primary_is_remote=False,
+            fallback=None,
+            fallback_is_remote=False,
+        ),
+        capture_store=AsyncMock(),
+        token_counters=FakeTokenCounterResolver(),
+    )
+    actor = make_user(role=Role.CONTRIBUTOR)
+
+    result = await handler.handle(
+        actor=actor,
+        command=InlineCompletionCommand(prefix="retu", suffix="rn"),
+    )
+
+    assert result.enabled is True
+    assert result.completion == "rn"
+    assert result.replace_suffix_chars == 2
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
 async def test_inline_completion_drops_two_line_echo() -> None:
     settings = Settings(LLM_COMPLETION_ENABLED=True)
     provider = AsyncMock()

@@ -7,7 +7,8 @@ owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-25
 updated: 2026-01-12
-links: ["ADR-0022", "ADR-0024", "ADR-0027", "ADR-0030", "EPIC-14"]
+updated: 2026-01-20
+links: ["ADR-0022", "ADR-0024", "ADR-0027", "ADR-0030", "ADR-0063", "EPIC-14"]
 ---
 
 ## Context
@@ -58,7 +59,7 @@ Add editor-scoped endpoints under `/api/v1/editor`:
 - Get sandbox session state: returns `state_rev` (and optionally `state` for debugging) for the sandbox context.
 - Start sandbox action: accepts `{action_id, input, expected_state_rev}` and:
   - reads current state from the sandbox session
-  - executes the same `tool_version` with `SKRIPTOTEKET_ACTION`
+  - executes the same `tool_version` with `action` in the request envelope (`/work/request.json`)
   - updates the sandbox session to the new normalized state
   - returns `{run_id, state_rev}`
 
@@ -84,4 +85,4 @@ as actionable error messaging (409 → “session changed; refresh / retry”).
 - Adds persisted state writes for sandbox runs (must use a sandbox-specific context to avoid collisions).
 - Tools that need prior input files across steps rely on session-scoped file persistence (ADR-0039). Sandbox action runs
   receive the original uploaded files in `/work/input/` (same as production), while the action payload is provided via
-  `SKRIPTOTEKET_ACTION` (ADR-0024).
+  the request envelope (ADR-0063).

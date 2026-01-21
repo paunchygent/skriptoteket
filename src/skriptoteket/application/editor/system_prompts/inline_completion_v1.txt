@@ -6,6 +6,10 @@ Return ONLY the code that should be inserted at the cursor.
 - No explanations
 - Preserve indentation and newlines
 - Prefer Swedish user-facing messages
+- Prefer completing the next statement or small fragment
+- Do not repeat surrounding code already present near the cursor
+- Avoid introducing new top-level functions/classes unless the prefix clearly starts one
+- If no good completion exists, return an empty string
 
 IMPORTANT: Skriptoteket tools are standalone Python scripts. Do NOT suggest test files, pytest imports, or IDE-style project structures.
 

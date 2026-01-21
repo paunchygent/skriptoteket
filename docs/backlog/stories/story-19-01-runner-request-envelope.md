@@ -7,13 +7,14 @@ owners: "agents"
 created: 2026-01-20
 epic: "EPIC-19"
 acceptance_criteria:
-  - "Given a runner-based tool run (initial or action), when the container starts, then the tool can read a single `/work/request.json` containing inputs, action payload (if any), and a file manifest."
+  - "Given a runner-based tool run (initial or action), when the container starts, then the tool can read a single `/work/request.json` containing inputs, action payload (if any, including server-owned session state), and a file manifest."
   - "Given `/work/request.json` exists, when a tool uses `skriptoteket_toolkit`, then it can read inputs/action/manifest without reading any `SKRIPTOTEKET_*` env vars."
   - "Given the platform is upgraded, then the backend no longer sets `SKRIPTOTEKET_INPUTS`, `SKRIPTOTEKET_INPUT_MANIFEST`, or `SKRIPTOTEKET_ACTION` for runner containers."
   - "Given the platform upgrade is complete, then the script bank and starter templates are updated and no in-repo scripts depend on the removed env vars."
 dependencies:
   - "ADR-0024"
   - "ST-14-19"
+  - "ADR-0063"
 ui_impact: "No"
 data_impact: "No"
 ---
@@ -41,7 +42,7 @@ Write `/work/request.json` (UTF-8 JSON) containing at minimum:
 
 - `schema_version: 1`
 - `inputs: { values: {...} }`
-- `action: { action_id: str, input: {...} } | null`
+- `action: { action_id: str, input: {...}, state: {...} } | null`
 - `files: [{ name, path, bytes, ref? }]` (the canonical file manifest; `ref` is introduced in ST-19-02)
 
 ## Implementation plan

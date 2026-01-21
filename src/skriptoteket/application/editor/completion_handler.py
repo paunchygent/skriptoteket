@@ -52,6 +52,8 @@ DropReason = Literal[
 
 _CAPTURE_PREFIX_TAIL_CHARS = 2_000
 _CAPTURE_SUFFIX_HEAD_CHARS = 2_000
+_CURSOR_OVERLAP_WINDOW_CHARS = 512
+_REPLACE_SUFFIX_MAX_CHARS = 24
 
 REMOTE_FALLBACK_REQUIRED_NOTICE_CODE = "remote_fallback_required"
 REMOTE_PROVIDERS_DISABLED_NOTICE_CODE = "remote_providers_disabled"
@@ -112,6 +114,7 @@ class _NormalizedInlineCompletion:
     completion: str
     prefix_overlap_chars: int = 0
     suffix_overlap_chars: int = 0
+    replace_suffix_chars: int = 0
     drop_reason: DropReason | None = None
 
 
@@ -121,6 +124,41 @@ def _choose_sentinel(*parts: str) -> str:
         if all(sentinel not in part for part in parts):
             return sentinel
     return "\x00"
+
+
+def _slice_tail(text: str, limit: int) -> str:
+    if limit <= 0:
+        return ""
+    return text[-limit:] if len(text) > limit else text
+
+
+def _slice_head(text: str, limit: int) -> str:
+    if limit <= 0:
+        return ""
+    return text[:limit] if len(text) > limit else text
+
+
+def _tokenize_non_whitespace(text: str) -> list[tuple[str, int, int]]:
+    tokens: list[tuple[str, int, int]] = []
+    idx = 0
+    while idx < len(text):
+        ch = text[idx]
+        if ch.isspace():
+            idx += 1
+            continue
+        start = idx
+        if ch.isalnum() or ch == "_":
+            idx += 1
+            while idx < len(text) and (text[idx].isalnum() or text[idx] == "_"):
+                idx += 1
+        else:
+            idx += 1
+        tokens.append((text[start:idx], start, idx))
+    return tokens
+
+
+def _is_identifier_char(ch: str) -> bool:
+    return ch.isalnum() or ch == "_"
 
 
 def _longest_suffix_prefix_overlap(prefix: str, completion: str) -> int:
@@ -144,10 +182,75 @@ def _longest_suffix_prefix_overlap(prefix: str, completion: str) -> int:
     return pi[-1]
 
 
+def _longest_suffix_prefix_token_overlap(prefix: str, completion: str) -> int:
+    prefix_tokens = _tokenize_non_whitespace(prefix)
+    completion_tokens = _tokenize_non_whitespace(completion)
+    if not prefix_tokens or not completion_tokens:
+        return 0
+    prefix_values = [token[0] for token in prefix_tokens]
+    completion_values = [token[0] for token in completion_tokens]
+    max_tokens = min(len(prefix_values), len(completion_values))
+    for size in range(max_tokens, 0, -1):
+        if prefix_values[-size:] == completion_values[:size]:
+            return completion_tokens[size - 1][2]
+    return 0
+
+
+def _longest_prefix_suffix_token_overlap(completion: str, suffix: str) -> int:
+    completion_tokens = _tokenize_non_whitespace(completion)
+    suffix_tokens = _tokenize_non_whitespace(suffix)
+    if not completion_tokens or not suffix_tokens:
+        return 0
+    completion_values = [token[0] for token in completion_tokens]
+    suffix_values = [token[0] for token in suffix_tokens]
+    max_tokens = min(len(completion_values), len(suffix_values))
+    for size in range(max_tokens, 0, -1):
+        if completion_values[-size:] == suffix_values[:size]:
+            start_offset = completion_tokens[-size][1]
+            return len(completion) - start_offset
+    return 0
+
+
+def _compute_replace_suffix_chars(prefix: str, completion: str, suffix: str) -> int:
+    if not prefix or not completion or not suffix:
+        return 0
+    if not _is_identifier_char(prefix[-1]):
+        return 0
+    if not _is_identifier_char(completion[0]):
+        return 0
+    if not _is_identifier_char(suffix[0]):
+        return 0
+    max_len = min(len(completion), len(suffix), _REPLACE_SUFFIX_MAX_CHARS)
+    overlap = 0
+    while overlap < max_len:
+        if completion[overlap] != suffix[overlap]:
+            break
+        if not _is_identifier_char(completion[overlap]):
+            break
+        overlap += 1
+    return overlap
+
+
+def _prefix_overlap_chars(prefix: str, completion: str) -> int:
+    prefix_tail = _slice_tail(prefix, _CURSOR_OVERLAP_WINDOW_CHARS)
+    completion_head = _slice_head(completion, _CURSOR_OVERLAP_WINDOW_CHARS)
+    exact = _longest_suffix_prefix_overlap(prefix_tail, completion_head)
+    token_overlap = _longest_suffix_prefix_token_overlap(prefix_tail, completion_head)
+    return max(exact, token_overlap)
+
+
+def _suffix_overlap_chars(completion: str, suffix: str) -> int:
+    completion_tail = _slice_tail(completion, _CURSOR_OVERLAP_WINDOW_CHARS)
+    suffix_head = _slice_head(suffix, _CURSOR_OVERLAP_WINDOW_CHARS)
+    exact = _longest_suffix_prefix_overlap(completion_tail, suffix_head)
+    token_overlap = _longest_prefix_suffix_token_overlap(completion_tail, suffix_head)
+    return max(exact, token_overlap)
+
+
 def _strip_prefix_overlap(prefix: str, completion: str) -> tuple[str, int]:
     removed = 0
     while completion:
-        overlap = _longest_suffix_prefix_overlap(prefix, completion)
+        overlap = _prefix_overlap_chars(prefix, completion)
         if overlap <= 0:
             break
         if overlap == 1 and len(completion) == 1:
@@ -160,7 +263,7 @@ def _strip_prefix_overlap(prefix: str, completion: str) -> tuple[str, int]:
 def _strip_suffix_overlap(completion: str, suffix: str) -> tuple[str, int]:
     removed = 0
     while completion:
-        overlap = _longest_suffix_prefix_overlap(completion, suffix)
+        overlap = _suffix_overlap_chars(completion, suffix)
         if overlap <= 0:
             break
         completion = completion[:-overlap]
@@ -174,11 +277,17 @@ def _strip_cursor_overlaps(
     if not completion:
         return _NormalizedInlineCompletion(completion="")
     stripped, prefix_removed = _strip_prefix_overlap(prefix, completion)
-    stripped, suffix_removed = _strip_suffix_overlap(stripped, suffix)
+    replace_suffix_chars = _compute_replace_suffix_chars(prefix, stripped, suffix)
+    replace_suffix_chars = min(replace_suffix_chars, len(stripped), len(suffix))
+    stripped_after_suffix, suffix_removed = _strip_suffix_overlap(stripped, suffix)
+    if not stripped_after_suffix and replace_suffix_chars > 0:
+        stripped_after_suffix = stripped
+        suffix_removed = 0
     return _NormalizedInlineCompletion(
-        completion=stripped,
+        completion=stripped_after_suffix,
         prefix_overlap_chars=prefix_removed,
         suffix_overlap_chars=suffix_removed,
+        replace_suffix_chars=replace_suffix_chars,
     )
 
 
@@ -186,14 +295,30 @@ def _elapsed_ms(start: float) -> int:
     return int(round((time.perf_counter() - start) * 1000))
 
 
-def _has_contiguous_echo(prefix: str, suffix: str, completion: str) -> bool:
+def _contiguous_echo_ratio(prefix: str, suffix: str, completion: str) -> float:
     completion_lines = [line for line in completion.splitlines() if line.strip()]
     if len(completion_lines) < 2:
-        return False
+        return 0.0
+    echoed_indexes: set[int] = set()
     for idx in range(len(completion_lines) - 1):
         chunk = "\n".join(completion_lines[idx : idx + 2])
         if chunk in prefix or chunk in suffix:
-            return True
+            echoed_indexes.add(idx)
+            echoed_indexes.add(idx + 1)
+    if not completion_lines:
+        return 0.0
+    return len(echoed_indexes) / len(completion_lines)
+
+
+def _should_drop_contiguous_echo(prefix: str, suffix: str, completion: str) -> bool:
+    completion_lines = [line for line in completion.splitlines() if line.strip()]
+    if len(completion_lines) < 2:
+        return False
+    ratio = _contiguous_echo_ratio(prefix=prefix, suffix=suffix, completion=completion)
+    if ratio >= 0.999:
+        return True
+    if len(completion_lines) <= 4 and ratio >= 0.6:
+        return True
     return False
 
 
@@ -237,13 +362,15 @@ def _normalize_inline_completion(
             completion="",
             prefix_overlap_chars=overlap_result.prefix_overlap_chars,
             suffix_overlap_chars=overlap_result.suffix_overlap_chars,
+            replace_suffix_chars=overlap_result.replace_suffix_chars,
             drop_reason="cursor_overlap_wiped_all",
         )
-    if _has_contiguous_echo(prefix, suffix, completion):
+    if _should_drop_contiguous_echo(prefix, suffix, completion):
         return _NormalizedInlineCompletion(
             completion="",
             prefix_overlap_chars=overlap_result.prefix_overlap_chars,
             suffix_overlap_chars=overlap_result.suffix_overlap_chars,
+            replace_suffix_chars=overlap_result.replace_suffix_chars,
             drop_reason="contiguous_echo",
         )
     completion = _strip_duplicate_lines(prefix, suffix, completion)
@@ -253,12 +380,14 @@ def _normalize_inline_completion(
             completion="",
             prefix_overlap_chars=overlap_result.prefix_overlap_chars,
             suffix_overlap_chars=overlap_result.suffix_overlap_chars,
+            replace_suffix_chars=overlap_result.replace_suffix_chars,
             drop_reason="dedup_wiped_all",
         )
     return _NormalizedInlineCompletion(
         completion=completion,
         prefix_overlap_chars=overlap_result.prefix_overlap_chars,
         suffix_overlap_chars=overlap_result.suffix_overlap_chars,
+        replace_suffix_chars=overlap_result.replace_suffix_chars,
     )
 
 
@@ -445,6 +574,7 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
         normalized_completion: str,
         prefix_overlap_chars: int = 0,
         suffix_overlap_chars: int = 0,
+        replace_suffix_chars: int = 0,
         drop_reason: DropReason | None = None,
         prepare_ms: int | None = None,
         provider_ms: int | None = None,
@@ -462,6 +592,7 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
             normalized_chars=len(normalized_completion),
             prefix_overlap_chars=prefix_overlap_chars,
             suffix_overlap_chars=suffix_overlap_chars,
+            replace_suffix_chars=replace_suffix_chars,
             dropped=bool(raw_completion) and not normalized_completion,
             drop_reason=drop_reason,
             prepare_ms=prepare_ms,
@@ -559,6 +690,7 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
                 "drop_reason": normalized.drop_reason,
                 "prefix_overlap_chars": normalized.prefix_overlap_chars,
                 "suffix_overlap_chars": normalized.suffix_overlap_chars,
+                "replace_suffix_chars": normalized.replace_suffix_chars,
                 "raw_chars": len(raw_completion),
                 "normalized_chars": len(normalized.completion),
                 "prepare_ms": prepare_ms,
@@ -711,8 +843,13 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
                 template_id=attempt.template_id,
                 outcome=outcome,
                 system_prompt_chars=len(attempt.system_prompt),
+                system_prompt_tokens=attempt.system_prompt_tokens,
                 prefix_chars=len(attempt.request.prefix),
                 suffix_chars=len(attempt.request.suffix),
+                prefix_tokens=attempt.prefix_tokens,
+                suffix_tokens=attempt.suffix_tokens,
+                prompt_tokens_total=attempt.prompt_tokens_total,
+                prompt_budget_tokens=attempt.prompt_budget_tokens,
                 raw_chars=raw_chars,
                 normalized_chars=normalized_chars,
                 prefix_overlap_chars=prefix_overlap_chars,
@@ -758,6 +895,8 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
             model=primary_attempt.model,
             remote_allowed=remote_allowed,
             active_file=command.active_file,
+            incoming_prefix_len=len(command.prefix),
+            incoming_suffix_len=len(command.suffix),
             prefix_len=len(primary_attempt.request.prefix),
             suffix_len=len(primary_attempt.request.suffix),
             system_prompt_tokens=primary_attempt.system_prompt_tokens,
@@ -929,6 +1068,7 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
                             normalized_completion=completion,
                             prefix_overlap_chars=normalized.prefix_overlap_chars,
                             suffix_overlap_chars=normalized.suffix_overlap_chars,
+                            replace_suffix_chars=normalized.replace_suffix_chars,
                             drop_reason=normalized.drop_reason,
                             prepare_ms=fallback_prepare_ms,
                             provider_ms=fallback_provider_ms,
@@ -952,6 +1092,7 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
                         return InlineCompletionResult(
                             completion=completion,
                             enabled=True,
+                            replace_suffix_chars=normalized.replace_suffix_chars or None,
                             eval_meta=build_eval_meta(
                                 attempt=fallback_attempt,
                                 outcome="truncated",
@@ -982,6 +1123,7 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
                         normalized_completion=completion,
                         prefix_overlap_chars=normalized.prefix_overlap_chars,
                         suffix_overlap_chars=normalized.suffix_overlap_chars,
+                        replace_suffix_chars=normalized.replace_suffix_chars,
                         drop_reason=normalized.drop_reason,
                         prepare_ms=fallback_prepare_ms,
                         provider_ms=fallback_provider_ms,
@@ -1006,6 +1148,7 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
                     return InlineCompletionResult(
                         completion=completion,
                         enabled=True,
+                        replace_suffix_chars=normalized.replace_suffix_chars or None,
                         eval_meta=build_eval_meta(
                             attempt=fallback_attempt,
                             outcome=outcome,
@@ -1057,6 +1200,7 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
                 normalized_completion=completion,
                 prefix_overlap_chars=normalized.prefix_overlap_chars,
                 suffix_overlap_chars=normalized.suffix_overlap_chars,
+                replace_suffix_chars=normalized.replace_suffix_chars,
                 drop_reason=normalized.drop_reason,
                 prepare_ms=primary_prepare_ms,
                 provider_ms=primary_provider_ms,
@@ -1080,6 +1224,7 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
             return InlineCompletionResult(
                 completion=completion,
                 enabled=True,
+                replace_suffix_chars=normalized.replace_suffix_chars or None,
                 eval_meta=build_eval_meta(
                     attempt=primary_attempt,
                     outcome="truncated",
@@ -1110,6 +1255,7 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
             normalized_completion=completion,
             prefix_overlap_chars=normalized.prefix_overlap_chars,
             suffix_overlap_chars=normalized.suffix_overlap_chars,
+            replace_suffix_chars=normalized.replace_suffix_chars,
             drop_reason=normalized.drop_reason,
             prepare_ms=primary_prepare_ms,
             provider_ms=primary_provider_ms,
@@ -1134,6 +1280,7 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
         return InlineCompletionResult(
             completion=completion,
             enabled=True,
+            replace_suffix_chars=normalized.replace_suffix_chars or None,
             eval_meta=build_eval_meta(
                 attempt=primary_attempt,
                 outcome=outcome,

@@ -10,8 +10,7 @@ import {
   autocompletion,
   closeBrackets,
   closeBracketsKeymap,
-  completionKeymap,
-} from "@codemirror/autocomplete";
+  completionKeymap } from "@codemirror/autocomplete";
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
 import { Compartment, EditorState, type Extension } from "@codemirror/state";
 import {
@@ -20,8 +19,7 @@ import {
   foldGutter,
   foldKeymap,
   indentOnInput,
-  syntaxHighlighting,
-} from "@codemirror/language";
+  syntaxHighlighting } from "@codemirror/language";
 import { python } from "@codemirror/lang-python";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
 import {
@@ -34,8 +32,7 @@ import {
   highlightSpecialChars,
   keymap,
   lineNumbers,
-  rectangularSelection,
-} from "@codemirror/view";
+  rectangularSelection } from "@codemirror/view";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 
 const props = withDefaults(

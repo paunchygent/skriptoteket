@@ -7,7 +7,8 @@ owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-19
 updated: 2026-01-16
-links: ["ADR-0022", "ADR-0023", "ADR-0027", "PRD-script-hub-v0.2", "EPIC-10", "EPIC-14"]
+updated: 2026-01-20
+links: ["ADR-0022", "ADR-0023", "ADR-0027", "ADR-0063", "PRD-script-hub-v0.2", "EPIC-10", "EPIC-14"]
 ---
 
 ## Context
@@ -104,7 +105,7 @@ action run receives the correct server-owned state.
   below). If the initial run does not update `tool_sessions`, the first action run will receive stale/empty state and
   workflows that rely on state handoff between steps will fail (e.g. preview → convert flows).
 
-### 6) Action payload transport: `SKRIPTOTEKET_ACTION`
+### 6) Action payload transport: request envelope (`/work/request.json`)
 
 Action runs need both:
 
@@ -112,18 +113,24 @@ Action runs need both:
 - server-owned session `state` (from `tool_sessions`, guarded by `expected_state_rev`).
 
 To keep the tool mental model clean and avoid confusing synthetic files in `/work/input/`, action runs MUST provide the
-action payload via an explicit environment variable:
+action payload via the runner request envelope (ADR-0063):
 
-```bash
-SKRIPTOTEKET_ACTION={"action_id":"...","input":{...},"state":{...}}
+```json
+{
+  "schema_version": 1,
+  "inputs": { "values": {} },
+  "action": { "action_id": "...", "input": { "...": "..." }, "state": { "...": "..." } },
+  "files": []
+}
 ```
 
 Notes:
 
 - This applies to both production action runs and editor sandbox action runs.
-- Uploaded/session files remain in `/work/input/` and are listed in `SKRIPTOTEKET_INPUT_MANIFEST`; the action payload is
-  not a file.
-- Tool authors SHOULD prefer helper functions from the runner toolkit (ST-14-19) rather than hand-parsing env vars.
+- Uploaded/session files remain in `/work/input/` and are listed in the request manifest; the action payload is not a
+  file.
+- Tool authors SHOULD prefer helper functions from the runner toolkit (ST-14-19) rather than parsing the envelope
+  directly.
 
 ## API shape (minimal, sketch)
 

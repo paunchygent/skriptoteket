@@ -61,6 +61,26 @@ async def create_inline_completion(
         )
         response.headers["X-Skriptoteket-Eval-Prefix-Chars"] = str(result.eval_meta.prefix_chars)
         response.headers["X-Skriptoteket-Eval-Suffix-Chars"] = str(result.eval_meta.suffix_chars)
+        if result.eval_meta.system_prompt_tokens is not None:
+            response.headers["X-Skriptoteket-Eval-System-Prompt-Tokens"] = str(
+                result.eval_meta.system_prompt_tokens
+            )
+        if result.eval_meta.prefix_tokens is not None:
+            response.headers["X-Skriptoteket-Eval-Prefix-Tokens"] = str(
+                result.eval_meta.prefix_tokens
+            )
+        if result.eval_meta.suffix_tokens is not None:
+            response.headers["X-Skriptoteket-Eval-Suffix-Tokens"] = str(
+                result.eval_meta.suffix_tokens
+            )
+        if result.eval_meta.prompt_tokens_total is not None:
+            response.headers["X-Skriptoteket-Eval-Prompt-Tokens-Total"] = str(
+                result.eval_meta.prompt_tokens_total
+            )
+        if result.eval_meta.prompt_budget_tokens is not None:
+            response.headers["X-Skriptoteket-Eval-Prompt-Budget-Tokens"] = str(
+                result.eval_meta.prompt_budget_tokens
+            )
         if result.eval_meta.raw_chars is not None:
             response.headers["X-Skriptoteket-Eval-Raw-Chars"] = str(result.eval_meta.raw_chars)
         if result.eval_meta.normalized_chars is not None:
@@ -89,6 +109,7 @@ async def create_inline_completion(
     return EditorInlineCompletionResponse(
         completion=result.completion,
         enabled=result.enabled,
+        replace_suffix_chars=result.replace_suffix_chars,
         notice_message=result.notice_message,
         notice_variant=result.notice_variant,
         notice_code=result.notice_code,
