@@ -2,10 +2,10 @@
 type: story
 id: ST-18-01
 title: "Postgres execution queue + worker loop (MVP)"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-01-17
-updated: 2026-01-18
+updated: 2026-01-21
 epic: "EPIC-18"
 acceptance_criteria:
   - "Given queueing is enabled, when a tool run is requested, then tool_runs and tool_run_jobs are created with status queued and the API returns the run_id with status queued."

@@ -2,10 +2,10 @@
 type: story
 id: ST-08-30
 title: "AI: inline completion failover + per-user completion provider selection"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-18
-updated: 2026-01-18
+updated: 2026-01-21
 epic: "EPIC-08"
 acceptance_criteria:
   - "Given inline completions are configured with an external primary (OpenAI `gpt-5-nano`) and a local fallback (Devstral), when the primary provider fails (connect/timeout/HTTP 429/HTTP 5xx), then the backend retries once against the fallback provider and returns a completion response."

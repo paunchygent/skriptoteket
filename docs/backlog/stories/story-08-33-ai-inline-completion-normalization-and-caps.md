@@ -2,9 +2,10 @@
 type: story
 id: ST-08-33
 title: "AI: inline completion normalization + token budgets"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-19
+updated: 2026-01-21
 epic: "EPIC-08"
 acceptance_criteria:
   - "Given local FIM inline completions are enabled, when a completion request is sent, then the local provider uses `max_tokens=64` and preserves the existing FIM prompt format."

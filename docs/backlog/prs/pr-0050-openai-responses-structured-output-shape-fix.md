@@ -2,7 +2,7 @@
 type: pr
 id: PR-0050
 title: "AI: fix OpenAI Responses structured output payload shape + add editor AI pipeline runbook"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-21
 updated: 2026-01-21
@@ -71,12 +71,12 @@ the Responses `text.format` field.
 
 ## Review checklist
 
-- [ ] `text.format.name` is present in Responses payloads (no more 400 missing required parameter)
-- [ ] Responses message history uses `output_text` for assistant turns
-- [ ] No behavioral changes in local llama-server paths
-- [ ] New runbooks are accurate and linked from `docs/index.md`
-- [ ] Unit tests pass
-- [ ] Lint + docs contract validation pass
+- [x] `text.format.name` is present in Responses payloads (no more 400 missing required parameter)
+- [x] Responses message history uses `output_text` for assistant turns
+- [x] No behavioral changes in local llama-server paths
+- [x] New runbooks are accurate and linked from `docs/index.md`
+- [x] Unit tests pass
+- [x] Lint + docs contract validation pass
 
 ## Test plan
 

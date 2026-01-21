@@ -2,10 +2,10 @@
 type: pr
 id: PR-0046
 title: "AI: inline completion harness (gpt-5-nano call logic)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-18
-updated: 2026-01-18
+updated: 2026-01-21
 stories:
   - "ST-08-32"
 tags: ["backend", "ai", "testing", "docs"]

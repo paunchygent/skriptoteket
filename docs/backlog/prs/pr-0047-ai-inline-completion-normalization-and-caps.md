@@ -2,7 +2,7 @@
 type: pr
 id: PR-0047
 title: "AI: inline completion normalization + token budgets"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-01-19
 updated: 2026-01-21

@@ -120,7 +120,13 @@ def validate_path_rules(path: Path, contract: YamlMapping) -> list[Violation]:
 
 def match_type_by_folder(path: Path, contract: YamlMapping) -> str | None:
     norm = normalize_path(path)
-    for doc_type, rule in contract["types"].items():
+    # Sort types by folder path length (descending) to match the most specific folder first
+    sorted_types = sorted(
+        contract["types"].items(),
+        key=lambda item: len(str(item[1]["folder"])),
+        reverse=True,
+    )
+    for doc_type, rule in sorted_types:
         folder = str(rule["folder"]).rstrip("/").replace("\\", "/")
         if norm.startswith(folder + "/"):
             return str(doc_type)
@@ -158,6 +164,9 @@ def expected_id_from_filename(doc_type: str, filename: str) -> str | None:
     if doc_type == "template":
         match = re.match(r"^template-([a-z0-9-]+)\.md$", filename)
         return f"TPL-{match.group(1)}" if match else None
+    if doc_type == "codemap":
+        match = re.match(r"^([a-z0-9-]+)\.md$", filename)
+        return f"MAP-{match.group(1)}" if match else None
     return None
 
 

@@ -2,9 +2,10 @@
 type: story
 id: ST-08-32
 title: "AI: inline completion harness (gpt-5-nano logic validation)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-18
+updated: 2026-01-21
 epic: "EPIC-08"
 acceptance_criteria:
   - "Given the harness, when run against script-bank fixtures, then it exercises the GPT-5-nano insertion variants (delimiter and structured output) across the defined scenarios and token caps (64/128)."

@@ -15,6 +15,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - PRD (Tool Authoring): `docs/prd/prd-tool-authoring-v0.1.md`
 - Implementation map (v0.2): `docs/reference/ref-implementation-map-script-hub-v0-2.md`
 - Editor sandbox preview plan: `docs/reference/ref-editor-sandbox-preview-plan.md`
+- Runner execution flow codemap: `docs/reference/reports/codemaps/runner-execution-flow.md`
+- AI API surfaces codemap: `docs/reference/reports/codemaps/ai-api-surfaces-tool-editor.md`
 - Tool editor framework codemap: `docs/reference/ref-tool-editor-framework-codemap.md`
 - Migration roadmap (SPA): `docs/reference/reports/ref-vue-spa-migration-roadmap.md`
 - Toasts + system messages (SPA): `docs/reference/ref-toast-system-messages.md`
@@ -490,6 +492,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 ### Templates
 
 - `docs/templates/template-adr.md`
+- `docs/templates/template-codemap.md`
 - `docs/templates/template-epic.md`
 - `docs/templates/template-pr.md`
 - `docs/templates/template-prd.md`

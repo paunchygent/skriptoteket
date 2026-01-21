@@ -2,10 +2,10 @@
 type: pr
 id: PR-0042
 title: "AI: model capability gating + OpenAI prompt caching alignment"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-18
-updated: 2026-01-18
+updated: 2026-01-21
 stories:
   - "ST-08-14"
 tags: ["backend", "ai", "cost"]

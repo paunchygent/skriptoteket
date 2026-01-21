@@ -2,9 +2,10 @@
 type: story
 id: ST-08-31
 title: "AI: migrate OpenAI providers to Responses API"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-18
+updated: 2026-01-21
 epic: "EPIC-08"
 acceptance_criteria:
   - "Given OpenAI providers are enabled, when the backend makes requests, then it uses the Responses API (`/v1/responses`) with payloads aligned to the OpenAI Responses API reference."

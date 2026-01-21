@@ -2,10 +2,10 @@
 type: pr
 id: PR-0041
 title: "AI inline completions: OpenAI-first + local fallback + profile selection"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-18
-updated: 2026-01-18
+updated: 2026-01-21
 stories:
   - "ST-08-30"
 tags: ["backend", "frontend", "ai", "reliability"]

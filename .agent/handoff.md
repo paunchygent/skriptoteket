@@ -13,7 +13,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2026-01-21
-- Branch: `main`
+- Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: history in `.agent/readme-first.md`
@@ -55,6 +55,11 @@ Keep this file updated so the next session can pick up work quickly.
     `tests/unit/infrastructure/llm/test_openai_chat_ops_provider_grammar.py`.
   - Docs: `docs/runbooks/runbook-openai-responses-api.md`,
     `docs/backlog/prs/pr-0050-openai-responses-structured-output-shape-fix.md`.
+- Docs-sync pass: marked completed backlog items as `done`.
+  - PRs: PR-0040, PR-0041, PR-0042, PR-0043, PR-0046, PR-0047, PR-0048, PR-0050.
+  - Stories: ST-08-30, ST-08-31, ST-08-32, ST-08-33, ST-18-01.
+  - Epics updated: `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md`,
+    `docs/backlog/epics/epic-18-execution-queue-and-worker-loop.md`.
 
 ## Verification
 

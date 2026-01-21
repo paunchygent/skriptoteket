@@ -2,10 +2,10 @@
 type: pr
 id: PR-0048
 title: "Fix: session_context propagation + state semantics (execution queue + interactive tools)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-20
-updated: 2026-01-20
+updated: 2026-01-21
 stories:
   - "ST-18-01"
 adrs:

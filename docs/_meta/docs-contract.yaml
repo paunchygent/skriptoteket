@@ -119,3 +119,11 @@ types:
     status_allowed: ["pending", "approved", "changes_requested", "rejected"]
     required: ["reviewer", "epic"]
     optional: ["adrs", "stories"]
+
+  codemap:
+    folder: docs/reference/reports/codemaps
+    filename_regex: "^[a-z0-9-]+\\.md$"
+    id_regex: "^MAP-[a-z0-9-]+$"
+    status_allowed: ["active", "deprecated"]
+    required: ["topic"]
+    optional: ["links"]

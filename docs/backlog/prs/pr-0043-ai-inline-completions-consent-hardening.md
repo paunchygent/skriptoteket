@@ -2,10 +2,10 @@
 type: pr
 id: PR-0043
 title: "AI inline completions: consent enforcement + failover hardening + SRP consolidation"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-18
-updated: 2026-01-18
+updated: 2026-01-21
 stories:
   - "ST-08-30"
 tags: ["backend", "frontend", "ai", "security", "reliability", "performance"]

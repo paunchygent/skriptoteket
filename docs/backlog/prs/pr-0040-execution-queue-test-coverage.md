@@ -2,10 +2,10 @@
 type: pr
 id: PR-0040
 title: "Execution queue test coverage (EPIC-18 / ADR-0062)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-18
-updated: 2026-01-18
+updated: 2026-01-21
 stories:
   - "ST-18-01"
 tags: ["backend", "tests", "db", "infra"]

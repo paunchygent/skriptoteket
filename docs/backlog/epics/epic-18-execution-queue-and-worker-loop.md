@@ -5,7 +5,7 @@ title: "Execution queue and worker loop"
 status: active
 owners: "agents"
 created: 2026-01-17
-updated: 2026-01-17
+updated: 2026-01-21
 outcome: "Tool execution runs asynchronously via a durable Postgres queue with worker leasing, removing HTTP request timeouts for long-running tools."
 ---
 
@@ -20,6 +20,12 @@ outcome: "Tool execution runs asynchronously via a durable Postgres queue with w
 ## Stories
 
 - [ST-18-01: Postgres execution queue + worker loop (MVP)](../stories/story-18-01-execution-queue-worker-loop.md)
+
+## Implementation Summary (as of 2026-01-21)
+
+- Postgres execution queue + worker loop are shipped (ST-18-01).
+- Queue-enabled runs enqueue to `tool_runs` + `tool_run_jobs`; workers claim/lease jobs, adopt-first, and finalize terminal results.
+- Stale-lease reaper clears leases (jobs remain adoptable), and queue-disabled mode preserves the cap+reject behavior (ADR-0016).
 
 ## Risks
 
