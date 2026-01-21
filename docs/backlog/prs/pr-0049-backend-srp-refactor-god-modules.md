@@ -50,7 +50,42 @@ Prioritize the largest backend modules that mix responsibilities. Exclude script
 - `src/skriptoteket/workers/execution_queue_job_processor.py` (~410 LOC)
 - `src/skriptoteket/di/infrastructure.py` (~380 LOC)
 
-### 2) Refactor approach
+### 2) Prioritized order + dependency mapping
+
+#### Suggested order (least churn + dependency-aware)
+
+1) `src/skriptoteket/protocols/llm.py`
+   - Foundation for editor + infra LLM usage; stabilize via re-exports to minimize call-site churn.
+2) `src/skriptoteket/application/editor/completion_handler.py`
+   - Largest module; depends on LLM protocols and provider wiring.
+3) `src/skriptoteket/application/editor/chat_stream_orchestrator.py`
+   - Shares LLM protocol surface; refactor after protocol split.
+4) `src/skriptoteket/infrastructure/editor/unified_diff/normalize.py`
+   - Used by edit-ops preview; small, localized split reduces risk.
+5) `src/skriptoteket/application/editor/edit_ops_handler.py`
+   - Depends on unified diff helpers + LLM protocols.
+6) `src/skriptoteket/web/api/v1/editor/models.py`
+   - DTOs rely on LLM protocol types; split after protocol stabilization.
+7) `src/skriptoteket/infrastructure/runner/docker/runner.py`
+   - Infra-only refactor; coordinate with runner protocol boundaries.
+8) `src/skriptoteket/workers/execution_queue_job_processor.py`
+   - Depends on runner protocols; refactor after runner package split.
+9) `src/skriptoteket/di/infrastructure.py`
+   - Final wiring pass after module paths settle.
+
+#### Dependency map (A -> B means B depends on A)
+
+- `protocols/llm` -> `application/editor/completion_handler`, `application/editor/chat_stream_orchestrator`,
+  `application/editor/edit_ops_handler`, `web/api/v1/editor/models`,
+  `infrastructure/editor/unified_diff/normalize`, `infrastructure/llm/*`, `di/llm`.
+- `infrastructure/editor/unified_diff/normalize` -> `application/editor/edit_ops_preview_handler`.
+- `application/editor/completion_handler` -> `web/api/v1/editor/completions`.
+- `application/editor/chat_stream_orchestrator` -> `web/api/v1/editor/chat`.
+- `infrastructure/runner/docker/runner` -> `di/infrastructure`, `protocols/runner` integration, worker wiring.
+- `workers/execution_queue_job_processor` -> `protocols/runner` + DI-provided runner.
+- `di/infrastructure` -> all refactored module entrypoints (final wiring).
+
+### 3) Refactor approach
 
 - Start by mapping responsibilities inside each module (group by concerns like parsing, normalization, routing, IO, logging).
 - Extract cohesive submodules into a package adjacent to the original file (e.g., `completion/`, `llm/`, `normalize/`).
@@ -58,7 +93,7 @@ Prioritize the largest backend modules that mix responsibilities. Exclude script
 - Keep DI and protocol boundaries explicit; avoid cross-layer dependencies.
 - Update tests to import the stable entrypoints or update fixtures if module paths change.
 
-### 3) Acceptance checks
+### 4) Acceptance checks
 
 - Each target module reduced below the size budget unless a well-justified exception is recorded.
 - No behavior changes (API responses, domain behavior, side effects) beyond internal structure.
