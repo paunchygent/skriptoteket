@@ -13,6 +13,7 @@ from skriptoteket.infrastructure.runner.capacity import RunnerCapacityLimiter
 from skriptoteket.protocols.runner import ArtifactManagerProtocol, ToolRunnerProtocol
 
 from .adoption import try_adopt_sync
+from .contract_selection import RunnerContractSelectorProtocol
 from .execution import execute_sync
 from .limits import DockerRunnerLimits
 
@@ -32,6 +33,7 @@ class DockerToolRunner(ToolRunnerProtocol):
         output_max_error_summary_bytes: int,
         capacity: RunnerCapacityLimiter,
         artifacts: ArtifactManagerProtocol,
+        contract_selector: RunnerContractSelectorProtocol,
     ) -> None:
         self._runner_image = runner_image
         self._sandbox_timeout_seconds = sandbox_timeout_seconds
@@ -42,6 +44,7 @@ class DockerToolRunner(ToolRunnerProtocol):
         self._output_max_error_summary_bytes = output_max_error_summary_bytes
         self._capacity = capacity
         self._artifacts = artifacts
+        self._contract_selector = contract_selector
 
     async def execute(
         self,
@@ -68,6 +71,7 @@ class DockerToolRunner(ToolRunnerProtocol):
             )
 
         try:
+            contract = self._contract_selector.select(version=version, context=context)
             return await asyncio.to_thread(
                 execute_sync,
                 run_id=run_id,
@@ -85,6 +89,7 @@ class DockerToolRunner(ToolRunnerProtocol):
                 output_max_stderr_bytes=self._output_max_stderr_bytes,
                 output_max_error_summary_bytes=self._output_max_error_summary_bytes,
                 artifacts=self._artifacts,
+                contract=contract,
             )
         finally:
             await self._capacity.release()
@@ -110,6 +115,7 @@ class DockerToolRunner(ToolRunnerProtocol):
             )
 
         try:
+            contract = self._contract_selector.select(version=version, context=context)
             return await asyncio.to_thread(
                 try_adopt_sync,
                 run_id=run_id,
@@ -121,6 +127,7 @@ class DockerToolRunner(ToolRunnerProtocol):
                 output_max_stderr_bytes=self._output_max_stderr_bytes,
                 output_max_error_summary_bytes=self._output_max_error_summary_bytes,
                 artifacts=self._artifacts,
+                contract=contract,
             )
         finally:
             await self._capacity.release()

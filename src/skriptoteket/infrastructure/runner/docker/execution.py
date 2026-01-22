@@ -12,7 +12,7 @@ from skriptoteket.protocols.runner import ArtifactManagerProtocol
 
 from .cleanup import close_client, remove_container, remove_volume
 from .client_adapter import DockerClientAdapter
-from .env import prepare_execution_inputs
+from .contract_selection import RunnerContract
 from .errors import raise_docker_client_unavailable
 from .limits import DockerRunnerLimits
 from .protocols import DockerClientProtocol, DockerContainerProtocol, DockerVolumeProtocol
@@ -20,9 +20,7 @@ from .results import (
     build_missing_result_error,
     build_timed_out_result,
     fetch_execution_outputs,
-    parse_runner_payload,
 )
-from .workdir_archive import build_workdir_archive
 
 logger = structlog.get_logger(__name__)
 
@@ -44,6 +42,7 @@ def execute_sync(
     output_max_stderr_bytes: int,
     output_max_error_summary_bytes: int,
     artifacts: ArtifactManagerProtocol,
+    contract: RunnerContract,
 ) -> ToolExecutionResult:
     import docker
     from docker.errors import DockerException
@@ -54,10 +53,11 @@ def execute_sync(
     timeout_seconds = (
         sandbox_timeout_seconds if context is RunContext.SANDBOX else production_timeout_seconds
     )
-    inputs = prepare_execution_inputs(
+    request = contract.request_factory.build_request(
         version=version,
         input_files=input_files,
         input_values=input_values,
+        memory_json=memory_json,
         action_payload=action_payload,
     )
 
@@ -68,7 +68,7 @@ def execute_sync(
         tool_version_id=str(version.id),
         context=context.value,
         timeout_seconds=timeout_seconds,
-        input_files_count=len(inputs.normalized_input_files),
+        input_files_count=len(request.normalized_input_files),
         cpu_limit=limits.cpu_limit,
         memory_limit=limits.memory_limit,
         pids_limit=limits.pids_limit,
@@ -105,15 +105,9 @@ def execute_sync(
             )
             span.add_event("volume_created")
 
-            workdir_tar = build_workdir_archive(
-                version=version,
-                input_files=inputs.normalized_input_files,
-                memory_json=memory_json,
-            )
-
             container = client.containers.create(
                 image=runner_image,
-                environment=inputs.env,
+                environment=request.env,
                 command=[
                     "sh",
                     "-lc",
@@ -139,7 +133,7 @@ def execute_sync(
                 },
             )
 
-            container.put_archive(path="/work", data=workdir_tar)
+            container.put_archive(path="/work", data=request.workdir_archive)
             container.start()
             span.add_event("container_started")
 
@@ -212,7 +206,7 @@ def execute_sync(
                 raise error
 
             try:
-                status, ui_result, artifacts_manifest = parse_runner_payload(
+                parsed = contract.result_parser.parse(
                     container=container,
                     result_json_bytes=outputs.result_json_bytes,
                     run_id=run_id,
@@ -242,10 +236,13 @@ def execute_sync(
                     )
                 raise
 
-            span.add_event("artifacts_extracted", {"count": str(len(artifacts_manifest.artifacts))})
-            span.set_attribute("run.status", status.value)
+            span.add_event(
+                "artifacts_extracted",
+                {"count": str(len(parsed.artifacts_manifest.artifacts))},
+            )
+            span.set_attribute("run.status", parsed.status.value)
             span.set_attribute("run.duration_seconds", round(time.monotonic() - start_time, 6))
-            span.set_attribute("run.artifacts_count", len(artifacts_manifest.artifacts))
+            span.set_attribute("run.artifacts_count", len(parsed.artifacts_manifest.artifacts))
 
             logger.info(
                 "Runner execution finished",
@@ -253,16 +250,16 @@ def execute_sync(
                 tool_id=str(version.tool_id),
                 tool_version_id=str(version.id),
                 context=context.value,
-                status=status.value,
+                status=parsed.status.value,
                 duration_seconds=round(time.monotonic() - start_time, 6),
-                artifacts_count=len(artifacts_manifest.artifacts),
+                artifacts_count=len(parsed.artifacts_manifest.artifacts),
             )
             return ToolExecutionResult(
-                status=status,
+                status=parsed.status,
                 stdout=outputs.stdout,
                 stderr=outputs.stderr,
-                ui_result=ui_result,
-                artifacts_manifest=artifacts_manifest,
+                ui_result=parsed.ui_result,
+                artifacts_manifest=parsed.artifacts_manifest,
             )
 
     finally:

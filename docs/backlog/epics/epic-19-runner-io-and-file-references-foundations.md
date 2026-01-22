@@ -53,6 +53,12 @@ Tool scripts should be able to follow a single, stable mental model:
 - [ST-19-05: Runner result parser seam (V2)](../stories/story-19-05-runner-result-parser-seam.md)
 - [ST-19-06: Runner contract selection seam (V2 default)](../stories/story-19-06-runner-contract-selection-seam.md)
 
+## Implementation Summary (as of 2026-01-22)
+
+- Added a V2 request factory seam that builds a structured request object + workdir archive (ST-19-04).
+- Added a V2 result parser seam that wraps the existing result parsing behavior (ST-19-05).
+- Added a DI-managed contract selection seam with V2 default factory/parser wiring (ST-19-06).
+
 ## Enables / blocks
 
 - Enables (and should precede):

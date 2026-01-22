@@ -3,8 +3,7 @@ from __future__ import annotations
 import io
 import json
 import tarfile
-from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
@@ -13,20 +12,8 @@ from pydantic import JsonValue
 from requests.exceptions import ReadTimeout
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
-from skriptoteket.domain.scripting.models import (
-    RunContext,
-    RunStatus,
-    ToolVersion,
-    VersionState,
-    compute_content_hash,
-)
-from skriptoteket.infrastructure.runner.capacity import RunnerCapacityLimiter
-from skriptoteket.infrastructure.runner.docker_runner import (
-    DockerRunnerLimits,
-    DockerToolRunner,
-)
-from skriptoteket.protocols.runner import ArtifactManagerProtocol
+from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolVersion
+from skriptoteket.infrastructure.runner.docker_runner import DockerToolRunner
 
 
 def create_result_tar(
@@ -57,78 +44,6 @@ def create_result_tar(
         tar.addfile(info, io.BytesIO(result_bytes))
 
     return tar_buffer.getvalue()
-
-
-@pytest.fixture
-def tool_version(now: datetime) -> ToolVersion:
-    source_code = "def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>Hi</p>'\n"
-    entrypoint = "run_tool"
-    return ToolVersion(
-        id=uuid4(),
-        tool_id=uuid4(),
-        version_number=1,
-        state=VersionState.DRAFT,
-        source_code=source_code,
-        entrypoint=entrypoint,
-        content_hash=compute_content_hash(entrypoint=entrypoint, source_code=source_code),
-        derived_from_version_id=None,
-        created_by_user_id=uuid4(),
-        created_at=now,
-        submitted_for_review_by_user_id=None,
-        submitted_for_review_at=None,
-        reviewed_by_user_id=None,
-        reviewed_at=None,
-        published_by_user_id=None,
-        published_at=None,
-        change_summary=None,
-        review_note=None,
-    )
-
-
-@pytest.fixture
-def mock_capacity() -> MagicMock:
-    capacity = MagicMock(spec=RunnerCapacityLimiter)
-    capacity.try_acquire = AsyncMock(return_value=True)
-    capacity.release = AsyncMock()
-    return capacity
-
-
-@pytest.fixture
-def mock_artifacts() -> MagicMock:
-    artifacts = MagicMock(spec=ArtifactManagerProtocol)
-    artifacts.store_output_archive.return_value = ArtifactsManifest(artifacts=[])
-    return artifacts
-
-
-@pytest.fixture
-def runner(mock_capacity: MagicMock, mock_artifacts: MagicMock) -> DockerToolRunner:
-    limits = DockerRunnerLimits(
-        cpu_limit=1.0,
-        memory_limit="256m",
-        pids_limit=128,
-        tmpfs_tmp="size=64m",
-    )
-    return DockerToolRunner(
-        runner_image="skriptoteket-runner:unit-test",
-        sandbox_timeout_seconds=30,
-        production_timeout_seconds=60,
-        limits=limits,
-        output_max_stdout_bytes=2048,
-        output_max_stderr_bytes=2048,
-        output_max_error_summary_bytes=2048,
-        capacity=mock_capacity,
-        artifacts=mock_artifacts,
-    )
-
-
-@pytest.fixture
-def mock_docker_client(monkeypatch) -> MagicMock:
-    import docker
-
-    mocked_from_env = MagicMock(name="from_env")
-    mocked_from_env.return_value = MagicMock()
-    monkeypatch.setattr(docker, "from_env", mocked_from_env)
-    return mocked_from_env
 
 
 @pytest.mark.unit
@@ -406,93 +321,3 @@ async def test_execute_returns_service_unavailable_when_docker_sock_missing(
     assert exc_info.value.code is ErrorCode.SERVICE_UNAVAILABLE
     assert "pdm run dev-start" in exc_info.value.message
     mock_capacity.release.assert_awaited_once()
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-@pytest.mark.parametrize("container_status", ["missing", "created"])
-async def test_try_adopt_returns_none_when_no_adoptable_container(
-    runner: DockerToolRunner,
-    mock_docker_client: MagicMock,
-    tool_version: ToolVersion,
-    container_status: str,
-) -> None:
-    run_id = uuid4()
-    client_instance = mock_docker_client.return_value
-    client_instance.volumes.list.return_value = []
-
-    created_container: MagicMock | None = None
-    if container_status == "missing":
-        client_instance.containers.list.return_value = []
-    elif container_status == "created":
-        created_container = MagicMock()
-        created_container.status = "created"
-        client_instance.containers.list.return_value = [created_container]
-    else:  # pragma: no cover
-        raise AssertionError(f"Unexpected container_status: {container_status}")
-
-    adopted = await runner.try_adopt(
-        run_id=run_id,
-        version=tool_version,
-        context=RunContext.SANDBOX,
-    )
-
-    assert adopted is None
-    if created_container is not None:
-        assert created_container.remove.call_count >= 1
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    ("case", "expected_status"),
-    [
-        ("success", RunStatus.SUCCEEDED),
-        ("timeout", RunStatus.TIMED_OUT),
-    ],
-)
-async def test_try_adopt_finalizes_container_and_archives_output(
-    runner: DockerToolRunner,
-    mock_docker_client: MagicMock,
-    tool_version: ToolVersion,
-    mock_artifacts: MagicMock,
-    case: str,
-    expected_status: RunStatus,
-) -> None:
-    run_id = uuid4()
-    client_instance = mock_docker_client.return_value
-    client_instance.volumes.list.return_value = []
-
-    container = MagicMock()
-    container.status = "exited" if case == "success" else "running"
-    container.logs.side_effect = [b"stdout", b"stderr"]
-    if case == "success":
-        container.wait.return_value = {"StatusCode": 0}
-        result_tar = create_result_tar(
-            status="succeeded",
-            outputs=[{"kind": "html_sandboxed", "html": "<p>Hi</p>"}],
-            artifacts=[{"path": "output/report.txt", "bytes": 1}],
-        )
-    else:
-        container.wait.side_effect = [ReadTimeout(), {"StatusCode": 137}]
-        result_tar = b""
-
-    def get_archive_side_effect(*, path: str):
-        if case == "success" and path == "/work/result.json":
-            return [result_tar], {}
-        if path == "/work/output":
-            return [b"tar_stream"], {}
-        raise NotFound("Not found")
-
-    container.get_archive.side_effect = get_archive_side_effect
-    client_instance.containers.list.return_value = [container]
-
-    adopted = await runner.try_adopt(
-        run_id=run_id,
-        version=tool_version,
-        context=RunContext.SANDBOX,
-    )
-
-    assert adopted is not None
-    assert adopted.status is expected_status
-    mock_artifacts.store_output_archive.assert_called_once()

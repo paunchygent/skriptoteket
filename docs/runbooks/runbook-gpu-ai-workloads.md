@@ -5,7 +5,7 @@ title: "Runbook: GPU AI Workloads (AMD Radeon AI PRO R9700)"
 status: active
 owners: "olof"
 created: 2025-12-30
-updated: 2026-01-13
+updated: 2026-01-22
 system: "hemma.hule.education"
 ---
 
@@ -34,9 +34,9 @@ Operations guide for AI workloads on the AMD Radeon AI PRO R9700 (32GB VRAM, RDN
 | Component | Version | Path |
 |-----------|---------|------|
 | **Kernel** | 6.14.0-37-generic (HWE) | - |
-| **Driver** | amdgpu 6.16.6 | - |
-| **ROCm** | 7.1.1 | `/opt/rocm-7.1.1/` |
-| **HIP** | 7.1.x | `/opt/rocm/bin/hipcc` |
+| **Driver** | amdgpu 6.16.13 | - |
+| **ROCm** | 7.2.0 | `/opt/rocm-7.2.0/` |
+| **HIP** | 7.2.x | `/opt/rocm/bin/hipcc` |
 | **MIOpen** | 3.5.1 | `/opt/rocm/bin/MIOpenDriver` |
 | **MIGraphX** | - | `/opt/rocm/bin/migraphx-driver` |
 
@@ -424,12 +424,35 @@ The fixture source is
 # Check current version
 ssh hemma "cat /opt/rocm/.info/version"
 
+# Confirm supported flags/usecases (e.g. rocm, rocmdev, rocmdevtools)
+ssh hemma "amdgpu-install --list-usecase"
+
+# Stop GPU workloads before uninstall/reinstall
+ssh hemma "sudo systemctl stop llama-server-rocm.service"
+
 # Update (download new amdgpu-install, then reinstall)
 ssh hemma "sudo amdgpu-install --uninstall"
-ssh hemma "wget https://repo.radeon.com/amdgpu-install/<version>/ubuntu/noble/amdgpu-install_<version>.deb"
-ssh hemma "sudo apt install ./amdgpu-install_*.deb"
+
+# Download + install new amdgpu-install (example: ROCm 7.2 on Ubuntu 24.04 'noble')
+ssh hemma "wget https://repo.radeon.com/amdgpu-install/7.2/ubuntu/noble/amdgpu-install_7.2.70200-1_all.deb"
+ssh hemma "sudo apt install ./amdgpu-install_7.2.70200-1_all.deb"
+
+# Install usecase (pick one):
+# - Graphics + compute (Mesa + ROCm): graphics,rocm
+# - Headless/compute (no Mesa): rocm
 ssh hemma "sudo amdgpu-install -y --usecase=graphics,rocm"
+# ssh hemma "sudo amdgpu-install -y --usecase=rocm"
 ssh hemma "sudo reboot"
+```
+
+Post-upgrade verification:
+
+```bash
+ssh hemma "cat /opt/rocm/.info/version"
+ssh hemma "rocm-smi -V && rocm-smi --showproductname --showdriverversion"
+ssh hemma "rocminfo | head -n 50"
+ssh hemma "sudo systemctl status --no-pager llama-server-rocm.service | head -n 40"
+ssh hemma "curl -fsS http://127.0.0.1:8082/health && echo"
 ```
 
 ### Clean MIOpen Cache

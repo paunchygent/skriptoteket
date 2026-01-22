@@ -2,7 +2,7 @@
 type: story
 id: ST-19-06
 title: "Runner contract selection seam (V2 default)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-22
 epic: "EPIC-19"

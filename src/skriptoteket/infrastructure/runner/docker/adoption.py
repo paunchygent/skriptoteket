@@ -8,12 +8,12 @@ from skriptoteket.protocols.runner import ArtifactManagerProtocol
 
 from .cleanup import close_client, remove_container, remove_run_volumes
 from .client_adapter import DockerClientAdapter
+from .contract_selection import RunnerContract
 from .protocols import DockerClientProtocol, DockerContainerProtocol
 from .results import (
     build_missing_result_error,
     build_timed_out_result,
     fetch_execution_outputs,
-    parse_runner_payload,
 )
 
 
@@ -28,6 +28,7 @@ def try_adopt_sync(
     output_max_stderr_bytes: int,
     output_max_error_summary_bytes: int,
     artifacts: ArtifactManagerProtocol,
+    contract: RunnerContract,
 ) -> ToolExecutionResult | None:
     import docker
     from docker.errors import DockerException
@@ -130,7 +131,7 @@ def try_adopt_sync(
                 )
                 raise error
 
-            status, ui_result, artifacts_manifest = parse_runner_payload(
+            parsed = contract.result_parser.parse(
                 container=container,
                 result_json_bytes=outputs.result_json_bytes,
                 run_id=run_id,
@@ -140,15 +141,15 @@ def try_adopt_sync(
                 output_max_error_summary_bytes=output_max_error_summary_bytes,
             )
 
-            span.set_attribute("run.status", status.value)
+            span.set_attribute("run.status", parsed.status.value)
             span.set_attribute("run.duration_seconds", round(time.monotonic() - start_time, 6))
-            span.set_attribute("run.artifacts_count", len(artifacts_manifest.artifacts))
+            span.set_attribute("run.artifacts_count", len(parsed.artifacts_manifest.artifacts))
             return ToolExecutionResult(
-                status=status,
+                status=parsed.status,
                 stdout=outputs.stdout,
                 stderr=outputs.stderr,
-                ui_result=ui_result,
-                artifacts_manifest=artifacts_manifest,
+                ui_result=parsed.ui_result,
+                artifacts_manifest=parsed.artifacts_manifest,
             )
     finally:
         remove_container(container, swallow_all=True)

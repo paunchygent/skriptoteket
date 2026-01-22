@@ -80,6 +80,7 @@ Keep this file updated so the next session can pick up work quickly.
   `RunnerRequest` now carries optional `request_json_bytes` for V3.
 - Promotions validation moved into `validate_promotion_envelope` in
   `src/skriptoteket/infrastructure/runner/contracts/promotions_v3.py`.
+- PR-0052 drafted for ST-19-01/02/03: `docs/backlog/prs/pr-0052-runner-request-envelope-file-refs-contract-v3.md`.
 
 ## Verification
 

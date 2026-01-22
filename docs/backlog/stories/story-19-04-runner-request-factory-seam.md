@@ -2,7 +2,7 @@
 type: story
 id: ST-19-04
 title: "Runner request factory seam (V2)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-22
 epic: "EPIC-19"

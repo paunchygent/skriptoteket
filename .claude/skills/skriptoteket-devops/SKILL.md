@@ -14,6 +14,12 @@ Source of truth for ops in this repo:
 - Tabby ops: `docs/runbooks/runbook-tabby-codemirror.md`
 - Observability ops: `docs/runbooks/runbook-observability.md`
 
+## ROCm / AMDGPU installer flags (hemma)
+
+- List supported usecases: `ssh hemma "amdgpu-install --list-usecase"`
+- ROCm (headless/compute): `ssh hemma "sudo amdgpu-install -y --usecase=rocm"`
+- Graphics + ROCm (Mesa + compute): `ssh hemma "sudo amdgpu-install -y --usecase=graphics,rocm"`
+
 ## When to Use
 
 Activate when the user:

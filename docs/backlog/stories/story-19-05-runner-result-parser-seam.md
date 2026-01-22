@@ -2,7 +2,7 @@
 type: story
 id: ST-19-05
 title: "Runner result parser seam (V2)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-22
 epic: "EPIC-19"
