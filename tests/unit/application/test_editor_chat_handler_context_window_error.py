@@ -5,7 +5,7 @@ from collections.abc import AsyncIterator
 import httpx
 import pytest
 
-from skriptoteket.application.editor.chat_stream_orchestrator import _is_context_window_error
+from skriptoteket.application.editor.chat_stream.http_errors import is_context_window_error
 
 
 class _StreamingBody(httpx.AsyncByteStream):
@@ -22,4 +22,4 @@ def test_is_context_window_error_returns_false_when_response_not_read() -> None:
     response = httpx.Response(400, request=request, stream=_StreamingBody())
     exc = httpx.HTTPStatusError("Boom", request=request, response=response)
 
-    assert _is_context_window_error(exc) is False
+    assert is_context_window_error(exc) is False

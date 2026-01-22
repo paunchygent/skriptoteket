@@ -23,11 +23,13 @@ scope: "all"
 - [040-fastapi-blueprint.md](040-fastapi-blueprint.md): HTTP service patterns, routers, validation
 - [042-async-di-patterns.md](042-async-di-patterns.md): Protocols, Dishka DI, async patterns
 - [045-huleedu-design-system.md](045-huleedu-design-system.md): HuleEdu design tokens, button hierarchy, components
+- [047-ai-llm-guardrails.md](047-ai-llm-guardrails.md): AI/LLM safety guardrails (editor features)
 - [048-error-handling.md](048-error-handling.md): Structured errors, correlation IDs
 - [050-python-standards.md](050-python-standards.md): Style, typing, formatting, file limits
 - [053-sqlalchemy-patterns.md](053-sqlalchemy-patterns.md): Repository pattern, session management
 - [054-alembic-migrations.md](054-alembic-migrations.md): Migration workflow + idempotency testing
 - [060-docker-and-compose.md](060-docker-and-compose.md): Docker/Compose workflow (dev/prod), deprecated keys, secrets
+- [062-execution-queue-worker-loop.md](062-execution-queue-worker-loop.md): Execution queue + worker loop guardrails (ADR-0062)
 
 ## Quality Assurance
 

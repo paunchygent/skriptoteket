@@ -5,7 +5,7 @@ title: "AI Completion Architecture Technical Specification"
 status: active
 owners: "agents"
 created: 2025-12-26
-updated: 2026-01-07
+updated: 2026-01-22
 topic: "ai-completion"
 ---
 
@@ -539,23 +539,26 @@ type SkriptoteketIntelligenceConfig = {
 
 | Path | Purpose |
 | ---- | ------- |
-| `src/skriptoteket/protocols/llm.py` | Protocol definitions |
+| `src/skriptoteket/protocols/llm/` | Protocol definitions |
 | `src/skriptoteket/infrastructure/llm/openai_provider.py` | OpenAI-compatible client |
-| `src/skriptoteket/application/editor/completion_handler.py` | Handler with KB injection |
+| `src/skriptoteket/application/editor/completion_handler.py` | Handler entrypoint (completion orchestration) |
+| `src/skriptoteket/application/editor/completion/` | Completion flow submodules (prepare/provider/normalize) |
 | `src/skriptoteket/di/llm.py` | DI provider |
 | `src/skriptoteket/config.py` | Configuration settings |
 | `src/skriptoteket/application/editor/prompt_templates.py` | Prompt template registry (IDs + required placeholders) |
 | `src/skriptoteket/application/editor/prompt_fragments.py` | Code-owned fragments (Contract v2 + runner constraints + helpers) |
 | `src/skriptoteket/application/editor/prompt_composer.py` | Template composition + validation (placeholders + budget) |
-| `src/skriptoteket/web/api/v1/editor.py` | API endpoint |
+| `src/skriptoteket/web/api/v1/editor/completions.py` | Inline completions API endpoint |
+| `src/skriptoteket/web/api/v1/editor/chat.py` | Chat SSE API endpoint |
+| `src/skriptoteket/web/api/v1/editor/edit_ops.py` | Edit-ops API endpoints |
 
 ### 10.2 Frontend
 
 | Path | Purpose |
 | ---- | ------- |
-| `frontend/.../skriptoteketGhostText.ts` | Ghost text extension |
-| `frontend/.../skriptoteketIntelligence.ts` | Bundle integration |
-| `frontend/.../useSkriptoteketIntelligenceExtensions.ts` | Config composable |
+| `frontend/apps/skriptoteket/src/composables/editor/skriptoteketGhostText.ts` | Ghost text extension |
+| `frontend/apps/skriptoteket/src/composables/editor/skriptoteketIntelligence.ts` | Bundle integration |
+| `frontend/apps/skriptoteket/src/composables/editor/useSkriptoteketIntelligenceExtensions.ts` | Config composable |
 
 ---
 

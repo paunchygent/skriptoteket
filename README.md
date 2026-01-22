@@ -12,9 +12,12 @@ central logging, approved SMTP relays, strict data retention).
 - **Backend:** **FastAPI** monolith with Clean Architecture / DDD layers and protocol-first DI (Dishka).
 - **Database:** **PostgreSQL** (users, sessions, tools, versions, runs, audit-ish event streams).
 - **Tool execution:** Tools run as **ephemeral sibling Docker containers** (runner image) via the Docker API.
-  Production runs are **queue-backed** by default (`RUNNER_QUEUE_ENABLED=true`) and require the execution worker to be
-  running.
+  Runs can be **queue-backed** (recommended; default) or **synchronous** (`RUNNER_QUEUE_ENABLED=false`). When queueing
+  is enabled, the execution worker must be running.
   - `network_mode=none`, `cap_drop=ALL`, read-only root, tmpfs for `/tmp`, resource limits (CPU/mem/pids/timeouts).
+- **UI contract:** Tools return a typed UI payload (**contract v2**) with `outputs[]`, optional `next_actions[]`, and
+  optional persisted `state`.
+- **Curated apps:** Owner-authored “apps” can be served alongside tools (not managed via the tool editor workflow).
 - **Storage:** Outputs/artifacts + ephemeral session files + editor sandbox snapshots are stored on disk under
   `ARTIFACTS_ROOT` (with retention cleanup commands).
 - **Identity:** Local accounts (email+password) with email verification; future SSO via federation is planned (roles remain
@@ -47,7 +50,7 @@ pdm install -G monorepo-tools
 pdm run fe-install
 ```
 
-1) Configure environment
+2) Configure environment
 
 - Copy `.env.example` → `.env` and adjust values as needed.
 - Create a local artifacts dir (required for tool execution):
@@ -56,20 +59,20 @@ pdm run fe-install
 mkdir -p /tmp/skriptoteket/artifacts
 ```
 
-1) Start PostgreSQL + migrate
+3) Start PostgreSQL + migrate
 
 ```bash
 docker compose up -d db
 pdm run db-upgrade
 ```
 
-1) Bootstrap the first superuser (local dev)
+4) Bootstrap the first superuser (local dev)
 
 ```bash
 pdm run bootstrap-superuser
 ```
 
-1) Run backend + SPA (two terminals)
+5) Run backend + SPA (two terminals)
 
 ```bash
 # Terminal A
@@ -79,8 +82,8 @@ pdm run dev
 pdm run fe-dev
 ```
 
-If you want to run tools in the “production” execution mode locally, run the execution worker too (required when
-`RUNNER_QUEUE_ENABLED=true`):
+Tool runs are **queue-backed by default**, so run the execution worker too (or set `RUNNER_QUEUE_ENABLED=false` in
+`.env` to force synchronous execution):
 
 ```bash
 # Terminal C
@@ -207,6 +210,7 @@ Common adaptations and where they live in the codebase:
 ## Documentation
 
 - Start here: `docs/index.md`
+- Release notes: `docs/releases/`
 - Operations runbooks: `docs/runbooks/`
 - Useful runbooks: `docs/runbooks/runbook-user-management.md`, `docs/runbooks/runbook-runner-image.md`,
   `docs/runbooks/runbook-observability.md`

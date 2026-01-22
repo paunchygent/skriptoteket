@@ -12,14 +12,20 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-01-21
+- Date: 2026-01-22
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: history in `.agent/readme-first.md`
 
-## Current Session (2026-01-21)
+## Current Session (2026-01-22)
 
+- PR-0049 SRP splits completed: `src/skriptoteket/application/editor/edit_ops/`, `src/skriptoteket/web/api/v1/editor/models/`,
+  `src/skriptoteket/infrastructure/runner/docker/`, `src/skriptoteket/workers/execution_queue/`,
+  `src/skriptoteket/di/infrastructure/` (container wiring updated in `src/skriptoteket/di/__init__.py`).
+- Added pre-EPIC-19 runner seam stories: `docs/backlog/stories/story-19-04-runner-request-factory-seam.md`,
+  `docs/backlog/stories/story-19-05-runner-result-parser-seam.md`,
+  `docs/backlog/stories/story-19-06-runner-contract-selection-seam.md` (EPIC-19 + docs index updated).
 - EPIC-19 approved (runner request envelope + FileRefs + promotions + runner contract v3 foundations).
   - Files: `docs/backlog/epics/epic-19-runner-io-and-file-references-foundations.md`,
     `docs/backlog/reviews/review-epic-19-runner-io-and-file-references-foundations.md`.
@@ -34,7 +40,8 @@ Keep this file updated so the next session can pick up work quickly.
     `docs/adr/adr-0031-multi-file-input-contract.md`, `docs/adr/adr-0039-session-file-persistence.md`.
 - PR-0047: softened contiguous-echo drop, added right-side replace metadata, and tightened inline prompts.
   - Backend normalization + replace hint: `src/skriptoteket/application/editor/completion_handler.py`.
-  - Response field + API plumbing: `src/skriptoteket/protocols/llm.py`, `src/skriptoteket/web/api/v1/editor/models.py`, `src/skriptoteket/web/api/v1/editor/completions.py`.
+  - Response field + API plumbing: `src/skriptoteket/protocols/llm/`, `src/skriptoteket/web/api/v1/editor/models/`,
+    `src/skriptoteket/web/api/v1/editor/completions.py`.
   - Frontend acceptance replace window: `frontend/apps/skriptoteket/src/composables/editor/skriptoteketGhostText.ts`.
   - Prompt tweaks: `src/skriptoteket/application/editor/system_prompts/inline_completion_v1.txt`,
     `src/skriptoteket/application/editor/system_prompts/inline_completion_gpt5_v1.txt`.
@@ -64,6 +71,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Verification
 
 - Services (running):
+  - Dev-local (backend + SPA) on `:8000`/`:5173`: `pdm run dev-local` (SPA check via `curl -I http://127.0.0.1:5173/`).
   - Local backend (FIM) on `:8002`: `WATCHFILES_FORCE_POLLING=true LLM_COMPLETION_ENABLED=true LLM_COMPLETION_SYSTEM_PROMPT_MAX_TOKENS=2048 pdm run uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8002` (log: `.artifacts/inline-completion-verify-local.log`).
   - GPT backend on `:8003`: `WATCHFILES_FORCE_POLLING=true LLM_COMPLETION_ENABLED=true LLM_COMPLETION_BASE_URL=https://api.openai.com LLM_COMPLETION_MODEL=gpt-5-nano AI_REMOTE_PROVIDERS_ENABLED=true LLM_COMPLETION_SYSTEM_PROMPT_MAX_TOKENS=2048 pdm run uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8003` (log: `.artifacts/inline-completion-verify-gpt5.log`).
   - Vite (local) on `:5173` → proxy `:8002`: `VITE_DEV_PROXY_TARGET=http://127.0.0.1:8002 pnpm -C frontend --filter @skriptoteket/spa dev`.
@@ -82,6 +90,8 @@ Keep this file updated so the next session can pick up work quickly.
   - `pdm run typecheck`
   - `pdm run test`
   - `pdm run fe-test`
+  - `pdm run fe-test-coverage`
+  - `pdm run fe-build`
   - `pdm run docs-validate`
 
 ## How to Run

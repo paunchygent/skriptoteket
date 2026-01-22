@@ -5,7 +5,7 @@ title: "Refactor: backend SRP split for largest god modules"
 status: ready
 owners: "agents"
 created: 2026-01-21
-updated: 2026-01-21
+updated: 2026-01-22
 stories:
   - "ST-06-16"
 tags: ["backend", "refactor", "srp", "ddd"]
@@ -92,6 +92,23 @@ Prioritize the largest backend modules that mix responsibilities. Exclude script
 - Keep public entrypoints stable where possible; if re-exporting is needed, use thin wrapper modules.
 - Keep DI and protocol boundaries explicit; avoid cross-layer dependencies.
 - Update tests to import the stable entrypoints or update fixtures if module paths change.
+
+### Checklist (live)
+
+- [x] Split `src/skriptoteket/protocols/llm.py` into `src/skriptoteket/protocols/llm/` package and delete the old module (no shim; package `__init__` re-exports).
+- [x] Refactor `src/skriptoteket/application/editor/completion_handler.py` into `application/editor/completion/` (attempts/normalization/telemetry/capture/flow) with a thin handler entrypoint.
+- [x] Extract chat stream capture + context-window error helpers into `application/editor/chat_stream/` and slim `chat_stream_orchestrator.py`.
+- [x] Extract unified-diff line normalization steps into `infrastructure/editor/unified_diff/normalize_steps.py`.
+- [x] Refactor `src/skriptoteket/application/editor/edit_ops_handler.py` into cohesive submodules.
+- [x] Split `src/skriptoteket/web/api/v1/editor/models.py` into request/response/common DTO modules.
+- [x] Split `src/skriptoteket/infrastructure/runner/docker/runner.py` into request/result/container helper modules with a thin orchestrator.
+- [x] Refactor `src/skriptoteket/workers/execution_queue_job_processor.py` into orchestration/state/telemetry helpers.
+- [x] Split `src/skriptoteket/di/infrastructure.py` into per-domain wiring modules.
+- [ ] Update tests/imports and run the full quality gate set.
+
+**Decisions recorded**
+
+- No legacy shim file for `protocols.llm`; the import path remains stable via the package `__init__` re-exports.
 
 ### 4) Acceptance checks
 

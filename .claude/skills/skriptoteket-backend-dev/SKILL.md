@@ -42,6 +42,8 @@ Tip: generate a fresh tree with `find src/skriptoteket -maxdepth 2 -type d`.
 - Raise `DomainError` (no HTTP) and map to HTTP in `src/skriptoteket/web/*`.
 - Unit of Work owns commit/rollback; repositories never commit (see `src/skriptoteket/infrastructure/db/uow.py`).
 - Avoid OpenAPI breakage: do NOT use `from __future__ import annotations` in router modules (rule 040).
+- For editor AI / LLM changes: follow `.agent/rules/047-ai-llm-guardrails.md` + `docs/runbooks/runbook-openai-responses-api.md`.
+- For execution queue/worker changes: follow `.agent/rules/062-execution-queue-worker-loop.md` + ADR-0062.
 
 ## Key ADRs + “goal state” watchlist
 

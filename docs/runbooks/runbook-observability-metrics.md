@@ -20,7 +20,7 @@ Metrics and health endpoints exposed by Skriptoteket, plus Prometheus scrape gui
   "service": "skriptoteket",
   "status": "healthy|degraded|unhealthy",
   "message": "Service is healthy",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "environment": "production",
   "checks": {
     "service_responsive": true,

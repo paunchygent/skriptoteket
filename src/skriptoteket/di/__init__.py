@@ -1,7 +1,7 @@
 """Dependency injection container assembly.
 
 Split into domain-specific providers for maintainability:
-- infrastructure.py: Database, repositories, core services
+- infrastructure/: Database, repositories, core services
 - identity.py: Authentication and user management
 - catalog.py: Tool browsing and maintainer management
 - scripting.py: Script execution and version management
@@ -17,7 +17,15 @@ from skriptoteket.di.catalog import CatalogProvider
 from skriptoteket.di.editor import EditorProvider
 from skriptoteket.di.favorites import FavoritesProvider
 from skriptoteket.di.identity import IdentityProvider
-from skriptoteket.di.infrastructure import InfrastructureProvider
+from skriptoteket.di.infrastructure import (
+    InfrastructureCuratedAppsProvider,
+    InfrastructureDatabaseProvider,
+    InfrastructureRepositoryProvider,
+    InfrastructureRunnerProvider,
+    InfrastructureScriptingUiProvider,
+    InfrastructureServicesProvider,
+    InfrastructureSessionFilesProvider,
+)
 from skriptoteket.di.llm import LlmProvider
 from skriptoteket.di.scripting import ScriptingProvider
 from skriptoteket.di.suggestions import SuggestionsProvider
@@ -27,7 +35,13 @@ __all__ = [
     "EditorProvider",
     "FavoritesProvider",
     "IdentityProvider",
-    "InfrastructureProvider",
+    "InfrastructureCuratedAppsProvider",
+    "InfrastructureDatabaseProvider",
+    "InfrastructureRepositoryProvider",
+    "InfrastructureRunnerProvider",
+    "InfrastructureScriptingUiProvider",
+    "InfrastructureServicesProvider",
+    "InfrastructureSessionFilesProvider",
     "LlmProvider",
     "ScriptingProvider",
     "SuggestionsProvider",
@@ -38,7 +52,13 @@ __all__ = [
 def create_container(settings: Settings):
     """Create the DI container with all domain providers."""
     return make_async_container(
-        InfrastructureProvider(settings),
+        InfrastructureDatabaseProvider(settings),
+        InfrastructureRepositoryProvider(),
+        InfrastructureRunnerProvider(),
+        InfrastructureScriptingUiProvider(),
+        InfrastructureServicesProvider(),
+        InfrastructureSessionFilesProvider(),
+        InfrastructureCuratedAppsProvider(),
         IdentityProvider(),
         CatalogProvider(),
         FavoritesProvider(),

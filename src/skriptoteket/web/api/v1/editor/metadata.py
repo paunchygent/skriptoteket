@@ -19,11 +19,8 @@ from skriptoteket.web.auth.api_dependencies import (
     require_csrf_token,
 )
 
-from .models import (
-    EditorToolMetadataRequest,
-    EditorToolMetadataResponse,
-    EditorToolSlugRequest,
-)
+from .models.requests import EditorToolMetadataRequest, EditorToolSlugRequest
+from .models.responses import EditorToolMetadataResponse
 
 router = APIRouter()
 

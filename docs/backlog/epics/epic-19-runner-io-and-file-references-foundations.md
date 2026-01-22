@@ -5,7 +5,7 @@ title: "Runner I/O + file references foundations"
 status: active
 owners: "agents"
 created: 2026-01-20
-updated: 2026-01-20
+updated: 2026-01-22
 outcome: "Runner-based tools use a single request envelope and first-class file references (run/session/vault) with explicit state semantics and structured errors, enabling robust multi-step workflows and future vault reuse without path leakage."
 ---
 
@@ -49,6 +49,9 @@ Tool scripts should be able to follow a single, stable mental model:
 - [ST-19-01: Runner request envelope: /work/request.json (replace env payloads)](../stories/story-19-01-runner-request-envelope.md)
 - [ST-19-02: FileRef model + resolver + promotion plumbing (session + vault)](../stories/story-19-02-file-refs-resolver-and-promotion.md)
 - [ST-19-03: Runner contract v3: structured errors + state_update + promotions](../stories/story-19-03-runner-contract-v3-structured-errors-state-update-and-promotions.md)
+- [ST-19-04: Runner request factory seam (V2)](../stories/story-19-04-runner-request-factory-seam.md)
+- [ST-19-05: Runner result parser seam (V2)](../stories/story-19-05-runner-result-parser-seam.md)
+- [ST-19-06: Runner contract selection seam (V2 default)](../stories/story-19-06-runner-contract-selection-seam.md)
 
 ## Enables / blocks
 

@@ -17,11 +17,8 @@ from skriptoteket.web.auth.api_dependencies import (
     require_csrf_token,
 )
 
-from .models import (
-    SandboxSettingsResolveRequest,
-    SandboxSettingsResponse,
-    SandboxSettingsSaveRequest,
-)
+from .models.requests import SandboxSettingsResolveRequest, SandboxSettingsSaveRequest
+from .models.responses import SandboxSettingsResponse
 
 router = APIRouter()
 

@@ -23,12 +23,8 @@ from skriptoteket.web.auth.api_dependencies import (
     require_superuser_api,
 )
 
-from .models import (
-    PublishVersionRequest,
-    RequestChangesRequest,
-    SubmitReviewRequest,
-    WorkflowActionResponse,
-)
+from .models.requests import PublishVersionRequest, RequestChangesRequest, SubmitReviewRequest
+from .models.responses import WorkflowActionResponse
 
 router = APIRouter()
 

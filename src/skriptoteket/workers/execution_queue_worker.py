@@ -26,7 +26,7 @@ from skriptoteket.protocols.scripting_ui import (
 )
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
-from skriptoteket.workers.execution_queue_job_processor import process_claim
+from skriptoteket.workers.execution_queue.processor import process_claim
 
 logger = structlog.get_logger(__name__)
 

@@ -30,7 +30,7 @@ services:
       # Observability (requires compose.observability.yaml running)
       OTEL_TRACING_ENABLED: "true"
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
-      SERVICE_VERSION: "0.1.0"
+      SERVICE_VERSION: "0.2.0"
       # Email (SMTP)
       EMAIL_PROVIDER: ${EMAIL_PROVIDER:-smtp}
       EMAIL_SMTP_HOST: ${EMAIL_SMTP_HOST:-mail.privateemail.com}

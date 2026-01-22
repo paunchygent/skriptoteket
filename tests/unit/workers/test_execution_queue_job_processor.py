@@ -9,7 +9,7 @@ from skriptoteket.domain.scripting.execution import ToolExecutionResult
 from skriptoteket.domain.scripting.models import RunStatus
 from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result, UiFormAction
 from skriptoteket.protocols.execution_queue import ToolRunJobClaim
-from skriptoteket.workers.execution_queue_job_processor import process_claim
+from skriptoteket.workers.execution_queue.processor import process_claim
 from tests.unit.workers.execution_queue_job_processor_test_support import make_harness
 
 

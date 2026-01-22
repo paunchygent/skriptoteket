@@ -21,7 +21,8 @@ from skriptoteket.web.auth.api_dependencies import (
     require_csrf_token,
 )
 
-from .models import AssignMaintainerRequest, MaintainerListResponse, MaintainerSummary
+from .models.requests import AssignMaintainerRequest
+from .models.responses import MaintainerListResponse, MaintainerSummary
 
 router = APIRouter()
 

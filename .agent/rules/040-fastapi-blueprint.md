@@ -2,27 +2,46 @@
 id: "040-fastapi-blueprint"
 type: "implementation"
 created: 2025-12-13
+updated: 2026-01-22
 scope: "backend"
 ---
 
-# 040: FastAPI Service Blueprint
+# 040: FastAPI Service Blueprint (SPA + API v1)
 
-## 1. Application Factory
+This repo is **SPA-first** (ADR-0027): FastAPI serves a built Vue/Vite SPA and exposes JSON APIs under `/api/v1/*`.
+There are no server-rendered page/HTMX surfaces.
+
+## 1. Application factory
+
+Canonical entrypoint:
+
+- `src/skriptoteket/web/app.py`
+
+Expected shape (simplified; mirrors the real implementation):
 
 ```python
-# app.py
-from fastapi import FastAPI
-from dishka.integrations.fastapi import setup_dishka
+from pathlib import Path
 
-from src.config import Settings
-from src.di import create_container
-from src.web import router as web_router
-from src.api.v1 import router as v1_router
-from src.api.middleware.correlation import CorrelationMiddleware
-from src.api.middleware.error_handler import error_handler_middleware
+from dishka.integrations.fastapi import setup_dishka
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+
+from skriptoteket.config import Settings
+from skriptoteket.di import create_container
+from skriptoteket.observability.logging import configure_logging
+from skriptoteket.observability.tracing import init_tracing
+from skriptoteket.web.middleware.correlation import CorrelationMiddleware
+from skriptoteket.web.middleware.error_handler import error_handler_middleware
+from skriptoteket.web.middleware.metrics import metrics_middleware
+from skriptoteket.web.middleware.tracing import tracing_middleware
+from skriptoteket.web.router import router as web_router
+from skriptoteket.web.routes.observability import router as observability_router
 
 def create_app() -> FastAPI:
     settings = Settings()
+    configure_logging(...)
+    if settings.OTEL_TRACING_ENABLED:
+        init_tracing(settings.SERVICE_NAME)
 
     app = FastAPI(
         title=settings.APP_NAME,
@@ -30,322 +49,79 @@ def create_app() -> FastAPI:
         docs_url="/docs" if settings.ENABLE_DOCS else None,
     )
 
-    # Middleware (order matters: first added = outermost)
+    # Middleware order: correlation (ASGI) → tracing → metrics → error_handler
     app.middleware("http")(error_handler_middleware)
+    app.middleware("http")(metrics_middleware)
+    app.middleware("http")(tracing_middleware)
     app.add_middleware(CorrelationMiddleware)
 
-    # DI container
+    static_dir = Path(__file__).resolve().parent / "static"
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
     container = create_container(settings)
     setup_dishka(container, app)
 
-    # Routers
-    app.include_router(web_router)  # Server-rendered UI (default)
-    app.include_router(v1_router, prefix="/api/v1")
-
-    # Health endpoint
-    @app.get("/health")
-    async def health():
-        return {"status": "ok"}
-
+    app.include_router(observability_router)  # /healthz, /metrics (public)
+    app.include_router(web_router)           # /api/v1 + SPA fallback
     return app
-
-app = create_app()
 ```
 
-## 2. Web Layer (server-rendered UI)
+## 2. Router organization (REQUIRED)
 
-### OpenAPI-safe typing (REQUIRED)
+### API v1 (SPA consumption)
 
-FastAPI uses type hints to build OpenAPI. With our current stack (FastAPI + Pydantic v2), postponed evaluation of
-annotations can surface as unresolved `ForwardRef`s and break `/docs` and `/openapi.json`.
+- Routers live in: `src/skriptoteket/web/api/v1/`
+- Router aggregation lives in: `src/skriptoteket/web/router.py`
 
-- **FORBIDDEN**: `from __future__ import annotations` in any router module (e.g. `src/skriptoteket/web/pages/**`,
-  `src/skriptoteket/web/partials/**`, `src/skriptoteket/api/**`).
-- **FORBIDDEN**: Union return type hints of Starlette responses (e.g. `RedirectResponse | HTMLResponse`).
-- **REQUIRED**: If an endpoint may return multiple response types (e.g. render a template on validation error and
-  redirect on success), annotate the return type as `fastapi.responses.Response` and set an explicit
-  `response_class=...` on the route decorator.
+### SPA history fallback (MUST be last)
 
-### Router organization
+- `src/skriptoteket/web/routes/spa_fallback.py`
+- MUST be the last router registered in `src/skriptoteket/web/router.py` so it does not intercept `/api/*`, `/static/*`,
+  or observability endpoints.
+
+## 3. OpenAPI-safe typing (REQUIRED)
+
+FastAPI builds OpenAPI from type hints. With postponed evaluation / ForwardRef edge cases, router annotations can break
+`/docs` and `/openapi.json`.
+
+- **FORBIDDEN**: `from __future__ import annotations` in any *router module* under:
+  - `src/skriptoteket/web/api/v1/**`
+  - `src/skriptoteket/web/routes/**`
+- **FORBIDDEN**: Union return type hints of Starlette responses (e.g. `FileResponse | JSONResponse`).
+- **REQUIRED**: If an endpoint may return multiple response types, annotate the return type as
+  `fastapi.responses.Response` (or `starlette.responses.Response`) and set an explicit `response_class=...` on the
+  decorator when needed.
+
+## 4. Endpoint pattern (REQUIRED)
+
+- Web layer stays thin: validate inputs, call a handler protocol, return a boundary model.
+- Use Dishka injection via `FromDishka[...]`.
+- For mutating endpoints, enforce CSRF via `require_csrf_token` and auth via `require_user_api`.
+
+Example (pattern only):
 
 ```python
-# web/__init__.py
-from fastapi import APIRouter
-from src.web.pages.tools import router as tools_pages_router
-from src.web.partials.tools import router as tools_partials_router
-
-router = APIRouter()
-router.include_router(tools_pages_router)
-router.include_router(tools_partials_router)
-```
-
-### HTMX endpoint pattern (partials)
-
-```python
-# web/partials/tools.py
-from fastapi import APIRouter, File, Request, UploadFile
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from dishka.integrations.fastapi import FromDishka, inject
+from fastapi import APIRouter, Depends
 
-from src.protocols import RunToolCommandHandlerProtocol
-from src.application.tools.commands import RunToolCommand
+from skriptoteket.domain.identity.models import User
+from skriptoteket.protocols.catalog import ListToolsHandlerProtocol
+from skriptoteket.web.auth.api_dependencies import require_user_api
 
-router = APIRouter()
-templates = Jinja2Templates(directory="src/web/templates")
+router = APIRouter(prefix="/api/v1")
 
-@router.post("/tools/{tool_id}/run", response_class=HTMLResponse)
+@router.get("/tools")
 @inject
-async def run_tool(
-    request: Request,
-    tool_id: str,
-    file: UploadFile = File(...),
-    handler: FromDishka[RunToolCommandHandlerProtocol],
-) -> HTMLResponse:
-    result = await handler.handle(RunToolCommand(tool_id=tool_id, file=file))
-    return templates.TemplateResponse(
-        "tools/_result.html",
-        {"request": request, "result": result},
-    )
+async def list_tools(
+    handler: FromDishka[ListToolsHandlerProtocol],
+    user: User = Depends(require_user_api),
+):
+    return await handler.handle(actor=user, query=...)
 ```
 
-## 3. API Router Organization (optional)
+## 5. OpenAPI as the contract (frontend types)
 
-```python
-# api/v1/__init__.py
-from fastapi import APIRouter
-from src.api.v1.users import router as users_router
-from src.api.v1.orders import router as orders_router
-
-router = APIRouter()
-router.include_router(users_router, prefix="/users", tags=["users"])
-router.include_router(orders_router, prefix="/orders", tags=["orders"])
-```
-
-## 4. API Endpoint Pattern (optional)
-
-```python
-# api/v1/users.py
-from fastapi import APIRouter, status
-from dishka.integrations.fastapi import FromDishka, inject
-from pydantic import BaseModel
-from uuid import UUID
-
-from src.protocols import UserServiceProtocol
-from src.domain.errors import DomainError, ErrorCode
-from src.domain.users.models import User
-
-router = APIRouter()
-
-# Request/Response DTOs
-class CreateUserRequest(BaseModel):
-    email: str
-    name: str
-
-class UserResponse(BaseModel):
-    id: UUID
-    email: str
-    name: str
-
-    @classmethod
-    def from_domain(cls, user: User) -> "UserResponse":
-        return cls(id=user.id, email=user.email, name=user.name)
-
-# Endpoints
-@router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-@inject
-async def create_user(
-    request: CreateUserRequest,
-    service: FromDishka[UserServiceProtocol],
-) -> UserResponse:
-    user = await service.create(request)
-    return UserResponse.from_domain(user)
-
-@router.get("/{user_id}", response_model=UserResponse)
-@inject
-async def get_user(
-    user_id: UUID,
-    service: FromDishka[UserServiceProtocol],
-) -> UserResponse:
-    user = await service.get_by_id(user_id)
-    if not user:
-        raise DomainError(
-            code=ErrorCode.USER_NOT_FOUND,
-            message="User not found",
-            details={"user_id": str(user_id)},
-        )
-    return UserResponse.from_domain(user)
-```
-
-## 5. Correlation Middleware
-
-```python
-# api/middleware/correlation.py
-from fastapi import Request
-from starlette.middleware.base import BaseHTTPMiddleware
-from uuid import uuid4, UUID
-
-class CorrelationMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        correlation_id = request.headers.get("X-Correlation-ID")
-        if correlation_id:
-            try:
-                request.state.correlation_id = UUID(correlation_id)
-            except ValueError:
-                request.state.correlation_id = uuid4()
-        else:
-            request.state.correlation_id = uuid4()
-
-        response = await call_next(request)
-        response.headers["X-Correlation-ID"] = str(request.state.correlation_id)
-        return response
-```
-
-## 6. Error Handler Middleware
-
-```python
-# api/middleware/error_handler.py
-from fastapi import Request
-from fastapi.responses import JSONResponse
-from fastapi.templating import Jinja2Templates
-import structlog
-
-from src.domain.errors import DomainError, ErrorCode
-from src.api.error_mapping import error_to_status
-
-logger = structlog.get_logger()
-templates = Jinja2Templates(directory="src/web/templates")
-
-async def error_handler_middleware(request: Request, call_next):
-    try:
-        return await call_next(request)
-    except DomainError as e:
-        logger.warning(
-            "Application error",
-            error_code=e.code.value,
-            message=e.message,
-            correlation_id=str(getattr(request.state, "correlation_id", None)),
-        )
-
-        status_code = error_to_status(e.code)
-        if request.url.path.startswith("/api/"):
-            return JSONResponse(
-                status_code=status_code,
-                content={
-                    "error": {
-                        "code": e.code.value,
-                        "message": e.message,
-                        "details": e.details,
-                    }
-                },
-            )
-
-        # Web UI: return an HTML page (or fragment for HTMX).
-        return templates.TemplateResponse(
-            request=request,
-            name="shared/error.html",
-            context={"error": e},
-            status_code=status_code,
-        )
-    except Exception as e:
-        logger.exception(
-            "Unhandled exception",
-            correlation_id=str(getattr(request.state, "correlation_id", None)),
-        )
-        return JSONResponse(
-            status_code=500,
-            content={
-                "error": {
-                    "code": ErrorCode.INTERNAL_ERROR.value,
-                    "message": "Internal server error",
-                }
-            },
-        )
-```
-
-## 7. Configuration
-
-```python
-# config.py
-from pydantic_settings import BaseSettings, SettingsConfigDict
-
-class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-
-    # App
-    APP_NAME: str = "myapp"
-    APP_VERSION: str = "1.0.0"
-    ENVIRONMENT: str = "development"
-    ENABLE_DOCS: bool = True
-
-    # Database
-    DATABASE_URL: str
-    DATABASE_POOL_SIZE: int = 10
-    DATABASE_MAX_OVERFLOW: int = 20
-
-    # Kafka
-    KAFKA_BOOTSTRAP_SERVERS: str = "localhost:9092"
-    KAFKA_CONSUMER_GROUP: str = "myapp-consumer"
-
-    # Redis
-    REDIS_URL: str = "redis://localhost:6379"
-
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
-```
-
-**REQUIRED**: Construct `Settings()` once at application startup and provide it via DI (Dishka `Scope.APP`), rather than
-using a global cached singleton.
-
-- **FORBIDDEN**: `@lru_cache`-based `get_settings()` patterns for settings in production code.
-- **WHY**: Global singletons make tests and env overrides brittle and obscure the dependency graph.
-
-## 8. Router/Page Size Limits
-
-| Metric | Limit |
-|--------|-------|
-| LoC per API router | <150 |
-| LoC per web module | <200 |
-| Endpoints per module | <10 |
-| Nesting depth | max 2 (`/api/v1/users`) |
-
-Split large routers into submodules:
-
-```text
-api/v1/users/
-├── __init__.py      # Router aggregation
-├── crud.py          # CRUD endpoints
-├── auth.py          # Auth-related endpoints
-└── admin.py         # Admin endpoints
-```
-
-## 9. Validation Patterns
-
-```python
-# Request validation via Pydantic
-class CreateOrderRequest(BaseModel):
-    user_id: UUID
-    items: list[OrderItemRequest]
-
-    @field_validator("items")
-    @classmethod
-    def validate_items(cls, v):
-        if not v:
-            raise ValueError("Order must have at least one item")
-        return v
-
-# Path parameter validation
-@router.get("/{order_id}")
-async def get_order(
-    order_id: UUID,  # Automatic UUID validation
-    service: FromDishka[OrderServiceProtocol],
-): ...
-
-# Query parameter validation
-@router.get("")
-async def list_orders(
-    limit: int = Query(default=20, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
-): ...
-```
+- The SPA treats OpenAPI as source of truth.
+- After changing API models/routes, run:
+  - `pdm run openapi-export-v1`
+  - `pdm run fe-gen-api-types` (runs OpenAPI export + TypeScript generation)

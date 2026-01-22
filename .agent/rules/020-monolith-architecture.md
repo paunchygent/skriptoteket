@@ -2,171 +2,93 @@
 id: "020-monolith-architecture"
 type: "architecture"
 created: 2025-12-13
+updated: 2026-01-22
 scope: "all"
 ---
 
-# 020: Monolith Layer Architecture
+# 020: Monolith Layer Architecture (Skriptoteket)
 
-## 1. Directory Structure
+Skriptoteket is a **FastAPI monolith** with a **Vue 3 + Vite SPA** frontend. The backend serves:
+
+- `/api/v1/*` JSON APIs (OpenAPI is the contract; TS types are generated from it)
+- `/static/*` assets (including the built SPA)
+- SPA history fallback (serves `index.html` for client-side routes)
+
+Legacy SSR/Jinja/HTMX is **removed** (ADR-0027).
+
+## 1. Repository shape
 
 ```text
 src/
-├── app.py                    # FastAPI application factory
-├── config.py                 # Pydantic Settings (env-based)
-├── protocols.py              # ALL Protocol definitions
-├── di.py                     # Dishka container setup
-│
-├── api/                      # HTTP Layer (thin)
-│   ├── v1/
-│   │   ├── __init__.py       # Router aggregation
-│   │   ├── users.py          # User endpoints
-│   │   └── orders.py         # Order endpoints
-│   └── middleware/
-│       ├── correlation.py    # Correlation ID injection
-│       └── error_handler.py  # Global exception → response
-│
-├── web/                      # Server-rendered UI (thin)
-│   ├── __init__.py           # Router aggregation
-│   ├── pages/                # Page routes (HTML)
-│   ├── partials/             # HTMX partial endpoints
-│   ├── templates/            # Jinja2 templates
-│   └── static/               # Static assets (CSS/JS)
-│
-├── domain/                   # Business Logic (pure)
-│   ├── users/
-│   │   ├── services.py       # Application services
-│   │   ├── models.py         # Domain entities (Pydantic)
-│   │   └── events.py         # Domain events
-│   └── orders/
-│       ├── services.py
-│       ├── models.py
-│       └── events.py
-│
-├── infrastructure/           # External Integrations
-│   ├── repositories/
-│   │   ├── user_repository.py
-│   │   └── order_repository.py
-│   ├── clients/              # External HTTP clients
-│   │   └── payment_client.py
-│   └── publishers/           # Kafka publishers
-│       └── event_publisher.py
-│
-├── workers/                  # Kafka Consumers (optional)
-│   ├── __init__.py
-│   └── order_consumer.py
-│
-└── tests/
-    ├── unit/
-    ├── integration/
-    └── fixtures/
+└── skriptoteket/                 # The only Python package (src-layout)
+    ├── config.py                 # Pydantic Settings
+    ├── di/                       # Dishka container assembly (composition root)
+    ├── protocols/                # typing.Protocol boundaries (by domain)
+    ├── domain/                   # Pure domain rules (no web/db/framework imports)
+    ├── application/              # Use-cases (handlers orchestrate protocols + UoW)
+    ├── infrastructure/           # Protocol implementations (DB/repos/runner/llm/etc.)
+    ├── workers/                  # Background loops (e.g. execution queue worker)
+    ├── observability/            # logging/metrics/tracing helpers
+    └── web/                      # FastAPI app + routers + middleware + static + SPA fallback
+
+runner/                           # Runner image entrypoint/runtime (tool containers)
+frontend/                         # pnpm workspace (SPA + component lib)
+docs/                             # Docs-as-code (PRDs/ADRs/backlog/runbooks/releases)
+tests/                            # pytest (unit + integration) + fixtures
 ```
 
-## 2. Layer Rules
+## 2. Layer boundaries (REQUIRED)
 
-### API Layer (`api/`)
+### Web layer (`src/skriptoteket/web/`)
 
-- **Thin**: Validation, routing, response formatting only
-- **No business logic**: Delegates to domain services
-- **DTOs**: Pydantic models for request/response
-- **Size**: <150 LoC per router file
+- **Responsibilities**: routing, auth/CSRF deps, request validation, response shaping, error mapping, SPA hosting.
+- **Must stay thin**: no business rules; call application handlers via protocols.
+- **SPA hosting**:
+  - Static: `src/skriptoteket/web/static/`
+  - SPA build output: `src/skriptoteket/web/static/spa/`
+  - History fallback: `src/skriptoteket/web/routes/spa_fallback.py` (MUST be registered last).
 
-```python
-@router.post("/users", response_model=UserResponse)
-@inject
-async def create_user(
-    request: CreateUserRequest,
-    service: FromDishka[UserServiceProtocol],
-) -> UserResponse:
-    user = await service.create(request)
-    return UserResponse.from_domain(user)
-```
+### Application layer (`src/skriptoteket/application/`)
 
-### Web Layer (`web/`)
+- **Responsibilities**: orchestrate use-cases (commands/queries), coordinate protocols + Unit of Work, enforce
+  cross-entity invariants that are not purely local to one domain object.
+- **No framework coupling**: no FastAPI types or routers.
 
-- **Thin**: routing + template rendering only
-- **No business logic**: calls application/domain handlers via protocols
-- **HTMX-friendly**: partial endpoints return HTML fragments
+### Domain layer (`src/skriptoteket/domain/`)
 
-```python
-@router.get("/tools", response_class=HTMLResponse)
-@inject
-async def list_tools(
-    request: Request,
-    handler: FromDishka[ListToolsQueryHandlerProtocol],
-):
-    result = await handler.handle(ListToolsQuery())
-    return templates.TemplateResponse(
-        request=request,
-        name="tools/index.html",
-        context={"tools": result.tools},
-    )
-```
+- **Pure**: no FastAPI, SQLAlchemy, Docker SDK, network IO, or environment reads.
+- **Errors**: raise `DomainError` (no HTTP).
 
-### Domain Layer (`domain/`)
+### Protocols (`src/skriptoteket/protocols/`)
 
-- **Pure business logic**: No framework dependencies
-- **Protocol dependencies**: Injected via constructor
-- **Domain events**: Defined here, published via injected publisher
-- **No I/O**: All I/O through injected protocols
+- **Contract boundary**: depend on `typing.Protocol`, not concrete implementations.
+- **Placement**: protocols are organized by domain (not a single `protocols.py` file).
 
-```python
-class UserService(UserServiceProtocol):
-    def __init__(
-        self,
-        repo: UserRepositoryProtocol,
-        publisher: EventPublisherProtocol,
-    ):
-        self._repo = repo
-        self._publisher = publisher
+### Infrastructure (`src/skriptoteket/infrastructure/`)
 
-    async def create(self, data: CreateUserDTO) -> User:
-        user = await self._repo.create(data)
-        await self._publisher.publish(UserCreatedEvent(user_id=user.id))
-        return user
-```
+- **Implements protocols**: repositories, DB models, runner integration, LLM providers, etc.
+- **Transactions**: repositories never commit; Unit of Work owns commit/rollback.
 
-### Infrastructure Layer (`infrastructure/`)
+### Workers (`src/skriptoteket/workers/`)
 
-- **Protocol implementations**: Repositories, clients, publishers
-- **Framework-specific**: SQLAlchemy, aiohttp, aiokafka
-- **Transactions**: Unit of Work owns session + commit/rollback; repositories receive a session and never commit
-- **No business logic**: Data access and external calls only
+- Background processes (e.g. execution queue worker loop per ADR-0062).
+- Must use the same application/infrastructure layers (no ad-hoc DB access patterns).
 
-## 3. Dependency Direction
+## 3. Dependency direction (REQUIRED)
 
 ```text
-api/ ──depends on──▶ domain/ ◀──implements── infrastructure/
-         │                           │
-         └─────── protocols.py ◀─────┘
+web/ ───────▶ application/ ───────▶ domain/
+ │                 │                 ▲
+ │                 └──── depends ────┘
+ │
+ └──────────▶ protocols/ ◀────────── infrastructure/
+                    ▲
+                    └──────── workers/
 ```
 
-- **Domain**: Zero external dependencies (pure Python + Pydantic)
-- **API**: Depends on domain protocols
-- **Infrastructure**: Implements domain protocols
+Rule of thumb:
 
-## 4. Cross-Cutting Files
-
-| File | Purpose | Location |
-|------|---------|----------|
-| `protocols.py` | All Protocol definitions | `src/` root |
-| `config.py` | Pydantic Settings | `src/` root |
-| `di.py` | Dishka provider setup | `src/` root |
-| `app.py` | FastAPI factory | `src/` root |
-
-## 5. Forbidden Patterns
-
-| Pattern | Why Forbidden |
-|---------|---------------|
-| Direct DB access in API | Violates layer separation |
-| Business logic in routers | Domain logic belongs in domain/ |
-| Infrastructure imports in domain | Domain must stay pure |
-| Circular imports | Indicates architecture violation |
-| God classes (>500 LoC) | Violates single responsibility |
-
-## 6. Domain Boundaries
-
-Each domain subdirectory (`domain/users/`, `domain/orders/`) is a bounded context:
-
-- Has its own models, services, events
-- Communicates with other domains via domain events
-- Never imports directly from other domain subdirectories
+- `domain` is pure.
+- `web` is thin.
+- `infrastructure` is where IO lives.
+- `protocols` are the seams.

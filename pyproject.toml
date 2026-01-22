@@ -1,7 +1,7 @@
 [project]
 name = "hule-script-hub"
-version = "0.1.0"
-description = "Server-driven Script Hub for upload-based tools (csv/xlsx/docx/pdf/md/py) with HTMX-friendly UIs."
+version = "0.2.0"
+description = "Teacher-first Script Hub with FastAPI backend + Vue/Vite SPA and queue-backed Docker runner execution."
 authors = [
     { name = "Olof Larsson", email = "paunchygent@gmail.com" },
 ]
@@ -17,7 +17,7 @@ dependencies = [
     "pydantic-settings",
     "structlog",
 
-    # Web app (server-driven UI)
+    # Web app (API + SPA hosting)
     "fastapi",
     "uvicorn[standard]",
     "jinja2",

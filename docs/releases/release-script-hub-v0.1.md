@@ -2,15 +2,19 @@
 type: release
 id: REL-script-hub-v0.1
 title: "Script Hub v0.1 release notes (MVP)"
-status: draft
+status: superseded
 owners: "agents"
 created: 2025-12-19
+updated: 2026-01-22
 product: "script-hub"
 version: "0.1"
-links: ["PRD-script-hub-v0.1"]
+links: ["PRD-script-hub-v0.1", "REL-script-hub-v0.2.0"]
 ---
 
 ## Summary
+
+**Superseded:** the platform moved to a full SPA UI and tool UI contract v2 before these notes were finalized. See
+`docs/releases/release-script-hub-v0.2.0.md`.
 
 v0.1 is the MVP release of Skriptoteket / Script Hub: a teacher-first, server-rendered platform where authenticated
 users can browse and run published tools via an upload → run → view result flow, with role-based governance for how

@@ -15,7 +15,8 @@ from skriptoteket.web.auth.api_dependencies import (
     require_csrf_token,
 )
 
-from .models import ToolTaxonomyRequest, ToolTaxonomyResponse
+from .models.requests import ToolTaxonomyRequest
+from .models.responses import ToolTaxonomyResponse
 
 router = APIRouter()
 

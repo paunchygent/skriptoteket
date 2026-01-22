@@ -17,7 +17,8 @@ from skriptoteket.web.auth.api_dependencies import (
     require_csrf_token,
 )
 
-from .models import DraftLockReleaseResponse, DraftLockRequest, DraftLockResponse
+from .models.requests import DraftLockRequest
+from .models.responses import DraftLockReleaseResponse, DraftLockResponse
 
 router = APIRouter()
 

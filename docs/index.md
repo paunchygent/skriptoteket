@@ -17,6 +17,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Editor sandbox preview plan: `docs/reference/ref-editor-sandbox-preview-plan.md`
 - Runner execution flow codemap: `docs/reference/reports/codemaps/runner-execution-flow.md`
 - AI API surfaces codemap: `docs/reference/reports/codemaps/ai-api-surfaces-tool-editor.md`
+- Observability correlation trace codemap: `docs/reference/reports/codemaps/observability-correlation-trace.md`
 - Tool editor framework codemap: `docs/reference/ref-tool-editor-framework-codemap.md`
 - Migration roadmap (SPA): `docs/reference/reports/ref-vue-spa-migration-roadmap.md`
 - Toasts + system messages (SPA): `docs/reference/ref-toast-system-messages.md`
@@ -108,6 +109,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 ### Releases
 
 - `docs/releases/release-script-hub-v0.1.md`
+- `docs/releases/release-script-hub-v0.2.0.md`
 
 ### Backlog Epics
 
@@ -417,6 +419,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-19-01-runner-request-envelope.md`
 - `docs/backlog/stories/story-19-02-file-refs-resolver-and-promotion.md`
 - `docs/backlog/stories/story-19-03-runner-contract-v3-structured-errors-state-update-and-promotions.md`
+- `docs/backlog/stories/story-19-04-runner-request-factory-seam.md`
+- `docs/backlog/stories/story-19-05-runner-result-parser-seam.md`
+- `docs/backlog/stories/story-19-06-runner-contract-selection-seam.md`
 
 ### Reference
 

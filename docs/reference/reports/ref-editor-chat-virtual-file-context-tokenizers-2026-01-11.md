@@ -5,6 +5,7 @@ title: "Research: Editor chat virtual file context + tokenizer budgeting"
 status: active
 owners: "agents"
 created: 2026-01-11
+updated: 2026-01-22
 topic: "editor-ai"
 ---
 
@@ -24,20 +25,28 @@ model-accurate tokenizers.
 4. **Minimal API addition**: optional `active_file` + `virtual_files` in `EditorChatRequest` (backwards compatible).
 5. **Design for refactorability**: place context persistence behind a protocol so a future swap to blob storage is easy.
 
+## Update (2026-01-22)
+
+This proposal is largely implemented:
+
+- `EditorChatRequest` supports `active_file` + `virtual_files` (optional).
+- Chat history filtering supports hidden messages (virtual-file context messages are not returned to the UI).
+- Prompt budgeting uses tokenizer-backed counters (no chars-per-token heuristic).
+
 ## Current state (from codebase)
 
-- `EditorChatRequest` includes only `message` + `base_version_id` (no virtual files).
+- `EditorChatRequest` includes `message` + `base_version_id` and supports optional `active_file` + `virtual_files`.
 - `EditorChatCommand` mirrors this.
-- Chat history is stored in `tool_session_messages` and returned to the UI without filtering by `meta`.
-- Budgeting uses `estimate_text_tokens()` (chars-per-token heuristic) with “drop oldest messages first.”
+- Chat history is stored in `tool_session_messages` and the history response filters hidden messages by `meta`.
+- Budgeting uses tokenizer-backed `TokenCounter` implementations with “drop oldest messages first.”
 - Edit-ops already sends `active_file` + `virtual_files` and builds a JSON payload.
 
 Key files:
 
-- Chat: `src/skriptoteket/web/api/v1/editor/chat.py`, `src/skriptoteket/application/editor/chat_handler.py`
+- Chat: `src/skriptoteket/web/api/v1/editor/chat.py`, `src/skriptoteket/application/editor/chat_stream_orchestrator.py`
 - Edit-ops: `src/skriptoteket/application/editor/edit_ops_handler.py`
 - Budgeting: `src/skriptoteket/application/editor/prompt_budget.py`
-- Request models: `src/skriptoteket/web/api/v1/editor/models.py`, `src/skriptoteket/protocols/llm.py`
+- Request models: `src/skriptoteket/web/api/v1/editor/models/requests.py`, `src/skriptoteket/protocols/llm/`
 
 ## Option A vs Option C (deeper comparison)
 

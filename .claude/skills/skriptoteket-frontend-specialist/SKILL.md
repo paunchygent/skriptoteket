@@ -32,7 +32,6 @@ description: Skriptoteket frontend development (FastAPI backend + full Vue/Vite 
   - Built SPA assets: `src/skriptoteket/web/static/spa/` (served via history fallback)
 - Frontend workspace (pnpm): `frontend/`
   - SPA app: `frontend/apps/skriptoteket/`
-  - (Legacy) islands: `frontend/islands/`
 
 ## Workflow
 

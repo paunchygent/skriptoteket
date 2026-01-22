@@ -11,7 +11,8 @@ from skriptoteket.web.auth.api_dependencies import (
     require_session_api,
 )
 
-from .models import EditorInlineCompletionRequest, EditorInlineCompletionResponse
+from .models.requests import EditorInlineCompletionRequest
+from .models.responses import EditorInlineCompletionResponse
 
 router = APIRouter()
 

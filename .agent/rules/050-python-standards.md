@@ -97,9 +97,9 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from sqlalchemy import select
 
-# Local (absolute from src/)
-from src.protocols import UserRepositoryProtocol
-from src.domain.users.models import User
+# Local (absolute from package)
+from skriptoteket.protocols.identity import UserRepositoryProtocol
+from skriptoteket.domain.identity.models import User
 ```
 
 **Rules**:

@@ -22,15 +22,17 @@ from skriptoteket.web.auth.api_dependencies import (
 )
 from skriptoteket.web.editor_support import require_tool_access
 
-from .models import (
+from .models.common import EditorVirtualFiles
+from .models.requests import (
     EditorEditOpsApplyRequest,
+    EditorEditOpsPreviewRequest,
+    EditorEditOpsRequest,
+)
+from .models.responses import (
     EditorEditOpsPreviewErrorDetails,
     EditorEditOpsPreviewMeta,
-    EditorEditOpsPreviewRequest,
     EditorEditOpsPreviewResponse,
-    EditorEditOpsRequest,
     EditorEditOpsResponse,
-    EditorVirtualFiles,
 )
 
 router = APIRouter()

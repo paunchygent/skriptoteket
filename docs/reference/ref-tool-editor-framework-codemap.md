@@ -5,7 +5,7 @@ title: "Tool editor framework codemap (current vs target)"
 status: active
 owners: "agents"
 created: 2026-01-02
-updated: 2026-01-02
+updated: 2026-01-22
 topic: "tool editor framework"
 links:
   - "ADR-0022"
@@ -60,7 +60,7 @@ This doc is descriptive, not prescriptive. It does not introduce new behavior.
 - Sandbox run + actions: `src/skriptoteket/web/api/v1/editor/sandbox.py`
 - Sandbox settings: `src/skriptoteket/web/api/v1/editor/sandbox_settings.py`
 - Run details + artifact download: `src/skriptoteket/web/api/v1/editor/runs.py`
-- Editor models: `src/skriptoteket/web/api/v1/editor/models.py`
+- Editor models: `src/skriptoteket/web/api/v1/editor/models/`
 
 ### Domain + infra
 

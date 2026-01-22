@@ -24,7 +24,8 @@ from skriptoteket.web.auth.api_dependencies import (
 )
 from skriptoteket.web.editor_support import require_tool_access
 
-from .models import EditorChatHistoryMessage, EditorChatHistoryResponse, EditorChatRequest
+from .models.requests import EditorChatRequest
+from .models.responses import EditorChatHistoryMessage, EditorChatHistoryResponse
 
 router = APIRouter()
 

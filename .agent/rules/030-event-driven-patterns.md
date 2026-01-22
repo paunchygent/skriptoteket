@@ -64,7 +64,7 @@ class OrderCompletedV1(BaseModel):
 ## 3. Event Publisher Protocol
 
 ```python
-# protocols.py
+# protocols/<domain>.py (Skriptoteket uses a protocols package, not a single file)
 class EventPublisherProtocol(Protocol):
     async def publish(
         self,

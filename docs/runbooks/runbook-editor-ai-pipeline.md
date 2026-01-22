@@ -5,7 +5,7 @@ title: "Runbook: Editor AI pipeline (completion/chat/edit-ops)"
 status: active
 owners: "agents"
 created: 2026-01-21
-updated: 2026-01-21
+updated: 2026-01-22
 system: "skriptoteket"
 ---
 
@@ -50,7 +50,9 @@ Key implementation files:
 Key implementation files:
 
 - Chat providers: `src/skriptoteket/infrastructure/llm/openai/chat_stream_provider.py`
-- Web API models: `src/skriptoteket/web/api/v1/editor/models.py`
+- Web API: `src/skriptoteket/web/api/v1/editor/chat.py`
+- Chat orchestration: `src/skriptoteket/application/editor/chat_stream_orchestrator.py`
+- Web API models: `src/skriptoteket/web/api/v1/editor/models/`
 
 ### Edit-ops (patch-only)
 

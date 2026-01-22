@@ -24,7 +24,7 @@ from skriptoteket.web.editor_support import (
     visible_versions_for_actor,
 )
 
-from .models import (
+from .models.responses import (
     DraftLockResponse,
     EditorBootResponse,
     EditorSaveMode,

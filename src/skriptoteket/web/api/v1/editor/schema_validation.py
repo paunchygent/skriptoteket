@@ -8,7 +8,8 @@ from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.scripting import ValidateToolSchemasHandlerProtocol
 from skriptoteket.web.auth.api_dependencies import require_contributor_api, require_csrf_token
 
-from .models import ValidateToolSchemasRequest, ValidateToolSchemasResponse
+from .models.requests import ValidateToolSchemasRequest
+from .models.responses import ValidateToolSchemasResponse
 
 router = APIRouter()
 

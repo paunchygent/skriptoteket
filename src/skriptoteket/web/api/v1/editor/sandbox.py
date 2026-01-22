@@ -31,10 +31,10 @@ from skriptoteket.web.auth.api_dependencies import (
 )
 from skriptoteket.web.uploads import read_upload_files
 
-from .models import (
+from .models.requests import StartSandboxActionRequest
+from .models.responses import (
     SandboxRunResponse,
     SandboxSessionResponse,
-    StartSandboxActionRequest,
     StartSandboxActionResponse,
 )
 
