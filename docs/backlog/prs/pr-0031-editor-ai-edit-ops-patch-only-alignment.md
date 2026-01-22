@@ -2,10 +2,10 @@
 type: pr
 id: PR-0031
 title: "Editor AI: patch-only edit-ops alignment (prompt + diff hygiene + correlation)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-14
-updated: 2026-01-14
+updated: 2026-01-22
 stories:
   - "ST-08-24"
   - "ST-08-28"

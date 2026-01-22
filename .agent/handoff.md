@@ -67,6 +67,19 @@ Keep this file updated so the next session can pick up work quickly.
   - Stories: ST-08-30, ST-08-31, ST-08-32, ST-08-33, ST-18-01.
   - Epics updated: `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md`,
     `docs/backlog/epics/epic-18-execution-queue-and-worker-loop.md`.
+- Docs-sync pass (next 15): marked PR-0030, PR-0031, PR-0032, PR-0033, PR-0036, PR-0038, and ST-07-06 as `done`
+  (EPIC-07 updated).
+- Runner contract seams shipped (ST-19-04/05/06): request factory + result parser + DI contract selector wired in
+  `src/skriptoteket/infrastructure/runner/docker/` + `src/skriptoteket/di/infrastructure/runner.py`, seam tests in
+  `tests/unit/infrastructure/runner/test_runner_contract_seams.py`, docker runner tests split into
+  `tests/unit/infrastructure/runner/test_docker_runner_execute.py` and
+  `tests/unit/infrastructure/runner/test_docker_runner_adoption.py`.
+- V3 scaffolding helpers added (PR-0051): runner contract schemas in
+  `src/skriptoteket/infrastructure/runner/contracts/`, archive builder helper in
+  `src/skriptoteket/infrastructure/runner/docker/workdir_archive.py`, and
+  `RunnerRequest` now carries optional `request_json_bytes` for V3.
+- Promotions validation moved into `validate_promotion_envelope` in
+  `src/skriptoteket/infrastructure/runner/contracts/promotions_v3.py`.
 
 ## Verification
 
@@ -88,7 +101,9 @@ Keep this file updated so the next session can pick up work quickly.
   - `pdm run pytest -q tests/unit/infrastructure/llm/test_openai_payloads.py tests/unit/infrastructure/llm/test_openai_chat_ops_provider_grammar.py`
   - `pdm run lint`
   - `pdm run typecheck`
+  - `pdm run pytest -q tests/unit/infrastructure/runner/test_docker_runner_execute.py tests/unit/infrastructure/runner/test_docker_runner_adoption.py tests/unit/infrastructure/runner/test_runner_contract_seams.py`
   - `pdm run test`
+  - `pdm run docs-validate`
   - `pdm run fe-test`
   - `pdm run fe-test-coverage`
   - `pdm run fe-build`

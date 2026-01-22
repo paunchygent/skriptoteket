@@ -2,10 +2,10 @@
 type: pr
 id: PR-0033
 title: "Refactor: reduce >500 LOC hotspots (HelpPanel + HomeView + ScriptEditorView, Docker runner + edit-ops + diff applier)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-16
-updated: 2026-01-17
+updated: 2026-01-22
 stories: []
 tags: ["backend", "frontend", "refactor", "srp", "performance"]
 acceptance_criteria:

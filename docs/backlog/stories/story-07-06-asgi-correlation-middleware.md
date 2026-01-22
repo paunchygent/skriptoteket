@@ -2,9 +2,10 @@
 type: story
 id: ST-07-06
 title: "ASGI correlation middleware so access logs include correlation_id"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-15
+updated: 2026-01-22
 epic: "EPIC-07"
 acceptance_criteria:
   - "Given a request with `X-Correlation-ID`, when it returns 2xx, then the response echoes the same header and `uvicorn.access` logs include `correlation_id` for that request."

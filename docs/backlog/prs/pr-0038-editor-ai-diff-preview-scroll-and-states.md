@@ -2,10 +2,10 @@
 type: pr
 id: PR-0038
 title: "Editor AI diff preview: scroll + error/regen states"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-17
-updated: 2026-01-17
+updated: 2026-01-22
 stories:
   - "ST-08-22"
 tags: ["frontend", "editor", "ai", "diff", "ux"]

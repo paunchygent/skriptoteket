@@ -2,10 +2,10 @@
 type: pr
 id: PR-0030
 title: "Editor chat streaming: reactive messages + typing status"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-01-14
-updated: 2026-01-14
+updated: 2026-01-22
 stories: []
 tags: ["frontend", "editor", "ai", "ux"]
 links: ["PR-0029"]

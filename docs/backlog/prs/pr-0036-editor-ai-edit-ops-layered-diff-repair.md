@@ -2,10 +2,10 @@
 type: pr
 id: PR-0036
 title: "Editor AI: layered diff validation + hunk repair for edit-ops"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-17
-updated: 2026-01-17
+updated: 2026-01-22
 stories:
   - "ST-08-29"
 tags: ["backend", "editor", "ai", "protocol"]

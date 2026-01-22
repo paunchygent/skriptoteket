@@ -2,10 +2,10 @@
 type: pr
 id: PR-0032
 title: "Correlation: ASGI middleware so access logs include correlation_id"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-15
-updated: 2026-01-15
+updated: 2026-01-22
 stories:
   - "ST-07-06"
 adrs:
