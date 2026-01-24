@@ -85,6 +85,10 @@ Keep this file updated so the next session can pick up work quickly.
     `src/skriptoteket/application/scripting/handlers/`, `runner/skriptoteket_toolkit.py`,
     `src/skriptoteket/infrastructure/session_files/`, `src/skriptoteket/protocols/`.
   - Tests refreshed + runner tests split kept in `tests/unit/infrastructure/runner/`.
+- Legacy cleanup: tokens-only CSS + remove unused package.
+  - Tokens-only: `src/skriptoteket/web/static/css/huleedu-design-tokens.css` (removed utilities/components/HTMX selectors).
+  - Removed unused component package: `frontend/packages/huleedu-ui`.
+  - Roadmap corrected: `docs/reference/reports/ref-vue-spa-migration-roadmap.md`.
 
 ## Verification
 
@@ -116,6 +120,7 @@ Keep this file updated so the next session can pick up work quickly.
   - `pdm run fe-test`
   - `pdm run fe-test-coverage`
   - `pdm run fe-build`
+  - `pdm run fe-preview` + `curl -I http://127.0.0.1:4173/` (stop preview with Ctrl+C)
   - `pdm run docs-validate`
 
 ## How to Run

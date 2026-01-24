@@ -38,7 +38,10 @@ This plan follows ADR-0027 and supersedes the prior SSR/HTMX and “SPA islands�
 
 **Status (2025-12-23): cutover complete.** Skriptoteket now serves a full Vue/Vite SPA for all non-API routes via
 history fallback (`src/skriptoteket/web/routes/spa_fallback.py`). Legacy Jinja/HTMX page routes are removed.
-`frontend/islands/` remains as legacy and should be deleted when safe.
+Legacy `frontend/islands/` has been deleted.
+
+No separate component-library package is maintained; SPA UI primitives live in
+`frontend/apps/skriptoteket/src/assets/main.css`.
 
 | Component | Location | Technology |
 |-----------|----------|------------|
@@ -114,8 +117,8 @@ From `src/skriptoteket/web/static/css/huleedu-design-tokens.css`:
 --huleedu-shadow-brutal-sm: 4px 4px 0px 0px var(--huleedu-navy);
 ```
 
-**Note:** The token CSS file should remain the source of truth and be packaged into `@huleedu/ui` rather than rewritten
-by hand.
+**Note:** The token CSS file should remain the source of truth and (if we later extract a shared UI package) be
+packaged rather than rewritten by hand.
 
 ### Current Routes
 
@@ -200,32 +203,10 @@ async def list_tools_by_tags(
 
 ```text
 frontend/
-├── package.json                          # Monorepo root
+├── package.json                          # pnpm workspace root
 ├── pnpm-workspace.yaml
-├── turbo.json                            # Optional: Turborepo
-│
-├── packages/
-│   └── huleedu-ui/                       # Vue component library
-│       ├── package.json                  # @huleedu/ui
-│       ├── vite.config.ts
-│       ├── src/
-│       │   ├── index.ts
-│       │   ├── tokens/
-│       │   │   ├── colors.ts
-│       │   │   ├── typography.ts
-│       │   │   └── tokens.css
-│       │   ├── composables/
-│       │   │   ├── useToast.ts
-│       │   │   └── useBreakpoint.ts
-│       │   └── components/
-│       │       ├── primitives/           # HButton, HInput, HSelect, HLabel
-│       │       ├── layout/               # HFrame, HHeader, HCard
-│       │       ├── feedback/             # HToast, HDot, HSpinner
-│       │       ├── forms/                # HFormField, HFileUpload
-│       │       └── navigation/           # HNav, HMobileNav, HBreadcrumb
-│       ├── .storybook/
-│       └── stories/
-│
+├── pnpm-lock.yaml
+├── eslint-rules/                         # optional
 └── apps/
     └── skriptoteket/                     # Main SPA
         ├── package.json                  # @skriptoteket/spa
@@ -235,30 +216,11 @@ frontend/
             ├── main.ts
             ├── App.vue
             ├── router/
-            │   ├── index.ts
-            │   └── guards.ts
             ├── stores/
-            │   ├── auth.ts
-            │   ├── user.ts
-            │   └── toast.ts
             ├── api/
-            │   ├── client.ts
-            │   ├── types.ts
-            │   ├── catalog.ts
-            │   ├── tools.ts
-            │   └── admin.ts
-            ├── views/
-            │   ├── auth/LoginView.vue
-            │   ├── home/HomeView.vue
-            │   ├── browse/
-            │   ├── tools/
-            │   ├── my-runs/
-            │   ├── my-tools/
-            │   ├── suggestions/
-            │   └── admin/
-            └── components/
-                ├── layout/AppHeader.vue
-                └── tools/ToolCard.vue
+            ├── assets/
+            ├── components/
+            └── views/
 ```
 
 ### Island Migration Map
@@ -270,7 +232,7 @@ frontend/
 | `runtime/UiOutputs.vue` | `components/tools/UiOutputs.vue` |
 | `runtime/RuntimeIslandApp.vue` | `views/tools/RunResultView.vue` (integrated) |
 
-**Delete after migration:** `frontend/islands/` directory
+**Deleted after migration:** `frontend/islands/` directory
 
 ---
 
@@ -366,14 +328,6 @@ src/skriptoteket/web/api/
 **Files to create:**
 
 - `frontend/pnpm-workspace.yaml`
-- `frontend/packages/huleedu-ui/package.json`
-- `frontend/packages/huleedu-ui/vite.config.ts`
-- `frontend/packages/huleedu-ui/src/index.ts`
-- `frontend/packages/huleedu-ui/src/tokens/colors.ts`
-- `frontend/packages/huleedu-ui/src/tokens/typography.ts`
-- `frontend/packages/huleedu-ui/src/tokens/tokens.css`
-- `frontend/packages/huleedu-ui/.storybook/main.ts`
-- `frontend/packages/huleedu-ui/.storybook/preview.ts`
 - `frontend/apps/skriptoteket/package.json`
 - `frontend/apps/skriptoteket/vite.config.ts`
 - `frontend/apps/skriptoteket/index.html`
@@ -382,36 +336,12 @@ src/skriptoteket/web/api/
 
 - `frontend/package.json` → Add workspace scripts
 
-### Phase 2: Component Library
+### Phase 2: Component library (not pursued)
 
-**Goal:** Build all HuleEdu UI components with Storybook
+**Goal (historical):** Extract a shared HuleEdu UI component library.
 
-**Components to build:**
-
-| Component | CSS Class | Priority |
-|-----------|-----------|----------|
-| `HButton` | `.huleedu-btn`, `.huleedu-btn-secondary`, `.huleedu-btn-sm` | High |
-| `HInput` | `.huleedu-input` | High |
-| `HSelect` | `.huleedu-select` | High |
-| `HLabel` | `.huleedu-label` | High |
-| `HCard` | `.huleedu-card`, `.huleedu-card-sm` | High |
-| `HFrame` | `.huleedu-frame` | High |
-| `HHeader` | `.huleedu-header` | High |
-| `HLink` | `.huleedu-link` | Medium |
-| `HDot` | `.huleedu-dot-active`, `.huleedu-dot-success`, etc. | Medium |
-| `HToast` | Toast markup from `base.html` | Medium |
-| `HNav` | `.huleedu-header-nav` | Medium |
-| `HMobileNav` | `.huleedu-mobile-nav` | Medium |
-| `HRow` | `.huleedu-row` | Low |
-| `HFormField` | Composite (label + input + error) | Low |
-| `HFileUpload` | Custom drag-drop | Low |
-| `HSpinner` | Loading indicator | Low |
-| `HBreadcrumb` | Navigation path | Low |
-
-**Files to create per component:**
-
-- `frontend/packages/huleedu-ui/src/components/{category}/{Component}.vue`
-- `frontend/packages/huleedu-ui/stories/{Component}.stories.ts`
+**Outcome:** Not pursued. SPA UI primitives live directly in `frontend/apps/skriptoteket/src/assets/main.css`
+(Tailwind v4 + design tokens via `@theme`; ADR-0032).
 
 ### Phase 3: SPA Scaffolding
 
@@ -432,7 +362,6 @@ src/skriptoteket/web/api/
 
 | Vue Route | Current HTML Route | Auth |
 |-----------|-------------------|------|
-| `/login` | `/login` | Public |
 | `/` | `/` | require_user |
 | `/browse` | `/browse` | require_user |
 | `/browse/:profession` | `/browse/{profession}` | require_user |
@@ -476,16 +405,15 @@ src/skriptoteket/web/api/
 
 **Views to implement:**
 
-1. `LoginView.vue` → POST `/api/v1/auth/login`
-2. `HomeView.vue` → Static welcome (uses HuleEdu UI)
-3. `ProfessionsView.vue` → GET `/api/v1/catalog/professions`
-4. `CategoriesView.vue` → GET `/api/v1/catalog/professions/{slug}/categories`
-5. `ToolsView.vue` → GET `/api/v1/catalog/professions/{slug}/categories/{cat}/tools`
-6. `CuratedAppView.vue` → GET `/api/v1/catalog/apps/{app_id}` (plus interactive endpoints)
-7. `RunToolView.vue` → POST `/api/v1/tools/{slug}/run` (multipart file upload)
-8. `RunResultView.vue` → GET `/api/runs/{run_id}` (existing endpoint)
-9. `MyRunsView.vue` → GET `/api/v1/my-runs`
-10. `RunDetailView.vue` → GET `/api/v1/my-runs/{run_id}`
+1. `HomeView.vue` → Static welcome (uses shared primitives + tokens)
+2. `ProfessionsView.vue` → GET `/api/v1/catalog/professions`
+3. `CategoriesView.vue` → GET `/api/v1/catalog/professions/{slug}/categories`
+4. `ToolsView.vue` → GET `/api/v1/catalog/professions/{slug}/categories/{cat}/tools`
+5. `CuratedAppView.vue` → GET `/api/v1/catalog/apps/{app_id}` (plus interactive endpoints)
+6. `RunToolView.vue` → POST `/api/v1/tools/{slug}/run` (multipart file upload)
+7. `RunResultView.vue` → GET `/api/v1/runs/{run_id}`
+8. `MyRunsView.vue` → GET `/api/v1/my-runs`
+9. `RunDetailView.vue` → GET `/api/v1/my-runs/{run_id}`
 
 ### Phase 6: Contributor/Admin Views
 
@@ -517,7 +445,7 @@ src/skriptoteket/web/api/
 
 This roadmap is implemented as `EPIC-11` and its stories:
 
-- ST-11-01..02: frontend workspace + UI library/tokens
+- ST-11-01..02: frontend workspace + tokens/Tailwind bridge
 - ST-11-03: serve SPA from FastAPI (manifest + history fallback)
 - ST-11-04..05: API v1 + OpenAPI TS + auth/guards
 - ST-11-06..12: SPA views for browse/tools/runs/apps/suggestions/admin/editor
@@ -611,7 +539,7 @@ Decision: adopt **Tailwind CSS v4** as a utility layer backed by **HuleEdu desig
 ### Implementation
 
 - [ ] Phase 1: Monorepo foundation
-- [ ] Phase 2: Component library (Storybook)
+- [ ] Phase 2: Component library (not pursued)
 - [ ] Phase 3: SPA scaffolding
 - [ ] Phase 4: Backend API layer
 - [ ] Phase 5: Core views
@@ -620,7 +548,7 @@ Decision: adopt **Tailwind CSS v4** as a utility layer backed by **HuleEdu desig
 
 ### Post-Implementation
 
-- [ ] Remove `frontend/islands/` after migration
+- [x] Remove `frontend/islands/` after migration
 - [ ] Remove old Jinja2 templates (clean break)
 - [ ] Update CLAUDE.md with new frontend commands
 - [ ] Update deployment scripts
