@@ -8,7 +8,7 @@ Vanligt användningsområden:
 
 Runner-kontrakt:
 - Entrypoint: run_tool(input_dir: str, output_dir: str) -> dict
-- Input: En eller flera CSV/XLSX-filer med rubrikrad (multi-fil via SKRIPTOTEKET_INPUT_MANIFEST)
+- Input: En eller flera CSV/XLSX-filer med rubrikrad (multi-fil via request.json-manifestet)
 - Output: Contract v2 dict with typed outputs + en fil `emails_<timestamp>.txt` som artifact
 """
 

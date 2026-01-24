@@ -13,21 +13,16 @@ from skriptoteket.application.scripting.commands import (
     ExecuteToolVersionCommand,
     ExecuteToolVersionResult,
 )
+from skriptoteket.application.scripting.run_input_resolution import ResolvedRunInputs
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
-from skriptoteket.domain.scripting.input_files import InputManifest, normalize_input_files
 from skriptoteket.domain.scripting.models import (
     RunStatus,
     ToolVersion,
     finish_run,
     start_tool_version_run,
-)
-from skriptoteket.domain.scripting.tool_inputs import (
-    normalize_tool_input_schema,
-    normalize_tool_input_values,
-    validate_input_files_count,
 )
 from skriptoteket.domain.scripting.tool_settings import (
     compute_settings_session_context,
@@ -38,6 +33,7 @@ from skriptoteket.domain.scripting.ui.normalization import UiNormalizationResult
 from skriptoteket.domain.scripting.ui.policy import UiPolicy
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.promotions import PromotionApplierProtocol
 from skriptoteket.protocols.runner import ToolRunnerProtocol
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
 from skriptoteket.protocols.scripting_ui import UiPayloadNormalizerProtocol
@@ -76,6 +72,8 @@ async def execute_tool_version_pipeline(
     span: Span,
     actor: User,
     command: ExecuteToolVersionCommand,
+    resolved_inputs: ResolvedRunInputs,
+    normalized_input_values: dict[str, JsonValue],
     run_id: UUID,
     version: ToolVersion,
     now: datetime,
@@ -87,31 +85,14 @@ async def execute_tool_version_pipeline(
     sessions: ToolSessionRepositoryProtocol,
     runner: ToolRunnerProtocol,
     ui_normalizer: UiPayloadNormalizerProtocol,
+    promotion_applier: PromotionApplierProtocol,
     clock: ClockProtocol,
     id_generator: IdGeneratorProtocol,
 ) -> ExecuteToolVersionResult:
     """Execute a tool version and persist run/session state."""
-    normalized_input_values: dict[str, JsonValue] = {}
-    normalized_input_files: list[tuple[str, bytes]] = []
-    input_manifest = InputManifest()
-
-    input_schema = normalize_tool_input_schema(input_schema=version.input_schema)
-    validate_input_files_count(
-        input_schema=input_schema,
-        files_count=len(command.input_files),
-    )
-    normalized_input_values = normalize_tool_input_values(
-        input_schema=input_schema,
-        values=command.input_values,
-    )
-
-    if command.input_files:
-        normalized_input_files, input_manifest = normalize_input_files(
-            input_files=command.input_files
-        )
-
-    primary_filename = normalized_input_files[0][0] if normalized_input_files else None
-    total_size_bytes = sum(len(content) for _, content in normalized_input_files)
+    input_manifest = resolved_inputs.manifest
+    primary_filename = resolved_inputs.primary_filename
+    total_size_bytes = resolved_inputs.total_size_bytes
 
     run = start_tool_version_run(
         run_id=run_id,
@@ -137,12 +118,12 @@ async def execute_tool_version_pipeline(
         context=command.context.value,
         actor_id=str(actor.id),
         input_filename=primary_filename,
-        input_files_count=len(normalized_input_files),
+        input_files_count=len(resolved_inputs.files),
         input_size_bytes=total_size_bytes,
     )
 
     span.add_event("run_created", {"run_id": str(run_id)})
-    span.set_attribute("run.input_files_count", len(normalized_input_files))
+    span.set_attribute("run.input_files_count", len(resolved_inputs.files))
     span.set_attribute("run.input_total_size_bytes", total_size_bytes)
 
     settings_values: dict[str, JsonValue] = {}
@@ -196,7 +177,7 @@ async def execute_tool_version_pipeline(
             run_id=run_id,
             version=version,
             context=command.context,
-            input_files=normalized_input_files,
+            input_files=resolved_inputs.files,
             input_values=normalized_input_values,
             memory_json=memory_json,
             action_payload=command.action_payload,
@@ -272,6 +253,38 @@ async def execute_tool_version_pipeline(
             state=None,
             artifacts=[],
         )
+
+    if execution_result is not None and execution_result.promotions is not None:
+        if execution_result.promotions.requests:
+            try:
+                await _apply_promotions(
+                    promotion_applier=promotion_applier,
+                    run_id=run_id,
+                    tool_id=command.tool_id,
+                    user_id=actor.id,
+                    context=command.session_context,
+                    execution_result=execution_result,
+                )
+            except DomainError as exc:
+                domain_error_to_raise = DomainError(
+                    code=ErrorCode.INTERNAL_ERROR,
+                    message="Execution failed (promotion error).",
+                    details={
+                        "reason": exc.message,
+                        "stdout": execution_result.stdout,
+                        "stderr": execution_result.stderr,
+                        "artifacts_manifest": execution_result.artifacts_manifest.model_dump(),
+                    },
+                )
+                fallback_raw_result = ToolUiContractV2Result(
+                    status="failed",
+                    error_summary=domain_error_to_raise.message,
+                    outputs=[],
+                    next_actions=[],
+                    state=None,
+                    artifacts=[],
+                )
+                execution_result = None
 
     finish_now = clock.now()
     raw_result = execution_result.ui_result if execution_result is not None else fallback_raw_result
@@ -384,3 +397,30 @@ async def execute_tool_version_pipeline(
         raise domain_error_to_raise
 
     return ExecuteToolVersionResult(run=finished, state_update=normalization_result.state_update)
+
+
+async def _apply_promotions(
+    *,
+    promotion_applier: PromotionApplierProtocol,
+    run_id: UUID,
+    tool_id: UUID,
+    user_id: UUID,
+    context: str,
+    execution_result: ToolExecutionResult,
+) -> None:
+    if execution_result.status is not RunStatus.SUCCEEDED:
+        raise DomainError(
+            code=ErrorCode.INTERNAL_ERROR,
+            message="Runner contract violation: promotions require succeeded status",
+            details={"status": execution_result.status.value},
+        )
+    if execution_result.promotions is None:
+        return
+    await promotion_applier.apply_session_promotions(
+        run_id=run_id,
+        tool_id=tool_id,
+        user_id=user_id,
+        context=context,
+        artifacts_manifest=execution_result.artifacts_manifest,
+        promotions=execution_result.promotions,
+    )

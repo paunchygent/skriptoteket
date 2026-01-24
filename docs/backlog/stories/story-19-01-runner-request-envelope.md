@@ -2,7 +2,7 @@
 type: story
 id: ST-19-01
 title: "Runner request envelope: /work/request.json (replace env payloads)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-20
 epic: "EPIC-19"

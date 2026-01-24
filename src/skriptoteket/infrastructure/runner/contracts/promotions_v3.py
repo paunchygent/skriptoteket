@@ -5,10 +5,9 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.domain.scripting.file_refs import parse_file_ref
 from skriptoteket.domain.scripting.input_files import sanitize_input_filename
 from skriptoteket.infrastructure.runner.path_safety import validate_output_path
-
-from .file_refs import parse_file_ref
 
 
 class PromotionRequestV3(BaseModel):

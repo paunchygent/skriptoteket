@@ -20,18 +20,22 @@ def create_result_tar(
     outputs: list[dict[str, object]],
     error_summary: str | None = None,
     next_actions: list[dict[str, object]] | None = None,
-    state: dict[str, object] | None = None,
+    state_update: dict[str, object] | None = None,
+    error: dict[str, object] | None = None,
     artifacts: list[dict[str, object]] | None = None,
-    contract_version: int = 2,
+    promotions: dict[str, object] | None = None,
+    contract_version: int = 3,
 ) -> bytes:
     payload = {
         "contract_version": contract_version,
         "status": status,
         "error_summary": error_summary,
+        "error": error,
         "outputs": outputs,
         "next_actions": next_actions or [],
-        "state": state,
+        "state_update": state_update or {"kind": "no_change"},
         "artifacts": artifacts or [],
+        "promotions": promotions,
     }
     result_bytes = json.dumps(payload, ensure_ascii=False).encode("utf-8")
 

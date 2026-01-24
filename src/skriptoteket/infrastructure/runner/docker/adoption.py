@@ -150,6 +150,7 @@ def try_adopt_sync(
                 stderr=outputs.stderr,
                 ui_result=parsed.ui_result,
                 artifacts_manifest=parsed.artifacts_manifest,
+                promotions=parsed.promotions,
             )
     finally:
         remove_container(container, swallow_all=True)

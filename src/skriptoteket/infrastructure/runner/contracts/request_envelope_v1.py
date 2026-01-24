@@ -6,9 +6,8 @@ from pathlib import PurePosixPath
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, field_validator
 
 from skriptoteket.domain.errors import DomainError
+from skriptoteket.domain.scripting.file_refs import parse_file_ref
 from skriptoteket.domain.scripting.input_files import sanitize_input_filename
-
-from .file_refs import parse_file_ref
 
 _INPUT_ROOT = PurePosixPath("/work/input")
 

@@ -332,7 +332,7 @@ async def test_list_session_files_calls_handler_with_context() -> None:
     handler.handle.return_value = ListSessionFilesResult(
         tool_id=tool_id,
         context="custom",
-        files=[SessionFileInfo(name="input.txt", bytes=12)],
+        files=[SessionFileInfo(name="input.txt", bytes=12, ref="session:input.txt")],
     )
 
     result = await _unwrap_dishka(interactive_tools_routes.list_session_files)(
@@ -345,6 +345,7 @@ async def test_list_session_files_calls_handler_with_context() -> None:
     assert result.tool_id == tool_id
     assert result.context == "custom"
     assert result.files[0].name == "input.txt"
+    assert result.files[0].ref == "session:input.txt"
 
     handler.handle.assert_awaited_once()
     handler_kwargs = handler.handle.call_args.kwargs
@@ -367,7 +368,7 @@ async def test_list_session_files_defaults_context(
     list_session_files_handler.handle.return_value = ListSessionFilesResult(
         tool_id=tool_id,
         context="default",
-        files=[SessionFileInfo(name="input.txt", bytes=12)],
+        files=[SessionFileInfo(name="input.txt", bytes=12, ref="session:input.txt")],
     )
 
     response = await client.get(f"/api/v1/tools/{tool_id}/session-files")
@@ -376,7 +377,7 @@ async def test_list_session_files_defaults_context(
     assert response.json() == {
         "tool_id": str(tool_id),
         "context": "default",
-        "files": [{"name": "input.txt", "bytes": 12}],
+        "files": [{"name": "input.txt", "bytes": 12, "ref": "session:input.txt"}],
     }
     list_session_files_handler.handle.assert_awaited_once()
     query = list_session_files_handler.handle.call_args.kwargs["query"]

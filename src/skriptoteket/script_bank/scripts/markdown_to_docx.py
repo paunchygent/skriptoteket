@@ -88,7 +88,7 @@ def _profile_desc(profile: str) -> str:
 # =========================
 # Platform IO:
 # - settings from memory.json
-# - per-run inputs from SKRIPTOTEKET_INPUTS
+# - per-run inputs from request.json
 # =========================
 
 
@@ -97,7 +97,7 @@ def _load_settings_from_memory() -> tuple[dict, str]:
 
 
 def _load_inputs_from_env() -> tuple[dict, str]:
-    return (read_inputs(), "SKRIPTOTEKET_INPUTS")
+    return (read_inputs(), "request.json")
 
 
 # =========================

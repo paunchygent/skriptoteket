@@ -9,7 +9,10 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 from skriptoteket.domain.errors import validation_error
-from skriptoteket.domain.scripting.input_files import normalize_input_files
+from skriptoteket.domain.scripting.input_files import (
+    normalize_input_files,
+    sanitize_input_filename,
+)
 from skriptoteket.domain.scripting.tool_sessions import normalize_tool_session_context
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.session_files import (
@@ -178,6 +181,66 @@ class LocalSessionFileStorage(SessionFileStorageProtocol):
             payload=self._build_meta(key=key, now_iso=now_iso),
         )
         return files
+
+    async def get_files_by_name(
+        self,
+        *,
+        tool_id: UUID,
+        user_id: UUID,
+        context: str,
+        names: list[str],
+    ) -> list[InputFile]:
+        if not names:
+            return []
+
+        key = self._key(tool_id=tool_id, user_id=user_id, context=context)
+        session_dir = self._session_dir(key)
+        if not session_dir.exists():
+            return []
+
+        safe_names = [sanitize_input_filename(input_filename=name) for name in names]
+        unique_names = set(safe_names)
+
+        files: list[InputFile] = []
+        for name in sorted(unique_names):
+            path = session_dir / name
+            if not path.is_file():
+                continue
+            files.append((name, path.read_bytes()))
+
+        now_iso = self._clock.now().isoformat()
+        _safe_write_json(
+            path=self._meta_path(session_dir),
+            payload=self._build_meta(key=key, now_iso=now_iso),
+        )
+        return files
+
+    async def upsert_files(
+        self,
+        *,
+        tool_id: UUID,
+        user_id: UUID,
+        context: str,
+        files: list[InputFile],
+    ) -> None:
+        if not files:
+            raise validation_error("files is required")
+
+        existing = await self.get_files(
+            tool_id=tool_id,
+            user_id=user_id,
+            context=context,
+        )
+        merged: dict[str, bytes] = {name: content for name, content in existing}
+        for name, content in files:
+            merged[name] = content
+
+        await self.store_files(
+            tool_id=tool_id,
+            user_id=user_id,
+            context=context,
+            files=[(name, content) for name, content in merged.items()],
+        )
 
     async def list_files(
         self,

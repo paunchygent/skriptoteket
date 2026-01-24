@@ -54,7 +54,7 @@ from skriptoteket.protocols.scripting_ui import (
     UiPayloadNormalizerProtocol,
     UiPolicyProviderProtocol,
 )
-from skriptoteket.protocols.session_files import SessionFileStorageProtocol
+from skriptoteket.protocols.session_files import SessionFileMetadata, SessionFileStorageProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.catalog_fixtures import make_tool
@@ -180,7 +180,7 @@ async def test_start_action_executes_with_session_state_and_updates_state_rev(
     )
 
     session_files = AsyncMock(spec=SessionFileStorageProtocol)
-    session_files.get_files.return_value = [("original.txt", b"hello")]
+    session_files.list_files.return_value = [SessionFileMetadata(name="original.txt", bytes=5)]
 
     async def _execute(
         *,
@@ -189,7 +189,8 @@ async def test_start_action_executes_with_session_state_and_updates_state_rev(
     ) -> ExecuteToolVersionResult:
         del actor
         assert uow.active is False
-        assert ("original.txt", b"hello") in command.input_files
+        assert command.input_files == []
+        assert command.file_refs == ["session:original.txt"]
         assert command.action_payload == {
             "action_id": "confirm_flags",
             "input": {"notify_guardians": True},

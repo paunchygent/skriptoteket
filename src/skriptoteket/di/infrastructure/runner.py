@@ -14,20 +14,23 @@ from skriptoteket.infrastructure.runner.docker.contract_selection import (
 )
 from skriptoteket.infrastructure.runner.docker.request_factory import (
     RunnerRequestFactoryProtocol,
-    V2RunnerRequestFactory,
+    V3RunnerRequestFactory,
 )
 from skriptoteket.infrastructure.runner.docker.result_parser import (
     RunnerResultParserProtocol,
-    V2RunnerResultParser,
+    V3RunnerResultParser,
 )
 from skriptoteket.infrastructure.runner.docker_runner import DockerRunnerLimits, DockerToolRunner
 from skriptoteket.infrastructure.runner.run_input_storage import LocalRunInputStorage
+from skriptoteket.infrastructure.runner.session_promotions import SessionPromotionApplier
+from skriptoteket.protocols.promotions import PromotionApplierProtocol
 from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
 from skriptoteket.protocols.runner import (
     ArtifactManagerProtocol,
     ToolRunnerAdoptionProtocol,
     ToolRunnerProtocol,
 )
+from skriptoteket.protocols.session_files import SessionFileStorageProtocol
 
 
 class InfrastructureRunnerProvider(Provider):
@@ -47,11 +50,11 @@ class InfrastructureRunnerProvider(Provider):
 
     @provide(scope=Scope.APP)
     def runner_request_factory(self) -> RunnerRequestFactoryProtocol:
-        return V2RunnerRequestFactory()
+        return V3RunnerRequestFactory()
 
     @provide(scope=Scope.APP)
     def runner_result_parser(self) -> RunnerResultParserProtocol:
-        return V2RunnerResultParser()
+        return V3RunnerResultParser()
 
     @provide(scope=Scope.APP)
     def runner_contract(
@@ -93,6 +96,17 @@ class InfrastructureRunnerProvider(Provider):
             capacity=capacity,
             artifacts=artifacts,
             contract_selector=contract_selector,
+        )
+
+    @provide(scope=Scope.APP)
+    def promotion_applier(
+        self,
+        artifacts: ArtifactManagerProtocol,
+        session_files: SessionFileStorageProtocol,
+    ) -> PromotionApplierProtocol:
+        return SessionPromotionApplier(
+            artifacts=artifacts,
+            session_files=session_files,
         )
 
     @provide(scope=Scope.APP)

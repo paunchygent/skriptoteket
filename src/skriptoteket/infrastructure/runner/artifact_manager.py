@@ -7,7 +7,7 @@ from io import RawIOBase
 from pathlib import Path
 from uuid import UUID
 
-from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest, RunnerArtifact
 from skriptoteket.infrastructure.artifacts.filesystem import build_artifacts_manifest
 from skriptoteket.infrastructure.runner.path_safety import validate_output_path
@@ -112,3 +112,31 @@ class FilesystemArtifactManager(ArtifactManagerProtocol):
 
         _safe_extract_tar(tar_stream=output_archive, destination_dir=run_dir)
         return build_artifacts_manifest(run_dir=run_dir)
+
+    def read_artifact(
+        self,
+        *,
+        run_id: UUID,
+        artifact_path: str,
+    ) -> bytes:
+        relative_path = validate_output_path(path=artifact_path)
+        run_dir = self._artifacts_root / str(run_id)
+        candidate_path = (run_dir / relative_path).resolve()
+
+        run_root = run_dir.resolve()
+        artifacts_root = self._artifacts_root.resolve()
+        if run_root not in candidate_path.parents and run_root != candidate_path:
+            raise DomainError(
+                code=ErrorCode.INTERNAL_ERROR,
+                message="Artifact path is outside run directory",
+                details={"path": artifact_path},
+            )
+        if artifacts_root not in candidate_path.parents and artifacts_root != candidate_path:
+            raise DomainError(
+                code=ErrorCode.INTERNAL_ERROR,
+                message="Artifact path is outside artifacts root",
+                details={"path": artifact_path},
+            )
+        if not candidate_path.is_file():
+            raise not_found("Artifact", artifact_path)
+        return candidate_path.read_bytes()

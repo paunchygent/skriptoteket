@@ -5,7 +5,7 @@ title: "Admin tool authoring (draft-first workflow)"
 status: active
 owners: "agents"
 created: 2025-12-25
-updated: 2026-01-20
+updated: 2026-01-23
 outcome: "Admins can quickly create draft tools directly from /admin/tools, iterate without contributor-only hoops, and publish only when slug and taxonomy are finalized."
 ---
 
@@ -67,6 +67,9 @@ outcome: "Admins can quickly create draft tools directly from /admin/tools, iter
 - [ST-14-34: Settings suggestions from tool runs](../stories/story-14-34-settings-suggestions-from-tool-runs.md)
 - [ST-14-35: Tool datasets: per-user CRUD + picker](../stories/story-14-35-tool-datasets-crud-and-picker.md)
 - [ST-14-36: User file vault: reusable uploads + picker](../stories/story-14-36-user-file-vault-and-picker.md)
+
+Note: File-ref pickers (ST-14-24) and the vault picker (ST-14-36) must support default vault file refs in tool
+settings and action prefill (preselect when available; show validation error when missing).
 
 ## References
 

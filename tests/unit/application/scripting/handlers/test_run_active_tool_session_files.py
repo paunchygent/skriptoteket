@@ -29,7 +29,7 @@ from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
     ToolVersionRepositoryProtocol,
 )
-from skriptoteket.protocols.session_files import SessionFileStorageProtocol
+from skriptoteket.protocols.session_files import SessionFileMetadata, SessionFileStorageProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.catalog_fixtures import make_tool
@@ -136,8 +136,8 @@ async def test_run_active_tool_reuses_session_files_when_requested(now: datetime
     id_generator = Mock(spec=IdGeneratorProtocol)
     session_files = AsyncMock(spec=SessionFileStorageProtocol)
 
-    persisted_files = [("persist.txt", b"data")]
-    session_files.get_files.return_value = persisted_files
+    persisted_files = [SessionFileMetadata(name="persist.txt", bytes=4)]
+    session_files.list_files.return_value = persisted_files
 
     run = make_tool_run(
         run_id=uuid4(),
@@ -167,8 +167,9 @@ async def test_run_active_tool_reuses_session_files_when_requested(now: datetime
     )
 
     command = execute.handle.call_args.kwargs["command"]
-    assert command.input_files == persisted_files
-    session_files.get_files.assert_awaited_once()
+    assert command.input_files == []
+    assert command.file_refs == ["session:persist.txt"]
+    session_files.list_files.assert_awaited_once()
     session_files.store_files.assert_not_called()
 
 

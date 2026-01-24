@@ -165,6 +165,7 @@ class StartSandboxActionRequest(BaseModel):
     snapshot_id: UUID
     action_id: str
     input: dict[str, JsonValue] = Field(default_factory=dict)
+    file_refs: list[str] = Field(default_factory=list)
     expected_state_rev: int
 
 

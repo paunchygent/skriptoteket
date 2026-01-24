@@ -6,7 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2025-12-30
-updated: 2026-01-13
+updated: 2026-01-23
 supersedes: []
 ---
 
@@ -30,7 +30,7 @@ model to run and how to host it.
 |--------------|-------------------------------------------|
 | GPU          | AMD Radeon AI PRO R9700 (RDNA 4, gfx1201) |
 | VRAM         | 32 GB GDDR6                               |
-| Driver/Stack | ROCm 7.1.1, kernel 6.14 HWE               |
+| Driver/Stack | ROCm 7.2.0, kernel 6.14 HWE               |
 | Server       | hemma.hule.education (Ubuntu 24.04)       |
 
 ### Options Considered
@@ -83,7 +83,7 @@ Qwen3-Coder-30B-A3B uses Mixture-of-Experts (MoE):
 
 | Service      | Port  | Runtime/Config |
 |--------------|-------|----------------|
-| llama-server | 8082  | Docker container `llama-server-rocm` (image `llama.cpp-rocm:7.1.1`) managed by `llama-server-rocm.service` |
+| llama-server | 8082  | Docker container `llama-server-rocm` (image `llama.cpp-rocm:7.2.0`) managed by `llama-server-rocm.service` |
 | tabby        | 8083  | `/usr/local/bin/tabby serve --port 8083 --no-webserver` (systemd: `tabby.service`) |
 
 llama.cpp runs via Docker (systemd wrapper) to match ROCm + llama.cpp recommended operations and to avoid accidental
@@ -91,7 +91,7 @@ host-level instability from legacy units.
 
 ### Build Notes (RDNA 4 / gfx1201)
 
-llama.cpp must be built with flash attention disabled due to ROCm 7.1.1 compiler crash:
+If you hit ROCm compiler crashes building flash attention on RDNA 4, rebuild with flash attention disabled:
 
 ```bash
 cmake -B build -DGGML_HIP=ON -DGGML_HIP_FA=OFF -DGGML_CURL=ON -DCMAKE_BUILD_TYPE=Release

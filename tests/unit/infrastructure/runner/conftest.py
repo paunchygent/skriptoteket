@@ -15,8 +15,8 @@ from skriptoteket.infrastructure.runner.docker.contract_selection import (
     RunnerContract,
     StaticRunnerContractSelector,
 )
-from skriptoteket.infrastructure.runner.docker.request_factory import V2RunnerRequestFactory
-from skriptoteket.infrastructure.runner.docker.result_parser import V2RunnerResultParser
+from skriptoteket.infrastructure.runner.docker.request_factory import V3RunnerRequestFactory
+from skriptoteket.infrastructure.runner.docker.result_parser import V3RunnerResultParser
 from skriptoteket.infrastructure.runner.docker_runner import (
     DockerRunnerLimits,
     DockerToolRunner,
@@ -25,19 +25,19 @@ from skriptoteket.protocols.runner import ArtifactManagerProtocol
 
 
 @pytest.fixture
-def runner_request_factory() -> V2RunnerRequestFactory:
-    return V2RunnerRequestFactory()
+def runner_request_factory() -> V3RunnerRequestFactory:
+    return V3RunnerRequestFactory()
 
 
 @pytest.fixture
-def runner_result_parser() -> V2RunnerResultParser:
-    return V2RunnerResultParser()
+def runner_result_parser() -> V3RunnerResultParser:
+    return V3RunnerResultParser()
 
 
 @pytest.fixture
 def runner_contract(
-    runner_request_factory: V2RunnerRequestFactory,
-    runner_result_parser: V2RunnerResultParser,
+    runner_request_factory: V3RunnerRequestFactory,
+    runner_result_parser: V3RunnerResultParser,
 ) -> RunnerContract:
     return RunnerContract(
         request_factory=runner_request_factory,

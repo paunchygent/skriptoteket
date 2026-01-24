@@ -2,7 +2,7 @@
 type: story
 id: ST-19-02
 title: "FileRef model + resolver + promotion plumbing (session + vault)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-20
 epic: "EPIC-19"

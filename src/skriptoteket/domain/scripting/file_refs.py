@@ -5,8 +5,19 @@ from uuid import UUID
 from skriptoteket.domain.errors import validation_error
 from skriptoteket.domain.scripting.input_files import sanitize_input_filename
 
+type FileRef = str
+
 FILE_REF_SESSION_PREFIX = "session:"
 FILE_REF_VAULT_PREFIX = "vault:"
+
+
+def build_session_file_ref(*, name: str) -> FileRef:
+    safe_name = sanitize_input_filename(input_filename=name)
+    return f"{FILE_REF_SESSION_PREFIX}{safe_name}"
+
+
+def build_vault_file_ref(*, file_id: UUID | str) -> FileRef:
+    return f"{FILE_REF_VAULT_PREFIX}{validate_vault_ref_id(value=str(file_id))}"
 
 
 def validate_session_ref_name(*, value: str) -> str:

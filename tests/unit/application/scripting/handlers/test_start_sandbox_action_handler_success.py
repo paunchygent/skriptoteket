@@ -25,6 +25,7 @@ from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
     ToolVersionRepositoryProtocol,
 )
+from skriptoteket.protocols.session_files import SessionFileMetadata
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from tests.fixtures.identity_fixtures import make_user
 from tests.unit.application.scripting.handlers.sandbox_test_support import (
@@ -89,6 +90,7 @@ async def test_start_sandbox_action_success_returns_run_id_and_state_rev(
         state={"step": "two"},
         state_rev=2,
     )
+    session_files.list_files.return_value = []
 
     run = make_tool_run(
         run_id=run_id,
@@ -184,6 +186,7 @@ async def test_start_sandbox_action_builds_correct_payload_structure(
         state={"new": "state"},
         state_rev=6,
     )
+    session_files.list_files.return_value = [SessionFileMetadata(name="persist.txt", bytes=4)]
 
     captured_command: ExecuteToolVersionCommand | None = None
 
@@ -235,6 +238,7 @@ async def test_start_sandbox_action_builds_correct_payload_structure(
 
     assert captured_command is not None
     assert captured_command.input_files == []
+    assert captured_command.file_refs == ["session:persist.txt"]
     assert captured_command.action_payload == {
         "action_id": "confirm_action",
         "input": {"user_choice": "yes"},

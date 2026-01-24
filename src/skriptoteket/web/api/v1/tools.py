@@ -216,6 +216,7 @@ async def start_tool_run(
     _: None = Depends(require_csrf_token),
     files: Annotated[list[UploadFile] | None, File()] = None,
     inputs: Annotated[str | None, Form()] = None,
+    file_refs: Annotated[str | None, Form()] = None,
     session_files_mode: Annotated[str | None, Form()] = None,
     session_context: Annotated[str | None, Form()] = None,
 ) -> StartToolRunResponse:
@@ -244,6 +245,22 @@ async def start_tool_run(
             )
         input_values = parsed
 
+    parsed_file_refs: list[str] = []
+    if file_refs is not None and file_refs.strip():
+        try:
+            parsed = json.loads(file_refs)
+        except json.JSONDecodeError as exc:
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="file_refs must be valid JSON",
+            ) from exc
+        if not isinstance(parsed, list) or any(not isinstance(item, str) for item in parsed):
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="file_refs must be a JSON array of strings",
+            )
+        parsed_file_refs = parsed
+
     context = session_context.strip() if session_context is not None else ""
     result = await handler.handle(
         actor=user,
@@ -251,6 +268,7 @@ async def start_tool_run(
             tool_slug=slug,
             input_files=input_files,
             input_values=input_values,
+            file_refs=parsed_file_refs,
             session_context=context or "default",
             session_files_mode=_parse_session_files_mode(session_files_mode),
         ),

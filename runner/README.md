@@ -34,7 +34,7 @@ Meddelandet visas som `error_summary` utan stacktrace.
 
 ## skriptoteket_toolkit
 
-Små, stabila hjälpfunktioner för att läsa Skriptotekets runner-env (inputs/manifest/action/memory) på ett säkert sätt.
+Små, stabila hjälpfunktioner för att läsa Skriptotekets runner-payload (request.json + memory.json) på ett säkert sätt.
 
 **Rekommendation:** Använd alltid dessa helpers istället för att läsa/parsa `os.environ` själv. Det gör skript mer
 robusta, mer förutsägbara vid fel (säkra defaultvärden), och enklare att stödja via editor-intelligence och AI.
@@ -88,11 +88,9 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
 - `prefill` är “initial-value only” (användarens editeringar ska inte skrivas över).
 - Servern validerar `prefill` mot `fields[]` (okända fält eller fel typ strippas deterministiskt och ger en system-notis).
 
-Environmentvariabler:
+Filer:
 
-- `SKRIPTOTEKET_INPUTS` (JSON object) – formulärvärden för initial körning.
-- `SKRIPTOTEKET_INPUT_MANIFEST` (JSON) – listar filer i `/work/input/` via `files[].path`.
-- `SKRIPTOTEKET_ACTION` (JSON object) – payload för action-körningar: `{action_id, input, state}`.
+- `/work/request.json` – inputs, action (om någon), och file-manifest.
 - `SKRIPTOTEKET_MEMORY_PATH` – sökväg till `memory.json` (JSON) med `memory["settings"]`.
 
 ---

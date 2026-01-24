@@ -24,12 +24,15 @@ from skriptoteket.domain.scripting.models import (
     compute_content_hash,
     start_tool_version_run,
 )
+from skriptoteket.domain.scripting.run_inputs import ResolvedInputFile
 from skriptoteket.domain.scripting.tool_inputs import ToolInputFileField
 from skriptoteket.domain.scripting.ui.normalizer import DeterministicUiPayloadNormalizer
 from skriptoteket.domain.scripting.ui.policy import DEFAULT_UI_POLICY, UiPolicyProfileId
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
+from skriptoteket.protocols.file_refs import FileRefResolverProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.promotions import PromotionApplierProtocol
 from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
 from skriptoteket.protocols.runner import ToolRunnerProtocol
 from skriptoteket.protocols.scripting import (
@@ -97,6 +100,9 @@ async def test_execute_tool_version_queue_enabled_production_enqueues_and_does_n
     run_inputs = AsyncMock(spec=RunInputStorageProtocol)
     sessions = AsyncMock(spec=ToolSessionRepositoryProtocol)
     runner = AsyncMock(spec=ToolRunnerProtocol)
+    file_refs = AsyncMock(spec=FileRefResolverProtocol)
+    file_refs.resolve_refs.return_value = []
+    promotion_applier = AsyncMock(spec=PromotionApplierProtocol)
 
     ui_policy_provider = Mock(spec=UiPolicyProviderProtocol)
     ui_policy_provider.get_profile_id_for_tool = AsyncMock(return_value=UiPolicyProfileId.DEFAULT)
@@ -122,6 +128,8 @@ async def test_execute_tool_version_queue_enabled_production_enqueues_and_does_n
         run_inputs=run_inputs,
         sessions=sessions,
         runner=runner,
+        file_refs=file_refs,
+        promotion_applier=promotion_applier,
         ui_policy_provider=ui_policy_provider,
         backend_actions=backend_actions,
         ui_normalizer=ui_normalizer,
@@ -154,7 +162,13 @@ async def test_execute_tool_version_queue_enabled_production_enqueues_and_does_n
 
     stored_call = run_inputs.store.call_args.kwargs
     assert stored_call["run_id"] == run_id
-    assert stored_call["files"] == [("input.txt", b"input")]
+    stored_files = stored_call["files"]
+    assert len(stored_files) == 1
+    stored_file = stored_files[0]
+    assert isinstance(stored_file, ResolvedInputFile)
+    assert stored_file.name == "input.txt"
+    assert stored_file.content == b"input"
+    assert stored_file.ref == "session:input.txt"
 
     created_job = jobs.create.call_args.kwargs["job"]
     assert created_job.run_id == run_id
@@ -188,6 +202,9 @@ async def test_execute_tool_version_queue_enabled_without_files_does_not_store_i
     run_inputs = AsyncMock(spec=RunInputStorageProtocol)
     sessions = AsyncMock(spec=ToolSessionRepositoryProtocol)
     runner = AsyncMock(spec=ToolRunnerProtocol)
+    file_refs = AsyncMock(spec=FileRefResolverProtocol)
+    file_refs.resolve_refs.return_value = []
+    promotion_applier = AsyncMock(spec=PromotionApplierProtocol)
 
     ui_policy_provider = Mock(spec=UiPolicyProviderProtocol)
     ui_policy_provider.get_profile_id_for_tool = AsyncMock(return_value=UiPolicyProfileId.DEFAULT)
@@ -213,6 +230,8 @@ async def test_execute_tool_version_queue_enabled_without_files_does_not_store_i
         run_inputs=run_inputs,
         sessions=sessions,
         runner=runner,
+        file_refs=file_refs,
+        promotion_applier=promotion_applier,
         ui_policy_provider=ui_policy_provider,
         backend_actions=backend_actions,
         ui_normalizer=ui_normalizer,
@@ -287,6 +306,9 @@ async def test_execute_tool_version_when_not_queueable_does_not_enqueue(
     run_inputs = AsyncMock(spec=RunInputStorageProtocol)
     sessions = AsyncMock(spec=ToolSessionRepositoryProtocol)
     runner = AsyncMock(spec=ToolRunnerProtocol)
+    file_refs = AsyncMock(spec=FileRefResolverProtocol)
+    file_refs.resolve_refs.return_value = []
+    promotion_applier = AsyncMock(spec=PromotionApplierProtocol)
 
     ui_policy_provider = Mock(spec=UiPolicyProviderProtocol)
     ui_policy_provider.get_profile_id_for_tool = AsyncMock(return_value=UiPolicyProfileId.DEFAULT)
@@ -332,6 +354,8 @@ async def test_execute_tool_version_when_not_queueable_does_not_enqueue(
         run_inputs=run_inputs,
         sessions=sessions,
         runner=runner,
+        file_refs=file_refs,
+        promotion_applier=promotion_applier,
         ui_policy_provider=ui_policy_provider,
         backend_actions=backend_actions,
         ui_normalizer=ui_normalizer,

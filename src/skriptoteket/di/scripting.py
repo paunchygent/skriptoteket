@@ -42,6 +42,7 @@ from skriptoteket.protocols.curated_apps import (
     CuratedAppRegistryProtocol,
 )
 from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
+from skriptoteket.protocols.file_refs import FileRefResolverProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.interactive_tools import (
     GetRunHandlerProtocol,
@@ -50,6 +51,7 @@ from skriptoteket.protocols.interactive_tools import (
     ListSessionFilesHandlerProtocol,
     StartActionHandlerProtocol,
 )
+from skriptoteket.protocols.promotions import PromotionApplierProtocol
 from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
 from skriptoteket.protocols.runner import ToolRunnerProtocol
 from skriptoteket.protocols.scripting import (
@@ -254,6 +256,8 @@ class ScriptingProvider(Provider):
         run_inputs: RunInputStorageProtocol,
         sessions: ToolSessionRepositoryProtocol,
         runner: ToolRunnerProtocol,
+        file_refs: FileRefResolverProtocol,
+        promotion_applier: PromotionApplierProtocol,
         ui_policy_provider: UiPolicyProviderProtocol,
         backend_actions: BackendActionProviderProtocol,
         ui_normalizer: UiPayloadNormalizerProtocol,
@@ -269,6 +273,8 @@ class ScriptingProvider(Provider):
             run_inputs=run_inputs,
             sessions=sessions,
             runner=runner,
+            file_refs=file_refs,
+            promotion_applier=promotion_applier,
             ui_policy_provider=ui_policy_provider,
             backend_actions=backend_actions,
             ui_normalizer=ui_normalizer,

@@ -11,6 +11,7 @@ from pydantic import JsonValue
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import AuthProvider, Role, User
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
+from skriptoteket.domain.scripting.file_refs import build_session_file_ref
 from skriptoteket.domain.scripting.input_files import InputManifest
 from skriptoteket.domain.scripting.models import (
     RunContext,
@@ -20,6 +21,7 @@ from skriptoteket.domain.scripting.models import (
     compute_content_hash,
     start_tool_version_run,
 )
+from skriptoteket.domain.scripting.run_inputs import ResolvedInputFile
 from skriptoteket.domain.scripting.tool_run_jobs import (
     ToolRunJob,
     mark_job_started,
@@ -33,6 +35,7 @@ from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import UserRepositoryProtocol
+from skriptoteket.protocols.promotions import PromotionApplierProtocol
 from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
 from skriptoteket.protocols.runner import ToolRunnerAdoptionProtocol, ToolRunnerProtocol
 from skriptoteket.protocols.scripting import (
@@ -184,14 +187,14 @@ class FakeToolSessionRepository:
 
 
 class FakeRunInputStorage(RunInputStorageProtocol):
-    def __init__(self, *, files_by_run: dict[UUID, list[tuple[str, bytes]]] | None = None) -> None:
+    def __init__(self, *, files_by_run: dict[UUID, list[ResolvedInputFile]] | None = None) -> None:
         self._files_by_run = files_by_run or {}
         self.deleted: list[UUID] = []
 
-    async def store(self, *, run_id: UUID, files: list[tuple[str, bytes]]) -> None:
+    async def store(self, *, run_id: UUID, files: list[ResolvedInputFile]) -> None:
         self._files_by_run[run_id] = files
 
-    async def get(self, *, run_id: UUID) -> list[tuple[str, bytes]]:
+    async def get(self, *, run_id: UUID) -> list[ResolvedInputFile]:
         return self._files_by_run.get(run_id, [])
 
     async def delete(self, *, run_id: UUID) -> None:
@@ -239,6 +242,32 @@ class FakeBackendActionProvider(BackendActionProviderProtocol):
         return []
 
 
+class FakePromotionApplier(PromotionApplierProtocol):
+    def __init__(self) -> None:
+        self.calls: list[dict[str, object]] = []
+
+    async def apply_session_promotions(
+        self,
+        *,
+        run_id: UUID,
+        tool_id: UUID,
+        user_id: UUID,
+        context: str,
+        artifacts_manifest,
+        promotions,
+    ) -> None:
+        self.calls.append(
+            {
+                "run_id": run_id,
+                "tool_id": tool_id,
+                "user_id": user_id,
+                "context": context,
+                "artifacts_manifest": artifacts_manifest,
+                "promotions": promotions,
+            }
+        )
+
+
 class FakeRunner(ToolRunnerProtocol):
     def __init__(self, *, result: ToolExecutionResult) -> None:
         self._result = result
@@ -250,7 +279,7 @@ class FakeRunner(ToolRunnerProtocol):
         run_id: UUID,
         version: ToolVersion,
         context: RunContext,
-        input_files: list[tuple[str, bytes]],
+        input_files: list[ResolvedInputFile],
         input_values: dict[str, JsonValue],
         memory_json: bytes,
         action_payload: dict[str, JsonValue] | None,
@@ -366,6 +395,7 @@ class ClaimProcessorHarness:
     run_inputs: FakeRunInputStorage
     runner: FakeRunner
     runner_adoption: FakeRunnerAdoption
+    promotion_applier: FakePromotionApplier
     ui_policy_provider: FakeUiPolicyProvider
     backend_actions_provider: FakeBackendActionProvider
     ui_normalizer: UiPayloadNormalizerProtocol
@@ -443,11 +473,23 @@ async def make_harness(
 
     runner = FakeRunner(result=execute_result)
     runner_adoption = FakeRunnerAdoption(result=adopt_result)
+    normalized_inputs: list[ResolvedInputFile] | None = None
+    if input_files is not None:
+        normalized_inputs = [
+            ResolvedInputFile(
+                name=name,
+                content=content,
+                ref=build_session_file_ref(name=name),
+            )
+            for name, content in input_files
+        ]
+
     run_inputs = FakeRunInputStorage(
-        files_by_run={} if input_files is None else {run_id: input_files}
+        files_by_run={} if normalized_inputs is None else {run_id: normalized_inputs}
     )
     ui_policy_provider = FakeUiPolicyProvider()
     backend_actions_provider = FakeBackendActionProvider()
+    promotion_applier = FakePromotionApplier()
     ui_normalizer: UiPayloadNormalizerProtocol = DeterministicUiPayloadNormalizer()
     clock = FakeClock(now=now)
     id_generator = FakeIdGenerator()
@@ -467,6 +509,7 @@ async def make_harness(
         run_inputs=run_inputs,
         runner=runner,
         runner_adoption=runner_adoption,
+        promotion_applier=promotion_applier,
         ui_policy_provider=ui_policy_provider,
         backend_actions_provider=backend_actions_provider,
         ui_normalizer=ui_normalizer,

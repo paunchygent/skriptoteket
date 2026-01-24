@@ -10,6 +10,7 @@ from skriptoteket.application.scripting.session_files import (
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
+from skriptoteket.domain.scripting.file_refs import build_session_file_ref
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.sandbox_snapshots import SandboxSnapshotRepositoryProtocol
@@ -123,5 +124,12 @@ class ListSandboxSessionFilesHandler(ListSandboxSessionFilesHandlerProtocol):
             tool_id=version.tool_id,
             version_id=query.version_id,
             snapshot_id=query.snapshot_id,
-            files=[SessionFileInfo(name=item.name, bytes=item.bytes) for item in files],
+            files=[
+                SessionFileInfo(
+                    name=item.name,
+                    bytes=item.bytes,
+                    ref=build_session_file_ref(name=item.name),
+                )
+                for item in files
+            ],
         )

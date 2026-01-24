@@ -23,14 +23,38 @@ RunnerUiObject = dict[str, JsonValue]
 RunnerStatus = Literal["succeeded", "failed", "timed_out"]
 
 
-class RunnerResultPayloadV2(TypedDict):
-    contract_version: Literal[2]
+class RunnerErrorPayload(TypedDict):
+    kind: Literal["tool_user_error", "tool_runtime_error", "contract_violation"]
+    code: str
+    details: dict[str, JsonValue] | None
+
+
+class RunnerStateUpdateNoChange(TypedDict):
+    kind: Literal["no_change"]
+
+
+class RunnerStateUpdateClear(TypedDict):
+    kind: Literal["clear"]
+
+
+class RunnerStateUpdateSet(TypedDict):
+    kind: Literal["set"]
+    state: dict[str, JsonValue]
+
+
+RunnerStateUpdatePayload = RunnerStateUpdateNoChange | RunnerStateUpdateClear | RunnerStateUpdateSet
+
+
+class RunnerResultPayloadV3(TypedDict):
+    contract_version: Literal[3]
     status: RunnerStatus
     error_summary: str | None
+    error: RunnerErrorPayload | None
     outputs: list[RunnerUiObject]
     next_actions: list[RunnerUiObject]
-    state: dict[str, JsonValue] | None
+    state_update: RunnerStateUpdatePayload
     artifacts: list[RunnerArtifact]
+    promotions: dict[str, JsonValue] | None
 
 
 def _stable_json_sort_key(value: JsonValue) -> str:
@@ -92,15 +116,59 @@ def _coerce_state(value: object) -> dict[str, JsonValue] | None:
     return None
 
 
-def _to_contract_v2_ui_fields(
+def _coerce_state_update(value: object) -> RunnerStateUpdatePayload | None:
+    if not isinstance(value, dict):
+        return None
+    kind = value.get("kind")
+    if kind == "no_change":
+        return {"kind": "no_change"}
+    if kind == "clear":
+        return {"kind": "clear"}
+    if kind == "set":
+        raw_state = value.get("state")
+        state_value = _coerce_state(raw_state)
+        if state_value is None:
+            raise TypeError("state_update.set requires a JSON object state")
+        return {"kind": "set", "state": state_value}
+    return None
+
+
+def _state_update_from_state(value: object) -> RunnerStateUpdatePayload:
+    state_value = _coerce_state(value)
+    if state_value is None:
+        return {"kind": "no_change"}
+    if not state_value:
+        return {"kind": "clear"}
+    return {"kind": "set", "state": state_value}
+
+
+def _coerce_promotions(value: object) -> dict[str, JsonValue] | None:
+    if value is None:
+        return None
+    json_value = _to_json_value(value)
+    if not isinstance(json_value, dict):
+        raise TypeError("promotions must be a JSON object")
+    requests = json_value.get("requests")
+    results = json_value.get("results")
+    if not isinstance(requests, list) or not isinstance(results, list):
+        raise TypeError("promotions must include requests/results lists")
+    return json_value
+
+
+def _to_contract_v3_fields(
     result: object,
-) -> tuple[list[RunnerUiObject], list[RunnerUiObject], dict[str, JsonValue] | None]:
-    """Convert a script return value into contract v2 UI fields.
+) -> tuple[
+    list[RunnerUiObject],
+    list[RunnerUiObject],
+    RunnerStateUpdatePayload,
+    dict[str, JsonValue] | None,
+]:
+    """Convert a script return value into contract v3 UI fields.
 
     Supported tool return shapes:
     - str: treated as a single `html_sandboxed` output (backwards compatible)
     - dict: treated as a partial contract payload containing optional `outputs`, `next_actions`,
-      and `state`
+      `state` (legacy) or `state_update`, and optional `promotions`.
     """
 
     if isinstance(result, str):
@@ -108,15 +176,26 @@ def _to_contract_v2_ui_fields(
         outputs: list[RunnerUiObject] = []
         if html:
             outputs.append({"kind": "html_sandboxed", "html": html})
-        return outputs, [], None
+        return outputs, [], {"kind": "no_change"}, None
 
     if isinstance(result, dict):
         outputs = _coerce_ui_object_list(result.get("outputs"))
         next_actions = _coerce_ui_object_list(result.get("next_actions"))
-        state = _coerce_state(result.get("state"))
-        return outputs, next_actions, state
+        raw_state_update = result.get("state_update")
+        raw_state = result.get("state")
+        if raw_state_update is not None and raw_state is not None:
+            raise TypeError("Provide either state_update or state, not both")
+        state_update = (
+            _coerce_state_update(raw_state_update)
+            if raw_state_update is not None
+            else _state_update_from_state(raw_state)
+        )
+        if state_update is None:
+            raise TypeError("Invalid state_update payload")
+        promotions = _coerce_promotions(result.get("promotions"))
+        return outputs, next_actions, state_update, promotions
 
-    raise TypeError("Entrypoint must return a str (HTML) or a dict (contract v2 payload)")
+    raise TypeError("Entrypoint must return a str (HTML) or a dict (contract payload)")
 
 
 def _load_module_from_path(*, module_path: Path) -> object:
@@ -132,6 +211,26 @@ def _safe_error_summary(*, error: BaseException) -> str:
     if isinstance(error, ToolUserError):
         return error.safe_message
     return f"Tool execution failed ({type(error).__name__})."
+
+
+def _build_error_payload(*, error: BaseException) -> RunnerErrorPayload:
+    if isinstance(error, ToolUserError):
+        return {
+            "kind": "tool_user_error",
+            "code": "tool_user_error",
+            "details": None,
+        }
+    if isinstance(error, (TypeError, ValueError)):
+        return {
+            "kind": "contract_violation",
+            "code": type(error).__name__,
+            "details": None,
+        }
+    return {
+        "kind": "tool_runtime_error",
+        "code": type(error).__name__,
+        "details": None,
+    }
 
 
 def _collect_artifacts(*, work_dir: Path, output_dir: Path) -> list[RunnerArtifact]:
@@ -156,10 +255,12 @@ def main() -> int:
 
     status: RunnerStatus = "failed"
     error_summary: str | None = None
+    error_payload: RunnerErrorPayload | None = None
     artifacts: list[RunnerArtifact] = []
     outputs: list[RunnerUiObject] = []
     next_actions: list[RunnerUiObject] = []
-    state: dict[str, JsonValue] | None = None
+    state_update: RunnerStateUpdatePayload = {"kind": "no_change"}
+    promotions: dict[str, JsonValue] | None = None
 
     try:
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -171,22 +272,25 @@ def main() -> int:
 
         result = func(str(input_dir), str(output_dir))
 
-        outputs, next_actions, state = _to_contract_v2_ui_fields(result)
+        outputs, next_actions, state_update, promotions = _to_contract_v3_fields(result)
         status = "succeeded"
         artifacts = _collect_artifacts(work_dir=work_dir, output_dir=output_dir)
 
     except BaseException as e:  # noqa: BLE001 - runner boundary; writes a safe result.json
         error_summary = _safe_error_summary(error=e)
+        error_payload = _build_error_payload(error=e)
         traceback.print_exc(file=sys.stderr)
 
-    payload: RunnerResultPayloadV2 = {
-        "contract_version": 2,
+    payload: RunnerResultPayloadV3 = {
+        "contract_version": 3,
         "status": status,
         "error_summary": error_summary,
+        "error": error_payload,
         "outputs": outputs,
         "next_actions": next_actions,
-        "state": state,
+        "state_update": state_update,
         "artifacts": artifacts,
+        "promotions": promotions,
     }
     result_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
     return 0

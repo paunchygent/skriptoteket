@@ -73,6 +73,7 @@ async def run_sandbox(
     _: None = Depends(require_csrf_token),
     files: Annotated[list[UploadFile] | None, File()] = None,
     inputs: Annotated[str | None, Form()] = None,
+    file_refs: Annotated[str | None, Form()] = None,
     session_files_mode: Annotated[str | None, Form()] = None,
     session_context: Annotated[str | None, Form()] = None,
     snapshot: str = Form(...),
@@ -106,6 +107,22 @@ async def run_sandbox(
             )
         input_values = parsed
 
+    parsed_file_refs: list[str] = []
+    if file_refs is not None and file_refs.strip():
+        try:
+            parsed = json.loads(file_refs)
+        except json.JSONDecodeError as exc:
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="file_refs must be valid JSON",
+            ) from exc
+        if not isinstance(parsed, list) or any(not isinstance(item, str) for item in parsed):
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="file_refs must be a JSON array of strings",
+            )
+        parsed_file_refs = parsed
+
     try:
         snapshot_payload = SandboxSnapshotPayload.model_validate_json(snapshot)
     except ValidationError as exc:
@@ -123,6 +140,7 @@ async def run_sandbox(
             snapshot_payload=snapshot_payload,
             input_files=input_files,
             input_values=input_values,
+            file_refs=parsed_file_refs,
             session_context=session_context.strip() if session_context else None,
             session_files_mode=_parse_session_files_mode(session_files_mode),
         ),
@@ -222,6 +240,7 @@ async def start_sandbox_action(
             snapshot_id=payload.snapshot_id,
             action_id=payload.action_id,
             input=payload.input,
+            file_refs=payload.file_refs,
             expected_state_rev=payload.expected_state_rev,
         ),
     )

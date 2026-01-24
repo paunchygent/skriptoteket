@@ -8,6 +8,7 @@ from skriptoteket.application.scripting.session_files import (
 from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
+from skriptoteket.domain.scripting.file_refs import build_session_file_ref
 from skriptoteket.domain.scripting.tool_sessions import normalize_tool_session_context
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
@@ -57,5 +58,12 @@ class ListSessionFilesHandler(ListSessionFilesHandlerProtocol):
         return ListSessionFilesResult(
             tool_id=query.tool_id,
             context=context,
-            files=[SessionFileInfo(name=item.name, bytes=item.bytes) for item in files],
+            files=[
+                SessionFileInfo(
+                    name=item.name,
+                    bytes=item.bytes,
+                    ref=build_session_file_ref(name=item.name),
+                )
+                for item in files
+            ],
         )

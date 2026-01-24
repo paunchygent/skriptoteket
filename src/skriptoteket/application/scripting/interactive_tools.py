@@ -17,6 +17,7 @@ class StartActionCommand(BaseModel):
     context: str
     action_id: str
     input: dict[str, JsonValue] = Field(default_factory=dict)
+    file_refs: list[str] = Field(default_factory=list)
     expected_state_rev: int
 
     @field_validator("action_id")

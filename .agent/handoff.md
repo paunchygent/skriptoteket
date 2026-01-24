@@ -80,7 +80,11 @@ Keep this file updated so the next session can pick up work quickly.
   `RunnerRequest` now carries optional `request_json_bytes` for V3.
 - Promotions validation moved into `validate_promotion_envelope` in
   `src/skriptoteket/infrastructure/runner/contracts/promotions_v3.py`.
-- PR-0052 drafted for ST-19-01/02/03: `docs/backlog/prs/pr-0052-runner-request-envelope-file-refs-contract-v3.md`.
+- PR-0052 implemented (ST-19-01/02/03): request.json envelope + FileRefs + promotions + contract v3 cutover.
+  - Key paths: `src/skriptoteket/infrastructure/runner/docker/`, `src/skriptoteket/domain/scripting/`,
+    `src/skriptoteket/application/scripting/handlers/`, `runner/skriptoteket_toolkit.py`,
+    `src/skriptoteket/infrastructure/session_files/`, `src/skriptoteket/protocols/`.
+  - Tests refreshed + runner tests split kept in `tests/unit/infrastructure/runner/`.
 
 ## Verification
 
@@ -102,13 +106,14 @@ Keep this file updated so the next session can pick up work quickly.
   - `pdm run pytest -q tests/unit/infrastructure/llm/test_openai_payloads.py tests/unit/infrastructure/llm/test_openai_chat_ops_provider_grammar.py`
   - `pdm run lint`
   - `pdm run typecheck`
-  - `pdm run pytest -q tests/unit/infrastructure/runner/test_docker_runner_execute.py tests/unit/infrastructure/runner/test_docker_runner_adoption.py tests/unit/infrastructure/runner/test_runner_contract_seams.py`
+  - `pdm run pytest -q tests/unit/infrastructure/runner` (old `test_docker_runner.py` removed after split)
   - `pdm run test`
   - `pdm run docs-validate`
   - `pdm run fe-test`
   - `pdm run fe-test-coverage`
   - `pdm run fe-build`
   - `pdm run docs-validate`
+- Pending (route change check, needs approval): start `pdm run dev` and verify a sandbox run with `file_refs`.
 
 ## How to Run
 

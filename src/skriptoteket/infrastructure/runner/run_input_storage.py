@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import json
 import shutil
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from skriptoteket.domain.errors import validation_error
-from skriptoteket.domain.scripting.input_files import normalize_input_files
+from skriptoteket.domain.errors import ErrorDetails, validation_error
+from skriptoteket.domain.scripting.run_inputs import ResolvedInputFile
 from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
-from skriptoteket.protocols.session_files import InputFile
+
+_META_FILENAME = "meta.json"
 
 
 class LocalRunInputStorage(RunInputStorageProtocol):
@@ -26,11 +28,11 @@ class LocalRunInputStorage(RunInputStorageProtocol):
     def _run_dir(self, *, run_id: UUID) -> Path:
         return self._root / str(run_id)
 
-    async def store(self, *, run_id: UUID, files: list[InputFile]) -> None:
+    async def store(self, *, run_id: UUID, files: list[ResolvedInputFile]) -> None:
         if not files:
             raise validation_error("files is required")
 
-        normalized_files = normalize_input_files(input_files=files)[0]
+        normalized_files = _normalize_files(files=files)
 
         run_dir = self._run_dir(run_id=run_id)
         parent_dir = run_dir.parent
@@ -41,8 +43,15 @@ class LocalRunInputStorage(RunInputStorageProtocol):
 
         temp_dir.mkdir(parents=True, exist_ok=False)
         try:
-            for name, content in normalized_files:
-                (temp_dir / name).write_bytes(content)
+            for entry in normalized_files:
+                (temp_dir / entry.name).write_bytes(entry.content)
+
+            _safe_write_json(
+                path=temp_dir / _META_FILENAME,
+                payload={
+                    "files": [{"name": entry.name, "ref": entry.ref} for entry in normalized_files]
+                },
+            )
 
             if run_dir.exists():
                 old_dir = parent_dir / f"{run_dir.name}.old-{uuid4()}"
@@ -61,16 +70,26 @@ class LocalRunInputStorage(RunInputStorageProtocol):
             if old_dir is not None:
                 shutil.rmtree(old_dir, ignore_errors=True)
 
-    async def get(self, *, run_id: UUID) -> list[InputFile]:
+    async def get(self, *, run_id: UUID) -> list[ResolvedInputFile]:
         run_dir = self._run_dir(run_id=run_id)
         if not run_dir.exists():
             return []
 
-        files: list[InputFile] = []
+        refs_by_name = _load_refs(path=run_dir / _META_FILENAME)
+
+        files: list[ResolvedInputFile] = []
         for item in sorted(run_dir.iterdir(), key=lambda path: path.name):
+            if item.name == _META_FILENAME:
+                continue
             if not item.is_file():
                 continue
-            files.append((item.name, item.read_bytes()))
+            files.append(
+                ResolvedInputFile(
+                    name=item.name,
+                    content=item.read_bytes(),
+                    ref=refs_by_name.get(item.name),
+                )
+            )
         return files
 
     async def delete(self, *, run_id: UUID) -> None:
@@ -78,3 +97,62 @@ class LocalRunInputStorage(RunInputStorageProtocol):
         if not run_dir.exists():
             return
         shutil.rmtree(run_dir, ignore_errors=True)
+
+
+def _normalize_files(*, files: list[ResolvedInputFile]) -> list[ResolvedInputFile]:
+    seen: set[str] = set()
+    collisions: dict[str, list[str]] = {}
+    normalized: list[ResolvedInputFile] = []
+
+    for entry in files:
+        name = entry.name
+        if name in seen:
+            collisions.setdefault(name, []).append(name)
+            continue
+        seen.add(name)
+        normalized.append(entry)
+
+    if collisions:
+        details: ErrorDetails = {
+            "collisions": {safe: [safe, *originals] for safe, originals in collisions.items()}
+        }
+        raise validation_error(
+            "Duplicate input filenames after sanitization; rename files locally.",
+            details=details,
+        )
+
+    return normalized
+
+
+def _safe_write_json(*, path: Path, payload: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_name(f"{path.name}.tmp-{uuid4()}")
+    try:
+        tmp_path.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), "utf-8")
+        tmp_path.replace(path)
+    finally:
+        if tmp_path.exists():
+            tmp_path.unlink(missing_ok=True)
+
+
+def _load_refs(*, path: Path) -> dict[str, str | None]:
+    if not path.exists():
+        return {}
+    try:
+        raw = json.loads(path.read_text("utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(raw, dict):
+        return {}
+    raw_files = raw.get("files")
+    if not isinstance(raw_files, list):
+        return {}
+    refs: dict[str, str | None] = {}
+    for item in raw_files:
+        if not isinstance(item, dict):
+            continue
+        name = item.get("name")
+        ref = item.get("ref")
+        if isinstance(name, str):
+            refs[name] = ref if isinstance(ref, str) else None
+    return refs

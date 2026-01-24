@@ -5,8 +5,6 @@ import tarfile
 from dataclasses import dataclass
 from typing import Iterable
 
-from skriptoteket.domain.scripting.models import ToolVersion
-
 
 @dataclass(frozen=True, slots=True)
 class WorkdirArchiveEntry:
@@ -42,22 +40,3 @@ def build_workdir_archive_from_entries(*, entries: Iterable[WorkdirArchiveEntry]
             tar.addfile(info, io.BytesIO(entry.content))
 
     return tar_buffer.getvalue()
-
-
-def build_workdir_archive(
-    *,
-    version: ToolVersion,
-    input_files: list[tuple[str, bytes]],
-    memory_json: bytes,
-) -> bytes:
-    script_bytes = version.source_code.encode("utf-8")
-    entries: list[WorkdirArchiveEntry] = [
-        WorkdirArchiveEntry.file(name="script.py", content=script_bytes),
-        WorkdirArchiveEntry.file(name="memory.json", content=memory_json),
-        WorkdirArchiveEntry.directory(name="input"),
-    ]
-    for safe_name, content in input_files:
-        input_path = f"input/{safe_name}"
-        entries.append(WorkdirArchiveEntry.file(name=input_path, content=content))
-
-    return build_workdir_archive_from_entries(entries=entries)

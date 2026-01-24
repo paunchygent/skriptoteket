@@ -42,6 +42,24 @@ class SessionFileStorageProtocol(Protocol):
         context: str,
     ) -> list[InputFile]: ...
 
+    async def get_files_by_name(
+        self,
+        *,
+        tool_id: UUID,
+        user_id: UUID,
+        context: str,
+        names: list[str],
+    ) -> list[InputFile]: ...
+
+    async def upsert_files(
+        self,
+        *,
+        tool_id: UUID,
+        user_id: UUID,
+        context: str,
+        files: list[InputFile],
+    ) -> None: ...
+
     async def list_files(
         self,
         *,

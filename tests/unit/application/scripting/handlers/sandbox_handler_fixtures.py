@@ -17,6 +17,7 @@ from skriptoteket.protocols.session_files import SessionFileStorageProtocol
 def session_files() -> AsyncMock:
     storage = AsyncMock(spec=SessionFileStorageProtocol)
     storage.get_files.return_value = []
+    storage.list_files.return_value = []
     return storage
 
 

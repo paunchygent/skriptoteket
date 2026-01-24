@@ -3,12 +3,12 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import TypedDict
+from typing import NotRequired, TypedDict
 
 """Stable helper API for Skriptoteket tool scripts (runner environment).
 
-Tool scripts run inside the isolated runner container. The platform injects JSON payloads
-via environment variables and a memory JSON file.
+Tool scripts run inside the isolated runner container. The platform injects a request
+payload via `/work/request.json` and settings via memory JSON.
 
 Prefer these helpers instead of reading/parsing `os.environ` directly:
 
@@ -49,22 +49,13 @@ class ManifestFile(TypedDict):
     name: str
     path: str
     bytes: int
+    ref: NotRequired[str | None]
 
 
 class ActionPayload(TypedDict):
     action_id: str
     input: dict[str, JsonValue]
     state: dict[str, JsonValue]
-
-
-def _read_json_env(name: str) -> object | None:
-    raw = os.environ.get(name, "")
-    if not raw.strip():
-        return None
-    try:
-        return json.loads(raw)
-    except json.JSONDecodeError:
-        return None
 
 
 def _read_json_file(path: Path) -> object | None:
@@ -78,22 +69,34 @@ def _read_json_file(path: Path) -> object | None:
         return None
 
 
+def _read_request_payload() -> dict[str, JsonValue] | None:
+    payload = _read_json_file(Path("/work/request.json"))
+    return payload if isinstance(payload, dict) else None
+
+
 def read_inputs() -> dict[str, JsonValue]:
-    """Parse SKRIPTOTEKET_INPUTS (JSON object). Returns {} on missing/invalid JSON."""
-    payload = _read_json_env("SKRIPTOTEKET_INPUTS")
-    return payload if isinstance(payload, dict) else {}
+    """Parse request.json inputs.values. Returns {} on missing/invalid JSON."""
+    payload = _read_request_payload()
+    if payload is None:
+        return {}
+    raw_inputs = payload.get("inputs")
+    if not isinstance(raw_inputs, dict):
+        return {}
+    raw_values = raw_inputs.get("values")
+    return raw_values if isinstance(raw_values, dict) else {}
 
 
 def read_input_manifest() -> dict[str, JsonValue]:
-    """Parse SKRIPTOTEKET_INPUT_MANIFEST (JSON). Returns {"files": []} on missing/invalid JSON."""
-    payload = _read_json_env("SKRIPTOTEKET_INPUT_MANIFEST")
-    if isinstance(payload, dict):
-        return payload
-    return {"files": []}
+    """Parse request.json files. Returns {"files": []} on missing/invalid JSON."""
+    payload = _read_request_payload()
+    if payload is None:
+        return {"files": []}
+    raw_files = payload.get("files")
+    return {"files": raw_files} if isinstance(raw_files, list) else {"files": []}
 
 
 def list_input_files() -> list[ManifestFile]:
-    """Return validated files from SKRIPTOTEKET_INPUT_MANIFEST. Returns [] on missing/invalid."""
+    """Return validated files from request.json manifest. Returns [] on missing/invalid."""
     manifest = read_input_manifest()
     raw_files = manifest.get("files")
     if not isinstance(raw_files, list):
@@ -106,33 +109,38 @@ def list_input_files() -> list[ManifestFile]:
         name = item.get("name")
         path = item.get("path")
         bytes_ = item.get("bytes")
+        ref = item.get("ref")
         if isinstance(bytes_, bool):
             continue
         if isinstance(name, str) and isinstance(path, str) and isinstance(bytes_, int):
-            files.append({"name": name, "path": path, "bytes": bytes_})
+            entry: ManifestFile = {"name": name, "path": path, "bytes": bytes_}
+            if isinstance(ref, str):
+                entry["ref"] = ref
+            files.append(entry)
     return files
 
 
 def read_action() -> ActionPayload | None:
-    """Parse SKRIPTOTEKET_ACTION.
-
-    Returns None if missing or malformed.
-    """
-    payload = _read_json_env("SKRIPTOTEKET_ACTION")
-    if not isinstance(payload, dict):
+    """Parse request.json action payload. Returns None if missing or malformed."""
+    payload = _read_request_payload()
+    if payload is None:
         return None
 
-    action_id = payload.get("action_id")
+    raw_action = payload.get("action")
+    if not isinstance(raw_action, dict):
+        return None
+
+    action_id = raw_action.get("action_id")
     if not isinstance(action_id, str):
         return None
     action_id = action_id.strip()
     if not action_id:
         return None
 
-    raw_input = payload.get("input")
+    raw_input = raw_action.get("input")
     input_value = raw_input if isinstance(raw_input, dict) else {}
 
-    raw_state = payload.get("state")
+    raw_state = raw_action.get("state")
     state_value = raw_state if isinstance(raw_state, dict) else {}
 
     return {

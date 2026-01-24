@@ -8,6 +8,7 @@ from skriptoteket.application.scripting.commands import (
 )
 from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.scripting.file_refs import build_session_file_ref
 from skriptoteket.domain.scripting.models import RunContext, VersionState
 from skriptoteket.domain.scripting.tool_sessions import normalize_tool_session_context
 from skriptoteket.domain.scripting.ui.state_update import resolve_state_update
@@ -79,14 +80,24 @@ class RunActiveToolHandler(RunActiveToolHandlerProtocol):
 
         session_context = normalize_tool_session_context(context=command.session_context)
         input_files = list(command.input_files)
+        file_refs = list(command.file_refs)
 
-        if not input_files and command.session_files_mode is SessionFilesMode.REUSE:
-            input_files = await self._session_files.get_files(
+        if (
+            not input_files
+            and not file_refs
+            and command.session_files_mode is SessionFilesMode.REUSE
+        ):
+            session_files = await self._session_files.list_files(
                 tool_id=tool.id,
                 user_id=actor.id,
                 context=session_context,
             )
-        elif not input_files and command.session_files_mode is SessionFilesMode.CLEAR:
+            file_refs = [build_session_file_ref(name=item.name) for item in session_files]
+        elif (
+            not input_files
+            and not file_refs
+            and command.session_files_mode is SessionFilesMode.CLEAR
+        ):
             await self._session_files.clear_session(
                 tool_id=tool.id,
                 user_id=actor.id,
@@ -103,6 +114,7 @@ class RunActiveToolHandler(RunActiveToolHandlerProtocol):
                 session_context=session_context,
                 input_files=input_files,
                 input_values=command.input_values,
+                file_refs=file_refs,
             ),
         )
 

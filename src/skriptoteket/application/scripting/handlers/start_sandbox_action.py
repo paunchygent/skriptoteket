@@ -19,6 +19,7 @@ from skriptoteket.application.scripting.interactive_sandbox import (
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
+from skriptoteket.domain.scripting.file_refs import build_session_file_ref
 from skriptoteket.domain.scripting.models import RunContext, VersionState
 from skriptoteket.domain.scripting.sandbox_snapshots import SandboxSnapshot
 from skriptoteket.domain.scripting.tool_settings import compute_sandbox_settings_context
@@ -72,7 +73,7 @@ def _ensure_snapshot_is_valid(
 class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
     """Start an interactive sandbox action (ADR-0038).
 
-    The tool receives `SKRIPTOTEKET_ACTION` (JSON) with the shape:
+    The tool receives `action` in `/work/request.json` with the shape:
     {"action_id": str, "input": {...}, "state": {...}}.
     """
 
@@ -216,11 +217,14 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
             "state": current_state,
         }
 
-        persisted_files = await self._session_files.get_files(
-            tool_id=command.tool_id,
-            user_id=actor.id,
-            context=context,
-        )
+        file_refs = list(command.file_refs)
+        if not file_refs:
+            session_files = await self._session_files.list_files(
+                tool_id=command.tool_id,
+                user_id=actor.id,
+                context=context,
+            )
+            file_refs = [build_session_file_ref(name=item.name) for item in session_files]
 
         settings_context: str | None = None
         if snapshot.settings_schema is not None:
@@ -246,8 +250,8 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
                     input_schema=snapshot.input_schema,
                     usage_instructions=snapshot.usage_instructions,
                 ),
-                input_files=persisted_files,
                 action_payload=action_payload,
+                file_refs=file_refs,
             ),
         )
 

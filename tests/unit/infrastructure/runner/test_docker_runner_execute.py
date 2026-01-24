@@ -13,6 +13,7 @@ from requests.exceptions import ReadTimeout
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolVersion
+from skriptoteket.domain.scripting.run_inputs import ResolvedInputFile
 from skriptoteket.infrastructure.runner.docker_runner import DockerToolRunner
 
 
@@ -22,18 +23,22 @@ def create_result_tar(
     outputs: list[dict[str, object]],
     error_summary: str | None = None,
     next_actions: list[dict[str, object]] | None = None,
-    state: dict[str, object] | None = None,
+    state_update: dict[str, object] | None = None,
+    error: dict[str, object] | None = None,
     artifacts: list[dict[str, object]] | None = None,
-    contract_version: int = 2,
+    promotions: dict[str, object] | None = None,
+    contract_version: int = 3,
 ) -> bytes:
     payload = {
         "contract_version": contract_version,
         "status": status,
         "error_summary": error_summary,
+        "error": error,
         "outputs": outputs,
         "next_actions": next_actions or [],
-        "state": state,
+        "state_update": state_update or {"kind": "no_change"},
         "artifacts": artifacts or [],
+        "promotions": promotions,
     }
     result_bytes = json.dumps(payload, ensure_ascii=False).encode("utf-8")
 
@@ -44,6 +49,16 @@ def create_result_tar(
         tar.addfile(info, io.BytesIO(result_bytes))
 
     return tar_buffer.getvalue()
+
+
+def read_tar_member(*, tar_bytes: bytes, name: str) -> bytes:
+    with tarfile.open(fileobj=io.BytesIO(tar_bytes), mode="r:*") as tar:
+        member = tar.getmember(name)
+        extracted = tar.extractfile(member)
+        if extracted is None:
+            raise AssertionError(f"Missing tar member: {name}")
+        with extracted:
+            return extracted.read()
 
 
 @pytest.mark.unit
@@ -85,7 +100,13 @@ async def test_execute_success(
         run_id=uuid4(),
         version=tool_version,
         context=RunContext.SANDBOX,
-        input_files=[("input.txt", b"input")],
+        input_files=[
+            ResolvedInputFile(
+                name="input.txt",
+                content=b"input",
+                ref="session:input.txt",
+            )
+        ],
         input_values={},
         memory_json=b'{"settings":{}}',
         action_payload=None,
@@ -104,17 +125,29 @@ async def test_execute_success(
     assert env["SKRIPTOTEKET_INPUT_DIR"] == "/work/input"
     assert "SKRIPTOTEKET_INPUT_PATH" not in env
     assert env["SKRIPTOTEKET_MEMORY_PATH"] == "/work/memory.json"
-    assert env["SKRIPTOTEKET_INPUTS"] == "{}"
+    assert "SKRIPTOTEKET_INPUTS" not in env
     assert "SKRIPTOTEKET_ACTION" not in env
-    manifest = json.loads(env["SKRIPTOTEKET_INPUT_MANIFEST"])
-    assert manifest == {
-        "files": [{"name": "input.txt", "path": "/work/input/input.txt", "bytes": 5}]
+    assert "SKRIPTOTEKET_INPUT_MANIFEST" not in env
+
+    archive_bytes = container.put_archive.call_args.kwargs["data"]
+    request_payload = json.loads(read_tar_member(tar_bytes=archive_bytes, name="request.json"))
+    assert request_payload == {
+        "schema_version": 1,
+        "inputs": {"values": {}},
+        "files": [
+            {
+                "name": "input.txt",
+                "path": "/work/input/input.txt",
+                "bytes": 5,
+                "ref": "session:input.txt",
+            }
+        ],
     }
 
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_execute_injects_action_payload_env_var(
+async def test_execute_includes_action_payload_in_request_json(
     runner: DockerToolRunner,
     mock_docker_client: MagicMock,
     tool_version: ToolVersion,
@@ -154,14 +187,21 @@ async def test_execute_injects_action_payload_env_var(
         run_id=uuid4(),
         version=tool_version,
         context=RunContext.SANDBOX,
-        input_files=[("input.txt", b"input")],
+        input_files=[
+            ResolvedInputFile(
+                name="input.txt",
+                content=b"input",
+                ref="session:input.txt",
+            )
+        ],
         input_values={},
         memory_json=b'{"settings":{}}',
         action_payload=action_payload,
     )
 
-    env = client_instance.containers.create.call_args.kwargs["environment"]
-    assert json.loads(env["SKRIPTOTEKET_ACTION"]) == action_payload
+    archive_bytes = container.put_archive.call_args.kwargs["data"]
+    request_payload = json.loads(read_tar_member(tar_bytes=archive_bytes, name="request.json"))
+    assert request_payload["action"] == action_payload
 
 
 @pytest.mark.unit
@@ -188,7 +228,13 @@ async def test_execute_missing_result_json_returns_failed(
             run_id=uuid4(),
             version=tool_version,
             context=RunContext.SANDBOX,
-            input_files=[("input.txt", b"input")],
+            input_files=[
+                ResolvedInputFile(
+                    name="input.txt",
+                    content=b"input",
+                    ref="session:input.txt",
+                )
+            ],
             input_values={},
             memory_json=b'{"settings":{}}',
             action_payload=None,
@@ -221,7 +267,13 @@ async def test_execute_timeout_returns_timed_out(
         run_id=uuid4(),
         version=tool_version,
         context=RunContext.SANDBOX,
-        input_files=[("input.txt", b"input")],
+        input_files=[
+            ResolvedInputFile(
+                name="input.txt",
+                content=b"input",
+                ref="session:input.txt",
+            )
+        ],
         input_values={},
         memory_json=b'{"settings":{}}',
         action_payload=None,
@@ -274,7 +326,13 @@ async def test_execute_artifact_extraction_violation_returns_failed(
             run_id=uuid4(),
             version=tool_version,
             context=RunContext.SANDBOX,
-            input_files=[("input.txt", b"input")],
+            input_files=[
+                ResolvedInputFile(
+                    name="input.txt",
+                    content=b"input",
+                    ref="session:input.txt",
+                )
+            ],
             input_values={},
             memory_json=b'{"settings":{}}',
             action_payload=None,
@@ -312,7 +370,13 @@ async def test_execute_returns_service_unavailable_when_docker_sock_missing(
             run_id=uuid4(),
             version=tool_version,
             context=RunContext.SANDBOX,
-            input_files=[("input.txt", b"input")],
+            input_files=[
+                ResolvedInputFile(
+                    name="input.txt",
+                    content=b"input",
+                    ref="session:input.txt",
+                )
+            ],
             input_values={},
             memory_json=b'{"settings":{}}',
             action_payload=None,

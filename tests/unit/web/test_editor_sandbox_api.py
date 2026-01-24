@@ -151,7 +151,7 @@ async def test_list_sandbox_session_files_calls_handler() -> None:
         tool_id=tool_id,
         version_id=version_id,
         snapshot_id=snapshot_id,
-        files=[SessionFileInfo(name="input.txt", bytes=42)],
+        files=[SessionFileInfo(name="input.txt", bytes=42, ref="session:input.txt")],
     )
 
     result = await _unwrap_dishka(editor_sandbox.list_sandbox_session_files)(
@@ -165,6 +165,7 @@ async def test_list_sandbox_session_files_calls_handler() -> None:
     assert result.version_id == version_id
     assert result.snapshot_id == snapshot_id
     assert result.files[0].name == "input.txt"
+    assert result.files[0].ref == "session:input.txt"
 
     handler.handle.assert_awaited_once()
     handler_kwargs = handler.handle.call_args.kwargs

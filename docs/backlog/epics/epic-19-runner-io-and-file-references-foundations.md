@@ -5,7 +5,7 @@ title: "Runner I/O + file references foundations"
 status: active
 owners: "agents"
 created: 2026-01-20
-updated: 2026-01-22
+updated: 2026-01-23
 outcome: "Runner-based tools use a single request envelope and first-class file references (run/session/vault) with explicit state semantics and structured errors, enabling robust multi-step workflows and future vault reuse without path leakage."
 ---
 
@@ -37,6 +37,8 @@ Tool scripts should be able to follow a single, stable mental model:
   from upload/session/vault.
 - Tools never handle platform file paths outside `/work/input/` for inputs. File identity across turns uses `FileRef`
   values (not paths), and the platform resolves/stages refs for the tool.
+- FileRef values are stable enough to be stored as defaults in tool settings or action prefill (including vault refs);
+  the resolver must treat these defaults the same as user-selected refs.
 
 ## Out of scope
 
@@ -55,6 +57,9 @@ Tool scripts should be able to follow a single, stable mental model:
 
 ## Implementation Summary (as of 2026-01-22)
 
+- Implemented `/work/request.json` envelope end-to-end and removed env-var JSON payloads (ST-19-01).
+- Added FileRef model + resolver + session promotion plumbing (ST-19-02).
+- Adopted runner contract v3 parsing/emission with `state_update`, structured errors, and promotions (ST-19-03).
 - Added a V2 request factory seam that builds a structured request object + workdir archive (ST-19-04).
 - Added a V2 result parser seam that wraps the existing result parsing behavior (ST-19-05).
 - Added a DI-managed contract selection seam with V2 default factory/parser wiring (ST-19-06).

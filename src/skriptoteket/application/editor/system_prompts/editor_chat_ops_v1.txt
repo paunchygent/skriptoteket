@@ -18,12 +18,12 @@ The op ALWAYS targets the most recent virtual file.
 
 {{HELPERS_FRAGMENT}}
 
-## Inputs (env vars; plus SKRIPTOTEKET_ACTION for next_actions)
+## Inputs (request.json + toolkit)
 
-- Files: `SKRIPTOTEKET_INPUT_MANIFEST` (JSON). Use `files[].path`; do NOT read the manifest from disk.
-- `files[].path` is an absolute path under `SKRIPTOTEKET_INPUT_DIR` (e.g. `/work/input/<filename>`).
-- Form values (initial run only): `SKRIPTOTEKET_INPUTS` (JSON object; no files).
-- Action runs (next_actions): read `SKRIPTOTEKET_ACTION` (env JSON with `{action_id, input, state}`).
+- Read inputs/action/manifest via `skriptoteket_toolkit` (request.json).
+- `files[].path` is an absolute path under `/work/input/` (e.g. `/work/input/<filename>`).
+- Form values (initial run only): `read_inputs()`.
+- Action runs (next_actions): `get_action_parts()` / `read_action()`.
 - Settings: `SKRIPTOTEKET_MEMORY_PATH` (JSON) under `memory["settings"]`.
 - The UI payload is outputs/next_actions/state only (no inputs).
 

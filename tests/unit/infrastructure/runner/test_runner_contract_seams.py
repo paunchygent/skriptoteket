@@ -8,11 +8,12 @@ import pytest
 
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolVersion
+from skriptoteket.domain.scripting.run_inputs import ResolvedInputFile
 from skriptoteket.infrastructure.runner.docker.contract_selection import (
     StaticRunnerContractSelector,
 )
-from skriptoteket.infrastructure.runner.docker.request_factory import V2RunnerRequestFactory
-from skriptoteket.infrastructure.runner.docker.result_parser import V2RunnerResultParser
+from skriptoteket.infrastructure.runner.docker.request_factory import V3RunnerRequestFactory
+from skriptoteket.infrastructure.runner.docker.result_parser import V3RunnerResultParser
 from skriptoteket.protocols.runner import ArtifactManagerProtocol
 
 
@@ -27,26 +28,41 @@ def read_tar_member(*, tar_bytes: bytes, name: str) -> bytes:
 
 
 @pytest.mark.unit
-def test_v2_request_factory_builds_request(
+def test_v3_request_factory_builds_request(
     tool_version: ToolVersion,
-    runner_request_factory: V2RunnerRequestFactory,
+    runner_request_factory: V3RunnerRequestFactory,
 ) -> None:
     memory_json = b'{"settings":{"mode":"test"}}'
     request = runner_request_factory.build_request(
         version=tool_version,
-        input_files=[("input.txt", b"input")],
+        input_files=[
+            ResolvedInputFile(
+                name="input.txt",
+                content=b"input",
+                ref="session:input.txt",
+            )
+        ],
         input_values={"alpha": 1},
         memory_json=memory_json,
         action_payload=None,
     )
 
-    assert json.loads(request.env["SKRIPTOTEKET_INPUTS"]) == {"alpha": 1}
-    assert json.loads(request.env["SKRIPTOTEKET_INPUT_MANIFEST"]) == {
-        "files": [{"name": "input.txt", "path": "/work/input/input.txt", "bytes": 5}]
+    assert "SKRIPTOTEKET_INPUTS" not in request.env
+    assert "SKRIPTOTEKET_INPUT_MANIFEST" not in request.env
+    assert "SKRIPTOTEKET_ACTION" not in request.env
+    request_payload = json.loads(request.request_json_bytes.decode("utf-8"))
+    assert request_payload == {
+        "schema_version": 1,
+        "inputs": {"values": {"alpha": 1}},
+        "files": [
+            {
+                "name": "input.txt",
+                "path": "/work/input/input.txt",
+                "bytes": 5,
+                "ref": "session:input.txt",
+            }
+        ],
     }
-    assert request.inputs_json == request.env["SKRIPTOTEKET_INPUTS"]
-    assert request.input_manifest_json == request.env["SKRIPTOTEKET_INPUT_MANIFEST"]
-    assert request.request_json_bytes is None
 
     names = []
     with tarfile.open(fileobj=io.BytesIO(request.workdir_archive), mode="r:*") as tar:
@@ -54,14 +70,15 @@ def test_v2_request_factory_builds_request(
 
     assert "script.py" in names
     assert "memory.json" in names
+    assert "request.json" in names
     assert "input/input.txt" in names
     assert read_tar_member(tar_bytes=request.workdir_archive, name="memory.json") == memory_json
     assert read_tar_member(tar_bytes=request.workdir_archive, name="input/input.txt") == b"input"
 
 
 @pytest.mark.unit
-def test_v2_result_parser_wraps_payload(
-    runner_result_parser: V2RunnerResultParser,
+def test_v3_result_parser_wraps_payload(
+    runner_result_parser: V3RunnerResultParser,
 ) -> None:
     container = MagicMock()
     artifacts = MagicMock(spec=ArtifactManagerProtocol)
@@ -75,13 +92,15 @@ def test_v2_result_parser_wraps_payload(
     container.get_archive.side_effect = get_archive_side_effect
 
     payload = {
-        "contract_version": 2,
+        "contract_version": 3,
         "status": "succeeded",
         "error_summary": None,
+        "error": None,
         "outputs": [{"kind": "notice", "level": "info", "message": "ok"}],
         "next_actions": [],
-        "state": None,
+        "state_update": {"kind": "set", "state": {"x": 1}},
         "artifacts": [],
+        "promotions": {"requests": [], "results": []},
     }
     parsed = runner_result_parser.parse(
         container=container,
@@ -95,6 +114,8 @@ def test_v2_result_parser_wraps_payload(
 
     assert parsed.status is RunStatus.SUCCEEDED
     assert parsed.ui_result.outputs[0].kind == "notice"
+    assert parsed.ui_result.state == {"x": 1}
+    assert parsed.promotions is not None
     artifacts.store_output_archive.assert_called_once()
 
 

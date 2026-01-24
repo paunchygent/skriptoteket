@@ -66,6 +66,7 @@ class ExecuteToolVersionCommand(BaseModel):
     input_files: list[InputFile] = Field(default_factory=list)
     input_values: dict[str, JsonValue] = Field(default_factory=dict)
     action_payload: dict[str, JsonValue] | None = None
+    file_refs: list[str] = Field(default_factory=list)
 
 
 class ExecuteToolVersionResult(BaseModel):
@@ -163,6 +164,7 @@ class RunSandboxCommand(BaseModel):
     snapshot_payload: SandboxSnapshotPayload
     input_files: list[InputFile] = Field(default_factory=list)
     input_values: dict[str, JsonValue] = Field(default_factory=dict)
+    file_refs: list[str] = Field(default_factory=list)
     session_context: str | None = None
     session_files_mode: SessionFilesMode = SessionFilesMode.NONE
 
@@ -183,6 +185,7 @@ class RunActiveToolCommand(BaseModel):
     tool_slug: str
     input_files: list[InputFile] = Field(default_factory=list)
     input_values: dict[str, JsonValue] = Field(default_factory=dict)
+    file_refs: list[str] = Field(default_factory=list)
     session_context: str = "default"
     session_files_mode: SessionFilesMode = SessionFilesMode.NONE
 

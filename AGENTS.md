@@ -1,7 +1,7 @@
 # Repository Guidelines
 
-This repository hosts **Skriptoteket**, a teacher-first Script Hub with a FastAPI backend and PostgreSQL.
-UI is a **Vue/Vite SPA** (see `docs/adr/adr-0027-full-vue-vite-spa.md`); legacy SSR/Jinja/HTMX has been removed after cutover.
+This repository hosts **Skriptoteket**, a teacher-first Script Hub with a Dockerized FastAPI backend and PostgreSQL.
+UI is a Dockerized **Vue/Vite SPA** (see `docs/adr/adr-0027-full-vue-vite-spa.md`) hot-reloaded during development.
 Target Python is **3.13–3.14**.
 
 ## Product Overview
@@ -12,6 +12,7 @@ Target Python is **3.13–3.14**.
 
 ## Engineering Rules (Non-Negotiable)
 
+- ALWAYS do `sandbox_permissions=require_escalated` for all commands that need elevated permissions (i.e., targets outside the project directory)
 - **No legacy support / workarounds**: do the full refactor; delete old paths instead of shims
 - **No vibe-coding**: follow established patterns and rules in `.agent/rules/000-rule-index.md`
 - **No unapproved reverts**: do not revert/restore changes you did not personally make without explicit user guidance (assume they may be user-added)
@@ -138,8 +139,9 @@ Prefer Playwright for browser automation and screenshots; do not use Puppeteer.
 ## Observability Stack
 
 Public URLs (credentials in `~/apps/skriptoteket/.env` on server):
-- https://grafana.hemma.hule.education (admin / `GRAFANA_ADMIN_PASSWORD`)
-- https://prometheus.hemma.hule.education (admin / `PROMETHEUS_BASIC_AUTH_PASSWORD`)
+
+- <https://grafana.hemma.hule.education> (admin / `GRAFANA_ADMIN_PASSWORD`)
+- <https://prometheus.hemma.hule.education> (admin / `PROMETHEUS_BASIC_AUTH_PASSWORD`)
 
 Reset Grafana password: `ssh hemma "sudo docker exec grafana grafana cli admin reset-admin-password '<pw>'"` (env var only works on first startup).
 Use the appropriate observability skill when troubleshooting (metrics/logs/traces/structured logging).

@@ -10,10 +10,10 @@ from skriptoteket.application.scripting.commands import (
 from skriptoteket.application.scripting.handlers.execute_tool_version_pipeline import (
     execute_tool_version_pipeline,
 )
+from skriptoteket.application.scripting.run_input_resolution import resolve_run_inputs
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.scripting.input_files import InputManifest, normalize_input_files
 from skriptoteket.domain.scripting.models import (
     ToolVersion,
     compute_content_hash,
@@ -31,7 +31,9 @@ from skriptoteket.domain.scripting.tool_settings import (
 from skriptoteket.observability.tracing import get_tracer, trace_operation
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
+from skriptoteket.protocols.file_refs import FileRefResolverProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.promotions import PromotionApplierProtocol
 from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
 from skriptoteket.protocols.runner import ToolRunnerProtocol
 from skriptoteket.protocols.scripting import (
@@ -105,6 +107,8 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         run_inputs: RunInputStorageProtocol,
         sessions: ToolSessionRepositoryProtocol,
         runner: ToolRunnerProtocol,
+        file_refs: FileRefResolverProtocol,
+        promotion_applier: PromotionApplierProtocol,
         ui_policy_provider: UiPolicyProviderProtocol,
         backend_actions: BackendActionProviderProtocol,
         ui_normalizer: UiPayloadNormalizerProtocol,
@@ -119,6 +123,8 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         self._run_inputs = run_inputs
         self._sessions = sessions
         self._runner = runner
+        self._file_refs = file_refs
+        self._promotion_applier = promotion_applier
         self._ui_policy_provider = ui_policy_provider
         self._backend_actions = backend_actions
         self._ui_normalizer = ui_normalizer
@@ -159,26 +165,29 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
             and command.version_override is None
         )
 
+        input_schema = normalize_tool_input_schema(input_schema=version.input_schema)
+        validate_input_files_count(
+            input_schema=input_schema,
+            files_count=len(command.input_files) + len(command.file_refs),
+        )
+        normalized_input_values = normalize_tool_input_values(
+            input_schema=input_schema,
+            values=command.input_values,
+        )
+
+        resolved_inputs = await resolve_run_inputs(
+            tool_id=command.tool_id,
+            user_id=actor.id,
+            context=command.session_context,
+            input_files=command.input_files,
+            file_refs=command.file_refs,
+            file_ref_resolver=self._file_refs,
+        )
+
         if can_queue:
-            input_schema = normalize_tool_input_schema(input_schema=version.input_schema)
-            validate_input_files_count(
-                input_schema=input_schema,
-                files_count=len(command.input_files),
-            )
-            normalized_input_values = normalize_tool_input_values(
-                input_schema=input_schema,
-                values=command.input_values,
-            )
-
-            normalized_input_files: list[tuple[str, bytes]] = []
-            input_manifest = InputManifest()
-            if command.input_files:
-                normalized_input_files, input_manifest = normalize_input_files(
-                    input_files=command.input_files
-                )
-
-            primary_filename = normalized_input_files[0][0] if normalized_input_files else None
-            total_size_bytes = sum(len(content) for _, content in normalized_input_files)
+            primary_filename = resolved_inputs.primary_filename
+            total_size_bytes = resolved_inputs.total_size_bytes
+            input_manifest = resolved_inputs.manifest
 
             queued_run = enqueue_tool_version_run(
                 run_id=run_id,
@@ -210,8 +219,8 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
             async with self._uow:
                 await self._runs.create(run=queued_run)
                 await self._jobs.create(job=queued_job)
-                if normalized_input_files:
-                    await self._run_inputs.store(run_id=run_id, files=normalized_input_files)
+                if resolved_inputs.files:
+                    await self._run_inputs.store(run_id=run_id, files=resolved_inputs.files)
 
             return ExecuteToolVersionResult(run=queued_run)
 
@@ -243,6 +252,8 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
                 span=span,
                 actor=actor,
                 command=command,
+                resolved_inputs=resolved_inputs,
+                normalized_input_values=normalized_input_values,
                 run_id=run_id,
                 version=version,
                 now=now,
@@ -254,6 +265,7 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
                 sessions=self._sessions,
                 runner=self._runner,
                 ui_normalizer=self._ui_normalizer,
+                promotion_applier=self._promotion_applier,
                 clock=self._clock,
                 id_generator=self._id_generator,
             )

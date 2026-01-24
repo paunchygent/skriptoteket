@@ -13,6 +13,7 @@ from skriptoteket.observability.tracing import get_tracer, trace_operation
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.execution_queue import ToolRunJobClaim
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.promotions import PromotionApplierProtocol
 from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
 from skriptoteket.protocols.runner import ToolRunnerAdoptionProtocol, ToolRunnerProtocol
 from skriptoteket.protocols.scripting_ui import (
@@ -48,6 +49,7 @@ async def process_claim(
     runner: ToolRunnerProtocol,
     runner_adoption: ToolRunnerAdoptionProtocol,
     run_inputs: RunInputStorageProtocol,
+    promotion_applier: PromotionApplierProtocol,
     ui_policy_provider: UiPolicyProviderProtocol,
     backend_actions_provider: BackendActionProviderProtocol,
     ui_normalizer: UiPayloadNormalizerProtocol,
@@ -143,6 +145,15 @@ async def process_claim(
                 span.add_event("adopt_missing_container")
                 return
 
+            outcome = await _apply_promotions_if_needed(
+                outcome=outcome,
+                promotion_applier=promotion_applier,
+                run_id=job.run_id,
+                tool_id=ctx.run.tool_id,
+                user_id=ctx.run.requested_by_user_id,
+                context=ctx.run.session_context,
+            )
+
             finish_now = clock.now()
             normalization_result = normalize_ui_payload(
                 ui_normalizer=ui_normalizer,
@@ -189,3 +200,59 @@ async def process_claim(
             await heartbeat_task
         except asyncio.CancelledError:
             pass
+
+
+async def _apply_promotions_if_needed(
+    *,
+    outcome,
+    promotion_applier: PromotionApplierProtocol,
+    run_id,
+    tool_id,
+    user_id,
+    context,
+):
+    execution_result = outcome.execution_result
+    promotions = execution_result.promotions
+    if promotions is None or not promotions.requests:
+        return outcome
+    if execution_result.status.value != "succeeded":
+        return _fail_promotions(
+            outcome=outcome, reason="Runner contract violation: promotions require succeeded status"
+        )
+
+    try:
+        await promotion_applier.apply_session_promotions(
+            run_id=run_id,
+            tool_id=tool_id,
+            user_id=user_id,
+            context=context,
+            artifacts_manifest=execution_result.artifacts_manifest,
+            promotions=promotions,
+        )
+    except DomainError as exc:
+        return _fail_promotions(outcome=outcome, reason=exc.message)
+    return outcome
+
+
+def _fail_promotions(*, outcome, reason):
+    from skriptoteket.domain.scripting.execution import ToolExecutionResult
+    from skriptoteket.domain.scripting.models import RunStatus
+    from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result
+
+    error_summary = "Execution failed (promotion error)."
+    raw_result = ToolUiContractV2Result(
+        status="failed",
+        error_summary=error_summary,
+        outputs=[],
+        next_actions=[],
+        state=None,
+        artifacts=[],
+    )
+    execution_result = ToolExecutionResult(
+        status=RunStatus.FAILED,
+        stdout=outcome.execution_result.stdout,
+        stderr=outcome.execution_result.stderr,
+        ui_result=raw_result,
+        artifacts_manifest=outcome.execution_result.artifacts_manifest,
+    )
+    return type(outcome)(execution_result=execution_result, raw_result=raw_result)

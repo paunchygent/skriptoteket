@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, JsonValue
+from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
 
 class StartSandboxActionCommand(BaseModel):
@@ -17,6 +17,7 @@ class StartSandboxActionCommand(BaseModel):
     snapshot_id: UUID
     action_id: str
     input: dict[str, JsonValue]
+    file_refs: list[str] = Field(default_factory=list)
     expected_state_rev: int
 
 

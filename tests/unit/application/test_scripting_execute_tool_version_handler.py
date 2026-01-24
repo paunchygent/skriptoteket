@@ -21,12 +21,15 @@ from skriptoteket.domain.scripting.models import (
     VersionState,
     compute_content_hash,
 )
+from skriptoteket.domain.scripting.run_inputs import ResolvedInputFile
 from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result
 from skriptoteket.domain.scripting.ui.normalizer import DeterministicUiPayloadNormalizer
 from skriptoteket.domain.scripting.ui.policy import DEFAULT_UI_POLICY, UiPolicyProfileId
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
+from skriptoteket.protocols.file_refs import FileRefResolverProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.promotions import PromotionApplierProtocol
 from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
 from skriptoteket.protocols.runner import ToolRunnerProtocol
 from skriptoteket.protocols.scripting import (
@@ -111,6 +114,9 @@ async def test_execute_tool_version_commits_before_runner_execute(now: datetime)
     clock.now.side_effect = [now, now]
 
     runner = AsyncMock(spec=ToolRunnerProtocol)
+    file_refs = AsyncMock(spec=FileRefResolverProtocol)
+    file_refs.resolve_refs.return_value = []
+    promotion_applier = AsyncMock(spec=PromotionApplierProtocol)
     ui_policy_provider = Mock(spec=UiPolicyProviderProtocol)
     ui_policy_provider.get_profile_id_for_tool = AsyncMock(return_value=UiPolicyProfileId.DEFAULT)
     ui_policy_provider.get_policy.return_value = DEFAULT_UI_POLICY
@@ -145,7 +151,7 @@ async def test_execute_tool_version_commits_before_runner_execute(now: datetime)
         run_id: UUID,
         version: ToolVersion,
         context: RunContext,
-        input_files: list[tuple[str, bytes]],
+        input_files: list[ResolvedInputFile],
         input_values: dict[str, object],
         memory_json: bytes,
         action_payload: dict[str, object] | None,
@@ -166,6 +172,8 @@ async def test_execute_tool_version_commits_before_runner_execute(now: datetime)
         run_inputs=run_inputs,
         sessions=sessions_repo,
         runner=runner,
+        file_refs=file_refs,
+        promotion_applier=promotion_applier,
         ui_policy_provider=ui_policy_provider,
         backend_actions=backend_actions,
         ui_normalizer=ui_normalizer,
@@ -212,6 +220,9 @@ async def test_execute_tool_version_marks_failed_on_capacity_error(now: datetime
     jobs_repo = AsyncMock(spec=ToolRunJobRepositoryProtocol)
     run_inputs = AsyncMock(spec=RunInputStorageProtocol)
     sessions_repo = AsyncMock(spec=ToolSessionRepositoryProtocol)
+    file_refs = AsyncMock(spec=FileRefResolverProtocol)
+    file_refs.resolve_refs.return_value = []
+    promotion_applier = AsyncMock(spec=PromotionApplierProtocol)
 
     id_generator = Mock(spec=IdGeneratorProtocol)
     id_generator.new_uuid.return_value = uuid4()
@@ -242,6 +253,8 @@ async def test_execute_tool_version_marks_failed_on_capacity_error(now: datetime
         run_inputs=run_inputs,
         sessions=sessions_repo,
         runner=runner,
+        file_refs=file_refs,
+        promotion_applier=promotion_applier,
         ui_policy_provider=ui_policy_provider,
         backend_actions=backend_actions,
         ui_normalizer=ui_normalizer,
@@ -295,6 +308,9 @@ async def test_execute_tool_version_marks_failed_on_syntax_error_and_skips_runne
     jobs_repo = AsyncMock(spec=ToolRunJobRepositoryProtocol)
     run_inputs = AsyncMock(spec=RunInputStorageProtocol)
     sessions_repo = AsyncMock(spec=ToolSessionRepositoryProtocol)
+    file_refs = AsyncMock(spec=FileRefResolverProtocol)
+    file_refs.resolve_refs.return_value = []
+    promotion_applier = AsyncMock(spec=PromotionApplierProtocol)
 
     id_generator = Mock(spec=IdGeneratorProtocol)
     id_generator.new_uuid.return_value = run_id
@@ -321,6 +337,8 @@ async def test_execute_tool_version_marks_failed_on_syntax_error_and_skips_runne
         run_inputs=run_inputs,
         sessions=sessions_repo,
         runner=runner,
+        file_refs=file_refs,
+        promotion_applier=promotion_applier,
         ui_policy_provider=ui_policy_provider,
         backend_actions=backend_actions,
         ui_normalizer=ui_normalizer,

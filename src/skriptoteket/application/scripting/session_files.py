@@ -10,6 +10,7 @@ class SessionFileInfo(BaseModel):
 
     name: str
     bytes: int
+    ref: str
 
 
 class ListSessionFilesQuery(BaseModel):

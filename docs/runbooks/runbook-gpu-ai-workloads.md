@@ -5,7 +5,7 @@ title: "Runbook: GPU AI Workloads (AMD Radeon AI PRO R9700)"
 status: active
 owners: "olof"
 created: 2025-12-30
-updated: 2026-01-22
+updated: 2026-01-23
 system: "hemma.hule.education"
 ---
 
@@ -132,7 +132,7 @@ runtime path for llama.cpp on this host (ROCm + llama.cpp recommended operations
 host-binary llama-server units.
 
 - Systemd unit: `llama-server-rocm.service`
-- Container: `llama-server-rocm` (image `llama.cpp-rocm:7.1.1`)
+- Container: `llama-server-rocm` (image `llama.cpp-rocm:7.2.0`)
 - Endpoint: `http://127.0.0.1:8082` (`/health`, `/v1/*`)
 
 #### Current settings (as of 2026-01-13)

@@ -1,8 +1,8 @@
 """
 Demo: Indata via input_schema (ST-12-04).
 
-Visar hur verktyg kan ta emot text/dropdown-indata via SKRIPTOTEKET_INPUTS och
-(valfritt) filer via SKRIPTOTEKET_INPUT_MANIFEST.
+Visar hur verktyg kan ta emot text/dropdown-indata via request.json och
+(valfritt) filer via request.json-manifestet.
 """
 
 from __future__ import annotations
@@ -44,7 +44,7 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
                 f"Filer: {len(file_rows)}."
             ),
         },
-        {"kind": "json", "title": "SKRIPTOTEKET_INPUTS", "value": inputs},
+        {"kind": "json", "title": "request.json inputs", "value": inputs},
         {
             "kind": "table",
             "title": "Indatafiler",

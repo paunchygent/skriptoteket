@@ -28,7 +28,9 @@ from skriptoteket.infrastructure.scripting_ui.backend_actions import NoopBackend
 from skriptoteket.infrastructure.scripting_ui.policy_provider import DefaultUiPolicyProvider
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
+from skriptoteket.protocols.file_refs import FileRefResolverProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.promotions import PromotionApplierProtocol
 from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
 from skriptoteket.protocols.runner import ToolRunnerProtocol
 from skriptoteket.protocols.scripting import (
@@ -53,7 +55,7 @@ class FakeUow(UnitOfWorkProtocol):
 async def test_execute_tool_version_passes_action_payload_without_affecting_file_count(
     now: datetime,
 ) -> None:
-    """Action runs use SKRIPTOTEKET_ACTION (env), not synthetic input files."""
+    """Action runs include action payload in request.json without synthetic input files."""
     actor = make_user(role=Role.USER)
     tool_id = uuid4()
     version_id = uuid4()
@@ -96,6 +98,9 @@ async def test_execute_tool_version_passes_action_payload_without_affecting_file
     run_inputs = AsyncMock(spec=RunInputStorageProtocol)
     sessions = AsyncMock(spec=ToolSessionRepositoryProtocol)
     runner = AsyncMock(spec=ToolRunnerProtocol)
+    file_refs = AsyncMock(spec=FileRefResolverProtocol)
+    file_refs.resolve_refs.return_value = []
+    promotion_applier = AsyncMock(spec=PromotionApplierProtocol)
     runner.execute.return_value = ToolExecutionResult(
         status=RunStatus.SUCCEEDED,
         stdout="",
@@ -130,6 +135,8 @@ async def test_execute_tool_version_passes_action_payload_without_affecting_file
         run_inputs=run_inputs,
         sessions=sessions,
         runner=runner,
+        file_refs=file_refs,
+        promotion_applier=promotion_applier,
         ui_policy_provider=ui_policy_provider,
         backend_actions=backend_actions,
         ui_normalizer=ui_normalizer,

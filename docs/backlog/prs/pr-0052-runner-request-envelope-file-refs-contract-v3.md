@@ -2,7 +2,7 @@
 type: pr
 id: PR-0052
 title: "Runner: request.json envelope + FileRef resolver + contract v3 parsing"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-22
 updated: 2026-01-22

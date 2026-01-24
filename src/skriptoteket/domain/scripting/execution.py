@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict
 
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.models import RunStatus
+from skriptoteket.domain.scripting.promotions import PromotionEnvelope
 from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result
 
 
@@ -17,3 +18,4 @@ class ToolExecutionResult(BaseModel):
     stderr: str
     ui_result: ToolUiContractV2Result
     artifacts_manifest: ArtifactsManifest
+    promotions: PromotionEnvelope | None = None

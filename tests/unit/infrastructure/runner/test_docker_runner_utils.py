@@ -1,19 +1,19 @@
 import io
 import tarfile
-from datetime import datetime, timezone
-from uuid import uuid4
 
 import pytest
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.input_files import sanitize_input_filename
-from skriptoteket.domain.scripting.models import ToolVersion, VersionState
 from skriptoteket.infrastructure.runner.docker.container_io import (
     extract_first_file_from_tar_bytes,
     truncate_utf8_bytes,
     truncate_utf8_str,
 )
-from skriptoteket.infrastructure.runner.docker.workdir_archive import build_workdir_archive
+from skriptoteket.infrastructure.runner.docker.workdir_archive import (
+    WorkdirArchiveEntry,
+    build_workdir_archive_from_entries,
+)
 
 # --- sanitize_input_filename tests ---
 
@@ -157,31 +157,18 @@ def test_truncate_utf8_str_with_zero_limit_returns_empty() -> None:
 
 
 # --- _build_workdir_archive tests ---
-
-
-def _make_tool_version(source_code: str = "print('test')") -> ToolVersion:
-    return ToolVersion(
-        id=uuid4(),
-        tool_id=uuid4(),
-        version_number=1,
-        state=VersionState.DRAFT,
-        entrypoint="run_tool",
-        source_code=source_code,
-        content_hash="abc123",
-        derived_from_version_id=None,
-        created_by_user_id=uuid4(),
-        created_at=datetime.now(timezone.utc),
-    )
-
-
 def test_build_workdir_archive_contains_script_and_input() -> None:
-    version = _make_tool_version(source_code="def run_tool(): pass")
-
-    archive_bytes = build_workdir_archive(
-        version=version,
-        input_files=[("data.csv", b"col1,col2\n1,2")],
-        memory_json=b'{"settings":{}}',
-    )
+    entries = [
+        WorkdirArchiveEntry.file(name="script.py", content=b"def run_tool(): pass"),
+        WorkdirArchiveEntry.file(name="memory.json", content=b'{"settings":{}}'),
+        WorkdirArchiveEntry.file(
+            name="request.json",
+            content=b'{"schema_version":1,"inputs":{"values":{}},"files":[]}',
+        ),
+        WorkdirArchiveEntry.directory(name="input"),
+        WorkdirArchiveEntry.file(name="input/data.csv", content=b"col1,col2\n1,2"),
+    ]
+    archive_bytes = build_workdir_archive_from_entries(entries=entries)
 
     with tarfile.open(fileobj=io.BytesIO(archive_bytes), mode="r") as tar:
         names = tar.getnames()
@@ -193,13 +180,17 @@ def test_build_workdir_archive_contains_script_and_input() -> None:
 
 def test_build_workdir_archive_script_has_correct_content() -> None:
     source = "def run_tool(): return '<p>ok</p>'"
-    version = _make_tool_version(source_code=source)
-
-    archive_bytes = build_workdir_archive(
-        version=version,
-        input_files=[("file.txt", b"content")],
-        memory_json=b'{"settings":{}}',
-    )
+    entries = [
+        WorkdirArchiveEntry.file(name="script.py", content=source.encode("utf-8")),
+        WorkdirArchiveEntry.file(name="memory.json", content=b'{"settings":{}}'),
+        WorkdirArchiveEntry.file(
+            name="request.json",
+            content=b'{"schema_version":1,"inputs":{"values":{}},"files":[]}',
+        ),
+        WorkdirArchiveEntry.directory(name="input"),
+        WorkdirArchiveEntry.file(name="input/file.txt", content=b"content"),
+    ]
+    archive_bytes = build_workdir_archive_from_entries(entries=entries)
 
     with tarfile.open(fileobj=io.BytesIO(archive_bytes), mode="r") as tar:
         script_member = tar.getmember("script.py")
@@ -209,14 +200,18 @@ def test_build_workdir_archive_script_has_correct_content() -> None:
 
 
 def test_build_workdir_archive_input_has_correct_content() -> None:
-    version = _make_tool_version()
     input_data = b"test input data"
-
-    archive_bytes = build_workdir_archive(
-        version=version,
-        input_files=[("input.txt", input_data)],
-        memory_json=b'{"settings":{}}',
-    )
+    entries = [
+        WorkdirArchiveEntry.file(name="script.py", content=b"print('test')"),
+        WorkdirArchiveEntry.file(name="memory.json", content=b'{"settings":{}}'),
+        WorkdirArchiveEntry.file(
+            name="request.json",
+            content=b'{"schema_version":1,"inputs":{"values":{}},"files":[]}',
+        ),
+        WorkdirArchiveEntry.directory(name="input"),
+        WorkdirArchiveEntry.file(name="input/input.txt", content=input_data),
+    ]
+    archive_bytes = build_workdir_archive_from_entries(entries=entries)
 
     with tarfile.open(fileobj=io.BytesIO(archive_bytes), mode="r") as tar:
         input_file = tar.extractfile("input/input.txt")

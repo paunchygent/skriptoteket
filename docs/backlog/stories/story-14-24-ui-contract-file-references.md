@@ -5,10 +5,11 @@ title: "UI contract: first-class file references (picker + action fields)"
 status: ready
 owners: "agents"
 created: 2025-12-29
-updated: 2026-01-20
+updated: 2026-01-23
 epic: "EPIC-14"
 acceptance_criteria:
   - "Given a run has uploaded input files, when a tool emits next_actions that accept file references, then the UI can present selectable file options without exposing runner filesystem paths."
+  - "Given a file-ref field has a default value (from tool settings or action prefill), when the UI renders the field, then the default is preselected if available (including vault refs); missing defaults block execution with an actionable validation error."
   - "Given a user submits an action containing file references, when the runner executes the tool, then the referenced files resolve to the correct on-disk paths within the run/session sandbox."
   - "Given a file reference is invalid or not available in the current run/session, when normalizing or executing, then the platform returns an actionable validation error (no 500)."
   - "Given a tool does not use file references, when running multi-step tools, then behavior remains unchanged."

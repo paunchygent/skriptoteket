@@ -2,7 +2,7 @@
 type: story
 id: ST-19-03
 title: "Runner contract v3: structured errors + state_update + promotions"
-status: ready
+status: done
 owners: "agents"
 created: 2026-01-20
 epic: "EPIC-19"

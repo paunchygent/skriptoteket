@@ -14,6 +14,7 @@ from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
+from skriptoteket.domain.scripting.file_refs import build_session_file_ref
 from skriptoteket.domain.scripting.input_files import InputManifest
 from skriptoteket.domain.scripting.models import (
     RunContext,
@@ -54,7 +55,7 @@ from skriptoteket.protocols.uow import UnitOfWorkProtocol
 class StartActionHandler(StartActionHandlerProtocol):
     """Start an interactive tool action (ADR-0024).
 
-    The tool receives `SKRIPTOTEKET_ACTION` (JSON) with the shape:
+    The tool receives `action` in `/work/request.json` with the shape:
     {"action_id": str, "input": {...}, "state": {...}}.
     """
 
@@ -316,11 +317,14 @@ class StartActionHandler(StartActionHandlerProtocol):
                     code=ErrorCode.INTERNAL_ERROR,
                     message="Internal error (missing active_version_id).",
                 )
-            persisted_files = await self._session_files.get_files(
-                tool_id=command.tool_id,
-                user_id=actor.id,
-                context=context,
-            )
+            file_refs = list(command.file_refs)
+            if not file_refs:
+                session_files = await self._session_files.list_files(
+                    tool_id=command.tool_id,
+                    user_id=actor.id,
+                    context=context,
+                )
+                file_refs = [build_session_file_ref(name=item.name) for item in session_files]
             result = await self._execute.handle(
                 actor=actor,
                 command=ExecuteToolVersionCommand(
@@ -328,8 +332,8 @@ class StartActionHandler(StartActionHandlerProtocol):
                     version_id=active_version_id,
                     context=RunContext.PRODUCTION,
                     session_context=context,
-                    input_files=persisted_files,
                     action_payload=payload,
+                    file_refs=file_refs,
                 ),
             )
             run_id = result.run.id

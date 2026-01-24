@@ -17,6 +17,7 @@ from skriptoteket.observability.tracing import init_tracing
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.execution_queue import ToolRunJobClaim, ToolRunJobRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.promotions import PromotionApplierProtocol
 from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
 from skriptoteket.protocols.runner import ToolRunnerAdoptionProtocol, ToolRunnerProtocol
 from skriptoteket.protocols.scripting_ui import (
@@ -60,6 +61,7 @@ async def run_execution_queue_worker(
         runner = await container.get(ToolRunnerProtocol)
         runner_adoption = await container.get(ToolRunnerAdoptionProtocol)
         run_inputs = await container.get(RunInputStorageProtocol)
+        promotion_applier = await container.get(PromotionApplierProtocol)
         ui_policy_provider = await container.get(UiPolicyProviderProtocol)
         backend_actions_provider = await container.get(BackendActionProviderProtocol)
         ui_normalizer = await container.get(UiPayloadNormalizerProtocol)
@@ -126,6 +128,7 @@ async def run_execution_queue_worker(
                 runner=runner,
                 runner_adoption=runner_adoption,
                 run_inputs=run_inputs,
+                promotion_applier=promotion_applier,
                 ui_policy_provider=ui_policy_provider,
                 backend_actions_provider=backend_actions_provider,
                 ui_normalizer=ui_normalizer,

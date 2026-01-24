@@ -261,16 +261,23 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
             await self._snapshots.create(snapshot=snapshot)
 
         input_files = list(command.input_files)
-        reuse_files: list[tuple[str, bytes]] = []
-        if not input_files and command.session_files_mode is SessionFilesMode.REUSE:
+        file_refs = list(command.file_refs)
+        if (
+            not input_files
+            and not file_refs
+            and command.session_files_mode is SessionFilesMode.REUSE
+        ):
             reuse_context = _require_sandbox_session_context(command.session_context)
-            reuse_files = await self._session_files.get_files(
+            input_files = await self._session_files.get_files(
                 tool_id=command.tool_id,
                 user_id=actor.id,
                 context=reuse_context,
             )
-            input_files = reuse_files
-        elif not input_files and command.session_files_mode is SessionFilesMode.CLEAR:
+        elif (
+            not input_files
+            and not file_refs
+            and command.session_files_mode is SessionFilesMode.CLEAR
+        ):
             reuse_context = _require_sandbox_session_context(command.session_context)
             await self._session_files.clear_session(
                 tool_id=command.tool_id,
@@ -296,17 +303,17 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
                 ),
                 input_files=input_files,
                 input_values=command.input_values,
+                file_refs=file_refs,
             ),
         )
 
         # Persist session-scoped files for subsequent sandbox action runs (ADR-0039).
-        files_to_store = command.input_files or reuse_files
-        if files_to_store:
+        if input_files:
             await self._session_files.store_files(
                 tool_id=command.tool_id,
                 user_id=actor.id,
                 context=_sandbox_context(snapshot_id),
-                files=files_to_store,
+                files=input_files,
             )
 
         # Persist sandbox session state if run has next_actions (ADR-0038)

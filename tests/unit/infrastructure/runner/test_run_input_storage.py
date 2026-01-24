@@ -5,6 +5,7 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.domain.scripting.run_inputs import ResolvedInputFile
 from skriptoteket.infrastructure.runner.run_input_storage import LocalRunInputStorage
 
 
@@ -14,7 +15,10 @@ async def test_local_run_input_storage_store_get_delete_roundtrip(tmp_path) -> N
     storage = LocalRunInputStorage(artifacts_root=tmp_path)
     run_id = uuid4()
 
-    files = [("a.txt", b"hello"), ("b.bin", b"\x00\x01")]
+    files = [
+        ResolvedInputFile(name="a.txt", content=b"hello", ref="session:a.txt"),
+        ResolvedInputFile(name="b.bin", content=b"\x00\x01"),
+    ]
     await storage.store(run_id=run_id, files=files)
 
     fetched = await storage.get(run_id=run_id)
@@ -41,7 +45,19 @@ async def test_local_run_input_storage_store_overwrites_existing_run_dir(tmp_pat
     storage = LocalRunInputStorage(artifacts_root=tmp_path)
     run_id = uuid4()
 
-    await storage.store(run_id=run_id, files=[("a.txt", b"v1")])
-    await storage.store(run_id=run_id, files=[("a.txt", b"v2"), ("b.txt", b"x")])
+    await storage.store(
+        run_id=run_id,
+        files=[ResolvedInputFile(name="a.txt", content=b"v1", ref="session:a.txt")],
+    )
+    await storage.store(
+        run_id=run_id,
+        files=[
+            ResolvedInputFile(name="a.txt", content=b"v2", ref="session:a.txt"),
+            ResolvedInputFile(name="b.txt", content=b"x", ref="session:b.txt"),
+        ],
+    )
 
-    assert await storage.get(run_id=run_id) == [("a.txt", b"v2"), ("b.txt", b"x")]
+    assert await storage.get(run_id=run_id) == [
+        ResolvedInputFile(name="a.txt", content=b"v2", ref="session:a.txt"),
+        ResolvedInputFile(name="b.txt", content=b"x", ref="session:b.txt"),
+    ]

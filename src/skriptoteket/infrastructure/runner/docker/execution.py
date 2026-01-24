@@ -7,6 +7,7 @@ from pydantic import JsonValue
 from skriptoteket.domain.errors import DomainError
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
 from skriptoteket.domain.scripting.models import RunContext, RunStatus, ToolVersion
+from skriptoteket.domain.scripting.run_inputs import ResolvedInputFile
 from skriptoteket.observability.tracing import get_tracer, trace_operation
 from skriptoteket.protocols.runner import ArtifactManagerProtocol
 
@@ -30,7 +31,7 @@ def execute_sync(
     run_id: UUID,
     version: ToolVersion,
     context: RunContext,
-    input_files: list[tuple[str, bytes]],
+    input_files: list[ResolvedInputFile],
     input_values: dict[str, JsonValue],
     memory_json: bytes,
     action_payload: dict[str, JsonValue] | None,
@@ -68,7 +69,7 @@ def execute_sync(
         tool_version_id=str(version.id),
         context=context.value,
         timeout_seconds=timeout_seconds,
-        input_files_count=len(request.normalized_input_files),
+        input_files_count=len(request.input_files),
         cpu_limit=limits.cpu_limit,
         memory_limit=limits.memory_limit,
         pids_limit=limits.pids_limit,
@@ -260,6 +261,7 @@ def execute_sync(
                 stderr=outputs.stderr,
                 ui_result=parsed.ui_result,
                 artifacts_manifest=parsed.artifacts_manifest,
+                promotions=parsed.promotions,
             )
 
     finally:

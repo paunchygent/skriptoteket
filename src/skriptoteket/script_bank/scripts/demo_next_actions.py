@@ -7,8 +7,8 @@ Syfte:
 
 Runner-kontrakt:
 - Entrypoint: run_tool(input_dir: str, output_dir: str) -> dict
-- Input: filer i /work/input/ (hämta filvägar via input manifest)
-- Action input: SKRIPTOTEKET_ACTION (env JSON med {action_id, input, state})
+- Input: filer i /work/input/ (hämta filvägar via request.json-manifestet)
+- Action input: request.json (via skriptoteket_toolkit)
 """
 
 from __future__ import annotations
