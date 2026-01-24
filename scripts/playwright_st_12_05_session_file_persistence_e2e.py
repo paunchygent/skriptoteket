@@ -1,13 +1,11 @@
-"""Playwright E2E test for ST-12-05 session-scoped file persistence.
+"""Playwright E2E test for ST-12-05 session-scoped file persistence (production only).
 
-Verifies the html-to-pdf-preview demo tool works end-to-end without re-upload:
+Verifies the html-to-pdf-preview demo tool works end-to-end:
 1) Production tool run: upload HTML, run preview, click "Konvertera till PDF" -> PDF is produced.
-2) Editor sandbox: same flow inside SandboxRunner for a draft version.
 """
 
 from __future__ import annotations
 
-import json
 import re
 from pathlib import Path
 
@@ -55,61 +53,29 @@ def _launch_chromium(playwright: object) -> object:
         return playwright.chromium.launch(headless=True, executable_path=executable_path)
 
 
-def _login(page: object, *, base_url: str, email: str, password: str) -> None:
-    page.goto(f"{base_url}/login", wait_until="domcontentloaded")
-    page.get_by_label("E-post").fill(email)
-    page.get_by_label("Lösenord").fill(password)
-    page.locator("form").get_by_role(
-        "button", name=re.compile(r"^Logga in$", re.IGNORECASE)
-    ).click()
-    expect(page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))).to_be_visible()
-
-
-def _ensure_draft_for_tool(
-    context: object,
+def _login(
     page: object,
     *,
     base_url: str,
-    tool_slug: str,
-) -> str:
-    csrf = context.request.get(f"{base_url}/api/v1/auth/csrf")
-    expect(csrf).to_be_ok()
-    csrf_token = csrf.json()["csrf_token"]
+    email: str,
+    password: str,
+    target_path: str,
+) -> None:
+    page.goto(f"{base_url}{target_path}", wait_until="domcontentloaded")
 
-    tool = context.request.get(f"{base_url}/api/v1/tools/{tool_slug}")
-    expect(tool).to_be_ok()
-    tool_id = tool.json()["id"]
+    logout_button = page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))
+    try:
+        expect(logout_button).to_be_visible(timeout=2_000)
+        return
+    except AssertionError:
+        pass
 
-    boot = context.request.get(f"{base_url}/api/v1/editor/tools/{tool_id}")
-    expect(boot).to_be_ok()
-    boot_payload = boot.json()
-    entrypoint = str(boot_payload.get("entrypoint") or "run_tool")
-    source_code = str(boot_payload.get("source_code") or "")
-
-    draft = context.request.post(
-        f"{base_url}/api/v1/editor/tools/{tool_id}/draft",
-        headers={
-            "Content-Type": "application/json",
-            "X-CSRF-Token": csrf_token,
-        },
-        data=json.dumps(
-            {
-                "source_code": source_code,
-                "entrypoint": entrypoint,
-                "change_summary": "playwright e2e: ST-12-05",
-            }
-        ),
-    )
-    expect(draft).to_be_ok()
-    redirect_url = draft.json()["redirect_url"]
-    version_id = redirect_url.split("/admin/tool-versions/")[-1].split("?")[0]
-
-    page.goto(f"{base_url}{redirect_url}", wait_until="domcontentloaded")
-    expect(
-        page.get_by_role("button", name=re.compile(r"Testkör kod", re.IGNORECASE))
-    ).to_be_visible(timeout=30_000)
-
-    return version_id
+    login_modal = page.get_by_role("dialog")
+    expect(login_modal).to_be_visible(timeout=30_000)
+    login_modal.get_by_label("E-post").fill(email)
+    login_modal.get_by_label("Lösenord").fill(password)
+    login_modal.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
+    expect(logout_button).to_be_visible(timeout=30_000)
 
 
 def _create_sample_html(*, artifacts_dir: Path) -> tuple[Path, str]:
@@ -178,52 +144,6 @@ def _run_production_flow(
     return downloaded_path
 
 
-def _get_sandbox_section(page: object) -> object:
-    return page.get_by_text("Testfiler").locator(
-        "xpath=ancestor::div[contains(@class,'space-y-4')][1]"
-    )
-
-
-def _run_editor_sandbox_flow(page: object, *, html_path: Path, expected_pdf: str) -> Path:
-    sandbox = _get_sandbox_section(page)
-
-    file_input = page.locator("input[type='file']").first
-    expect(file_input).to_be_attached()
-    file_input.set_input_files(str(html_path))
-
-    sandbox.get_by_role("button", name=re.compile(r"^Testkör kod", re.IGNORECASE)).first.click()
-    expect(sandbox.get_by_text(re.compile(r"Lyckades", re.IGNORECASE))).to_be_visible(
-        timeout=60_000
-    )
-
-    page_size = sandbox.get_by_role("group", name=re.compile(r"Sidstorlek", re.IGNORECASE))
-    expect(page_size.first).to_be_visible(timeout=60_000)
-    page_size.get_by_label(re.compile(r"^A4$", re.IGNORECASE)).first.check()
-
-    orientation = sandbox.get_by_role("group", name=re.compile(r"Orientering", re.IGNORECASE))
-    expect(orientation.first).to_be_visible(timeout=60_000)
-    orientation.get_by_label(re.compile(r"Stående", re.IGNORECASE)).first.check()
-    sandbox.get_by_role(
-        "button", name=re.compile(r"Konvertera till PDF", re.IGNORECASE)
-    ).first.click()
-
-    expect(sandbox.get_by_text(re.compile(r"Konverteringsresultat", re.IGNORECASE))).to_be_visible(
-        timeout=60_000
-    )
-    pdf_link = sandbox.get_by_role("link", name=f"output/{expected_pdf}")
-    expect(pdf_link.first).to_be_visible(timeout=60_000)
-
-    downloaded_path = html_path.parent / "sandbox.pdf"
-    with page.expect_download() as download_info:
-        pdf_link.first.click()
-    download = download_info.value
-    download.save_as(str(downloaded_path))
-
-    header = downloaded_path.read_bytes()[:5]
-    assert header == b"%PDF-", f"Expected PDF header, got {header!r}"
-    return downloaded_path
-
-
 def main() -> None:
     config = get_config()
     base_url = config.base_url.rstrip("/")
@@ -253,16 +173,18 @@ def main() -> None:
             ),
         )
 
-        _login(page, base_url=base_url, email=email, password=password)
+        _login(
+            page,
+            base_url=base_url,
+            email=email,
+            password=password,
+            target_path="/tools/html-to-pdf-preview/run",
+        )
 
         production_pdf = _run_production_flow(
             page, base_url=base_url, html_path=html_path, expected_pdf=expected_pdf
         )
         print(f"Production OK (downloaded): {production_pdf}")
-
-        _ensure_draft_for_tool(context, page, base_url=base_url, tool_slug="html-to-pdf-preview")
-        sandbox_pdf = _run_editor_sandbox_flow(page, html_path=html_path, expected_pdf=expected_pdf)
-        print(f"Editor sandbox OK (downloaded): {sandbox_pdf}")
 
         page.screenshot(path=str(artifacts_dir / "done.png"), full_page=True)
 

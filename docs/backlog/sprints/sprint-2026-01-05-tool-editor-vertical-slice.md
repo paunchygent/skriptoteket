@@ -150,7 +150,7 @@ Last updated: 2025-12-29
 - UI smoke: `pdm run ui-editor-smoke` (Playwright; escalation on macOS).
 - Manual E2E:
   - `pdm run python -m scripts.playwright_st_14_05_editor_sandbox_settings_e2e`
-  - `pdm run python -m scripts.playwright_st_14_03_editor_sandbox_html_to_pdf_preview_e2e`
+  - `pdm run python -m scripts.playwright_sandbox_file_refs_reuse_e2e --base-url http://127.0.0.1:5173`
 
 ### Ops notes
 

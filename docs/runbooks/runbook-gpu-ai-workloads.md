@@ -135,6 +135,21 @@ host-binary llama-server units.
 - Container: `llama-server-rocm` (image `llama.cpp-rocm:7.2.0`)
 - Endpoint: `http://127.0.0.1:8082` (`/health`, `/v1/*`)
 
+#### Image build (ROCm 7.2)
+
+`llama.cpp-rocm:7.2.0` is built locally on `hemma` from AMD's ROCm base image and ROCm fork of llama.cpp:
+
+- Dockerfile: `/home/paunchygent/llama.cpp-rocm/Dockerfile`
+- Base image: `rocm/dev-ubuntu-24.04:7.2-complete`
+- Source: `https://github.com/ROCm/llama.cpp` (pinned via `LLAMA_CPP_COMMIT`)
+
+Rebuild (pull base + rebuild local image) and restart:
+
+```bash
+ssh hemma "cd /home/paunchygent/llama.cpp-rocm && sudo docker build --pull -t llama.cpp-rocm:7.2.0 ."
+ssh hemma "sudo systemctl restart llama-server-rocm.service"
+```
+
 #### Current settings (as of 2026-01-13)
 
 - `--ctx-size 32768`
@@ -440,6 +455,9 @@ ssh hemma "sudo apt install ./amdgpu-install_7.2.70200-1_all.deb"
 # Install usecase (pick one):
 # - Graphics + compute (Mesa + ROCm): graphics,rocm
 # - Headless/compute (no Mesa): rocm
+# Notes:
+# - "Mesa graphics" == `graphics` (open source Mesa 3D + multimedia libs).
+# - `workstation` is deprecated and maps to Mesa; prefer `graphics`.
 ssh hemma "sudo amdgpu-install -y --usecase=graphics,rocm"
 # ssh hemma "sudo amdgpu-install -y --usecase=rocm"
 ssh hemma "sudo reboot"

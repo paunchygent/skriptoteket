@@ -224,6 +224,31 @@ ssh hemma "sudo ls -la /var/lib/systemd/pstore"
 ssh hemma "sudo systemctl status --no-pager systemd-pstore"
 ```
 
+### Storage Layout (hemma)
+
+Mount points:
+
+- `/` (root SSD): OS + services (snap Docker stores data under `/var/snap/docker/common/var-lib-docker/`)
+- `/srv/storage` (HDD, label `HEMMA_DATA`): long-term data
+  - `/srv/storage/models` (bind-mounted to `/home/paunchygent/models` for llama.cpp compatibility)
+  - `/srv/storage/data`
+  - `/srv/storage/archives`
+- `/srv/scratch` (SSD, label `HEMMA_SCRATCH`): fast ephemeral work
+  - `/srv/scratch/tmp` (sticky like `/tmp`)
+  - `/srv/scratch/build`
+  - `/srv/scratch/cache`
+- `/srv/backup` (label `BACKUP`): long-term backups/snapshots
+
+Scratch defaults (interactive shells, `paunchygent`):
+
+- `/home/paunchygent/.bashrc` sets `TMPDIR=/srv/scratch/tmp` and `XDG_CACHE_HOME=/srv/scratch/cache/$USER` when
+  `/srv/scratch` is mounted.
+- One-off command pattern:
+
+```bash
+ssh hemma "TMPDIR=/srv/scratch/tmp XDG_CACHE_HOME=/srv/scratch/cache/$USER <command>"
+```
+
 ### Crash Capture Hardening (hemma, 2026-01-07)
 
 Crash capture is hardened with larger kernel buffers, panic-on-oops, kdump, and netconsole.

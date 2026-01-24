@@ -205,6 +205,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0050-openai-responses-structured-output-shape-fix.md`
 - `docs/backlog/prs/pr-0051-runner-contract-v3-scaffolding.md`
 - `docs/backlog/prs/pr-0052-runner-request-envelope-file-refs-contract-v3.md`
+- `docs/backlog/prs/pr-0053-ui-contract-file-ref-picker-and-defaults.md`
+- `docs/backlog/prs/pr-0054-user-file-vault-backend-and-resolver.md`
+- `docs/backlog/prs/pr-0055-user-file-vault-ui-picker.md`
 - `docs/backlog/prs/pr-0028-editor-focus-mode-and-ai-drawer-density.md`
 - `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md`
 - `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md`

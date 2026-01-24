@@ -12,7 +12,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-01-22
+- Date: 2026-01-24
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
@@ -95,6 +95,10 @@ Keep this file updated so the next session can pick up work quickly.
   - Vite (local) on `:5173` → proxy `:8002`: `VITE_DEV_PROXY_TARGET=http://127.0.0.1:8002 pnpm -C frontend --filter @skriptoteket/spa dev`.
   - Vite (GPT) on `:5174` → proxy `:8003`: `VITE_DEV_PROXY_TARGET=http://127.0.0.1:8003 pnpm -C frontend --filter @skriptoteket/spa exec vite --port 5174 --strictPort`.
 - Playwright (real editor requests; escalated permissions required on macOS):
+  - Sandbox file refs + session reuse (Vite dev): `pdm run python -m scripts.playwright_sandbox_file_refs_reuse_e2e --base-url http://127.0.0.1:5173`
+    → artifacts: `.artifacts/sandbox-file-refs-reuse-e2e/` (editor-ready, test-mode, run-with-upload, run-with-reuse).
+  - Production html-to-pdf preview (Vite dev): `pdm run python -m scripts.playwright_st_12_05_session_file_persistence_e2e --base-url http://127.0.0.1:5173`
+    → artifacts: `.artifacts/st-12-05-session-file-persistence-e2e/` (production.pdf).
   - Local (long script, suffix hole): `pdm run python -m scripts.diagnose_ghost_text --base-url http://127.0.0.1:5173 --tool-slug html-to-pdf-preview --cursor-anchor "if not html_sources:" --cursor-anchor-mode line --cursor-text "        return {" --cursor-delete-next-lines 7`
     → ghost text present; `cursor_overlap_chars=0` in `.artifacts/diagnose-ghost-text/result.json` (completion off-target).
   - GPT-5 (long script, return block hole): `pdm run python -m scripts.diagnose_ghost_text --base-url http://127.0.0.1:5174 --tool-slug html-to-pdf-preview --cursor-anchor "if not html_sources:" --cursor-anchor-mode line --cursor-text "        return {" --cursor-delete-next-lines 7`
@@ -113,7 +117,6 @@ Keep this file updated so the next session can pick up work quickly.
   - `pdm run fe-test-coverage`
   - `pdm run fe-build`
   - `pdm run docs-validate`
-- Pending (route change check, needs approval): start `pdm run dev` and verify a sandbox run with `file_refs`.
 
 ## How to Run
 

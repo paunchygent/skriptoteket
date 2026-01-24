@@ -26,6 +26,19 @@ scope: "testing"
 - `pdm run ui-editor-smoke` → screenshots in `.artifacts/ui-editor-smoke/`
 - `pdm run ui-runtime-smoke` → screenshots in `.artifacts/ui-runtime-smoke/` (apps + `/tools/<slug>/run`)
 
+## Playwright Strategy (REQUIRED)
+
+- Maintain **one script per operational validation**; avoid overlapping flows between scripts.
+- Prefer extending existing scripts rather than adding new ones unless the flow is distinct and reusable.
+- Keep scripts passing; update selectors and steps when UI changes (no stale/aspirational flows).
+- Use `scripts._playwright_config.get_config()` for base URL + credentials.
+- Login via **protected routes + modal** (e.g., `/admin/tools`) instead of `/login` to match SPA routing.
+- Editor/sandbox detection must be robust: `.cm-editor` visible + "Testkör" button + test mode open.
+- For sandbox session reuse, assert:
+  - `/work/input/<filename>` appears in tool outputs (from `request.json` manifest)
+  - reuse checkbox enables only after selected files are cleared
+  - session-files API returns the uploaded filename
+
 ### Prod runs (recommended)
 
 Create a gitignored `.env.prod-smoke`:

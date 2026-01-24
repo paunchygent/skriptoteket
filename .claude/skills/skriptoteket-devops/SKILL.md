@@ -19,6 +19,9 @@ Source of truth for ops in this repo:
 - List supported usecases: `ssh hemma "amdgpu-install --list-usecase"`
 - ROCm (headless/compute): `ssh hemma "sudo amdgpu-install -y --usecase=rocm"`
 - Graphics + ROCm (Mesa + compute): `ssh hemma "sudo amdgpu-install -y --usecase=graphics,rocm"`
+- Notes:
+  - "Mesa graphics" == `graphics` (open source Mesa 3D + multimedia libs).
+  - `workstation` is deprecated (and now maps to Mesa anyway); prefer `graphics`.
 
 ## When to Use
 
@@ -175,6 +178,9 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml ex
 ~/apps/skriptoteket/.env       # Production secrets (never commit)
 ~/infrastructure/              # nginx-proxy, certbot
 ~/backups/                     # Database backups
+/srv/storage/                  # Long-term data (HDD; models/data/archives)
+/srv/backup/                   # Long-term backups (ext4)
+/srv/scratch/                  # Fast ephemeral work (SSD; tmp/build/cache)
 /root/logs/incident-*.log      # Incident log captures
 /root/logs/smart/              # SMART snapshots
 ```
