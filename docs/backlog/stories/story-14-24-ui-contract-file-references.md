@@ -5,12 +5,13 @@ title: "UI contract: first-class file references (picker + action fields)"
 status: ready
 owners: "agents"
 created: 2025-12-29
-updated: 2026-01-23
+updated: 2026-01-24
 epic: "EPIC-14"
 acceptance_criteria:
-  - "Given a run has uploaded input files, when a tool emits next_actions that accept file references, then the UI can present selectable file options without exposing runner filesystem paths."
-  - "Given a file-ref field has a default value (from tool settings or action prefill), when the UI renders the field, then the default is preselected if available (including vault refs); missing defaults block execution with an actionable validation error."
-  - "Given a user submits an action containing file references, when the runner executes the tool, then the referenced files resolve to the correct on-disk paths within the run/session sandbox."
+  - "Given a tool emits next_actions with file fields, when the UI renders the action form, then it shows a picker per file field (multiple file fields in the same action are supported) without exposing runner filesystem paths."
+  - "Given a file field has min/max constraints, when the user selects file refs, then validation enforces the constraints and the submitted value is always FileRef[] (array), even when max=1."
+  - "Given a file field has a default value (from tool settings or action prefill), when the UI renders the field, then the default is preselected if available (including vault refs); missing defaults block execution with an actionable validation error."
+  - "Given a user submits an action containing file fields, when the runner executes the tool, then the referenced files resolve to the correct on-disk paths within the run/session sandbox and the input manifest preserves which field each file belongs to."
   - "Given a file reference is invalid or not available in the current run/session, when normalizing or executing, then the platform returns an actionable validation error (no 500)."
   - "Given a tool does not use file references, when running multi-step tools, then behavior remains unchanged."
 dependencies:
@@ -39,6 +40,25 @@ paths; this keeps the contract compatible with future file sources (e.g. per-use
 breaking UX.
 
 Reference: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
+
+## Decisions (LOCKED)
+
+- **Multiple file fields are REQUIRED:** `next_actions[].fields` MUST allow multiple file fields in the same action.
+- **Value shape is always list:** file field values MUST be `FileRef[]` (array). There is no scalar `FileRef` value
+  shape for actions.
+- **UiActionField kind/name (REQUIRED):** action fields MUST use `UiActionField.kind="file_ref"` (NOT `kind="file"`),
+  with `min/max` and optional `sources?: ["session","vault"]` (default both). Value is always `FileRef[]`.
+- **Available FileRefs API shape (REQUIRED):** implement new endpoints (do not overload session-files):
+  - `GET /api/v1/tools/{tool_id}/file-refs?context=default`
+  - `GET /api/v1/editor/tool-versions/{version_id}/file-refs?snapshot_id=...`
+- **Wire payload shape (REQUIRED):**
+  - Non-file inputs are sent as JSON only (existing behavior).
+  - File refs are sent as `file_refs_by_field: Record[field_name, FileRef[]]` (no flat list).
+  - The platform writes file-ref arrays into `/work/request.json` under `inputs.values[field]` / `action.input[field]`.
+- **Per-field mapping is REQUIRED end-to-end:** the platform MUST preserve which field each staged file belongs to
+  (e.g. include a `field` property per entry in `/work/request.json`).
+- **No flat file_refs semantics:** action submission MUST NOT be a single flat `file_refs: string[]` with ambiguous
+  ownership across multiple fields.
 
 ### Dependency alignment (no parallel mechanisms)
 

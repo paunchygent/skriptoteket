@@ -10,9 +10,10 @@ stories:
   - "ST-14-36"
 tags: ["frontend"]
 acceptance_criteria:
-  - "Vault files appear in run/action pickers and respect file constraints."
-  - "Vault default refs preselect when available; missing defaults block execution with validation error."
-  - "Users can save artifacts to vault and delete/restore entries from the picker."
+  - "Vault files appear in run/action pickers per file field (multiple file fields supported) and respect file constraints."
+  - "File field values are always FileRef[] (array), even when max=1."
+  - "Vault defaults preselect when available; missing defaults block execution with an actionable validation error."
+  - "Users can save artifacts to vault from ToolRunArtifacts; users can delete/restore vault entries from the vault UI."
 ---
 
 ## Problem
@@ -25,6 +26,22 @@ Parent: EPIC-14. Depends on PR-0054 backend endpoints and PR-0053 UI contract be
 ## Goal
 
 Deliver the vault picker UI for runs/actions, handle defaults, and support save/delete/restore flows with clear UX.
+
+## Decisions (LOCKED)
+
+- **Multiple file fields are REQUIRED:** the UI MUST render a picker for each file field (both in `input_schema` and in
+  `next_actions[].fields`).
+- **Value shape is always list:** file field values MUST be `FileRef[]` (array). There is no scalar `FileRef` shape.
+- **Per-field source selection:** per field, users MUST choose either upload OR vault/session refs. Mixing sources
+  within the same field is FORBIDDEN.
+- **Save to vault UX:** saving run artifacts to the vault MUST be an explicit per-artifact action (“Spara i valv”) in
+  ToolRunArtifacts (and sandbox).
+- **Vault management UI is REQUIRED:** the vault panel MUST support:
+  - active list + soft-deleted “papperskorg” view
+  - delete + restore
+  - search by filename
+  - sorting: Newest, Name (A–Ö), Size
+  - a quota/usage bar (e.g. `x MB / y MB`) plus actionable limits messaging
 
 ## Non-goals
 

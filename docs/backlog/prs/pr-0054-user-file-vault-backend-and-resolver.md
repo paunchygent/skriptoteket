@@ -10,9 +10,9 @@ stories:
   - "ST-14-36"
 tags: ["backend"]
 acceptance_criteria:
-  - "Vault file refs can be listed, resolved, and staged into /work/input."
-  - "Access control enforced for vault file refs; invalid refs return actionable errors."
-  - "Soft-delete + restore + retention cleanup paths are implemented."
+  - "Vault file refs can be listed, resolved, and staged into /work/input (preserving field ownership in the input manifest)."
+  - "Access control is enforced for vault file refs; invalid refs return actionable errors (no 500)."
+  - "Soft-delete + restore + retention cleanup paths are implemented, with explicit, dedicated vault configuration."
 ---
 
 ## Problem
@@ -25,6 +25,23 @@ Parent: EPIC-14. Dependencies: ADR-0059, ST-19-02.
 
 Implement backend persistence and resolver support for `vault:*` file refs, with access control, soft-delete, and
 retention cleanup, without impacting existing session-file flows.
+
+## Decisions (LOCKED)
+
+- **Dedicated vault storage config (REQUIRED):**
+  - `VAULT_ROOT` (Path)
+  - `VAULT_MAX_FILE_BYTES` (int)
+  - `VAULT_MAX_TOTAL_BYTES` (int; per-user quota)
+  - `VAULT_RETENTION_DAYS` (int; soft-delete retention)
+  - Default: `VAULT_RETENTION_DAYS = 30`.
+- **Vault ≠ session files/artifacts:** vault files MUST NOT be stored under `ARTIFACTS_ROOT/<run_id>/...` and MUST NOT
+  reuse session-file cleanup semantics.
+- **Per-field file mapping (REQUIRED):** staging MUST preserve which field each file belongs to for multi-file-field
+  actions/runs (e.g. include a `field` property per staged file entry in `/work/request.json`).
+- **No flat file_refs support:** APIs/commands MUST NOT accept flat `file_refs: list[str]`; the wire contract is
+  `file_refs_by_field: Record[field, FileRef[]]` only.
+- **Explicit user action only:** saving to vault is FORBIDDEN unless triggered by an explicit user interaction (no tool
+  auto-persist).
 
 ## Non-goals
 

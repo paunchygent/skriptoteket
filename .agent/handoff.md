@@ -89,6 +89,16 @@ Keep this file updated so the next session can pick up work quickly.
   - Tokens-only: `src/skriptoteket/web/static/css/huleedu-design-tokens.css` (removed utilities/components/HTMX selectors).
   - Removed unused component package: `frontend/packages/huleedu-ui`.
   - Roadmap corrected: `docs/reference/reports/ref-vue-spa-migration-roadmap.md`.
+- Locked decisions for PR-0053/54/55 (docs-only): multi file fields per run/action, file field values always `FileRef[]`
+  (no scalar), per-field mapping preserved into `/work/request.json` (manifest must include field), vault uses dedicated
+  config + default `VAULT_RETENTION_DAYS=30`, per-artifact “Spara i valv”, new file-refs listing endpoints, new
+  `UiActionField.kind="file_ref"` (+ optional `sources`), settings pickers vault-only, session file reuse preserves
+  field ownership, and hard cut to `file_refs_by_field` (no flat `file_refs`).
+  - PR docs: `docs/backlog/prs/pr-0053-ui-contract-file-ref-picker-and-defaults.md`,
+    `docs/backlog/prs/pr-0054-user-file-vault-backend-and-resolver.md`,
+    `docs/backlog/prs/pr-0055-user-file-vault-ui-picker.md`.
+  - Stories: `docs/backlog/stories/story-14-24-ui-contract-file-references.md`,
+    `docs/backlog/stories/story-14-36-user-file-vault-and-picker.md` (deps updated to include ST-14-24).
 
 ## Verification
 
