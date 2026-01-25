@@ -57,8 +57,8 @@ function handleCardKeydown(event: KeyboardEvent): void {
     :tabindex="isInteractive ? 0 : undefined"
     :aria-label="isInteractive ? `${actionLabel} ${item.title}` : undefined"
     :class="[
-      'relative',
-      isList ? 'px-4 py-3 bg-white' : 'border border-navy bg-white shadow-brutal-sm',
+      'relative border transition-all duration-150',
+      isList ? 'px-4 py-3 bg-white border-navy/15' : 'border-navy bg-white shadow-brutal-xs',
       isCompact ? 'flex flex-col h-full p-3 compact-card' : (!isList && 'p-4'),
       isInteractive ? 'catalog-card-interactive' : '',
     ]"
@@ -237,8 +237,9 @@ function handleCardKeydown(event: KeyboardEvent): void {
 
 @media (hover: hover) and (pointer: fine) {
   .catalog-card-interactive:hover {
-    box-shadow: var(--huleedu-shadow-brutal);
+    box-shadow: var(--huleedu-shadow-brutal-sm);
     transform: translate(-2px, -2px);
+    border-color: var(--huleedu-navy);
     z-index: 1;
   }
 
@@ -249,9 +250,11 @@ function handleCardKeydown(event: KeyboardEvent): void {
 
 .clamp-2 {
   -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .clamp-4 {
   -webkit-line-clamp: 4;
+  line-clamp: 4;
 }
 </style>
