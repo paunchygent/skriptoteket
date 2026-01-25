@@ -99,8 +99,8 @@ onMounted(() => {
 
 <template>
   <div class="page">
-    <header class="page-header">
-      <div>
+    <header class="page-header max-w-[40rem]">
+      <div class="max-w-[40rem]">
         <h1 class="page-title">Mina körningar</h1>
         <p class="page-description">
           Se tidigare resultat, ladda ner filer och fortsätt med nästa steg.

@@ -5,7 +5,7 @@ import { RouterLink, useRoute } from "vue-router";
 import BrandLogo from "../brand/BrandLogo.vue";
 import HelpButton from "../help/HelpButton.vue";
 
-const props = defineProps<{
+defineProps<{
   user: { email: string; role: string } | null;
   logoutInProgress: boolean;
   isFocusMode: boolean;
@@ -18,9 +18,6 @@ const emit = defineEmits<{
 
 const route = useRoute();
 const navLink = computed(() => {
-  if (!props.isFocusMode) {
-    return null;
-  }
   if (route.name === "admin-tool-editor" || route.name === "admin-tool-version-editor") {
     return {
       to: "/admin/tools",
@@ -42,20 +39,22 @@ function onToggleFocusMode(): void {
 <template>
   <header class="top-user-bar">
     <div class="top-user-bar-left">
-      <div
-        class="topbar-brand-spacer"
-        aria-hidden="true"
-      />
-      <Transition name="topbar-brand">
-        <RouterLink
-          v-if="isFocusMode"
-          to="/"
-          class="topbar-brand-link"
-          aria-label="Skriptoteket"
-        >
-          <BrandLogo height="32px" />
-        </RouterLink>
-      </Transition>
+      <div class="topbar-brand-slot">
+        <div
+          class="topbar-brand-spacer"
+          aria-hidden="true"
+        />
+        <Transition name="topbar-brand">
+          <RouterLink
+            v-if="isFocusMode"
+            to="/"
+            class="topbar-brand-link"
+            aria-label="Skriptoteket"
+          >
+            <BrandLogo height="32px" />
+          </RouterLink>
+        </Transition>
+      </div>
       <RouterLink
         v-if="navLink"
         :to="navLink.to"
@@ -131,6 +130,13 @@ function onToggleFocusMode(): void {
   gap: var(--huleedu-space-3);
 }
 
+.topbar-brand-slot {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+}
+
 .topbar-brand-spacer {
   aspect-ratio: 2100 / 460;
   height: 32px;
@@ -139,10 +145,7 @@ function onToggleFocusMode(): void {
 
 .topbar-brand-link {
   position: absolute;
-  top: 50%;
-  left: var(--huleedu-space-4);
-  transform: translateY(calc(-50% + 1px));
-  z-index: 31;
+  inset: 0;
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;

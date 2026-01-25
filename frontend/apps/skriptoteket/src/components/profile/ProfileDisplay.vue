@@ -52,7 +52,7 @@ const memberSince = computed(() => {
 <template>
   <div class="space-y-6">
     <!-- Header with avatar -->
-    <div class="flex items-center gap-4">
+    <div class="expand-left-40 flex items-center gap-4 border border-navy bg-white p-4 shadow-brutal-sm">
       <div
         class="flex h-16 w-16 items-center justify-center border border-navy bg-navy text-2xl font-bold text-canvas shadow-brutal-sm"
       >
@@ -71,7 +71,7 @@ const memberSince = computed(() => {
     </div>
 
     <!-- Personal Information section -->
-    <section class="border border-navy bg-white shadow-brutal-sm">
+    <section class="expand-left-40 border border-navy bg-white shadow-brutal-sm">
       <div class="flex items-center justify-between border-b border-navy px-4 py-3">
         <div>
           <h3 class="text-sm font-semibold text-navy">Personlig information</h3>
@@ -107,7 +107,7 @@ const memberSince = computed(() => {
     </section>
 
     <!-- Email section -->
-    <section class="border border-navy bg-white shadow-brutal-sm">
+    <section class="expand-left-40 border border-navy bg-white shadow-brutal-sm">
       <div class="flex items-center justify-between border-b border-navy px-4 py-3">
         <div>
           <h3 class="text-sm font-semibold text-navy">E-postadress</h3>
@@ -131,7 +131,7 @@ const memberSince = computed(() => {
     </section>
 
     <!-- Password section -->
-    <section class="border border-navy bg-white shadow-brutal-sm">
+    <section class="expand-left-40 border border-navy bg-white shadow-brutal-sm">
       <div class="flex items-center justify-between border-b border-navy px-4 py-3">
         <div>
           <h3 class="text-sm font-semibold text-navy">Lösenord</h3>

@@ -66,8 +66,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="max-w-3xl space-y-6">
-    <header class="space-y-1">
+  <div class="space-y-6">
+    <header class="expand-left-40 space-y-1">
       <h1 class="page-title">Profil</h1>
       <p class="page-description">Hantera dina personuppgifter, preferenser och lösenord.</p>
     </header>
@@ -75,11 +75,12 @@ onMounted(() => {
     <SystemMessage
       v-model="loadError"
       variant="error"
+      class="expand-left-40"
     />
 
     <div
       v-if="isLoading"
-      class="space-y-6"
+      class="space-y-6 expand-left-40"
     >
       <div class="h-20 animate-pulse border border-navy/20 bg-navy/5" />
       <div class="h-28 animate-pulse border border-navy/20 bg-navy/5" />

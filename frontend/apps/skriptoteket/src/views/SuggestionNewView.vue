@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 
 import { apiGet, apiPost, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
@@ -17,7 +17,8 @@ const categories = ref<CategoryItem[]>([]);
 const title = ref("");
 const description = ref("");
 const showHelp = ref(false);
-const isHelpLayoutActive = ref(false);
+const helpTriggerRef = ref<HTMLButtonElement | null>(null);
+const helpPopoverRef = ref<HTMLDivElement | null>(null);
 const selectedProfessions = ref<string[]>([]);
 const selectedCategories = ref<string[]>([]);
 
@@ -28,27 +29,29 @@ const formErrorMessage = ref<string | null>(null);
 
 const toast = useToast();
 
-function openHelp(): void {
-  isHelpLayoutActive.value = true;
-  showHelp.value = true;
-}
-
 function closeHelp(): void {
   showHelp.value = false;
 }
 
 function toggleHelp(): void {
-  if (showHelp.value) {
-    closeHelp();
-    return;
-  }
-
-  openHelp();
+  showHelp.value = !showHelp.value;
 }
 
-function onHelpAfterLeave(): void {
-  if (!showHelp.value) {
-    isHelpLayoutActive.value = false;
+function handleClickOutside(event: MouseEvent): void {
+  if (!showHelp.value) return;
+  const target = event.target as Node;
+  if (
+    helpTriggerRef.value?.contains(target) ||
+    helpPopoverRef.value?.contains(target)
+  ) {
+    return;
+  }
+  closeHelp();
+}
+
+function handleEscape(event: KeyboardEvent): void {
+  if (event.key === "Escape" && showHelp.value) {
+    closeHelp();
   }
 }
 
@@ -134,19 +137,26 @@ function toggleSelection(list: string[], value: string): string[] {
 
 onMounted(() => {
   void loadTaxonomy();
+  document.addEventListener("click", handleClickOutside);
+  document.addEventListener("keydown", handleEscape);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleClickOutside);
+  document.removeEventListener("keydown", handleEscape);
 });
 </script>
 
 <template>
-  <div class="max-w-3xl space-y-6">
-    <div class="space-y-2">
+  <div class="space-y-6">
+    <header class="expand-left-40 space-y-1">
       <h1 class="page-title">Föreslå ett nytt verktyg</h1>
       <p class="page-description">Kom med ett förslag på ett nytt verktyg som du skulle vilja skapa själv eller tillsammans med Skriptotekets admins.</p>
-    </div>
+    </header>
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
+      class="expand-left-40 p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
     >
       Laddar formulär...
     </div>
@@ -161,7 +171,7 @@ onMounted(() => {
       />
 
       <form
-        class="space-y-4"
+        class="expand-left-40 border border-navy bg-white p-4 shadow-brutal-sm space-y-4"
         @submit.prevent="submit"
       >
         <SystemMessage
@@ -169,7 +179,7 @@ onMounted(() => {
           variant="error"
         />
 
-        <div class="space-y-2">
+        <div class="expand-left-40 space-y-2">
           <label
             for="title"
             class="text-sm font-semibold text-navy"
@@ -179,86 +189,78 @@ onMounted(() => {
             v-model="title"
             type="text"
             required
-            placeholder="T.ex. ”Skapa slumpade elevgrupper”"
-            class="w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm text-navy"
+            placeholder="T.ex. 'Skapa slumpade elevgrupper'"
+            class="w-full border border-navy bg-white px-3 py-2 text-navy"
           >
         </div>
 
-        <div
-          class="space-y-2"
-          @keydown.esc="closeHelp"
-        >
-          <div class="flex items-center gap-1">
+        <div class="expand-left-40 space-y-2">
+          <div class="relative flex items-center gap-1">
             <label
               for="description"
               class="text-sm font-semibold text-navy"
             >Beskrivning</label>
 
             <button
+              ref="helpTriggerRef"
               type="button"
-              class="ml-1 inline-flex items-center justify-center text-navy/60 hover:text-burgundy focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
+              class="help-trigger"
               aria-label="Visa hjälp"
               :aria-expanded="showHelp"
               aria-controls="suggestion-description-help"
-              @click="toggleHelp"
+              @click.stop="toggleHelp"
             >
               <IconHelp :size="16" />
             </button>
-          </div>
 
-          <div
-            class="description-help-grid"
-            :class="{ 'description-help-grid--with-help': isHelpLayoutActive }"
-          >
-            <textarea
-              id="description"
-              v-model="description"
-              required
-              rows="5"
-              placeholder="Beskriv problemet och hur du vill att verktyget ska hjälpa dig..."
-              class="w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm text-navy"
-            />
-
-            <Transition
-              name="fade"
-              @after-leave="onHelpAfterLeave"
-            >
-              <aside
-                v-show="showHelp"
+            <Transition name="popover">
+              <div
+                v-if="showHelp"
                 id="suggestion-description-help"
-                class="sticky-note text-sm text-navy/70"
-                role="note"
+                ref="helpPopoverRef"
+                class="help-popover"
+                role="tooltip"
               >
                 <button
                   type="button"
-                  class="sticky-note-close"
+                  class="help-popover-close"
                   aria-label="Stäng hjälp"
                   @click="closeHelp"
                 >
-                  <IconX :size="16" />
+                  <IconX :size="14" />
                 </button>
 
-                <ul class="list-disc pl-5">
+                <p class="font-semibold text-navy mb-2">Tips för en bra beskrivning:</p>
+                <ul class="list-disc pl-4 space-y-1">
                   <li>Vilket problem vill du lösa?</li>
                   <li>Vilken typ av material matar du in?</li>
                   <li>Vad vill du få tillbaka?</li>
                   <li>Hur gör du uppgiften idag?</li>
                 </ul>
 
-                <p class="mt-6">
+                <p class="mt-3 pt-3 border-t border-navy/10 text-navy/60 italic">
                   Exempel: "Jag vill kunna ladda upp en klasslista och få ut slumpmässiga grupper."
                 </p>
-              </aside>
+              </div>
             </Transition>
           </div>
+
+          <textarea
+            id="description"
+            v-model="description"
+            required
+            rows="5"
+            placeholder="Beskriv problemet och hur du vill att verktyget ska hjälpa dig..."
+            class="w-full border border-navy bg-white px-3 py-2 text-navy"
+          />
         </div>
 
-        <div class="space-y-2">
+        <div class="expand-left-40 space-y-2">
           <div class="flex items-center justify-between">
             <label class="text-sm font-semibold text-navy">Yrken</label>
             <span class="text-xs text-navy/60">Välj minst ett</span>
           </div>
-          <div class="p-4 border border-navy bg-white shadow-brutal-sm">
+          <div class="p-4 border border-navy bg-white">
             <div class="grid gap-3 sm:grid-cols-2">
               <label
                 v-for="profession in professions"
@@ -278,12 +280,12 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="space-y-2">
+        <div class="expand-left-40 space-y-2">
           <div class="flex items-center justify-between">
             <label class="text-sm font-semibold text-navy">Kategorier</label>
             <span class="text-xs text-navy/60">Välj minst en</span>
           </div>
-          <div class="p-4 border border-navy bg-white shadow-brutal-sm">
+          <div class="p-4 border border-navy bg-white">
             <div class="grid gap-3 sm:grid-cols-2">
               <label
                 v-for="category in categories"
@@ -327,79 +329,84 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.description-help-grid {
-  display: grid;
-  gap: var(--huleedu-space-4);
+.help-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  color: var(--huleedu-navy-60);
+  border-radius: var(--huleedu-radius-sm);
+  transition:
+    color var(--huleedu-duration-default) var(--huleedu-ease-default),
+    background-color var(--huleedu-duration-default) var(--huleedu-ease-default);
 }
 
-@media (min-width: 768px) {
-  .description-help-grid--with-help {
-    grid-template-columns: minmax(0, 1fr) 22rem;
-    align-items: start;
-  }
+.help-trigger:hover {
+  color: var(--huleedu-burgundy);
+  background-color: var(--huleedu-burgundy-10);
 }
 
-.sticky-note {
-  --note-line: var(--huleedu-grid-size);
-
-  position: relative;
-  padding: var(--huleedu-space-4);
-  max-width: 22rem;
-  background-color: #fff;
-  border: 1px solid var(--huleedu-navy-20);
-  box-shadow:
-    4px 4px 0 var(--huleedu-navy),
-    8px 8px 0 var(--huleedu-navy-20);
-  line-height: var(--note-line);
-  background-position: 0 var(--huleedu-space-4);
-  background-image: repeating-linear-gradient(
-    transparent,
-    transparent calc(var(--note-line) - 1px),
-    var(--huleedu-navy-10) calc(var(--note-line) - 1px),
-    var(--huleedu-navy-10) var(--note-line)
-  );
+.help-trigger:focus-visible {
+  outline: 2px solid var(--huleedu-burgundy-40);
+  outline-offset: 2px;
 }
 
-.sticky-note-close {
+.help-popover {
   position: absolute;
-  top: var(--huleedu-space-1);
-  right: var(--huleedu-space-1);
-  width: 2rem;
-  height: 2rem;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 50;
+  width: max-content;
+  max-width: min(20rem, calc(100vw - 2rem));
+  padding: 1rem;
+  padding-right: 2.5rem;
+  background-color: #fff;
+  border: 1px solid var(--huleedu-navy);
+  box-shadow: 4px 4px 0 var(--huleedu-navy);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--huleedu-navy-80);
+}
+
+.help-popover-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
   display: grid;
   place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
   border: 1px solid transparent;
   border-radius: var(--huleedu-radius-sm);
   background: transparent;
-  cursor: pointer;
   color: var(--huleedu-navy-60);
+  cursor: pointer;
   transition:
     color var(--huleedu-duration-default) var(--huleedu-ease-default),
     border-color var(--huleedu-duration-default) var(--huleedu-ease-default);
 }
 
-.sticky-note-close:hover {
+.help-popover-close:hover {
   color: var(--huleedu-burgundy);
   border-color: var(--huleedu-navy);
 }
 
-.sticky-note-close:active {
-  border-color: var(--huleedu-navy);
-}
-
-.sticky-note-close:focus-visible {
+.help-popover-close:focus-visible {
   outline: 2px solid var(--huleedu-burgundy-40);
   outline-offset: 2px;
-  border-color: var(--huleedu-navy);
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 200ms var(--huleedu-ease-default);
+.popover-enter-active,
+.popover-leave-active {
+  transition:
+    opacity 150ms var(--huleedu-ease-default),
+    transform 150ms var(--huleedu-ease-default);
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.popover-enter-from,
+.popover-leave-to {
   opacity: 0;
+  transform: translateY(-0.25rem);
 }
 </style>

@@ -60,8 +60,8 @@ async function handleFavoriteToggled(payload: { id: string; isFavorite: boolean 
 </script>
 
 <template>
-  <div class="max-w-6xl space-y-6">
-    <header class="space-y-4">
+  <div class="space-y-6">
+    <header class="space-y-4 max-w-[40rem]">
       <div>
         <h2 class="page-title">Katalog</h2>
         <p class="page-description">Alla publicerade verktyg och kurerade appar.</p>
@@ -81,7 +81,7 @@ async function handleFavoriteToggled(payload: { id: string; isFavorite: boolean 
     </header>
 
     <div class="grid gap-6 lg:grid-cols-[260px_1fr]">
-      <aside class="space-y-4">
+      <aside class="space-y-4 lg:sticky lg:top-8 lg:h-fit">
         <h3 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
           Filter
         </h3>

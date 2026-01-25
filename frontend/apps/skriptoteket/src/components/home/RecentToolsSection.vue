@@ -36,7 +36,7 @@ function handleFavoriteToggled(payload: { id: string; isFavorite: boolean }): vo
     <SectionHeader title="Senast använda" />
     <div
       ref="gridRef"
-      class="grid items-stretch gap-3 sm:grid-cols-2 xl:grid-cols-3"
+      class="grid items-stretch gap-3 [grid-template-columns:repeat(auto-fill,minmax(18rem,1fr))]"
     >
       <CatalogItemCard
         v-for="item in items"

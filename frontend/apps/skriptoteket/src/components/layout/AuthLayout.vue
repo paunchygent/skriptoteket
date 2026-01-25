@@ -169,12 +169,12 @@ watch(
   height: 100vh;
   height: 100dvh;
   min-height: 0;
+  transition: margin-left var(--huleedu-duration-slow) var(--huleedu-ease-default);
 }
 
 @media (min-width: 768px) {
   .auth-main-wrapper {
     margin-left: var(--huleedu-sidebar-width);
-    transition: margin-left var(--huleedu-duration-slow) var(--huleedu-ease-default);
     will-change: margin-left;
   }
 

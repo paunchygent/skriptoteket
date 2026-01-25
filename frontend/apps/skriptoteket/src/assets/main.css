@@ -239,6 +239,58 @@ body::before {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   EXPAND-LEFT UTILITIES - Focus-aware expansion
+
+   These are OUTSIDE @layer to ensure proper specificity with .is-focus-mode.
+
+   Used for panels and forms to prevent excessive right-side stretching
+   while allowing expansion into sidebar space. The right edge stays
+   stationary relative to the viewport as the sidebar slides out.
+
+   Math:
+     Normal mode:  left=240px, width=640px → right=880px
+     Focus mode:   left=0px,   width=880px → right=880px (stationary)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (min-width: 768px) {
+  .expand-left-40 {
+    width: 100%;
+    max-width: 40rem; /* 640px */
+    margin-left: 0;
+    margin-right: auto;
+    transition: max-width var(--huleedu-duration-slow) var(--huleedu-ease-default);
+  }
+
+  .is-focus-mode .expand-left-40 {
+    max-width: calc(40rem + var(--huleedu-sidebar-width)); /* 640 + 240 = 880px */
+  }
+
+  .expand-left-48 {
+    width: 100%;
+    max-width: 48rem; /* 768px */
+    margin-left: 0;
+    margin-right: auto;
+    transition: max-width var(--huleedu-duration-slow) var(--huleedu-ease-default);
+  }
+
+  .is-focus-mode .expand-left-48 {
+    max-width: calc(48rem + var(--huleedu-sidebar-width)); /* 768 + 240 = 1008px */
+  }
+
+  .expand-left-64 {
+    width: 100%;
+    max-width: 64rem; /* 1024px */
+    margin-left: 0;
+    margin-right: auto;
+    transition: max-width var(--huleedu-duration-slow) var(--huleedu-ease-default);
+  }
+
+  .is-focus-mode .expand-left-64 {
+    max-width: calc(64rem + var(--huleedu-sidebar-width)); /* 1024 + 240 = 1264px */
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .btn-primary:not(:disabled):not(:active):hover {
     @apply bg-burgundy;

@@ -40,7 +40,7 @@ const actionLabel = computed(() => {
 </script>
 
 <template>
-  <section class="border border-navy bg-white shadow-brutal-sm">
+  <section class="expand-left-40 border border-navy bg-white shadow-brutal-sm">
     <div class="flex items-center justify-between border-b border-navy px-4 py-3">
       <div>
         <h3 class="text-sm font-semibold text-navy">AI-inställningar</h3>

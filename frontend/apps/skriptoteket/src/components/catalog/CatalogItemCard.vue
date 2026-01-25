@@ -141,7 +141,7 @@ function handleCardKeydown(event: KeyboardEvent): void {
           :filled="item.is_favorite"
         />
       </button>
-      <div :class="['min-w-0', isList ? 'space-y-0.5' : 'space-y-1 pr-12 sm:pr-14']">
+      <div :class="['min-w-0', isList ? 'space-y-0.5 lg:max-w-[40rem]' : 'space-y-1 pr-12 sm:pr-14']">
         <div class="flex flex-wrap items-center gap-2">
           <h3 :class="['font-semibold text-navy catalog-title', isList ? 'text-sm' : 'text-base']">
             {{ item.title }}

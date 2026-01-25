@@ -153,7 +153,7 @@ onMounted(async () => {
          POST-LOGIN: Role-guarded Dashboard
          ═══════════════════════════════════════════════════════════════════════ -->
     <template v-else>
-      <div class="max-w-4xl space-y-10">
+      <div class="space-y-10">
         <!-- Error message -->
         <div
           v-if="dashboardError"
@@ -163,7 +163,7 @@ onMounted(async () => {
         </div>
 
         <!-- Greeting -->
-        <section class="space-y-1">
+        <section class="space-y-1 max-w-[40rem]">
           <h1 class="font-serif text-3xl font-bold text-navy">
             Välkommen<template v-if="userName">, {{ userName }}</template>
           </h1>
@@ -188,8 +188,8 @@ onMounted(async () => {
         <!-- ═══════════════════════════════════════════════════════════════════
              USER SECTION: All authenticated users
              ═══════════════════════════════════════════════════════════════════ -->
-        <section class="space-y-4">
-          <div class="grid gap-5 sm:grid-cols-2">
+        <section class="space-y-4 w-full">
+          <div class="grid gap-5 [grid-template-columns:repeat(auto-fill,minmax(18rem,1fr))]">
             <!-- Senaste körningar -->
             <RouterLink
               to="/my-runs"
@@ -242,10 +242,13 @@ onMounted(async () => {
              ═══════════════════════════════════════════════════════════════════ -->
         <section
           v-if="canSeeContributor"
-          class="space-y-4"
+          class="space-y-4 w-full"
         >
-          <SectionHeader title="Bidragsgivare" />
-          <div class="grid gap-5 sm:grid-cols-2">
+          <SectionHeader
+            title="Bidragsgivare"
+            class="max-w-[40rem]"
+          />
+          <div class="grid gap-5 [grid-template-columns:repeat(auto-fill,minmax(18rem,1fr))]">
             <!-- Mina verktyg -->
             <RouterLink
               to="/my-tools"
@@ -305,10 +308,13 @@ onMounted(async () => {
              ═══════════════════════════════════════════════════════════════════ -->
         <section
           v-if="canSeeAdmin"
-          class="space-y-4"
+          class="space-y-4 w-full"
         >
-          <SectionHeader title="Administration" />
-          <div class="grid gap-5 sm:grid-cols-2">
+          <SectionHeader
+            title="Administration"
+            class="max-w-[40rem]"
+          />
+          <div class="grid gap-5 [grid-template-columns:repeat(auto-fill,minmax(18rem,1fr))]">
             <!-- Att granska -->
             <RouterLink
               to="/admin/tools"

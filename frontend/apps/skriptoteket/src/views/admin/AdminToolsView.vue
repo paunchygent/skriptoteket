@@ -269,8 +269,8 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-      <div class="space-y-2">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between w-full">
+      <div class="space-y-2 max-w-[40rem]">
         <h1 class="page-title">Testyta</h1>
         <p class="page-description">Hantera publicering av verktyg.</p>
       </div>
@@ -290,9 +290,9 @@ onMounted(() => {
 
     <template v-else>
       <!-- Section 1: Pågående (tools in development) -->
-      <section class="space-y-3">
+      <section class="space-y-3 w-full">
         <div class="relative flex items-end justify-between">
-          <div>
+          <div class="max-w-[40rem]">
             <h2 class="text-lg font-semibold text-navy">Pågående</h2>
             <p class="text-sm text-navy/60 leading-none">Verktyg under utveckling</p>
           </div>
@@ -308,11 +308,11 @@ onMounted(() => {
         <!-- Empty state within Section 1 if no in-progress tools -->
         <div
           v-if="inProgressTools.length === 0"
-          class="p-8 border border-navy bg-white shadow-brutal flex flex-col items-center text-center space-y-4"
+          class="w-full p-8 border border-navy bg-white shadow-brutal flex flex-col items-center text-center space-y-4"
         >
-          <div class="space-y-2">
+          <div class="space-y-2 max-w-[40rem]">
             <p class="text-navy font-semibold">Här visas verktyg som inte har publicerats än.</p>
-            <p class="text-sm text-navy/60 max-w-sm">
+            <p class="text-sm text-navy/60">
               För närvarande är alla verktyg publicerade.
               Skapa ett nytt verktyg om du saknar något som du skulle vilja utveckla.
             </p>
@@ -321,7 +321,7 @@ onMounted(() => {
 
         <ul
           v-else
-          class="border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15"
+          class="w-full border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15"
         >
           <ToolListRow
             v-for="tool in inProgressTools"
@@ -365,13 +365,13 @@ onMounted(() => {
       <!-- Section 2: Klara med ändringar (publishable tools with in-review updates) -->
       <section
         v-if="readyToolsWithPendingReview.length > 0"
-        class="space-y-3"
+        class="space-y-3 w-full"
       >
-        <div>
+        <div class="max-w-[40rem]">
           <h2 class="text-lg font-semibold text-navy">Klara med ändringar</h2>
           <p class="text-sm text-navy/60">Publicerade verktyg med ny version under granskning</p>
         </div>
-        <ul class="border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15">
+        <ul class="w-full border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15">
           <ToolListRow
             v-for="tool in readyToolsWithPendingReview"
             :key="tool.id"
@@ -430,13 +430,13 @@ onMounted(() => {
       <!-- Section 2: Klara (publishable tools) -->
       <section
         v-if="readyToolsWithoutPendingReview.length > 0"
-        class="space-y-3"
+        class="space-y-3 w-full"
       >
-        <div>
+        <div class="max-w-[40rem]">
           <h2 class="text-lg font-semibold text-navy">Klara</h2>
           <p class="text-sm text-navy/60">Verktyg med godkänt skript</p>
         </div>
-        <ul class="border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15">
+        <ul class="w-full border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15">
           <ToolListRow
             v-for="tool in readyToolsWithoutPendingReview"
             :key="tool.id"

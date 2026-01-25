@@ -103,8 +103,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="max-w-4xl space-y-6">
-    <div class="space-y-2">
+  <div class="space-y-6">
+    <div class="space-y-2 max-w-[40rem]">
       <h1 class="page-title">Mina verktyg</h1>
       <p class="page-description">Verktyg som du ansvarar för att underhålla.</p>
     </div>
@@ -125,9 +125,9 @@ onMounted(() => {
 
     <div
       v-else-if="!hasTools"
-      class="p-8 border border-navy bg-white shadow-brutal flex flex-col items-center text-center space-y-4"
+      class="w-full p-8 border border-navy bg-white shadow-brutal flex flex-col items-center text-center space-y-4"
     >
-      <div class="space-y-2">
+      <div class="space-y-2 max-w-[40rem]">
         <p class="text-navy font-semibold">Du har inga verktyg att underhålla ännu.</p>
         <p class="text-sm text-navy/60 max-w-sm">
           Här samlas verktyg som du skapat eller blivit tilldelad ansvar för.
