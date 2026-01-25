@@ -2,7 +2,7 @@
 id: "045-huleedu-design-system"
 type: "implementation"
 created: 2025-12-15
-updated: 2025-12-25
+updated: 2026-01-25
 scope: "frontend"
 references:
   - ADR-0027
@@ -12,15 +12,31 @@ references:
 
 # 045: HuleEdu Design System (SPA Edition)
 
-Skriptoteket adopts the HuleEdu Brutalist design system. This document covers the **Vue 3 SPA implementation** using Tailwind CSS v4 with `@theme` design tokens.
+Skriptoteket adopts a **Brutalist Academic** design system. This style prioritizes clear information hierarchy, physical feedback, and layout stability.
 
-Frontend unit/integration tests use **Vitest** (see `.agent/rules/070-testing-standards.md` and `docs/runbooks/runbook-testing.md`).
+## 0. Core Design Principles
 
-> **Legacy SSR/HTMX**: Cutover is complete (EPIC-11). SSR/HTMX is deleted; do not re-introduce it.
+### Physicality (Elevation & Feedback)
+
+- **Object Model**: Treat UI components as physical layers.
+- **Lift on Hover**: Hovering "lifts" an object. Standard is `-2px` translation and an increased hard shadow (`shadow-brutal`).
+- **Press on Active**: Clicking "presses" into the canvas. Standard is `1px` translation and shadow removal.
+- **Rule**: Never use blurred shadows. Always use "Brutal" (hard) shadows.
+
+### Stationarity (Natural Reflow)
+
+- **Problem**: Layout shifts (e.g., sidebars opening) shouldn't move interactive controls.
+- **Solution**: Use **Natural Grid Reflow**. Set the "content" column to `1fr` and the "action" column to fixed or measured widths.
+- **Effect**: As the layout expands, the content column absorbs the width change, keeping the right-aligned buttons visually fixed relative to the viewport edge.
+
+### Academic Typography (The Rule of 40rem)
+
+- **Constraint**: Human eyes struggle with line lengths over 75 characters.
+- **Rule**: Content columns (text, markdown, tool titles) must be capped at `max-w-[40rem]` (`~640px`) even if the parent container grows wider.
 
 ---
 
-## 0. Styling Rules (Alignment)
+## 1. Styling Rules (Alignment)
 
 These rules keep our docs, skills, and implementation aligned (ADR-0032):
 
@@ -82,6 +98,7 @@ The `@theme inline` block in `tailwind-theme.css` maps HuleEdu tokens to Tailwin
 ```
 
 **Usage in Vue templates**:
+
 ```vue
 <div class="bg-canvas text-navy border border-navy shadow-brutal-sm">
   Content with HuleEdu tokens via Tailwind
@@ -146,12 +163,14 @@ Notes:
 ## 5. Form Elements
 
 ### Input Field
+
 ```vue
 <input class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
        placeholder="T.ex. värde..." />
 ```
 
 ### Label
+
 ```vue
 <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
   Fältnamn
@@ -159,6 +178,7 @@ Notes:
 ```
 
 ### Input with Label (Stacked)
+
 ```vue
 <div class="space-y-1">
   <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
@@ -175,6 +195,7 @@ Notes:
 ## 6. Cards and Containers
 
 ### Card with Shadow
+
 ```vue
 <div class="border border-navy bg-white shadow-brutal-sm p-4">
   Card content
@@ -182,6 +203,7 @@ Notes:
 ```
 
 ### Section Card (larger padding)
+
 ```vue
 <div class="border border-navy bg-white shadow-brutal-sm p-5 space-y-3">
   Section content
@@ -189,6 +211,7 @@ Notes:
 ```
 
 ### Error Message
+
 ```vue
 <div class="p-4 border border-burgundy bg-white shadow-brutal-sm text-sm text-burgundy">
   {{ errorMessage }}
@@ -196,6 +219,7 @@ Notes:
 ```
 
 ### Success Message
+
 ```vue
 <div class="p-4 border border-success bg-success/10 shadow-brutal-sm text-sm text-success">
   {{ successMessage }}
@@ -207,6 +231,7 @@ Notes:
 ## 7. List Patterns
 
 ### Standard List
+
 ```vue
 <ul class="list-none m-0 p-0 border border-navy bg-white">
   <li v-for="item in items"
@@ -223,6 +248,7 @@ Notes:
 ```
 
 ### List Item with Description
+
 ```vue
 <li class="border-b border-navy/20 last:border-b-0">
   <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4 p-4">
@@ -242,6 +268,7 @@ Notes:
 ## 8. Loading & Empty States
 
 ### Loading Spinner
+
 ```vue
 <div class="flex items-center gap-3 p-4 text-navy/60">
   <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
@@ -250,6 +277,7 @@ Notes:
 ```
 
 ### Empty State
+
 ```vue
 <div class="p-4 text-navy/60 italic">
   Inga verktyg hittades.
@@ -261,6 +289,7 @@ Notes:
 ## 9. Typography Patterns
 
 ### Page Title
+
 ```vue
 <h1 class="text-2xl font-semibold text-navy">
   Sidtitel
@@ -268,6 +297,7 @@ Notes:
 ```
 
 ### Section Label
+
 ```vue
 <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70 mb-3">
   Sektionsrubrik
@@ -275,6 +305,7 @@ Notes:
 ```
 
 ### Status Line (IDE-style)
+
 ```vue
 <p class="text-sm font-medium text-navy/70">
   Ej publicerad · v4 · Utkast
@@ -282,6 +313,7 @@ Notes:
 ```
 
 ### Breadcrumb
+
 ```vue
 <nav class="flex items-center flex-wrap gap-2 text-xs uppercase tracking-wide text-navy/60">
   <RouterLink to="/browse" class="text-navy/70 border-b border-navy/40 pb-0.5 hover:text-burgundy hover:border-burgundy transition-colors">
@@ -297,6 +329,7 @@ Notes:
 ## 10. Modal & Drawer Patterns
 
 ### Modal Backdrop + Container
+
 ```vue
 <Teleport to="body">
   <Transition name="fade">
@@ -313,6 +346,7 @@ Notes:
 ```
 
 ### Fade Transition
+
 ```css
 .fade-enter-active,
 .fade-leave-active {
@@ -325,6 +359,7 @@ Notes:
 ```
 
 ### Right Drawer
+
 ```vue
 <div class="fixed inset-y-0 right-0 w-full max-w-md border-l border-navy bg-canvas shadow-brutal overflow-y-auto">
   <!-- Drawer content -->
@@ -336,6 +371,7 @@ Notes:
 ## 11. Status Badges
 
 ### Workflow State Badge
+
 ```vue
 <span class="px-2 py-0.5 text-xs font-semibold uppercase tracking-wide border"
       :class="{
@@ -348,6 +384,7 @@ Notes:
 ```
 
 ### Warning Badge (Pending Review)
+
 ```vue
 <span class="inline-block px-2 py-1 text-xs font-medium bg-warning/20 text-warning border border-warning">
   Granskas
@@ -380,6 +417,7 @@ body::before {
 ## 13. Vue Composable Patterns
 
 ### State Management
+
 Use Pinia stores for global state, composables for component-scoped logic:
 
 ```typescript
@@ -393,6 +431,7 @@ export function useScriptEditor(options: UseScriptEditorOptions) {
 ```
 
 ### API Calls
+
 Use typed API client with error handling:
 
 ```typescript

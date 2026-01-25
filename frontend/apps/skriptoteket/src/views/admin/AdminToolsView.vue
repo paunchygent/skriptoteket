@@ -271,16 +271,9 @@ onMounted(() => {
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div class="space-y-2">
-        <h1 class="page-title">Verktyg (admin)</h1>
+        <h1 class="page-title">Testyta</h1>
         <p class="page-description">Hantera publicering av verktyg.</p>
       </div>
-      <button
-        type="button"
-        class="btn-primary"
-        @click="openCreateModal"
-      >
-        Skapa nytt verktyg
-      </button>
     </div>
 
     <SystemMessage
@@ -296,24 +289,40 @@ onMounted(() => {
     </div>
 
     <template v-else>
-      <!-- Empty state -->
-      <div
-        v-if="tools.length === 0"
-        class="p-4 border border-navy bg-white shadow-brutal-sm text-sm text-navy/70"
-      >
-        Inga verktyg finns.
-      </div>
-
       <!-- Section 1: Pågående (tools in development) -->
-      <section
-        v-if="inProgressTools.length > 0"
-        class="space-y-3"
-      >
-        <div>
-          <h2 class="text-lg font-semibold text-navy">Pågående</h2>
-          <p class="text-sm text-navy/60">Verktyg under utveckling</p>
+      <section class="space-y-3">
+        <div class="relative flex items-end justify-between">
+          <div>
+            <h2 class="text-lg font-semibold text-navy">Pågående</h2>
+            <p class="text-sm text-navy/60 leading-none">Verktyg under utveckling</p>
+          </div>
+          <button
+            type="button"
+            class="btn-primary"
+            @click="openCreateModal"
+          >
+            Skapa nytt verktyg
+          </button>
         </div>
-        <ul class="border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15">
+
+        <!-- Empty state within Section 1 if no in-progress tools -->
+        <div
+          v-if="inProgressTools.length === 0"
+          class="p-8 border border-navy bg-white shadow-brutal flex flex-col items-center text-center space-y-4"
+        >
+          <div class="space-y-2">
+            <p class="text-navy font-semibold">Här visas verktyg som inte har publicerats än.</p>
+            <p class="text-sm text-navy/60 max-w-sm">
+              För närvarande är alla verktyg publicerade.
+              Skapa ett nytt verktyg om du saknar något som du skulle vilja utveckla.
+            </p>
+          </div>
+        </div>
+
+        <ul
+          v-else
+          class="border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15"
+        >
           <ToolListRow
             v-for="tool in inProgressTools"
             :key="tool.id"

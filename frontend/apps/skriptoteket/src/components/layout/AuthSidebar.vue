@@ -105,7 +105,7 @@ function onHelp(): void {
           class="sidebar-nav-item"
           @click="onClose"
         >
-          Admin
+          Testyta
         </RouterLink>
         <RouterLink
           v-if="canSeeSuperuser"
