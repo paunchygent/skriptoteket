@@ -137,21 +137,23 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
             :key="tool.id"
             class="border-b border-navy/20 last:border-b-0"
           >
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4 p-4">
+            <RouterLink
+              :to="{ name: 'tool-run', params: { slug: tool.slug } }"
+              class="group flex items-start justify-between gap-4 p-4 no-underline text-inherit hover:bg-canvas transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
+            >
               <div class="flex flex-col gap-1 min-w-0">
-                <span class="font-medium text-navy">{{ tool.title }}</span>
+                <span class="font-medium text-navy group-hover:text-burgundy transition-colors">
+                  {{ tool.title }}
+                </span>
                 <span
                   v-if="tool.summary"
                   class="text-sm text-navy/60 break-words"
                 >{{ tool.summary }}</span>
               </div>
-              <RouterLink
-                :to="{ name: 'tool-run', params: { slug: tool.slug } }"
-                class="btn-ghost shrink-0 w-full sm:w-auto sm:min-w-20 text-center no-underline"
-              >
-                Välj
-              </RouterLink>
-            </div>
+              <span class="text-navy/40 group-hover:text-burgundy transition-colors">
+                →
+              </span>
+            </RouterLink>
           </li>
         </ul>
       </section>
@@ -167,21 +169,23 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
             :key="app.app_id"
             class="border-b border-navy/20 last:border-b-0"
           >
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4 p-4">
+            <RouterLink
+              :to="{ name: 'app-detail', params: { appId: app.app_id } }"
+              class="group flex items-start justify-between gap-4 p-4 no-underline text-inherit hover:bg-canvas transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
+            >
               <div class="flex flex-col gap-1 min-w-0">
-                <span class="font-medium text-navy">{{ app.title }}</span>
+                <span class="font-medium text-navy group-hover:text-burgundy transition-colors">
+                  {{ app.title }}
+                </span>
                 <span
                   v-if="app.summary"
                   class="text-sm text-navy/60 break-words"
                 >{{ app.summary }}</span>
               </div>
-              <RouterLink
-                :to="{ name: 'app-detail', params: { appId: app.app_id } }"
-                class="btn-ghost shrink-0 w-full sm:w-auto sm:min-w-20 text-center no-underline"
-              >
-                Välj
-              </RouterLink>
-            </div>
+              <span class="text-navy/40 group-hover:text-burgundy transition-colors">
+                →
+              </span>
+            </RouterLink>
           </li>
         </ul>
       </section>

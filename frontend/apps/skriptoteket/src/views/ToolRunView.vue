@@ -14,6 +14,7 @@ import UsageInstructions from "../components/tool-run/UsageInstructions.vue";
 import ToolRunSettingsPanel from "../components/tool-run/ToolRunSettingsPanel.vue";
 import ToolRunStepIndicator from "../components/tool-run/ToolRunStepIndicator.vue";
 import SystemMessage from "../components/ui/SystemMessage.vue";
+import UiCollapse from "../components/ui/UiCollapse.vue";
 import { useToolRun, type StepResult } from "../composables/tools/useToolRun";
 import { useToolSettings } from "../composables/tools/useToolSettings";
 
@@ -104,10 +105,24 @@ const currentStepNumber = computed(() => completedSteps.value.length + 1);
 const showStepIndicator = computed(() => completedSteps.value.length > 0 || hasNextActions.value);
 const idBase = computed(() => `tool-${slug.value}-run-${displayedRun.value?.run_id ?? "none"}`);
 const showSessionFilesPanel = computed(() => fileFields.value.length === 0);
+const showSettingsPanel = computed(() => {
+  return isSettingsOpen.value && hasSettingsSchema.value && Boolean(settingsSchema.value);
+});
 
 const outputs = computed<UiOutput[]>(() => displayedRun.value?.ui_payload?.outputs ?? []);
 const nextActions = computed<UiFormAction[]>(() => displayedRun.value?.ui_payload?.next_actions ?? []);
 const artifacts = computed(() => displayedRun.value?.artifacts ?? []);
+const showRunningState = computed(
+  () =>
+    (isSubmitting.value && !displayedRun.value) ||
+    displayedRun.value?.status === "running" ||
+    displayedRun.value?.status === "queued",
+);
+const showResultsPanel = computed(() => {
+  const run = displayedRun.value;
+  return Boolean(run && run.status !== "running" && run.status !== "queued");
+});
+const showEmptyState = computed(() => !isSubmitting.value && !displayedRun.value);
 
 function onToggleSettings(): void {
   isSettingsOpen.value = !isSettingsOpen.value;
@@ -249,6 +264,7 @@ watch(hasSettingsSchema, (hasSchema) => {
           :model-value="inputValues"
           :errors="inputFieldErrors"
           class="mb-4"
+          density="compact"
           @update:model-value="onInputValuesUpdate"
         />
 
@@ -260,6 +276,7 @@ watch(hasSettingsSchema, (hasSchema) => {
           :accept-by-field="fileAcceptByField"
           :errors="fileErrors"
           :available-refs="availableFileRefs"
+          density="compact"
           @update:mode="onFileModeChange"
           @update:uploads="onFileUploadsChange"
           @update:refs="onFileRefsChange"
@@ -272,6 +289,7 @@ watch(hasSettingsSchema, (hasSchema) => {
           :has-settings="hasSettingsSchema"
           :is-settings-open="isSettingsOpen"
           :can-run="canSubmitRun"
+          density="compact"
           @run="onRun"
           @clear="onClear"
           @toggle-settings="onToggleSettings"
@@ -284,6 +302,7 @@ watch(hasSettingsSchema, (hasSchema) => {
           <SessionFilesPanel
             v-model:mode="sessionFilesMode"
             :files="sessionFiles"
+            density="compact"
             :can-reuse="canReuseSessionFiles"
             :can-clear="canClearSessionFiles"
             :helper-text="sessionFilesHelperText"
@@ -291,59 +310,60 @@ watch(hasSettingsSchema, (hasSchema) => {
         </div>
       </div>
 
-      <div
-        v-if="isSettingsOpen && hasSettingsSchema && settingsSchema"
-        class="px-4 py-4 border-b border-navy/20 bg-canvas/30"
-      >
-        <ToolRunSettingsPanel
-          v-model:error-message="settingsErrorMessage"
-          :id-base="idBase"
-          :schema="settingsSchema"
-          :model-value="settingsValues"
-          :is-loading="isLoadingSettings"
-          :is-saving="isSavingSettings"
-          :available-file-refs="availableFileRefs"
-          @update:model-value="onSettingsValuesUpdate"
-          @save="saveSettings"
-        />
-      </div>
+      <UiCollapse :open="showSettingsPanel">
+        <div class="px-4 py-4 border-b border-navy/20 bg-canvas/30">
+          <ToolRunSettingsPanel
+            v-model:error-message="settingsErrorMessage"
+            :id-base="idBase"
+            :schema="settingsSchema"
+            :model-value="settingsValues"
+            :is-loading="isLoadingSettings"
+            :is-saving="isSavingSettings"
+            :available-file-refs="availableFileRefs"
+            variant="embedded"
+            density="compact"
+            @update:model-value="onSettingsValuesUpdate"
+            @save="saveSettings"
+          />
+        </div>
+      </UiCollapse>
 
       <!-- Step indicator (if multi-step) -->
-      <div
-        v-if="showStepIndicator"
-        class="px-4 py-3 border-b border-navy/20 bg-canvas/50"
-      >
-        <ToolRunStepIndicator
-          :steps="allSteps"
-          :current-step-number="currentStepNumber"
-          @select-step="onSelectStep"
-        />
-      </div>
+      <UiCollapse :open="showStepIndicator">
+        <div class="px-4 py-3 border-b border-navy/20 bg-canvas/50">
+          <ToolRunStepIndicator
+            :steps="allSteps"
+            :current-step-number="currentStepNumber"
+            @select-step="onSelectStep"
+          />
+        </div>
+      </UiCollapse>
 
       <!-- Error message -->
-      <div
-        v-if="errorMessage"
-        class="px-4 py-3 border-b border-navy/20 bg-white"
-      >
-        <SystemMessage
-          v-model="errorMessage"
-          variant="error"
-          class="shadow-none"
-        />
-      </div>
+      <UiCollapse :open="Boolean(errorMessage)">
+        <div class="px-4 py-3 border-b border-navy/20 bg-white">
+          <SystemMessage
+            v-model="errorMessage"
+            variant="error"
+            class="shadow-none"
+          />
+        </div>
+      </UiCollapse>
 
       <!-- Running state -->
-      <div
-        v-if="(isSubmitting && !displayedRun) || displayedRun?.status === 'running' || displayedRun?.status === 'queued'"
-        class="px-4 py-3 flex items-center gap-2 text-navy/70 text-sm"
-      >
-        <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
-        <span>{{ displayedRun?.status === "queued" ? "Köar..." : "Kör..." }}</span>
-      </div>
+      <UiCollapse :open="showRunningState">
+        <div class="px-4 py-3 flex items-center gap-2 text-navy/70 text-sm">
+          <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+          <span>{{ displayedRun?.status === "queued" ? "Köar..." : "Kör..." }}</span>
+        </div>
+      </UiCollapse>
 
       <!-- Results section -->
-      <template v-if="displayedRun && displayedRun.status !== 'running' && displayedRun.status !== 'queued'">
-        <div class="p-4 space-y-4">
+      <UiCollapse :open="showResultsPanel">
+        <div
+          v-if="displayedRun"
+          class="p-4 space-y-4"
+        >
           <!-- Viewing past step notice -->
           <div
             v-if="selectedStepRun"
@@ -387,6 +407,7 @@ watch(hasSettingsSchema, (hasSchema) => {
               v-for="(output, index) in outputs"
               :key="index"
               :output="output"
+              density="compact"
             />
           </div>
 
@@ -398,21 +419,24 @@ watch(hasSettingsSchema, (hasSchema) => {
             :id-base="idBase"
             :available-file-refs="availableFileRefs"
             :disabled="isSubmitting || !canSubmitActions"
+            density="compact"
             @submit="onSubmitAction"
           />
 
           <!-- Artifacts -->
-          <ToolRunArtifacts :artifacts="artifacts" />
+          <ToolRunArtifacts
+            :artifacts="artifacts"
+            density="compact"
+          />
         </div>
-      </template>
+      </UiCollapse>
 
       <!-- Empty state when no run yet -->
-      <div
-        v-else-if="!isSubmitting && !displayedRun"
-        class="px-4 py-6 text-center text-navy/50 text-sm"
-      >
-        Välj filer och klicka Kör för att starta.
-      </div>
+      <UiCollapse :open="showEmptyState">
+        <div class="px-4 py-6 text-center text-navy/50 text-sm">
+          Välj filer och klicka Kör för att starta.
+        </div>
+      </UiCollapse>
     </div>
   </div>
 </template>

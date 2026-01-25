@@ -7,8 +7,10 @@ const props = withDefaults(defineProps<{
   hasSettings: boolean;
   isSettingsOpen: boolean;
   canRun?: boolean;
+  density?: "default" | "compact";
 }>(), {
   canRun: undefined,
+  density: "default",
 });
 
 const emit = defineEmits<{
@@ -18,14 +20,20 @@ const emit = defineEmits<{
 }>();
 
 const canRun = computed(() => props.canRun ?? false);
+const isCompact = computed(() => props.density === "compact");
 </script>
 
 <template>
-  <div class="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+  <div :class="[isCompact ? 'flex flex-col gap-2 sm:flex-row sm:items-center' : 'flex flex-col gap-3 sm:flex-row sm:items-stretch']">
     <button
       type="button"
       :disabled="!canRun || isRunning"
-      class="btn-ghost min-w-[120px] h-[32px] px-3 py-1 text-xs font-semibold tracking-wide border-navy/30 bg-canvas shadow-none"
+      :class="[
+        'btn-ghost min-w-[120px] border-navy/30 bg-canvas shadow-none',
+        isCompact
+          ? 'h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none'
+          : 'h-[32px] px-3 py-1 text-xs font-semibold tracking-wide',
+      ]"
       @click="emit('run')"
     >
       <span
@@ -39,7 +47,10 @@ const canRun = computed(() => props.canRun ?? false);
       v-if="hasSettings"
       type="button"
       :class="[
-        'btn-ghost h-[32px] px-3 py-1 text-xs font-semibold tracking-wide border-navy/30 shadow-none',
+        'btn-ghost border-navy/30 shadow-none',
+        isCompact
+          ? 'h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none'
+          : 'h-[32px] px-3 py-1 text-xs font-semibold tracking-wide',
         isSettingsOpen ? 'bg-canvas text-navy' : 'bg-white text-navy/70',
       ]"
       @click="emit('toggle-settings')"
@@ -50,7 +61,12 @@ const canRun = computed(() => props.canRun ?? false);
     <button
       v-if="hasResults"
       type="button"
-      class="btn-ghost h-[32px] px-3 py-1 text-xs font-semibold tracking-wide border-navy/30 bg-white shadow-none"
+      :class="[
+        'btn-ghost border-navy/30 bg-white shadow-none',
+        isCompact
+          ? 'h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none'
+          : 'h-[32px] px-3 py-1 text-xs font-semibold tracking-wide',
+      ]"
       @click="emit('clear')"
     >
       Rensa

@@ -208,6 +208,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0053-ui-contract-file-ref-picker-and-defaults.md`
 - `docs/backlog/prs/pr-0054-user-file-vault-backend-and-resolver.md`
 - `docs/backlog/prs/pr-0055-user-file-vault-ui-picker.md`
+- `docs/backlog/prs/pr-0056-shared-segmented-toggle-and-file-picker-row.md`
+- `docs/backlog/prs/pr-0057-browse-cta-removal-and-toolrunview-density-transition-polish.md`
 - `docs/backlog/prs/pr-0028-editor-focus-mode-and-ai-drawer-density.md`
 - `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md`
 - `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md`

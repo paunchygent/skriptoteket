@@ -12,13 +12,23 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-01-24
+- Date: 2026-01-25
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: history in `.agent/readme-first.md`
 
-## Current Session (2026-01-22)
+## Current Session (2026-01-25)
+
+- UI cohesion pass shipped (PR-0056 + PR-0057):
+  - Shared segmented toggle: `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue`
+  - Editor mode selector now single-row + separators: `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceModeSelector.vue`
+  - Cohesive file picker row (upload + saved refs): `frontend/apps/skriptoteket/src/components/tool-run/ToolFileFieldPicker.vue`
+  - Browse: removed per-item “Välj” CTAs; rows/cards are the target: `frontend/apps/skriptoteket/src/views/BrowseToolsView.vue`,
+    `frontend/apps/skriptoteket/src/components/catalog/CatalogItemCard.vue`
+  - Tool runs: compact/embedded density + anti-jank collapses: `frontend/apps/skriptoteket/src/views/ToolRunView.vue`,
+    `frontend/apps/skriptoteket/src/components/ui/UiCollapse.vue`
+  - Smoke selector update (no “Välj” dependency): `scripts/playwright_ui_runtime_smoke.py`
 
 - PR-0049 SRP splits completed: `src/skriptoteket/application/editor/edit_ops/`, `src/skriptoteket/web/api/v1/editor/models/`,
   `src/skriptoteket/infrastructure/runner/docker/`, `src/skriptoteket/workers/execution_queue/`,
@@ -121,6 +131,10 @@ Keep this file updated so the next session can pick up work quickly.
   - Local: `.artifacts/inline-completion-verify-local.log` correlation `46a593de-db93-412e-952b-2bc065980e7f` shows `prompt_format="fim"` + `ai_inline_completion_request` (`system_prompt_tokens=1075`, `prefix_tokens=2016`, `suffix_tokens=512`).
   - GPT-5: `.artifacts/inline-completion-verify-gpt5.log` correlation `79bbf574-96d5-4020-af0d-f9ac36b3af5a` shows `prompt_format="delimited"` + `ai_inline_completion_request` (`system_prompt_tokens=875`, `prefix_tokens=1904`, `suffix_tokens=512`).
 - Quality gates:
+  - `pdm run format`
+  - `pdm run lint`
+  - `pdm run typecheck`
+  - `pdm run docs-validate`
   - `pdm run pytest -q tests/unit/infrastructure/llm/test_openai_payloads.py tests/unit/infrastructure/llm/test_openai_chat_ops_provider_grammar.py`
   - `pdm run lint`
   - `pdm run typecheck`

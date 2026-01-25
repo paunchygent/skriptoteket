@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import UiSegmentedToggle, { type UiSegmentedToggleOption } from "../ui/UiSegmentedToggle.vue";
+
 import type {
   FileFieldSelection,
   FileSelectionMode,
@@ -106,6 +108,17 @@ function sourceLabel(ref: FileRefInfo): string {
   if (source === "session") return "Session";
   return "Okänt";
 }
+
+function modeOptions(field: ToolFileFieldSpec): UiSegmentedToggleOption[] {
+  return [
+    { value: "upload", label: "Ladda upp" },
+    { value: "refs", label: "Välj sparade" },
+  ].map((opt) => ({
+    ...opt,
+    disabled: props.isReadOnly,
+    title: field.label,
+  }));
+}
 </script>
 
 <template>
@@ -137,75 +150,38 @@ function sourceLabel(ref: FileRefInfo): string {
           </p>
         </div>
 
-        <div
-          :class="[
-            'inline-flex overflow-hidden border border-navy/30 bg-white',
-            isCompact ? 'rounded-sm' : 'rounded',
-          ]"
-          role="group"
+        <UiSegmentedToggle
+          :model-value="selectionFor(field).mode"
+          :options="modeOptions(field)"
+          :disabled="isReadOnly"
+          :density="isCompact ? 'compact' : 'default'"
           aria-label="Välj filkälla"
-        >
-          <button
-            type="button"
-            :disabled="isReadOnly"
-            :class="[
-              'btn-ghost border-0 shadow-none rounded-none active:translate-x-0 active:translate-y-0',
-              isCompact
-                ? 'h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none'
-                : 'h-[32px] px-3 py-1 text-xs font-semibold tracking-wide',
-              selectionFor(field).mode === 'upload'
-                ? 'bg-canvas text-navy'
-                : 'bg-white text-navy/60 hover:text-navy',
-            ]"
-            @click="onModeChange(field, 'upload')"
-          >
-            Ladda upp
-          </button>
-          <button
-            type="button"
-            :disabled="isReadOnly"
-            :class="[
-              'btn-ghost border-0 shadow-none rounded-none active:translate-x-0 active:translate-y-0 border-l border-navy/20',
-              isCompact
-                ? 'h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none'
-                : 'h-[32px] px-3 py-1 text-xs font-semibold tracking-wide',
-              selectionFor(field).mode === 'refs'
-                ? 'bg-canvas text-navy'
-                : 'bg-white text-navy/60 hover:text-navy',
-            ]"
-            @click="onModeChange(field, 'refs')"
-          >
-            Välj sparade
-          </button>
-        </div>
+          :columns="2"
+          @update:model-value="onModeChange(field, $event as FileSelectionMode)"
+        />
       </div>
 
       <div v-if="selectionFor(field).mode === 'upload'">
-        <div
+        <label
           :class="[
-            'flex items-center gap-2 w-full border border-navy/30 bg-white px-2.5 py-1.5',
+            'group flex items-center gap-2 w-full border border-navy/30 bg-white px-2.5 py-1.5',
             isCompact ? 'h-[28px]' : 'h-[36px]',
+            isReadOnly
+              ? 'opacity-60 cursor-not-allowed'
+              : 'cursor-pointer hover:bg-canvas/30 transition-colors',
           ]"
         >
-          <label
+          <span
             :class="[
-              'btn-ghost shrink-0',
+              'shrink-0 font-semibold uppercase underline underline-offset-4 decoration-navy/30',
               isCompact
-                ? 'h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none'
-                : 'px-3 py-1 text-xs font-semibold tracking-wide',
-              { 'opacity-60 pointer-events-none': isReadOnly },
+                ? 'text-[10px] tracking-[var(--huleedu-tracking-label)] text-navy/80'
+                : 'text-xs tracking-wide text-navy',
+              isReadOnly ? '' : 'group-hover:text-burgundy',
             ]"
           >
             Välj filer
-            <input
-              type="file"
-              :multiple="field.max > 1"
-              :accept="acceptByField[field.name]"
-              class="sr-only"
-              :disabled="isReadOnly"
-              @change="onFilesSelected(field, $event)"
-            >
-          </label>
+          </span>
           <span :class="[isCompact ? 'text-[11px] text-navy/60 truncate' : 'text-sm text-navy/60 truncate']">
             {{
               selectionFor(field).uploads.length > 0
@@ -213,7 +189,15 @@ function sourceLabel(ref: FileRefInfo): string {
                 : "Inga filer valda"
             }}
           </span>
-        </div>
+          <input
+            type="file"
+            :multiple="field.max > 1"
+            :accept="acceptByField[field.name]"
+            class="sr-only"
+            :disabled="isReadOnly"
+            @change="onFilesSelected(field, $event)"
+          >
+        </label>
       </div>
 
       <div v-else>

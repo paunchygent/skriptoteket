@@ -80,7 +80,7 @@ def _run_demo_tool(page: object, *, base_url: str, artifacts_dir: Path) -> None:
 
     tool_row = page.locator("li").filter(has_text="Demo: Interaktiv")
     expect(tool_row).to_have_count(1)
-    tool_row.get_by_role("link", name=re.compile(r"Välj", re.IGNORECASE)).click()
+    tool_row.get_by_role("link").click()
     page.wait_for_url("**/tools/**/run", wait_until="domcontentloaded")
 
     expect(
@@ -122,7 +122,7 @@ def _run_demo_inputs_no_files(page: object, *, base_url: str, artifacts_dir: Pat
 
     tool_row = page.locator("li").filter(has_text="Demo: Indata utan filer")
     expect(tool_row).to_have_count(1)
-    tool_row.get_by_role("link", name=re.compile(r"Välj", re.IGNORECASE)).click()
+    tool_row.get_by_role("link").click()
     page.wait_for_url("**/tools/**/run", wait_until="domcontentloaded")
 
     expect(
@@ -147,7 +147,7 @@ def _run_demo_inputs_with_files(page: object, *, base_url: str, artifacts_dir: P
 
     tool_row = page.locator("li").filter(has_text="Demo: Indata + filer")
     expect(tool_row).to_have_count(1)
-    tool_row.get_by_role("link", name=re.compile(r"Välj", re.IGNORECASE)).click()
+    tool_row.get_by_role("link").click()
     page.wait_for_url("**/tools/**/run", wait_until="domcontentloaded")
 
     expect(
