@@ -63,6 +63,7 @@ class ListSessionFilesHandler(ListSessionFilesHandlerProtocol):
                     name=item.name,
                     bytes=item.bytes,
                     ref=build_session_file_ref(name=item.name),
+                    field=item.field,
                 )
                 for item in files
             ],

@@ -2,121 +2,58 @@
 import { computed } from "vue";
 
 const props = withDefaults(defineProps<{
-  selectedFiles: File[];
   isRunning: boolean;
   hasResults: boolean;
   hasSettings: boolean;
   isSettingsOpen: boolean;
-  showFilePicker?: boolean;
-  fileLabel?: string;
-  fileAccept?: string;
-  fileMultiple?: boolean;
-  fileError?: string | null;
   canRun?: boolean;
 }>(), {
-  showFilePicker: true,
-  fileLabel: "Filer",
-  fileAccept: undefined,
-  fileMultiple: true,
-  fileError: null,
   canRun: undefined,
 });
 
 const emit = defineEmits<{
-  (e: "files-selected", files: File[]): void;
   (e: "run"): void;
   (e: "clear"): void;
   (e: "toggle-settings"): void;
 }>();
 
-const hasFiles = computed(() => props.selectedFiles.length > 0);
-const canRun = computed(() => props.canRun ?? hasFiles.value);
-const fileCountLabel = computed(() => {
-  if (!hasFiles.value) return "Inga filer valda";
-  return `${props.selectedFiles.length} fil(er) valda`;
-});
-
-function onFilesSelected(event: Event): void {
-  const target = event.target as HTMLInputElement;
-  if (target.files) {
-    emit("files-selected", Array.from(target.files));
-  }
-}
+const canRun = computed(() => props.canRun ?? false);
 </script>
 
 <template>
-  <div class="space-y-2">
-    <!-- Label row -->
-    <label
-      v-if="showFilePicker"
-      class="block text-xs font-semibold uppercase tracking-wide text-navy/70"
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+    <button
+      type="button"
+      :disabled="!canRun || isRunning"
+      class="btn-ghost min-w-[120px] h-[32px] px-3 py-1 text-xs font-semibold tracking-wide border-navy/30 bg-canvas shadow-none"
+      @click="emit('run')"
     >
-      {{ fileLabel }}
-    </label>
+      <span
+        v-if="isRunning"
+        class="inline-block w-3 h-3 border-2 border-navy/20 border-t-navy rounded-full animate-spin"
+      />
+      <span v-else>Kör</span>
+    </button>
 
-    <!-- Input + buttons row (same height via items-stretch) -->
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-stretch">
-      <div
-        v-if="showFilePicker"
-        class="flex-1"
-      >
-        <div class="flex items-center gap-3 w-full border border-navy bg-canvas px-3 py-2 h-full">
-          <label
-            class="btn-cta shrink-0 px-3 py-1 text-xs font-semibold tracking-wide"
-          >
-            Välj filer
-            <input
-              type="file"
-              :multiple="fileMultiple"
-              :accept="fileAccept"
-              class="sr-only"
-              @change="onFilesSelected"
-            >
-          </label>
-          <span class="text-sm text-navy/60 truncate">
-            {{ fileCountLabel }}
-          </span>
-        </div>
-      </div>
-
-      <button
-        type="button"
-        :disabled="!canRun || isRunning"
-        class="btn-cta min-w-[80px]"
-        @click="emit('run')"
-      >
-        <span
-          v-if="isRunning"
-          class="inline-block w-3 h-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
-        />
-        <span v-else>Kör</span>
-      </button>
-
-      <button
-        v-if="hasSettings"
-        type="button"
-        :class="isSettingsOpen ? 'btn-primary' : 'btn-ghost'"
-        @click="emit('toggle-settings')"
-      >
-        ⚙ Inställningar
-      </button>
-
-      <button
-        v-if="hasResults"
-        type="button"
-        class="btn-ghost"
-        @click="emit('clear')"
-      >
-        Rensa
-      </button>
-    </div>
-
-    <!-- Error row (below input row) -->
-    <p
-      v-if="showFilePicker && fileError"
-      class="text-xs font-semibold text-burgundy"
+    <button
+      v-if="hasSettings"
+      type="button"
+      :class="[
+        'btn-ghost h-[32px] px-3 py-1 text-xs font-semibold tracking-wide border-navy/30 shadow-none',
+        isSettingsOpen ? 'bg-canvas text-navy' : 'bg-white text-navy/70',
+      ]"
+      @click="emit('toggle-settings')"
     >
-      {{ fileError }}
-    </p>
+      ⚙ Inställningar
+    </button>
+
+    <button
+      v-if="hasResults"
+      type="button"
+      class="btn-ghost h-[32px] px-3 py-1 text-xs font-semibold tracking-wide border-navy/30 bg-white shadow-none"
+      @click="emit('clear')"
+    >
+      Rensa
+    </button>
   </div>
 </template>

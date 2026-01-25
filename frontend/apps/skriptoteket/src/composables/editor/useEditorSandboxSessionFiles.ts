@@ -1,9 +1,10 @@
 import { computed, ref, watch, type Ref } from "vue";
 
-import { apiGet } from "../../api/client";
+import { apiFetch, apiGet } from "../../api/client";
+import type { FileFieldSelection, ToolFileFieldSpec } from "../tools/useToolInputs";
 
 export type SessionFilesMode = "none" | "reuse" | "clear";
-export type SessionFileInfo = { name: string; bytes: number };
+export type SessionFileInfo = { name: string; bytes: number; field?: string | null };
 
 type SandboxSessionFilesResponse = {
   tool_id: string;
@@ -12,16 +13,21 @@ type SandboxSessionFilesResponse = {
   files: SessionFileInfo[];
 };
 
-type FileFieldConstraints = { min: number; max: number };
+type DeleteSandboxSessionFilesResponse = {
+  tool_id: string;
+  version_id: string;
+  snapshot_id: string;
+  deleted: number;
+};
 
 type UseEditorSandboxSessionFilesOptions = {
   versionId: Readonly<Ref<string>>;
   isReadOnly: Readonly<Ref<boolean>>;
   isRunning: Readonly<Ref<boolean>>;
   isSubmitting: Readonly<Ref<boolean>>;
-  selectedFiles: Ref<File[]>;
-  fileError: Readonly<Ref<string | null>>;
-  fileField: Readonly<Ref<FileFieldConstraints | null>>;
+  fileFields: Readonly<Ref<ToolFileFieldSpec[]>>;
+  fileSelections: Readonly<Ref<Record<string, FileFieldSelection>>>;
+  fileErrors: Readonly<Ref<Record<string, string | null>>>;
 };
 
 export function useEditorSandboxSessionFiles({
@@ -29,46 +35,56 @@ export function useEditorSandboxSessionFiles({
   isReadOnly,
   isRunning,
   isSubmitting,
-  selectedFiles,
-  fileError,
-  fileField,
+  fileFields,
+  fileSelections,
+  fileErrors,
 }: UseEditorSandboxSessionFilesOptions) {
   const sessionFiles = ref<SessionFileInfo[]>([]);
   const sessionFilesMode = ref<SessionFilesMode>("none");
   const sessionFilesSnapshotId = ref<string | null>(null);
 
-  const hasFiles = computed(() => selectedFiles.value.length > 0);
+  const hasSelections = computed(() => {
+    return Object.values(fileSelections.value).some(
+      (selection) => selection.uploads.length > 0 || selection.refs.length > 0,
+    );
+  });
+
   const hasSessionFiles = computed(() => sessionFiles.value.length > 0);
 
+  const sessionCountsByField = computed<Record<string, number>>(() => {
+    const counts: Record<string, number> = {};
+    for (const file of sessionFiles.value) {
+      if (!file.field) continue;
+      counts[file.field] = (counts[file.field] ?? 0) + 1;
+    }
+    return counts;
+  });
+
   const effectiveSessionFilesMode = computed<SessionFilesMode>(() => {
-    if (hasFiles.value) return "none";
+    if (hasSelections.value) return "none";
     if (sessionFilesMode.value === "reuse" && !hasSessionFiles.value) return "none";
     return sessionFilesMode.value;
   });
 
-  const effectiveFileError = computed<string | null>(() => {
-    const baseError = fileError.value;
-    const field = fileField.value;
-    if (!field) {
-      if (effectiveSessionFilesMode.value === "reuse" && hasSessionFiles.value) {
-        return "Det här verktyget tar inte emot filer.";
+  const effectiveFileErrors = computed<Record<string, string | null>>(() => {
+    if (effectiveSessionFilesMode.value !== "reuse") {
+      return fileErrors.value;
+    }
+
+    const errors: Record<string, string | null> = {};
+    for (const field of fileFields.value) {
+      const count = sessionCountsByField.value[field.name] ?? 0;
+      if (count < field.min) {
+        errors[field.name] = field.min === 1 ? "Välj minst en fil." : `Välj minst ${field.min} filer.`;
+        continue;
       }
-      return baseError;
+      if (count > field.max) {
+        errors[field.name] = field.max === 1 ? "Du kan välja max 1 fil." : `Du kan välja max ${field.max} filer.`;
+        continue;
+      }
+      errors[field.name] = null;
     }
-    if (hasFiles.value) return baseError;
-    if (effectiveSessionFilesMode.value !== "reuse") return baseError;
-
-    const count = sessionFiles.value.length;
-    const min = field.min;
-    const max = field.max;
-
-    if (count < min) {
-      return min === 1 ? "Välj minst en fil." : `Välj minst ${min} filer.`;
-    }
-    if (count > max) {
-      return max === 1 ? "Du kan välja max 1 fil." : `Du kan välja max ${max} filer.`;
-    }
-    return null;
+    return errors;
   });
 
   const canReuseSessionFiles = computed(() => {
@@ -76,25 +92,27 @@ export function useEditorSandboxSessionFiles({
       !isReadOnly.value &&
       !isRunning.value &&
       !isSubmitting.value &&
-      !hasFiles.value &&
+      !hasSelections.value &&
       hasSessionFiles.value &&
-      fileField.value !== null
+      fileFields.value.length > 0
     );
   });
+
   const canClearSessionFiles = computed(() => {
     return (
       !isReadOnly.value &&
       !isRunning.value &&
       !isSubmitting.value &&
-      !hasFiles.value &&
+      !hasSelections.value &&
       hasSessionFiles.value
     );
   });
+
   const helperText = computed(() => {
     if (isReadOnly.value) {
       return "Du saknar redigeringslåset. Sparade filer kan inte användas.";
     }
-    if (hasFiles.value) {
+    if (hasSelections.value) {
       return "Väljer du filer används de istället för sparade.";
     }
     return null;
@@ -112,10 +130,23 @@ export function useEditorSandboxSessionFiles({
     }
   }
 
+  async function deleteSessionFiles(snapshotId: string, names: string[]): Promise<void> {
+    if (!snapshotId || names.length === 0) return;
+    await apiFetch<DeleteSandboxSessionFilesResponse>(
+      `/api/v1/editor/tool-versions/${encodeURIComponent(versionId.value)}` +
+        `/session-files/delete?snapshot_id=${encodeURIComponent(snapshotId)}`,
+      {
+        method: "POST",
+        body: { names },
+      },
+    );
+    await fetchSessionFiles(snapshotId);
+  }
+
   watch(
-    () => selectedFiles.value.length,
-    (count) => {
-      if (count > 0 && sessionFilesMode.value !== "none") {
+    () => hasSelections.value,
+    (hasAny) => {
+      if (hasAny && sessionFilesMode.value !== "none") {
         sessionFilesMode.value = "none";
       }
     },
@@ -144,10 +175,11 @@ export function useEditorSandboxSessionFiles({
     sessionFilesMode,
     sessionFilesSnapshotId,
     effectiveSessionFilesMode,
-    effectiveFileError,
+    effectiveFileErrors,
     canReuseSessionFiles,
     canClearSessionFiles,
     helperText,
     fetchSessionFiles,
+    deleteSessionFiles,
   };
 }

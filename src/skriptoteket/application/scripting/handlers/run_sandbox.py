@@ -19,10 +19,10 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
+from skriptoteket.domain.scripting.file_refs import build_session_file_ref
 from skriptoteket.domain.scripting.models import RunContext, VersionState
 from skriptoteket.domain.scripting.sandbox_snapshots import SandboxSnapshot
 from skriptoteket.domain.scripting.tool_inputs import normalize_tool_input_schema
-from skriptoteket.domain.scripting.tool_sessions import normalize_tool_session_context
 from skriptoteket.domain.scripting.tool_settings import (
     compute_sandbox_settings_context,
     normalize_tool_settings_schema,
@@ -38,7 +38,10 @@ from skriptoteket.protocols.scripting import (
     RunSandboxHandlerProtocol,
     ToolVersionRepositoryProtocol,
 )
-from skriptoteket.protocols.session_files import SessionFileStorageProtocol
+from skriptoteket.protocols.session_files import (
+    SessionFileContent,
+    SessionFileStorageProtocol,
+)
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
@@ -48,24 +51,9 @@ def _sandbox_context(snapshot_id: UUID) -> str:
     return f"sandbox:{snapshot_id}"
 
 
-def _require_sandbox_session_context(value: str | None) -> str:
-    if value is None or not value.strip():
-        raise validation_error("session_context is required for sandbox reuse/clear")
-    normalized = normalize_tool_session_context(context=value)
-    if not normalized.startswith("sandbox:"):
-        raise validation_error(
-            "session_context must start with 'sandbox:'",
-            details={"session_context": normalized},
-        )
-    snapshot_raw = normalized.removeprefix("sandbox:")
-    try:
-        UUID(snapshot_raw)
-    except ValueError as exc:
-        raise validation_error(
-            "session_context must include a valid snapshot_id",
-            details={"session_context": normalized},
-        ) from exc
-    return normalized
+def _sandbox_files_context(version_id: UUID) -> str:
+    """Stable sandbox file context scoped to the current draft head."""
+    return f"sandbox-files:{version_id}"
 
 
 def _normalize_optional_text(value: str | None) -> str | None:
@@ -260,29 +248,41 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
             )
             await self._snapshots.create(snapshot=snapshot)
 
-        input_files = list(command.input_files)
-        file_refs = list(command.file_refs)
+        input_files_by_field = {
+            field: list(files) for field, files in command.input_files_by_field.items() if files
+        }
+        file_refs_by_field = {
+            field: list(refs) for field, refs in command.file_refs_by_field.items() if refs
+        }
+        has_uploads = any(input_files_by_field.values())
+        has_refs = any(file_refs_by_field.values())
+
+        files_context = _sandbox_files_context(command.version_id)
         if (
-            not input_files
-            and not file_refs
+            not has_uploads
+            and not has_refs
             and command.session_files_mode is SessionFilesMode.REUSE
         ):
-            reuse_context = _require_sandbox_session_context(command.session_context)
-            input_files = await self._session_files.get_files(
+            session_files = await self._session_files.list_files(
                 tool_id=command.tool_id,
                 user_id=actor.id,
-                context=reuse_context,
+                context=files_context,
             )
+            for item in session_files:
+                if item.field is None:
+                    continue
+                file_refs_by_field.setdefault(item.field, []).append(
+                    build_session_file_ref(name=item.name)
+                )
         elif (
-            not input_files
-            and not file_refs
+            not has_uploads
+            and not has_refs
             and command.session_files_mode is SessionFilesMode.CLEAR
         ):
-            reuse_context = _require_sandbox_session_context(command.session_context)
             await self._session_files.clear_session(
                 tool_id=command.tool_id,
                 user_id=actor.id,
-                context=reuse_context,
+                context=files_context,
             )
 
         result = await self._execute.handle(
@@ -292,7 +292,7 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
                 version_id=command.version_id,
                 snapshot_id=snapshot_id,
                 context=RunContext.SANDBOX,
-                session_context=_sandbox_context(snapshot_id),
+                session_context=files_context,
                 settings_context=settings_context,
                 version_override=ToolVersionOverride(
                     entrypoint=entrypoint,
@@ -301,19 +301,24 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
                     input_schema=input_schema,
                     usage_instructions=usage_instructions,
                 ),
-                input_files=input_files,
+                input_files_by_field=input_files_by_field,
                 input_values=command.input_values,
-                file_refs=file_refs,
+                file_refs_by_field=file_refs_by_field,
             ),
         )
 
         # Persist session-scoped files for subsequent sandbox action runs (ADR-0039).
-        if input_files:
-            await self._session_files.store_files(
+        if input_files_by_field:
+            files_to_store = [
+                SessionFileContent(name=name, content=content, field=field)
+                for field, files in input_files_by_field.items()
+                for name, content in files
+            ]
+            await self._session_files.upsert_files(
                 tool_id=command.tool_id,
                 user_id=actor.id,
-                context=_sandbox_context(snapshot_id),
-                files=input_files,
+                context=files_context,
+                files=files_to_store,
             )
 
         # Persist sandbox session state if run has next_actions (ADR-0038)

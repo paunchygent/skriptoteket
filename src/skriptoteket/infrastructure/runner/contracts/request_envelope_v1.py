@@ -40,6 +40,7 @@ class RunnerRequestFile(BaseModel):
     name: str
     path: str
     bytes: int
+    field: str
     ref: str | None = None
 
     @field_validator("name")
@@ -71,6 +72,14 @@ class RunnerRequestFile(BaseModel):
         if value < 0:
             raise ValueError("bytes must be >= 0")
         return value
+
+    @field_validator("field")
+    @classmethod
+    def _validate_field(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("field is required")
+        return normalized
 
     @field_validator("ref")
     @classmethod

@@ -6,7 +6,7 @@ import UiActionForm from "./UiActionForm.vue";
 
 describe("UiActionForm", () => {
   it("prefills fields from action.prefill", async () => {
-    const action = {
+    const action: components["schemas"]["UiFormAction"] = {
       action_id: "confirm",
       label: "Confirm",
       kind: "form",
@@ -15,7 +15,7 @@ describe("UiActionForm", () => {
         { name: "limit", kind: "integer", label: "Limit" },
       ],
       prefill: { notify: true, limit: 3 },
-    } as components["schemas"]["UiFormAction"];
+    };
 
     const wrapper = mount(UiActionForm, {
       props: {
@@ -35,7 +35,9 @@ describe("UiActionForm", () => {
     await wrapper.find("form").trigger("submit");
 
     const events = wrapper.emitted("submit") ?? [];
-    expect(events[0]).toEqual([{ actionId: "confirm", input: { notify: true, limit: 3 } }]);
+    expect(events[0]).toEqual([
+      { actionId: "confirm", input: { notify: true, limit: 3 }, fileRefsByField: {} },
+    ]);
 
     wrapper.unmount();
   });

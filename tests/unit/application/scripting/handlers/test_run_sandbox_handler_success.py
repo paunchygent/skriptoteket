@@ -121,7 +121,7 @@ async def test_run_sandbox_with_next_actions_returns_state_rev(
             tool_id=tool_id,
             version_id=version_id,
             snapshot_payload=make_snapshot_payload(),
-            input_files=[("input.txt", b"test")],
+            input_files_by_field={"documents": [("input.txt", b"test")]},
         ),
     )
 
@@ -129,7 +129,7 @@ async def test_run_sandbox_with_next_actions_returns_state_rev(
     assert result.run.id == run_id
     sessions.get_or_create.assert_awaited_once()
     sessions.update_state.assert_awaited_once()
-    session_files.store_files.assert_awaited_once()
+    session_files.upsert_files.assert_awaited_once()
 
 
 @pytest.mark.unit
@@ -192,7 +192,7 @@ async def test_run_sandbox_without_next_actions_returns_none_state_rev(
             tool_id=tool_id,
             version_id=version_id,
             snapshot_payload=make_snapshot_payload(),
-            input_files=[("input.txt", b"test")],
+            input_files_by_field={"documents": [("input.txt", b"test")]},
         ),
     )
 
@@ -261,7 +261,7 @@ async def test_run_sandbox_with_empty_next_actions_returns_none_state_rev(
             tool_id=tool_id,
             version_id=version_id,
             snapshot_payload=make_snapshot_payload(),
-            input_files=[("input.txt", b"test")],
+            input_files_by_field={"documents": [("input.txt", b"test")]},
         ),
     )
 
@@ -352,7 +352,7 @@ async def test_run_sandbox_uses_expected_state_rev_from_session(
             tool_id=tool_id,
             version_id=version_id,
             snapshot_payload=make_snapshot_payload(),
-            input_files=[("input.txt", b"test")],
+            input_files_by_field={"documents": [("input.txt", b"test")]},
         ),
     )
 

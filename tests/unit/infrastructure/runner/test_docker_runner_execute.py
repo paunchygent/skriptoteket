@@ -105,6 +105,7 @@ async def test_execute_success(
                 name="input.txt",
                 content=b"input",
                 ref="session:input.txt",
+                field="documents",
             )
         ],
         input_values={},
@@ -140,6 +141,7 @@ async def test_execute_success(
                 "path": "/work/input/input.txt",
                 "bytes": 5,
                 "ref": "session:input.txt",
+                "field": "documents",
             }
         ],
     }
@@ -192,6 +194,7 @@ async def test_execute_includes_action_payload_in_request_json(
                 name="input.txt",
                 content=b"input",
                 ref="session:input.txt",
+                field="documents",
             )
         ],
         input_values={},
@@ -233,6 +236,7 @@ async def test_execute_missing_result_json_returns_failed(
                     name="input.txt",
                     content=b"input",
                     ref="session:input.txt",
+                    field="documents",
                 )
             ],
             input_values={},
@@ -272,6 +276,7 @@ async def test_execute_timeout_returns_timed_out(
                 name="input.txt",
                 content=b"input",
                 ref="session:input.txt",
+                field="documents",
             )
         ],
         input_values={},
@@ -331,6 +336,7 @@ async def test_execute_artifact_extraction_violation_returns_failed(
                     name="input.txt",
                     content=b"input",
                     ref="session:input.txt",
+                    field="documents",
                 )
             ],
             input_values={},
@@ -375,6 +381,7 @@ async def test_execute_returns_service_unavailable_when_docker_sock_missing(
                     name="input.txt",
                     content=b"input",
                     ref="session:input.txt",
+                    field="documents",
                 )
             ],
             input_values={},

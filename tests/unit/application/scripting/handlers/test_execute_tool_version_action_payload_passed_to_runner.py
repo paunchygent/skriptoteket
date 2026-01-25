@@ -11,6 +11,7 @@ from skriptoteket.application.scripting.handlers.execute_tool_version import (
     ExecuteToolVersionHandler,
 )
 from skriptoteket.config import Settings
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
@@ -21,6 +22,7 @@ from skriptoteket.domain.scripting.models import (
     VersionState,
     compute_content_hash,
 )
+from skriptoteket.domain.scripting.run_inputs import ResolvedInputFile
 from skriptoteket.domain.scripting.tool_inputs import ToolInputStringField
 from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result
 from skriptoteket.domain.scripting.ui.normalizer import DeterministicUiPayloadNormalizer
@@ -153,10 +155,235 @@ async def test_execute_tool_version_passes_action_payload_without_affecting_file
             context=RunContext.PRODUCTION,
             session_context="default",
             input_values={},
-            input_files=[],
+            input_files_by_field={},
             action_payload=action_payload,
         ),
     )
 
     runner.execute.assert_awaited_once()
     assert runner.execute.call_args.kwargs["action_payload"] == action_payload
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_execute_tool_version_merges_file_refs_into_action_payload(now: datetime) -> None:
+    actor = make_user(role=Role.USER)
+    tool_id = uuid4()
+    version_id = uuid4()
+    run_id = uuid4()
+
+    source_code = "def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>ok</p>'\n"
+    entrypoint = "run_tool"
+    version = ToolVersion(
+        id=version_id,
+        tool_id=tool_id,
+        version_number=1,
+        state=VersionState.ACTIVE,
+        source_code=source_code,
+        entrypoint=entrypoint,
+        content_hash=compute_content_hash(entrypoint=entrypoint, source_code=source_code),
+        input_schema=[],
+        derived_from_version_id=None,
+        created_by_user_id=actor.id,
+        created_at=now,
+        submitted_for_review_by_user_id=None,
+        submitted_for_review_at=None,
+        reviewed_by_user_id=None,
+        reviewed_at=None,
+        published_by_user_id=None,
+        published_at=None,
+        change_summary=None,
+        review_note=None,
+    )
+
+    uow = FakeUow()
+    versions = AsyncMock(spec=ToolVersionRepositoryProtocol)
+    versions.get_by_id.return_value = version
+
+    settings = Mock(spec=Settings)
+    settings.RUNNER_QUEUE_ENABLED = False
+    settings.RUNNER_QUEUE_MAX_ATTEMPTS = 1
+
+    runs = AsyncMock(spec=ToolRunRepositoryProtocol)
+    jobs = AsyncMock(spec=ToolRunJobRepositoryProtocol)
+    run_inputs = AsyncMock(spec=RunInputStorageProtocol)
+    sessions = AsyncMock(spec=ToolSessionRepositoryProtocol)
+    runner = AsyncMock(spec=ToolRunnerProtocol)
+    file_refs = AsyncMock(spec=FileRefResolverProtocol)
+    file_refs.resolve_refs.return_value = [
+        ResolvedInputFile(
+            name="doc.txt",
+            content=b"data",
+            ref="session:doc.txt",
+            field="documents",
+        )
+    ]
+    promotion_applier = AsyncMock(spec=PromotionApplierProtocol)
+    runner.execute.return_value = ToolExecutionResult(
+        status=RunStatus.SUCCEEDED,
+        stdout="",
+        stderr="",
+        ui_result=ToolUiContractV2Result(
+            status="succeeded",
+            error_summary=None,
+            outputs=[],
+            next_actions=[],
+            state=None,
+            artifacts=[],
+        ),
+        artifacts_manifest=ArtifactsManifest(artifacts=[]),
+    )
+
+    ui_policy_provider = DefaultUiPolicyProvider()
+    backend_actions = NoopBackendActionProvider()
+    ui_normalizer = DeterministicUiPayloadNormalizer()
+
+    clock = Mock(spec=ClockProtocol)
+    clock.now.return_value = now
+
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    id_generator.new_uuid.return_value = run_id
+
+    handler = ExecuteToolVersionHandler(
+        uow=uow,
+        settings=settings,
+        versions=versions,
+        runs=runs,
+        jobs=jobs,
+        run_inputs=run_inputs,
+        sessions=sessions,
+        runner=runner,
+        file_refs=file_refs,
+        promotion_applier=promotion_applier,
+        ui_policy_provider=ui_policy_provider,
+        backend_actions=backend_actions,
+        ui_normalizer=ui_normalizer,
+        clock=clock,
+        id_generator=id_generator,
+    )
+
+    action_payload = {"action_id": "step", "input": {}, "state": {"y": 2}}
+    await handler.handle(
+        actor=actor,
+        command=ExecuteToolVersionCommand(
+            tool_id=tool_id,
+            version_id=version_id,
+            context=RunContext.PRODUCTION,
+            session_context="default",
+            input_values={},
+            input_files_by_field={},
+            file_refs_by_field={"documents": ["session:doc.txt"]},
+            action_payload=action_payload,
+        ),
+    )
+
+    merged_payload = runner.execute.call_args.kwargs["action_payload"]
+    assert merged_payload["input"] == {"documents": ["session:doc.txt"]}
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_execute_tool_version_rejects_action_payload_ref_conflict(
+    now: datetime,
+) -> None:
+    actor = make_user(role=Role.USER)
+    tool_id = uuid4()
+    version_id = uuid4()
+    run_id = uuid4()
+
+    source_code = "def run_tool(input_path: str, output_dir: str) -> str:\n    return '<p>ok</p>'\n"
+    entrypoint = "run_tool"
+    version = ToolVersion(
+        id=version_id,
+        tool_id=tool_id,
+        version_number=1,
+        state=VersionState.ACTIVE,
+        source_code=source_code,
+        entrypoint=entrypoint,
+        content_hash=compute_content_hash(entrypoint=entrypoint, source_code=source_code),
+        input_schema=[],
+        derived_from_version_id=None,
+        created_by_user_id=actor.id,
+        created_at=now,
+        submitted_for_review_by_user_id=None,
+        submitted_for_review_at=None,
+        reviewed_by_user_id=None,
+        reviewed_at=None,
+        published_by_user_id=None,
+        published_at=None,
+        change_summary=None,
+        review_note=None,
+    )
+
+    uow = FakeUow()
+    versions = AsyncMock(spec=ToolVersionRepositoryProtocol)
+    versions.get_by_id.return_value = version
+
+    settings = Mock(spec=Settings)
+    settings.RUNNER_QUEUE_ENABLED = False
+    settings.RUNNER_QUEUE_MAX_ATTEMPTS = 1
+
+    runs = AsyncMock(spec=ToolRunRepositoryProtocol)
+    jobs = AsyncMock(spec=ToolRunJobRepositoryProtocol)
+    run_inputs = AsyncMock(spec=RunInputStorageProtocol)
+    sessions = AsyncMock(spec=ToolSessionRepositoryProtocol)
+    runner = AsyncMock(spec=ToolRunnerProtocol)
+    file_refs = AsyncMock(spec=FileRefResolverProtocol)
+    file_refs.resolve_refs.return_value = [
+        ResolvedInputFile(
+            name="doc.txt",
+            content=b"data",
+            ref="session:doc.txt",
+            field="documents",
+        )
+    ]
+    promotion_applier = AsyncMock(spec=PromotionApplierProtocol)
+
+    ui_policy_provider = DefaultUiPolicyProvider()
+    backend_actions = NoopBackendActionProvider()
+    ui_normalizer = DeterministicUiPayloadNormalizer()
+
+    clock = Mock(spec=ClockProtocol)
+    clock.now.return_value = now
+
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    id_generator.new_uuid.return_value = run_id
+
+    handler = ExecuteToolVersionHandler(
+        uow=uow,
+        settings=settings,
+        versions=versions,
+        runs=runs,
+        jobs=jobs,
+        run_inputs=run_inputs,
+        sessions=sessions,
+        runner=runner,
+        file_refs=file_refs,
+        promotion_applier=promotion_applier,
+        ui_policy_provider=ui_policy_provider,
+        backend_actions=backend_actions,
+        ui_normalizer=ui_normalizer,
+        clock=clock,
+        id_generator=id_generator,
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(
+            actor=actor,
+            command=ExecuteToolVersionCommand(
+                tool_id=tool_id,
+                version_id=version_id,
+                context=RunContext.PRODUCTION,
+                session_context="default",
+                input_values={},
+                input_files_by_field={},
+                file_refs_by_field={"documents": ["session:doc.txt"]},
+                action_payload={
+                    "action_id": "step",
+                    "input": {"documents": ["session:doc.txt"]},
+                    "state": {},
+                },
+            ),
+        )
+
+    assert exc_info.value.code is ErrorCode.VALIDATION_ERROR

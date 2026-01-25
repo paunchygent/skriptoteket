@@ -49,8 +49,8 @@ function formatDateTime(value: string): string {
   return date.toLocaleString("sv-SE", { dateStyle: "medium", timeStyle: "short" });
 }
 
-function formatDuration(startedAt: string | null, finishedAt: string | null): string | null {
-  if (!startedAt || !finishedAt) return null;
+	function formatDuration(startedAt?: string | null, finishedAt?: string | null): string | null {
+	  if (!startedAt || !finishedAt) return null;
 
   const start = new Date(startedAt);
   const end = new Date(finishedAt);

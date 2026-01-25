@@ -511,6 +511,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/editor/tool-versions/{version_id}/file-refs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sandbox File Refs */
+        get: operations["list_sandbox_file_refs_api_v1_editor_tool_versions__version_id__file_refs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/editor/tool-versions/{version_id}/publish": {
         parameters: {
             query?: never;
@@ -661,6 +678,23 @@ export interface paths {
         get: operations["list_sandbox_session_files_api_v1_editor_tool_versions__version_id__session_files_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/editor/tool-versions/{version_id}/session-files/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Delete Sandbox Session Files */
+        post: operations["delete_sandbox_session_files_api_v1_editor_tool_versions__version_id__session_files_delete_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1153,6 +1187,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tools/{tool_id}/file-refs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tool File Refs */
+        get: operations["list_tool_file_refs_api_v1_tools__tool_id__file_refs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tools/{tool_id}/session-files": {
         parameters: {
             query?: never;
@@ -1164,6 +1215,23 @@ export interface paths {
         get: operations["list_session_files_api_v1_tools__tool_id__session_files_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tools/{tool_id}/session-files/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Delete Session Files */
+        post: operations["delete_session_files_api_v1_tools__tool_id__session_files_delete_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1323,6 +1391,10 @@ export interface components {
         AuthProvider: "local" | "huleedu";
         /** Body_run_sandbox_api_v1_editor_tool_versions__version_id__run_sandbox_post */
         Body_run_sandbox_api_v1_editor_tool_versions__version_id__run_sandbox_post: {
+            /** File Fields */
+            file_fields?: string | null;
+            /** File Refs By Field */
+            file_refs_by_field?: string | null;
             /** Files */
             files?: string[] | null;
             /** Inputs */
@@ -1336,6 +1408,10 @@ export interface components {
         };
         /** Body_start_tool_run_api_v1_tools__slug__run_post */
         Body_start_tool_run_api_v1_tools__slug__run_post: {
+            /** File Fields */
+            file_fields?: string | null;
+            /** File Refs By Field */
+            file_refs_by_field?: string | null;
             /** Files */
             files?: string[] | null;
             /** Inputs */
@@ -1443,7 +1519,7 @@ export interface components {
             /** Input Schema */
             input_schema?: (components["schemas"]["ToolInputStringField"] | components["schemas"]["ToolInputTextField"] | components["schemas"]["ToolInputIntegerField"] | components["schemas"]["ToolInputNumberField"] | components["schemas"]["ToolInputBooleanField"] | components["schemas"]["ToolInputEnumField"] | components["schemas"]["ToolInputFileField"])[];
             /** Settings Schema */
-            settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
+            settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"] | components["schemas"]["UiFileRefField"])[] | null;
             /** Source Code */
             source_code: string;
             /** Usage Instructions */
@@ -1503,6 +1579,48 @@ export interface components {
              * Format: uuid
              */
             suggestion_id: string;
+        };
+        /** DeleteSandboxSessionFilesRequest */
+        DeleteSandboxSessionFilesRequest: {
+            /** Names */
+            names?: string[];
+        };
+        /** DeleteSandboxSessionFilesResult */
+        DeleteSandboxSessionFilesResult: {
+            /** Deleted */
+            deleted: number;
+            /**
+             * Snapshot Id
+             * Format: uuid
+             */
+            snapshot_id: string;
+            /**
+             * Tool Id
+             * Format: uuid
+             */
+            tool_id: string;
+            /**
+             * Version Id
+             * Format: uuid
+             */
+            version_id: string;
+        };
+        /** DeleteSessionFilesRequest */
+        DeleteSessionFilesRequest: {
+            /** Names */
+            names?: string[];
+        };
+        /** DeleteSessionFilesResult */
+        DeleteSessionFilesResult: {
+            /** Context */
+            context: string;
+            /** Deleted */
+            deleted: number;
+            /**
+             * Tool Id
+             * Format: uuid
+             */
+            tool_id: string;
         };
         /** DepublishToolResponse */
         DepublishToolResponse: {
@@ -1574,7 +1692,7 @@ export interface components {
             save_mode: "snapshot" | "create_draft";
             selected_version: components["schemas"]["EditorVersionSummary"] | null;
             /** Settings Schema */
-            settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
+            settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"] | components["schemas"]["UiFileRefField"])[] | null;
             /** Source Code */
             source_code: string;
             tool: components["schemas"]["EditorToolSummary"];
@@ -1809,6 +1927,8 @@ export interface components {
             notice_message?: string | null;
             /** Notice Variant */
             notice_variant?: ("info" | "warning") | null;
+            /** Replace Suffix Chars */
+            replace_suffix_chars?: number | null;
         };
         /** EditorRunDetails */
         EditorRunDetails: {
@@ -1847,10 +1967,7 @@ export interface components {
             stdout_max_bytes?: number | null;
             /** Stdout Truncated */
             stdout_truncated?: boolean | null;
-            /** Ui Payload */
-            ui_payload: {
-                [key: string]: unknown;
-            } | null;
+            ui_payload: components["schemas"]["UiPayloadV2"] | null;
             /** Version Id */
             version_id: string | null;
         };
@@ -1983,6 +2100,17 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** FileRefInfo */
+        FileRefInfo: {
+            /** Bytes */
+            bytes: number;
+            /** Field */
+            field?: string | null;
+            /** Name */
+            name: string;
+            /** Ref */
+            ref: string;
+        };
         /** GetRunResult */
         GetRunResult: {
             run: components["schemas"]["RunDetails"];
@@ -2103,6 +2231,26 @@ export interface components {
             /** Items */
             items: (components["schemas"]["RecentToolItem"] | components["schemas"]["RecentCuratedAppItem"])[];
         };
+        /** ListSandboxFileRefsResult */
+        ListSandboxFileRefsResult: {
+            /** Files */
+            files?: components["schemas"]["FileRefInfo"][];
+            /**
+             * Snapshot Id
+             * Format: uuid
+             */
+            snapshot_id: string;
+            /**
+             * Tool Id
+             * Format: uuid
+             */
+            tool_id: string;
+            /**
+             * Version Id
+             * Format: uuid
+             */
+            version_id: string;
+        };
         /** ListSandboxSessionFilesResult */
         ListSandboxSessionFilesResult: {
             /** Files */
@@ -2139,6 +2287,18 @@ export interface components {
         ListSuggestionsResponse: {
             /** Suggestions */
             suggestions: components["schemas"]["SuggestionSummary"][];
+        };
+        /** ListToolFileRefsResult */
+        ListToolFileRefsResult: {
+            /** Context */
+            context: string;
+            /** Files */
+            files?: components["schemas"]["FileRefInfo"][];
+            /**
+             * Tool Id
+             * Format: uuid
+             */
+            tool_id: string;
         };
         /**
          * ListToolsResponse
@@ -2248,8 +2408,10 @@ export interface components {
         /** MeResponse */
         MeResponse: {
             ai_policy: components["schemas"]["AiPolicyResponse"];
+            /** Authenticated */
+            authenticated: boolean;
             profile?: components["schemas"]["UserProfile"] | null;
-            user: components["schemas"]["User"];
+            user?: components["schemas"]["User"] | null;
         };
         /** MyRunItem */
         MyRunItem: {
@@ -2507,14 +2669,14 @@ export interface components {
         /** SandboxSettingsResolveRequest */
         SandboxSettingsResolveRequest: {
             /** Settings Schema */
-            settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
+            settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"] | components["schemas"]["UiFileRefField"])[] | null;
         };
         /** SandboxSettingsResponse */
         SandboxSettingsResponse: {
             /** Schema Version */
             schema_version: string | null;
             /** Settings Schema */
-            settings_schema: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
+            settings_schema: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"] | components["schemas"]["UiFileRefField"])[] | null;
             /** State Rev */
             state_rev: number;
             /**
@@ -2532,7 +2694,7 @@ export interface components {
             /** Expected State Rev */
             expected_state_rev: number;
             /** Settings Schema */
-            settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
+            settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"] | components["schemas"]["UiFileRefField"])[] | null;
             /** Values */
             values?: {
                 [key: string]: components["schemas"]["JsonValue"];
@@ -2555,7 +2717,7 @@ export interface components {
             /** Input Schema */
             input_schema?: (components["schemas"]["ToolInputStringField"] | components["schemas"]["ToolInputTextField"] | components["schemas"]["ToolInputIntegerField"] | components["schemas"]["ToolInputNumberField"] | components["schemas"]["ToolInputBooleanField"] | components["schemas"]["ToolInputEnumField"] | components["schemas"]["ToolInputFileField"])[];
             /** Settings Schema */
-            settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
+            settings_schema?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"] | components["schemas"]["UiFileRefField"])[] | null;
             /** Source Code */
             source_code: string;
             /** Usage Instructions */
@@ -2592,8 +2754,12 @@ export interface components {
         SessionFileInfo: {
             /** Bytes */
             bytes: number;
+            /** Field */
+            field?: string | null;
             /** Name */
             name: string;
+            /** Ref */
+            ref: string;
         };
         /**
          * StartActionCommand
@@ -2606,6 +2772,10 @@ export interface components {
             context: string;
             /** Expected State Rev */
             expected_state_rev: number;
+            /** File Refs By Field */
+            file_refs_by_field?: {
+                [key: string]: string[];
+            };
             /** Input */
             input?: {
                 [key: string]: components["schemas"]["JsonValue"];
@@ -2635,6 +2805,10 @@ export interface components {
             action_id: string;
             /** Expected State Rev */
             expected_state_rev: number;
+            /** File Refs By Field */
+            file_refs_by_field?: {
+                [key: string]: string[];
+            };
             /** Input */
             input?: {
                 [key: string]: components["schemas"]["JsonValue"];
@@ -2964,7 +3138,7 @@ export interface components {
             /** Schema Version */
             schema_version: string | null;
             /** Settings Schema */
-            settings_schema: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[] | null;
+            settings_schema: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"] | components["schemas"]["UiFileRefField"])[] | null;
             /** State Rev */
             state_rev: number;
             /**
@@ -3029,12 +3203,35 @@ export interface components {
             /** Value */
             value: string;
         };
+        /** UiFileRefField */
+        UiFileRefField: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "file_ref";
+            /** Label */
+            label: string;
+            /** Max */
+            max: number;
+            /** Min */
+            min: number;
+            /** Name */
+            name: string;
+            /** Sources */
+            sources?: components["schemas"]["UiFileRefSource"][] | null;
+        };
+        /**
+         * UiFileRefSource
+         * @enum {string}
+         */
+        UiFileRefSource: "session" | "vault";
         /** UiFormAction */
         UiFormAction: {
             /** Action Id */
             action_id: string;
             /** Fields */
-            fields?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"])[];
+            fields?: (components["schemas"]["UiStringField"] | components["schemas"]["UiTextField"] | components["schemas"]["UiIntegerField"] | components["schemas"]["UiNumberField"] | components["schemas"]["UiBooleanField"] | components["schemas"]["UiEnumField"] | components["schemas"]["UiMultiEnumField"] | components["schemas"]["UiFileRefField"])[];
             /**
              * Kind
              * @default form
@@ -4293,6 +4490,39 @@ export interface operations {
             };
         };
     };
+    list_sandbox_file_refs_api_v1_editor_tool_versions__version_id__file_refs_get: {
+        parameters: {
+            query: {
+                snapshot_id: string;
+            };
+            header?: never;
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListSandboxFileRefsResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     publish_version_api_v1_editor_tool_versions__version_id__publish_post: {
         parameters: {
             query?: never;
@@ -4601,6 +4831,45 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ListSandboxSessionFilesResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_sandbox_session_files_api_v1_editor_tool_versions__version_id__session_files_delete_post: {
+        parameters: {
+            query: {
+                snapshot_id: string;
+            };
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteSandboxSessionFilesRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteSandboxSessionFilesResult"];
                 };
             };
             /** @description Validation Error */
@@ -5764,6 +6033,39 @@ export interface operations {
             };
         };
     };
+    list_tool_file_refs_api_v1_tools__tool_id__file_refs_get: {
+        parameters: {
+            query?: {
+                context?: string;
+            };
+            header?: never;
+            path: {
+                tool_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListToolFileRefsResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_session_files_api_v1_tools__tool_id__session_files_get: {
         parameters: {
             query?: {
@@ -5784,6 +6086,45 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ListSessionFilesResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_session_files_api_v1_tools__tool_id__session_files_delete_post: {
+        parameters: {
+            query?: {
+                context?: string;
+            };
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                tool_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteSessionFilesRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteSessionFilesResult"];
                 };
             };
             /** @description Validation Error */

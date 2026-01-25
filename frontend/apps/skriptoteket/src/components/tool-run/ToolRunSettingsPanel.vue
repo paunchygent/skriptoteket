@@ -2,6 +2,8 @@
 import { computed } from "vue";
 
 import type { components } from "../../api/openapi";
+import type { FileRefInfo, FileRefSource } from "../../composables/tools/fileRefHelpers";
+import { filterFileRefsBySources } from "../../composables/tools/fileRefHelpers";
 import UiActionFieldRenderer from "../ui-actions/UiActionFieldRenderer.vue";
 import SystemMessage from "../ui/SystemMessage.vue";
 
@@ -22,10 +24,12 @@ const props = withDefaults(defineProps<{
   density?: "default" | "compact";
   isSaveDisabled?: boolean;
   errorMessage: string | null;
+  availableFileRefs?: FileRefInfo[];
 }>(), {
   variant: "standalone",
   density: "default",
   isSaveDisabled: false,
+  availableFileRefs: () => [],
 });
 
 const emit = defineEmits<{
@@ -36,12 +40,48 @@ const emit = defineEmits<{
 
 const fieldIdBase = computed(() => `${props.idBase}-settings`);
 const isCompact = computed(() => props.variant === "embedded" || props.density === "compact");
+const vaultSources: FileRefSource[] = ["vault"];
+const vaultFileRefs = computed(() => filterFileRefsBySources(props.availableFileRefs ?? [], vaultSources));
+
+const fileRefErrors = computed<Record<string, string | null>>(() => {
+  const errors: Record<string, string | null> = {};
+  const availableSet = new Set(vaultFileRefs.value.map((ref) => ref.ref));
+
+  for (const field of props.schema) {
+    if (field.kind !== "file_ref") continue;
+    const raw = props.modelValue[field.name];
+    const selected = Array.isArray(raw) ? raw.filter((item) => typeof item === "string") : [];
+    const missing = selected.filter((ref) => !availableSet.has(ref));
+    if (missing.length > 0) {
+      errors[field.name] = "Vald fil finns inte längre i valvet. Välj en ny fil.";
+      continue;
+    }
+    if (selected.length < field.min) {
+      errors[field.name] = field.min === 1 ? "Välj minst en fil." : `Välj minst ${field.min} filer.`;
+      continue;
+    }
+    if (selected.length > field.max) {
+      errors[field.name] = field.max === 1 ? "Du kan välja max 1 fil." : `Du kan välja max ${field.max} filer.`;
+      continue;
+    }
+    errors[field.name] = null;
+  }
+  return errors;
+});
+
+const hasFileRefErrors = computed(() => {
+  return Object.values(fileRefErrors.value).some((value) => value !== null);
+});
+
+const isSaveDisabled = computed(() => props.isSaveDisabled || hasFileRefErrors.value);
 
 function defaultValueForKind(kind: SettingsFieldKind): FieldValue {
   switch (kind) {
     case "boolean":
       return false;
     case "multi_enum":
+      return [];
+    case "file_ref":
       return [];
     default:
       return "";
@@ -78,7 +118,7 @@ function onSave(): void {
 
       <button
         type="button"
-        :disabled="isLoading || isSaving || props.isSaveDisabled"
+        :disabled="isLoading || isSaving || isSaveDisabled"
         class="btn-ghost px-3 py-2"
         @click="onSave"
       >
@@ -96,7 +136,7 @@ function onSave(): void {
     >
       <button
         type="button"
-        :disabled="isLoading || isSaving || props.isSaveDisabled"
+        :disabled="isLoading || isSaving || isSaveDisabled"
         class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
         @click="onSave"
       >
@@ -126,6 +166,9 @@ function onSave(): void {
         :field="field"
         :id-base="fieldIdBase"
         :model-value="valueForField(field)"
+        :available-file-refs="vaultFileRefs"
+        :file-ref-errors="fileRefErrors"
+        :file-ref-sources-override="vaultSources"
         :density="isCompact ? 'compact' : 'default'"
         @update:model-value="updateField(field.name, $event)"
       />

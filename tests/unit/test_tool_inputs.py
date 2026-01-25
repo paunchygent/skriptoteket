@@ -28,25 +28,34 @@ def test_normalize_tool_input_schema_with_duplicate_names_raises_validation_erro
     assert exc_info.value.details["duplicates"] == ["title"]
 
 
-def test_normalize_tool_input_schema_with_multiple_file_fields_raises_validation_error() -> None:
+def test_normalize_tool_input_schema_allows_multiple_file_fields() -> None:
     schema: list[ToolInputField] = [
         ToolInputFileField(name="a", label="A", min=0, max=1),
-        ToolInputFileField(name="b", label="B", min=0, max=1),
+        ToolInputFileField(name="b", label="B", min=1, max=2),
     ]
 
-    with pytest.raises(DomainError) as exc_info:
-        normalize_tool_input_schema(input_schema=schema)
-
-    assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+    assert normalize_tool_input_schema(input_schema=schema) == schema
 
 
 def test_validate_input_files_count_when_no_file_field_rejects_any_files() -> None:
     schema: list[ToolInputField] = [ToolInputStringField(name="title", label="Title")]
 
     with pytest.raises(DomainError) as exc_info:
-        validate_input_files_count(input_schema=schema, files_count=1)
+        validate_input_files_count(input_schema=schema, files_count_by_field={"documents": 1})
 
     assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+
+
+def test_validate_input_files_count_rejects_unknown_field() -> None:
+    schema: list[ToolInputField] = [
+        ToolInputFileField(name="documents", label="Documents", min=0, max=2)
+    ]
+
+    with pytest.raises(DomainError) as exc_info:
+        validate_input_files_count(input_schema=schema, files_count_by_field={"unknown": 1})
+
+    assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+    assert exc_info.value.details["unknown_fields"] == ["unknown"]
 
 
 def test_validate_input_files_count_enforces_min_max() -> None:
@@ -55,12 +64,32 @@ def test_validate_input_files_count_enforces_min_max() -> None:
     ]
 
     with pytest.raises(DomainError):
-        validate_input_files_count(input_schema=schema, files_count=0)
+        validate_input_files_count(input_schema=schema, files_count_by_field={"documents": 0})
 
-    validate_input_files_count(input_schema=schema, files_count=2)
+    validate_input_files_count(input_schema=schema, files_count_by_field={"documents": 2})
 
     with pytest.raises(DomainError):
-        validate_input_files_count(input_schema=schema, files_count=4)
+        validate_input_files_count(input_schema=schema, files_count_by_field={"documents": 4})
+
+
+def test_validate_input_files_count_enforces_limits_per_field() -> None:
+    schema: list[ToolInputField] = [
+        ToolInputFileField(name="documents", label="Documents", min=1, max=2),
+        ToolInputFileField(name="images", label="Images", min=0, max=1),
+    ]
+
+    validate_input_files_count(
+        input_schema=schema,
+        files_count_by_field={"documents": 1, "images": 0},
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        validate_input_files_count(
+            input_schema=schema,
+            files_count_by_field={"documents": 3, "images": 0},
+        )
+
+    assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
 
 def test_validate_input_schema_upload_limits_allows_when_no_file_field() -> None:

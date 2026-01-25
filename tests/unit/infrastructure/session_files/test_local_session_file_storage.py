@@ -9,6 +9,7 @@ from skriptoteket.infrastructure.session_files.local_session_file_storage import
     LocalSessionFileStorage,
 )
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.session_files import SessionFileContent
 
 
 class FakeClock(ClockProtocol):
@@ -34,7 +35,7 @@ async def test_store_and_get_files_updates_last_accessed_at(tmp_path) -> None:
         tool_id=tool_id,
         user_id=user_id,
         context="default",
-        files=[("input.txt", b"hello")],
+        files=[SessionFileContent(name="input.txt", content=b"hello", field="documents")],
     )
 
     session_dir = next((tmp_path / "sessions" / str(tool_id) / str(user_id)).iterdir())
@@ -44,7 +45,7 @@ async def test_store_and_get_files_updates_last_accessed_at(tmp_path) -> None:
 
     clock.advance(timedelta(seconds=10))
     files = await storage.get_files(tool_id=tool_id, user_id=user_id, context="default")
-    assert files == [("input.txt", b"hello")]
+    assert files == [SessionFileContent(name="input.txt", content=b"hello", field="documents")]
 
     meta_after = meta_path.read_text("utf-8")
     assert clock.now().isoformat() in meta_after
@@ -62,17 +63,75 @@ async def test_store_files_replaces_existing_session_files(tmp_path) -> None:
         tool_id=tool_id,
         user_id=user_id,
         context="default",
-        files=[("a.txt", b"a")],
+        files=[SessionFileContent(name="a.txt", content=b"a", field="documents")],
     )
     await storage.store_files(
         tool_id=tool_id,
         user_id=user_id,
         context="default",
-        files=[("b.txt", b"b")],
+        files=[SessionFileContent(name="b.txt", content=b"b", field="documents")],
     )
 
     files = await storage.get_files(tool_id=tool_id, user_id=user_id, context="default")
-    assert files == [("b.txt", b"b")]
+    assert files == [SessionFileContent(name="b.txt", content=b"b", field="documents")]
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_upsert_files_preserves_existing_session_files(tmp_path) -> None:
+    tool_id = uuid4()
+    user_id = uuid4()
+    clock = FakeClock(datetime(2025, 1, 1, tzinfo=timezone.utc))
+    storage = LocalSessionFileStorage(sessions_root=tmp_path, ttl_seconds=60, clock=clock)
+
+    await storage.store_files(
+        tool_id=tool_id,
+        user_id=user_id,
+        context="default",
+        files=[SessionFileContent(name="a.txt", content=b"a", field="documents")],
+    )
+    await storage.upsert_files(
+        tool_id=tool_id,
+        user_id=user_id,
+        context="default",
+        files=[SessionFileContent(name="b.txt", content=b"b", field="documents")],
+    )
+
+    files = await storage.get_files(tool_id=tool_id, user_id=user_id, context="default")
+    assert files == [
+        SessionFileContent(name="a.txt", content=b"a", field="documents"),
+        SessionFileContent(name="b.txt", content=b"b", field="documents"),
+    ]
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_delete_files_removes_selected_entries(tmp_path) -> None:
+    tool_id = uuid4()
+    user_id = uuid4()
+    clock = FakeClock(datetime(2025, 1, 1, tzinfo=timezone.utc))
+    storage = LocalSessionFileStorage(sessions_root=tmp_path, ttl_seconds=60, clock=clock)
+
+    await storage.store_files(
+        tool_id=tool_id,
+        user_id=user_id,
+        context="default",
+        files=[
+            SessionFileContent(name="a.txt", content=b"a", field="documents"),
+            SessionFileContent(name="b.txt", content=b"b", field="documents"),
+        ],
+    )
+
+    deleted = await storage.delete_files(
+        tool_id=tool_id,
+        user_id=user_id,
+        context="default",
+        names=["a.txt"],
+    )
+
+    assert deleted == 1
+    files = await storage.get_files(tool_id=tool_id, user_id=user_id, context="default")
+    assert files == [SessionFileContent(name="b.txt", content=b"b", field="documents")]
 
 
 @pytest.mark.unit
@@ -87,11 +146,11 @@ async def test_store_files_allows_action_json_filename(tmp_path) -> None:
         tool_id=tool_id,
         user_id=user_id,
         context="default",
-        files=[("action.json", b"{}")],
+        files=[SessionFileContent(name="action.json", content=b"{}", field="documents")],
     )
 
     files = await storage.get_files(tool_id=tool_id, user_id=user_id, context="default")
-    assert files == [("action.json", b"{}")]
+    assert files == [SessionFileContent(name="action.json", content=b"{}", field="documents")]
 
 
 @pytest.mark.unit
@@ -106,7 +165,7 @@ async def test_clear_session_removes_files(tmp_path) -> None:
         tool_id=tool_id,
         user_id=user_id,
         context="default",
-        files=[("a.txt", b"a")],
+        files=[SessionFileContent(name="a.txt", content=b"a", field="documents")],
     )
     await storage.clear_session(tool_id=tool_id, user_id=user_id, context="default")
 
@@ -128,13 +187,13 @@ async def test_clear_all_removes_all_sessions_but_not_other_artifacts(tmp_path) 
         tool_id=tool_id_1,
         user_id=user_id_1,
         context="default",
-        files=[("a.txt", b"a")],
+        files=[SessionFileContent(name="a.txt", content=b"a", field="documents")],
     )
     await storage.store_files(
         tool_id=tool_id_2,
         user_id=user_id_2,
         context="default",
-        files=[("b.txt", b"b")],
+        files=[SessionFileContent(name="b.txt", content=b"b", field="documents")],
     )
 
     other_artifacts_dir = tmp_path / "runs"
@@ -160,7 +219,7 @@ async def test_cleanup_expired_deletes_sessions_by_last_accessed_at(tmp_path) ->
         tool_id=tool_id,
         user_id=user_id,
         context="default",
-        files=[("a.txt", b"hello")],
+        files=[SessionFileContent(name="a.txt", content=b"hello", field="documents")],
     )
 
     clock.advance(timedelta(seconds=10))

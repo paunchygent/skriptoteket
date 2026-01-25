@@ -82,7 +82,7 @@ async def test_run_sandbox_contributor_not_maintainer_raises_forbidden(
                 tool_id=tool_id,
                 version_id=version_id,
                 snapshot_payload=make_snapshot_payload(),
-                input_files=[("input.txt", b"test")],
+                input_files_by_field={"documents": [("input.txt", b"test")]},
             ),
         )
 
@@ -132,7 +132,7 @@ async def test_run_sandbox_user_role_raises_insufficient_permissions(
                 tool_id=tool_id,
                 version_id=version_id,
                 snapshot_payload=make_snapshot_payload(),
-                input_files=[("input.txt", b"test")],
+                input_files_by_field={"documents": [("input.txt", b"test")]},
             ),
         )
 
@@ -192,7 +192,7 @@ async def test_run_sandbox_requires_active_draft_lock(
                 tool_id=tool_id,
                 version_id=version_id,
                 snapshot_payload=make_snapshot_payload(),
-                input_files=[],
+                input_files_by_field={},
             ),
         )
 
@@ -260,7 +260,7 @@ async def test_run_sandbox_rejects_lock_owned_by_another_user(
                 tool_id=tool_id,
                 version_id=version_id,
                 snapshot_payload=make_snapshot_payload(),
-                input_files=[],
+                input_files_by_field={},
             ),
         )
 
@@ -327,7 +327,7 @@ async def test_run_sandbox_rejects_non_head_draft_version(
                 tool_id=tool_id,
                 version_id=version_id,
                 snapshot_payload=make_snapshot_payload(),
-                input_files=[],
+                input_files_by_field={},
             ),
         )
 

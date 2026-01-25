@@ -317,14 +317,21 @@ class StartActionHandler(StartActionHandlerProtocol):
                     code=ErrorCode.INTERNAL_ERROR,
                     message="Internal error (missing active_version_id).",
                 )
-            file_refs = list(command.file_refs)
-            if not file_refs:
+            file_refs_by_field = {
+                field: list(refs) for field, refs in command.file_refs_by_field.items() if refs
+            }
+            if not file_refs_by_field:
                 session_files = await self._session_files.list_files(
                     tool_id=command.tool_id,
                     user_id=actor.id,
                     context=context,
                 )
-                file_refs = [build_session_file_ref(name=item.name) for item in session_files]
+                for item in session_files:
+                    if item.field is None:
+                        continue
+                    file_refs_by_field.setdefault(item.field, []).append(
+                        build_session_file_ref(name=item.name)
+                    )
             result = await self._execute.handle(
                 actor=actor,
                 command=ExecuteToolVersionCommand(
@@ -333,7 +340,7 @@ class StartActionHandler(StartActionHandlerProtocol):
                     context=RunContext.PRODUCTION,
                     session_context=context,
                     action_payload=payload,
-                    file_refs=file_refs,
+                    file_refs_by_field=file_refs_by_field,
                 ),
             )
             run_id = result.run.id

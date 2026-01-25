@@ -63,10 +63,10 @@ class ExecuteToolVersionCommand(BaseModel):
     session_context: str = Field(..., min_length=1, max_length=64)
     settings_context: str | None = None
     version_override: ToolVersionOverride | None = None
-    input_files: list[InputFile] = Field(default_factory=list)
+    input_files_by_field: dict[str, list[InputFile]] = Field(default_factory=dict)
     input_values: dict[str, JsonValue] = Field(default_factory=dict)
     action_payload: dict[str, JsonValue] | None = None
-    file_refs: list[str] = Field(default_factory=list)
+    file_refs_by_field: dict[str, list[str]] = Field(default_factory=dict)
 
 
 class ExecuteToolVersionResult(BaseModel):
@@ -162,9 +162,9 @@ class RunSandboxCommand(BaseModel):
     tool_id: UUID
     version_id: UUID
     snapshot_payload: SandboxSnapshotPayload
-    input_files: list[InputFile] = Field(default_factory=list)
+    input_files_by_field: dict[str, list[InputFile]] = Field(default_factory=dict)
     input_values: dict[str, JsonValue] = Field(default_factory=dict)
-    file_refs: list[str] = Field(default_factory=list)
+    file_refs_by_field: dict[str, list[str]] = Field(default_factory=dict)
     session_context: str | None = None
     session_files_mode: SessionFilesMode = SessionFilesMode.NONE
 
@@ -183,9 +183,9 @@ class RunActiveToolCommand(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     tool_slug: str
-    input_files: list[InputFile] = Field(default_factory=list)
+    input_files_by_field: dict[str, list[InputFile]] = Field(default_factory=dict)
     input_values: dict[str, JsonValue] = Field(default_factory=dict)
-    file_refs: list[str] = Field(default_factory=list)
+    file_refs_by_field: dict[str, list[str]] = Field(default_factory=dict)
     session_context: str = "default"
     session_files_mode: SessionFilesMode = SessionFilesMode.NONE
 

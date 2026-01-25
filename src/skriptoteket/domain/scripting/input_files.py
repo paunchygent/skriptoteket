@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import PurePosixPath
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from skriptoteket.domain.errors import ErrorDetails, validation_error
 
@@ -12,6 +12,17 @@ class InputFileEntry(BaseModel):
 
     name: str
     bytes: int
+    field: str | None = None
+
+    @field_validator("field")
+    @classmethod
+    def _validate_field(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("field is required")
+        return normalized
 
 
 class InputManifest(BaseModel):

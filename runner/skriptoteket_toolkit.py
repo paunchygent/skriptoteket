@@ -50,6 +50,7 @@ class ManifestFile(TypedDict):
     path: str
     bytes: int
     ref: NotRequired[str | None]
+    field: NotRequired[str]
 
 
 class ActionPayload(TypedDict):
@@ -110,12 +111,15 @@ def list_input_files() -> list[ManifestFile]:
         path = item.get("path")
         bytes_ = item.get("bytes")
         ref = item.get("ref")
+        field = item.get("field")
         if isinstance(bytes_, bool):
             continue
         if isinstance(name, str) and isinstance(path, str) and isinstance(bytes_, int):
             entry: ManifestFile = {"name": name, "path": path, "bytes": bytes_}
             if isinstance(ref, str):
                 entry["ref"] = ref
+            if isinstance(field, str) and field.strip():
+                entry["field"] = field
             files.append(entry)
     return files
 

@@ -17,7 +17,7 @@ class StartSandboxActionCommand(BaseModel):
     snapshot_id: UUID
     action_id: str
     input: dict[str, JsonValue]
-    file_refs: list[str] = Field(default_factory=list)
+    file_refs_by_field: dict[str, list[str]] = Field(default_factory=dict)
     expected_state_rev: int
 
 

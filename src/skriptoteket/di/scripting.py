@@ -7,6 +7,9 @@ from dishka import Provider, Scope, provide
 from skriptoteket.application.scripting.handlers.clear_tool_session_state import (
     ClearToolSessionStateHandler,
 )
+from skriptoteket.application.scripting.handlers.delete_session_files import (
+    DeleteSessionFilesHandler,
+)
 from skriptoteket.application.scripting.handlers.execute_tool_version import (
     ExecuteToolVersionHandler,
 )
@@ -25,6 +28,9 @@ from skriptoteket.application.scripting.handlers.list_run_artifacts import (
 )
 from skriptoteket.application.scripting.handlers.list_session_files import (
     ListSessionFilesHandler,
+)
+from skriptoteket.application.scripting.handlers.list_tool_file_refs import (
+    ListToolFileRefsHandler,
 )
 from skriptoteket.application.scripting.handlers.run_active_tool import RunActiveToolHandler
 from skriptoteket.application.scripting.handlers.start_action import StartActionHandler
@@ -45,6 +51,7 @@ from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
 from skriptoteket.protocols.file_refs import FileRefResolverProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.interactive_tools import (
+    DeleteSessionFilesHandlerProtocol,
     GetRunHandlerProtocol,
     GetSessionStateHandlerProtocol,
     ListArtifactsHandlerProtocol,
@@ -56,6 +63,7 @@ from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
 from skriptoteket.protocols.runner import ToolRunnerProtocol
 from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
+    ListToolFileRefsHandlerProtocol,
     RunActiveToolHandlerProtocol,
     ToolRunRepositoryProtocol,
     ToolVersionRepositoryProtocol,
@@ -170,6 +178,36 @@ class ScriptingProvider(Provider):
             tools=tools,
             curated_apps=curated_apps,
             session_files=session_files,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def delete_session_files_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        curated_apps: CuratedAppRegistryProtocol,
+        session_files: SessionFileStorageProtocol,
+    ) -> DeleteSessionFilesHandlerProtocol:
+        return DeleteSessionFilesHandler(
+            uow=uow,
+            tools=tools,
+            curated_apps=curated_apps,
+            session_files=session_files,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def list_tool_file_refs_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        tools: ToolRepositoryProtocol,
+        curated_apps: CuratedAppRegistryProtocol,
+        file_refs: FileRefResolverProtocol,
+    ) -> ListToolFileRefsHandlerProtocol:
+        return ListToolFileRefsHandler(
+            uow=uow,
+            tools=tools,
+            curated_apps=curated_apps,
+            file_refs=file_refs,
         )
 
     @provide(scope=Scope.REQUEST)

@@ -2,6 +2,7 @@
 import { computed } from "vue";
 
 import type { components } from "../../api/openapi";
+import type { FileRefInfo } from "../../composables/tools/fileRefHelpers";
 import { UiActionForm } from "../ui-actions";
 import { UiOutputRenderer } from "../ui-outputs";
 
@@ -29,6 +30,7 @@ type RunDetailsBase = {
 type SubmitPayload = {
   actionId: string;
   input: Record<string, components["schemas"]["JsonValue"]>;
+  fileRefsByField?: Record<string, string[]>;
 };
 
 const props = defineProps<{
@@ -37,6 +39,7 @@ const props = defineProps<{
   isSubmittingAction: boolean;
   canSubmitActions: boolean;
   actionErrorMessage: string | null;
+  availableFileRefs?: FileRefInfo[];
 }>();
 
 const emit = defineEmits<{
@@ -116,6 +119,7 @@ function onSubmitAction(payload: SubmitPayload): void {
         :action="action"
         :id-base="idBase"
         :disabled="isSubmittingAction || !canSubmitActions"
+        :available-file-refs="availableFileRefs"
         @submit="onSubmitAction"
       />
 

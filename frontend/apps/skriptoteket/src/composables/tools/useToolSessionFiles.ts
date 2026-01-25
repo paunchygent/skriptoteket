@@ -1,9 +1,12 @@
 import { computed, ref, watch, type Ref } from "vue";
 
-import { apiGet } from "../../api/client";
+import { apiFetch, apiGet } from "../../api/client";
+import type { FileFieldSelection, ToolFileFieldSpec } from "./useToolInputs";
 
-export type SessionFilesMode = "none" | "reuse" | "clear";
-export type SessionFileInfo = { name: string; bytes: number };
+type SessionFilesMode = "none" | "reuse" | "clear";
+export type SessionFileInfo = { name: string; bytes: number; field?: string | null };
+
+const DEFAULT_SESSION_CONTEXT = "default";
 
 type SessionFilesResponse = {
   tool_id: string;
@@ -11,65 +14,75 @@ type SessionFilesResponse = {
   files: SessionFileInfo[];
 };
 
-type FileFieldConstraints = { min: number; max: number } | null;
+type DeleteSessionFilesResponse = {
+  tool_id: string;
+  context: string;
+  deleted: number;
+};
 
 type UseToolSessionFilesOptions = {
-  selectedFiles: Readonly<Ref<File[]>>;
-  fileField: Readonly<Ref<FileFieldConstraints>>;
-  fileError: Readonly<Ref<string | null>>;
+  fileFields: Readonly<Ref<ToolFileFieldSpec[]>>;
+  fileSelections: Readonly<Ref<Record<string, FileFieldSelection>>>;
+  fileErrors: Readonly<Ref<Record<string, string | null>>>;
   isSubmitting: Readonly<Ref<boolean>>;
   isRunning: Readonly<Ref<boolean>>;
 };
-
-const DEFAULT_SESSION_CONTEXT = "default";
 
 export function useToolSessionFiles(options: UseToolSessionFilesOptions) {
   const sessionFiles = ref<SessionFileInfo[]>([]);
   const sessionFilesMode = ref<SessionFilesMode>("none");
 
-  const hasFiles = computed(() => options.selectedFiles.value.length > 0);
+  const hasSelections = computed(() => {
+    return Object.values(options.fileSelections.value).some(
+      (selection) => selection.uploads.length > 0 || selection.refs.length > 0,
+    );
+  });
+
   const hasSessionFiles = computed(() => sessionFiles.value.length > 0);
 
+  const sessionCountsByField = computed<Record<string, number>>(() => {
+    const counts: Record<string, number> = {};
+    for (const file of sessionFiles.value) {
+      if (!file.field) continue;
+      counts[file.field] = (counts[file.field] ?? 0) + 1;
+    }
+    return counts;
+  });
+
   const effectiveSessionFilesMode = computed<SessionFilesMode>(() => {
-    if (hasFiles.value) return "none";
+    if (hasSelections.value) return "none";
     if (sessionFilesMode.value === "reuse" && !hasSessionFiles.value) return "none";
     return sessionFilesMode.value;
   });
 
-  const effectiveFileError = computed<string | null>(() => {
-    const baseError = options.fileError.value;
-    const fileField = options.fileField.value;
+  const effectiveFileErrors = computed<Record<string, string | null>>(() => {
+    if (effectiveSessionFilesMode.value !== "reuse") {
+      return options.fileErrors.value;
+    }
 
-    if (!fileField) {
-      if (effectiveSessionFilesMode.value === "reuse" && hasSessionFiles.value) {
-        return "Det här verktyget tar inte emot filer.";
+    const errors: Record<string, string | null> = {};
+    for (const field of options.fileFields.value) {
+      const count = sessionCountsByField.value[field.name] ?? 0;
+      if (count < field.min) {
+        errors[field.name] = field.min === 1 ? "Välj minst en fil." : `Välj minst ${field.min} filer.`;
+        continue;
       }
-      return baseError;
+      if (count > field.max) {
+        errors[field.name] = field.max === 1 ? "Du kan välja max 1 fil." : `Du kan välja max ${field.max} filer.`;
+        continue;
+      }
+      errors[field.name] = null;
     }
-
-    if (hasFiles.value) return baseError;
-    if (effectiveSessionFilesMode.value !== "reuse") return baseError;
-
-    const count = sessionFiles.value.length;
-    const min = fileField.min;
-    const max = fileField.max;
-
-    if (count < min) {
-      return min === 1 ? "Välj minst en fil." : `Välj minst ${min} filer.`;
-    }
-    if (count > max) {
-      return max === 1 ? "Du kan välja max 1 fil." : `Du kan välja max ${max} filer.`;
-    }
-    return null;
+    return errors;
   });
 
   const canReuseSessionFiles = computed(() => {
     return (
       !options.isSubmitting.value &&
       !options.isRunning.value &&
-      !hasFiles.value &&
+      !hasSelections.value &&
       hasSessionFiles.value &&
-      options.fileField.value !== null
+      options.fileFields.value.length > 0
     );
   });
 
@@ -77,13 +90,13 @@ export function useToolSessionFiles(options: UseToolSessionFilesOptions) {
     return (
       !options.isSubmitting.value &&
       !options.isRunning.value &&
-      !hasFiles.value &&
+      !hasSelections.value &&
       hasSessionFiles.value
     );
   });
 
   const sessionFilesHelperText = computed(() => {
-    if (hasFiles.value) {
+    if (hasSelections.value) {
       return "Väljer du filer används de istället för sparade.";
     }
     return null;
@@ -100,15 +113,28 @@ export function useToolSessionFiles(options: UseToolSessionFilesOptions) {
     }
   }
 
+  async function deleteSessionFiles(toolId: string, names: string[]): Promise<void> {
+    if (!toolId || names.length === 0) return;
+    await apiFetch<DeleteSessionFilesResponse>(
+      `/api/v1/tools/${encodeURIComponent(toolId)}/session-files/delete` +
+        `?context=${encodeURIComponent(DEFAULT_SESSION_CONTEXT)}`,
+      {
+        method: "POST",
+        body: { names },
+      },
+    );
+    await fetchSessionFiles(toolId);
+  }
+
   function resetSessionFiles(): void {
     sessionFiles.value = [];
     sessionFilesMode.value = "none";
   }
 
   watch(
-    () => options.selectedFiles.value.length,
-    (count) => {
-      if (count > 0 && sessionFilesMode.value !== "none") {
+    () => hasSelections.value,
+    (hasAny) => {
+      if (hasAny && sessionFilesMode.value !== "none") {
         sessionFilesMode.value = "none";
       }
     },
@@ -128,11 +154,12 @@ export function useToolSessionFiles(options: UseToolSessionFilesOptions) {
     sessionFilesMode,
     hasSessionFiles,
     effectiveSessionFilesMode,
-    effectiveFileError,
+    effectiveFileErrors,
     sessionFilesHelperText,
     canReuseSessionFiles,
     canClearSessionFiles,
     fetchSessionFiles,
+    deleteSessionFiles,
     resetSessionFiles,
   };
 }

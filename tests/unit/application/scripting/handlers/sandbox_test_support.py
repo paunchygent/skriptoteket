@@ -174,11 +174,20 @@ def make_sandbox_snapshot(
     created_by_user_id: UUID,
     now: datetime,
     expired: bool = False,
+    expires_at: datetime | None = None,
 ):
     """Create a SandboxSnapshot for testing."""
     from datetime import timedelta
 
     from skriptoteket.domain.scripting.sandbox_snapshots import SandboxSnapshot
+
+    resolved_expires_at = (
+        expires_at
+        if expires_at is not None
+        else now - timedelta(hours=1)
+        if expired
+        else now + timedelta(hours=24)
+    )
 
     return SandboxSnapshot(
         id=snapshot_id or uuid4(),
@@ -194,5 +203,5 @@ def make_sandbox_snapshot(
         usage_instructions=None,
         payload_bytes=100,
         created_at=now,
-        expires_at=now - timedelta(hours=1) if expired else now + timedelta(hours=24),
+        expires_at=resolved_expires_at,
     )

@@ -2,6 +2,7 @@
 import { computed, ref, watch } from "vue";
 
 import type { components } from "../../api/openapi";
+import type { FileRefInfo } from "../../composables/tools/fileRefHelpers";
 import {
   buildSandboxDebugBundle,
   buildSandboxDebugJson,
@@ -17,7 +18,6 @@ type EditorRunDetails = components["schemas"]["EditorRunDetails"];
 type RunStatus = components["schemas"]["RunStatus"];
 type UiOutput = NonNullable<components["schemas"]["UiPayloadV2"]["outputs"]>[number];
 type UiFormAction = NonNullable<components["schemas"]["UiPayloadV2"]["next_actions"]>[number];
-type UiPayloadV2 = components["schemas"]["UiPayloadV2"];
 type JsonValue = components["schemas"]["JsonValue"];
 
 const props = defineProps<{
@@ -28,11 +28,12 @@ const props = defineProps<{
   versionId: string;
   canSubmitActions: boolean;
   actionErrorMessage: string | null;
+  availableFileRefs?: FileRefInfo[];
 }>();
 
 const emit = defineEmits<{
   (event: "select-step", index: number | null): void;
-  (event: "submit-action", payload: { actionId: string; input: Record<string, JsonValue> }): void;
+  (event: "submit-action", payload: { actionId: string; input: Record<string, JsonValue>; fileRefsByField?: Record<string, string[]> }): void;
   (event: "update:actionErrorMessage", value: string | null): void;
 }>();
 
@@ -44,14 +45,14 @@ const displayedRun = computed<EditorRunDetails | null>(() => {
 });
 
 const outputs = computed<UiOutput[]>(() => {
-  const payload = displayedRun.value?.ui_payload as UiPayloadV2 | null;
+  const payload = displayedRun.value?.ui_payload;
   return payload?.outputs ?? [];
 });
 
 const artifacts = computed(() => displayedRun.value?.artifacts ?? []);
 
 const nextActions = computed<UiFormAction[]>(() => {
-  const payload = props.runResult?.ui_payload as UiPayloadV2 | null;
+  const payload = props.runResult?.ui_payload;
   return payload?.next_actions ?? [];
 });
 
@@ -347,6 +348,7 @@ async function copyDebugText(): Promise<void> {
         v-if="nextActions.length > 0 && selectedStepIndex === null"
         :actions="nextActions"
         :id-base="actionIdBase"
+        :available-file-refs="availableFileRefs"
         :disabled="!canSubmitActions"
         density="compact"
         @submit="emit('submit-action', $event)"

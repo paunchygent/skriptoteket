@@ -3,6 +3,7 @@ import { computed, ref, watch } from "vue";
 
 import type { components } from "../../api/openapi";
 import type { SettingsFormValues } from "../../composables/tools/toolSettingsHelpers";
+import type { FileRefInfo } from "../../composables/tools/fileRefHelpers";
 import ToolRunSettingsPanel from "../tool-run/ToolRunSettingsPanel.vue";
 
 type CreateDraftVersionRequest = components["schemas"]["CreateDraftVersionRequest"];
@@ -18,6 +19,7 @@ type SandboxSettingsCardProps = {
   settingsErrorMessage: string | null;
   isLoadingSettings: boolean;
   isSavingSettings: boolean;
+  availableFileRefs?: FileRefInfo[];
   saveSettings: () => Promise<void>;
 };
 
@@ -91,6 +93,7 @@ watch(
         :model-value="props.settingsValues"
         :is-loading="props.isLoadingSettings"
         :is-saving="props.isSavingSettings"
+        :available-file-refs="props.availableFileRefs"
         variant="embedded"
         density="compact"
         :is-save-disabled="isSaveDisabled"

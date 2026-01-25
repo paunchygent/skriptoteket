@@ -22,6 +22,7 @@ from skriptoteket.domain.scripting.models import (
     compute_content_hash,
 )
 from skriptoteket.domain.scripting.run_inputs import ResolvedInputFile
+from skriptoteket.domain.scripting.tool_inputs import ToolInputFileField, ToolInputStringField
 from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result
 from skriptoteket.domain.scripting.ui.normalizer import DeterministicUiPayloadNormalizer
 from skriptoteket.domain.scripting.ui.policy import DEFAULT_UI_POLICY, UiPolicyProfileId
@@ -83,6 +84,123 @@ def make_tool_version(*, tool_id: UUID, now: datetime, state: VersionState) -> T
         published_at=None,
         change_summary=None,
         review_note=None,
+    )
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_execute_tool_version_merges_file_refs_into_input_values(now: datetime) -> None:
+    actor = make_user(user_id=uuid4())
+    tool_id = uuid4()
+    version = make_tool_version(tool_id=tool_id, now=now, state=VersionState.DRAFT).model_copy(
+        update={
+            "input_schema": [
+                ToolInputStringField(name="title", label="Title"),
+                ToolInputFileField(name="documents", label="Documents", min=0, max=2),
+            ]
+        }
+    )
+    run_id = uuid4()
+
+    uow = FakeUow()
+    versions_repo = AsyncMock(spec=ToolVersionRepositoryProtocol)
+    versions_repo.get_by_id.return_value = version
+
+    settings = Mock(spec=Settings)
+    settings.RUNNER_QUEUE_ENABLED = False
+    settings.RUNNER_QUEUE_MAX_ATTEMPTS = 1
+
+    runs_repo = AsyncMock(spec=ToolRunRepositoryProtocol)
+    jobs_repo = AsyncMock(spec=ToolRunJobRepositoryProtocol)
+    run_inputs = AsyncMock(spec=RunInputStorageProtocol)
+    sessions_repo = AsyncMock(spec=ToolSessionRepositoryProtocol)
+
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    id_generator.new_uuid.return_value = run_id
+
+    clock = Mock(spec=ClockProtocol)
+    clock.now.side_effect = [now, now]
+
+    runner = AsyncMock(spec=ToolRunnerProtocol)
+    file_refs = AsyncMock(spec=FileRefResolverProtocol)
+    file_refs.resolve_refs.return_value = [
+        ResolvedInputFile(
+            name="doc.txt",
+            content=b"data",
+            ref="session:doc.txt",
+            field="documents",
+        )
+    ]
+    promotion_applier = AsyncMock(spec=PromotionApplierProtocol)
+    ui_policy_provider = Mock(spec=UiPolicyProviderProtocol)
+    ui_policy_provider.get_profile_id_for_tool = AsyncMock(return_value=UiPolicyProfileId.DEFAULT)
+    ui_policy_provider.get_policy.return_value = DEFAULT_UI_POLICY
+
+    backend_actions = AsyncMock(spec=BackendActionProviderProtocol)
+    backend_actions.list_backend_actions.return_value = []
+
+    ui_normalizer = DeterministicUiPayloadNormalizer()
+
+    execution_result = ToolExecutionResult(
+        status=RunStatus.SUCCEEDED,
+        stdout="ok",
+        stderr="",
+        ui_result=ToolUiContractV2Result(
+            status="succeeded",
+            error_summary=None,
+            outputs=[],
+            next_actions=[],
+            state=None,
+            artifacts=[],
+        ),
+        artifacts_manifest=ArtifactsManifest(artifacts=[]),
+    )
+
+    async def _execute(
+        *,
+        run_id: UUID,
+        version: ToolVersion,
+        context: RunContext,
+        input_files: list[ResolvedInputFile],
+        input_values: dict[str, object],
+        memory_json: bytes,
+        action_payload: dict[str, object] | None,
+    ) -> ToolExecutionResult:
+        del run_id, version, context, memory_json, action_payload
+        assert input_values == {"title": "Hello", "documents": ["session:doc.txt"]}
+        assert input_files[0].field == "documents"
+        return execution_result
+
+    runner.execute.side_effect = _execute
+
+    handler = ExecuteToolVersionHandler(
+        uow=uow,
+        settings=settings,
+        versions=versions_repo,
+        runs=runs_repo,
+        jobs=jobs_repo,
+        run_inputs=run_inputs,
+        sessions=sessions_repo,
+        runner=runner,
+        file_refs=file_refs,
+        promotion_applier=promotion_applier,
+        ui_policy_provider=ui_policy_provider,
+        backend_actions=backend_actions,
+        ui_normalizer=ui_normalizer,
+        clock=clock,
+        id_generator=id_generator,
+    )
+
+    await handler.handle(
+        actor=actor,
+        command=ExecuteToolVersionCommand(
+            tool_id=tool_id,
+            version_id=version.id,
+            context=RunContext.SANDBOX,
+            session_context="default",
+            input_values={"title": " Hello "},
+            file_refs_by_field={"documents": ["session:doc.txt"]},
+        ),
     )
 
 

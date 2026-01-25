@@ -31,11 +31,19 @@ from skriptoteket.application.scripting.commands import (
     ValidateToolSchemasCommand,
     ValidateToolSchemasResult,
 )
+from skriptoteket.application.scripting.file_refs import (
+    ListSandboxFileRefsQuery,
+    ListSandboxFileRefsResult,
+    ListToolFileRefsQuery,
+    ListToolFileRefsResult,
+)
 from skriptoteket.application.scripting.interactive_sandbox import (
     StartSandboxActionCommand,
     StartSandboxActionResult,
 )
 from skriptoteket.application.scripting.session_files import (
+    DeleteSandboxSessionFilesCommand,
+    DeleteSandboxSessionFilesResult,
     ListSandboxSessionFilesQuery,
     ListSandboxSessionFilesResult,
 )
@@ -225,6 +233,33 @@ class ListSandboxSessionFilesHandlerProtocol(Protocol):
         actor: User,
         query: ListSandboxSessionFilesQuery,
     ) -> ListSandboxSessionFilesResult: ...
+
+
+class DeleteSandboxSessionFilesHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: DeleteSandboxSessionFilesCommand,
+    ) -> DeleteSandboxSessionFilesResult: ...
+
+
+class ListToolFileRefsHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        query: ListToolFileRefsQuery,
+    ) -> ListToolFileRefsResult: ...
+
+
+class ListSandboxFileRefsHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        query: ListSandboxFileRefsQuery,
+    ) -> ListSandboxFileRefsResult: ...
 
 
 class ValidateToolSchemasHandlerProtocol(Protocol):

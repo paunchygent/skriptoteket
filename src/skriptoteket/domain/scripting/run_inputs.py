@@ -14,6 +14,7 @@ class ResolvedInputFile(BaseModel):
 
     name: str
     content: bytes
+    field: str
     ref: str | None = None
 
     @field_validator("name")
@@ -34,3 +35,11 @@ class ResolvedInputFile(BaseModel):
         except DomainError as exc:
             raise ValueError(exc.message) from exc
         return value
+
+    @field_validator("field")
+    @classmethod
+    def _validate_field(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("field is required")
+        return normalized

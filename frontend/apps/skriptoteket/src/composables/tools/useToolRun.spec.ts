@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { defineComponent, ref } from "vue";
 import { mount } from "@vue/test-utils";
 
+import type { components } from "../../api/openapi";
 import { useToolRun } from "./useToolRun";
 
 const clientMocks = vi.hoisted(() => ({
@@ -10,8 +11,14 @@ const clientMocks = vi.hoisted(() => ({
   isApiError: vi.fn(),
 }));
 
-const toolInputsState = vi.hoisted(() => ({
-  value: null as ToolInputsMock | null,
+const toolInputsState = vi.hoisted(() => {
+  const state: { value: ToolInputsMock | null } = { value: null };
+  return state;
+});
+
+const authState = vi.hoisted(() => ({
+  bootstrapped: true,
+  isAuthenticated: false,
 }));
 
 vi.mock("../../api/client", () => ({
@@ -21,38 +28,86 @@ vi.mock("../../api/client", () => ({
 }));
 
 type ToolInputsMock = {
-  fileError: ReturnType<typeof ref<string | null>>;
+  fileFields: ReturnType<typeof ref<Array<{ name: string; label: string; min: number; max: number }>>>;
+  fileSelections: ReturnType<typeof ref<Record<string, { mode: "upload" | "refs"; uploads: File[]; refs: string[] }>>>;
+  fileAcceptByField: ReturnType<typeof ref<Record<string, string | undefined>>>;
+  fileErrors: ReturnType<typeof ref<Record<string, string | null>>>;
+  hasFileSelections: ReturnType<typeof ref<boolean>>;
   fieldErrors: ReturnType<typeof ref<Record<string, string>>>;
   values: ReturnType<typeof ref<Record<string, unknown>>>;
   nonFileFields: ReturnType<typeof ref<unknown[]>>;
-  fileField: ReturnType<typeof ref<unknown>>;
-  fileAccept: ReturnType<typeof ref<string>>;
-  fileLabel: ReturnType<typeof ref<string>>;
-  fileMultiple: ReturnType<typeof ref<boolean>>;
   resetValues: ReturnType<typeof vi.fn>;
+  resetFileSelections: ReturnType<typeof vi.fn>;
+  setFileMode: ReturnType<typeof vi.fn>;
+  setFileUploads: ReturnType<typeof vi.fn>;
+  setFileRefs: ReturnType<typeof vi.fn>;
   buildApiValues: ReturnType<typeof vi.fn>;
 };
+
+type ToolMetadataResponse = components["schemas"]["ToolMetadataResponse"];
+type UploadConstraints = components["schemas"]["UploadConstraints"];
+type RunDetails = components["schemas"]["RunDetails"];
+
+const baseUploadConstraints: UploadConstraints = {
+  max_file_bytes: 10_000,
+  max_files: 10,
+  max_total_bytes: 50_000,
+};
+
+function makeTool(overrides: Partial<ToolMetadataResponse> = {}): ToolMetadataResponse {
+  return {
+    id: "tool-1",
+    slug: "demo-tool",
+    title: "Tool",
+    summary: null,
+    input_schema: [],
+    upload_constraints: baseUploadConstraints,
+    usage_instructions: null,
+    usage_instructions_seen: false,
+    ...overrides,
+  };
+}
+
+function makeRunDetails(overrides: Partial<RunDetails> = {}): RunDetails {
+  return {
+    run_id: "run-1",
+    tool_id: "tool-1",
+    tool_title: "Tool",
+    status: "succeeded",
+    ...overrides,
+  };
+}
 
 let toolInputs: ToolInputsMock;
 const mountedWrappers: Array<ReturnType<typeof mount>> = [];
 
 function createToolInputs(): ToolInputsMock {
   return {
-    fileError: ref(null),
+    fileFields: ref([{ name: "files", label: "Filer", min: 1, max: 3 }]),
+    fileSelections: ref({
+      files: { mode: "upload", uploads: [], refs: [] },
+    }),
+    fileAcceptByField: ref({}),
+    fileErrors: ref({ files: null }),
+    hasFileSelections: ref(false),
     fieldErrors: ref({}),
     values: ref({}),
     nonFileFields: ref([]),
-    fileField: ref(null),
-    fileAccept: ref(""),
-    fileLabel: ref(""),
-    fileMultiple: ref(false),
     resetValues: vi.fn(),
+    resetFileSelections: vi.fn(),
+    setFileMode: vi.fn(),
+    setFileUploads: vi.fn(),
+    setFileRefs: vi.fn(),
     buildApiValues: vi.fn().mockReturnValue({}),
   };
 }
 
 vi.mock("./useToolInputs", () => ({
   useToolInputs: () => toolInputsState.value,
+}));
+
+vi.mock("../../stores/auth", () => ({
+  useAuthStore: () => authState,
 }));
 
 function mountToolRun(initialSlug = "demo-tool") {
@@ -100,8 +155,8 @@ describe("useToolRun", () => {
   it("surfaces validation errors from tool inputs when schema exists", async () => {
     const { toolRun } = mountToolRun();
 
-    toolRun.tool.value = { id: "tool-1", title: "Tool", input_schema: [] } as never;
-    toolInputs.fileError.value = "File error";
+    toolRun.tool.value = makeTool({ id: "tool-1", title: "Tool", input_schema: [] });
+    toolInputs.fileErrors.value = { files: "File error" };
 
     await toolRun.submitRun();
 
@@ -112,8 +167,10 @@ describe("useToolRun", () => {
   it("submits a run with FormData and stores the resolved run", async () => {
     const { toolRun } = mountToolRun();
 
-    toolRun.tool.value = { id: "tool-1", title: "Tool", input_schema: [] } as never;
-    toolRun.selectFiles([new File(["test"], "test.txt")]);
+    toolRun.tool.value = makeTool({ id: "tool-1", title: "Tool", input_schema: [] });
+    toolInputs.fileSelections.value = {
+      files: { mode: "upload", uploads: [new File(["test"], "test.txt")], refs: [] },
+    };
 
     clientMocks.apiFetch.mockResolvedValue({ run_id: "run-1" });
     clientMocks.apiGet.mockResolvedValue({
@@ -143,12 +200,7 @@ describe("useToolRun", () => {
   it("blocks actions when session state is missing", async () => {
     const { toolRun } = mountToolRun();
 
-    toolRun.currentRun.value = {
-      run_id: "run-1",
-      tool_id: "tool-1",
-      tool_title: "Tool",
-      status: "completed",
-    } as never;
+    toolRun.currentRun.value = makeRunDetails({ status: "succeeded" });
 
     await toolRun.submitAction({ actionId: "next", input: {} });
 
@@ -161,12 +213,7 @@ describe("useToolRun", () => {
   it("maps 409 conflicts to user-friendly action errors", async () => {
     const { toolRun } = mountToolRun();
 
-    toolRun.currentRun.value = {
-      run_id: "run-1",
-      tool_id: "tool-1",
-      tool_title: "Tool",
-      status: "completed",
-    } as never;
+    toolRun.currentRun.value = makeRunDetails({ status: "succeeded" });
     toolRun.stateRev.value = 3;
 
     const conflictError = { status: 409, message: "Conflict" };

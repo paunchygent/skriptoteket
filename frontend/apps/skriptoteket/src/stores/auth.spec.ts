@@ -36,6 +36,22 @@ function createTestProfile(overrides: Partial<ApiUserProfile> = {}): ApiUserProf
   };
 }
 
+function mockJsonResponse(
+  payload: unknown,
+  status = 200,
+  statusText?: string,
+): Response {
+  return new Response(JSON.stringify(payload), {
+    status,
+    statusText,
+    headers: { "content-type": "application/json" },
+  });
+}
+
+function mockEmptyResponse(status: number, statusText?: string): Response {
+  return new Response(null, { status, statusText });
+}
+
 describe("useAuthStore", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -209,10 +225,9 @@ describe("useAuthStore", () => {
       const store = useAuthStore();
       store.user = createTestUser();
 
-      vi.mocked(fetch).mockResolvedValueOnce({
-        status: 200,
-        json: () => Promise.resolve({ csrf_token: "new-token" }),
-      } as Response);
+      vi.mocked(fetch).mockResolvedValueOnce(
+        mockJsonResponse({ csrf_token: "new-token" }),
+      );
 
       const token = await store.ensureCsrfToken();
 
@@ -229,9 +244,7 @@ describe("useAuthStore", () => {
       const store = useAuthStore();
       store.user = createTestUser();
 
-      vi.mocked(fetch).mockResolvedValueOnce({
-        status: 401,
-      } as Response);
+      vi.mocked(fetch).mockResolvedValueOnce(mockEmptyResponse(401));
 
       const token = await store.ensureCsrfToken();
 
@@ -247,15 +260,13 @@ describe("useAuthStore", () => {
       const mockUser = createTestUser();
       const mockProfile = createTestProfile({ display_name: "Test User" });
 
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            user: mockUser,
-            profile: mockProfile,
-            csrf_token: "new-csrf-token",
-          }),
-      } as Response);
+      vi.mocked(fetch).mockResolvedValueOnce(
+        mockJsonResponse({
+          user: mockUser,
+          profile: mockProfile,
+          csrf_token: "new-csrf-token",
+        }),
+      );
 
       await store.login({ email: "test@test.com", password: "password" });
 
@@ -269,16 +280,15 @@ describe("useAuthStore", () => {
     it("throws and sets error on failure", async () => {
       const store = useAuthStore();
 
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        statusText: "Unauthorized",
-        headers: new Headers({ "content-type": "application/json" }),
-        json: () =>
-          Promise.resolve({
+      vi.mocked(fetch).mockResolvedValueOnce(
+        mockJsonResponse(
+          {
             error: { code: "INVALID_CREDENTIALS", message: "Invalid email or password" },
-          }),
-      } as Response);
+          },
+          401,
+          "Unauthorized",
+        ),
+      );
 
       await expect(store.login({ email: "test@test.com", password: "wrong" })).rejects.toThrow(
         "Invalid email or password"
@@ -297,9 +307,7 @@ describe("useAuthStore", () => {
       store.csrfToken = "token";
       store.bootstrapped = true;
 
-      vi.mocked(fetch).mockResolvedValueOnce({
-        status: 204,
-      } as Response);
+      vi.mocked(fetch).mockResolvedValueOnce(mockEmptyResponse(204));
 
       await store.logout();
 
@@ -314,9 +322,7 @@ describe("useAuthStore", () => {
       store.csrfToken = "token";
       store.bootstrapped = true;
 
-      vi.mocked(fetch).mockResolvedValueOnce({
-        status: 401,
-      } as Response);
+      vi.mocked(fetch).mockResolvedValueOnce(mockEmptyResponse(401));
 
       await store.logout();
 
@@ -332,18 +338,15 @@ describe("useAuthStore", () => {
       const mockProfile = createTestProfile();
 
       vi.mocked(fetch)
-        .mockResolvedValueOnce({
-          status: 200,
-          json: () =>
-            Promise.resolve({
-              user: mockUser,
-              profile: mockProfile,
-            }),
-        } as Response)
-        .mockResolvedValueOnce({
-          status: 200,
-          json: () => Promise.resolve({ csrf_token: "csrf-token" }),
-        } as Response);
+        .mockResolvedValueOnce(
+          mockJsonResponse({
+            authenticated: true,
+            user: mockUser,
+            profile: mockProfile,
+            ai_policy: null,
+          }),
+        )
+        .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "csrf-token" }));
 
       await store.bootstrap();
 
@@ -352,12 +355,17 @@ describe("useAuthStore", () => {
       expect(store.status).toBe("ready");
     });
 
-    it("sets ready state on 401 (not logged in)", async () => {
+    it("sets ready state when not logged in", async () => {
       const store = useAuthStore();
 
-      vi.mocked(fetch).mockResolvedValueOnce({
-        status: 401,
-      } as Response);
+      vi.mocked(fetch).mockResolvedValueOnce(
+        mockJsonResponse({
+          authenticated: false,
+          user: null,
+          profile: null,
+          ai_policy: null,
+        }),
+      );
 
       await store.bootstrap();
 

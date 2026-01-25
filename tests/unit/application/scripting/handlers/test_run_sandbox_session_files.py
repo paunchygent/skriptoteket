@@ -19,6 +19,7 @@ from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
     ToolVersionRepositoryProtocol,
 )
+from skriptoteket.protocols.session_files import SessionFileMetadata
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from tests.fixtures.identity_fixtures import make_user
 from tests.unit.application.scripting.handlers.sandbox_test_support import (
@@ -48,7 +49,6 @@ async def test_run_sandbox_reuses_session_files_on_initial_run(
     tool_id = uuid4()
     version_id = uuid4()
     snapshot_id = uuid4()
-    previous_snapshot_id = uuid4()
 
     uow = FakeUow()
     versions = AsyncMock(spec=ToolVersionRepositoryProtocol)
@@ -66,8 +66,8 @@ async def test_run_sandbox_reuses_session_files_on_initial_run(
     )
     versions.list_for_tool.return_value = []
 
-    persisted_files = [("persist.txt", b"data")]
-    session_files.get_files.return_value = persisted_files
+    persisted_files = [SessionFileMetadata(name="persist.txt", bytes=4, field="documents")]
+    session_files.list_files.return_value = persisted_files
 
     run = make_tool_run(
         tool_id=tool_id,
@@ -98,23 +98,18 @@ async def test_run_sandbox_reuses_session_files_on_initial_run(
             version_id=version_id,
             snapshot_payload=make_snapshot_payload(),
             session_files_mode=SessionFilesMode.REUSE,
-            session_context=f"sandbox:{previous_snapshot_id}",
         ),
     )
 
     command = execute.handle.call_args.kwargs["command"]
-    assert command.input_files == persisted_files
-    session_files.get_files.assert_awaited_once_with(
+    assert command.input_files_by_field == {}
+    assert command.file_refs_by_field == {"documents": ["session:persist.txt"]}
+    session_files.list_files.assert_awaited_once_with(
         tool_id=tool_id,
         user_id=actor.id,
-        context=f"sandbox:{previous_snapshot_id}",
+        context=f"sandbox-files:{version_id}",
     )
-    session_files.store_files.assert_awaited_once_with(
-        tool_id=tool_id,
-        user_id=actor.id,
-        context=f"sandbox:{snapshot_id}",
-        files=persisted_files,
-    )
+    session_files.upsert_files.assert_not_called()
 
 
 @pytest.mark.unit
@@ -131,7 +126,6 @@ async def test_run_sandbox_clears_session_files_on_request(
     tool_id = uuid4()
     version_id = uuid4()
     snapshot_id = uuid4()
-    previous_snapshot_id = uuid4()
 
     uow = FakeUow()
     versions = AsyncMock(spec=ToolVersionRepositoryProtocol)
@@ -178,15 +172,14 @@ async def test_run_sandbox_clears_session_files_on_request(
             version_id=version_id,
             snapshot_payload=make_snapshot_payload(),
             session_files_mode=SessionFilesMode.CLEAR,
-            session_context=f"sandbox:{previous_snapshot_id}",
         ),
     )
 
     command = execute.handle.call_args.kwargs["command"]
-    assert command.input_files == []
+    assert command.input_files_by_field == {}
     session_files.clear_session.assert_awaited_once_with(
         tool_id=tool_id,
         user_id=actor.id,
-        context=f"sandbox:{previous_snapshot_id}",
+        context=f"sandbox-files:{version_id}",
     )
-    session_files.store_files.assert_not_called()
+    session_files.upsert_files.assert_not_called()

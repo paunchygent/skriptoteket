@@ -126,7 +126,7 @@ async def test_run_sandbox_persists_session_with_correct_context(
             tool_id=tool_id,
             version_id=version_id,
             snapshot_payload=make_snapshot_payload(),
-            input_files=[("input.txt", b"test")],
+            input_files_by_field={"documents": [("input.txt", b"test")]},
         ),
     )
 
@@ -199,7 +199,7 @@ async def test_run_sandbox_creates_snapshot_with_expected_fields(
             tool_id=tool_id,
             version_id=version_id,
             snapshot_payload=payload,
-            input_files=[],
+            input_files_by_field={},
         ),
     )
 
@@ -294,7 +294,7 @@ async def test_run_sandbox_passes_settings_context_override(
             tool_id=tool_id,
             version_id=version_id,
             snapshot_payload=payload,
-            input_files=[],
+            input_files_by_field={},
         ),
     )
 
@@ -349,7 +349,7 @@ async def test_run_sandbox_rejects_oversize_snapshot_payload(
                 tool_id=tool_id,
                 version_id=version_id,
                 snapshot_payload=make_snapshot_payload(),
-                input_files=[],
+                input_files_by_field={},
             ),
         )
 

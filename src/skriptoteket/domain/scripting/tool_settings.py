@@ -7,10 +7,12 @@ from uuid import UUID
 from pydantic import JsonValue
 
 from skriptoteket.domain.errors import validation_error
+from skriptoteket.domain.scripting.file_refs import parse_file_ref
 from skriptoteket.domain.scripting.ui.contract_v2 import (
     UiActionField,
     UiActionFieldKind,
     UiEnumField,
+    UiFileRefField,
     UiMultiEnumField,
 )
 
@@ -233,6 +235,61 @@ def normalize_tool_settings_values(
                 seen.add(stripped)
 
             normalized[field.name] = selected
+            continue
+
+        if field.kind is UiActionFieldKind.FILE_REF:
+            if not isinstance(raw, list):
+                raise validation_error(
+                    "Invalid settings value (expected list of file refs)",
+                    details={"field": field.name, "kind": field.kind.value},
+                )
+            if not isinstance(field, UiFileRefField):
+                raise validation_error(
+                    "Invalid settings schema (file_ref field mismatch)",
+                    details={"field": field.name, "kind": field.kind.value},
+                )
+            refs: list[JsonValue] = []
+            seen_refs: set[str] = set()
+            for item in raw:
+                if not isinstance(item, str):
+                    raise validation_error(
+                        "Invalid settings value (expected list of file refs)",
+                        details={"field": field.name, "kind": field.kind.value},
+                    )
+                stripped = item.strip()
+                if not stripped:
+                    raise validation_error(
+                        "Invalid settings value (blank file ref)",
+                        details={"field": field.name, "kind": field.kind.value},
+                    )
+                try:
+                    source, _value = parse_file_ref(value=stripped)
+                except Exception as exc:
+                    raise validation_error(
+                        "Invalid settings value (invalid file ref)",
+                        details={"field": field.name, "kind": field.kind.value},
+                    ) from exc
+                if source != "vault":
+                    raise validation_error(
+                        "Invalid settings value (file ref must be vault:*)",
+                        details={"field": field.name, "kind": field.kind.value, "ref": stripped},
+                    )
+                if stripped in seen_refs:
+                    continue
+                refs.append(stripped)
+                seen_refs.add(stripped)
+            if len(refs) < field.min or len(refs) > field.max:
+                raise validation_error(
+                    "Invalid settings value (file ref count out of range)",
+                    details={
+                        "field": field.name,
+                        "kind": field.kind.value,
+                        "min": field.min,
+                        "max": field.max,
+                        "count": len(refs),
+                    },
+                )
+            normalized[field.name] = refs
             continue
 
         raise validation_error(

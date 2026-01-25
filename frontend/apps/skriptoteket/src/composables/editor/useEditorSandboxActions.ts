@@ -48,6 +48,7 @@ export function useEditorSandboxActions({
   async function onSubmitAction(payload: {
     actionId: string;
     input: Record<string, JsonValue>;
+    fileRefsByField?: Record<string, string[]>;
   }): Promise<void> {
     if (!canSubmitActions.value || !runResult.value) return;
 
@@ -76,6 +77,7 @@ export function useEditorSandboxActions({
             snapshot_id: snapshotId.value,
             action_id: payload.actionId,
             input: payload.input,
+            file_refs_by_field: payload.fileRefsByField ?? {},
             expected_state_rev: stateRev.value,
           }),
           headers: { "Content-Type": "application/json" },

@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Any
 from uuid import UUID, uuid4
 
 from pydantic import JsonValue
@@ -29,8 +28,10 @@ from skriptoteket.domain.scripting.tool_run_jobs import (
 from skriptoteket.domain.scripting.tool_run_jobs import (
     enqueue_job as enqueue_job_domain,
 )
+from skriptoteket.domain.scripting.tool_sessions import ToolSession
+from skriptoteket.domain.scripting.ui.contract_v2 import UiFormAction
 from skriptoteket.domain.scripting.ui.normalizer import DeterministicUiPayloadNormalizer
-from skriptoteket.domain.scripting.ui.policy import DEFAULT_UI_POLICY, UiPolicyProfileId
+from skriptoteket.domain.scripting.ui.policy import DEFAULT_UI_POLICY, UiPolicy, UiPolicyProfileId
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -131,21 +132,17 @@ class InMemoryUserRepository:
         return self._users.get(user_id)
 
 
-@dataclass(slots=True)
-class FakeToolSession:
-    state: dict[str, object]
-    state_rev: int
-
-
 class FakeToolSessionRepository:
     def __init__(
         self,
         *,
-        state: dict[str, object] | None = None,
+        state: dict[str, JsonValue] | None = None,
         state_rev: int = 0,
         fail_update: bool = False,
     ) -> None:
-        self._session = FakeToolSession(state={} if state is None else state, state_rev=state_rev)
+        self._session: ToolSession | None = None
+        self._state = {} if state is None else state
+        self._state_rev = state_rev
         self._fail_update = fail_update
         self.update_calls: list[dict[str, object]] = []
 
@@ -156,8 +153,18 @@ class FakeToolSessionRepository:
         tool_id: UUID,
         user_id: UUID,
         context: str,
-    ) -> Any:
-        del session_id, tool_id, user_id, context
+    ) -> ToolSession:
+        if self._session is None:
+            self._session = ToolSession(
+                id=session_id,
+                tool_id=tool_id,
+                user_id=user_id,
+                context=context,
+                state=self._state,
+                state_rev=self._state_rev,
+                created_at=DEFAULT_NOW,
+                updated_at=DEFAULT_NOW,
+            )
         return self._session
 
     async def update_state(
@@ -167,8 +174,8 @@ class FakeToolSessionRepository:
         user_id: UUID,
         context: str,
         expected_state_rev: int,
-        state: dict[str, object],
-    ) -> None:
+        state: dict[str, JsonValue],
+    ) -> ToolSession:
         self.update_calls.append(
             {
                 "tool_id": tool_id,
@@ -183,7 +190,19 @@ class FakeToolSessionRepository:
                 code=ErrorCode.INTERNAL_ERROR,
                 message="Failed to persist state",
             )
-        self._session = FakeToolSession(state=state, state_rev=expected_state_rev + 1)
+        session_id = self._session.id if self._session else uuid4()
+        created_at = self._session.created_at if self._session else DEFAULT_NOW
+        self._session = ToolSession(
+            id=session_id,
+            tool_id=tool_id,
+            user_id=user_id,
+            context=context,
+            state=state,
+            state_rev=expected_state_rev + 1,
+            created_at=created_at,
+            updated_at=DEFAULT_NOW,
+        )
+        return self._session
 
 
 class FakeRunInputStorage(RunInputStorageProtocol):
@@ -231,13 +250,19 @@ class FakeUiPolicyProvider(UiPolicyProviderProtocol):
         del curated_app_id, actor
         return UiPolicyProfileId.DEFAULT
 
-    def get_policy(self, *, profile_id: UiPolicyProfileId):
+    def get_policy(self, *, profile_id: UiPolicyProfileId) -> UiPolicy:
         del profile_id
         return DEFAULT_UI_POLICY
 
 
 class FakeBackendActionProvider(BackendActionProviderProtocol):
-    async def list_backend_actions(self, *, tool_id: UUID, actor: User, policy) -> list[Any]:
+    async def list_backend_actions(
+        self,
+        *,
+        tool_id: UUID,
+        actor: User,
+        policy: UiPolicy,
+    ) -> list[UiFormAction]:
         del tool_id, actor, policy
         return []
 
@@ -307,7 +332,7 @@ class FakeRunnerAdoption(ToolRunnerAdoptionProtocol):
 
 
 class _Request:
-    def __init__(self, registry: dict[Any, Any]) -> None:
+    def __init__(self, registry: dict[type[object], object]) -> None:
         self._registry = registry
 
     async def __aenter__(self) -> "_Request":
@@ -316,15 +341,15 @@ class _Request:
     async def __aexit__(self, exc_type, exc, tb) -> None:
         return None
 
-    async def get(self, key: Any) -> Any:
+    async def get(self, key: type[object]) -> object:
         return self._registry[key]
 
 
 class ContainerAdapter:
-    def __init__(self, registry: dict[Any, Any]) -> None:
+    def __init__(self, registry: dict[type[object], object]) -> None:
         self._registry = registry
 
-    def __call__(self, *, scope: Any) -> _Request:
+    def __call__(self, *, scope: object) -> _Request:
         del scope
         return _Request(self._registry)
 
@@ -415,7 +440,7 @@ async def make_harness(
     adopt_result: ToolExecutionResult | None,
     input_files: list[tuple[str, bytes]] | None = None,
     session_context: str = "default",
-    session_state: dict[str, object] | None = None,
+    session_state: dict[str, JsonValue] | None = None,
     session_state_rev: int = 0,
     fail_session_update: bool = False,
 ) -> ClaimProcessorHarness:
@@ -480,6 +505,7 @@ async def make_harness(
                 name=name,
                 content=content,
                 ref=build_session_file_ref(name=name),
+                field="documents",
             )
             for name, content in input_files
         ]

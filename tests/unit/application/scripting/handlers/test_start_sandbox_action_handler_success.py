@@ -186,7 +186,9 @@ async def test_start_sandbox_action_builds_correct_payload_structure(
         state={"new": "state"},
         state_rev=6,
     )
-    session_files.list_files.return_value = [SessionFileMetadata(name="persist.txt", bytes=4)]
+    session_files.list_files.return_value = [
+        SessionFileMetadata(name="persist.txt", bytes=4, field="documents")
+    ]
 
     captured_command: ExecuteToolVersionCommand | None = None
 
@@ -237,8 +239,8 @@ async def test_start_sandbox_action_builds_correct_payload_structure(
     )
 
     assert captured_command is not None
-    assert captured_command.input_files == []
-    assert captured_command.file_refs == ["session:persist.txt"]
+    assert captured_command.input_files_by_field == {}
+    assert captured_command.file_refs_by_field == {"documents": ["session:persist.txt"]}
     assert captured_command.action_payload == {
         "action_id": "confirm_action",
         "input": {"user_choice": "yes"},

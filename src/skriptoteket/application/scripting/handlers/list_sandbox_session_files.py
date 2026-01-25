@@ -22,9 +22,9 @@ from skriptoteket.protocols.session_files import SessionFileStorageProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 
-def _sandbox_context(snapshot_id: UUID) -> str:
-    """Build sandbox session context per ADR-0044."""
-    return f"sandbox:{snapshot_id}"
+def _sandbox_files_context(version_id: UUID) -> str:
+    """Stable sandbox file context scoped to the current draft head."""
+    return f"sandbox-files:{version_id}"
 
 
 def _ensure_snapshot_matches_version(*, snapshot, version) -> None:
@@ -117,7 +117,7 @@ class ListSandboxSessionFilesHandler(ListSandboxSessionFilesHandlerProtocol):
         files = await self._session_files.list_files(
             tool_id=version.tool_id,
             user_id=actor.id,
-            context=_sandbox_context(query.snapshot_id),
+            context=_sandbox_files_context(query.version_id),
         )
 
         return ListSandboxSessionFilesResult(
@@ -129,6 +129,7 @@ class ListSandboxSessionFilesHandler(ListSandboxSessionFilesHandlerProtocol):
                     name=item.name,
                     bytes=item.bytes,
                     ref=build_session_file_ref(name=item.name),
+                    field=item.field,
                 )
                 for item in files
             ],

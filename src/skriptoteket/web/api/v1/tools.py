@@ -3,12 +3,16 @@ from typing import Annotated
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
 from skriptoteket.application.scripting.commands import (
     RunActiveToolCommand,
     SessionFilesMode,
+)
+from skriptoteket.application.scripting.file_refs import (
+    ListToolFileRefsQuery,
+    ListToolFileRefsResult,
 )
 from skriptoteket.application.scripting.tool_settings import (
     GetToolSettingsQuery,
@@ -29,6 +33,7 @@ from skriptoteket.domain.scripting.ui.contract_v2 import UiActionField
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.scripting import (
+    ListToolFileRefsHandlerProtocol,
     RunActiveToolHandlerProtocol,
     ToolVersionRepositoryProtocol,
 )
@@ -58,6 +63,76 @@ def _parse_session_files_mode(value: str | None) -> SessionFilesMode:
             message="session_files_mode must be one of: none, reuse, clear",
             details={"session_files_mode": normalized},
         ) from exc
+
+
+def _parse_file_refs_by_field(raw: str | None) -> dict[str, list[str]]:
+    if raw is None or not raw.strip():
+        return {}
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message="file_refs_by_field must be valid JSON",
+        ) from exc
+    if not isinstance(parsed, dict):
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message="file_refs_by_field must be a JSON object",
+        )
+    normalized: dict[str, list[str]] = {}
+    for key, value in parsed.items():
+        if not isinstance(key, str) or not key.strip():
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="file_refs_by_field keys must be non-empty strings",
+            )
+        if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="file_refs_by_field values must be lists of strings",
+            )
+        normalized[key] = [item.strip() for item in value if item.strip()]
+    return normalized
+
+
+def _parse_file_fields(raw: str | None, *, expected_len: int) -> list[str]:
+    if expected_len == 0:
+        return []
+    if raw is None or not raw.strip():
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message="file_fields is required when uploading files",
+            details={"files": expected_len},
+        )
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message="file_fields must be valid JSON",
+        ) from exc
+    if not isinstance(parsed, list) or any(not isinstance(item, str) for item in parsed):
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message="file_fields must be a JSON array of strings",
+        )
+    if len(parsed) != expected_len:
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message="file_fields length must match files",
+            details={"file_fields": len(parsed), "files": expected_len},
+        )
+    normalized: list[str] = []
+    for item in parsed:
+        normalized_item = item.strip()
+        if not normalized_item:
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="file_fields entries must be non-empty strings",
+            )
+        normalized.append(normalized_item)
+    return normalized
 
 
 class UploadConstraints(BaseModel):
@@ -216,7 +291,8 @@ async def start_tool_run(
     _: None = Depends(require_csrf_token),
     files: Annotated[list[UploadFile] | None, File()] = None,
     inputs: Annotated[str | None, Form()] = None,
-    file_refs: Annotated[str | None, Form()] = None,
+    file_fields: Annotated[str | None, Form()] = None,
+    file_refs_by_field: Annotated[str | None, Form()] = None,
     session_files_mode: Annotated[str | None, Form()] = None,
     session_context: Annotated[str | None, Form()] = None,
 ) -> StartToolRunResponse:
@@ -228,6 +304,11 @@ async def start_tool_run(
             max_file_bytes=settings.UPLOAD_MAX_FILE_BYTES,
             max_total_bytes=settings.UPLOAD_MAX_TOTAL_BYTES,
         )
+    input_files_by_field: dict[str, list[tuple[str, bytes]]] = {}
+    if input_files:
+        parsed_fields = _parse_file_fields(file_fields, expected_len=len(input_files))
+        for entry, field in zip(input_files, parsed_fields, strict=True):
+            input_files_by_field.setdefault(field, []).append(entry)
 
     input_values: dict[str, JsonValue] = {}
     if inputs is not None and inputs.strip():
@@ -245,35 +326,35 @@ async def start_tool_run(
             )
         input_values = parsed
 
-    parsed_file_refs: list[str] = []
-    if file_refs is not None and file_refs.strip():
-        try:
-            parsed = json.loads(file_refs)
-        except json.JSONDecodeError as exc:
-            raise DomainError(
-                code=ErrorCode.VALIDATION_ERROR,
-                message="file_refs must be valid JSON",
-            ) from exc
-        if not isinstance(parsed, list) or any(not isinstance(item, str) for item in parsed):
-            raise DomainError(
-                code=ErrorCode.VALIDATION_ERROR,
-                message="file_refs must be a JSON array of strings",
-            )
-        parsed_file_refs = parsed
+    parsed_file_refs_by_field = _parse_file_refs_by_field(file_refs_by_field)
 
     context = session_context.strip() if session_context is not None else ""
     result = await handler.handle(
         actor=user,
         command=RunActiveToolCommand(
             tool_slug=slug,
-            input_files=input_files,
+            input_files_by_field=input_files_by_field,
             input_values=input_values,
-            file_refs=parsed_file_refs,
+            file_refs_by_field=parsed_file_refs_by_field,
             session_context=context or "default",
             session_files_mode=_parse_session_files_mode(session_files_mode),
         ),
     )
     return StartToolRunResponse(run_id=result.run.id)
+
+
+@router.get("/{tool_id}/file-refs", response_model=ListToolFileRefsResult)
+@inject
+async def list_tool_file_refs(
+    tool_id: UUID,
+    handler: FromDishka[ListToolFileRefsHandlerProtocol],
+    user: User = Depends(require_user_api),
+    context: str = Query("default"),
+) -> ListToolFileRefsResult:
+    return await handler.handle(
+        actor=user,
+        query=ListToolFileRefsQuery(tool_id=tool_id, context=context),
+    )
 
 
 @router.get("/{tool_id}/settings", response_model=ToolSettingsResponse)

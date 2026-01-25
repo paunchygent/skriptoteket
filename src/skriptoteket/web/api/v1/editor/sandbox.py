@@ -4,14 +4,20 @@ from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
-from pydantic import JsonValue, ValidationError
+from pydantic import BaseModel, Field, JsonValue, ValidationError
 
 from skriptoteket.application.scripting.commands import (
     RunSandboxCommand,
     SandboxSnapshotPayload,
     SessionFilesMode,
 )
+from skriptoteket.application.scripting.file_refs import (
+    ListSandboxFileRefsQuery,
+    ListSandboxFileRefsResult,
+)
 from skriptoteket.application.scripting.session_files import (
+    DeleteSandboxSessionFilesCommand,
+    DeleteSandboxSessionFilesResult,
     ListSandboxSessionFilesQuery,
     ListSandboxSessionFilesResult,
 )
@@ -19,6 +25,8 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.scripting import (
+    DeleteSandboxSessionFilesHandlerProtocol,
+    ListSandboxFileRefsHandlerProtocol,
     ListSandboxSessionFilesHandlerProtocol,
     RunSandboxHandlerProtocol,
     StartSandboxActionHandlerProtocol,
@@ -39,6 +47,10 @@ from .models.responses import (
 )
 
 router = APIRouter()
+
+
+class DeleteSandboxSessionFilesRequest(BaseModel):
+    names: list[str] = Field(default_factory=list)
 
 
 def _sandbox_context(context_id: UUID) -> str:
@@ -62,6 +74,76 @@ def _parse_session_files_mode(value: str | None) -> SessionFilesMode:
         ) from exc
 
 
+def _parse_file_refs_by_field(raw: str | None) -> dict[str, list[str]]:
+    if raw is None or not raw.strip():
+        return {}
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message="file_refs_by_field must be valid JSON",
+        ) from exc
+    if not isinstance(parsed, dict):
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message="file_refs_by_field must be a JSON object",
+        )
+    normalized: dict[str, list[str]] = {}
+    for key, value in parsed.items():
+        if not isinstance(key, str) or not key.strip():
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="file_refs_by_field keys must be non-empty strings",
+            )
+        if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="file_refs_by_field values must be lists of strings",
+            )
+        normalized[key] = [item.strip() for item in value if item.strip()]
+    return normalized
+
+
+def _parse_file_fields(raw: str | None, *, expected_len: int) -> list[str]:
+    if expected_len == 0:
+        return []
+    if raw is None or not raw.strip():
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message="file_fields is required when uploading files",
+            details={"files": expected_len},
+        )
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message="file_fields must be valid JSON",
+        ) from exc
+    if not isinstance(parsed, list) or any(not isinstance(item, str) for item in parsed):
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message="file_fields must be a JSON array of strings",
+        )
+    if len(parsed) != expected_len:
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message="file_fields length must match files",
+            details={"file_fields": len(parsed), "files": expected_len},
+        )
+    normalized: list[str] = []
+    for item in parsed:
+        normalized_item = item.strip()
+        if not normalized_item:
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="file_fields entries must be non-empty strings",
+            )
+        normalized.append(normalized_item)
+    return normalized
+
+
 @router.post("/tool-versions/{version_id}/run-sandbox", response_model=SandboxRunResponse)
 @inject
 async def run_sandbox(
@@ -73,7 +155,8 @@ async def run_sandbox(
     _: None = Depends(require_csrf_token),
     files: Annotated[list[UploadFile] | None, File()] = None,
     inputs: Annotated[str | None, Form()] = None,
-    file_refs: Annotated[str | None, Form()] = None,
+    file_fields: Annotated[str | None, Form()] = None,
+    file_refs_by_field: Annotated[str | None, Form()] = None,
     session_files_mode: Annotated[str | None, Form()] = None,
     session_context: Annotated[str | None, Form()] = None,
     snapshot: str = Form(...),
@@ -90,6 +173,11 @@ async def run_sandbox(
             max_file_bytes=settings.UPLOAD_MAX_FILE_BYTES,
             max_total_bytes=settings.UPLOAD_MAX_TOTAL_BYTES,
         )
+    input_files_by_field: dict[str, list[tuple[str, bytes]]] = {}
+    if input_files:
+        parsed_fields = _parse_file_fields(file_fields, expected_len=len(input_files))
+        for entry, field in zip(input_files, parsed_fields, strict=True):
+            input_files_by_field.setdefault(field, []).append(entry)
 
     input_values: dict[str, JsonValue] = {}
     if inputs is not None and inputs.strip():
@@ -107,21 +195,7 @@ async def run_sandbox(
             )
         input_values = parsed
 
-    parsed_file_refs: list[str] = []
-    if file_refs is not None and file_refs.strip():
-        try:
-            parsed = json.loads(file_refs)
-        except json.JSONDecodeError as exc:
-            raise DomainError(
-                code=ErrorCode.VALIDATION_ERROR,
-                message="file_refs must be valid JSON",
-            ) from exc
-        if not isinstance(parsed, list) or any(not isinstance(item, str) for item in parsed):
-            raise DomainError(
-                code=ErrorCode.VALIDATION_ERROR,
-                message="file_refs must be a JSON array of strings",
-            )
-        parsed_file_refs = parsed
+    parsed_file_refs_by_field = _parse_file_refs_by_field(file_refs_by_field)
 
     try:
         snapshot_payload = SandboxSnapshotPayload.model_validate_json(snapshot)
@@ -138,9 +212,9 @@ async def run_sandbox(
             tool_id=version.tool_id,
             version_id=version_id,
             snapshot_payload=snapshot_payload,
-            input_files=input_files,
+            input_files_by_field=input_files_by_field,
             input_values=input_values,
-            file_refs=parsed_file_refs,
+            file_refs_by_field=parsed_file_refs_by_field,
             session_context=session_context.strip() if session_context else None,
             session_files_mode=_parse_session_files_mode(session_files_mode),
         ),
@@ -191,6 +265,26 @@ async def get_sandbox_session(
 
 
 @router.get(
+    "/tool-versions/{version_id}/file-refs",
+    response_model=ListSandboxFileRefsResult,
+)
+@inject
+async def list_sandbox_file_refs(
+    version_id: UUID,
+    handler: FromDishka[ListSandboxFileRefsHandlerProtocol],
+    user: User = Depends(require_contributor_api),
+    snapshot_id: UUID = Query(...),
+) -> ListSandboxFileRefsResult:
+    return await handler.handle(
+        actor=user,
+        query=ListSandboxFileRefsQuery(
+            version_id=version_id,
+            snapshot_id=snapshot_id,
+        ),
+    )
+
+
+@router.get(
     "/tool-versions/{version_id}/session-files",
     response_model=ListSandboxSessionFilesResult,
 )
@@ -206,6 +300,29 @@ async def list_sandbox_session_files(
         query=ListSandboxSessionFilesQuery(
             version_id=version_id,
             snapshot_id=snapshot_id,
+        ),
+    )
+
+
+@router.post(
+    "/tool-versions/{version_id}/session-files/delete",
+    response_model=DeleteSandboxSessionFilesResult,
+)
+@inject
+async def delete_sandbox_session_files(
+    version_id: UUID,
+    payload: DeleteSandboxSessionFilesRequest,
+    handler: FromDishka[DeleteSandboxSessionFilesHandlerProtocol],
+    user: User = Depends(require_contributor_api),
+    _: None = Depends(require_csrf_token),
+    snapshot_id: UUID = Query(...),
+) -> DeleteSandboxSessionFilesResult:
+    return await handler.handle(
+        actor=user,
+        command=DeleteSandboxSessionFilesCommand(
+            version_id=version_id,
+            snapshot_id=snapshot_id,
+            names=payload.names,
         ),
     )
 
@@ -240,7 +357,7 @@ async def start_sandbox_action(
             snapshot_id=payload.snapshot_id,
             action_id=payload.action_id,
             input=payload.input,
-            file_refs=payload.file_refs,
+            file_refs_by_field=payload.file_refs_by_field,
             expected_state_rev=payload.expected_state_rev,
         ),
     )

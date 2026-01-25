@@ -14,6 +14,8 @@ function defaultValueForKind(kind: SettingsFieldKind): FieldValue {
       return false;
     case "multi_enum":
       return [];
+    case "file_ref":
+      return [];
     default:
       return "";
   }
@@ -25,6 +27,13 @@ function toFormValue(kind: SettingsFieldKind, raw: JsonValue | undefined): Field
   }
 
   if (kind === "multi_enum") {
+    if (Array.isArray(raw) && raw.every((item) => typeof item === "string")) {
+      return raw;
+    }
+    return [];
+  }
+
+  if (kind === "file_ref") {
     if (Array.isArray(raw) && raw.every((item) => typeof item === "string")) {
       return raw;
     }
@@ -45,6 +54,11 @@ function toApiValue(kind: SettingsFieldKind, raw: FieldValue): JsonValue | undef
 
   if (kind === "multi_enum") {
     return Array.isArray(raw) ? raw : [];
+  }
+
+  if (kind === "file_ref") {
+    if (!Array.isArray(raw)) return [];
+    return raw.filter((item): item is string => typeof item === "string");
   }
 
   const value = typeof raw === "string" ? raw.trim() : "";

@@ -8,7 +8,7 @@ from skriptoteket.application.scripting.commands import SchemaValidationIssue
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.models import RunStatus, VersionState
 from skriptoteket.domain.scripting.tool_inputs import ToolInputField
-from skriptoteket.domain.scripting.ui.contract_v2 import UiActionField
+from skriptoteket.domain.scripting.ui.contract_v2 import UiActionField, UiPayloadV2
 from skriptoteket.protocols.llm import VirtualFileId
 
 from .common import EditorEditOpsOp, EditorVirtualFiles
@@ -195,7 +195,7 @@ class EditorRunDetails(BaseModel):
     stderr_max_bytes: int | None = None
     stdout_truncated: bool | None = None
     stderr_truncated: bool | None = None
-    ui_payload: dict | None
+    ui_payload: UiPayloadV2 | None
     artifacts: list[ArtifactEntry]
 
 

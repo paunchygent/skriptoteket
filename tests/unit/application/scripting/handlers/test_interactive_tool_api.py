@@ -180,7 +180,9 @@ async def test_start_action_executes_with_session_state_and_updates_state_rev(
     )
 
     session_files = AsyncMock(spec=SessionFileStorageProtocol)
-    session_files.list_files.return_value = [SessionFileMetadata(name="original.txt", bytes=5)]
+    session_files.list_files.return_value = [
+        SessionFileMetadata(name="original.txt", bytes=5, field="documents")
+    ]
 
     async def _execute(
         *,
@@ -189,8 +191,8 @@ async def test_start_action_executes_with_session_state_and_updates_state_rev(
     ) -> ExecuteToolVersionResult:
         del actor
         assert uow.active is False
-        assert command.input_files == []
-        assert command.file_refs == ["session:original.txt"]
+        assert command.input_files_by_field == {}
+        assert command.file_refs_by_field == {"documents": ["session:original.txt"]}
         assert command.action_payload == {
             "action_id": "confirm_flags",
             "input": {"notify_guardians": True},

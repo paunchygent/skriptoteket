@@ -4,11 +4,15 @@ from __future__ import annotations
 
 from dishka import Provider, Scope, provide
 
-from skriptoteket.application.scripting.handlers.acquire_draft_lock import (
-    AcquireDraftLockHandler,
-)
+from skriptoteket.application.scripting.handlers.acquire_draft_lock import AcquireDraftLockHandler
 from skriptoteket.application.scripting.handlers.create_draft_version import (
     CreateDraftVersionHandler,
+)
+from skriptoteket.application.scripting.handlers.delete_sandbox_session_files import (
+    DeleteSandboxSessionFilesHandler,
+)
+from skriptoteket.application.scripting.handlers.list_sandbox_file_refs import (
+    ListSandboxFileRefsHandler,
 )
 from skriptoteket.application.scripting.handlers.list_sandbox_session_files import (
     ListSandboxSessionFilesHandler,
@@ -46,11 +50,14 @@ from skriptoteket.protocols.draft_locks import (
     DraftLockRepositoryProtocol,
     ReleaseDraftLockHandlerProtocol,
 )
+from skriptoteket.protocols.file_refs import FileRefResolverProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.sandbox_snapshots import SandboxSnapshotRepositoryProtocol
 from skriptoteket.protocols.scripting import (
     CreateDraftVersionHandlerProtocol,
+    DeleteSandboxSessionFilesHandlerProtocol,
     ExecuteToolVersionHandlerProtocol,
+    ListSandboxFileRefsHandlerProtocol,
     ListSandboxSessionFilesHandlerProtocol,
     PublishVersionHandlerProtocol,
     RequestChangesHandlerProtocol,
@@ -269,6 +276,44 @@ class EditorProvider(Provider):
             maintainers=maintainers,
             snapshots=snapshots,
             session_files=session_files,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def delete_sandbox_session_files_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
+        snapshots: SandboxSnapshotRepositoryProtocol,
+        session_files: SessionFileStorageProtocol,
+        clock: ClockProtocol,
+    ) -> DeleteSandboxSessionFilesHandlerProtocol:
+        return DeleteSandboxSessionFilesHandler(
+            uow=uow,
+            versions=versions,
+            maintainers=maintainers,
+            snapshots=snapshots,
+            session_files=session_files,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def list_sandbox_file_refs_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        versions: ToolVersionRepositoryProtocol,
+        maintainers: ToolMaintainerRepositoryProtocol,
+        snapshots: SandboxSnapshotRepositoryProtocol,
+        file_refs: FileRefResolverProtocol,
+        clock: ClockProtocol,
+    ) -> ListSandboxFileRefsHandlerProtocol:
+        return ListSandboxFileRefsHandler(
+            uow=uow,
+            versions=versions,
+            maintainers=maintainers,
+            snapshots=snapshots,
+            file_refs=file_refs,
             clock=clock,
         )
 

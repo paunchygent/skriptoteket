@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, JsonValue, field_validator
+from pydantic import BaseModel, ConfigDict, Field, JsonValue, field_validator, model_validator
 
 from skriptoteket.domain.scripting.artifacts import RunnerArtifact
 
@@ -170,6 +170,12 @@ class UiActionFieldKind(StrEnum):
     BOOLEAN = "boolean"
     ENUM = "enum"
     MULTI_ENUM = "multi_enum"
+    FILE_REF = "file_ref"
+
+
+class UiFileRefSource(StrEnum):
+    SESSION = "session"
+    VAULT = "vault"
 
 
 class UiEnumOption(BaseModel):
@@ -262,6 +268,50 @@ class UiMultiEnumField(UiActionFieldBase):
         return value
 
 
+class UiFileRefField(UiActionFieldBase):
+    kind: Literal[UiActionFieldKind.FILE_REF] = UiActionFieldKind.FILE_REF
+
+    min: int
+    max: int
+    sources: list[UiFileRefSource] | None = None
+
+    @field_validator("min")
+    @classmethod
+    def _validate_min(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("min must be >= 0")
+        return value
+
+    @field_validator("max")
+    @classmethod
+    def _validate_max(cls, value: int) -> int:
+        if value < 1:
+            raise ValueError("max must be >= 1")
+        return value
+
+    @field_validator("sources")
+    @classmethod
+    def _normalize_sources(
+        cls, value: list[UiFileRefSource] | None
+    ) -> list[UiFileRefSource] | None:
+        if value is None:
+            return None
+        normalized: list[UiFileRefSource] = []
+        seen: set[UiFileRefSource] = set()
+        for item in value:
+            if item in seen:
+                continue
+            normalized.append(item)
+            seen.add(item)
+        return normalized or None
+
+    @model_validator(mode="after")
+    def _validate_range(self) -> UiFileRefField:
+        if self.max < self.min:
+            raise ValueError("max must be >= min")
+        return self
+
+
 UiActionField = Annotated[
     UiStringField
     | UiTextField
@@ -269,7 +319,8 @@ UiActionField = Annotated[
     | UiNumberField
     | UiBooleanField
     | UiEnumField
-    | UiMultiEnumField,
+    | UiMultiEnumField
+    | UiFileRefField,
     Field(discriminator="kind"),
 ]
 

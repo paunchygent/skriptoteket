@@ -5,6 +5,7 @@ import { useRoute } from "vue-router";
 import type { components } from "../api/openapi";
 import { UiOutputRenderer } from "../components/ui-outputs";
 import ToolInputForm from "../components/tool-run/ToolInputForm.vue";
+import ToolFileFieldPicker from "../components/tool-run/ToolFileFieldPicker.vue";
 import ToolRunActions from "../components/tool-run/ToolRunActions.vue";
 import ToolRunArtifacts from "../components/tool-run/ToolRunArtifacts.vue";
 import ToolRunControlBar from "../components/tool-run/ToolRunControlBar.vue";
@@ -29,15 +30,14 @@ const slug = computed(() => {
 
 const {
   tool,
-  selectedFiles,
   inputValues,
   inputFields,
   inputFieldErrors,
-  fileField,
-  fileAccept,
-  fileLabel,
-  fileMultiple,
-  fileError,
+  fileFields,
+  fileSelections,
+  fileAcceptByField,
+  fileErrors,
+  availableFileRefs,
   sessionFiles,
   sessionFilesMode,
   sessionFilesHelperText,
@@ -58,7 +58,10 @@ const {
   submitRun,
   submitAction,
   clearRun,
-  selectFiles,
+  setFileMode,
+  setFileUploads,
+  setFileRefs,
+  deleteFileRefs,
 } = useToolRun({ slug });
 
 const toolId = computed(() => tool.value?.id ?? "");
@@ -100,6 +103,7 @@ const allSteps = computed<StepResult[]>(() => {
 const currentStepNumber = computed(() => completedSteps.value.length + 1);
 const showStepIndicator = computed(() => completedSteps.value.length > 0 || hasNextActions.value);
 const idBase = computed(() => `tool-${slug.value}-run-${displayedRun.value?.run_id ?? "none"}`);
+const showSessionFilesPanel = computed(() => fileFields.value.length === 0);
 
 const outputs = computed<UiOutput[]>(() => displayedRun.value?.ui_payload?.outputs ?? []);
 const nextActions = computed<UiFormAction[]>(() => displayedRun.value?.ui_payload?.next_actions ?? []);
@@ -129,10 +133,6 @@ function statusLabel(status: RunStatus): string {
   return labels[status] ?? status;
 }
 
-function onFilesSelected(files: File[]): void {
-  selectFiles(files);
-}
-
 function onRun(): void {
   selectedStepRun.value = null;
   void submitRun();
@@ -150,9 +150,26 @@ function onSelectStep(step: StepResult): void {
 function onSubmitAction(payload: {
   actionId: string;
   input: Record<string, components["schemas"]["JsonValue"]>;
+  fileRefsByField?: Record<string, string[]>;
 }): void {
   selectedStepRun.value = null;
   void submitAction(payload);
+}
+
+function onFileModeChange(payload: { field: string; mode: "upload" | "refs" }): void {
+  setFileMode(payload.field, payload.mode);
+}
+
+function onFileUploadsChange(payload: { field: string; files: File[] }): void {
+  setFileUploads(payload.field, payload.files);
+}
+
+function onFileRefsChange(payload: { field: string; refs: string[] }): void {
+  setFileRefs(payload.field, payload.refs);
+}
+
+async function onDeleteFileRefs(payload: { field: string; refs: string[] }): Promise<void> {
+  await deleteFileRefs(payload);
 }
 
 watch(currentRun, () => {
@@ -235,25 +252,35 @@ watch(hasSettingsSchema, (hasSchema) => {
           @update:model-value="onInputValuesUpdate"
         />
 
+        <ToolFileFieldPicker
+          v-if="fileFields.length > 0"
+          class="mb-4"
+          :fields="fileFields"
+          :selections="fileSelections"
+          :accept-by-field="fileAcceptByField"
+          :errors="fileErrors"
+          :available-refs="availableFileRefs"
+          @update:mode="onFileModeChange"
+          @update:uploads="onFileUploadsChange"
+          @update:refs="onFileRefsChange"
+          @delete:refs="onDeleteFileRefs"
+        />
+
         <ToolRunControlBar
-          :selected-files="selectedFiles"
           :is-running="isSubmitting || isRunning"
           :has-results="hasResults"
           :has-settings="hasSettingsSchema"
           :is-settings-open="isSettingsOpen"
-          :show-file-picker="fileField !== null"
-          :file-label="fileLabel"
-          :file-accept="fileAccept"
-          :file-multiple="fileMultiple"
-          :file-error="fileError"
           :can-run="canSubmitRun"
-          @files-selected="onFilesSelected"
           @run="onRun"
           @clear="onClear"
           @toggle-settings="onToggleSettings"
         />
 
-        <div class="mt-4">
+        <div
+          v-if="showSessionFilesPanel"
+          class="mt-4"
+        >
           <SessionFilesPanel
             v-model:mode="sessionFilesMode"
             :files="sessionFiles"
@@ -275,6 +302,7 @@ watch(hasSettingsSchema, (hasSchema) => {
           :model-value="settingsValues"
           :is-loading="isLoadingSettings"
           :is-saving="isSavingSettings"
+          :available-file-refs="availableFileRefs"
           @update:model-value="onSettingsValuesUpdate"
           @save="saveSettings"
         />
@@ -368,6 +396,7 @@ watch(hasSettingsSchema, (hasSchema) => {
             v-model:error-message="actionErrorMessage"
             :actions="nextActions"
             :id-base="idBase"
+            :available-file-refs="availableFileRefs"
             :disabled="isSubmitting || !canSubmitActions"
             @submit="onSubmitAction"
           />

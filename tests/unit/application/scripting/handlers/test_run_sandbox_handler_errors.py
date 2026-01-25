@@ -76,7 +76,7 @@ async def test_run_sandbox_when_version_not_found_raises_not_found(
                 tool_id=tool_id,
                 version_id=version_id,
                 snapshot_payload=make_snapshot_payload(),
-                input_files=[("input.txt", b"test")],
+                input_files_by_field={"documents": [("input.txt", b"test")]},
             ),
         )
 
@@ -136,7 +136,7 @@ async def test_run_sandbox_when_version_tool_id_mismatch_raises_conflict(
                 tool_id=tool_id,
                 version_id=version_id,
                 snapshot_payload=make_snapshot_payload(),
-                input_files=[("input.txt", b"test")],
+                input_files_by_field={"documents": [("input.txt", b"test")]},
             ),
         )
 
@@ -187,7 +187,7 @@ async def test_run_sandbox_rejects_blank_entrypoint(
                 tool_id=tool_id,
                 version_id=version_id,
                 snapshot_payload=payload,
-                input_files=[("input.txt", b"test")],
+                input_files_by_field={"documents": [("input.txt", b"test")]},
             ),
         )
 

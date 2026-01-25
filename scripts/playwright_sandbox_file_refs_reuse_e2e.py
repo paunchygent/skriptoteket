@@ -3,7 +3,7 @@
 Flow:
 1) Open editor for demo-inputs-file via draft API.
 2) Sandbox run with uploaded file and verify /work/input path in outputs.
-3) Enable "Återanvänd sparade filer" and rerun without upload, verify /work/input again.
+3) Select saved file refs and rerun without upload, verify /work/input again.
 """
 
 from __future__ import annotations
@@ -172,12 +172,6 @@ def _open_test_mode(page: object) -> object:
     return sandbox_root
 
 
-def _get_reuse_checkbox(page: object) -> object:
-    checkbox = page.get_by_label(re.compile(r"Återanvänd sparade filer", re.IGNORECASE)).first
-    expect(checkbox).to_be_visible(timeout=30_000)
-    return checkbox
-
-
 def _assert_manifest_path(page: object, *, filename: str) -> None:
     title = page.get_by_text("Indatafiler").first
     expect(title).to_be_visible(timeout=60_000)
@@ -229,15 +223,13 @@ def main() -> None:
 
         sandbox = _open_test_mode(page)
         page.screenshot(path=str(artifacts_dir / "test-mode.png"), full_page=True)
-        reuse_checkbox = _get_reuse_checkbox(page)
-
         file_input = sandbox.locator("input[type='file']").first
         expect(file_input).to_be_attached()
         file_input.set_input_files(str(sample_file))
 
         run_endpoint = re.compile(r"/api/v1/editor/tool-versions/.+/run-sandbox")
-        session_files_endpoint = re.compile(r"/api/v1/editor/tool-versions/.+/session-files")
-        with page.expect_response(session_files_endpoint) as session_files_response:
+        file_refs_endpoint = re.compile(r"/api/v1/editor/tool-versions/.+/file-refs")
+        with page.expect_response(file_refs_endpoint) as file_refs_response:
             with page.expect_response(run_endpoint) as run_response:
                 sandbox.get_by_role(
                     "button", name=re.compile(r"^Testkör kod", re.IGNORECASE)
@@ -253,23 +245,26 @@ def main() -> None:
         snapshot_id = run_payload.get("snapshot_id")
         if not snapshot_id:
             raise RuntimeError("Missing snapshot_id on sandbox run result.")
-        session_response = session_files_response.value
-        if session_response.status >= 400:
+        file_refs_response = file_refs_response.value
+        if file_refs_response.status >= 400:
             raise RuntimeError(
-                f"Session files fetch failed: {session_response.status} {session_response.url}"
+                f"File refs fetch failed: {file_refs_response.status} {file_refs_response.url}"
             )
-        session_payload = session_response.json()
-        session_files = session_payload.get("files", [])
-        if not any(item.get("name") == sample_file.name for item in session_files):
-            raise RuntimeError(f"Session files response missing expected file: {sample_file.name}")
+        file_refs_payload = file_refs_response.json()
+        file_refs = file_refs_payload.get("files", [])
+        if not any(item.get("name") == sample_file.name for item in file_refs):
+            raise RuntimeError(f"File refs response missing expected file: {sample_file.name}")
         page.screenshot(path=str(artifacts_dir / "run-with-upload.png"), full_page=True)
 
         file_input.set_input_files([])
         expect(sandbox.get_by_text(re.compile(r"Inga filer valda", re.IGNORECASE))).to_be_visible()
 
-        expect(reuse_checkbox).to_be_enabled(timeout=30_000)
-        reuse_checkbox.check()
-        expect(reuse_checkbox).to_be_checked()
+        sandbox.get_by_role(
+            "button", name=re.compile(r"^Välj sparade$", re.IGNORECASE)
+        ).first.click()
+        ref_label = sandbox.get_by_text(sample_file.name).locator("xpath=ancestor::label[1]")
+        expect(ref_label).to_be_visible(timeout=30_000)
+        ref_label.locator("input[type='checkbox']").check()
 
         sandbox.get_by_role("button", name=re.compile(r"^Testkör kod", re.IGNORECASE)).first.click()
         expect(page.get_by_text(re.compile(r"Lyckades", re.IGNORECASE))).to_be_visible(

@@ -117,6 +117,7 @@ DEFAULT_UI_POLICY = UiPolicy(
             UiActionFieldKind.BOOLEAN,
             UiActionFieldKind.ENUM,
             UiActionFieldKind.MULTI_ENUM,
+            UiActionFieldKind.FILE_REF,
         }
     ),
     budgets=UiPolicyBudgets(

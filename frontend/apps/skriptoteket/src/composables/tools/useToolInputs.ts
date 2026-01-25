@@ -14,9 +14,25 @@ type ToolInputFileField = Extract<ToolInputField, { kind: "file" }>;
 export type ToolInputFormValue = string | boolean;
 export type ToolInputFormValues = Record<string, ToolInputFormValue>;
 
+export type FileSelectionMode = "upload" | "refs";
+export type FileFieldSelection = {
+  mode: FileSelectionMode;
+  uploads: File[];
+  refs: string[];
+};
+
+export type FileFieldSelections = Record<string, FileFieldSelection>;
+
+export type ToolFileFieldSpec = {
+  name: string;
+  label: string;
+  min: number;
+  max: number;
+  accept?: string[] | null;
+};
+
 type UseToolInputsOptions = {
   schema: Readonly<Ref<ToolMetadataResponse["input_schema"] | null | undefined>>;
-  selectedFiles: Ref<File[]>;
 };
 
 function defaultValueForKind(kind: ToolInputFieldKind): ToolInputFormValue {
@@ -32,63 +48,46 @@ function isNonFileField(field: ToolInputField): boolean {
   return field.kind !== "file";
 }
 
-export function useToolInputs({ schema, selectedFiles }: UseToolInputsOptions) {
-  const values = ref<ToolInputFormValues>({});
+function isFileField(field: ToolInputField): field is ToolInputFileField {
+  return field.kind === "file";
+}
 
-  const resolvedSchema = computed<ToolInputSchema>(() => (schema.value ?? []) as ToolInputSchema);
+function toFileSpec(field: ToolInputFileField): ToolFileFieldSpec {
+  return {
+    name: field.name,
+    label: field.label,
+    min: field.min,
+    max: field.max,
+    accept: field.accept ?? null,
+  };
+}
+
+function defaultFileSelection(): FileFieldSelection {
+  return { mode: "upload", uploads: [], refs: [] };
+}
+
+export function useToolInputs({ schema }: UseToolInputsOptions) {
+  const values = ref<ToolInputFormValues>({});
+  const fileSelections = ref<FileFieldSelections>({});
+
+  const resolvedSchema = computed((): ToolInputSchema => schema.value ?? []);
 
   const nonFileFields = computed<ToolInputField[]>(() => {
     return resolvedSchema.value.filter(isNonFileField);
   });
 
-  const fileField = computed<ToolInputFileField | null>(() => {
-    const field = resolvedSchema.value.find((candidate) => candidate.kind === "file") ?? null;
-    return field as ToolInputFileField | null;
-  });
-
-  const fileAccept = computed(() => {
-    const accept = fileField.value?.accept ?? null;
-    if (!accept || accept.length === 0) return undefined;
-    return accept.join(",");
-  });
-
-  const fileLabel = computed(() => fileField.value?.label ?? "Filer");
-  const fileMultiple = computed(() => {
-    return (fileField.value?.max ?? 1) > 1;
-  });
-
-  const showFilePicker = computed(() => fileField.value !== null);
-
-  const fileError = computed<string | null>(() => {
-    if (fileField.value === null) {
-      if (selectedFiles.value.length > 0) {
-        return "Det här verktyget tar inte emot filer.";
-      }
-      return null;
-    }
-
-    const min = fileField.value.min;
-    const max = fileField.value.max;
-    const count = selectedFiles.value.length;
-
-    if (count < min) {
-      return min === 1 ? "Välj minst en fil." : `Välj minst ${min} filer.`;
-    }
-    if (count > max) {
-      return max === 1 ? "Du kan välja max 1 fil." : `Du kan välja max ${max} filer.`;
-    }
-    return null;
+  const fileFields = computed<ToolFileFieldSpec[]>(() => {
+    return resolvedSchema.value.filter(isFileField).map(toFileSpec);
   });
 
   const fieldErrors = computed<Record<string, string>>(() => {
     const errors: Record<string, string> = {};
-
     for (const field of nonFileFields.value) {
-      const raw = values.value[field.name] ?? defaultValueForKind(field.kind);
+      const raw = values.value[field.name];
+      const value = typeof raw === "string" ? raw.trim() : "";
+      if (!value) continue;
 
       if (field.kind === "integer") {
-        const value = typeof raw === "string" ? raw.trim() : "";
-        if (!value) continue;
         const parsed = Number.parseInt(value, 10);
         if (Number.isNaN(parsed)) {
           errors[field.name] = "Ogiltigt heltal.";
@@ -97,39 +96,109 @@ export function useToolInputs({ schema, selectedFiles }: UseToolInputsOptions) {
       }
 
       if (field.kind === "number") {
-        const value = typeof raw === "string" ? raw.trim() : "";
-        if (!value) continue;
         const parsed = Number.parseFloat(value);
         if (Number.isNaN(parsed)) {
           errors[field.name] = "Ogiltigt tal.";
         }
-        continue;
-      }
-
-      if (field.kind === "enum") {
-        const value = typeof raw === "string" ? raw.trim() : "";
-        if (!value) continue;
-        const options = new Set((field.options ?? []).map((opt) => opt.value));
-        if (!options.has(value)) {
-          errors[field.name] = "Ogiltigt val.";
-        }
-        continue;
       }
     }
-
     return errors;
   });
 
-  const isValid = computed(() => {
-    return fileError.value === null && Object.keys(fieldErrors.value).length === 0;
+  const fileAcceptByField = computed<Record<string, string | undefined>>(() => {
+    const acceptByField: Record<string, string | undefined> = {};
+    for (const field of fileFields.value) {
+      if (field.accept && field.accept.length > 0) {
+        acceptByField[field.name] = field.accept.join(",");
+      } else {
+        acceptByField[field.name] = undefined;
+      }
+    }
+    return acceptByField;
   });
 
-  function resetValues(): void {
+  const fileErrors = computed<Record<string, string | null>>(() => {
+    const errors: Record<string, string | null> = {};
+    for (const field of fileFields.value) {
+      const selection = fileSelections.value[field.name] ?? defaultFileSelection();
+      const count = selection.mode === "upload" ? selection.uploads.length : selection.refs.length;
+      if (count < field.min) {
+        errors[field.name] = field.min === 1 ? "Välj minst en fil." : `Välj minst ${field.min} filer.`;
+        continue;
+      }
+      if (count > field.max) {
+        errors[field.name] = field.max === 1 ? "Du kan välja max 1 fil." : `Du kan välja max ${field.max} filer.`;
+        continue;
+      }
+      errors[field.name] = null;
+    }
+    return errors;
+  });
+
+  const hasFileSelections = computed(() => {
+    return Object.values(fileSelections.value).some(
+      (selection) => selection.uploads.length > 0 || selection.refs.length > 0,
+    );
+  });
+
+  function ensureDefaults(): void {
     const next: ToolInputFormValues = {};
     for (const field of nonFileFields.value) {
       next[field.name] = defaultValueForKind(field.kind);
     }
     values.value = next;
+  }
+
+  function ensureFileSelections(): void {
+    const next: FileFieldSelections = {};
+    for (const field of fileFields.value) {
+      const existing = fileSelections.value[field.name];
+      next[field.name] = existing ?? defaultFileSelection();
+    }
+    fileSelections.value = next;
+  }
+
+  function resetValues(): void {
+    ensureDefaults();
+  }
+
+  function resetFileSelections(): void {
+    fileSelections.value = {};
+    ensureFileSelections();
+  }
+
+  function setFileMode(fieldName: string, mode: FileSelectionMode): void {
+    const current = fileSelections.value[fieldName] ?? defaultFileSelection();
+    fileSelections.value = {
+      ...fileSelections.value,
+      [fieldName]: {
+        mode,
+        uploads: mode === "upload" ? current.uploads : [],
+        refs: mode === "refs" ? current.refs : [],
+      },
+    };
+  }
+
+  function setFileUploads(fieldName: string, uploads: File[]): void {
+    fileSelections.value = {
+      ...fileSelections.value,
+      [fieldName]: {
+        mode: "upload",
+        uploads,
+        refs: [],
+      },
+    };
+  }
+
+  function setFileRefs(fieldName: string, refs: string[]): void {
+    fileSelections.value = {
+      ...fileSelections.value,
+      [fieldName]: {
+        mode: "refs",
+        uploads: [],
+        refs,
+      },
+    };
   }
 
   function buildApiValues(): Record<string, JsonValue> {
@@ -173,7 +242,8 @@ export function useToolInputs({ schema, selectedFiles }: UseToolInputsOptions) {
   watch(
     () => schema.value,
     () => {
-      resetValues();
+      ensureDefaults();
+      ensureFileSelections();
     },
     { immediate: true },
   );
@@ -181,15 +251,17 @@ export function useToolInputs({ schema, selectedFiles }: UseToolInputsOptions) {
   return {
     values,
     nonFileFields,
-    fileField,
-    fileAccept,
-    fileLabel,
-    fileMultiple,
-    showFilePicker,
-    fileError,
     fieldErrors,
-    isValid,
+    fileFields,
+    fileSelections,
+    fileAcceptByField,
+    fileErrors,
+    hasFileSelections,
     resetValues,
+    resetFileSelections,
+    setFileMode,
+    setFileUploads,
+    setFileRefs,
     buildApiValues,
   };
 }

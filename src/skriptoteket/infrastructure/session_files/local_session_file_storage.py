@@ -9,15 +9,12 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 from skriptoteket.domain.errors import validation_error
-from skriptoteket.domain.scripting.input_files import (
-    normalize_input_files,
-    sanitize_input_filename,
-)
+from skriptoteket.domain.scripting.input_files import sanitize_input_filename
 from skriptoteket.domain.scripting.tool_sessions import normalize_tool_session_context
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.session_files import (
     CleanupExpiredSessionFilesResult,
-    InputFile,
+    SessionFileContent,
     SessionFileMetadata,
     SessionFileStorageProtocol,
 )
@@ -52,6 +49,26 @@ def _parse_last_accessed_at(*, value: object) -> str | None:
     if not isinstance(value, str) or not value.strip():
         return None
     return value
+
+
+def _parse_file_meta(*, value: object) -> list[SessionFileMetadata]:
+    if not isinstance(value, list):
+        return []
+    items: list[SessionFileMetadata] = []
+    for raw in value:
+        if not isinstance(raw, dict):
+            continue
+        name = raw.get("name")
+        size = raw.get("bytes")
+        field = raw.get("field")
+        if not isinstance(name, str) or not name.strip():
+            continue
+        if isinstance(size, bool) or not isinstance(size, int):
+            size = 0
+        if not isinstance(field, str) or not field.strip():
+            field = None
+        items.append(SessionFileMetadata(name=name, bytes=size, field=field))
+    return items
 
 
 class LocalSessionFileStorage(SessionFileStorageProtocol):
@@ -89,12 +106,23 @@ class LocalSessionFileStorage(SessionFileStorageProtocol):
     def _meta_path(self, session_dir: Path) -> Path:
         return session_dir / _META_FILENAME
 
-    def _build_meta(self, *, key: _SessionKey, now_iso: str) -> dict[str, object]:
-        return {
+    def _build_meta(
+        self,
+        *,
+        key: _SessionKey,
+        now_iso: str,
+        files_meta: list[SessionFileMetadata] | None = None,
+    ) -> dict[str, object]:
+        payload: dict[str, object] = {
             "context": key.context,
             "context_key": key.context_key,
             "last_accessed_at": now_iso,
         }
+        if files_meta is not None:
+            payload["files"] = [
+                {"name": item.name, "bytes": item.bytes, "field": item.field} for item in files_meta
+            ]
+        return payload
 
     def _read_meta(self, *, session_dir: Path) -> dict[str, object] | None:
         meta_path = self._meta_path(session_dir)
@@ -112,13 +140,38 @@ class LocalSessionFileStorage(SessionFileStorageProtocol):
         tool_id: UUID,
         user_id: UUID,
         context: str,
-        files: list[InputFile],
+        files: list[SessionFileContent],
     ) -> None:
         if not files:
             raise validation_error("files is required")
 
         key = self._key(tool_id=tool_id, user_id=user_id, context=context)
-        normalized_files = normalize_input_files(input_files=files)[0]
+        normalized_files: list[SessionFileContent] = []
+        seen: set[str] = set()
+        collisions: dict[str, list[str]] = {}
+        for file in files:
+            safe_name = sanitize_input_filename(input_filename=file.name)
+            if safe_name in seen:
+                collisions.setdefault(safe_name, []).append(file.name)
+                continue
+            seen.add(safe_name)
+            normalized_files.append(
+                SessionFileContent(
+                    name=safe_name,
+                    content=file.content,
+                    field=file.field,
+                )
+            )
+        if collisions:
+            raise validation_error(
+                "Duplicate input filenames after sanitization; rename files locally.",
+                details={
+                    "collisions": {
+                        safe_name: [safe_name, *originals]
+                        for safe_name, originals in collisions.items()
+                    }
+                },
+            )
 
         session_dir = self._session_dir(key)
         parent_dir = session_dir.parent
@@ -128,14 +181,18 @@ class LocalSessionFileStorage(SessionFileStorageProtocol):
         old_dir: Path | None = None
 
         now_iso = self._clock.now().isoformat()
+        files_meta = [
+            SessionFileMetadata(name=item.name, bytes=len(item.content), field=item.field)
+            for item in normalized_files
+        ]
         temp_dir.mkdir(parents=True, exist_ok=False)
         try:
-            for name, content in normalized_files:
-                (temp_dir / name).write_bytes(content)
+            for item in normalized_files:
+                (temp_dir / item.name).write_bytes(item.content)
 
             _safe_write_json(
                 path=self._meta_path(temp_dir),
-                payload=self._build_meta(key=key, now_iso=now_iso),
+                payload=self._build_meta(key=key, now_iso=now_iso, files_meta=files_meta),
             )
 
             if session_dir.exists():
@@ -161,24 +218,37 @@ class LocalSessionFileStorage(SessionFileStorageProtocol):
         tool_id: UUID,
         user_id: UUID,
         context: str,
-    ) -> list[InputFile]:
+    ) -> list[SessionFileContent]:
         key = self._key(tool_id=tool_id, user_id=user_id, context=context)
         session_dir = self._session_dir(key)
         if not session_dir.exists():
             return []
 
-        files: list[InputFile] = []
+        meta = self._read_meta(session_dir=session_dir) or {}
+        meta_files = _parse_file_meta(value=meta.get("files"))
+        field_by_name = {item.name: item.field for item in meta_files}
+
+        files: list[SessionFileContent] = []
         for item in sorted(session_dir.iterdir(), key=lambda path: path.name):
             if item.name == _META_FILENAME:
                 continue
             if not item.is_file():
                 continue
-            files.append((item.name, item.read_bytes()))
+            field = field_by_name.get(item.name)
+            if field is None:
+                continue
+            files.append(
+                SessionFileContent(
+                    name=item.name,
+                    content=item.read_bytes(),
+                    field=field,
+                )
+            )
 
         now_iso = self._clock.now().isoformat()
         _safe_write_json(
             path=self._meta_path(session_dir),
-            payload=self._build_meta(key=key, now_iso=now_iso),
+            payload=self._build_meta(key=key, now_iso=now_iso, files_meta=meta_files or None),
         )
         return files
 
@@ -189,7 +259,7 @@ class LocalSessionFileStorage(SessionFileStorageProtocol):
         user_id: UUID,
         context: str,
         names: list[str],
-    ) -> list[InputFile]:
+    ) -> list[SessionFileContent]:
         if not names:
             return []
 
@@ -198,20 +268,33 @@ class LocalSessionFileStorage(SessionFileStorageProtocol):
         if not session_dir.exists():
             return []
 
+        meta = self._read_meta(session_dir=session_dir) or {}
+        meta_files = _parse_file_meta(value=meta.get("files"))
+        field_by_name = {item.name: item.field for item in meta_files}
+
         safe_names = [sanitize_input_filename(input_filename=name) for name in names]
         unique_names = set(safe_names)
 
-        files: list[InputFile] = []
+        files: list[SessionFileContent] = []
         for name in sorted(unique_names):
             path = session_dir / name
             if not path.is_file():
                 continue
-            files.append((name, path.read_bytes()))
+            field = field_by_name.get(name)
+            if field is None:
+                continue
+            files.append(
+                SessionFileContent(
+                    name=name,
+                    content=path.read_bytes(),
+                    field=field,
+                )
+            )
 
         now_iso = self._clock.now().isoformat()
         _safe_write_json(
             path=self._meta_path(session_dir),
-            payload=self._build_meta(key=key, now_iso=now_iso),
+            payload=self._build_meta(key=key, now_iso=now_iso, files_meta=meta_files or None),
         )
         return files
 
@@ -221,7 +304,7 @@ class LocalSessionFileStorage(SessionFileStorageProtocol):
         tool_id: UUID,
         user_id: UUID,
         context: str,
-        files: list[InputFile],
+        files: list[SessionFileContent],
     ) -> None:
         if not files:
             raise validation_error("files is required")
@@ -231,15 +314,15 @@ class LocalSessionFileStorage(SessionFileStorageProtocol):
             user_id=user_id,
             context=context,
         )
-        merged: dict[str, bytes] = {name: content for name, content in existing}
-        for name, content in files:
-            merged[name] = content
+        merged: dict[str, SessionFileContent] = {item.name: item for item in existing}
+        for item in files:
+            merged[item.name] = item
 
         await self.store_files(
             tool_id=tool_id,
             user_id=user_id,
             context=context,
-            files=[(name, content) for name, content in merged.items()],
+            files=list(merged.values()),
         )
 
     async def list_files(
@@ -254,6 +337,10 @@ class LocalSessionFileStorage(SessionFileStorageProtocol):
         if not session_dir.exists():
             return []
 
+        meta = self._read_meta(session_dir=session_dir) or {}
+        meta_files = _parse_file_meta(value=meta.get("files"))
+        field_by_name = {item.name: item.field for item in meta_files}
+
         files: list[SessionFileMetadata] = []
         for item in sorted(session_dir.iterdir(), key=lambda path: path.name):
             if item.name == _META_FILENAME:
@@ -264,14 +351,67 @@ class LocalSessionFileStorage(SessionFileStorageProtocol):
                 size_bytes = item.stat().st_size
             except OSError:
                 size_bytes = 0
-            files.append(SessionFileMetadata(name=item.name, bytes=size_bytes))
+            files.append(
+                SessionFileMetadata(
+                    name=item.name,
+                    bytes=size_bytes,
+                    field=field_by_name.get(item.name),
+                )
+            )
 
         now_iso = self._clock.now().isoformat()
         _safe_write_json(
             path=self._meta_path(session_dir),
-            payload=self._build_meta(key=key, now_iso=now_iso),
+            payload=self._build_meta(key=key, now_iso=now_iso, files_meta=files),
         )
         return files
+
+    async def delete_files(
+        self,
+        *,
+        tool_id: UUID,
+        user_id: UUID,
+        context: str,
+        names: list[str],
+    ) -> int:
+        if not names:
+            return 0
+
+        key = self._key(tool_id=tool_id, user_id=user_id, context=context)
+        session_dir = self._session_dir(key)
+        if not session_dir.exists():
+            return 0
+
+        safe_names = []
+        seen: set[str] = set()
+        for name in names:
+            safe_name = sanitize_input_filename(input_filename=name)
+            if safe_name in seen:
+                continue
+            seen.add(safe_name)
+            safe_names.append(safe_name)
+
+        deleted = 0
+        for name in safe_names:
+            path = session_dir / name
+            if not path.is_file():
+                continue
+            try:
+                path.unlink()
+            except OSError:
+                continue
+            deleted += 1
+
+        meta = self._read_meta(session_dir=session_dir) or {}
+        meta_files = _parse_file_meta(value=meta.get("files"))
+        remaining_meta = [item for item in meta_files if item.name not in set(safe_names)]
+
+        now_iso = self._clock.now().isoformat()
+        _safe_write_json(
+            path=self._meta_path(session_dir),
+            payload=self._build_meta(key=key, now_iso=now_iso, files_meta=remaining_meta),
+        )
+        return deleted
 
     async def clear_session(
         self,

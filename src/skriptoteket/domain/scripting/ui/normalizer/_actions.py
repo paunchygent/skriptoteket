@@ -3,6 +3,7 @@ from __future__ import annotations
 from pydantic import JsonValue
 
 from skriptoteket.domain.errors import validation_error
+from skriptoteket.domain.scripting.file_refs import parse_file_ref
 from skriptoteket.domain.scripting.ui import contract_v2
 from skriptoteket.domain.scripting.ui.policy import UiPolicy
 
@@ -59,6 +60,24 @@ def _prefill_reason(*, field: contract_v2.UiActionField, value: JsonValue) -> st
             if all(item in multi_enum_options for item in value)
             else "contains value not in options"
         )
+
+    if kind is contract_v2.UiActionFieldKind.FILE_REF:
+        if not isinstance(value, list):
+            return "expected list"
+        if isinstance(field, contract_v2.UiFileRefField) and field.sources:
+            allowed_sources = {source.value for source in field.sources}
+        else:
+            allowed_sources = None
+        for item in value:
+            if not isinstance(item, str):
+                return "expected list[str]"
+            try:
+                source, _ref_value = parse_file_ref(value=item)
+            except Exception:
+                return "invalid file ref"
+            if allowed_sources is not None and source not in allowed_sources:
+                return "file ref source not allowed"
+        return None
 
     return "unsupported field kind"
 

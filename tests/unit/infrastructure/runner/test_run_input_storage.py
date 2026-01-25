@@ -16,8 +16,8 @@ async def test_local_run_input_storage_store_get_delete_roundtrip(tmp_path) -> N
     run_id = uuid4()
 
     files = [
-        ResolvedInputFile(name="a.txt", content=b"hello", ref="session:a.txt"),
-        ResolvedInputFile(name="b.bin", content=b"\x00\x01"),
+        ResolvedInputFile(name="a.txt", content=b"hello", ref="session:a.txt", field="documents"),
+        ResolvedInputFile(name="b.bin", content=b"\x00\x01", field="documents"),
     ]
     await storage.store(run_id=run_id, files=files)
 
@@ -47,17 +47,19 @@ async def test_local_run_input_storage_store_overwrites_existing_run_dir(tmp_pat
 
     await storage.store(
         run_id=run_id,
-        files=[ResolvedInputFile(name="a.txt", content=b"v1", ref="session:a.txt")],
+        files=[
+            ResolvedInputFile(name="a.txt", content=b"v1", ref="session:a.txt", field="documents")
+        ],
     )
     await storage.store(
         run_id=run_id,
         files=[
-            ResolvedInputFile(name="a.txt", content=b"v2", ref="session:a.txt"),
-            ResolvedInputFile(name="b.txt", content=b"x", ref="session:b.txt"),
+            ResolvedInputFile(name="a.txt", content=b"v2", ref="session:a.txt", field="documents"),
+            ResolvedInputFile(name="b.txt", content=b"x", ref="session:b.txt", field="documents"),
         ],
     )
 
     assert await storage.get(run_id=run_id) == [
-        ResolvedInputFile(name="a.txt", content=b"v2", ref="session:a.txt"),
-        ResolvedInputFile(name="b.txt", content=b"x", ref="session:b.txt"),
+        ResolvedInputFile(name="a.txt", content=b"v2", ref="session:a.txt", field="documents"),
+        ResolvedInputFile(name="b.txt", content=b"x", ref="session:b.txt", field="documents"),
     ]

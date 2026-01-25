@@ -43,6 +43,11 @@ def _sandbox_context(snapshot_id: UUID) -> str:
     return f"sandbox:{snapshot_id}"
 
 
+def _sandbox_files_context(version_id: UUID) -> str:
+    """Stable sandbox file context scoped to the current draft head."""
+    return f"sandbox-files:{version_id}"
+
+
 def _ensure_snapshot_is_valid(
     *,
     snapshot: SandboxSnapshot,
@@ -110,6 +115,7 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
 
         now = self._clock.now()
         context = _sandbox_context(command.snapshot_id)
+        files_context = _sandbox_files_context(command.version_id)
 
         # Validate version and permissions
         async with self._uow:
@@ -217,14 +223,21 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
             "state": current_state,
         }
 
-        file_refs = list(command.file_refs)
-        if not file_refs:
+        file_refs_by_field = {
+            field: list(refs) for field, refs in command.file_refs_by_field.items() if refs
+        }
+        if not file_refs_by_field:
             session_files = await self._session_files.list_files(
                 tool_id=command.tool_id,
                 user_id=actor.id,
-                context=context,
+                context=files_context,
             )
-            file_refs = [build_session_file_ref(name=item.name) for item in session_files]
+            for item in session_files:
+                if item.field is None:
+                    continue
+                file_refs_by_field.setdefault(item.field, []).append(
+                    build_session_file_ref(name=item.name)
+                )
 
         settings_context: str | None = None
         if snapshot.settings_schema is not None:
@@ -241,7 +254,7 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
                 version_id=command.version_id,
                 snapshot_id=command.snapshot_id,
                 context=RunContext.SANDBOX,
-                session_context=context,
+                session_context=files_context,
                 settings_context=settings_context,
                 version_override=ToolVersionOverride(
                     entrypoint=snapshot.entrypoint,
@@ -251,7 +264,7 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
                     usage_instructions=snapshot.usage_instructions,
                 ),
                 action_payload=action_payload,
-                file_refs=file_refs,
+                file_refs_by_field=file_refs_by_field,
             ),
         )
 

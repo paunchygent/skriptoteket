@@ -34,7 +34,7 @@ from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
     ToolVersionRepositoryProtocol,
 )
-from skriptoteket.protocols.session_files import SessionFileStorageProtocol
+from skriptoteket.protocols.session_files import SessionFileContent, SessionFileStorageProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.catalog_fixtures import make_tool
@@ -150,7 +150,7 @@ async def test_run_active_tool_raises_not_found_when_tool_missing(now: datetime)
             actor=actor,
             command=RunActiveToolCommand(
                 tool_slug="nonexistent-tool",
-                input_files=[("test.xlsx", b"test")],
+                input_files_by_field={"documents": [("test.xlsx", b"test")]},
             ),
         )
 
@@ -193,7 +193,7 @@ async def test_run_active_tool_raises_not_found_when_tool_not_published(
             actor=actor,
             command=RunActiveToolCommand(
                 tool_slug=tool.slug,
-                input_files=[("test.xlsx", b"test")],
+                input_files_by_field={"documents": [("test.xlsx", b"test")]},
             ),
         )
 
@@ -237,7 +237,7 @@ async def test_run_active_tool_raises_not_found_when_no_active_version_id(
             actor=actor,
             command=RunActiveToolCommand(
                 tool_slug=tool.slug,
-                input_files=[("test.xlsx", b"test")],
+                input_files_by_field={"documents": [("test.xlsx", b"test")]},
             ),
         )
 
@@ -284,7 +284,7 @@ async def test_run_active_tool_raises_not_found_when_version_missing(
             actor=actor,
             command=RunActiveToolCommand(
                 tool_slug=tool.slug,
-                input_files=[("test.xlsx", b"test")],
+                input_files_by_field={"documents": [("test.xlsx", b"test")]},
             ),
         )
 
@@ -341,7 +341,7 @@ async def test_run_active_tool_raises_not_found_when_version_not_active(
             actor=actor,
             command=RunActiveToolCommand(
                 tool_slug=tool.slug,
-                input_files=[("test.xlsx", b"test")],
+                input_files_by_field={"documents": [("test.xlsx", b"test")]},
             ),
         )
 
@@ -403,7 +403,7 @@ async def test_run_active_tool_success_returns_tool_run(now: datetime) -> None:
         actor=actor,
         command=RunActiveToolCommand(
             tool_slug=tool.slug,
-            input_files=[("test.xlsx", b"test data")],
+            input_files_by_field={"documents": [("test.xlsx", b"test data")]},
         ),
     )
 
@@ -420,8 +420,12 @@ async def test_run_active_tool_success_returns_tool_run(now: datetime) -> None:
     assert cmd.version_id == version.id
     assert cmd.context is RunContext.PRODUCTION
     assert cmd.session_context == "default"
-    assert cmd.input_files == [("test.xlsx", b"test data")]
-    session_files.store_files.assert_awaited_once()
+    assert cmd.input_files_by_field == {"documents": [("test.xlsx", b"test data")]}
+    session_files.upsert_files.assert_awaited_once()
+    upsert_kwargs = session_files.upsert_files.call_args.kwargs
+    assert upsert_kwargs["files"] == [
+        SessionFileContent(name="test.xlsx", content=b"test data", field="documents")
+    ]
 
     assert uow.entered is True
     assert uow.exited is True
@@ -509,7 +513,7 @@ async def test_run_active_tool_persists_session_state_when_run_has_next_actions(
         actor=actor,
         command=RunActiveToolCommand(
             tool_slug=tool.slug,
-            input_files=[("input.txt", b"test")],
+            input_files_by_field={"documents": [("input.txt", b"test")]},
         ),
     )
 

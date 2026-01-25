@@ -15,6 +15,7 @@ class FileRefEntry(BaseModel):
     ref: FileRef
     name: str
     bytes: int
+    field: str | None = None
 
 
 class FileRefResolverProtocol(Protocol):
@@ -32,5 +33,5 @@ class FileRefResolverProtocol(Protocol):
         tool_id: UUID,
         user_id: UUID,
         context: str,
-        refs: list[FileRef],
+        refs_by_field: dict[str, list[FileRef]],
     ) -> list[ResolvedInputFile]: ...

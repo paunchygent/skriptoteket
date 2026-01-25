@@ -37,14 +37,16 @@ describe("editorChatApi", () => {
   });
 
   it("posts chat stream with csrf + correlation headers", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
+    const fetchMock = vi
+      .fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>()
+      .mockResolvedValue(new Response(null, { status: 200 }));
     globalThis.fetch = fetchMock;
 
     const controller = new AbortController();
 
     await postChatStream({
       toolId: "tool/1",
-      body: { message: "Hi", allow_remote_fallback: false },
+      body: { message: "Hi" },
       correlationId: "corr-1",
       csrfToken: "csrf-1",
       signal: controller.signal,
@@ -52,7 +54,7 @@ describe("editorChatApi", () => {
 
     const call = fetchMock.mock.calls[0];
     expect(call?.[0]).toBe("/api/v1/editor/tools/tool%2F1/chat");
-    const init = call?.[1] as RequestInit | undefined;
+    const init = call?.[1];
     const headers = new Headers(init?.headers);
     expect(headers.get("Accept")).toBe("text/event-stream");
     expect(headers.get("Content-Type")).toBe("application/json");

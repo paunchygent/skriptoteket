@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { computed, ref, toRef } from "vue";
+import { computed, ref, toRef, watch } from "vue";
 
 import type { components } from "../../api/openapi";
 import { useEditorSandboxActions } from "../../composables/editor/useEditorSandboxActions";
 import { useEditorSandboxRunExecution } from "../../composables/editor/useEditorSandboxRunExecution";
 import { useEditorSandboxSessionFiles } from "../../composables/editor/useEditorSandboxSessionFiles";
+import { useSandboxFileRefs } from "../../composables/editor/useSandboxFileRefs";
 import { useSandboxSettings } from "../../composables/editor/useSandboxSettings";
 import { useToolInputs, type ToolInputFormValues } from "../../composables/tools/useToolInputs";
+import type { FileSelectionMode } from "../../composables/tools/useToolInputs";
+import { getFileRefSource } from "../../composables/tools/fileRefHelpers";
 import SessionFilesPanel from "../tool-run/SessionFilesPanel.vue";
 import SystemMessage from "../ui/SystemMessage.vue";
 import SandboxInputPanel from "./SandboxInputPanel.vue";
@@ -33,17 +36,15 @@ const props = defineProps<{
   validateSchemasNow: () => Promise<boolean>;
 }>();
 
-const selectedFiles = ref<File[]>([]);
-const toolInputs = useToolInputs({ schema: toRef(props, "inputSchema"), selectedFiles });
+const toolInputs = useToolInputs({ schema: toRef(props, "inputSchema") });
 
 const inputValues = toolInputs.values;
 const inputFields = toolInputs.nonFileFields;
 const inputFieldErrors = toolInputs.fieldErrors;
-const fileAccept = toolInputs.fileAccept;
-const fileLabel = toolInputs.fileLabel;
-const fileMultiple = toolInputs.fileMultiple;
-const fileError = toolInputs.fileError;
-const showFilePicker = toolInputs.showFilePicker;
+const fileFields = toolInputs.fileFields;
+const fileSelections = toolInputs.fileSelections;
+const fileAcceptByField = toolInputs.fileAcceptByField;
+const fileErrors = toolInputs.fileErrors;
 
 const sandboxSettings = useSandboxSettings({
   versionId: toRef(props, "versionId"),
@@ -64,20 +65,24 @@ const {
   sessionFilesMode,
   sessionFilesSnapshotId,
   effectiveSessionFilesMode,
-  effectiveFileError,
+  effectiveFileErrors,
   canReuseSessionFiles,
   canClearSessionFiles,
   helperText: sessionFilesHelperText,
   fetchSessionFiles,
+  deleteSessionFiles,
 } = useEditorSandboxSessionFiles({
   versionId: toRef(props, "versionId"),
   isReadOnly: toRef(props, "isReadOnly"),
   isRunning,
   isSubmitting,
-  selectedFiles,
-  fileError,
-  fileField: toolInputs.fileField,
+  fileFields,
+  fileSelections,
+  fileErrors,
 });
+
+const sandboxFileRefs = useSandboxFileRefs({ versionId: toRef(props, "versionId") });
+const availableFileRefs = sandboxFileRefs.fileRefs;
 
 const runExec = useEditorSandboxRunExecution({
   versionId: toRef(props, "versionId"),
@@ -94,7 +99,8 @@ const runExec = useEditorSandboxRunExecution({
   schemaValidationError: toRef(props, "schemaValidationError"),
   validateSchemasNow: props.validateSchemasNow,
   buildApiInputs: () => toolInputs.buildApiValues(),
-  selectedFiles,
+  fileFields,
+  fileSelections,
   effectiveSessionFilesMode,
   sessionFilesSnapshotId,
   sessionFilesMode,
@@ -117,6 +123,7 @@ const runResult = runExec.runResult;
 const errorMessage = runExec.errorMessage;
 const inputsPreview = computed(() => runExec.lastSentInputsJson.value);
 const hasResults = computed(() => runResult.value !== null || errorMessage.value !== null);
+const showSessionFilesPanel = computed(() => fileFields.value.length === 0);
 
 const actionErrorMessage = actions.actionErrorMessage;
 const completedSteps = actions.completedSteps;
@@ -124,10 +131,9 @@ const selectedStepIndex = actions.selectedStepIndex;
 const canSubmitActions = actions.canSubmitActions;
 
 const inputsValid = computed(() => {
-  return (
-    effectiveFileError.value === null &&
-    Object.keys(inputFieldErrors.value).length === 0
-  );
+  const fileErrorsByField = effectiveFileErrors.value;
+  const hasFileErrors = Object.values(fileErrorsByField).some((value) => value !== null);
+  return !hasFileErrors && Object.keys(inputFieldErrors.value).length === 0;
 });
 
 const canRun = computed(() => {
@@ -141,8 +147,37 @@ function updateInputValues(values: ToolInputFormValues): void {
   inputValues.value = values;
 }
 
-function updateSelectedFiles(files: File[]): void {
-  selectedFiles.value = files;
+function updateFileMode(payload: { field: string; mode: FileSelectionMode }): void {
+  toolInputs.setFileMode(payload.field, payload.mode);
+}
+
+function updateFileUploads(payload: { field: string; files: File[] }): void {
+  toolInputs.setFileUploads(payload.field, payload.files);
+}
+
+function updateFileRefs(payload: { field: string; refs: string[] }): void {
+  toolInputs.setFileRefs(payload.field, payload.refs);
+}
+
+async function deleteFileRefs(payload: { field: string; refs: string[] }): Promise<void> {
+  const snapshotId = sessionFilesSnapshotId.value;
+  if (!snapshotId) return;
+  const sessionRefs = payload.refs.filter((ref) => getFileRefSource(ref) === "session");
+  if (sessionRefs.length === 0) return;
+  const names = availableFileRefs.value
+    .filter((ref) => sessionRefs.includes(ref.ref))
+    .map((ref) => ref.name);
+  if (names.length === 0) return;
+  try {
+    await deleteSessionFiles(snapshotId, names);
+    await sandboxFileRefs.fetchFileRefs(snapshotId);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      runExec.errorMessage.value = error.message;
+    } else {
+      runExec.errorMessage.value = "Det gick inte att ta bort filer.";
+    }
+  }
 }
 
 async function runSandbox(): Promise<void> {
@@ -157,6 +192,23 @@ function clearResult(): void {
 
 const onSubmitAction = actions.onSubmitAction;
 
+watch(
+  () => runExec.snapshotId.value,
+  (snapshotId) => {
+    if (!snapshotId) {
+      sandboxFileRefs.reset();
+      return;
+    }
+    void sandboxFileRefs.fetchFileRefs(snapshotId);
+  },
+);
+
+watch(
+  () => props.versionId,
+  () => {
+    sandboxFileRefs.reset();
+  },
+);
 </script>
 
 <template>
@@ -168,23 +220,26 @@ const onSubmitAction = actions.onSubmitAction;
       :input-field-errors="inputFieldErrors"
       :input-schema-error="inputSchemaError"
       :inputs-preview="inputsPreview"
-      :selected-files="selectedFiles"
-      :show-file-picker="showFilePicker"
-      :file-label="fileLabel"
-      :file-accept="fileAccept"
-      :file-multiple="fileMultiple"
-      :file-error="effectiveFileError"
+      :file-fields="fileFields"
+      :file-selections="fileSelections"
+      :file-accept-by-field="fileAcceptByField"
+      :file-errors="effectiveFileErrors"
+      :available-file-refs="availableFileRefs"
       :is-running="isRunning"
       :is-read-only="isReadOnly"
       :has-results="hasResults"
       :can-run="canRun"
       @update:input-values="updateInputValues"
-      @update:selected-files="updateSelectedFiles"
+      @update:file-mode="updateFileMode"
+      @update:file-uploads="updateFileUploads"
+      @update:file-refs="updateFileRefs"
+      @delete:file-refs="deleteFileRefs"
       @run="runSandbox"
       @clear="clearResult"
     />
 
     <SessionFilesPanel
+      v-if="showSessionFilesPanel"
       v-model:mode="sessionFilesMode"
       :files="sessionFiles"
       density="compact"
@@ -203,6 +258,7 @@ const onSubmitAction = actions.onSubmitAction;
       :settings-error-message="settingsErrorMessage"
       :is-loading-settings="isLoadingSettings"
       :is-saving-settings="isSavingSettings"
+      :available-file-refs="availableFileRefs"
       :save-settings="sandboxSettings.saveSettings"
       @update:settings-values="settingsValues = $event"
       @update:settings-error-message="settingsErrorMessage = $event"
@@ -221,6 +277,7 @@ const onSubmitAction = actions.onSubmitAction;
       :is-running="isRunning"
       :version-id="versionId"
       :can-submit-actions="canSubmitActions"
+      :available-file-refs="availableFileRefs"
       @select-step="selectedStepIndex = $event"
       @submit-action="onSubmitAction"
     />

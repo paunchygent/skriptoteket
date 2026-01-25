@@ -4,6 +4,7 @@ from uuid import UUID
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import FileResponse, Response
+from pydantic import BaseModel, Field
 
 from skriptoteket.application.scripting.interactive_tools import (
     GetRunQuery,
@@ -16,6 +17,8 @@ from skriptoteket.application.scripting.interactive_tools import (
     StartActionResult,
 )
 from skriptoteket.application.scripting.session_files import (
+    DeleteSessionFilesCommand,
+    DeleteSessionFilesResult,
     ListSessionFilesQuery,
     ListSessionFilesResult,
 )
@@ -26,6 +29,7 @@ from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
 from skriptoteket.domain.scripting.models import RunContext, ToolRun
 from skriptoteket.infrastructure.runner.path_safety import validate_output_path
 from skriptoteket.protocols.interactive_tools import (
+    DeleteSessionFilesHandlerProtocol,
     GetRunHandlerProtocol,
     GetSessionStateHandlerProtocol,
     ListArtifactsHandlerProtocol,
@@ -36,6 +40,10 @@ from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
 
 router = APIRouter(prefix="/api/v1")
+
+
+class DeleteSessionFilesRequest(BaseModel):
+    names: list[str] = Field(default_factory=list)
 
 
 async def _load_production_run_for_user(
@@ -116,6 +124,26 @@ async def list_session_files(
     return await handler.handle(
         actor=user,
         query=ListSessionFilesQuery(tool_id=tool_id, context=context),
+    )
+
+
+@router.post("/tools/{tool_id}/session-files/delete", response_model=DeleteSessionFilesResult)
+@inject
+async def delete_session_files(
+    tool_id: UUID,
+    payload: DeleteSessionFilesRequest,
+    handler: FromDishka[DeleteSessionFilesHandlerProtocol],
+    user: User = Depends(require_user_api),
+    _: None = Depends(require_csrf_token),
+    context: str = Query("default"),
+) -> DeleteSessionFilesResult:
+    return await handler.handle(
+        actor=user,
+        command=DeleteSessionFilesCommand(
+            tool_id=tool_id,
+            context=context,
+            names=payload.names,
+        ),
     )
 
 

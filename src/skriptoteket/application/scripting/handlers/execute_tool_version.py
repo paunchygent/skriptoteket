@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import time
 
+from pydantic import JsonValue
+
 from skriptoteket.application.scripting.commands import (
     ExecuteToolVersionCommand,
     ExecuteToolVersionResult,
@@ -12,7 +14,7 @@ from skriptoteket.application.scripting.handlers.execute_tool_version_pipeline i
 )
 from skriptoteket.application.scripting.run_input_resolution import resolve_run_inputs
 from skriptoteket.config import Settings
-from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
+from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.models import (
     ToolVersion,
@@ -95,6 +97,60 @@ def _apply_version_override(
     return version.model_copy(update=updated)
 
 
+def _count_files_by_field(
+    *,
+    input_files_by_field: dict[str, list[tuple[str, bytes]]],
+    file_refs_by_field: dict[str, list[str]],
+) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for field, files in input_files_by_field.items():
+        counts[field] = counts.get(field, 0) + len(files)
+    for field, refs in file_refs_by_field.items():
+        counts[field] = counts.get(field, 0) + len(refs)
+    return counts
+
+
+def _merge_refs_into_values(
+    *,
+    values: dict[str, JsonValue],
+    refs_by_field: dict[str, list[str]],
+) -> dict[str, JsonValue]:
+    merged = dict(values)
+    for field, refs in refs_by_field.items():
+        if field in merged:
+            raise validation_error(
+                "File refs conflict with input values",
+                details={"field": field},
+            )
+        refs_value: list[JsonValue] = list(refs)
+        merged[field] = refs_value
+    return merged
+
+
+def _merge_refs_into_action_payload(
+    *,
+    action_payload: dict[str, JsonValue],
+    refs_by_field: dict[str, list[str]],
+) -> dict[str, JsonValue]:
+    if not refs_by_field:
+        return action_payload
+    raw_input = action_payload.get("input")
+    input_values = raw_input if isinstance(raw_input, dict) else {}
+    merged_input = dict(input_values)
+    for field, refs in refs_by_field.items():
+        if field in merged_input:
+            raise validation_error(
+                "File refs conflict with action input values",
+                details={"field": field},
+            )
+        refs_value: list[JsonValue] = list(refs)
+        merged_input[field] = refs_value
+    return {
+        **action_payload,
+        "input": merged_input,
+    }
+
+
 class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
     def __init__(
         self,
@@ -166,10 +222,14 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
         )
 
         input_schema = normalize_tool_input_schema(input_schema=version.input_schema)
-        validate_input_files_count(
-            input_schema=input_schema,
-            files_count=len(command.input_files) + len(command.file_refs),
-        )
+        if command.action_payload is None:
+            validate_input_files_count(
+                input_schema=input_schema,
+                files_count_by_field=_count_files_by_field(
+                    input_files_by_field=command.input_files_by_field,
+                    file_refs_by_field=command.file_refs_by_field,
+                ),
+            )
         normalized_input_values = normalize_tool_input_values(
             input_schema=input_schema,
             values=command.input_values,
@@ -179,10 +239,22 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
             tool_id=command.tool_id,
             user_id=actor.id,
             context=command.session_context,
-            input_files=command.input_files,
-            file_refs=command.file_refs,
+            input_files_by_field=command.input_files_by_field,
+            file_refs_by_field=command.file_refs_by_field,
             file_ref_resolver=self._file_refs,
         )
+        input_values_for_run = normalized_input_values
+        action_payload = command.action_payload
+        if command.action_payload is None:
+            input_values_for_run = _merge_refs_into_values(
+                values=normalized_input_values,
+                refs_by_field=resolved_inputs.refs_by_field,
+            )
+        else:
+            action_payload = _merge_refs_into_action_payload(
+                action_payload=command.action_payload,
+                refs_by_field=resolved_inputs.refs_by_field,
+            )
 
         if can_queue:
             primary_filename = resolved_inputs.primary_filename
@@ -201,7 +273,7 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
                 input_filename=primary_filename,
                 input_size_bytes=total_size_bytes,
                 input_manifest=input_manifest,
-                input_values=normalized_input_values,
+                input_values=input_values_for_run,
                 now=now,
             )
 
@@ -248,12 +320,17 @@ class ExecuteToolVersionHandler(ExecuteToolVersionHandlerProtocol):
                 "actor.id": str(actor.id),
             },
         ) as span:
+            updated_command = command
+            if action_payload is not None and action_payload is not command.action_payload:
+                updated_command = command.model_copy(
+                    update={"action_payload": action_payload},
+                )
             return await execute_tool_version_pipeline(
                 span=span,
                 actor=actor,
-                command=command,
+                command=updated_command,
                 resolved_inputs=resolved_inputs,
-                normalized_input_values=normalized_input_values,
+                normalized_input_values=input_values_for_run,
                 run_id=run_id,
                 version=version,
                 now=now,

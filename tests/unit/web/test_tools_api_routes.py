@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from datetime import datetime
-from typing import cast
 from unittest.mock import AsyncMock, Mock
 from uuid import UUID, uuid4
 
@@ -13,11 +12,12 @@ from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 
 from skriptoteket.application.scripting.session_files import (
+    ListSessionFilesQuery,
     ListSessionFilesResult,
     SessionFileInfo,
 )
 from skriptoteket.config import Settings
-from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.scripting.models import VersionState
 from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.domain.scripting.tool_usage_instructions import (
@@ -66,13 +66,39 @@ def _make_tool_session(
     )
 
 
+class _CurrentUserProviderStub(CurrentUserProviderProtocol):
+    def __init__(self) -> None:
+        self.mock = AsyncMock(spec=CurrentUserProviderProtocol)
+
+    async def get_current_user(self, *, session_id: UUID | None) -> User | None:
+        user: User | None = await self.mock.get_current_user(session_id=session_id)
+        return user
+
+
+class _ListSessionFilesHandlerStub(ListSessionFilesHandlerProtocol):
+    def __init__(self) -> None:
+        self.mock = AsyncMock(spec=ListSessionFilesHandlerProtocol)
+
+    async def handle(
+        self,
+        *,
+        actor: User,
+        query: ListSessionFilesQuery,
+    ) -> ListSessionFilesResult:
+        result: ListSessionFilesResult = await self.mock.handle(
+            actor=actor,
+            query=query,
+        )
+        return result
+
+
 class InteractiveToolsApiProvider(Provider):
     def __init__(
         self,
         *,
         settings: Settings,
-        current_user_provider: AsyncMock,
-        list_session_files_handler: AsyncMock,
+        current_user_provider: CurrentUserProviderProtocol,
+        list_session_files_handler: ListSessionFilesHandlerProtocol,
     ) -> None:
         super().__init__()
         self._settings = settings
@@ -85,11 +111,11 @@ class InteractiveToolsApiProvider(Provider):
 
     @provide(scope=Scope.REQUEST)
     def current_user_provider(self) -> CurrentUserProviderProtocol:
-        return cast(CurrentUserProviderProtocol, self._current_user_provider)
+        return self._current_user_provider
 
     @provide(scope=Scope.REQUEST)
     def list_session_files_handler(self) -> ListSessionFilesHandlerProtocol:
-        return cast(ListSessionFilesHandlerProtocol, self._list_session_files_handler)
+        return self._list_session_files_handler
 
 
 @pytest.fixture
@@ -98,22 +124,22 @@ def settings() -> Settings:
 
 
 @pytest.fixture
-def current_user_provider() -> AsyncMock:
-    provider = AsyncMock(spec=CurrentUserProviderProtocol)
-    provider.get_current_user.return_value = None
+def current_user_provider() -> _CurrentUserProviderStub:
+    provider = _CurrentUserProviderStub()
+    provider.mock.get_current_user.return_value = None
     return provider
 
 
 @pytest.fixture
-def list_session_files_handler() -> AsyncMock:
-    return AsyncMock(spec=ListSessionFilesHandlerProtocol)
+def list_session_files_handler() -> _ListSessionFilesHandlerStub:
+    return _ListSessionFilesHandlerStub()
 
 
 @pytest.fixture
 def app(
     settings: Settings,
-    current_user_provider: AsyncMock,
-    list_session_files_handler: AsyncMock,
+    current_user_provider: _CurrentUserProviderStub,
+    list_session_files_handler: _ListSessionFilesHandlerStub,
 ) -> FastAPI:
     app = FastAPI()
     app.middleware("http")(error_handler_middleware)
@@ -358,14 +384,14 @@ async def test_list_session_files_calls_handler_with_context() -> None:
 @pytest.mark.asyncio
 async def test_list_session_files_defaults_context(
     client: httpx.AsyncClient,
-    current_user_provider: AsyncMock,
-    list_session_files_handler: AsyncMock,
+    current_user_provider: _CurrentUserProviderStub,
+    list_session_files_handler: _ListSessionFilesHandlerStub,
 ) -> None:
     user = make_user(role=Role.USER)
     tool_id = uuid4()
 
-    current_user_provider.get_current_user.return_value = user
-    list_session_files_handler.handle.return_value = ListSessionFilesResult(
+    current_user_provider.mock.get_current_user.return_value = user
+    list_session_files_handler.mock.handle.return_value = ListSessionFilesResult(
         tool_id=tool_id,
         context="default",
         files=[SessionFileInfo(name="input.txt", bytes=12, ref="session:input.txt")],
@@ -377,9 +403,9 @@ async def test_list_session_files_defaults_context(
     assert response.json() == {
         "tool_id": str(tool_id),
         "context": "default",
-        "files": [{"name": "input.txt", "bytes": 12, "ref": "session:input.txt"}],
+        "files": [{"name": "input.txt", "bytes": 12, "ref": "session:input.txt", "field": None}],
     }
-    list_session_files_handler.handle.assert_awaited_once()
-    query = list_session_files_handler.handle.call_args.kwargs["query"]
+    list_session_files_handler.mock.handle.assert_awaited_once()
+    query = list_session_files_handler.mock.handle.call_args.kwargs["query"]
     assert query.tool_id == tool_id
     assert query.context == "default"

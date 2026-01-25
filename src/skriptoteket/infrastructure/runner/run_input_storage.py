@@ -49,7 +49,10 @@ class LocalRunInputStorage(RunInputStorageProtocol):
             _safe_write_json(
                 path=temp_dir / _META_FILENAME,
                 payload={
-                    "files": [{"name": entry.name, "ref": entry.ref} for entry in normalized_files]
+                    "files": [
+                        {"name": entry.name, "ref": entry.ref, "field": entry.field}
+                        for entry in normalized_files
+                    ]
                 },
             )
 
@@ -75,7 +78,7 @@ class LocalRunInputStorage(RunInputStorageProtocol):
         if not run_dir.exists():
             return []
 
-        refs_by_name = _load_refs(path=run_dir / _META_FILENAME)
+        meta_by_name = _load_meta(path=run_dir / _META_FILENAME)
 
         files: list[ResolvedInputFile] = []
         for item in sorted(run_dir.iterdir(), key=lambda path: path.name):
@@ -83,11 +86,19 @@ class LocalRunInputStorage(RunInputStorageProtocol):
                 continue
             if not item.is_file():
                 continue
+            meta = meta_by_name.get(item.name, {})
+            field = meta.get("field")
+            if field is None:
+                raise validation_error(
+                    "Run input metadata missing field ownership",
+                    details={"filename": item.name, "run_id": str(run_id)},
+                )
             files.append(
                 ResolvedInputFile(
                     name=item.name,
                     content=item.read_bytes(),
-                    ref=refs_by_name.get(item.name),
+                    ref=meta.get("ref"),
+                    field=field,
                 )
             )
         return files
@@ -135,7 +146,7 @@ def _safe_write_json(*, path: Path, payload: dict[str, object]) -> None:
             tmp_path.unlink(missing_ok=True)
 
 
-def _load_refs(*, path: Path) -> dict[str, str | None]:
+def _load_meta(*, path: Path) -> dict[str, dict[str, str | None]]:
     if not path.exists():
         return {}
     try:
@@ -147,12 +158,16 @@ def _load_refs(*, path: Path) -> dict[str, str | None]:
     raw_files = raw.get("files")
     if not isinstance(raw_files, list):
         return {}
-    refs: dict[str, str | None] = {}
+    meta: dict[str, dict[str, str | None]] = {}
     for item in raw_files:
         if not isinstance(item, dict):
             continue
         name = item.get("name")
         ref = item.get("ref")
+        field = item.get("field")
         if isinstance(name, str):
-            refs[name] = ref if isinstance(ref, str) else None
-    return refs
+            meta[name] = {
+                "ref": ref if isinstance(ref, str) else None,
+                "field": field if isinstance(field, str) and field.strip() else None,
+            }
+    return meta

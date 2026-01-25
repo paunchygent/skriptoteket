@@ -3,6 +3,7 @@ import { onBeforeUnmount, ref, type Ref } from "vue";
 import { apiFetch, apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import type { SessionFilesMode } from "./useEditorSandboxSessionFiles";
+import type { FileFieldSelection, ToolFileFieldSpec } from "../tools/useToolInputs";
 
 type SandboxRunResponse = components["schemas"]["SandboxRunResponse"];
 type EditorRunDetails = components["schemas"]["EditorRunDetails"];
@@ -28,7 +29,8 @@ type UseEditorSandboxRunExecutionOptions = {
   schemaValidationError: Readonly<Ref<string | null>>;
   validateSchemasNow: () => Promise<boolean>;
   buildApiInputs: () => Record<string, JsonValue>;
-  selectedFiles: Readonly<Ref<File[]>>;
+  fileFields: Readonly<Ref<ToolFileFieldSpec[]>>;
+  fileSelections: Readonly<Ref<Record<string, FileFieldSelection>>>;
   effectiveSessionFilesMode: Readonly<Ref<SessionFilesMode>>;
   sessionFilesSnapshotId: Ref<string | null>;
   sessionFilesMode: Ref<SessionFilesMode>;
@@ -52,7 +54,8 @@ export function useEditorSandboxRunExecution({
   schemaValidationError,
   validateSchemasNow,
   buildApiInputs,
-  selectedFiles,
+  fileFields,
+  fileSelections,
   effectiveSessionFilesMode,
   sessionFilesSnapshotId,
   sessionFilesMode,
@@ -172,17 +175,34 @@ export function useEditorSandboxRunExecution({
     };
 
     const formData = new FormData();
-    for (const file of selectedFiles.value) {
-      formData.append("files", file);
+    const fileFieldsPayload: string[] = [];
+    const fileRefsByField: Record<string, string[]> = {};
+
+    for (const field of fileFields.value) {
+      const selection = fileSelections.value[field.name];
+      if (!selection) continue;
+      if (selection.mode === "upload") {
+        for (const file of selection.uploads) {
+          formData.append("files", file);
+          fileFieldsPayload.push(field.name);
+        }
+      } else if (selection.refs.length > 0) {
+        fileRefsByField[field.name] = [...selection.refs];
+      }
+    }
+    if (fileFieldsPayload.length > 0) {
+      formData.append("file_fields", JSON.stringify(fileFieldsPayload));
+    }
+    if (Object.keys(fileRefsByField).length > 0) {
+      formData.append("file_refs_by_field", JSON.stringify(fileRefsByField));
     }
     formData.append("inputs", JSON.stringify(apiInputs));
     formData.append("snapshot", JSON.stringify(snapshotPayload));
     lastSentInputsJson.value = JSON.stringify(apiInputs, null, 2);
 
     const resolvedSessionFilesMode = effectiveSessionFilesMode.value;
-    if (resolvedSessionFilesMode !== "none" && sessionFilesSnapshotId.value) {
+    if (resolvedSessionFilesMode !== "none") {
       formData.append("session_files_mode", resolvedSessionFilesMode);
-      formData.append("session_context", `sandbox:${sessionFilesSnapshotId.value}`);
     }
 
     try {

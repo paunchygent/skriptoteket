@@ -159,15 +159,11 @@ type ToolInputValues = dict[str, JsonValue]
 def normalize_tool_input_schema(*, input_schema: ToolInputSchema) -> ToolInputSchema:
     seen_names: set[str] = set()
     duplicates: set[str] = set()
-    file_field_count = 0
 
     for field in input_schema:
         if field.name in seen_names:
             duplicates.add(field.name)
         seen_names.add(field.name)
-
-        if field.kind is ToolInputFieldKind.FILE:
-            file_field_count += 1
 
     if duplicates:
         raise validation_error(
@@ -175,16 +171,11 @@ def normalize_tool_input_schema(*, input_schema: ToolInputSchema) -> ToolInputSc
             details={"duplicates": sorted(duplicates)},
         )
 
-    if file_field_count > 1:
-        raise validation_error(
-            "input_schema can contain at most one file field",
-            details={"file_fields": file_field_count},
-        )
-
     return input_schema
 
 
-def get_file_field(*, input_schema: ToolInputSchema) -> ToolInputFileField | None:
+def get_file_fields(*, input_schema: ToolInputSchema) -> list[ToolInputFileField]:
+    file_fields: list[ToolInputFileField] = []
     for field in input_schema:
         if field.kind is not ToolInputFieldKind.FILE:
             continue
@@ -194,8 +185,8 @@ def get_file_field(*, input_schema: ToolInputSchema) -> ToolInputFileField | Non
                 message="Invalid input_schema (file field mismatch)",
                 details={"field": field.name, "kind": field.kind.value},
             )
-        return field
-    return None
+        file_fields.append(field)
+    return file_fields
 
 
 def validate_input_schema_upload_limits(
@@ -237,31 +228,47 @@ def validate_input_schema_upload_limits(
                     "violations": violations,
                 },
             )
-        return
+        continue
 
 
-def validate_input_files_count(*, input_schema: ToolInputSchema, files_count: int) -> None:
-    if files_count < 0:
-        raise validation_error("files_count must be >= 0", details={"files_count": files_count})
+def validate_input_files_count(
+    *,
+    input_schema: ToolInputSchema,
+    files_count_by_field: dict[str, int],
+) -> None:
+    for count in files_count_by_field.values():
+        if count < 0:
+            raise validation_error("files_count must be >= 0", details={"files_count": count})
 
-    file_field = get_file_field(input_schema=input_schema)
-    if file_field is None:
-        if files_count > 0:
+    file_fields = {field.name: field for field in get_file_fields(input_schema=input_schema)}
+    unknown_fields = sorted([key for key in files_count_by_field.keys() if key not in file_fields])
+    if unknown_fields:
+        raise validation_error(
+            "Unknown file field",
+            details={"unknown_fields": unknown_fields},
+        )
+
+    if not file_fields:
+        total = sum(files_count_by_field.values())
+        if total > 0:
             raise validation_error(
                 "Tool does not accept files",
-                details={"files_count": files_count},
+                details={"files_count": total},
             )
         return
 
-    if files_count < file_field.min or files_count > file_field.max:
-        raise validation_error(
-            "Invalid number of uploaded files",
-            details={
-                "min": file_field.min,
-                "max": file_field.max,
-                "files_count": files_count,
-            },
-        )
+    for name, field in file_fields.items():
+        count = files_count_by_field.get(name, 0)
+        if count < field.min or count > field.max:
+            raise validation_error(
+                "Invalid number of files for field",
+                details={
+                    "field": name,
+                    "min": field.min,
+                    "max": field.max,
+                    "files_count": count,
+                },
+            )
 
 
 def normalize_tool_input_values(

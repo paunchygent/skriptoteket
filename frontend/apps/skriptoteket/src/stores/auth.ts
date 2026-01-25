@@ -24,10 +24,9 @@ function hasAtLeastRole(params: { actual: ApiRole; minRole: ApiRole }): boolean 
   return ROLE_RANK[params.actual] >= ROLE_RANK[params.minRole];
 }
 
-type ApiErrorEnvelope = {
-  error?: { code?: string; message?: string };
-  detail?: unknown;
-};
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
 
 async function readErrorMessage(response: Response): Promise<string> {
   const contentType = response.headers.get("content-type") ?? "";
@@ -35,16 +34,17 @@ async function readErrorMessage(response: Response): Promise<string> {
     return response.statusText || `Request failed (${response.status})`;
   }
 
-  const payload = (await response.json().catch(() => null)) as ApiErrorEnvelope | null;
-  if (!payload || typeof payload !== "object") {
+  const payload: unknown = await response.json().catch(() => null);
+  if (!isRecord(payload)) {
     return response.statusText || `Request failed (${response.status})`;
   }
 
-  if (payload.error?.message) {
-    return payload.error.message;
+  const error = payload.error;
+  if (isRecord(error) && typeof error.message === "string") {
+    return error.message;
   }
 
-  if (payload.detail) {
+  if ("detail" in payload && payload.detail) {
     return "Validation error";
   }
 
@@ -53,15 +53,25 @@ async function readErrorMessage(response: Response): Promise<string> {
 
 let bootstrapPromise: Promise<void> | null = null;
 
+type AuthState = {
+  user: ApiUser | null;
+  profile: ApiUserProfile | null;
+  aiPolicy: ApiAiPolicy | null;
+  csrfToken: string | null;
+  bootstrapped: boolean;
+  status: AuthStatus;
+  error: string | null;
+};
+
 export const useAuthStore = defineStore("auth", {
-  state: () => ({
-    user: null as ApiUser | null,
-    profile: null as ApiUserProfile | null,
-    aiPolicy: null as ApiAiPolicy | null,
-    csrfToken: null as string | null,
+  state: (): AuthState => ({
+    user: null,
+    profile: null,
+    aiPolicy: null,
+    csrfToken: null,
     bootstrapped: false,
-    status: "idle" as AuthStatus,
-    error: null as string | null,
+    status: "idle",
+    error: null,
   }),
   getters: {
     isAuthenticated: (state) => state.user !== null,
@@ -113,10 +123,20 @@ export const useAuthStore = defineStore("auth", {
           });
 
           if (response.status === 200) {
-            const payload = (await response.json()) as MeResponse;
+            const payload: MeResponse = await response.json();
+            this.aiPolicy = payload.ai_policy ?? null;
+
+            if (!payload.authenticated || !payload.user) {
+              this.user = null;
+              this.profile = null;
+              this.csrfToken = null;
+              this.status = "ready";
+              this.error = null;
+              return;
+            }
+
             this.user = payload.user;
             this.profile = payload.profile ?? null;
-            this.aiPolicy = payload.ai_policy ?? null;
 
             if (!this.csrfToken) {
               await this.ensureCsrfToken();
@@ -177,7 +197,7 @@ export const useAuthStore = defineStore("auth", {
         });
 
         if (response.status === 200) {
-          const payload = (await response.json()) as CsrfResponse;
+          const payload: CsrfResponse = await response.json();
           this.csrfToken = payload.csrf_token;
           return this.csrfToken;
         }
@@ -216,7 +236,7 @@ export const useAuthStore = defineStore("auth", {
           throw new Error(this.error);
         }
 
-        const payload = (await response.json()) as LoginResponse;
+        const payload: LoginResponse = await response.json();
         this.user = payload.user;
         this.profile = payload.profile ?? null;
         this.aiPolicy = payload.ai_policy ?? null;
@@ -263,7 +283,7 @@ export const useAuthStore = defineStore("auth", {
           throw new Error(this.error);
         }
 
-        const payload = (await response.json()) as RegisterResponse;
+        const payload: RegisterResponse = await response.json();
         this.user = payload.user;
         this.profile = payload.profile;
         this.csrfToken = null;

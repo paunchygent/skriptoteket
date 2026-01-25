@@ -229,7 +229,7 @@ async def test_run_sandbox_valid_snapshot_payload_calls_handler() -> None:
     assert command.tool_id == tool.id
     assert command.version_id == version.id
     assert command.snapshot_payload.entrypoint == "run_tool"
-    assert command.input_files == []
+    assert command.input_files_by_field == {}
     assert command.input_values == {}
 
 

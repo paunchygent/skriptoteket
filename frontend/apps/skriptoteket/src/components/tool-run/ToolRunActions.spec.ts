@@ -6,7 +6,7 @@ import ToolRunActions from "./ToolRunActions.vue";
 
 describe("ToolRunActions", () => {
   it("prefills shared fields from action.prefill", async () => {
-    const actions = [
+    const actions: components["schemas"]["UiFormAction"][] = [
       {
         action_id: "confirm",
         label: "Confirm",
@@ -17,7 +17,7 @@ describe("ToolRunActions", () => {
         ],
         prefill: { notify: true, limit: 3 },
       },
-    ] as components["schemas"]["UiFormAction"][];
+    ];
 
     const wrapper = mount(ToolRunActions, {
       props: {
@@ -41,7 +41,9 @@ describe("ToolRunActions", () => {
     await wrapper.find("button").trigger("click");
 
     const events = wrapper.emitted("submit") ?? [];
-    expect(events[0]).toEqual([{ actionId: "confirm", input: { notify: true, limit: 3 } }]);
+    expect(events[0]).toEqual([
+      { actionId: "confirm", input: { notify: true, limit: 3 }, fileRefsByField: {} },
+    ]);
 
     wrapper.unmount();
   });

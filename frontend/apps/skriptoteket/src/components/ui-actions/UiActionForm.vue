@@ -2,6 +2,8 @@
 import { computed, onMounted, reactive, ref, watch } from "vue";
 
 import type { components } from "../../api/openapi";
+import type { FileRefInfo } from "../../composables/tools/fileRefHelpers";
+import { filterFileRefsBySources } from "../../composables/tools/fileRefHelpers";
 import UiActionFieldRenderer from "./UiActionFieldRenderer.vue";
 
 type UiFormAction = components["schemas"]["UiFormAction"];
@@ -14,12 +16,19 @@ const props = withDefaults(
     action: UiFormAction;
     idBase: string;
     disabled?: boolean;
+    availableFileRefs?: FileRefInfo[];
   }>(),
-  { disabled: false },
+  { disabled: false, availableFileRefs: () => [] },
 );
 
 const emit = defineEmits<{
-  submit: [payload: { actionId: string; input: Record<string, components["schemas"]["JsonValue"]> }];
+  submit: [
+    payload: {
+      actionId: string;
+      input: Record<string, components["schemas"]["JsonValue"]>;
+      fileRefsByField?: Record<string, string[]>;
+    },
+  ];
 }>();
 
 const errorMessage = ref<string | null>(null);
@@ -27,8 +36,11 @@ const errorMessage = ref<string | null>(null);
 const textValues = reactive<Record<string, string>>({});
 const booleanValues = reactive<Record<string, boolean>>({});
 const multiEnumValues = reactive<Record<string, string[]>>({});
+const fileRefValues = reactive<Record<string, string[]>>({});
+const fileRefDirty = reactive<Record<string, boolean>>({});
 
 const fields = computed(() => props.action.fields ?? []);
+const isString = (value: unknown): value is string => typeof value === "string";
 
 function ensureDefaults(): void {
   for (const field of fields.value) {
@@ -47,6 +59,19 @@ function ensureDefaults(): void {
           value.every((item) => typeof item === "string")
         ) {
           multiEnumValues[field.name] = value;
+        }
+      } else if (field.kind === "file_ref") {
+        const validRefs = Array.isArray(value) ? value.filter(isString) : [];
+        if (fileRefDirty[field.name] === undefined) {
+          fileRefDirty[field.name] = false;
+        }
+        if (!fileRefDirty[field.name] && validRefs.length > 0) {
+          const unique = Array.from(new Set(validRefs));
+          const allowedSources = field.sources?.length ? field.sources : null;
+          const availableSet = new Set(
+            filterFileRefsBySources(props.availableFileRefs, allowedSources).map((ref) => ref.ref),
+          );
+          fileRefValues[field.name] = unique.filter((ref) => availableSet.has(ref));
         }
       } else if (textValues[field.name] === undefined) {
         if (typeof value === "string") {
@@ -75,6 +100,16 @@ function ensureDefaults(): void {
       continue;
     }
 
+    if (field.kind === "file_ref") {
+      if (fileRefValues[field.name] === undefined) {
+        fileRefValues[field.name] = [];
+      }
+      if (fileRefDirty[field.name] === undefined) {
+        fileRefDirty[field.name] = false;
+      }
+      continue;
+    }
+
     if (textValues[field.name] === undefined) {
       textValues[field.name] = "";
     }
@@ -88,6 +123,9 @@ function modelValueFor(field: UiActionField): FieldValue {
   if (field.kind === "multi_enum") {
     return multiEnumValues[field.name] ?? [];
   }
+  if (field.kind === "file_ref") {
+    return fileRefValues[field.name] ?? [];
+  }
   return textValues[field.name] ?? "";
 }
 
@@ -98,6 +136,11 @@ function updateModelValue(field: UiActionField, value: FieldValue): void {
   }
   if (field.kind === "multi_enum") {
     multiEnumValues[field.name] = Array.isArray(value) ? value : [];
+    return;
+  }
+  if (field.kind === "file_ref") {
+    fileRefValues[field.name] = Array.isArray(value) ? value : [];
+    fileRefDirty[field.name] = true;
     return;
   }
   textValues[field.name] = typeof value === "string" ? value : String(value);
@@ -114,6 +157,9 @@ function buildInput(): Record<string, components["schemas"]["JsonValue"]> {
 
     if (field.kind === "multi_enum") {
       input[field.name] = multiEnumValues[field.name] ?? [];
+      continue;
+    }
+    if (field.kind === "file_ref") {
       continue;
     }
 
@@ -150,13 +196,59 @@ function buildInput(): Record<string, components["schemas"]["JsonValue"]> {
   return input;
 }
 
+function buildFileRefsByField(): Record<string, string[]> {
+  const refsByField: Record<string, string[]> = {};
+  for (const field of fields.value) {
+    if (field.kind !== "file_ref") continue;
+    const refs = fileRefValues[field.name] ?? [];
+    if (refs.length > 0) {
+      refsByField[field.name] = refs;
+    }
+  }
+  return refsByField;
+}
+
+const fileRefErrors = computed<Record<string, string | null>>(() => {
+  const errors: Record<string, string | null> = {};
+  for (const field of fields.value) {
+    if (field.kind !== "file_ref") continue;
+    const selected = fileRefValues[field.name] ?? [];
+    const allowedSources = field.sources?.length ? field.sources : null;
+    const availableSet = new Set(
+      filterFileRefsBySources(props.availableFileRefs, allowedSources).map((ref) => ref.ref),
+    );
+    const prefillValue = (props.action.prefill ?? {})[field.name];
+    const prefillRefs = Array.isArray(prefillValue) ? prefillValue.filter(isString) : [];
+    const missing = prefillRefs.filter((ref) => !availableSet.has(ref));
+    if (!fileRefDirty[field.name] && missing.length > 0) {
+      errors[field.name] = "En förvald fil saknas. Välj en ny fil.";
+      continue;
+    }
+    if (selected.length < field.min) {
+      errors[field.name] = field.min === 1 ? "Välj minst en fil." : `Välj minst ${field.min} filer.`;
+      continue;
+    }
+    if (selected.length > field.max) {
+      errors[field.name] = field.max === 1 ? "Du kan välja max 1 fil." : `Du kan välja max ${field.max} filer.`;
+      continue;
+    }
+    errors[field.name] = null;
+  }
+  return errors;
+});
+
+const hasFileRefErrors = computed(() => {
+  return Object.values(fileRefErrors.value).some((value) => value !== null);
+});
+
 function onSubmit(): void {
-  if (props.disabled) return;
+  if (props.disabled || hasFileRefErrors.value) return;
   errorMessage.value = null;
 
   try {
     const input = buildInput();
-    emit("submit", { actionId: props.action.action_id, input });
+    const fileRefsByField = buildFileRefsByField();
+    emit("submit", { actionId: props.action.action_id, input, fileRefsByField });
   } catch (error: unknown) {
     errorMessage.value = error instanceof Error ? error.message : "Ogiltig indata.";
   }
@@ -169,6 +261,11 @@ onMounted(() => {
 watch(fields, () => {
   ensureDefaults();
 });
+watch(
+  () => props.availableFileRefs,
+  () => ensureDefaults(),
+  { deep: true },
+);
 </script>
 
 <template>
@@ -189,13 +286,15 @@ watch(fields, () => {
       :field="field"
       :id-base="`${idBase}-a-${action.action_id}`"
       :model-value="modelValueFor(field)"
+      :available-file-refs="availableFileRefs"
+      :file-ref-errors="fileRefErrors"
       @update:model-value="(value) => updateModelValue(field, value)"
     />
 
     <button
       type="submit"
       class="btn-cta"
-      :disabled="disabled"
+      :disabled="disabled || hasFileRefErrors"
     >
       {{ action.label }}
     </button>

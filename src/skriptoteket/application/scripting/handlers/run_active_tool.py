@@ -19,7 +19,10 @@ from skriptoteket.protocols.scripting import (
     RunActiveToolHandlerProtocol,
     ToolVersionRepositoryProtocol,
 )
-from skriptoteket.protocols.session_files import SessionFileStorageProtocol
+from skriptoteket.protocols.session_files import (
+    SessionFileContent,
+    SessionFileStorageProtocol,
+)
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
@@ -79,12 +82,18 @@ class RunActiveToolHandler(RunActiveToolHandlerProtocol):
                 raise not_found("Tool", command.tool_slug)
 
         session_context = normalize_tool_session_context(context=command.session_context)
-        input_files = list(command.input_files)
-        file_refs = list(command.file_refs)
+        input_files_by_field = {
+            field: list(files) for field, files in command.input_files_by_field.items() if files
+        }
+        file_refs_by_field = {
+            field: list(refs) for field, refs in command.file_refs_by_field.items() if refs
+        }
+        has_uploads = any(input_files_by_field.values())
+        has_refs = any(file_refs_by_field.values())
 
         if (
-            not input_files
-            and not file_refs
+            not has_uploads
+            and not has_refs
             and command.session_files_mode is SessionFilesMode.REUSE
         ):
             session_files = await self._session_files.list_files(
@@ -92,10 +101,15 @@ class RunActiveToolHandler(RunActiveToolHandlerProtocol):
                 user_id=actor.id,
                 context=session_context,
             )
-            file_refs = [build_session_file_ref(name=item.name) for item in session_files]
+            for item in session_files:
+                if item.field is None:
+                    continue
+                file_refs_by_field.setdefault(item.field, []).append(
+                    build_session_file_ref(name=item.name)
+                )
         elif (
-            not input_files
-            and not file_refs
+            not has_uploads
+            and not has_refs
             and command.session_files_mode is SessionFilesMode.CLEAR
         ):
             await self._session_files.clear_session(
@@ -112,19 +126,24 @@ class RunActiveToolHandler(RunActiveToolHandlerProtocol):
                 version_id=version.id,
                 context=RunContext.PRODUCTION,
                 session_context=session_context,
-                input_files=input_files,
+                input_files_by_field=input_files_by_field,
                 input_values=command.input_values,
-                file_refs=file_refs,
+                file_refs_by_field=file_refs_by_field,
             ),
         )
 
         # Persist session-scoped files for subsequent action runs (ADR-0039).
-        if command.input_files:
-            await self._session_files.store_files(
+        if input_files_by_field:
+            files_to_store = [
+                SessionFileContent(name=name, content=content, field=field)
+                for field, files in input_files_by_field.items()
+                for name, content in files
+            ]
+            await self._session_files.upsert_files(
                 tool_id=tool.id,
                 user_id=actor.id,
                 context=session_context,
-                files=command.input_files,
+                files=files_to_store,
             )
 
         # Persist normalized session state after the initial run when next_actions exist (ADR-0024).

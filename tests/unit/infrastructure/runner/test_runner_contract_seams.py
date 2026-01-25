@@ -40,9 +40,10 @@ def test_v3_request_factory_builds_request(
                 name="input.txt",
                 content=b"input",
                 ref="session:input.txt",
+                field="documents",
             )
         ],
-        input_values={"alpha": 1},
+        input_values={"alpha": 1, "documents": ["session:doc.txt"]},
         memory_json=memory_json,
         action_payload=None,
     )
@@ -53,13 +54,14 @@ def test_v3_request_factory_builds_request(
     request_payload = json.loads(request.request_json_bytes.decode("utf-8"))
     assert request_payload == {
         "schema_version": 1,
-        "inputs": {"values": {"alpha": 1}},
+        "inputs": {"values": {"alpha": 1, "documents": ["session:doc.txt"]}},
         "files": [
             {
                 "name": "input.txt",
                 "path": "/work/input/input.txt",
                 "bytes": 5,
                 "ref": "session:input.txt",
+                "field": "documents",
             }
         ],
     }

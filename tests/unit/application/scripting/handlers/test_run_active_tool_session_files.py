@@ -136,7 +136,7 @@ async def test_run_active_tool_reuses_session_files_when_requested(now: datetime
     id_generator = Mock(spec=IdGeneratorProtocol)
     session_files = AsyncMock(spec=SessionFileStorageProtocol)
 
-    persisted_files = [SessionFileMetadata(name="persist.txt", bytes=4)]
+    persisted_files = [SessionFileMetadata(name="persist.txt", bytes=4, field="documents")]
     session_files.list_files.return_value = persisted_files
 
     run = make_tool_run(
@@ -167,10 +167,10 @@ async def test_run_active_tool_reuses_session_files_when_requested(now: datetime
     )
 
     command = execute.handle.call_args.kwargs["command"]
-    assert command.input_files == []
-    assert command.file_refs == ["session:persist.txt"]
+    assert command.input_files_by_field == {}
+    assert command.file_refs_by_field == {"documents": ["session:persist.txt"]}
     session_files.list_files.assert_awaited_once()
-    session_files.store_files.assert_not_called()
+    session_files.upsert_files.assert_not_called()
 
 
 @pytest.mark.unit
@@ -224,6 +224,6 @@ async def test_run_active_tool_clears_session_files_when_requested(now: datetime
     )
 
     command = execute.handle.call_args.kwargs["command"]
-    assert command.input_files == []
+    assert command.input_files_by_field == {}
     session_files.clear_session.assert_awaited_once()
-    session_files.store_files.assert_not_called()
+    session_files.upsert_files.assert_not_called()

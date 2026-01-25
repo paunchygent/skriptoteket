@@ -11,6 +11,7 @@ class SessionFileInfo(BaseModel):
     name: str
     bytes: int
     ref: str
+    field: str | None = None
 
 
 class ListSessionFilesQuery(BaseModel):
@@ -28,6 +29,22 @@ class ListSessionFilesResult(BaseModel):
     files: list[SessionFileInfo] = Field(default_factory=list)
 
 
+class DeleteSessionFilesCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    context: str
+    names: list[str] = Field(default_factory=list)
+
+
+class DeleteSessionFilesResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    context: str
+    deleted: int
+
+
 class ListSandboxSessionFilesQuery(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -42,3 +59,20 @@ class ListSandboxSessionFilesResult(BaseModel):
     version_id: UUID
     snapshot_id: UUID
     files: list[SessionFileInfo] = Field(default_factory=list)
+
+
+class DeleteSandboxSessionFilesCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    version_id: UUID
+    snapshot_id: UUID
+    names: list[str] = Field(default_factory=list)
+
+
+class DeleteSandboxSessionFilesResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tool_id: UUID
+    version_id: UUID
+    snapshot_id: UUID
+    deleted: int

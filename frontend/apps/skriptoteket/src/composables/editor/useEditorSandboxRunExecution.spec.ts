@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { defineComponent, nextTick, ref } from "vue";
 import { mount } from "@vue/test-utils";
 
+import type { components } from "../../api/openapi";
+import type { FileFieldSelection } from "../tools/useToolInputs";
 import { useEditorSandboxRunExecution } from "./useEditorSandboxRunExecution";
 
 const clientMocks = vi.hoisted(() => ({
@@ -32,6 +34,8 @@ type EditorRunDetails = {
   ui_payload: Record<string, unknown> | null;
   artifacts: unknown[];
 };
+
+type ToolInputSchema = NonNullable<components["schemas"]["CreateDraftVersionRequest"]["input_schema"]>;
 
 function createEditorRunDetails({
   runId,
@@ -77,13 +81,16 @@ function mountRunExecution({
   const sourceCode = ref("print('hello')");
   const usageInstructions = ref("Use it.");
   const settingsSchema = ref(null);
-  const inputSchema = ref([] as never);
+  const inputSchema = ref<ToolInputSchema>([]);
   const inputSchemaError = ref<string | null>(null);
   const settingsSchemaError = ref<string | null>(null);
   const hasBlockingSchemaIssues = ref(false);
   const schemaValidationError = ref<string | null>(schemaValidationErrorValue);
 
-  const selectedFiles = ref<File[]>([]);
+  const fileFields = ref([{ name: "files", label: "Filer", min: 1, max: 2 }]);
+  const fileSelections = ref<Record<string, FileFieldSelection>>({
+    files: { mode: "upload", uploads: [], refs: [] },
+  });
   const effectiveSessionFilesMode = ref<"none" | "reuse" | "clear">(effectiveSessionFilesModeValue);
   const sessionFilesSnapshotId = ref<string | null>(sessionFilesSnapshotIdValue);
   const sessionFilesMode = ref<"none" | "reuse" | "clear">("none");
@@ -111,7 +118,8 @@ function mountRunExecution({
         schemaValidationError,
         validateSchemasNow,
         buildApiInputs,
-        selectedFiles,
+        fileFields,
+        fileSelections,
         effectiveSessionFilesMode,
         sessionFilesSnapshotId,
         sessionFilesMode,

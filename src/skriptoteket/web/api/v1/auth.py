@@ -25,8 +25,12 @@ from skriptoteket.protocols.identity import (
     ProfileRepositoryProtocol,
     RegisterUserHandlerProtocol,
 )
-from skriptoteket.web.auth.api_dependencies import require_session_api, require_user_api
-from skriptoteket.web.auth.dependencies import get_current_session, get_session_id
+from skriptoteket.web.auth.api_dependencies import require_session_api
+from skriptoteket.web.auth.dependencies import (
+    get_current_session,
+    get_current_user,
+    get_session_id,
+)
 from skriptoteket.web.request_metadata import (
     get_client_ip,
     get_correlation_id,
@@ -98,7 +102,8 @@ class RegisterResponse(BaseModel):
 class MeResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    user: User
+    authenticated: bool
+    user: User | None = None
     profile: UserProfile | None = None
     ai_policy: AiPolicyResponse
 
@@ -194,10 +199,22 @@ async def logout(
 async def me(
     profiles: FromDishka[ProfileRepositoryProtocol],
     settings: FromDishka[Settings],
-    user: User = Depends(require_user_api),
+    user: User | None = Depends(get_current_user),
 ) -> MeResponse:
+    if user is None:
+        return MeResponse(
+            authenticated=False,
+            user=None,
+            profile=None,
+            ai_policy=_build_ai_policy(settings),
+        )
     profile = await profiles.get_by_user_id(user_id=user.id)
-    return MeResponse(user=user, profile=profile, ai_policy=_build_ai_policy(settings))
+    return MeResponse(
+        authenticated=True,
+        user=user,
+        profile=profile,
+        ai_policy=_build_ai_policy(settings),
+    )
 
 
 @router.get("/csrf", response_model=CsrfResponse)

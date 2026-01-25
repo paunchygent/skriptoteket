@@ -10,6 +10,7 @@ from skriptoteket.infrastructure.session_files.local_session_file_storage import
 )
 from skriptoteket.infrastructure.session_files.usage import get_session_file_usage
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.session_files import SessionFileContent
 
 
 class FakeClock(ClockProtocol):
@@ -30,13 +31,13 @@ async def test_get_session_file_usage_counts_bytes_and_files_excluding_meta_json
         tool_id=uuid4(),
         user_id=uuid4(),
         context="default",
-        files=[("a.txt", b"a")],
+        files=[SessionFileContent(name="a.txt", content=b"a", field="documents")],
     )
     await storage.store_files(
         tool_id=uuid4(),
         user_id=uuid4(),
         context="default",
-        files=[("b.txt", b"bb")],
+        files=[SessionFileContent(name="b.txt", content=b"bb", field="documents")],
     )
 
     usage = get_session_file_usage(artifacts_root=tmp_path)

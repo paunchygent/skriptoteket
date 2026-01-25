@@ -5,7 +5,13 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-type InputFile = tuple[str, bytes]
+
+class SessionFileContent(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    name: str
+    content: bytes
+    field: str
 
 
 class CleanupExpiredSessionFilesResult(BaseModel):
@@ -22,6 +28,7 @@ class SessionFileMetadata(BaseModel):
 
     name: str
     bytes: int
+    field: str | None = None
 
 
 class SessionFileStorageProtocol(Protocol):
@@ -31,7 +38,7 @@ class SessionFileStorageProtocol(Protocol):
         tool_id: UUID,
         user_id: UUID,
         context: str,
-        files: list[InputFile],
+        files: list[SessionFileContent],
     ) -> None: ...
 
     async def get_files(
@@ -40,7 +47,7 @@ class SessionFileStorageProtocol(Protocol):
         tool_id: UUID,
         user_id: UUID,
         context: str,
-    ) -> list[InputFile]: ...
+    ) -> list[SessionFileContent]: ...
 
     async def get_files_by_name(
         self,
@@ -49,7 +56,7 @@ class SessionFileStorageProtocol(Protocol):
         user_id: UUID,
         context: str,
         names: list[str],
-    ) -> list[InputFile]: ...
+    ) -> list[SessionFileContent]: ...
 
     async def upsert_files(
         self,
@@ -57,7 +64,7 @@ class SessionFileStorageProtocol(Protocol):
         tool_id: UUID,
         user_id: UUID,
         context: str,
-        files: list[InputFile],
+        files: list[SessionFileContent],
     ) -> None: ...
 
     async def list_files(
@@ -67,6 +74,15 @@ class SessionFileStorageProtocol(Protocol):
         user_id: UUID,
         context: str,
     ) -> list[SessionFileMetadata]: ...
+
+    async def delete_files(
+        self,
+        *,
+        tool_id: UUID,
+        user_id: UUID,
+        context: str,
+        names: list[str],
+    ) -> int: ...
 
     async def clear_session(
         self,

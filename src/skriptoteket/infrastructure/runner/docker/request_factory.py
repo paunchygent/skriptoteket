@@ -55,6 +55,7 @@ class V3RunnerRequestFactory:
                 path=f"/work/input/{entry.name}",
                 bytes=len(entry.content),
                 ref=entry.ref,
+                field=entry.field,
             )
             for entry in input_files
         ]

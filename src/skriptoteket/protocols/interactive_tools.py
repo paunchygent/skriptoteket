@@ -13,6 +13,8 @@ from skriptoteket.application.scripting.interactive_tools import (
     StartActionResult,
 )
 from skriptoteket.application.scripting.session_files import (
+    DeleteSessionFilesCommand,
+    DeleteSessionFilesResult,
     ListSessionFilesQuery,
     ListSessionFilesResult,
 )
@@ -52,3 +54,12 @@ class ListSessionFilesHandlerProtocol(Protocol):
         actor: User,
         query: ListSessionFilesQuery,
     ) -> ListSessionFilesResult: ...
+
+
+class DeleteSessionFilesHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: DeleteSessionFilesCommand,
+    ) -> DeleteSessionFilesResult: ...

@@ -6,6 +6,7 @@ type SessionFilesMode = "none" | "reuse" | "clear";
 type SessionFileInfo = {
   name: string;
   bytes: number;
+  field?: string | null;
 };
 
 const props = withDefaults(defineProps<{
@@ -78,9 +79,15 @@ function toggleClear(): void {
         <li
           v-for="file in files"
           :key="file.name"
-          class="font-mono truncate"
+          class="flex items-center gap-2"
         >
-          {{ file.name }}
+          <span class="font-mono truncate">{{ file.name }}</span>
+          <span
+            v-if="file.field"
+            :class="[isCompact ? 'text-[10px] text-navy/50' : 'text-[11px] text-navy/50']"
+          >
+            (fält: {{ file.field }})
+          </span>
         </li>
       </ul>
       <p

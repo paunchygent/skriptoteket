@@ -84,7 +84,9 @@ async def test_execute_tool_version_queue_enabled_production_enqueues_and_does_n
     job_id = uuid4()
 
     version = _make_tool_version(tool_id=tool_id, now=now).model_copy(
-        update={"input_schema": [ToolInputFileField(name="files", label="Files", min=1, max=10)]}
+        update={
+            "input_schema": [ToolInputFileField(name="documents", label="Files", min=1, max=10)]
+        }
     )
 
     uow = FakeUow()
@@ -144,7 +146,7 @@ async def test_execute_tool_version_queue_enabled_production_enqueues_and_does_n
             version_id=version.id,
             context=RunContext.PRODUCTION,
             session_context="default",
-            input_files=[("input.txt", b"input")],
+            input_files_by_field={"documents": [("input.txt", b"input")]},
         ),
     )
 
@@ -169,6 +171,7 @@ async def test_execute_tool_version_queue_enabled_production_enqueues_and_does_n
     assert stored_file.name == "input.txt"
     assert stored_file.content == b"input"
     assert stored_file.ref == "session:input.txt"
+    assert stored_file.field == "documents"
 
     created_job = jobs.create.call_args.kwargs["job"]
     assert created_job.run_id == run_id

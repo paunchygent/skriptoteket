@@ -5,6 +5,7 @@ import { useRoute, useRouter } from "vue-router";
 import { apiGet, apiPost, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
 import { RunResultPanel } from "../components/run-results";
+import { useToolFileRefs } from "../composables/tools/useToolFileRefs";
 
 type GetRunResult = components["schemas"]["GetRunResult"];
 type StartActionResult = components["schemas"]["StartActionResult"];
@@ -20,6 +21,9 @@ const runId = computed(() => {
 
 const run = ref<GetRunResult["run"] | null>(null);
 const stateRev = ref<number | null>(null);
+
+const toolFileRefs = useToolFileRefs();
+const availableFileRefs = toolFileRefs.fileRefs;
 
 const isLoading = ref(true);
 const isSubmittingAction = ref(false);
@@ -102,7 +106,11 @@ function stopPolling(): void {
   pollIntervalId = null;
 }
 
-async function submitAction(payload: { actionId: string; input: Record<string, components["schemas"]["JsonValue"]> }): Promise<void> {
+async function submitAction(payload: {
+  actionId: string;
+  input: Record<string, components["schemas"]["JsonValue"]>;
+  fileRefsByField?: Record<string, string[]>;
+}): Promise<void> {
   if (!run.value) return;
   if (stateRev.value === null) {
     actionErrorMessage.value = "Sessionen är inte redo än. Försök igen.";
@@ -119,6 +127,7 @@ async function submitAction(payload: { actionId: string; input: Record<string, c
       context: "default",
       action_id: payload.actionId,
       input: payload.input,
+      file_refs_by_field: payload.fileRefsByField ?? {},
       expected_state_rev: stateRev.value,
     });
 
@@ -145,6 +154,7 @@ onMounted(() => {
 });
 
 watch(runId, () => {
+  toolFileRefs.reset();
   void load();
 });
 
@@ -164,6 +174,17 @@ watch(
     }
   },
   { immediate: true },
+);
+
+watch(
+  () => run.value?.tool_id,
+  (toolId) => {
+    if (!toolId) {
+      toolFileRefs.reset();
+      return;
+    }
+    void toolFileRefs.fetchFileRefs(toolId);
+  },
 );
 
 onUnmounted(() => {
@@ -213,6 +234,7 @@ onUnmounted(() => {
         :is-submitting-action="isSubmittingAction"
         :can-submit-actions="canSubmitActions"
         :action-error-message="actionErrorMessage"
+        :available-file-refs="availableFileRefs"
         @submit-action="submitAction"
       />
     </template>

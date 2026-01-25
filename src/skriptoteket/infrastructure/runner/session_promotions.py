@@ -8,7 +8,7 @@ from skriptoteket.domain.scripting.file_refs import build_session_file_ref, pars
 from skriptoteket.domain.scripting.promotions import PromotionEnvelope, PromotionRequest
 from skriptoteket.protocols.promotions import PromotionApplierProtocol
 from skriptoteket.protocols.runner import ArtifactManagerProtocol
-from skriptoteket.protocols.session_files import SessionFileStorageProtocol
+from skriptoteket.protocols.session_files import SessionFileContent, SessionFileStorageProtocol
 
 
 class SessionPromotionApplier(PromotionApplierProtocol):
@@ -37,7 +37,7 @@ class SessionPromotionApplier(PromotionApplierProtocol):
         artifacts_by_path = {item.path: item for item in artifacts_manifest.artifacts}
         seen_names: set[str] = set()
 
-        files_to_store: list[tuple[str, bytes]] = []
+        files_to_store: list[SessionFileContent] = []
         for request in promotions.requests:
             _require_session_promotion(request=request)
             if request.name in seen_names:
@@ -71,7 +71,9 @@ class SessionPromotionApplier(PromotionApplierProtocol):
                 run_id=run_id,
                 artifact_path=request.source_path,
             )
-            files_to_store.append((request.name, content))
+            files_to_store.append(
+                SessionFileContent(name=request.name, content=content, field="promoted")
+            )
 
         await self._session_files.upsert_files(
             tool_id=tool_id,
