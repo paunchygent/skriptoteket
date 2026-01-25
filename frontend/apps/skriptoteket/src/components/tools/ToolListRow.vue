@@ -1,9 +1,9 @@
 <script setup lang="ts">
 type Props = {
-  gridClass?: string;
-  mainClass?: string;
-  statusClass?: string;
-  actionsClass?: string;
+  gridClass?: string | Record<string, boolean> | (string | Record<string, boolean>)[];
+  mainClass?: string | Record<string, boolean> | (string | Record<string, boolean>)[];
+  statusClass?: string | Record<string, boolean> | (string | Record<string, boolean>)[];
+  actionsClass?: string | Record<string, boolean> | (string | Record<string, boolean>)[];
 };
 
 const props = withDefaults(defineProps<Props>(), {

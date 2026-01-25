@@ -317,9 +317,9 @@ onMounted(() => {
           <ToolListRow
             v-for="tool in inProgressTools"
             :key="tool.id"
-            grid-class="sm:grid-cols-[minmax(0,1fr)_12rem_var(--admin-tools-action-col)] lg:grid-cols-[minmax(0,40rem)_12rem_var(--admin-tools-action-col)]"
+            grid-class="sm:grid-cols-[1fr_12rem_var(--admin-tools-action-col)]"
+            main-class="space-y-1 min-w-0 lg:max-w-[40rem]"
             status-class="justify-self-start"
-            actions-class="justify-self-start sm:justify-self-stretch"
           >
             <template #main>
               <div class="text-base font-semibold text-navy truncate">{{ tool.title }}</div>
@@ -366,9 +366,9 @@ onMounted(() => {
           <ToolListRow
             v-for="tool in readyToolsWithPendingReview"
             :key="tool.id"
-            grid-class="sm:grid-cols-[minmax(0,1fr)_12rem_var(--admin-tools-action-col)] lg:grid-cols-[minmax(0,40rem)_12rem_var(--admin-tools-action-col)]"
+            grid-class="sm:grid-cols-[1fr_12rem_var(--admin-tools-action-col)]"
+            main-class="space-y-1 min-w-0 lg:max-w-[40rem]"
             status-class="justify-self-start"
-            actions-class="justify-self-start sm:justify-self-stretch"
           >
             <template #main>
               <div class="flex flex-col gap-1 min-w-0 sm:flex-row sm:items-center sm:gap-2">
@@ -431,9 +431,9 @@ onMounted(() => {
           <ToolListRow
             v-for="tool in readyToolsWithoutPendingReview"
             :key="tool.id"
-            grid-class="sm:grid-cols-[minmax(0,1fr)_12rem_var(--admin-tools-action-col)] lg:grid-cols-[minmax(0,40rem)_12rem_var(--admin-tools-action-col)]"
+            grid-class="sm:grid-cols-[1fr_12rem_var(--admin-tools-action-col)]"
+            main-class="space-y-1 min-w-0 lg:max-w-[40rem]"
             status-class="justify-self-start"
-            actions-class="justify-self-start sm:justify-self-stretch"
           >
             <template #main>
               <div class="text-base font-semibold text-navy truncate">{{ tool.title }}</div>
@@ -489,3 +489,6 @@ onMounted(() => {
     @update:summary="createSummary = $event"
   />
 </template>
+
+<style scoped>
+</style>
