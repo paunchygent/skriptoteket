@@ -71,35 +71,35 @@ async function createDraftTool(): Promise<void> {
 </script>
 
 <template>
-  <div>
-    <button
-      type="button"
-      class="dashboard-card group text-left w-full"
-      @click="openCreateModal"
-    >
-      <div class="card-header">
-        <span class="card-label">Skapa nytt verktyg</span>
-        <IconArrow
-          :size="18"
-          class="card-arrow"
-        />
-      </div>
-      <p class="card-description mt-4">
-        Skapa ett nytt verktyg i systemet.
-      </p>
-    </button>
+  <button
+    type="button"
+    class="dashboard-card group text-left"
+    @click="openCreateModal"
+  >
+    <div class="card-header">
+      <span class="card-label">Skapa nytt verktyg</span>
+      <IconArrow
+        :size="18"
+        class="card-arrow"
+      />
+    </div>
+    <p class="card-description mt-4">
+      Skapa ett nytt verktyg i systemet.
+    </p>
 
-    <CreateDraftToolModal
-      :is-open="isCreateModalOpen"
-      :title="createTitle"
-      :summary="createSummary"
-      :error="createError"
-      :is-submitting="isCreating"
-      @update:title="createTitle = $event"
-      @update:summary="createSummary = $event"
-      @update:error="createError = $event"
-      @close="closeCreateModal"
-      @submit="createDraftTool"
-    />
-  </div>
+    <Teleport to="body">
+      <CreateDraftToolModal
+        :is-open="isCreateModalOpen"
+        :title="createTitle"
+        :summary="createSummary"
+        :error="createError"
+        :is-submitting="isCreating"
+        @update:title="createTitle = $event"
+        @update:summary="createSummary = $event"
+        @update:error="createError = $event"
+        @close="closeCreateModal"
+        @submit="createDraftTool"
+      />
+    </Teleport>
+  </button>
 </template>

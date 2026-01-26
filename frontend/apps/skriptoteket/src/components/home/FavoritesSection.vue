@@ -31,7 +31,7 @@ function handleFavoriteToggled(payload: { id: string; isFavorite: boolean }): vo
 <template>
   <section
     v-if="hasItems"
-    class="space-y-3"
+    class="space-y-3 expand-left-64"
   >
     <SectionHeader title="Dina favoriter">
       <template #action>
@@ -45,7 +45,7 @@ function handleFavoriteToggled(payload: { id: string; isFavorite: boolean }): vo
     </SectionHeader>
     <div
       ref="gridRef"
-      class="grid items-stretch gap-3 [grid-template-columns:repeat(auto-fill,minmax(18rem,1fr))]"
+      class="grid items-stretch gap-5 [grid-template-columns:repeat(auto-fill,minmax(18rem,1fr))]"
     >
       <CatalogItemCard
         v-for="item in items"

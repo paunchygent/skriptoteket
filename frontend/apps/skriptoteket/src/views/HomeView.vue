@@ -4,7 +4,6 @@ import { computed, onMounted } from "vue";
 import FavoritesSection from "../components/home/FavoritesSection.vue";
 import HomeCreateDraftTool from "../components/home/HomeCreateDraftTool.vue";
 import RecentToolsSection from "../components/home/RecentToolsSection.vue";
-import SectionHeader from "../components/home/SectionHeader.vue";
 import { IconArrow } from "../components/icons";
 import { useHomeDashboard } from "../composables/home/useHomeDashboard";
 import { useLoginModal } from "../composables/useLoginModal";
@@ -186,11 +185,12 @@ onMounted(async () => {
         />
 
         <!-- ═══════════════════════════════════════════════════════════════════
-             USER SECTION: All authenticated users
+             UNIFIED ACTION CARDS GRID
+             All cards flow together in one grid. Section markers span full row.
              ═══════════════════════════════════════════════════════════════════ -->
-        <section class="space-y-4 w-full">
-          <div class="grid gap-5 [grid-template-columns:repeat(auto-fill,minmax(18rem,1fr))]">
-            <!-- Senaste körningar -->
+        <section class="expand-left-64">
+          <div class="action-cards-grid">
+            <!-- USER CARDS: All authenticated users -->
             <RouterLink
               to="/my-runs"
               class="dashboard-card group"
@@ -218,7 +218,6 @@ onMounted(async () => {
               </p>
             </RouterLink>
 
-            <!-- Hitta verktyg -->
             <RouterLink
               to="/browse"
               class="dashboard-card group"
@@ -234,122 +233,96 @@ onMounted(async () => {
                 Sök och filtrera bland tillgängliga verktyg.
               </p>
             </RouterLink>
-          </div>
-        </section>
 
-        <!-- ═══════════════════════════════════════════════════════════════════
-             CONTRIBUTOR SECTION: contributor+ only
-             ═══════════════════════════════════════════════════════════════════ -->
-        <section
-          v-if="canSeeContributor"
-          class="space-y-4 w-full"
-        >
-          <SectionHeader
-            title="Bidragsgivare"
-            class="max-w-[40rem]"
-          />
-          <div class="grid gap-5 [grid-template-columns:repeat(auto-fill,minmax(18rem,1fr))]">
-            <!-- Mina verktyg -->
-            <RouterLink
-              to="/my-tools"
-              class="dashboard-card group"
-            >
-              <div class="card-header">
-                <span class="card-label">Mina verktyg</span>
-                <IconArrow
-                  :size="18"
-                  class="card-arrow"
-                />
-              </div>
-              <div class="card-stats">
-                <span
-                  v-if="toolsLoading"
-                  class="text-navy/40"
-                >...</span>
-                <template v-else>
-                  <span class="stat-number">{{ toolsTotal }}</span>
-                  <span class="stat-label">
-                    verktyg
-                    <span
-                      v-if="toolsPublished > 0"
-                      class="text-success"
-                    >
-                      ({{ toolsPublished }} publicerade)
-                    </span>
-                  </span>
-                </template>
-              </div>
-              <p class="card-description">
-                Hantera verktyg du ansvarar för.
-              </p>
-            </RouterLink>
-
-            <!-- Föreslå verktyg -->
-            <RouterLink
-              to="/suggestions/new"
-              class="dashboard-card group"
-            >
-              <div class="card-header">
-                <span class="card-label">Föreslå verktyg</span>
-                <IconArrow
-                  :size="18"
-                  class="card-arrow"
-                />
-              </div>
-              <p class="card-description mt-4">
-                Har du en idé? Skicka in ett förslag.
-              </p>
-            </RouterLink>
-          </div>
-        </section>
-
-        <!-- ═══════════════════════════════════════════════════════════════════
-             ADMIN SECTION: admin+ only
-             ═══════════════════════════════════════════════════════════════════ -->
-        <section
-          v-if="canSeeAdmin"
-          class="space-y-4 w-full"
-        >
-          <SectionHeader
-            title="Administration"
-            class="max-w-[40rem]"
-          />
-          <div class="grid gap-5 [grid-template-columns:repeat(auto-fill,minmax(18rem,1fr))]">
-            <!-- Att granska -->
-            <RouterLink
-              to="/admin/tools"
-              class="dashboard-card group"
-              :class="{ 'border-warning': adminPendingReview > 0 }"
-            >
-              <div class="card-header">
-                <span class="card-label">Att granska</span>
-                <IconArrow
-                  :size="18"
-                  class="card-arrow"
-                />
-              </div>
-              <div class="card-stats">
-                <span
-                  v-if="adminLoading"
-                  class="text-navy/40"
-                >...</span>
-                <template v-else>
+            <!-- CONTRIBUTOR CARDS -->
+            <template v-if="canSeeContributor">
+              <RouterLink
+                to="/my-tools"
+                class="dashboard-card group"
+              >
+                <div class="card-header">
+                  <span class="card-label">Mina verktyg</span>
+                  <IconArrow
+                    :size="18"
+                    class="card-arrow"
+                  />
+                </div>
+                <div class="card-stats">
                   <span
-                    class="stat-number"
-                    :class="{ 'text-warning': adminPendingReview > 0 }"
-                  >
-                    {{ adminPendingReview }}
-                  </span>
-                  <span class="stat-label">väntar på granskning</span>
-                </template>
-              </div>
-              <p class="card-description">
-                Granska och publicera verktyg.
-              </p>
-            </RouterLink>
+                    v-if="toolsLoading"
+                    class="text-navy/40"
+                  >...</span>
+                  <template v-else>
+                    <span class="stat-number">{{ toolsTotal }}</span>
+                    <span class="stat-label">
+                      verktyg
+                      <span
+                        v-if="toolsPublished > 0"
+                        class="text-success"
+                      >
+                        ({{ toolsPublished }} publicerade)
+                      </span>
+                    </span>
+                  </template>
+                </div>
+                <p class="card-description">
+                  Hantera verktyg du ansvarar för.
+                </p>
+              </RouterLink>
 
-            <!-- Skapa nytt verktyg -->
-            <HomeCreateDraftTool />
+              <RouterLink
+                to="/suggestions/new"
+                class="dashboard-card group"
+              >
+                <div class="card-header">
+                  <span class="card-label">Föreslå verktyg</span>
+                  <IconArrow
+                    :size="18"
+                    class="card-arrow"
+                  />
+                </div>
+                <p class="card-description mt-4">
+                  Har du en idé? Skicka in ett förslag.
+                </p>
+              </RouterLink>
+            </template>
+
+            <!-- ADMIN CARDS -->
+            <template v-if="canSeeAdmin">
+              <RouterLink
+                to="/admin/tools"
+                class="dashboard-card group"
+                :class="{ 'border-warning': adminPendingReview > 0 }"
+              >
+                <div class="card-header">
+                  <span class="card-label">Att granska</span>
+                  <IconArrow
+                    :size="18"
+                    class="card-arrow"
+                  />
+                </div>
+                <div class="card-stats">
+                  <span
+                    v-if="adminLoading"
+                    class="text-navy/40"
+                  >...</span>
+                  <template v-else>
+                    <span
+                      class="stat-number"
+                      :class="{ 'text-warning': adminPendingReview > 0 }"
+                    >
+                      {{ adminPendingReview }}
+                    </span>
+                    <span class="stat-label">väntar på granskning</span>
+                  </template>
+                </div>
+                <p class="card-description">
+                  Granska och publicera verktyg.
+                </p>
+              </RouterLink>
+
+              <HomeCreateDraftTool />
+            </template>
           </div>
         </section>
       </div>
@@ -358,6 +331,13 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+/* Unified action cards grid - all cards flow together */
+.action-cards-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+}
+
 /* Dashboard card */
 :deep(.dashboard-card) {
   display: block;
