@@ -72,6 +72,7 @@ async function mountEditor({
 }) {
   const toolId = ref("tool-1");
   const versionId = ref("");
+  const userId = ref<string | null>(null);
   const route = reactive({
     path: routePath,
     fullPath: routePath,
@@ -91,6 +92,7 @@ async function mountEditor({
       return useScriptEditor({
         toolId,
         versionId,
+        userId,
         route: route as never,
         router: router as never,
         notify: notify as UiNotifier,

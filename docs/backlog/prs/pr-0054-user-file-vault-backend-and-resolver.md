@@ -42,6 +42,21 @@ retention cleanup, without impacting existing session-file flows.
   `file_refs_by_field: Record[field, FileRef[]]` only.
 - **Explicit user action only:** saving to vault is FORBIDDEN unless triggered by an explicit user interaction (no tool
   auto-persist).
+- **Resolver sources param (REQUIRED):** the file-refs endpoints MUST accept `sources` and delegate via a composite
+  resolver (session + vault); default `sources=["session","vault"]` when omitted.
+- **Session vs vault context semantics:** `context` applies to session refs only; vault ignores `context`.
+- **Dedicated vault API surface:** implement a `/api/v1/vault` module for list/save/delete/restore (no mixing with
+  session-files endpoints).
+- **Vault storage layout:** store bytes under `VAULT_ROOT/<user_id>/<file_id>` (deterministic path; not stored in DB).
+- **Vault DB schema (minimal + provenance):** `id`, `user_id`, `name`, `bytes`, `created_at`, `deleted_at`,
+  `source_kind`, `source_run_id`, `source_artifact_id` (nullable).
+- **Quota enforcement:** maintain `user_vault_usage` with row-level lock for updates; usage excludes soft-deleted files.
+- **Soft delete behavior:** DB-only soft delete (set `deleted_at`); files remain on disk until cleanup.
+- **Vault list response shape:** list endpoint returns `files` plus `usage`/`limits` and optional `next_cursor`.
+- **Save-to-vault request shape:** `POST /api/v1/vault/files` with
+  `{source_kind:"run_artifact", run_id, artifact_id, name?}`; validate size/quota and ownership; no path leakage.
+- **Retention cleanup:** add `cleanup-vault-files` CLI command to delete soft-deleted vault files past
+  `VAULT_RETENTION_DAYS` and update usage.
 
 ## Non-goals
 

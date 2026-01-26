@@ -271,6 +271,22 @@ onMounted(async () => {
               </RouterLink>
 
               <RouterLink
+                to="/editor"
+                class="dashboard-card group"
+              >
+                <div class="card-header">
+                  <span class="card-label">Kodredigerare</span>
+                  <IconArrow
+                    :size="18"
+                    class="card-arrow"
+                  />
+                </div>
+                <p class="card-description mt-4">
+                  Fortsätt där du slutade eller välj ett verktyg att redigera.
+                </p>
+              </RouterLink>
+
+              <RouterLink
                 to="/suggestions/new"
                 class="dashboard-card group"
               >

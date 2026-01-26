@@ -12,13 +12,25 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-01-25
+- Date: 2026-01-26
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: history in `.agent/readme-first.md`
 
-## Current Session (2026-01-25)
+## Current Session (2026-01-26)
+
+- Editor “byt verktyg” UX + hub route:
+  - `/editor` hub route (auto-open last editor tool; `?pick=1` forces picker): `frontend/apps/skriptoteket/src/views/editor/EditorHubView.vue`,
+    `frontend/apps/skriptoteket/src/router/routes.ts`
+  - Editor MRU (per user) stored in localStorage and recorded on editor boot: `frontend/apps/skriptoteket/src/composables/editor/editorRecentTools.ts`,
+    `frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.ts`
+  - New editor toolbar menu “Verktyg ▾” (recents + my tools + create): `frontend/apps/skriptoteket/src/components/editor/EditorToolMenu.vue`,
+    `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceToolbar.vue`
+  - Shared create-draft modal composable (SRP; used across hub/menu/admin/my tools/home): `frontend/apps/skriptoteket/src/composables/admin/useCreateDraftToolModal.ts`
+  - Modal polish: create-tool modal + login modal inputs aligned with design rules: `frontend/apps/skriptoteket/src/components/admin/CreateDraftToolModal.vue`,
+    `frontend/apps/skriptoteket/src/components/auth/LoginModal.vue`
+  - Docs: `docs/backlog/stories/story-14-38-kodredigerare-verktygsval-och-sok.md`, `docs/backlog/prs/pr-0058-kodredigerare-verktygsval-och-sok.md`
 
 - UI cohesion pass shipped (PR-0056 + PR-0057):
   - Shared segmented toggle: `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue`
@@ -119,6 +131,8 @@ Keep this file updated so the next session can pick up work quickly.
   - Vite (local) on `:5173` → proxy `:8002`: `VITE_DEV_PROXY_TARGET=http://127.0.0.1:8002 pnpm -C frontend --filter @skriptoteket/spa dev`.
   - Vite (GPT) on `:5174` → proxy `:8003`: `VITE_DEV_PROXY_TARGET=http://127.0.0.1:8003 pnpm -C frontend --filter @skriptoteket/spa exec vite --port 5174 --strictPort`.
 - Playwright (real editor requests; escalated permissions required on macOS):
+  - Editor hub + tool menu (Vite dev): `pdm run ui-editor-smoke --base-url http://127.0.0.1:5173`
+    → artifacts: `.artifacts/ui-editor-smoke/editor-hub.png`, `.artifacts/ui-editor-smoke/editor-loaded.png`.
   - Sandbox file refs + session reuse (Vite dev): `pdm run python -m scripts.playwright_sandbox_file_refs_reuse_e2e --base-url http://127.0.0.1:5173`
     → artifacts: `.artifacts/sandbox-file-refs-reuse-e2e/` (editor-ready, test-mode, run-with-upload, run-with-reuse).
   - Production html-to-pdf preview (Vite dev): `pdm run python -m scripts.playwright_st_12_05_session_file_persistence_e2e --base-url http://127.0.0.1:5173`

@@ -36,7 +36,7 @@ const canSeeAdmin = computed(() => auth.hasAtLeastRole("admin"));
         <strong>Förslag</strong>: granska inkomna förslag och fatta beslut.
       </li>
       <li v-if="canSeeAdmin">
-        <strong>Testyta</strong>: publicera/avpublicera och testa verktyg.
+        <strong>Hantera verktyg</strong>: publicera, avpublicera och hantera verktyg.
       </li>
       <li v-if="canSeeAdmin">
         <strong>Skripteditorn</strong>: redigera skript och spara versioner.

@@ -19,6 +19,7 @@ class MyToolItem(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     id: UUID
+    slug: str
     title: str
     summary: str | None
     is_published: bool
@@ -33,6 +34,7 @@ class ListMyToolsResponse(BaseModel):
 def to_my_tool_item(tool: Tool) -> MyToolItem:
     return MyToolItem(
         id=tool.id,
+        slug=tool.slug,
         title=tool.title,
         summary=tool.summary,
         is_published=tool.is_published,

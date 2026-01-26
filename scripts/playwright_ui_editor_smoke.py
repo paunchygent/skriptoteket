@@ -65,24 +65,31 @@ def _login(
 
 
 def _open_editor(page: object, *, base_url: str, artifacts_dir: Path | None = None) -> None:
-    page.goto(f"{base_url}/admin/tools", wait_until="domcontentloaded")
+    page.goto(f"{base_url}/editor?pick=1", wait_until="domcontentloaded")
     try:
         expect(
-            page.get_by_role("heading", name=re.compile(r"(Verktyg|Testyta)", re.IGNORECASE))
+            page.get_by_role("heading", name=re.compile(r"^Kodredigeraren$", re.IGNORECASE))
         ).to_be_visible()
     except AssertionError:
         if artifacts_dir:
             page.screenshot(path=str(artifacts_dir / "open-editor-failure.png"), full_page=True)
         raise
 
-    empty_state = page.get_by_text("Inga verktyg finns.")
-    if empty_state.count() > 0 and empty_state.is_visible():
-        raise RuntimeError("No tools available to verify editor view.")
+    my_tools_loading = page.locator("[data-testid='editor-hub-my-tools-loading']")
+    if my_tools_loading.count() > 0:
+        expect(my_tools_loading.first).not_to_be_visible(timeout=30_000)
 
-    edit_link = page.get_by_role("link", name=re.compile(r"Redigera", re.IGNORECASE)).first
-    expect(edit_link).to_be_visible()
-    edit_link.click()
-    page.wait_for_url("**/admin/**", wait_until="domcontentloaded")
+    my_tools_buttons = page.locator("[data-testid='editor-hub-my-tools-list'] button")
+    if my_tools_buttons.count() > 0:
+        my_tools_buttons.first.click()
+    else:
+        recent_buttons = page.locator("[data-testid='editor-hub-recent-tools-list'] button")
+        if recent_buttons.count() > 0:
+            recent_buttons.first.click()
+        else:
+            raise RuntimeError("No tools available to verify editor view.")
+
+    page.wait_for_url(re.compile(r".*/admin/tools/[^/?#]+"), wait_until="domcontentloaded")
     try:
         editor = page.locator(".cm-editor").first
         expect(editor).to_be_visible(timeout=30_000)
@@ -103,6 +110,27 @@ def _open_editor(page: object, *, base_url: str, artifacts_dir: Path | None = No
                 path=str(artifacts_dir / "chat-drawer-missing.png"),
                 full_page=True,
             )
+        raise
+
+
+def _open_editor_hub(page: object, *, base_url: str, artifacts_dir: Path | None = None) -> None:
+    page.goto(f"{base_url}/editor?pick=1", wait_until="domcontentloaded")
+    try:
+        expect(
+            page.get_by_role("heading", name=re.compile(r"^Kodredigeraren$", re.IGNORECASE))
+        ).to_be_visible()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"^Senast öppnade$", re.IGNORECASE))
+        ).to_be_visible()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"^Mina verktyg$", re.IGNORECASE))
+        ).to_be_visible()
+        expect(page.locator("[data-testid='editor-hub-search-input']")).to_be_visible()
+        if artifacts_dir:
+            page.screenshot(path=str(artifacts_dir / "editor-hub.png"), full_page=True)
+    except AssertionError:
+        if artifacts_dir:
+            page.screenshot(path=str(artifacts_dir / "editor-hub-failure.png"), full_page=True)
         raise
 
 
@@ -158,10 +186,19 @@ def main() -> None:
         page = context.new_page()
 
         _login(page, base_url=base_url, email=email, password=password, artifacts_dir=artifacts_dir)
+        _open_editor_hub(page, base_url=base_url, artifacts_dir=artifacts_dir)
         _open_editor(page, base_url=base_url, artifacts_dir=artifacts_dir)
 
         editor = page.locator(".cm-editor").first
         expect(editor).to_be_visible(timeout=30_000)
+
+        tool_menu_button = page.get_by_role(
+            "button", name=re.compile(r"^Verktyg", re.IGNORECASE)
+        ).first
+        expect(tool_menu_button).to_be_visible()
+        tool_menu_button.click()
+        expect(page.get_by_text(re.compile(r"Aktivt verktyg", re.IGNORECASE))).to_be_visible()
+        page.keyboard.press("Escape")
 
         new_chat_button = page.get_by_role(
             "button", name=re.compile(r"Ny chatt", re.IGNORECASE)

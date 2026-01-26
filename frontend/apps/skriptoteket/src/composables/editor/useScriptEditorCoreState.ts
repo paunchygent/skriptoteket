@@ -77,6 +77,7 @@ export function useScriptEditorCoreState() {
   } = useScriptEditor({
     toolId,
     versionId,
+    userId: currentUserId,
     route,
     router,
     notify,

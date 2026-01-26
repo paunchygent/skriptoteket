@@ -7,7 +7,7 @@ const { showIndex } = useHelp();
 
 <template>
   <HelpTopicLayout
-    title="Testyta (admin)"
+    title="Hantera verktyg"
     @back="showIndex"
   >
     <ul class="list-disc pl-5 space-y-2 text-sm text-navy">

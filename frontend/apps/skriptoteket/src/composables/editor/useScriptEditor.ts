@@ -4,6 +4,7 @@ import type { RouteLocationNormalizedLoaded, Router } from "vue-router";
 import { apiFetch, apiGet, apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import type { UiNotifier } from "../notify";
+import { recordRecentEditorTool } from "./editorRecentTools";
 import { editorBaseRouteKey } from "./editorRouteKey";
 import { parseSchemaJsonArrayText } from "./schemaJsonHelpers";
 
@@ -16,6 +17,7 @@ type InputSchema = NonNullable<EditorBootResponse["input_schema"]>;
 type UseScriptEditorOptions = {
   toolId: Readonly<Ref<string>>;
   versionId: Readonly<Ref<string>>;
+  userId: Readonly<Ref<string | null>>;
   route: RouteLocationNormalizedLoaded;
   router: Router;
   notify: UiNotifier;
@@ -37,6 +39,7 @@ export type EditorBaselineSnapshot = {
 export function useScriptEditor({
   toolId,
   versionId,
+  userId,
   route,
   router,
   notify,
@@ -152,6 +155,15 @@ export function useScriptEditor({
       inputSchemaText: inputSchemaText.value,
       usageInstructions: usageInstructions.value,
     };
+
+    const userIdValue = userId.value;
+    if (userIdValue) {
+      recordRecentEditorTool(userIdValue, {
+        toolId: response.tool.id,
+        title: response.tool.title,
+        slug: response.tool.slug,
+      });
+    }
   }
 
   function suggestToolSlugFromTitle(title: string): string {

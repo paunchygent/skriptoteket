@@ -93,6 +93,14 @@ function onHelp(): void {
         </RouterLink>
         <RouterLink
           v-if="canSeeContributor"
+          to="/editor"
+          class="sidebar-nav-item"
+          @click="onClose"
+        >
+          Kodredigerare
+        </RouterLink>
+        <RouterLink
+          v-if="canSeeContributor"
           to="/suggestions/new"
           class="sidebar-nav-item"
           @click="onClose"
@@ -105,7 +113,7 @@ function onHelp(): void {
           class="sidebar-nav-item"
           @click="onClose"
         >
-          Testyta
+          Hantera verktyg
         </RouterLink>
         <RouterLink
           v-if="canSeeSuperuser"

@@ -90,7 +90,12 @@ function handleDocumentClick(event: MouseEvent): void {
 }
 
 function handleKeydown(event: KeyboardEvent): void {
-  if (event.key === "Escape") {
+  if (event.key !== "Escape") {
+    return;
+  }
+  if (isPresetMenuOpen.value) {
+    event.preventDefault();
+    event.stopPropagation();
     closePresetMenu();
   }
 }

@@ -16,6 +16,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Implementation map (v0.2): `docs/reference/ref-implementation-map-script-hub-v0-2.md`
 - Editor sandbox preview plan: `docs/reference/ref-editor-sandbox-preview-plan.md`
 - Runner execution flow codemap: `docs/reference/reports/codemaps/runner-execution-flow.md`
+- Runner Contract V3 (Structured Results, State & Promotions): `docs/reference/ref-runner-contract-v3.md`
 - AI API surfaces codemap: `docs/reference/reports/codemaps/ai-api-surfaces-tool-editor.md`
 - Observability correlation trace codemap: `docs/reference/reports/codemaps/observability-correlation-trace.md`
 - Tool editor framework codemap: `docs/reference/ref-tool-editor-framework-codemap.md`
@@ -97,6 +98,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0063-runner-request-envelope-v1.md`
 - `docs/adr/adr-0064-file-references-and-resolver.md`
 - `docs/adr/adr-0065-runner-contract-v3-state-update-errors-and-session-promotions.md`
+- `docs/reference/ref-runner-contract-v3.md`
 
 ### PRDs
 
@@ -210,6 +212,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0055-user-file-vault-ui-picker.md`
 - `docs/backlog/prs/pr-0056-shared-segmented-toggle-and-file-picker-row.md`
 - `docs/backlog/prs/pr-0057-browse-cta-removal-and-toolrunview-density-transition-polish.md`
+- `docs/backlog/prs/pr-0058-kodredigerare-verktygsval-och-sok.md`
 - `docs/backlog/prs/pr-0028-editor-focus-mode-and-ai-drawer-density.md`
 - `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md`
 - `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md`
@@ -405,6 +408,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-14-35-tool-datasets-crud-and-picker.md`
 - `docs/backlog/stories/story-14-36-user-file-vault-and-picker.md`
 - `docs/backlog/stories/story-14-37-ui-output-vega-lite.md`
+- `docs/backlog/stories/story-14-38-kodredigerare-verktygsval-och-sok.md`
 - `docs/backlog/stories/story-15-01-user-profile-redesign.md`
 - `docs/backlog/stories/story-15-02-avatar-upload.md`
 - `docs/backlog/stories/story-16-01-favorites-domain-and-database.md`

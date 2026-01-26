@@ -1,53 +1,30 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from "vue";
-import { RouterLink, useRouter } from "vue-router";
+import { computed, onMounted, ref } from "vue";
+import { RouterLink } from "vue-router";
 import { apiGet, apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import CreateDraftToolModal from "../../components/admin/CreateDraftToolModal.vue";
 import { useToast } from "../../composables/useToast";
-import ToolListRow from "../../components/tools/ToolListRow.vue";
 import SystemMessage from "../../components/ui/SystemMessage.vue";
 import ToggleSwitch from "../../components/ui/ToggleSwitch.vue";
+import { useCreateDraftToolModal } from "../../composables/admin/useCreateDraftToolModal";
 
 type ListAdminToolsResponse = components["schemas"]["ListAdminToolsResponse"];
 type AdminToolItem = components["schemas"]["AdminToolItem"];
 type PublishToolResponse = components["schemas"]["PublishToolResponse"];
 type DepublishToolResponse = components["schemas"]["DepublishToolResponse"];
-type CreateDraftToolResponse = components["schemas"]["CreateDraftToolResponse"];
 
 const tools = ref<AdminToolItem[]>([]);
 const isLoading = ref(true);
 const errorMessage = ref<string | null>(null);
 const actionInProgress = ref<string | null>(null);
-const actionColumnWidth = ref("8.5rem");
-const statusPillMinWidth = ref("0");
-const measureEditActionRef = ref<HTMLDivElement | null>(null);
-const measureReviewActionRef = ref<HTMLDivElement | null>(null);
-const measurePillRefs = ref<HTMLSpanElement[]>([]);
-const isCreateModalOpen = ref(false);
-const createTitle = ref("");
-const createSummary = ref("");
-const createError = ref<string | null>(null);
-const isCreating = ref(false);
-const router = useRouter();
 const toast = useToast();
-
-function updateActionColumnWidth(): void {
-  const editWidth = measureEditActionRef.value?.getBoundingClientRect().width ?? 0;
-  const reviewWidth = measureReviewActionRef.value?.getBoundingClientRect().width ?? 0;
-  const next = Math.ceil(Math.max(editWidth, reviewWidth));
-  if (next > 0) {
-    actionColumnWidth.value = `${next}px`;
-  }
-}
-
-function updateStatusPillMinWidth(): void {
-  const widths = measurePillRefs.value.map((el) => el?.getBoundingClientRect().width ?? 0);
-  const maxWidth = Math.ceil(Math.max(...widths, 0));
-  if (maxWidth > 0) {
-    statusPillMinWidth.value = `${maxWidth}px`;
-  }
-}
+const createDraftToolModal = useCreateDraftToolModal();
+const isCreateModalOpen = createDraftToolModal.isOpen;
+const createTitle = createDraftToolModal.title;
+const createSummary = createDraftToolModal.summary;
+const createError = createDraftToolModal.error;
+const isCreating = createDraftToolModal.isSubmitting;
 
 // Split tools into two sections (ADR-0033)
 const inProgressTools = computed(() =>
@@ -66,104 +43,22 @@ const readyToolsWithoutPendingReview = computed(() =>
   readyTools.value.filter((t) => !t.has_pending_review),
 );
 
-// Determine which section gets the "Skapa nytt verktyg" button (first visible section)
-type SectionId = "in-progress" | "pending-review" | "ready";
-const firstVisibleSection = computed<SectionId>(() => {
-  if (inProgressTools.value.length > 0) return "in-progress";
-  if (readyToolsWithPendingReview.value.length > 0) return "pending-review";
-  return "ready";
-});
-
-const editActionClass = "btn-ghost text-center no-underline";
-
-const reviewActionClass = "btn-cta text-center no-underline";
-
-function actionLabel(tool: AdminToolItem): string {
-  return tool.has_pending_review ? "Granska" : "Redigera";
-}
-
-function actionClass(tool: AdminToolItem): string {
-  return tool.has_pending_review ? reviewActionClass : editActionClass;
-}
-
-// Status label for tools in development
-function getDevStatus(tool: AdminToolItem): string {
-  if (tool.version_count === 0) return "Ingen kod";
-  if (tool.has_pending_review) return "Granskas";
-  if (tool.latest_version_state === "draft") return "Arbetsversion";
-  return "";
-}
-
-// Status styling for tools in development
-function getDevStatusClass(tool: AdminToolItem): string {
-  if (tool.has_pending_review)
-    return "bg-burgundy/10 text-burgundy border border-burgundy/40";
-  if (tool.version_count === 0) return "bg-navy/10 text-navy/60";
-  return "bg-canvas text-navy/70 border border-navy/30";
-}
-
-function formatDateTime(value: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-  return date.toLocaleString("sv-SE", { dateStyle: "medium", timeStyle: "short" });
-}
-
 function truncate(text: string | null, maxLength: number): string {
   if (!text) return "-";
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength) + "...";
 }
 
-function normalizedOptionalString(value: string): string | null {
-  const trimmed = value.trim();
-  return trimmed ? trimmed : null;
-}
-
 function openCreateModal(): void {
-  createTitle.value = "";
-  createSummary.value = "";
-  createError.value = null;
-  isCreateModalOpen.value = true;
+  createDraftToolModal.open();
 }
 
 function closeCreateModal(): void {
-  isCreateModalOpen.value = false;
+  createDraftToolModal.close();
 }
 
 async function createDraftTool(): Promise<void> {
-  if (isCreating.value) return;
-
-  const title = createTitle.value.trim();
-  if (!title) {
-    createError.value = "Titel krävs.";
-    return;
-  }
-
-  isCreating.value = true;
-  createError.value = null;
-
-  try {
-    const response = await apiPost<CreateDraftToolResponse>("/api/v1/admin/tools", {
-      title,
-      summary: normalizedOptionalString(createSummary.value),
-    });
-
-    closeCreateModal();
-    toast.success("Verktyg skapat.");
-    await router.push(`/admin/tools/${response.tool.id}`);
-  } catch (error: unknown) {
-    if (isApiError(error)) {
-      createError.value = error.message;
-    } else if (error instanceof Error) {
-      createError.value = error.message;
-    } else {
-      createError.value = "Det gick inte att skapa verktyget.";
-    }
-  } finally {
-    isCreating.value = false;
-  }
+  await createDraftToolModal.submit();
 }
 
 async function load(): Promise<void> {
@@ -260,59 +155,23 @@ async function togglePublishState(tool: AdminToolItem, newValue: boolean): Promi
 
 onMounted(() => {
   void load();
-  void nextTick().then(() => {
-    updateActionColumnWidth();
-    updateStatusPillMinWidth();
-  });
 });
 </script>
 
 <template>
-  <div
-    class="space-y-8"
-    :style="{ '--admin-tools-action-col': actionColumnWidth, '--admin-tools-pill-min-w': statusPillMinWidth }"
-  >
-    <div
-      class="fixed -left-[9999px] top-0 opacity-0 pointer-events-none"
-      aria-hidden="true"
-    >
-      <div
-        ref="measureEditActionRef"
-        :class="editActionClass"
-      >
-        Redigera
-      </div>
-      <div
-        ref="measureReviewActionRef"
-        :class="reviewActionClass"
-      >
-        Granska
-      </div>
-      <span
-        :ref="(el) => { if (el) measurePillRefs[0] = el as HTMLSpanElement }"
-        class="status-pill bg-navy/10 text-navy/60"
-      >
-        Ingen kod
-      </span>
-      <span
-        :ref="(el) => { if (el) measurePillRefs[1] = el as HTMLSpanElement }"
-        class="status-pill bg-canvas text-navy/70 border border-navy/30"
-      >
-        Arbetsversion
-      </span>
-      <span
-        :ref="(el) => { if (el) measurePillRefs[2] = el as HTMLSpanElement }"
-        class="status-pill bg-burgundy/10 text-burgundy border border-burgundy/40"
-      >
-        Granskas
-      </span>
-    </div>
-
+  <div class="space-y-6">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between w-full">
       <div class="space-y-2 max-w-[40rem]">
-        <h1 class="page-title">Testyta</h1>
+        <h1 class="page-title">Hantera verktyg</h1>
         <p class="page-description">Hantera publicering av verktyg.</p>
       </div>
+      <button
+        type="button"
+        class="btn-primary shrink-0"
+        @click="openCreateModal"
+      >
+        Skapa nytt verktyg
+      </button>
     </div>
 
     <SystemMessage
@@ -331,111 +190,54 @@ onMounted(() => {
       <!-- Section 1: Pågående (tools in development) - only show if has items -->
       <section
         v-if="inProgressTools.length > 0"
-        class="space-y-3 w-full"
+        class="space-y-3"
       >
-        <div class="relative flex items-end justify-between">
-          <div class="max-w-[40rem]">
-            <h2 class="text-lg font-semibold text-navy">Pågående</h2>
-            <p class="text-sm text-navy/60 leading-none">Verktyg under utveckling</p>
-          </div>
-          <button
-            v-if="firstVisibleSection === 'in-progress'"
-            type="button"
-            class="btn-primary"
-            @click="openCreateModal"
-          >
-            Skapa nytt verktyg
-          </button>
-        </div>
-
-        <ul class="w-full border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15">
-          <ToolListRow
+        <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+          Pågående
+        </h2>
+        <ul class="border border-navy bg-white shadow-brutal-sm">
+          <li
             v-for="tool in inProgressTools"
             :key="tool.id"
-            grid-class="sm:grid-cols-[1fr_12rem_var(--admin-tools-action-col)]"
-            main-class="space-y-1 min-w-0 lg:max-w-[40rem]"
-            status-class="justify-self-start"
+            class="border-b border-navy/20 last:border-b-0"
           >
-            <template #main>
-              <div class="text-base font-semibold text-navy truncate">{{ tool.title }}</div>
-              <div class="text-xs text-navy/60">
-                URL-namn: <span class="font-mono">{{ tool.slug }}</span>
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 p-4 hover:bg-canvas transition-colors">
+              <div class="flex flex-col gap-1 min-w-0 max-w-[40rem]">
+                <span class="text-sm font-medium text-navy">{{ tool.title }}</span>
+                <span class="text-xs text-navy/60 break-words">{{ truncate(tool.summary, 80) }}</span>
               </div>
-              <div class="text-xs text-navy/70">
-                {{ truncate(tool.summary, 80) }}
-              </div>
-            </template>
-
-            <template #status>
-              <span
-                v-if="getDevStatus(tool)"
-                class="status-pill justify-center"
-                :class="getDevStatusClass(tool)"
-                :style="{ minWidth: statusPillMinWidth }"
-              >
-                {{ getDevStatus(tool) }}
-              </span>
-            </template>
-
-            <template #actions>
               <RouterLink
                 :to="`/admin/tools/${tool.id}`"
-                :class="[actionClass(tool), 'w-full']"
+                class="shrink-0 text-sm font-medium text-navy border-b border-navy/40 pb-0.5 hover:text-burgundy hover:border-burgundy transition-colors"
               >
-                {{ actionLabel(tool) }}
+                Redigera
               </RouterLink>
-            </template>
-          </ToolListRow>
+            </div>
+          </li>
         </ul>
       </section>
 
       <!-- Section 2: Klara med ändringar (publishable tools with in-review updates) -->
       <section
         v-if="readyToolsWithPendingReview.length > 0"
-        class="space-y-3 w-full"
+        class="space-y-3"
       >
-        <div class="relative flex items-end justify-between">
-          <div class="max-w-[40rem]">
-            <h2 class="text-lg font-semibold text-navy">Klara med ändringar</h2>
-            <p class="text-sm text-navy/60">Publicerade verktyg med ny version under granskning</p>
-          </div>
-          <button
-            v-if="firstVisibleSection === 'pending-review'"
-            type="button"
-            class="btn-primary"
-            @click="openCreateModal"
-          >
-            Skapa nytt verktyg
-          </button>
-        </div>
-        <ul class="w-full border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15">
-          <ToolListRow
+        <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+          Klara med ändringar
+        </h2>
+        <ul class="border border-navy bg-white shadow-brutal-sm">
+          <li
             v-for="tool in readyToolsWithPendingReview"
             :key="tool.id"
-            grid-class="sm:grid-cols-[1fr_12rem_var(--admin-tools-action-col)]"
-            main-class="space-y-1 min-w-0 lg:max-w-[40rem]"
-            status-class="justify-self-start"
+            class="border-b border-navy/20 last:border-b-0"
           >
-            <template #main>
-              <div class="text-base font-semibold text-navy truncate">{{ tool.title }}</div>
-              <div class="text-xs text-navy/60">
-                URL-namn: <span class="font-mono">{{ tool.slug }}</span> · Uppdaterad
-                {{ formatDateTime(tool.updated_at) }}
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 p-4 hover:bg-canvas transition-colors">
+              <div class="flex flex-col gap-1 min-w-0 max-w-[40rem]">
+                <span class="text-sm font-medium text-navy">{{ tool.title }}</span>
+                <span class="text-xs text-navy/60 break-words">{{ truncate(tool.summary, 80) }}</span>
               </div>
-              <div class="text-xs text-navy/70">
-                {{ truncate(tool.summary, 80) }}
-              </div>
-            </template>
-
-            <template #status>
-              <div class="flex flex-col items-start gap-2">
-                <span
-                  class="status-pill justify-center bg-burgundy/10 text-burgundy"
-                  :style="{ minWidth: statusPillMinWidth }"
-                >
-                  Granskas
-                </span>
-                <div class="flex items-center gap-2">
+              <div class="flex items-center gap-4 shrink-0">
+                <div class="flex items-center gap-2 w-[8.5rem]">
                   <ToggleSwitch
                     :model-value="tool.is_published"
                     :disabled="actionInProgress === tool.id"
@@ -448,84 +250,60 @@ onMounted(() => {
                     {{ tool.is_published ? "Publicerad" : "Ej publicerad" }}
                   </span>
                 </div>
+                <RouterLink
+                  :to="`/admin/tools/${tool.id}`"
+                  class="text-sm font-semibold text-burgundy border-b border-burgundy/40 pb-0.5 hover:border-burgundy transition-colors"
+                >
+                  Granska
+                </RouterLink>
               </div>
-            </template>
-
-            <template #actions>
-              <RouterLink
-                :to="`/admin/tools/${tool.id}`"
-                :class="[actionClass(tool), 'w-full']"
-              >
-                {{ actionLabel(tool) }}
-              </RouterLink>
-            </template>
-          </ToolListRow>
+            </div>
+          </li>
         </ul>
       </section>
 
       <!-- Section 3: Klara (publishable tools) -->
       <section
         v-if="readyToolsWithoutPendingReview.length > 0"
-        class="space-y-3 w-full"
+        class="space-y-3"
       >
-        <div class="relative flex items-end justify-between">
-          <div class="max-w-[40rem]">
-            <h2 class="text-lg font-semibold text-navy">Klara</h2>
-            <p class="text-sm text-navy/60">Verktyg med godkänt skript</p>
-          </div>
-          <button
-            v-if="firstVisibleSection === 'ready'"
-            type="button"
-            class="btn-primary"
-            @click="openCreateModal"
-          >
-            Skapa nytt verktyg
-          </button>
-        </div>
-        <ul class="w-full border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15">
-          <ToolListRow
+        <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+          Klara
+        </h2>
+        <ul class="border border-navy bg-white shadow-brutal-sm">
+          <li
             v-for="tool in readyToolsWithoutPendingReview"
             :key="tool.id"
-            grid-class="sm:grid-cols-[1fr_12rem_var(--admin-tools-action-col)]"
-            main-class="space-y-1 min-w-0 lg:max-w-[40rem]"
-            status-class="justify-self-start"
+            class="border-b border-navy/20 last:border-b-0"
           >
-            <template #main>
-              <div class="text-base font-semibold text-navy truncate">{{ tool.title }}</div>
-              <div class="text-xs text-navy/60">
-                URL-namn: <span class="font-mono">{{ tool.slug }}</span> · Uppdaterad
-                {{ formatDateTime(tool.updated_at) }}
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 p-4 hover:bg-canvas transition-colors">
+              <div class="flex flex-col gap-1 min-w-0 max-w-[40rem]">
+                <span class="text-sm font-medium text-navy">{{ tool.title }}</span>
+                <span class="text-xs text-navy/60 break-words">{{ truncate(tool.summary, 80) }}</span>
               </div>
-              <div class="text-xs text-navy/70">
-                {{ truncate(tool.summary, 80) }}
-              </div>
-            </template>
-
-            <template #status>
-              <div class="flex items-center gap-2">
-                <ToggleSwitch
-                  :model-value="tool.is_published"
-                  :disabled="actionInProgress === tool.id"
-                  @update:model-value="togglePublishState(tool, $event)"
-                />
-                <span
-                  class="text-xs whitespace-nowrap"
-                  :class="tool.is_published ? 'text-success font-medium' : 'text-navy/50'"
+              <div class="flex items-center gap-4 shrink-0">
+                <div class="flex items-center gap-2 w-[8.5rem]">
+                  <ToggleSwitch
+                    :model-value="tool.is_published"
+                    :disabled="actionInProgress === tool.id"
+                    @update:model-value="togglePublishState(tool, $event)"
+                  />
+                  <span
+                    class="text-xs whitespace-nowrap"
+                    :class="tool.is_published ? 'text-success font-medium' : 'text-navy/50'"
+                  >
+                    {{ tool.is_published ? "Publicerad" : "Ej publicerad" }}
+                  </span>
+                </div>
+                <RouterLink
+                  :to="`/admin/tools/${tool.id}`"
+                  class="text-sm font-medium text-navy border-b border-navy/40 pb-0.5 hover:text-burgundy hover:border-burgundy transition-colors"
                 >
-                  {{ tool.is_published ? "Publicerad" : "Ej publicerad" }}
-                </span>
+                  Redigera
+                </RouterLink>
               </div>
-            </template>
-
-            <template #actions>
-              <RouterLink
-                :to="`/admin/tools/${tool.id}`"
-                :class="[actionClass(tool), 'w-full']"
-              >
-                {{ actionLabel(tool) }}
-              </RouterLink>
-            </template>
-          </ToolListRow>
+            </div>
+          </li>
         </ul>
       </section>
     </template>

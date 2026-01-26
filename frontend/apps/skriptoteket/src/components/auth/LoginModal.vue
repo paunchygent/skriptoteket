@@ -83,7 +83,7 @@ async function onSubmit(): Promise<void> {
           >
             <div>
               <label
-                class="block text-sm font-semibold text-navy mb-1"
+                class="block text-xs font-semibold uppercase tracking-wide text-navy/70 mb-1"
                 for="modal-email"
               >
                 E-post
@@ -94,14 +94,14 @@ async function onSubmit(): Promise<void> {
                 type="email"
                 autocomplete="username"
                 required
-                class="w-full px-3 py-2 border border-navy bg-white text-navy"
+                class="w-full px-3 py-2 border border-navy bg-white text-sm text-navy shadow-brutal-sm"
                 :disabled="isSubmitting"
               >
             </div>
 
             <div>
               <label
-                class="block text-sm font-semibold text-navy mb-1"
+                class="block text-xs font-semibold uppercase tracking-wide text-navy/70 mb-1"
                 for="modal-password"
               >
                 Lösenord
@@ -112,7 +112,7 @@ async function onSubmit(): Promise<void> {
                 type="password"
                 autocomplete="current-password"
                 required
-                class="w-full px-3 py-2 border border-navy bg-white text-navy"
+                class="w-full px-3 py-2 border border-navy bg-white text-sm text-navy shadow-brutal-sm"
                 :disabled="isSubmitting"
               >
             </div>

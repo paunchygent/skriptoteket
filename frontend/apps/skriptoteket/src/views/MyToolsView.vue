@@ -1,80 +1,43 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { RouterLink, useRouter } from "vue-router";
+import { RouterLink } from "vue-router";
 
-import { apiGet, apiPost, isApiError } from "../api/client";
+import { apiGet, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
 import ToolListRow from "../components/tools/ToolListRow.vue";
 import CreateDraftToolModal from "../components/admin/CreateDraftToolModal.vue";
-import { useToast } from "../composables/useToast";
+import { useCreateDraftToolModal } from "../composables/admin/useCreateDraftToolModal";
+import { useAuthStore } from "../stores/auth";
 
 type ListMyToolsResponse = components["schemas"]["ListMyToolsResponse"];
 type MyToolItem = components["schemas"]["MyToolItem"];
-type CreateDraftToolResponse = components["schemas"]["CreateDraftToolResponse"];
 
 const tools = ref<MyToolItem[]>([]);
 const isLoading = ref(true);
 const errorMessage = ref<string | null>(null);
 
-const isCreateModalOpen = ref(false);
-const createTitle = ref("");
-const createSummary = ref("");
-const createError = ref<string | null>(null);
-const isCreating = ref(false);
+const auth = useAuthStore();
+const canCreateTool = computed(() => auth.hasAtLeastRole("admin"));
 
-const router = useRouter();
-const toast = useToast();
+const createDraftToolModal = useCreateDraftToolModal();
+const isCreateModalOpen = createDraftToolModal.isOpen;
+const createTitle = createDraftToolModal.title;
+const createSummary = createDraftToolModal.summary;
+const createError = createDraftToolModal.error;
+const isCreating = createDraftToolModal.isSubmitting;
 
 const hasTools = computed(() => tools.value.length > 0);
 
 function openCreateModal(): void {
-  createTitle.value = "";
-  createSummary.value = "";
-  createError.value = null;
-  isCreateModalOpen.value = true;
+  createDraftToolModal.open();
 }
 
 function closeCreateModal(): void {
-  isCreateModalOpen.value = false;
-}
-
-function normalizedOptionalString(value: string): string | null {
-  const trimmed = value.trim();
-  return trimmed ? trimmed : null;
+  createDraftToolModal.close();
 }
 
 async function createDraftTool(): Promise<void> {
-  if (isCreating.value) return;
-
-  const title = createTitle.value.trim();
-  if (!title) {
-    createError.value = "Titel krävs.";
-    return;
-  }
-
-  isCreating.value = true;
-  createError.value = null;
-
-  try {
-    const response = await apiPost<CreateDraftToolResponse>("/api/v1/admin/tools", {
-      title,
-      summary: normalizedOptionalString(createSummary.value),
-    });
-
-    closeCreateModal();
-    toast.success("Verktyg skapat.");
-    await router.push(`/admin/tools/${response.tool.id}`);
-  } catch (error: unknown) {
-    if (isApiError(error)) {
-      createError.value = error.message;
-    } else if (error instanceof Error) {
-      createError.value = error.message;
-    } else {
-      createError.value = "Det gick inte att skapa verktyget.";
-    }
-  } finally {
-    isCreating.value = false;
-  }
+  await createDraftToolModal.submit();
 }
 
 async function loadTools(): Promise<void> {
@@ -131,16 +94,25 @@ onMounted(() => {
         <p class="text-navy font-semibold">Du har inga verktyg att underhålla ännu.</p>
         <p class="text-sm text-navy/60 max-w-sm">
           Här samlas verktyg som du skapat eller blivit tilldelad ansvar för.
-          Vill du börja bygga något nytt?
+          <template v-if="canCreateTool">Vill du börja bygga något nytt?</template>
+          <template v-else>Har du en idé? Föreslå ett verktyg.</template>
         </p>
       </div>
       <button
+        v-if="canCreateTool"
         type="button"
         class="btn-primary px-6"
         @click="openCreateModal"
       >
         Skapa ditt första verktyg
       </button>
+      <RouterLink
+        v-else
+        to="/suggestions/new"
+        class="btn-primary px-6 no-underline"
+      >
+        Föreslå verktyg
+      </RouterLink>
     </div>
 
     <ul

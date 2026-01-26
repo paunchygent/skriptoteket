@@ -90,6 +90,10 @@ const chatColumnWidth = computed(() => {
 
           <div class="min-w-0 md:col-start-1 md:row-start-3 md:self-end">
             <EditorWorkspaceToolbar
+              :tool-id="props.toolId"
+              :tool-title="props.metadataTitle"
+              :tool-slug="props.metadataSlug"
+              :can-create-tool="props.canEditTaxonomy"
               :is-saving="props.isSaving"
               :is-read-only="props.isReadOnly"
               :has-dirty-changes="props.hasDirtyChanges"

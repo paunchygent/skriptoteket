@@ -82,6 +82,12 @@ export const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, minRole: "contributor" },
   },
   {
+    path: "/editor",
+    name: "editor-hub",
+    component: () => import("../views/editor/EditorHubView.vue"),
+    meta: { requiresAuth: true, minRole: "contributor" },
+  },
+  {
     path: "/admin/tools",
     name: "admin-tools",
     component: () => import("../views/admin/AdminToolsView.vue"),

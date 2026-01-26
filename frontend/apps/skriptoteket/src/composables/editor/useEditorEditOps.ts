@@ -121,7 +121,7 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
 
   const applyDisabledReason = computed(() => {
     if (!proposal.value) return null;
-    if (isReadOnly.value) return "Editorn är låst för redigering.";
+    if (isReadOnly.value) return "Kodredigeraren är låst för redigering.";
     if (isPreviewing.value) return "Skapar förhandsvisning...";
     if (previewError.value) return previewError.value;
     if (!hasChanges.value) return "Inga ändringar att tillämpa.";
@@ -144,7 +144,7 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
 
   const undoDisabledReason = computed(() => {
     if (!lastApplied.value) return null;
-    if (isReadOnly.value) return "Editorn är låst för redigering.";
+    if (isReadOnly.value) return "Kodredigeraren är låst för redigering.";
     if (aiPosition.value !== "after") {
       return "AI-ändringen är redan återställd.";
     }
@@ -164,7 +164,7 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
 
   const redoDisabledReason = computed(() => {
     if (!lastApplied.value) return null;
-    if (isReadOnly.value) return "Editorn är låst för redigering.";
+    if (isReadOnly.value) return "Kodredigeraren är låst för redigering.";
     if (aiPosition.value !== "before") {
       return "Ingen AI-ändring att återställa.";
     }
@@ -354,7 +354,7 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       return false;
     }
     if (isReadOnly.value) {
-      applyError.value = "Editorn är låst för redigering.";
+      applyError.value = "Kodredigeraren är låst för redigering.";
       return false;
     }
 

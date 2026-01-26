@@ -56,8 +56,8 @@ const adminIndexItems: IndexItem[] = [
   },
   {
     topic: "admin_tools",
-    title: "Testyta",
-    description: "Publicera/avpublicera och testa.",
+    title: "Hantera verktyg",
+    description: "Publicera, avpublicera och hantera verktyg.",
   },
   {
     topic: "admin_editor",

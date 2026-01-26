@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
+import EditorToolMenu from "./EditorToolMenu.vue";
+
 type EditorWorkspaceToolbarProps = {
+  toolId: string;
+  toolTitle: string;
+  toolSlug: string;
+  canCreateTool: boolean;
   isSaving: boolean;
   isReadOnly: boolean;
   hasDirtyChanges: boolean;
@@ -60,7 +66,7 @@ const isSaveDisabled = computed(
 const saveBlockers = computed(() => {
   const blockers: string[] = [];
   if (props.isReadOnly) {
-    blockers.push("Editorn är låst för redigering.");
+    blockers.push("Kodredigeraren är låst för redigering.");
   }
   if (props.inputSchemaError) {
     blockers.push("Indata (JSON): ogiltig. Kontrollera “Indata & inställningar”.");
@@ -111,10 +117,17 @@ function handleDocumentClick(event: MouseEvent): void {
 }
 
 function handleKeydown(event: KeyboardEvent): void {
-  if (event.key === "Escape") {
-    closeSaveMenu();
-    closeAiMenu();
+  if (event.key !== "Escape") {
+    return;
   }
+
+  if (isSaveMenuOpen.value || isAiMenuOpen.value) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  closeSaveMenu();
+  closeAiMenu();
 }
 
 onMounted(() => {
@@ -272,6 +285,13 @@ function formatDateTime(value: string | number): string {
           </div>
         </div>
       </div>
+
+      <EditorToolMenu
+        :active-tool-id="props.toolId"
+        :active-tool-title="props.toolTitle"
+        :active-tool-slug="props.toolSlug"
+        :can-create-tool="props.canCreateTool"
+      />
 
       <button
         type="button"

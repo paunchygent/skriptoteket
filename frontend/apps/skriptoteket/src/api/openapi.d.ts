@@ -2453,6 +2453,8 @@ export interface components {
             id: string;
             /** Is Published */
             is_published: boolean;
+            /** Slug */
+            slug: string;
             /** Summary */
             summary: string | null;
             /** Title */
