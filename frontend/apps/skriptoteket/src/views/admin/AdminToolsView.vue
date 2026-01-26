@@ -56,6 +56,14 @@ const readyToolsWithoutPendingReview = computed(() =>
   readyTools.value.filter((t) => !t.has_pending_review),
 );
 
+// Determine which section gets the "Skapa nytt verktyg" button (first visible section)
+type SectionId = "in-progress" | "pending-review" | "ready";
+const firstVisibleSection = computed<SectionId>(() => {
+  if (inProgressTools.value.length > 0) return "in-progress";
+  if (readyToolsWithPendingReview.value.length > 0) return "pending-review";
+  return "ready";
+});
+
 const editActionClass = "btn-ghost text-center no-underline";
 
 const reviewActionClass = "btn-cta text-center no-underline";
@@ -289,14 +297,18 @@ onMounted(() => {
     </div>
 
     <template v-else>
-      <!-- Section 1: Pågående (tools in development) -->
-      <section class="space-y-3 w-full">
+      <!-- Section 1: Pågående (tools in development) - only show if has items -->
+      <section
+        v-if="inProgressTools.length > 0"
+        class="space-y-3 w-full"
+      >
         <div class="relative flex items-end justify-between">
           <div class="max-w-[40rem]">
             <h2 class="text-lg font-semibold text-navy">Pågående</h2>
             <p class="text-sm text-navy/60 leading-none">Verktyg under utveckling</p>
           </div>
           <button
+            v-if="firstVisibleSection === 'in-progress'"
             type="button"
             class="btn-primary"
             @click="openCreateModal"
@@ -305,24 +317,7 @@ onMounted(() => {
           </button>
         </div>
 
-        <!-- Empty state within Section 1 if no in-progress tools -->
-        <div
-          v-if="inProgressTools.length === 0"
-          class="w-full p-8 border border-navy bg-white shadow-brutal flex flex-col items-center text-center space-y-4"
-        >
-          <div class="space-y-2 max-w-[40rem]">
-            <p class="text-navy font-semibold">Här visas verktyg som inte har publicerats än.</p>
-            <p class="text-sm text-navy/60">
-              För närvarande är alla verktyg publicerade.
-              Skapa ett nytt verktyg om du saknar något som du skulle vilja utveckla.
-            </p>
-          </div>
-        </div>
-
-        <ul
-          v-else
-          class="w-full border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15"
-        >
+        <ul class="w-full border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15">
           <ToolListRow
             v-for="tool in inProgressTools"
             :key="tool.id"
@@ -367,9 +362,19 @@ onMounted(() => {
         v-if="readyToolsWithPendingReview.length > 0"
         class="space-y-3 w-full"
       >
-        <div class="max-w-[40rem]">
-          <h2 class="text-lg font-semibold text-navy">Klara med ändringar</h2>
-          <p class="text-sm text-navy/60">Publicerade verktyg med ny version under granskning</p>
+        <div class="relative flex items-end justify-between">
+          <div class="max-w-[40rem]">
+            <h2 class="text-lg font-semibold text-navy">Klara med ändringar</h2>
+            <p class="text-sm text-navy/60">Publicerade verktyg med ny version under granskning</p>
+          </div>
+          <button
+            v-if="firstVisibleSection === 'pending-review'"
+            type="button"
+            class="btn-primary"
+            @click="openCreateModal"
+          >
+            Skapa nytt verktyg
+          </button>
         </div>
         <ul class="w-full border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15">
           <ToolListRow
@@ -380,16 +385,7 @@ onMounted(() => {
             status-class="justify-self-start"
           >
             <template #main>
-              <div class="flex flex-col gap-1 min-w-0 sm:flex-row sm:items-center sm:gap-2">
-                <div class="text-base font-semibold text-navy truncate min-w-0">
-                  {{ tool.title }}
-                </div>
-                <span
-                  class="status-pill bg-burgundy/10 text-burgundy border border-burgundy/40 self-start sm:self-auto shrink-0"
-                >
-                  Ny version granskas
-                </span>
-              </div>
+              <div class="text-base font-semibold text-navy truncate">{{ tool.title }}</div>
               <div class="text-xs text-navy/60">
                 URL-namn: <span class="font-mono">{{ tool.slug }}</span> · Uppdaterad
                 {{ formatDateTime(tool.updated_at) }}
@@ -427,14 +423,24 @@ onMounted(() => {
         </ul>
       </section>
 
-      <!-- Section 2: Klara (publishable tools) -->
+      <!-- Section 3: Klara (publishable tools) -->
       <section
         v-if="readyToolsWithoutPendingReview.length > 0"
         class="space-y-3 w-full"
       >
-        <div class="max-w-[40rem]">
-          <h2 class="text-lg font-semibold text-navy">Klara</h2>
-          <p class="text-sm text-navy/60">Verktyg med godkänt skript</p>
+        <div class="relative flex items-end justify-between">
+          <div class="max-w-[40rem]">
+            <h2 class="text-lg font-semibold text-navy">Klara</h2>
+            <p class="text-sm text-navy/60">Verktyg med godkänt skript</p>
+          </div>
+          <button
+            v-if="firstVisibleSection === 'ready'"
+            type="button"
+            class="btn-primary"
+            @click="openCreateModal"
+          >
+            Skapa nytt verktyg
+          </button>
         </div>
         <ul class="w-full border border-navy bg-white shadow-brutal-sm divide-y divide-navy/15">
           <ToolListRow
