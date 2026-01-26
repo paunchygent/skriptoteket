@@ -38,7 +38,7 @@ describe("editorChatApi", () => {
 
   it("posts chat stream with csrf + correlation headers", async () => {
     const fetchMock = vi
-      .fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>()
+      .fn<typeof fetch>()
       .mockResolvedValue(new Response(null, { status: 200 }));
     globalThis.fetch = fetchMock;
 

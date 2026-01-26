@@ -1,28 +1,17 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { storeToRefs } from "pinia";
 
 import { isApiError } from "../api/client";
 import ProfileDisplay from "../components/profile/ProfileDisplay.vue";
-import ProfileEditAiSettings from "../components/profile/ProfileEditAiSettings.vue";
-import ProfileEditEmail from "../components/profile/ProfileEditEmail.vue";
-import ProfileEditPassword from "../components/profile/ProfileEditPassword.vue";
-import ProfileEditPersonal from "../components/profile/ProfileEditPersonal.vue";
 import SystemMessage from "../components/ui/SystemMessage.vue";
 import { useProfile } from "../composables/useProfile";
-import { useAiStore } from "../stores/ai";
 import { useAuthStore } from "../stores/auth";
 
-type EditingSection = "personal" | "email" | "password" | "ai" | null;
-
 const auth = useAuthStore();
-const ai = useAiStore();
-const { remoteFallbackPreference } = storeToRefs(ai);
 const { profile, load } = useProfile();
 
 const isLoading = ref(true);
 const loadError = ref<string | null>(null);
-const editingSection = ref<EditingSection>(null);
 
 const currentEmail = computed(() => auth.user?.email ?? "");
 const createdAt = computed(() => auth.user?.created_at ?? undefined);
@@ -46,17 +35,7 @@ async function loadProfile(): Promise<void> {
   }
 }
 
-function handleEditRequest(section: "personal" | "email" | "password" | "ai"): void {
-  editingSection.value = section;
-}
-
-function handleCancel(): void {
-  editingSection.value = null;
-}
-
-async function handleSaved(): Promise<void> {
-  editingSection.value = null;
-  // Reload profile to get fresh data
+async function handleProfileUpdated(): Promise<void> {
   await loadProfile();
 }
 
@@ -78,81 +57,55 @@ onMounted(() => {
       class="expand-left-40"
     />
 
-    <div
-      v-if="isLoading"
-      class="space-y-6 expand-left-40"
+    <Transition
+      name="profile-fade"
+      mode="out-in"
     >
-      <div class="h-20 animate-pulse border border-navy/20 bg-navy/5" />
-      <div class="h-28 animate-pulse border border-navy/20 bg-navy/5" />
-      <div class="h-16 animate-pulse border border-navy/20 bg-navy/5" />
-      <div class="h-16 animate-pulse border border-navy/20 bg-navy/5" />
-    </div>
-
-    <template v-else-if="!loadError">
-      <Transition
-        name="profile-section"
-        mode="out-in"
+      <div
+        v-if="isLoading"
+        key="loading"
+        class="expand-left-40 border border-navy bg-white shadow-brutal-sm"
       >
-        <ProfileDisplay
-          v-if="!editingSection"
-          :profile="profile"
-          :email="currentEmail"
-          :created-at="createdAt"
-          :remote-fallback-preference="remoteFallbackPreference"
-          @edit="handleEditRequest"
-        />
+        <div class="flex items-center gap-4 border-b border-navy/20 p-4">
+          <div class="h-14 w-14 shrink-0 animate-pulse border-2 border-navy/20 bg-navy/10" />
+          <div class="flex-1 space-y-2">
+            <div class="h-5 w-32 animate-pulse bg-navy/10" />
+            <div class="h-4 w-48 animate-pulse bg-navy/10" />
+          </div>
+        </div>
+        <div class="divide-y divide-navy/10 p-4">
+          <div class="h-10 animate-pulse bg-navy/5" />
+          <div class="h-10 animate-pulse bg-navy/5" />
+          <div class="h-10 animate-pulse bg-navy/5" />
+        </div>
+      </div>
 
-        <ProfileEditPersonal
-          v-else-if="editingSection === 'personal' && profile"
-          :profile="profile"
-          @cancel="handleCancel"
-          @saved="handleSaved"
-        />
-
-        <ProfileEditEmail
-          v-else-if="editingSection === 'email'"
-          :current-email="currentEmail"
-          @cancel="handleCancel"
-          @saved="handleSaved"
-        />
-
-        <ProfileEditPassword
-          v-else-if="editingSection === 'password'"
-          @cancel="handleCancel"
-          @saved="handleSaved"
-        />
-
-        <ProfileEditAiSettings
-          v-else-if="editingSection === 'ai'"
-          @cancel="handleCancel"
-          @saved="handleSaved"
-        />
-      </Transition>
-    </template>
+      <ProfileDisplay
+        v-else-if="!loadError"
+        key="content"
+        :profile="profile"
+        :email="currentEmail"
+        :created-at="createdAt"
+        @profile-updated="handleProfileUpdated"
+      />
+    </Transition>
   </div>
 </template>
 
 <style scoped>
-.profile-section-enter-active,
-.profile-section-leave-active {
-  transition:
-    opacity var(--huleedu-duration-slow, 300ms) var(--huleedu-ease-default, ease),
-    transform var(--huleedu-duration-slow, 300ms) var(--huleedu-ease-default, ease);
+.profile-fade-enter-active,
+.profile-fade-leave-active {
+  transition: opacity var(--huleedu-duration-default, 200ms) var(--huleedu-ease-default, ease);
 }
 
-.profile-section-enter-from {
+.profile-fade-enter-from,
+.profile-fade-leave-to {
   opacity: 0;
-  transform: translateY(8px);
-}
-
-.profile-section-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .profile-section-enter-active,
-  .profile-section-leave-active {
+  .profile-fade-enter-active,
+  .profile-fade-leave-active {
     transition: none;
   }
 }

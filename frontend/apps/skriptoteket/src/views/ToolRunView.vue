@@ -315,7 +315,7 @@ watch(hasSettingsSchema, (hasSchema) => {
           <ToolRunSettingsPanel
             v-model:error-message="settingsErrorMessage"
             :id-base="idBase"
-            :schema="settingsSchema"
+            :schema="settingsSchema ?? []"
             :model-value="settingsValues"
             :is-loading="isLoadingSettings"
             :is-saving="isSavingSettings"

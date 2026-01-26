@@ -237,6 +237,99 @@ body::before {
     font-size: var(--huleedu-text-xs);
     font-weight: var(--huleedu-font-medium);
   }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     INLINE EDIT PRIMITIVES - Profile & settings forms
+
+     Smaller-scale buttons for inline editing within content panels.
+     These complement the main btn-* primitives for compact UI contexts.
+
+     Usage:
+       - btn-inline-edit:    Small ghost trigger (Ändra)
+       - btn-inline-primary: Small primary action (Spara)
+       - btn-inline-cancel:  Small cancel/dismiss (Avbryt)
+       - input-inline:       Form input with canvas background
+       - label-inline:       Uppercase micro label
+     ════════════════════════════════════════════════════════════════════════ */
+
+  .btn-inline-edit {
+    @apply inline-flex items-center justify-center;
+    @apply h-6 px-2;
+    @apply text-[10px] font-semibold uppercase tracking-wide;
+    @apply text-navy/70 bg-canvas border border-navy/20;
+    @apply transition-colors;
+  }
+
+  .btn-inline-edit:hover:not(:disabled) {
+    @apply border-navy/40 text-navy;
+  }
+
+  .btn-inline-edit:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  .btn-inline-primary {
+    @apply inline-flex items-center justify-center;
+    @apply h-8 px-3;
+    @apply text-[11px] font-semibold uppercase tracking-wide;
+    @apply text-canvas bg-navy border border-navy;
+    @apply transition-colors;
+  }
+
+  .btn-inline-primary:hover:not(:disabled) {
+    @apply bg-burgundy;
+  }
+
+  .btn-inline-primary:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  .btn-inline-cancel {
+    @apply inline-flex items-center justify-center;
+    @apply h-8 px-3;
+    @apply text-[11px] font-semibold uppercase tracking-wide;
+    @apply text-navy/70 bg-transparent border border-navy/25;
+    @apply transition-colors;
+  }
+
+  .btn-inline-cancel:hover:not(:disabled) {
+    @apply border-navy/50 text-navy;
+  }
+
+  .btn-inline-cancel:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  .input-inline {
+    @apply w-full max-w-xs;
+    @apply px-3 py-2;
+    @apply text-sm text-navy bg-canvas;
+    @apply border-2 border-navy/25;
+    @apply transition-colors;
+    @apply placeholder:text-navy/40;
+  }
+
+  .input-inline:focus {
+    @apply border-navy outline-none;
+  }
+
+  .input-inline:disabled {
+    @apply opacity-60;
+  }
+
+  .label-inline {
+    @apply text-[11px] font-semibold uppercase tracking-wide text-navy/60;
+  }
+
+  /* Radio option card - for expandable settings panels */
+  .radio-option-card {
+    @apply flex items-start gap-3;
+    @apply border border-navy/20 bg-canvas px-3 py-2;
+  }
+
+  .radio-option-card--disabled {
+    @apply opacity-50;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
