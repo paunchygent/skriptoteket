@@ -20,6 +20,14 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Current Session (2026-01-26)
 
+- Curated app planning docs added (Reagent Prep Chef):
+  - Spec: `docs/reference/ref-curated-app-reagent-prep-chef.md`
+  - Epic/Story/Review/PR: `docs/backlog/epics/epic-20-curated-app-reagent-prep-chef.md`,
+    `docs/backlog/stories/story-20-01-curated-app-reagent-prep-chef.md`,
+    `docs/backlog/reviews/review-epic-20-curated-app-reagent-prep-chef.md`,
+    `docs/backlog/prs/pr-0059-curated-app-reagent-prep-chef.md`
+  - Verification: `pdm run docs-validate`
+
 - Editor “byt verktyg” UX + hub route:
   - `/editor` hub route (auto-open last editor tool; `?pick=1` forces picker): `frontend/apps/skriptoteket/src/views/editor/EditorHubView.vue`,
     `frontend/apps/skriptoteket/src/router/routes.ts`

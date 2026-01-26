@@ -20,6 +20,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - AI API surfaces codemap: `docs/reference/reports/codemaps/ai-api-surfaces-tool-editor.md`
 - Observability correlation trace codemap: `docs/reference/reports/codemaps/observability-correlation-trace.md`
 - Tool editor framework codemap: `docs/reference/ref-tool-editor-framework-codemap.md`
+- Curated app spec: `docs/reference/ref-curated-app-reagent-prep-chef.md`
 - Migration roadmap (SPA): `docs/reference/reports/ref-vue-spa-migration-roadmap.md`
 - Toasts + system messages (SPA): `docs/reference/ref-toast-system-messages.md`
 - Hemma critical paths + ops inventory: `docs/reference/ref-hemma-critical-paths-2026-01-06.md`
@@ -134,6 +135,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-17-observability-visualization-and-operations.md`
 - `docs/backlog/epics/epic-18-execution-queue-and-worker-loop.md`
 - `docs/backlog/epics/epic-19-runner-io-and-file-references-foundations.md`
+- `docs/backlog/epics/epic-20-curated-app-reagent-prep-chef.md`
 
 ### Backlog Reviews
 
@@ -153,6 +155,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-17-observability-visualization.md`
 - `docs/backlog/reviews/review-epic-18-execution-queue.md`
 - `docs/backlog/reviews/review-epic-19-runner-io-and-file-references-foundations.md`
+- `docs/backlog/reviews/review-epic-20-curated-app-reagent-prep-chef.md`
 
 ### Backlog Sprints
 
@@ -213,6 +216,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0056-shared-segmented-toggle-and-file-picker-row.md`
 - `docs/backlog/prs/pr-0057-browse-cta-removal-and-toolrunview-density-transition-polish.md`
 - `docs/backlog/prs/pr-0058-kodredigerare-verktygsval-och-sok.md`
+- `docs/backlog/prs/pr-0059-curated-app-reagent-prep-chef.md`
 - `docs/backlog/prs/pr-0028-editor-focus-mode-and-ai-drawer-density.md`
 - `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md`
 - `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md`
