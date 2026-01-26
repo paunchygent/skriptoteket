@@ -20,8 +20,10 @@ const isLoading = ref(true);
 const errorMessage = ref<string | null>(null);
 const actionInProgress = ref<string | null>(null);
 const actionColumnWidth = ref("8.5rem");
+const statusPillMinWidth = ref("0");
 const measureEditActionRef = ref<HTMLDivElement | null>(null);
 const measureReviewActionRef = ref<HTMLDivElement | null>(null);
+const measurePillRefs = ref<HTMLSpanElement[]>([]);
 const isCreateModalOpen = ref(false);
 const createTitle = ref("");
 const createSummary = ref("");
@@ -36,6 +38,14 @@ function updateActionColumnWidth(): void {
   const next = Math.ceil(Math.max(editWidth, reviewWidth));
   if (next > 0) {
     actionColumnWidth.value = `${next}px`;
+  }
+}
+
+function updateStatusPillMinWidth(): void {
+  const widths = measurePillRefs.value.map((el) => el?.getBoundingClientRect().width ?? 0);
+  const maxWidth = Math.ceil(Math.max(...widths, 0));
+  if (maxWidth > 0) {
+    statusPillMinWidth.value = `${maxWidth}px`;
   }
 }
 
@@ -250,14 +260,17 @@ async function togglePublishState(tool: AdminToolItem, newValue: boolean): Promi
 
 onMounted(() => {
   void load();
-  void nextTick().then(updateActionColumnWidth);
+  void nextTick().then(() => {
+    updateActionColumnWidth();
+    updateStatusPillMinWidth();
+  });
 });
 </script>
 
 <template>
   <div
     class="space-y-8"
-    :style="{ '--admin-tools-action-col': actionColumnWidth }"
+    :style="{ '--admin-tools-action-col': actionColumnWidth, '--admin-tools-pill-min-w': statusPillMinWidth }"
   >
     <div
       class="fixed -left-[9999px] top-0 opacity-0 pointer-events-none"
@@ -275,6 +288,24 @@ onMounted(() => {
       >
         Granska
       </div>
+      <span
+        :ref="(el) => { if (el) measurePillRefs[0] = el as HTMLSpanElement }"
+        class="status-pill bg-navy/10 text-navy/60"
+      >
+        Ingen kod
+      </span>
+      <span
+        :ref="(el) => { if (el) measurePillRefs[1] = el as HTMLSpanElement }"
+        class="status-pill bg-canvas text-navy/70 border border-navy/30"
+      >
+        Arbetsversion
+      </span>
+      <span
+        :ref="(el) => { if (el) measurePillRefs[2] = el as HTMLSpanElement }"
+        class="status-pill bg-burgundy/10 text-burgundy border border-burgundy/40"
+      >
+        Granskas
+      </span>
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between w-full">
@@ -338,8 +369,9 @@ onMounted(() => {
             <template #status>
               <span
                 v-if="getDevStatus(tool)"
-                class="status-pill"
+                class="status-pill justify-center"
                 :class="getDevStatusClass(tool)"
+                :style="{ minWidth: statusPillMinWidth }"
               >
                 {{ getDevStatus(tool) }}
               </span>
@@ -396,18 +428,26 @@ onMounted(() => {
             </template>
 
             <template #status>
-              <div class="flex items-center gap-2">
-                <ToggleSwitch
-                  :model-value="tool.is_published"
-                  :disabled="actionInProgress === tool.id"
-                  @update:model-value="togglePublishState(tool, $event)"
-                />
+              <div class="flex flex-col items-start gap-2">
                 <span
-                  class="text-xs whitespace-nowrap"
-                  :class="tool.is_published ? 'text-success font-medium' : 'text-navy/50'"
+                  class="status-pill justify-center bg-burgundy/10 text-burgundy"
+                  :style="{ minWidth: statusPillMinWidth }"
                 >
-                  {{ tool.is_published ? "Publicerad" : "Ej publicerad" }}
+                  Granskas
                 </span>
+                <div class="flex items-center gap-2">
+                  <ToggleSwitch
+                    :model-value="tool.is_published"
+                    :disabled="actionInProgress === tool.id"
+                    @update:model-value="togglePublishState(tool, $event)"
+                  />
+                  <span
+                    class="text-xs whitespace-nowrap"
+                    :class="tool.is_published ? 'text-success font-medium' : 'text-navy/50'"
+                  >
+                    {{ tool.is_published ? "Publicerad" : "Ej publicerad" }}
+                  </span>
+                </div>
               </div>
             </template>
 
