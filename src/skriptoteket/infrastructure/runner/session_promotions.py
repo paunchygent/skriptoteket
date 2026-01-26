@@ -4,7 +4,11 @@ from uuid import UUID
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
-from skriptoteket.domain.scripting.file_refs import build_session_file_ref, parse_file_ref
+from skriptoteket.domain.scripting.file_refs import (
+    FileRefSource,
+    build_session_file_ref,
+    parse_file_ref,
+)
 from skriptoteket.domain.scripting.promotions import PromotionEnvelope, PromotionRequest
 from skriptoteket.protocols.promotions import PromotionApplierProtocol
 from skriptoteket.protocols.runner import ArtifactManagerProtocol
@@ -92,7 +96,7 @@ def _require_session_promotion(*, request: PromotionRequest) -> None:
         )
     if request.ref is not None:
         source, _value = parse_file_ref(value=request.ref)
-        if source != "session":
+        if source is not FileRefSource.SESSION:
             raise DomainError(
                 code=ErrorCode.INTERNAL_ERROR,
                 message="Runner contract violation: promotion ref must be session:*",

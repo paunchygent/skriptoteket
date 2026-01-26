@@ -75,7 +75,7 @@ def _prefill_reason(*, field: contract_v2.UiActionField, value: JsonValue) -> st
                 source, _ref_value = parse_file_ref(value=item)
             except Exception:
                 return "invalid file ref"
-            if allowed_sources is not None and source not in allowed_sources:
+            if allowed_sources is not None and source.value not in allowed_sources:
                 return "file ref source not allowed"
         return None
 

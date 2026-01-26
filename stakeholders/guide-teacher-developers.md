@@ -163,7 +163,7 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
     return {
         "outputs": [{"kind": "notice", "level": "info", "message": f"Hej {name}!"}],
         "next_actions": [],
-        "state": None,
+        "state_update": {"kind": "no_change"},
     }
 ```
 

@@ -22,6 +22,7 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.catalog.models import Tool
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.scripting.file_refs import FileRefSource
 from skriptoteket.domain.scripting.models import ToolVersion, VersionState
 from skriptoteket.domain.scripting.tool_inputs import ToolInputField
 from skriptoteket.domain.scripting.tool_usage_instructions import (
@@ -94,6 +95,38 @@ def _parse_file_refs_by_field(raw: str | None) -> dict[str, list[str]]:
             )
         normalized[key] = [item.strip() for item in value if item.strip()]
     return normalized
+
+
+def _parse_file_ref_sources(raw: list[str] | None) -> list[FileRefSource]:
+    if raw is None or not raw:
+        return [FileRefSource.SESSION, FileRefSource.VAULT]
+
+    tokens: list[str] = []
+    for item in raw:
+        for part in item.split(","):
+            normalized = part.strip().lower()
+            if normalized:
+                tokens.append(normalized)
+
+    if not tokens:
+        return [FileRefSource.SESSION, FileRefSource.VAULT]
+
+    sources: list[FileRefSource] = []
+    seen: set[FileRefSource] = set()
+    for token in tokens:
+        try:
+            source = FileRefSource(token)
+        except ValueError as exc:
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="sources must be a subset of: session, vault",
+                details={"sources": tokens},
+            ) from exc
+        if source in seen:
+            continue
+        seen.add(source)
+        sources.append(source)
+    return sources
 
 
 def _parse_file_fields(raw: str | None, *, expected_len: int) -> list[str]:
@@ -350,10 +383,16 @@ async def list_tool_file_refs(
     handler: FromDishka[ListToolFileRefsHandlerProtocol],
     user: User = Depends(require_user_api),
     context: str = Query("default"),
+    sources: list[str] | None = Query(None),
 ) -> ListToolFileRefsResult:
+    parsed_sources = _parse_file_ref_sources(sources)
     return await handler.handle(
         actor=user,
-        query=ListToolFileRefsQuery(tool_id=tool_id, context=context),
+        query=ListToolFileRefsQuery(
+            tool_id=tool_id,
+            context=context,
+            sources=parsed_sources,
+        ),
     )
 
 

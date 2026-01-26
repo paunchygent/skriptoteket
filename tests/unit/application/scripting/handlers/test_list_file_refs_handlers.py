@@ -17,6 +17,7 @@ from skriptoteket.application.scripting.handlers.list_tool_file_refs import (
     ListToolFileRefsHandler,
 )
 from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.scripting.file_refs import FileRefSource
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol, ToolRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
@@ -64,7 +65,11 @@ async def test_list_tool_file_refs_returns_expected_shape(now: datetime) -> None
 
     result = await handler.handle(
         actor=actor,
-        query=ListToolFileRefsQuery(tool_id=tool.id, context=" default "),
+        query=ListToolFileRefsQuery(
+            tool_id=tool.id,
+            context=" default ",
+            sources=[FileRefSource.SESSION],
+        ),
     )
 
     assert result.context == "default"
@@ -72,6 +77,7 @@ async def test_list_tool_file_refs_returns_expected_shape(now: datetime) -> None
         tool_id=tool.id,
         user_id=actor.id,
         context="default",
+        sources=[FileRefSource.SESSION],
     )
     payload = result.files[0].model_dump()
     assert set(payload.keys()) == {"ref", "name", "bytes", "field"}
@@ -123,6 +129,7 @@ async def test_list_sandbox_file_refs_returns_expected_shape(now: datetime) -> N
         query=ListSandboxFileRefsQuery(
             version_id=version.id,
             snapshot_id=snapshot.id,
+            sources=[FileRefSource.SESSION],
         ),
     )
 
@@ -132,6 +139,7 @@ async def test_list_sandbox_file_refs_returns_expected_shape(now: datetime) -> N
         tool_id=tool_id,
         user_id=actor.id,
         context=f"sandbox-files:{version.id}",
+        sources=[FileRefSource.SESSION],
     )
     payload = result.files[0].model_dump()
     assert set(payload.keys()) == {"ref", "name", "bytes", "field"}

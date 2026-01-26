@@ -57,6 +57,11 @@ class Settings(BaseSettings):
     ARTIFACTS_ROOT: Path = Path("/var/lib/skriptoteket/artifacts")
     ARTIFACTS_RETENTION_DAYS: int = 7
 
+    VAULT_ROOT: Path = Path("/var/lib/skriptoteket/vault")
+    VAULT_MAX_FILE_BYTES: int = 20_000_000
+    VAULT_MAX_TOTAL_BYTES: int = 200_000_000
+    VAULT_RETENTION_DAYS: int = 30
+
     # Platform-only debug capture (OFF by default; see ADR-0051).
     # Captures are written under ARTIFACTS_ROOT and may contain tool code/model output.
     LLM_CAPTURE_ON_ERROR_ENABLED: bool = False

@@ -20,6 +20,7 @@ class FakeFileRefResolver(FileRefResolverProtocol):
         tool_id,
         user_id,
         context,
+        sources,
     ) -> list[FileRefEntry]:
         return []
 

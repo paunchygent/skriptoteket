@@ -29,17 +29,22 @@ Related documents:
 
 ## Request Inputs (Environment)
 
-The platform provides inputs via environment variables and files in `/work`:
+The platform provides inputs via a structured JSON envelope (`/work/request.json`) and environment variables.
+
+**Primary Mechanism (V3):**
+The `skriptoteket_toolkit` library reads from `/work/request.json`. This file contains all inputs, file references, and action payloads in a unified structure.
+
+**Legacy/Secondary (Environment Variables):**
+Direct access to these is supported but discouraged in favor of the toolkit.
 
 | Variable | Description |
 | :------- | :---------- |
-| `SKRIPTOTEKET_INPUTS` | JSON object containing form inputs (strings, integers, etc.). |
+| `SKRIPTOTEKET_INPUTS` | JSON object containing form inputs. |
 | `SKRIPTOTEKET_INPUT_DIR` | Path to input files directory (default: `/work/input`). |
-| `SKRIPTOTEKET_INPUT_MANIFEST` | JSON manifest of all available input files. |
-| `SKRIPTOTEKET_ACTION` | JSON object for multi-step tools `{action_id, input, state}`. |
-| `SKRIPTOTEKET_MEMORY_PATH` | Path to memory JSON file containing `settings`. |
+| `SKRIPTOTEKET_ACTION` | JSON object for multi-step tools. |
+| `SKRIPTOTEKET_MEMORY_PATH` | Path to memory JSON file (settings). |
 
-**Recommendation:** Use `skriptoteket_toolkit` instead of reading these directly.
+**Recommendation:** Always use `skriptoteket_toolkit`.
 
 ## Result Contract (`result.json`)
 

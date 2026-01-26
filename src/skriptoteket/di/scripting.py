@@ -10,6 +10,7 @@ from skriptoteket.application.scripting.handlers.clear_tool_session_state import
 from skriptoteket.application.scripting.handlers.delete_session_files import (
     DeleteSessionFilesHandler,
 )
+from skriptoteket.application.scripting.handlers.delete_vault_file import DeleteVaultFileHandler
 from skriptoteket.application.scripting.handlers.execute_tool_version import (
     ExecuteToolVersionHandler,
 )
@@ -32,7 +33,10 @@ from skriptoteket.application.scripting.handlers.list_session_files import (
 from skriptoteket.application.scripting.handlers.list_tool_file_refs import (
     ListToolFileRefsHandler,
 )
+from skriptoteket.application.scripting.handlers.list_vault_files import ListVaultFilesHandler
+from skriptoteket.application.scripting.handlers.restore_vault_file import RestoreVaultFileHandler
 from skriptoteket.application.scripting.handlers.run_active_tool import RunActiveToolHandler
+from skriptoteket.application.scripting.handlers.save_vault_file import SaveVaultFileHandler
 from skriptoteket.application.scripting.handlers.start_action import StartActionHandler
 from skriptoteket.application.scripting.handlers.update_tool_session_state import (
     UpdateToolSessionStateHandler,
@@ -60,7 +64,7 @@ from skriptoteket.protocols.interactive_tools import (
 )
 from skriptoteket.protocols.promotions import PromotionApplierProtocol
 from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
-from skriptoteket.protocols.runner import ToolRunnerProtocol
+from skriptoteket.protocols.runner import ArtifactManagerProtocol, ToolRunnerProtocol
 from skriptoteket.protocols.scripting import (
     ExecuteToolVersionHandlerProtocol,
     ListToolFileRefsHandlerProtocol,
@@ -85,6 +89,15 @@ from skriptoteket.protocols.tool_settings import (
     UpdateToolSettingsHandlerProtocol,
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+from skriptoteket.protocols.vault import (
+    DeleteVaultFileHandlerProtocol,
+    ListVaultFilesHandlerProtocol,
+    RestoreVaultFileHandlerProtocol,
+    SaveVaultFileHandlerProtocol,
+    VaultFileRepositoryProtocol,
+    VaultStorageProtocol,
+    VaultUsageRepositoryProtocol,
+)
 
 
 class ScriptingProvider(Provider):
@@ -208,6 +221,78 @@ class ScriptingProvider(Provider):
             tools=tools,
             curated_apps=curated_apps,
             file_refs=file_refs,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def list_vault_files_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_usage: VaultUsageRepositoryProtocol,
+        settings: Settings,
+    ) -> ListVaultFilesHandlerProtocol:
+        return ListVaultFilesHandler(
+            uow=uow,
+            vault_files=vault_files,
+            vault_usage=vault_usage,
+            settings=settings,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def save_vault_file_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        runs: ToolRunRepositoryProtocol,
+        artifacts: ArtifactManagerProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_usage: VaultUsageRepositoryProtocol,
+        vault_storage: VaultStorageProtocol,
+        settings: Settings,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> SaveVaultFileHandlerProtocol:
+        return SaveVaultFileHandler(
+            uow=uow,
+            runs=runs,
+            artifacts=artifacts,
+            vault_files=vault_files,
+            vault_usage=vault_usage,
+            vault_storage=vault_storage,
+            settings=settings,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def delete_vault_file_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_usage: VaultUsageRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> DeleteVaultFileHandlerProtocol:
+        return DeleteVaultFileHandler(
+            uow=uow,
+            vault_files=vault_files,
+            vault_usage=vault_usage,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def restore_vault_file_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_usage: VaultUsageRepositoryProtocol,
+        settings: Settings,
+        clock: ClockProtocol,
+    ) -> RestoreVaultFileHandlerProtocol:
+        return RestoreVaultFileHandler(
+            uow=uow,
+            vault_files=vault_files,
+            vault_usage=vault_usage,
+            settings=settings,
+            clock=clock,
         )
 
     @provide(scope=Scope.REQUEST)

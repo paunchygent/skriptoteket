@@ -5,6 +5,7 @@ from uuid import UUID
 from skriptoteket.domain.errors import validation_error
 from skriptoteket.domain.scripting.file_refs import (
     FileRef,
+    FileRefSource,
     build_session_file_ref,
     parse_file_ref,
 )
@@ -23,7 +24,10 @@ class SessionFileRefResolver(FileRefResolverProtocol):
         tool_id: UUID,
         user_id: UUID,
         context: str,
+        sources: list[FileRefSource],
     ) -> list[FileRefEntry]:
+        if FileRefSource.SESSION not in sources:
+            return []
         files = await self._session_files.list_files(
             tool_id=tool_id,
             user_id=user_id,
@@ -58,7 +62,7 @@ class SessionFileRefResolver(FileRefResolverProtocol):
         for field, refs in refs_by_field.items():
             for ref in refs:
                 source, value = parse_file_ref(value=ref)
-                if source != "session":
+                if source is not FileRefSource.SESSION:
                     raise validation_error(
                         "Only session file refs are supported right now.",
                         details={"ref": ref},

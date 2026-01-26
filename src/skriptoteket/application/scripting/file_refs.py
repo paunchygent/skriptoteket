@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from skriptoteket.domain.scripting.file_refs import FileRefSource
+
 
 class FileRefInfo(BaseModel):
     model_config = ConfigDict(frozen=True)
@@ -19,6 +21,7 @@ class ListToolFileRefsQuery(BaseModel):
 
     tool_id: UUID
     context: str
+    sources: list[FileRefSource] = Field(default_factory=list)
 
 
 class ListToolFileRefsResult(BaseModel):
@@ -34,6 +37,7 @@ class ListSandboxFileRefsQuery(BaseModel):
 
     version_id: UUID
     snapshot_id: UUID
+    sources: list[FileRefSource] = Field(default_factory=list)
 
 
 class ListSandboxFileRefsResult(BaseModel):

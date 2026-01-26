@@ -60,6 +60,12 @@ from skriptoteket.infrastructure.repositories.user_favorite_repository import (
     PostgreSQLFavoritesRepository,
 )
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
+from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
+    PostgreSQLUserVaultFileRepository,
+)
+from skriptoteket.infrastructure.repositories.user_vault_usage_repository import (
+    PostgreSQLUserVaultUsageRepository,
+)
 from skriptoteket.protocols.catalog import (
     CategoryRepositoryProtocol,
     ProfessionRepositoryProtocol,
@@ -89,6 +95,10 @@ from skriptoteket.protocols.suggestions import (
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
 from skriptoteket.protocols.tool_session_turns import ToolSessionTurnRepositoryProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
+from skriptoteket.protocols.vault import (
+    VaultFileRepositoryProtocol,
+    VaultUsageRepositoryProtocol,
+)
 
 
 class InfrastructureRepositoryProvider(Provider):
@@ -185,3 +195,11 @@ class InfrastructureRepositoryProvider(Provider):
         self, session: AsyncSession
     ) -> EmailVerificationTokenRepositoryProtocol:
         return PostgreSQLEmailVerificationTokenRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def vault_file_repo(self, session: AsyncSession) -> VaultFileRepositoryProtocol:
+        return PostgreSQLUserVaultFileRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def vault_usage_repo(self, session: AsyncSession) -> VaultUsageRepositoryProtocol:
+        return PostgreSQLUserVaultUsageRepository(session)

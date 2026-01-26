@@ -52,6 +52,7 @@ class ListToolFileRefsHandler(ListToolFileRefsHandlerProtocol):
             tool_id=query.tool_id,
             user_id=actor.id,
             context=context,
+            sources=query.sources,
         )
 
         return ListToolFileRefsResult(

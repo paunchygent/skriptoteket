@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from skriptoteket.domain.scripting.file_refs import FileRef
+from skriptoteket.domain.scripting.file_refs import FileRef, FileRefSource
 from skriptoteket.domain.scripting.run_inputs import ResolvedInputFile
 
 
@@ -25,6 +25,7 @@ class FileRefResolverProtocol(Protocol):
         tool_id: UUID,
         user_id: UUID,
         context: str,
+        sources: list[FileRefSource],
     ) -> list[FileRefEntry]: ...
 
     async def resolve_refs(

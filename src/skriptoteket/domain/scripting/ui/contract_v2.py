@@ -6,6 +6,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, field_validator, model_validator
 
 from skriptoteket.domain.scripting.artifacts import RunnerArtifact
+from skriptoteket.domain.scripting.file_refs import FileRefSource as UiFileRefSource
 
 
 class UiOutputKind(StrEnum):
@@ -171,11 +172,6 @@ class UiActionFieldKind(StrEnum):
     ENUM = "enum"
     MULTI_ENUM = "multi_enum"
     FILE_REF = "file_ref"
-
-
-class UiFileRefSource(StrEnum):
-    SESSION = "session"
-    VAULT = "vault"
 
 
 class UiEnumOption(BaseModel):

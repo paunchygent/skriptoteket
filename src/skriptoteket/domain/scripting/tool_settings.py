@@ -7,7 +7,7 @@ from uuid import UUID
 from pydantic import JsonValue
 
 from skriptoteket.domain.errors import validation_error
-from skriptoteket.domain.scripting.file_refs import parse_file_ref
+from skriptoteket.domain.scripting.file_refs import FileRefSource, parse_file_ref
 from skriptoteket.domain.scripting.ui.contract_v2 import (
     UiActionField,
     UiActionFieldKind,
@@ -269,7 +269,7 @@ def normalize_tool_settings_values(
                         "Invalid settings value (invalid file ref)",
                         details={"field": field.name, "kind": field.kind.value},
                     ) from exc
-                if source != "vault":
+                if source is not FileRefSource.VAULT:
                     raise validation_error(
                         "Invalid settings value (file ref must be vault:*)",
                         details={"field": field.name, "kind": field.kind.value, "ref": stripped},

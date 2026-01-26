@@ -13,9 +13,9 @@ import random
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Literal, NotRequired, TypedDict
 
-from skriptoteket_toolkit import (  # type: ignore[import-not-found]
+from skriptoteket_toolkit import (
     get_action_parts,
     list_input_files,
     read_inputs,
@@ -27,7 +27,14 @@ DEFAULT_GROUP_SIZE = 3
 MAX_SHUFFLES = 200
 
 
-def _notice(level: str, message: str) -> dict[str, object]:
+class ToolResult(TypedDict):
+    outputs: list[dict[str, object]]
+    next_actions: list[dict[str, object]]
+    state_update: dict[str, object]
+    promotions: NotRequired[dict[str, object]]
+
+
+def _notice(level: Literal["info", "warning", "error"], message: str) -> dict[str, object]:
     return {"kind": "notice", "level": level, "message": message}
 
 
@@ -76,6 +83,7 @@ def _detect_name_column(headers: list[str]) -> int:
 
 def _read_csv_rows(path: Path) -> list[list[str]]:
     content = path.read_text(encoding="utf-8-sig")
+    # Try sniffing, fallback to common delimiters
     for delimiter in [",", ";", "\t"]:
         try:
             reader = csv.reader(content.splitlines(), delimiter=delimiter)
@@ -84,24 +92,28 @@ def _read_csv_rows(path: Path) -> list[list[str]]:
             continue
         if rows and len(rows[0]) > 1:
             return rows
+    # Fallback default
     reader = csv.reader(content.splitlines())
     return list(reader)
 
 
 def _read_xlsx_rows(path: Path) -> list[list[str]]:
     try:
-        from openpyxl import load_workbook  # type: ignore
-    except Exception:
+        from openpyxl import load_workbook
+    except ImportError:
         return []
 
-    wb = load_workbook(path, read_only=True, data_only=True)
-    ws = wb.active
-    if ws is None:
+    try:
+        wb = load_workbook(path, read_only=True, data_only=True)
+        ws = wb.active
+        if ws is None:
+            wb.close()
+            return []
+        rows = [[str(cell.value or "").strip() for cell in row] for row in ws.iter_rows()]
         wb.close()
+        return rows
+    except Exception:
         return []
-    rows = [[str(cell.value or "").strip() for cell in row] for row in ws.iter_rows()]
-    wb.close()
-    return rows
 
 
 def _extract_names_from_rows(rows: list[list[str]]) -> list[str]:
@@ -125,35 +137,54 @@ def _parse_roster_file(path: Path) -> tuple[list[str], str | None]:
     if suffix == ".xlsx":
         rows = _read_xlsx_rows(path)
         if not rows:
-            return ([], "Kunde inte läsa Excel-filen (openpyxl saknas eller tom fil).")
+            return ([], "Kunde inte läsa Excel-filen (openpyxl saknas eller filen är tom/trasig).")
         return (_extract_names_from_rows(rows), None)
 
     rows = _read_csv_rows(path)
     if not rows:
-        return ([], "CSV-filen är tom.")
+        return ([], "CSV-filen verkar vara tom eller oläslig.")
     return (_extract_names_from_rows(rows), None)
 
 
-def _parse_saved_classes(settings: dict[str, Any]) -> tuple[dict[str, list[str]], str | None]:
+def _parse_saved_classes(settings: dict[str, object]) -> tuple[dict[str, list[str]], str | None]:
     raw = settings.get("saved_classes_json", "")
+
+    # Also look for session-promoted classes
+    session_classes: dict[str, list[str]] = {}
+    for item in list_input_files():
+        if item["name"] == "session_classes.json":
+            try:
+                data = json.loads(Path(item["path"]).read_text(encoding="utf-8"))
+                if isinstance(data, dict):
+                    for k, v in data.items():
+                        if isinstance(v, list):
+                            session_classes[str(k)] = [str(i) for i in v]
+            except Exception:
+                pass
+
     if raw is None:
-        return ({}, None)
+        return (session_classes, None)
+
+    payload: dict[str, object] = {}
     if isinstance(raw, dict):
         payload = raw
     elif isinstance(raw, str):
         if not raw.strip():
-            return ({}, None)
+            return (session_classes, None)
         try:
             payload = json.loads(raw)
         except json.JSONDecodeError:
-            return ({}, "Sparade klasser (JSON) är ogiltig JSON.")
+            return (session_classes, "Sparade klasser (JSON) i settings innehåller ogiltig JSON.")
     else:
-        return ({}, "Sparade klasser (JSON) måste vara text eller JSON.")
+        return (
+            session_classes,
+            "Sparade klasser (JSON) i settings måste vara text eller ett JSON-objekt.",
+        )
 
     if not isinstance(payload, dict):
-        return ({}, "Sparade klasser (JSON) måste vara ett objekt med klassnamn som nycklar.")
+        return (session_classes, "Sparade klasser (JSON) i settings måste vara ett objekt.")
 
-    classes: dict[str, list[str]] = {}
+    classes: dict[str, list[str]] = dict(session_classes)
     for key, value in payload.items():
         if not isinstance(key, str):
             continue
@@ -166,17 +197,22 @@ def _parse_saved_classes(settings: dict[str, Any]) -> tuple[dict[str, list[str]]
 def _parse_previous_groups(raw: str) -> tuple[list[list[str]], str | None]:
     if not raw.strip():
         return ([], None)
+
+    # Try JSON first
     try:
         payload = json.loads(raw)
         if isinstance(payload, list):
             groups = []
             for item in payload:
                 if isinstance(item, list):
-                    groups.append([str(entry) for entry in item if str(entry).strip()])
+                    clean_group = [str(entry).strip() for entry in item if str(entry).strip()]
+                    if clean_group:
+                        groups.append(clean_group)
             return (groups, None)
     except json.JSONDecodeError:
         pass
 
+    # Fallback: simple text parsing (lines with comma/semicolon)
     groups: list[list[str]] = []
     for line in raw.splitlines():
         if not line.strip():
@@ -184,8 +220,9 @@ def _parse_previous_groups(raw: str) -> tuple[list[list[str]], str | None]:
         parts = [p.strip() for p in re.split(r"[;,]", line) if p.strip()]
         if parts:
             groups.append(parts)
+
     if not groups:
-        return ([], "Kunde inte tolka tidigare grupper.")
+        return ([], "Kunde inte tolka tidigare grupper (varken som JSON eller text).")
     return (groups, None)
 
 
@@ -221,8 +258,15 @@ def _build_action_fields(saved_classes: dict[str, list[str]]) -> list[dict[str, 
                 "kind": "string",
             },
             {
+                "name": "previous_groups_file",
+                "label": "Välj tidigare grupper (från session/valv)",
+                "kind": "file_ref",
+                "min": 0,
+                "max": 1,
+            },
+            {
                 "name": "previous_groups",
-                "label": "Tidigare grupper (valfritt)",
+                "label": "Klistra in tidigare grupper (valfritt om fil ej väljs)",
                 "kind": "text",
             },
         ]
@@ -278,16 +322,17 @@ def _build_groups(
     if not students:
         return ([], 0)
     rng = random.Random()
-    best_groups = []
+    best_groups: list[list[str]] = []
     best_score = float("inf")
     attempts = MAX_SHUFFLES if previous_pairs else 1
     pool = students[:]
+
     for _ in range(attempts):
         rng.shuffle(pool)
         groups = _chunk_groups(pool, group_size)
         score = _score_groups(groups, previous_pairs)
         if score < best_score:
-            best_score = score
+            best_score = float(score)
             best_groups = [group[:] for group in groups]
             if score == 0:
                 break
@@ -309,10 +354,14 @@ def _select_roster_file(input_dir: Path) -> Path | None:
     return None
 
 
-def run_tool(input_dir: str, output_dir: str) -> dict:
-    inputs = read_inputs()
-    settings = read_settings()
-    action_id, action_input, _ = get_action_parts()
+def run_tool(input_dir: str, output_dir: str) -> ToolResult:
+    inputs_raw = read_inputs()
+    settings_raw = read_settings()
+    action_id, action_input_raw, _ = get_action_parts()
+
+    inputs: dict[str, object] = inputs_raw if isinstance(inputs_raw, dict) else {}
+    settings: dict[str, object] = settings_raw if isinstance(settings_raw, dict) else {}
+    action_input: dict[str, object] = action_input_raw if isinstance(action_input_raw, dict) else {}
 
     payload = action_input if action_id == "generate" else inputs
 
@@ -324,52 +373,74 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
     group_set_name = str(payload.get("group_set_name") or "").strip()
     previous_groups_raw = str(payload.get("previous_groups") or "")
 
+    # Strategy: Read previous groups from file if provided, else fallback to text field
+    previous_groups_file_refs = payload.get("previous_groups_file")
+    if isinstance(previous_groups_file_refs, list) and previous_groups_file_refs:
+        # Take the first one (usually max=1 anyway)
+        file_ref = previous_groups_file_refs[0]
+        # In Contract V3, selected files are staged into input_dir
+        # We find it by matching name in list_input_files
+        for item in list_input_files():
+            if item.get("ref") == file_ref:
+                try:
+                    previous_groups_raw = Path(item["path"]).read_text(encoding="utf-8")
+                    break
+                except Exception:
+                    pass
+
     saved_classes, saved_error = _parse_saved_classes(settings)
     if saved_error:
         saved_classes = {}
 
     roster_path = _select_roster_file(Path(input_dir))
+
+    # --- Initial State (No Action) ---
     if action_id is None:
         outputs: list[dict[str, object]] = []
         if saved_error:
             outputs.append(_notice("warning", saved_error))
+
+        has_saved = bool(saved_classes)
+
         if roster_path is not None:
             students, roster_error = _parse_roster_file(roster_path)
             if roster_error:
                 outputs.append(_notice("error", roster_error))
             else:
                 outputs.append(
-                    _notice(
-                        "info",
-                        f"Hittade {len(students)} elever i '{roster_path.name}'.",
-                    )
+                    _notice("info", f"Hittade {len(students)} elever i '{roster_path.name}'.")
                 )
                 if students:
                     preview = ", ".join(students[:10])
-                    outputs.append(_markdown(f"Exempel på namn: {preview}"))
-        elif saved_classes:
+                    if len(students) > 10:
+                        preview += "..."
+                    outputs.append(_markdown(f"**Exempel på namn:** {preview}"))
+        elif has_saved:
             outputs.append(
-                _notice(
-                    "info",
-                    "Inga filer uppladdade. Välj en sparad klass i formuläret nedan.",
-                )
+                _notice("info", "Inga filer uppladdade. Du kan välja en sparad klass nedan.")
             )
         else:
             outputs.append(
                 _notice(
                     "error",
-                    "Ingen klasslista hittades. Ladda upp en fil eller spara en klass i settings.",
+                    "Ingen klasslista hittades. Ladda upp en fil eller spara klasser i settings.",
                 )
             )
 
         outputs.append(_markdown("Fyll i formuläret nedan och klicka **Skapa grupper**."))
-        return {"outputs": outputs, "next_actions": _build_actions(saved_classes), "state": None}
 
+        return {
+            "outputs": outputs,
+            "next_actions": _build_actions(saved_classes),
+            "state_update": {"kind": "no_change"},
+        }
+
+    # --- Handle Action ---
     if action_id != "generate":
         return {
             "outputs": [_notice("error", f"Okänd action_id: '{action_id}'.")],
             "next_actions": _build_actions(saved_classes),
-            "state": None,
+            "state_update": {"kind": "no_change"},
         }
 
     selected_saved = str(payload.get("saved_class") or "").strip()
@@ -377,6 +448,7 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
     roster_error: str | None = None
     source_label = ""
 
+    # Strategy: 1. Selected Saved, 2. Matching Class Name (Saved), 3. Uploaded File
     if selected_saved and selected_saved in saved_classes:
         students = saved_classes[selected_saved]
         class_name = selected_saved
@@ -401,11 +473,11 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
             "outputs": [
                 _notice("error", roster_error or "Inga elever hittades i klasslistan."),
                 _markdown(
-                    "Tips: Lägg klasslistor i settings som JSON för att kunna återanvända dem."
+                    "Tips: Lägg klasslistor i settings (memory.json) för att återanvända dem."
                 ),
             ],
             "next_actions": _build_actions(saved_classes),
-            "state": None,
+            "state_update": {"kind": "no_change"},
         }
 
     if group_size > len(students):
@@ -417,7 +489,7 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
                 )
             ],
             "next_actions": _build_actions(saved_classes),
-            "state": None,
+            "state_update": {"kind": "no_change"},
         }
 
     previous_groups, previous_error = _parse_previous_groups(previous_groups_raw)
@@ -434,16 +506,38 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
         rows.append({"group": name, "members": members})
         markdown_lines.append(f"{idx}. {members}")
 
+    # Create artifacts and promotions
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+
+    # Artifact 1: Group list (TXT)
     artifact_name = f"grupper_{timestamp}.txt"
     (output_path / artifact_name).write_text("\n".join(markdown_lines), encoding="utf-8")
 
+    promotions = {}
+    # If we have new/updated classes, promote them to the session
+    if class_name and (roster_path is not None or students):
+        updated_classes = dict(saved_classes)
+        updated_classes[class_name] = students
+
+        # Write to a hidden artifact for session promotion
+        session_file = "session_classes.json"
+        (output_path / session_file).write_text(json.dumps(updated_classes), encoding="utf-8")
+
+        promotions = {
+            "requests": [
+                {
+                    "kind": "session",
+                    "name": session_file,
+                    "source_path": f"output/{session_file}",
+                }
+            ]
+        }
+
     outputs: list[dict[str, object]] = [
         _notice(
-            "info",
-            f"Elever: {len(students)} | Gruppstorlek: {group_size} | Grupper: {len(groups)}",
+            "info", f"Elever: {len(students)} | Gruppstorlek: {group_size} | Grupper: {len(groups)}"
         ),
         _notice("info", source_label),
         _markdown("\n".join(markdown_lines)),
@@ -458,11 +552,16 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
     if previous_pairs:
         outputs.append(_notice("info", f"Upprepade par mot tidigare grupper: {repeats}"))
 
+    # Offer to save class if from file (for PERMANENT storage in Settings)
     if class_name and roster_path is not None:
         updated_classes = dict(saved_classes)
         updated_classes[class_name] = students
         outputs.append(
-            _markdown("Spara klassen i **Settings** genom att kopiera JSON från nästa block.")
+            _markdown(
+                "Klassen har sparats **temporärt** för denna session. "
+                "För att spara den **permanent**, kopiera JSON-blocket nedan till "
+                "verktygets **Settings**."
+            )
         )
         outputs.append(
             {
@@ -477,4 +576,12 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
             _markdown("Tillgängliga sparade klasser: " + ", ".join(sorted(saved_classes.keys())))
         )
 
-    return {"outputs": outputs, "next_actions": _build_actions(saved_classes), "state": None}
+    result: ToolResult = {
+        "outputs": outputs,
+        "next_actions": _build_actions(saved_classes),
+        "state_update": {"kind": "no_change"},
+    }
+    if promotions:
+        result["promotions"] = promotions
+
+    return result

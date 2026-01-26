@@ -27,6 +27,12 @@ from skriptoteket.infrastructure.db.models.tool import ToolModel  # noqa: F401
 from skriptoteket.infrastructure.db.models.tool_category import ToolCategoryModel  # noqa: F401
 from skriptoteket.infrastructure.db.models.tool_profession import ToolProfessionModel  # noqa: F401
 from skriptoteket.infrastructure.db.models.user import UserModel  # noqa: F401
+from skriptoteket.infrastructure.db.models.user_vault_file import (  # noqa: F401
+    UserVaultFileModel,
+)
+from skriptoteket.infrastructure.db.models.user_vault_usage import (  # noqa: F401
+    UserVaultUsageModel,
+)
 
 config = context.config
 

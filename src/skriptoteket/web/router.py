@@ -13,6 +13,7 @@ from skriptoteket.web.api.v1 import my_tools as api_v1_my_tools
 from skriptoteket.web.api.v1 import profile as api_v1_profile
 from skriptoteket.web.api.v1 import suggestions as api_v1_suggestions
 from skriptoteket.web.api.v1 import tools as api_v1_tools
+from skriptoteket.web.api.v1 import vault as api_v1_vault
 from skriptoteket.web.routes import interactive_tools as interactive_tools_routes
 from skriptoteket.web.routes import spa_fallback
 
@@ -28,6 +29,7 @@ router.include_router(api_v1_apps.router)
 router.include_router(api_v1_profile.router)
 router.include_router(api_v1_suggestions.router)
 router.include_router(api_v1_tools.router)
+router.include_router(api_v1_vault.router)
 router.include_router(api_v1_admin_tools.router)
 router.include_router(api_v1_admin_users.router)
 router.include_router(api_v1_editor.router)

@@ -117,6 +117,7 @@ class ListSandboxFileRefsHandler(ListSandboxFileRefsHandlerProtocol):
             tool_id=version.tool_id,
             user_id=actor.id,
             context=_sandbox_files_context(query.version_id),
+            sources=query.sources,
         )
 
         return ListSandboxFileRefsResult(
