@@ -138,6 +138,11 @@ def main() -> None:
         _wait_for_page_fade_in(page)
         page.screenshot(path=str(artifacts_dir / "browse-mobile.png"), full_page=True)
 
+        page.goto(f"{base_url}/vault", wait_until="domcontentloaded")
+        expect(page.get_by_role("heading", name=re.compile(r"Valv", re.IGNORECASE))).to_be_visible()
+        _wait_for_page_fade_in(page)
+        page.screenshot(path=str(artifacts_dir / "vault-mobile.png"), full_page=True)
+
         curated_checkbox = page.get_by_label(re.compile(r"Enbart kurerade appar", re.IGNORECASE))
         if curated_checkbox.count() > 0:
             curated_checkbox.first.check()
@@ -165,6 +170,11 @@ def main() -> None:
             page.get_by_role("heading", name=re.compile(r"Katalog", re.IGNORECASE))
         ).to_be_visible()
         _wait_for_page_fade_in(page)
+
+        page.goto(f"{base_url}/vault", wait_until="domcontentloaded")
+        expect(page.get_by_role("heading", name=re.compile(r"Valv", re.IGNORECASE))).to_be_visible()
+        _wait_for_page_fade_in(page)
+        page.screenshot(path=str(artifacts_dir / "vault-desktop.png"), full_page=True)
 
         page.goto(f"{base_url}/admin/tools", wait_until="domcontentloaded")
         expect(

@@ -405,6 +405,7 @@ watch(hasSettingsSchema, (hasSchema) => {
           <!-- Artifacts -->
           <ToolRunArtifacts
             :artifacts="artifacts"
+            :run-id="displayedRun?.run_id ?? null"
             density="compact"
           />
         </div>

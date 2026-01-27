@@ -9,6 +9,8 @@ Target Python is **3.13–3.14**.
 - Roles: **users → contributors → admins → superuser**
 - Findability: tools are tagged by **profession** and **category**; a tool can belong to multiple professions/categories
 - Future: HuleEdu SSO is planned via identity federation (identity external; **roles remain local**)
+- Curated apps are **first-class application modules** (shipped code), not tools.
+- Curated apps MUST use bespoke UX + app-specific APIs; shared tool/runner infrastructure is internal-only.
 
 ## Engineering Rules (Non-Negotiable)
 

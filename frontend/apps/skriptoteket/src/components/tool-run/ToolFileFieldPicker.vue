@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import UiSegmentedToggle, { type UiSegmentedToggleOption } from "../ui/UiSegmentedToggle.vue";
+import VaultPickerModal from "../vault/VaultPickerModal.vue";
 
 import type {
   FileFieldSelection,
@@ -37,12 +38,34 @@ const sortedRefs = computed(() => {
   return [...props.availableRefs].sort((a, b) => a.name.localeCompare(b.name, "sv"));
 });
 
+const activeVaultField = ref<ToolFileFieldSpec | null>(null);
+
 function selectionFor(field: ToolFileFieldSpec): FileFieldSelection {
   return props.selections[field.name] ?? { mode: "upload", uploads: [], refs: [] };
 }
 
 function refsForField(field: ToolFileFieldSpec): FileRefInfo[] {
   return sortedRefs.value.filter((ref) => !ref.field || ref.field === field.name);
+}
+
+function sessionRefsForField(field: ToolFileFieldSpec): FileRefInfo[] {
+  return refsForField(field).filter((ref) => getFileRefSource(ref.ref) === "session");
+}
+
+function vaultRefsSelected(field: ToolFileFieldSpec): string[] {
+  return selectionFor(field).refs.filter((ref) => getFileRefSource(ref) === "vault");
+}
+
+function sessionRefsSelected(field: ToolFileFieldSpec): string[] {
+  return selectionFor(field).refs.filter((ref) => getFileRefSource(ref) === "session");
+}
+
+function remainingVaultSlots(field: ToolFileFieldSpec): number {
+  return Math.max(0, field.max - sessionRefsSelected(field).length);
+}
+
+function fileNameForRef(refValue: string): string {
+  return props.availableRefs.find((ref) => ref.ref === refValue)?.name ?? refValue;
 }
 
 function countLabel(field: ToolFileFieldSpec): string {
@@ -52,8 +75,13 @@ function countLabel(field: ToolFileFieldSpec): string {
   return count === 1 ? "1 vald" : `${count} valda`;
 }
 
-function onModeChange(field: ToolFileFieldSpec, mode: FileSelectionMode): void {
+function isFileSelectionMode(value: string): value is FileSelectionMode {
+  return value === "upload" || value === "refs";
+}
+
+function onModeChange(field: ToolFileFieldSpec, mode: string): void {
   if (props.isReadOnly) return;
+  if (!isFileSelectionMode(mode)) return;
   emit("update:mode", { field: field.name, mode });
 }
 
@@ -64,7 +92,7 @@ function onFilesSelected(field: ToolFileFieldSpec, event: Event): void {
   emit("update:uploads", { field: field.name, files: Array.from(files) });
 }
 
-function onToggleRef(field: ToolFileFieldSpec, refValue: string, event: Event): void {
+function onToggleSessionRef(field: ToolFileFieldSpec, refValue: string, event: Event): void {
   if (props.isReadOnly) return;
   if (!(event.target instanceof HTMLInputElement)) return;
   const selection = selectionFor(field);
@@ -72,13 +100,17 @@ function onToggleRef(field: ToolFileFieldSpec, refValue: string, event: Event): 
   const next = event.target.checked
     ? Array.from(new Set([...current, refValue]))
     : current.filter((value) => value !== refValue);
+  if (next.length > field.max) return;
   emit("update:refs", { field: field.name, refs: next });
 }
 
 function onSelectAllRefs(field: ToolFileFieldSpec): void {
   if (props.isReadOnly) return;
-  const refs = refsForField(field).map((ref) => ref.ref);
-  const limited = refs.slice(0, Math.max(0, field.max));
+  const selection = selectionFor(field);
+  const current = selection.refs ?? [];
+  const refs = sessionRefsForField(field).map((ref) => ref.ref);
+  const next = Array.from(new Set([...current, ...refs]));
+  const limited = next.slice(0, Math.max(0, field.max));
   emit("update:refs", { field: field.name, refs: limited });
 }
 
@@ -100,6 +132,26 @@ function onDeleteSelectedRefs(field: ToolFileFieldSpec): void {
 function canDeleteSelected(field: ToolFileFieldSpec): boolean {
   if (props.isReadOnly) return false;
   return selectionFor(field).refs.some((ref) => getFileRefSource(ref) === "session");
+}
+
+function openVaultPicker(field: ToolFileFieldSpec): void {
+  if (props.isReadOnly) return;
+  activeVaultField.value = field;
+}
+
+function closeVaultPicker(): void {
+  activeVaultField.value = null;
+}
+
+function onVaultPickerConfirm(selected: string[]): void {
+  const field = activeVaultField.value;
+  if (!field) return;
+
+  const selection = selectionFor(field);
+  const sessionSelected = selection.refs.filter((ref) => getFileRefSource(ref) === "session");
+  const next = Array.from(new Set([...sessionSelected, ...selected]));
+  emit("update:refs", { field: field.name, refs: next });
+  closeVaultPicker();
 }
 
 function sourceLabel(ref: FileRefInfo): string {
@@ -157,7 +209,7 @@ function modeOptions(field: ToolFileFieldSpec): UiSegmentedToggleOption[] {
           :density="isCompact ? 'compact' : 'default'"
           aria-label="Välj filkälla"
           :columns="2"
-          @update:model-value="onModeChange(field, $event as FileSelectionMode)"
+          @update:model-value="onModeChange(field, $event)"
         />
       </div>
 
@@ -201,10 +253,7 @@ function modeOptions(field: ToolFileFieldSpec): UiSegmentedToggleOption[] {
       </div>
 
       <div v-else>
-        <div
-          v-if="refsForField(field).length > 0"
-          :class="[isCompact ? 'space-y-1' : 'space-y-2']"
-        >
+        <div :class="[isCompact ? 'space-y-2' : 'space-y-3']">
           <div class="flex flex-wrap items-center gap-2">
             <button
               type="button"
@@ -246,42 +295,97 @@ function modeOptions(field: ToolFileFieldSpec): UiSegmentedToggleOption[] {
               Ta bort markerade
             </button>
           </div>
-          <label
-            v-for="ref in refsForField(field)"
-            :key="ref.ref"
-            :class="[
-              'flex items-start gap-2 border border-navy/20 bg-white px-2.5 py-2',
-              isCompact ? 'text-[11px]' : 'text-sm',
-              isReadOnly ? 'opacity-60 pointer-events-none' : '',
-            ]"
+
+          <div
+            v-if="sessionRefsForField(field).length > 0"
+            :class="[isCompact ? 'space-y-1' : 'space-y-2']"
           >
-            <input
-              type="checkbox"
-              class="mt-0.5 accent-burgundy"
-              :checked="selectionFor(field).refs.includes(ref.ref)"
-              :disabled="isReadOnly"
-              @change="onToggleRef(field, ref.ref, $event)"
+            <p :class="[isCompact ? 'text-[10px] font-semibold uppercase tracking-wide text-navy/60' : 'text-xs font-semibold uppercase tracking-wide text-navy/70']">
+              Session
+            </p>
+            <label
+              v-for="sessionRef in sessionRefsForField(field)"
+              :key="sessionRef.ref"
+              :class="[
+                'flex items-start gap-2 border border-navy/20 bg-white px-2.5 py-2',
+                isCompact ? 'text-[11px]' : 'text-sm',
+                isReadOnly ? 'opacity-60 pointer-events-none' : '',
+              ]"
             >
-            <span class="flex-1 min-w-0">
-              <span class="block font-mono text-navy truncate">{{ ref.name }}</span>
-              <span
-                :class="[
-                  'block text-navy/50',
-                  isCompact ? 'text-[10px]' : 'text-xs',
-                ]"
+              <input
+                type="checkbox"
+                class="mt-0.5 accent-burgundy"
+                :checked="selectionFor(field).refs.includes(sessionRef.ref)"
+                :disabled="isReadOnly || (!selectionFor(field).refs.includes(sessionRef.ref) && selectionFor(field).refs.length >= field.max)"
+                @change="onToggleSessionRef(field, sessionRef.ref, $event)"
               >
-                {{ formatBytes(ref.bytes) }} · {{ sourceLabel(ref) }}
-                <span v-if="ref.field">· fält: {{ ref.field }}</span>
+              <span class="flex-1 min-w-0">
+                <span class="block font-mono text-navy truncate">{{ sessionRef.name }}</span>
+                <span
+                  :class="[
+                    'block text-navy/50',
+                    isCompact ? 'text-[10px]' : 'text-xs',
+                  ]"
+                >
+                  {{ formatBytes(sessionRef.bytes) }} · {{ sourceLabel(sessionRef) }}
+                  <span v-if="sessionRef.field">· fält: {{ sessionRef.field }}</span>
+                </span>
               </span>
-            </span>
-          </label>
+            </label>
+          </div>
+
+          <div :class="[isCompact ? 'space-y-1.5' : 'space-y-2']">
+            <div class="flex items-center justify-between gap-3">
+              <p :class="[isCompact ? 'text-[10px] font-semibold uppercase tracking-wide text-navy/60' : 'text-xs font-semibold uppercase tracking-wide text-navy/70']">
+                Valv
+              </p>
+              <button
+                type="button"
+                class="btn-ghost border-navy/30 bg-canvas shadow-none"
+                :disabled="isReadOnly || remainingVaultSlots(field) === 0"
+                @click="openVaultPicker(field)"
+              >
+                Välj i valvet
+              </button>
+            </div>
+
+            <div
+              v-if="vaultRefsSelected(field).length > 0"
+              class="space-y-1"
+            >
+              <div
+                v-for="refValue in vaultRefsSelected(field)"
+                :key="refValue"
+                class="flex items-center justify-between gap-3 border border-navy/20 bg-white px-2.5 py-2"
+              >
+                <span class="font-mono text-navy truncate text-sm">
+                  {{ fileNameForRef(refValue) }}
+                </span>
+                <button
+                  type="button"
+                  class="btn-ghost h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-burgundy/40 text-burgundy bg-white leading-none"
+                  :disabled="isReadOnly"
+                  @click="emit('update:refs', { field: field.name, refs: selectionFor(field).refs.filter((value) => value !== refValue) })"
+                >
+                  Ta bort
+                </button>
+              </div>
+            </div>
+            <p
+              v-else
+              :class="[isCompact ? 'text-[11px] text-navy/60' : 'text-xs text-navy/60']"
+            >
+              Inga valda valvfiler.
+            </p>
+
+            <p
+              v-if="remainingVaultSlots(field) === 0"
+              :class="[isCompact ? 'text-[11px] text-navy/50' : 'text-xs text-navy/50']"
+            >
+              Avmarkera en sessionfil för att välja från valvet.
+            </p>
+          </div>
         </div>
-        <p
-          v-else
-          :class="[isCompact ? 'text-[11px] text-navy/60' : 'text-xs text-navy/60']"
-        >
-          Inga sparade filer.
-        </p>
       </div>
 
       <p
@@ -292,4 +396,15 @@ function modeOptions(field: ToolFileFieldSpec): UiSegmentedToggleOption[] {
       </p>
     </div>
   </div>
+
+  <VaultPickerModal
+    :is-open="activeVaultField !== null"
+    :title="activeVaultField ? `Välj filer (${activeVaultField.label})` : 'Välj filer'"
+    :selected-refs="activeVaultField ? vaultRefsSelected(activeVaultField) : []"
+    :max-selected="activeVaultField ? remainingVaultSlots(activeVaultField) : 1"
+    confirm-label="Välj"
+    :is-read-only="isReadOnly"
+    @close="closeVaultPicker"
+    @confirm="onVaultPickerConfirm"
+  />
 </template>

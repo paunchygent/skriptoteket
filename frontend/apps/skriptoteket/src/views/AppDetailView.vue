@@ -345,7 +345,10 @@ onUnmounted(() => {
           />
 
           <!-- Artifacts -->
-          <ToolRunArtifacts :artifacts="artifacts" />
+          <ToolRunArtifacts
+            :artifacts="artifacts"
+            :run-id="run.run_id"
+          />
         </div>
       </div>
     </template>

@@ -13,6 +13,7 @@ scope: "all"
 
 - [010-foundational-principles.md](010-foundational-principles.md): Non-negotiable tenets and mindset
 - [020-monolith-architecture.md](020-monolith-architecture.md): Layer structure and boundaries
+- [025-curated-apps.md](025-curated-apps.md): Curated apps are first-class application modules (bespoke UX + APIs)
 
 ## Communication & Events
 

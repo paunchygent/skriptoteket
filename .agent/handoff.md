@@ -35,6 +35,18 @@ Keep this file updated so the next session can pick up work quickly.
     `frontend/apps/skriptoteket/src/views/apps/ReagentPrepChefView.vue`
   - OpenAPI types refreshed: `pdm run fe-gen-api-types`
 
+- Vault UI (file refs):
+  - New authenticated route: `frontend/apps/skriptoteket/src/views/VaultView.vue` (path: `/vault`)
+  - Vault panel + picker modal: `frontend/apps/skriptoteket/src/components/vault/`
+  - Vault API composable: `frontend/apps/skriptoteket/src/composables/vault/useVaultFiles.ts`
+  - Tool run artifacts: save to vault + pass `runId`: `frontend/apps/skriptoteket/src/components/tool-run/ToolRunArtifacts.vue`
+  - File-ref pickers support session + vault sources:
+    `frontend/apps/skriptoteket/src/components/tool-run/ToolFileFieldPicker.vue`,
+    `frontend/apps/skriptoteket/src/components/ui-actions/UiActionFieldFileRef.vue`
+  - E2E: `scripts/playwright_st_14_36_vault_ui_e2e.py`
+
+- Auth UX hardening: timeout auth fetches to avoid stuck "Loggar in…": `frontend/apps/skriptoteket/src/stores/auth.ts`
+
 - Older history: see `.agent/readme-first.md` + `docs/`.
 
 ## Verification
@@ -42,6 +54,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Dev-local (backend + SPA): `pdm run dev-local` (backend `:8000`, Vite `:5173`).
 - Playwright (macOS may need escalation): `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_11_09_curated_app_e2e`
   → artifacts: `.artifacts/st-11-09-curated-app-e2e/` (demo.counter + Reagensberedning).
+- Playwright smoke (includes `/vault`): `BASE_URL=http://127.0.0.1:5173 pdm run ui-smoke`
 - Quality gates:
   - `pdm run format`
   - `pdm run lint`

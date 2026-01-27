@@ -84,6 +84,13 @@ function onHelp(): void {
           Mina körningar
         </RouterLink>
         <RouterLink
+          to="/vault"
+          class="sidebar-nav-item"
+          @click="onClose"
+        >
+          Valv
+        </RouterLink>
+        <RouterLink
           v-if="canSeeContributor"
           to="/my-tools"
           class="sidebar-nav-item"

@@ -1,23 +1,71 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import type { components } from "../../api/openapi";
+import { isApiError } from "../../api/client";
+import { useVaultFiles } from "../../composables/vault/useVaultFiles";
+import { useToastStore } from "../../stores/toast";
 
 type RunArtifact = components["schemas"]["RunArtifact"];
 type ArtifactEntry = components["schemas"]["ArtifactEntry"];
 
 const props = withDefaults(defineProps<{
   artifacts: (RunArtifact | ArtifactEntry)[];
+  runId?: string | null;
   density?: "default" | "compact";
 }>(), {
+  runId: null,
   density: "default",
 });
 
 const isCompact = computed(() => props.density === "compact");
+const toast = useToastStore();
+const { saveFromRunArtifact } = useVaultFiles();
+
+const savingIds = ref<Set<string>>(new Set());
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function filenameFromPath(path: string): string {
+  const parts = path.split("/");
+  const last = parts.at(-1);
+  return last && last.length > 0 ? last : path;
+}
+
+async function saveToVault(artifact: RunArtifact | ArtifactEntry): Promise<void> {
+  if (!props.runId) return;
+
+  const artifactId = artifact.artifact_id;
+  if (savingIds.value.has(artifactId)) return;
+
+  const next = new Set(savingIds.value);
+  next.add(artifactId);
+  savingIds.value = next;
+
+  try {
+    const name = filenameFromPath(artifact.path);
+    await saveFromRunArtifact({
+      runId: props.runId,
+      artifactId: artifactId,
+      name,
+    });
+    toast.success("Sparade filen i valvet.");
+  } catch (error: unknown) {
+    if (isApiError(error)) {
+      toast.failure(error.message);
+    } else if (error instanceof Error) {
+      toast.failure(error.message);
+    } else {
+      toast.failure("Det gick inte att spara filen i valvet.");
+    }
+  } finally {
+    const cleared = new Set(savingIds.value);
+    cleared.delete(artifactId);
+    savingIds.value = cleared;
+  }
 }
 </script>
 
@@ -60,6 +108,15 @@ function formatBytes(bytes: number): string {
         <span class="text-navy/50 text-xs">
           {{ formatBytes(artifact.bytes) }}
         </span>
+        <button
+          v-if="runId"
+          type="button"
+          class="btn-ghost border-navy/30 bg-canvas shadow-none ml-auto"
+          :disabled="savingIds.has(artifact.artifact_id)"
+          @click="void saveToVault(artifact)"
+        >
+          {{ savingIds.has(artifact.artifact_id) ? "Sparar…" : "Spara i valv" }}
+        </button>
       </li>
     </ul>
   </div>

@@ -13,6 +13,34 @@ type RegisterResponse = components["schemas"]["RegisterResponse"];
 
 type AuthStatus = "idle" | "loading" | "ready" | "error";
 
+type FetchTimeoutOptions = {
+  timeoutMs?: number;
+  timeoutMessage?: string;
+};
+
+async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init: RequestInit,
+  options: FetchTimeoutOptions = {},
+): Promise<Response> {
+  const timeoutMs = options.timeoutMs ?? 15000;
+  const timeoutMessage = options.timeoutMessage ?? "Request timed out";
+
+  const controller = new AbortController();
+  const timeoutId = globalThis.setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error(timeoutMessage);
+    }
+    throw error;
+  } finally {
+    globalThis.clearTimeout(timeoutId);
+  }
+}
+
 const ROLE_RANK: Record<ApiRole, number> = {
   user: 0,
   contributor: 1,
@@ -116,11 +144,15 @@ export const useAuthStore = defineStore("auth", {
 
       bootstrapPromise = (async () => {
         try {
-          const response = await fetch("/api/v1/auth/me", {
-            method: "GET",
-            credentials: "include",
-            headers: { Accept: "application/json" },
-          });
+          const response = await fetchWithTimeout(
+            "/api/v1/auth/me",
+            {
+              method: "GET",
+              credentials: "include",
+              headers: { Accept: "application/json" },
+            },
+            { timeoutMs: 10000, timeoutMessage: "Sessionen svarar inte. Försök igen." },
+          );
 
           if (response.status === 200) {
             const payload: MeResponse = await response.json();
@@ -190,11 +222,15 @@ export const useAuthStore = defineStore("auth", {
       }
 
       try {
-        const response = await fetch("/api/v1/auth/csrf", {
-          method: "GET",
-          credentials: "include",
-          headers: { Accept: "application/json" },
-        });
+        const response = await fetchWithTimeout(
+          "/api/v1/auth/csrf",
+          {
+            method: "GET",
+            credentials: "include",
+            headers: { Accept: "application/json" },
+          },
+          { timeoutMs: 10000, timeoutMessage: "Det gick inte att hämta CSRF-token." },
+        );
 
         if (response.status === 200) {
           const payload: CsrfResponse = await response.json();
@@ -220,15 +256,22 @@ export const useAuthStore = defineStore("auth", {
       this.error = null;
 
       try {
-        const response = await fetch("/api/v1/auth/login", {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
+        const response = await fetchWithTimeout(
+          "/api/v1/auth/login",
+          {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email: params.email, password: params.password }),
           },
-          body: JSON.stringify({ email: params.email, password: params.password }),
-        });
+          {
+            timeoutMs: 15000,
+            timeoutMessage: "Inloggningen tog för lång tid. Kontrollera anslutningen och försök igen.",
+          },
+        );
 
         if (!response.ok) {
           this.status = "error";
@@ -262,20 +305,24 @@ export const useAuthStore = defineStore("auth", {
       this.error = null;
 
       try {
-        const response = await fetch("/api/v1/auth/register", {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
+        const response = await fetchWithTimeout(
+          "/api/v1/auth/register",
+          {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: params.email,
+              password: params.password,
+              first_name: params.firstName,
+              last_name: params.lastName,
+            }),
           },
-          body: JSON.stringify({
-            email: params.email,
-            password: params.password,
-            first_name: params.firstName,
-            last_name: params.lastName,
-          }),
-        });
+          { timeoutMs: 20000, timeoutMessage: "Registreringen tog för lång tid. Försök igen." },
+        );
 
         if (!response.ok) {
           this.status = "error";
@@ -313,11 +360,15 @@ export const useAuthStore = defineStore("auth", {
       }
 
       try {
-        const response = await fetch("/api/v1/auth/logout", {
-          method: "POST",
-          credentials: "include",
-          headers,
-        });
+        const response = await fetchWithTimeout(
+          "/api/v1/auth/logout",
+          {
+            method: "POST",
+            credentials: "include",
+            headers,
+          },
+          { timeoutMs: 10000, timeoutMessage: "Utloggningen tog för lång tid. Försök igen." },
+        );
 
         if (response.status === 204 || response.status === 401) {
           this.clear();
@@ -333,11 +384,15 @@ export const useAuthStore = defineStore("auth", {
             throw new Error(this.error);
           }
 
-          const retry = await fetch("/api/v1/auth/logout", {
-            method: "POST",
-            credentials: "include",
-            headers: { ...headers, "X-CSRF-Token": refreshedToken },
-          });
+          const retry = await fetchWithTimeout(
+            "/api/v1/auth/logout",
+            {
+              method: "POST",
+              credentials: "include",
+              headers: { ...headers, "X-CSRF-Token": refreshedToken },
+            },
+            { timeoutMs: 10000, timeoutMessage: "Utloggningen tog för lång tid. Försök igen." },
+          );
 
           if (retry.status === 204 || retry.status === 401) {
             this.clear();
