@@ -6,6 +6,7 @@ from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict
 
+from skriptoteket.domain.curated_apps.models import CuratedAppUiMode
 from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
@@ -25,6 +26,7 @@ class AppDetailResponse(BaseModel):
     title: str
     summary: str | None
     min_role: Role
+    ui_mode: CuratedAppUiMode
 
 
 @router.get("/{app_id}", response_model=AppDetailResponse)
@@ -46,4 +48,5 @@ async def get_app_by_id(
         title=app.title,
         summary=app.summary,
         min_role=app.min_role,
+        ui_mode=app.ui_mode,
     )

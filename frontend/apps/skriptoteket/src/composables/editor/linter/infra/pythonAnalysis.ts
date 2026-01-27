@@ -178,6 +178,38 @@ export function findPythonCallExpressions(state: EditorState, range: { from: num
   const tree = syntaxTree(state);
   const cursor = tree.cursor() as unknown as TreeCursorLike;
   const result: PythonCallExpression[] = [];
+  const docText = state.doc.toString();
+
+  function findEmptyArgListBounds(callFrom: number, callTo: number): { from: number; to: number } | null {
+    let closeParenPos = -1;
+    for (let pos = callTo - 1; pos >= callFrom; pos -= 1) {
+      if (docText[pos] === ")") {
+        closeParenPos = pos;
+        break;
+      }
+    }
+
+    if (closeParenPos < 0) return null;
+
+    let depth = 0;
+    for (let pos = closeParenPos; pos >= callFrom; pos -= 1) {
+      const ch = docText[pos] ?? "";
+      if (ch === ")") {
+        depth += 1;
+        continue;
+      }
+      if (ch === "(") {
+        depth -= 1;
+        if (depth === 0) {
+          const inner = docText.slice(pos + 1, closeParenPos);
+          if (inner.trim().length > 0) return null;
+          return { from: pos, to: closeParenPos + 1 };
+        }
+      }
+    }
+
+    return null;
+  }
 
   function parseMemberExpression(): Omit<Extract<PythonCallCallee, { kind: "member" }>, "kind"> | null {
     if (!cursor.firstChild()) return null;
@@ -297,7 +329,7 @@ export function findPythonCallExpressions(state: EditorState, range: { from: num
         continue;
       }
 
-      if (cursor.name === "ArgList") {
+      if (cursor.name === "ArgList" || cursor.name === "ArgumentList") {
         argListFrom = cursor.from;
         argListTo = cursor.to;
         const parsed = parseArgList();
@@ -309,6 +341,13 @@ export function findPythonCallExpressions(state: EditorState, range: { from: num
     cursor.parent();
 
     if (!callee) return null;
+    if (argListFrom === null || argListTo === null) {
+      const inferred = findEmptyArgListBounds(callFrom, callTo);
+      if (inferred) {
+        argListFrom = inferred.from;
+        argListTo = inferred.to;
+      }
+    }
     return { from: callFrom, to: callTo, callee, argListFrom, argListTo, positionalArgs, keywordArgs };
   }
 

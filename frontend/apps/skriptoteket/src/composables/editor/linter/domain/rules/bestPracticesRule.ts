@@ -55,30 +55,49 @@ function openModeIsWriting(mode: string): boolean {
   return /[wax+]/.test(mode);
 }
 
+function findEmptyArgListBounds(
+  ctxText: string,
+  call: PythonCallExpression,
+): { from: number; to: number } | null {
+  let closeParenPos = -1;
+  for (let pos = call.to - 1; pos >= call.from; pos -= 1) {
+    if (ctxText[pos] === ")") {
+      closeParenPos = pos;
+      break;
+    }
+  }
+
+  if (closeParenPos < 0) return null;
+
+  let depth = 0;
+  for (let pos = closeParenPos; pos >= call.from; pos -= 1) {
+    const ch = ctxText[pos] ?? "";
+    if (ch === ")") {
+      depth += 1;
+      continue;
+    }
+    if (ch === "(") {
+      depth -= 1;
+      if (depth === 0) {
+        const inner = ctxText.slice(pos + 1, closeParenPos);
+        if (inner.trim().length > 0) return null;
+        return { from: pos, to: closeParenPos + 1 };
+      }
+    }
+  }
+
+  return null;
+}
+
 function addEncodingFix(ctxText: string, call: PythonCallExpression): FixIntent | null {
   let argListFrom = call.argListFrom;
   let argListTo = call.argListTo;
 
   if (argListFrom === null || argListTo === null) {
-    const closeParenPos = call.to - 1;
-    if ((ctxText[closeParenPos] ?? "") !== ")") return null;
-
-    let depth = 0;
-    for (let pos = closeParenPos; pos >= call.from; pos -= 1) {
-      const ch = ctxText[pos] ?? "";
-      if (ch === ")") {
-        depth += 1;
-        continue;
-      }
-      if (ch === "(") {
-        depth -= 1;
-        if (depth === 0) {
-          argListFrom = pos;
-          argListTo = closeParenPos + 1;
-          break;
-        }
-      }
-    }
+    const inferred = findEmptyArgListBounds(ctxText, call);
+    if (!inferred) return null;
+    argListFrom = inferred.from;
+    argListTo = inferred.to;
   }
 
   if (argListFrom === null || argListTo === null) return null;

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import StrEnum
 from uuid import NAMESPACE_URL, UUID, uuid5
 
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
@@ -14,6 +15,11 @@ def curated_app_tool_id(*, app_id: str) -> UUID:
     if not normalized:
         raise ValueError("app_id is required")
     return uuid5(_CURATED_APPS_NAMESPACE, normalized)
+
+
+class CuratedAppUiMode(StrEnum):
+    GENERIC_OK = "generic_ok"
+    BESPOKE_REQUIRED = "bespoke_required"
 
 
 class CuratedAppPlacement(BaseModel):
@@ -43,6 +49,7 @@ class CuratedAppDefinition(BaseModel):
     app_id: str
     tool_id: UUID
     app_version: str
+    ui_mode: CuratedAppUiMode = CuratedAppUiMode.GENERIC_OK
     title: str
     summary: str | None = None
     min_role: Role = Role.USER

@@ -1,0 +1,26 @@
+[
+  {
+    "key": "NaCl",
+    "display_name": "Natriumklorid",
+    "hazard_codes": [],
+    "ppe": ["Skyddsglasögon"],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "notes": []
+  },
+  {
+    "key": "CuSO4·5H2O",
+    "display_name": "Kopparsulfat (pentahydrat)",
+    "hazard_codes": [],
+    "ppe": ["Skyddsglasögon", "Handskar"],
+    "disposal": "Följ lokala rutiner och SDS (tungmetallavfall kan krävas).",
+    "notes": []
+  },
+  {
+    "key": "KMnO4",
+    "display_name": "Kaliumpermanganat",
+    "hazard_codes": [],
+    "ppe": ["Skyddsglasögon", "Handskar"],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "notes": []
+  }
+]

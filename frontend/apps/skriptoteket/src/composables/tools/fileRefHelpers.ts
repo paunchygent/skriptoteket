@@ -1,6 +1,6 @@
 import type { components } from "../../api/openapi";
 
-export type FileRefSource = components["schemas"]["UiFileRefSource"];
+export type FileRefSource = components["schemas"]["FileRefSource"];
 
 export type FileRefInfo = {
   ref: string;

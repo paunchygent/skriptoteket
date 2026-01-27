@@ -63,6 +63,7 @@ dependencies = [
     "mistral-common>=1.5.6",
     "pypandoc",
     "weasyprint",
+    "molmass>=2026.1.8",
 ]
 
 [project.optional-dependencies]

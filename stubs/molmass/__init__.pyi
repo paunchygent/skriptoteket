@@ -1,0 +1,6 @@
+from __future__ import annotations
+
+class Formula:
+    def __init__(self, formula: str) -> None: ...
+    @property
+    def mass(self) -> float: ...

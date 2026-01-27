@@ -12,13 +12,13 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-01-26
-- Branch: `main` + local changes
+- Date: 2026-01-27
+- Branch: `main` + local commits
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: history in `.agent/readme-first.md`
 
-## Current Session (2026-01-26)
+## Current Session (2026-01-27)
 
 - Curated app planning docs added (Reagent Prep Chef):
   - Spec: `docs/reference/ref-curated-app-reagent-prep-chef.md`
@@ -28,146 +28,28 @@ Keep this file updated so the next session can pick up work quickly.
     `docs/backlog/prs/pr-0059-curated-app-reagent-prep-chef.md`
   - Verification: `pdm run docs-validate`
 
-- Editor “byt verktyg” UX + hub route:
-  - `/editor` hub route (auto-open last editor tool; `?pick=1` forces picker): `frontend/apps/skriptoteket/src/views/editor/EditorHubView.vue`,
-    `frontend/apps/skriptoteket/src/router/routes.ts`
-  - Editor MRU (per user) stored in localStorage and recorded on editor boot: `frontend/apps/skriptoteket/src/composables/editor/editorRecentTools.ts`,
-    `frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.ts`
-  - New editor toolbar menu “Verktyg ▾” (recents + my tools + create): `frontend/apps/skriptoteket/src/components/editor/EditorToolMenu.vue`,
-    `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceToolbar.vue`
-  - Shared create-draft modal composable (SRP; used across hub/menu/admin/my tools/home): `frontend/apps/skriptoteket/src/composables/admin/useCreateDraftToolModal.ts`
-  - Modal polish: create-tool modal + login modal inputs aligned with design rules: `frontend/apps/skriptoteket/src/components/admin/CreateDraftToolModal.vue`,
-    `frontend/apps/skriptoteket/src/components/auth/LoginModal.vue`
-  - Docs: `docs/backlog/stories/story-14-38-kodredigerare-verktygsval-och-sok.md`, `docs/backlog/prs/pr-0058-kodredigerare-verktygsval-och-sok.md`
+- Curated apps: `ui_mode` added to registry + `/api/v1/apps/{app_id}`; `chemistry.reagent_prep_chef` is `bespoke_required`.
+  - Backend registry + execution: `src/skriptoteket/infrastructure/curated_apps/`
+  - Reagensberedning app backend: `src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/`
+  - SPA route host + bespoke view: `frontend/apps/skriptoteket/src/views/AppHostView.vue`,
+    `frontend/apps/skriptoteket/src/views/apps/ReagentPrepChefView.vue`
+  - OpenAPI types refreshed: `pdm run fe-gen-api-types`
 
-- UI cohesion pass shipped (PR-0056 + PR-0057):
-  - Shared segmented toggle: `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue`
-  - Editor mode selector now single-row + separators: `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceModeSelector.vue`
-  - Cohesive file picker row (upload + saved refs): `frontend/apps/skriptoteket/src/components/tool-run/ToolFileFieldPicker.vue`
-  - Browse: removed per-item “Välj” CTAs; rows/cards are the target: `frontend/apps/skriptoteket/src/views/BrowseToolsView.vue`,
-    `frontend/apps/skriptoteket/src/components/catalog/CatalogItemCard.vue`
-  - Tool runs: compact/embedded density + anti-jank collapses: `frontend/apps/skriptoteket/src/views/ToolRunView.vue`,
-    `frontend/apps/skriptoteket/src/components/ui/UiCollapse.vue`
-  - Smoke selector update (no “Välj” dependency): `scripts/playwright_ui_runtime_smoke.py`
-
-- PR-0049 SRP splits completed: `src/skriptoteket/application/editor/edit_ops/`, `src/skriptoteket/web/api/v1/editor/models/`,
-  `src/skriptoteket/infrastructure/runner/docker/`, `src/skriptoteket/workers/execution_queue/`,
-  `src/skriptoteket/di/infrastructure/` (container wiring updated in `src/skriptoteket/di/__init__.py`).
-- Added pre-EPIC-19 runner seam stories: `docs/backlog/stories/story-19-04-runner-request-factory-seam.md`,
-  `docs/backlog/stories/story-19-05-runner-result-parser-seam.md`,
-  `docs/backlog/stories/story-19-06-runner-contract-selection-seam.md` (EPIC-19 + docs index updated).
-- EPIC-19 approved (runner request envelope + FileRefs + promotions + runner contract v3 foundations).
-  - Files: `docs/backlog/epics/epic-19-runner-io-and-file-references-foundations.md`,
-    `docs/backlog/reviews/review-epic-19-runner-io-and-file-references-foundations.md`.
-  - ADRs: `docs/adr/adr-0063-runner-request-envelope-v1.md`, `docs/adr/adr-0064-file-references-and-resolver.md`,
-    `docs/adr/adr-0065-runner-contract-v3-state-update-errors-and-session-promotions.md`.
-  - Alignment: `docs/backlog/stories/story-19-01-runner-request-envelope.md`,
-    `docs/backlog/stories/story-19-02-file-refs-resolver-and-promotion.md`,
-    `docs/backlog/stories/story-19-03-runner-contract-v3-structured-errors-state-update-and-promotions.md`,
-    `docs/backlog/stories/story-14-24-ui-contract-file-references.md`,
-    `docs/backlog/stories/story-14-36-user-file-vault-and-picker.md`.
-  - Conflicts resolved in ADRs: `docs/adr/adr-0024-tool-sessions-and-ui-payload-persistence.md`,
-    `docs/adr/adr-0031-multi-file-input-contract.md`, `docs/adr/adr-0039-session-file-persistence.md`.
-- PR-0047: softened contiguous-echo drop, added right-side replace metadata, and tightened inline prompts.
-  - Backend normalization + replace hint: `src/skriptoteket/application/editor/completion_handler.py`.
-  - Response field + API plumbing: `src/skriptoteket/protocols/llm/`, `src/skriptoteket/web/api/v1/editor/models/`,
-    `src/skriptoteket/web/api/v1/editor/completions.py`.
-  - Frontend acceptance replace window: `frontend/apps/skriptoteket/src/composables/editor/skriptoteketGhostText.ts`.
-  - Prompt tweaks: `src/skriptoteket/application/editor/system_prompts/inline_completion_v1.txt`,
-    `src/skriptoteket/application/editor/system_prompts/inline_completion_gpt5_v1.txt`.
-- Frontend warning cleanup (withDefaults + router + onBeforeUnmount):
-  - Removed `withDefaults` imports in SFCs (macro is global).
-  - Added `/profile` route in test router to avoid Vue Router warnings: `frontend/apps/skriptoteket/src/test/utils.ts`.
-  - Switched cleanup to `onScopeDispose` to avoid lifecycle warnings in tests: `frontend/apps/skriptoteket/src/composables/editor/useEditorChat.ts`.
-- Tests added/updated for replace_suffix_chars + overlap: `tests/unit/application/test_editor_inline_completion_handler.py`,
-  `tests/unit/web/test_editor_inline_completion_api.py`, `frontend/apps/skriptoteket/src/composables/editor/skriptoteketGhostText.spec.ts`.
-- PR doc updated with new validation notes + checklist: `docs/backlog/prs/pr-0047-ai-inline-completion-normalization-and-caps.md`.
-- Quality gates run: `pdm run lint`, `pdm run typecheck`, `pdm run test`, `pdm run fe-test`, `pdm run docs-validate`.
-- PR-0050: enforce strict separation of Chat vs Responses structured outputs (Option B).
-  - Code: `src/skriptoteket/infrastructure/llm/openai/grammars.py`,
-    `src/skriptoteket/infrastructure/llm/openai/payloads.py`,
-    `src/skriptoteket/infrastructure/llm/openai/chat_ops_provider.py`,
-    `src/skriptoteket/infrastructure/llm/openai/types.py`.
-  - Tests: `tests/unit/infrastructure/llm/test_openai_payloads.py`,
-    `tests/unit/infrastructure/llm/test_openai_chat_ops_provider_grammar.py`.
-  - Docs: `docs/runbooks/runbook-openai-responses-api.md`,
-    `docs/backlog/prs/pr-0050-openai-responses-structured-output-shape-fix.md`.
-- Docs-sync pass: marked completed backlog items as `done`.
-  - PRs: PR-0040, PR-0041, PR-0042, PR-0043, PR-0046, PR-0047, PR-0048, PR-0050.
-  - Stories: ST-08-30, ST-08-31, ST-08-32, ST-08-33, ST-18-01.
-  - Epics updated: `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md`,
-    `docs/backlog/epics/epic-18-execution-queue-and-worker-loop.md`.
-- Docs-sync pass (next 15): marked PR-0030, PR-0031, PR-0032, PR-0033, PR-0036, PR-0038, and ST-07-06 as `done`
-  (EPIC-07 updated).
-- Runner contract seams shipped (ST-19-04/05/06): request factory + result parser + DI contract selector wired in
-  `src/skriptoteket/infrastructure/runner/docker/` + `src/skriptoteket/di/infrastructure/runner.py`, seam tests in
-  `tests/unit/infrastructure/runner/test_runner_contract_seams.py`, docker runner tests split into
-  `tests/unit/infrastructure/runner/test_docker_runner_execute.py` and
-  `tests/unit/infrastructure/runner/test_docker_runner_adoption.py`.
-- V3 scaffolding helpers added (PR-0051): runner contract schemas in
-  `src/skriptoteket/infrastructure/runner/contracts/`, archive builder helper in
-  `src/skriptoteket/infrastructure/runner/docker/workdir_archive.py`, and
-  `RunnerRequest` now carries optional `request_json_bytes` for V3.
-- Promotions validation moved into `validate_promotion_envelope` in
-  `src/skriptoteket/infrastructure/runner/contracts/promotions_v3.py`.
-- PR-0052 implemented (ST-19-01/02/03): request.json envelope + FileRefs + promotions + contract v3 cutover.
-  - Key paths: `src/skriptoteket/infrastructure/runner/docker/`, `src/skriptoteket/domain/scripting/`,
-    `src/skriptoteket/application/scripting/handlers/`, `runner/skriptoteket_toolkit.py`,
-    `src/skriptoteket/infrastructure/session_files/`, `src/skriptoteket/protocols/`.
-  - Tests refreshed + runner tests split kept in `tests/unit/infrastructure/runner/`.
-- Legacy cleanup: tokens-only CSS + remove unused package.
-  - Tokens-only: `src/skriptoteket/web/static/css/huleedu-design-tokens.css` (removed utilities/components/HTMX selectors).
-  - Removed unused component package: `frontend/packages/huleedu-ui`.
-  - Roadmap corrected: `docs/reference/reports/ref-vue-spa-migration-roadmap.md`.
-- Locked decisions for PR-0053/54/55 (docs-only): multi file fields per run/action, file field values always `FileRef[]`
-  (no scalar), per-field mapping preserved into `/work/request.json` (manifest must include field), vault uses dedicated
-  config + default `VAULT_RETENTION_DAYS=30`, per-artifact “Spara i valv”, new file-refs listing endpoints, new
-  `UiActionField.kind="file_ref"` (+ optional `sources`), settings pickers vault-only, session file reuse preserves
-  field ownership, and hard cut to `file_refs_by_field` (no flat `file_refs`).
-  - PR docs: `docs/backlog/prs/pr-0053-ui-contract-file-ref-picker-and-defaults.md`,
-    `docs/backlog/prs/pr-0054-user-file-vault-backend-and-resolver.md`,
-    `docs/backlog/prs/pr-0055-user-file-vault-ui-picker.md`.
-  - Stories: `docs/backlog/stories/story-14-24-ui-contract-file-references.md`,
-    `docs/backlog/stories/story-14-36-user-file-vault-and-picker.md` (deps updated to include ST-14-24).
+- Older history: see `.agent/readme-first.md` + `docs/`.
 
 ## Verification
 
-- Services (running):
-  - Dev-local (backend + SPA) on `:8000`/`:5173`: `pdm run dev-local` (SPA check via `curl -I http://127.0.0.1:5173/`).
-  - Local backend (FIM) on `:8002`: `WATCHFILES_FORCE_POLLING=true LLM_COMPLETION_ENABLED=true LLM_COMPLETION_SYSTEM_PROMPT_MAX_TOKENS=2048 pdm run uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8002` (log: `.artifacts/inline-completion-verify-local.log`).
-  - GPT backend on `:8003`: `WATCHFILES_FORCE_POLLING=true LLM_COMPLETION_ENABLED=true LLM_COMPLETION_BASE_URL=https://api.openai.com LLM_COMPLETION_MODEL=gpt-5-nano AI_REMOTE_PROVIDERS_ENABLED=true LLM_COMPLETION_SYSTEM_PROMPT_MAX_TOKENS=2048 pdm run uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8003` (log: `.artifacts/inline-completion-verify-gpt5.log`).
-  - Vite (local) on `:5173` → proxy `:8002`: `VITE_DEV_PROXY_TARGET=http://127.0.0.1:8002 pnpm -C frontend --filter @skriptoteket/spa dev`.
-  - Vite (GPT) on `:5174` → proxy `:8003`: `VITE_DEV_PROXY_TARGET=http://127.0.0.1:8003 pnpm -C frontend --filter @skriptoteket/spa exec vite --port 5174 --strictPort`.
-- Playwright (real editor requests; escalated permissions required on macOS):
-  - Editor hub + tool menu (Vite dev): `pdm run ui-editor-smoke --base-url http://127.0.0.1:5173`
-    → artifacts: `.artifacts/ui-editor-smoke/editor-hub.png`, `.artifacts/ui-editor-smoke/editor-loaded.png`.
-  - Sandbox file refs + session reuse (Vite dev): `pdm run python -m scripts.playwright_sandbox_file_refs_reuse_e2e --base-url http://127.0.0.1:5173`
-    → artifacts: `.artifacts/sandbox-file-refs-reuse-e2e/` (editor-ready, test-mode, run-with-upload, run-with-reuse).
-  - Production html-to-pdf preview (Vite dev): `pdm run python -m scripts.playwright_st_12_05_session_file_persistence_e2e --base-url http://127.0.0.1:5173`
-    → artifacts: `.artifacts/st-12-05-session-file-persistence-e2e/` (production.pdf).
-  - Local (long script, suffix hole): `pdm run python -m scripts.diagnose_ghost_text --base-url http://127.0.0.1:5173 --tool-slug html-to-pdf-preview --cursor-anchor "if not html_sources:" --cursor-anchor-mode line --cursor-text "        return {" --cursor-delete-next-lines 7`
-    → ghost text present; `cursor_overlap_chars=0` in `.artifacts/diagnose-ghost-text/result.json` (completion off-target).
-  - GPT-5 (long script, return block hole): `pdm run python -m scripts.diagnose_ghost_text --base-url http://127.0.0.1:5174 --tool-slug html-to-pdf-preview --cursor-anchor "if not html_sources:" --cursor-anchor-mode line --cursor-text "        return {" --cursor-delete-next-lines 7`
-    → ghost text present; `cursor_overlap_chars=0`.
-- Logs (source of truth):
-  - Local: `.artifacts/inline-completion-verify-local.log` correlation `46a593de-db93-412e-952b-2bc065980e7f` shows `prompt_format="fim"` + `ai_inline_completion_request` (`system_prompt_tokens=1075`, `prefix_tokens=2016`, `suffix_tokens=512`).
-  - GPT-5: `.artifacts/inline-completion-verify-gpt5.log` correlation `79bbf574-96d5-4020-af0d-f9ac36b3af5a` shows `prompt_format="delimited"` + `ai_inline_completion_request` (`system_prompt_tokens=875`, `prefix_tokens=1904`, `suffix_tokens=512`).
+- Dev-local (backend + SPA): `pdm run dev-local` (backend `:8000`, Vite `:5173`).
+- Playwright (macOS may need escalation): `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_11_09_curated_app_e2e`
+  → artifacts: `.artifacts/st-11-09-curated-app-e2e/` (demo.counter + Reagensberedning).
 - Quality gates:
   - `pdm run format`
   - `pdm run lint`
   - `pdm run typecheck`
-  - `pdm run docs-validate`
-  - `pdm run pytest -q tests/unit/infrastructure/llm/test_openai_payloads.py tests/unit/infrastructure/llm/test_openai_chat_ops_provider_grammar.py`
-  - `pdm run lint`
-  - `pdm run typecheck`
-  - `pdm run pytest -q tests/unit/infrastructure/runner` (old `test_docker_runner.py` removed after split)
   - `pdm run test`
-  - `pdm run docs-validate`
-  - `pdm run fe-test`
-  - `pdm run fe-test-coverage`
-  - `pdm run fe-build`
-  - `pdm run fe-preview` + `curl -I http://127.0.0.1:4173/` (stop preview with Ctrl+C)
-  - `pdm run docs-validate`
+  - `pdm run fe-gen-api-types`
+  - `pdm run fe-type-check`
+  - `pdm run fe-lint`
 
 ## How to Run
 

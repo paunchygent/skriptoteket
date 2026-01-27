@@ -5,7 +5,7 @@
 groups = ["default", "analysis", "dev", "docs", "llm", "monorepo-tools", "tui"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:d151dcd82f342cedeb4f74598530bc81ab1bcb870ce1e38608ee957c6f93b420"
+content_hash = "sha256:07f42aa4fec4ffb8aee92c757cf43ff5d46559578cd351859851cc6ca56ba688"
 
 [[metadata.targets]]
 requires_python = ">=3.13,<3.15"
@@ -1398,6 +1398,17 @@ dependencies = [
 files = [
     {file = "mkdocstrings-1.0.0-py3-none-any.whl", hash = "sha256:4c50eb960bff6e05dfc631f6bc00dfabffbcb29c5ff25f676d64daae05ed82fa"},
     {file = "mkdocstrings-1.0.0.tar.gz", hash = "sha256:351a006dbb27aefce241ade110d3cd040c1145b7a3eb5fd5ac23f03ed67f401a"},
+]
+
+[[package]]
+name = "molmass"
+version = "2026.1.8"
+requires_python = ">=3.11"
+summary = "Molecular mass calculations"
+groups = ["default"]
+files = [
+    {file = "molmass-2026.1.8-py3-none-any.whl", hash = "sha256:d7ad83bd542c5bf132a8eca28630ad774c10f0890d9cf51625774838d03d5f8b"},
+    {file = "molmass-2026.1.8.tar.gz", hash = "sha256:6f677940148f876a6690149956598841f068111cb8ff3c63cf831833e88a5247"},
 ]
 
 [[package]]

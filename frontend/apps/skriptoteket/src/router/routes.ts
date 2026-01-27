@@ -54,7 +54,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: "/apps/:appId",
     name: "app-detail",
-    component: () => import("../views/AppDetailView.vue"),
+    component: () => import("../views/AppHostView.vue"),
     meta: { requiresAuth: true },
   },
   {

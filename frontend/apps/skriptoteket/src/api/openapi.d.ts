@@ -1290,6 +1290,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/vault/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Vault Files */
+        get: operations["list_vault_files_api_v1_vault_files_get"];
+        put?: never;
+        /** Save Vault File */
+        post: operations["save_vault_file_api_v1_vault_files_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/vault/files/{file_id}/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Delete Vault File */
+        post: operations["delete_vault_file_api_v1_vault_files__file_id__delete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/vault/files/{file_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore Vault File */
+        post: operations["restore_vault_file_api_v1_vault_files__file_id__restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1367,6 +1419,7 @@ export interface components {
              * Format: uuid
              */
             tool_id: string;
+            ui_mode: components["schemas"]["CuratedAppUiMode"];
         };
         /** ArtifactEntry */
         ArtifactEntry: {
@@ -1549,6 +1602,11 @@ export interface components {
             tool_id: string;
         };
         /**
+         * CuratedAppUiMode
+         * @enum {string}
+         */
+        CuratedAppUiMode: "generic_ok" | "bespoke_required";
+        /**
          * DecideSuggestionRequest
          * @description Admin decision payload for a suggestion.
          */
@@ -1621,6 +1679,10 @@ export interface components {
              * Format: uuid
              */
             tool_id: string;
+        };
+        /** DeleteVaultFileResult */
+        DeleteVaultFileResult: {
+            file: components["schemas"]["VaultFileInfo"];
         };
         /** DepublishToolResponse */
         DepublishToolResponse: {
@@ -2100,6 +2162,7 @@ export interface components {
             /** Title */
             title: string;
         };
+        FileRef: string;
         /** FileRefInfo */
         FileRefInfo: {
             /** Bytes */
@@ -2111,6 +2174,11 @@ export interface components {
             /** Ref */
             ref: string;
         };
+        /**
+         * FileRefSource
+         * @enum {string}
+         */
+        FileRefSource: "session" | "vault";
         /** GetRunResult */
         GetRunResult: {
             run: components["schemas"]["RunDetails"];
@@ -2311,6 +2379,18 @@ export interface components {
             profession: components["schemas"]["ProfessionItem"];
             /** Tools */
             tools: components["schemas"]["ToolItem"][];
+        };
+        /** ListVaultFilesResult */
+        ListVaultFilesResult: {
+            /** Files */
+            files?: components["schemas"]["VaultFileInfo"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+            /** Search */
+            search: string | null;
+            sort: components["schemas"]["VaultListSort"];
+            state: components["schemas"]["VaultListState"];
+            usage: components["schemas"]["VaultUsageInfo"];
         };
         /** LoginEvent */
         LoginEvent: {
@@ -2591,6 +2671,10 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** RestoreVaultFileResult */
+        RestoreVaultFileResult: {
+            file: components["schemas"]["VaultFileInfo"];
+        };
         /**
          * Role
          * @enum {string}
@@ -2734,6 +2818,23 @@ export interface components {
              * Format: uuid
              */
             version_id: string;
+        };
+        /** SaveVaultFileCommand */
+        SaveVaultFileCommand: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Name */
+            name?: string | null;
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+            source_kind: components["schemas"]["VaultFileSourceKind"];
+        };
+        /** SaveVaultFileResult */
+        SaveVaultFileResult: {
+            file: components["schemas"]["VaultFileInfo"];
         };
         /**
          * SchemaName
@@ -3221,13 +3322,8 @@ export interface components {
             /** Name */
             name: string;
             /** Sources */
-            sources?: components["schemas"]["UiFileRefSource"][] | null;
+            sources?: components["schemas"]["FileRefSource"][] | null;
         };
-        /**
-         * UiFileRefSource
-         * @enum {string}
-         */
-        UiFileRefSource: "session" | "vault";
         /** UiFormAction */
         UiFormAction: {
             /** Action Id */
@@ -3547,6 +3643,50 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /** VaultFileInfo */
+        VaultFileInfo: {
+            /** Bytes */
+            bytes: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Deleted At */
+            deleted_at?: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            ref: components["schemas"]["FileRef"];
+        };
+        /**
+         * VaultFileSourceKind
+         * @enum {string}
+         */
+        VaultFileSourceKind: "run_artifact";
+        /**
+         * VaultListSort
+         * @enum {string}
+         */
+        VaultListSort: "newest" | "name" | "size";
+        /**
+         * VaultListState
+         * @enum {string}
+         */
+        VaultListState: "active" | "trash";
+        /** VaultUsageInfo */
+        VaultUsageInfo: {
+            /** Bytes Total */
+            bytes_total: number;
+            /** Max File Bytes */
+            max_file_bytes: number;
+            /** Max Total Bytes */
+            max_total_bytes: number;
         };
         /** VerifyEmailRequest */
         VerifyEmailRequest: {
@@ -4496,6 +4636,7 @@ export interface operations {
         parameters: {
             query: {
                 snapshot_id: string;
+                sources?: string[] | null;
             };
             header?: never;
             path: {
@@ -6039,6 +6180,7 @@ export interface operations {
         parameters: {
             query?: {
                 context?: string;
+                sources?: string[] | null;
             };
             header?: never;
             path: {
@@ -6260,6 +6402,142 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MarkUsageInstructionsSeenResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_vault_files_api_v1_vault_files_get: {
+        parameters: {
+            query?: {
+                state?: components["schemas"]["VaultListState"];
+                sort?: components["schemas"]["VaultListSort"];
+                search?: string | null;
+                limit?: number;
+                cursor?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListVaultFilesResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_vault_file_api_v1_vault_files_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveVaultFileCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaveVaultFileResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_vault_file_api_v1_vault_files__file_id__delete_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                file_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteVaultFileResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_vault_file_api_v1_vault_files__file_id__restore_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                file_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestoreVaultFileResult"];
                 };
             };
             /** @description Validation Error */
