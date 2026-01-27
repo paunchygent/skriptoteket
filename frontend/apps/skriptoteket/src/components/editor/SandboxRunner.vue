@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, toRef, watch } from "vue";
 
+import { apiFetch } from "../../api/client";
 import type { components } from "../../api/openapi";
 import { useEditorSandboxActions } from "../../composables/editor/useEditorSandboxActions";
 import { useEditorSandboxRunExecution } from "../../composables/editor/useEditorSandboxRunExecution";
-import { useEditorSandboxSessionFiles } from "../../composables/editor/useEditorSandboxSessionFiles";
 import { useSandboxFileRefs } from "../../composables/editor/useSandboxFileRefs";
 import { useSandboxSettings } from "../../composables/editor/useSandboxSettings";
 import { useToolInputs, type ToolInputFormValues } from "../../composables/tools/useToolInputs";
 import type { FileSelectionMode } from "../../composables/tools/useToolInputs";
 import { getFileRefSource } from "../../composables/tools/fileRefHelpers";
-import SessionFilesPanel from "../tool-run/SessionFilesPanel.vue";
 import SystemMessage from "../ui/SystemMessage.vue";
 import SandboxInputPanel from "./SandboxInputPanel.vue";
 import SandboxSettingsCard from "./SandboxSettingsCard.vue";
@@ -60,26 +59,7 @@ const hasSettingsSchema = sandboxSettings.hasSchema;
 const isRunning = ref(false);
 const isSubmitting = ref(false);
 
-const {
-  sessionFiles,
-  sessionFilesMode,
-  sessionFilesSnapshotId,
-  effectiveSessionFilesMode,
-  effectiveFileErrors,
-  canReuseSessionFiles,
-  canClearSessionFiles,
-  helperText: sessionFilesHelperText,
-  fetchSessionFiles,
-  deleteSessionFiles,
-} = useEditorSandboxSessionFiles({
-  versionId: toRef(props, "versionId"),
-  isReadOnly: toRef(props, "isReadOnly"),
-  isRunning,
-  isSubmitting,
-  fileFields,
-  fileSelections,
-  fileErrors,
-});
+const sessionFilesSnapshotId = ref<string | null>(null);
 
 const sandboxFileRefs = useSandboxFileRefs({ versionId: toRef(props, "versionId") });
 const availableFileRefs = sandboxFileRefs.fileRefs;
@@ -101,10 +81,7 @@ const runExec = useEditorSandboxRunExecution({
   buildApiInputs: () => toolInputs.buildApiValues(),
   fileFields,
   fileSelections,
-  effectiveSessionFilesMode,
   sessionFilesSnapshotId,
-  sessionFilesMode,
-  fetchSessionFiles,
 });
 
 const actions = useEditorSandboxActions({
@@ -123,7 +100,6 @@ const runResult = runExec.runResult;
 const errorMessage = runExec.errorMessage;
 const inputsPreview = computed(() => runExec.lastSentInputsJson.value);
 const hasResults = computed(() => runResult.value !== null || errorMessage.value !== null);
-const showSessionFilesPanel = computed(() => fileFields.value.length === 0);
 
 const actionErrorMessage = actions.actionErrorMessage;
 const completedSteps = actions.completedSteps;
@@ -131,7 +107,7 @@ const selectedStepIndex = actions.selectedStepIndex;
 const canSubmitActions = actions.canSubmitActions;
 
 const inputsValid = computed(() => {
-  const fileErrorsByField = effectiveFileErrors.value;
+  const fileErrorsByField = fileErrors.value;
   const hasFileErrors = Object.values(fileErrorsByField).some((value) => value !== null);
   return !hasFileErrors && Object.keys(inputFieldErrors.value).length === 0;
 });
@@ -169,7 +145,14 @@ async function deleteFileRefs(payload: { field: string; refs: string[] }): Promi
     .map((ref) => ref.name);
   if (names.length === 0) return;
   try {
-    await deleteSessionFiles(snapshotId, names);
+    await apiFetch(
+      `/api/v1/editor/tool-versions/${encodeURIComponent(props.versionId)}` +
+        `/session-files/delete?snapshot_id=${encodeURIComponent(snapshotId)}`,
+      {
+        method: "POST",
+        body: { names },
+      },
+    );
     await sandboxFileRefs.fetchFileRefs(snapshotId);
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -193,12 +176,9 @@ function clearResult(): void {
 const onSubmitAction = actions.onSubmitAction;
 
 watch(
-  () => runExec.snapshotId.value,
+  () => sessionFilesSnapshotId.value,
   (snapshotId) => {
-    if (!snapshotId) {
-      sandboxFileRefs.reset();
-      return;
-    }
+    if (!snapshotId) return;
     void sandboxFileRefs.fetchFileRefs(snapshotId);
   },
 );
@@ -206,6 +186,7 @@ watch(
 watch(
   () => props.versionId,
   () => {
+    sessionFilesSnapshotId.value = null;
     sandboxFileRefs.reset();
   },
 );
@@ -223,7 +204,7 @@ watch(
       :file-fields="fileFields"
       :file-selections="fileSelections"
       :file-accept-by-field="fileAcceptByField"
-      :file-errors="effectiveFileErrors"
+      :file-errors="fileErrors"
       :available-file-refs="availableFileRefs"
       :is-running="isRunning"
       :is-read-only="isReadOnly"
@@ -236,16 +217,6 @@ watch(
       @delete:file-refs="deleteFileRefs"
       @run="runSandbox"
       @clear="clearResult"
-    />
-
-    <SessionFilesPanel
-      v-if="showSessionFilesPanel"
-      v-model:mode="sessionFilesMode"
-      :files="sessionFiles"
-      density="compact"
-      :can-reuse="canReuseSessionFiles"
-      :can-clear="canClearSessionFiles"
-      :helper-text="sessionFilesHelperText"
     />
 
     <SandboxSettingsCard

@@ -7,7 +7,6 @@ import { useToolInputs } from "./useToolInputs";
 import { getFileRefSource } from "./fileRefHelpers";
 import { useToolFileRefs } from "./useToolFileRefs";
 import { useToolRunPolling } from "./useToolRunPolling";
-import { useToolSessionFiles } from "./useToolSessionFiles";
 
 type ToolMetadataResponse = components["schemas"]["ToolMetadataResponse"];
 type GetRunResult = components["schemas"]["GetRunResult"];
@@ -46,7 +45,6 @@ export function useToolRun({ slug }: UseToolRunOptions) {
   const errorMessage = ref<string | null>(null);
   const actionErrorMessage = ref<string | null>(null);
 
-  const hasSelections = computed(() => toolInputs.hasFileSelections.value);
   const hasResults = computed(() => currentRun.value !== null);
   const isRunning = computed(() => {
     return currentRun.value?.status === "running" || currentRun.value?.status === "queued";
@@ -56,39 +54,18 @@ export function useToolRun({ slug }: UseToolRunOptions) {
   });
   const canSubmitActions = computed(() => stateRev.value !== null && hasNextActions.value);
 
-  const sessionFilesState = useToolSessionFiles({
-    fileFields: toolInputs.fileFields,
-    fileSelections: toolInputs.fileSelections,
-    fileErrors: toolInputs.fileErrors,
-    isSubmitting,
-    isRunning,
-  });
-  const {
-    sessionFiles,
-    sessionFilesMode,
-    effectiveSessionFilesMode,
-    effectiveFileErrors,
-    sessionFilesHelperText,
-    canReuseSessionFiles,
-    canClearSessionFiles,
-    fetchSessionFiles,
-    deleteSessionFiles,
-    resetSessionFiles,
-  } = sessionFilesState;
-
   const inputsValid = computed(() => {
-    const fileErrors = effectiveFileErrors.value;
+    const fileErrors = toolInputs.fileErrors.value;
     const hasFileErrors = Object.values(fileErrors).some((value) => value !== null);
     return !hasFileErrors && Object.keys(toolInputs.fieldErrors.value).length === 0;
   });
   const firstFileError = computed(() => {
-    return Object.values(effectiveFileErrors.value).find((value) => value !== null) ?? null;
+    return Object.values(toolInputs.fileErrors.value).find((value) => value !== null) ?? null;
   });
   const canSubmitRun = computed(() => {
     if (!tool.value) return false;
     return inputsValid.value;
   });
-  const showSessionFilesPanel = computed(() => toolInputs.fileFields.value.length === 0);
 
   function isTerminalStatus(status: RunStatus): boolean {
     return status !== "running" && status !== "queued";
@@ -97,7 +74,6 @@ export function useToolRun({ slug }: UseToolRunOptions) {
   async function refreshToolFiles(): Promise<void> {
     const toolId = tool.value?.id ?? null;
     if (!toolId) {
-      resetSessionFiles();
       toolFileRefs.reset();
       return;
     }
@@ -105,14 +81,8 @@ export function useToolRun({ slug }: UseToolRunOptions) {
       return;
     }
     if (!auth.isAuthenticated) {
-      resetSessionFiles();
       toolFileRefs.reset();
       return;
-    }
-    if (showSessionFilesPanel.value) {
-      await fetchSessionFiles(toolId);
-    } else {
-      resetSessionFiles();
     }
     await toolFileRefs.fetchFileRefs(toolId);
   }
@@ -127,7 +97,13 @@ export function useToolRun({ slug }: UseToolRunOptions) {
       .filter((name): name is string => typeof name === "string" && name.length > 0);
     if (names.length === 0) return;
     try {
-      await deleteSessionFiles(toolId, names);
+      await apiFetch(
+        `/api/v1/tools/${encodeURIComponent(toolId)}/session-files/delete?context=default`,
+        {
+          method: "POST",
+          body: { names },
+        },
+      );
       await toolFileRefs.fetchFileRefs(toolId);
     } catch (error: unknown) {
       if (isApiError(error)) {
@@ -240,12 +216,6 @@ export function useToolRun({ slug }: UseToolRunOptions) {
     }
     formData.append("inputs", JSON.stringify(inputValues));
 
-    const resolvedSessionFilesMode = effectiveSessionFilesMode.value;
-    if (resolvedSessionFilesMode !== "none") {
-      formData.append("session_files_mode", resolvedSessionFilesMode);
-      formData.append("session_context", "default");
-    }
-
     try {
       const response = await apiFetch<StartToolRunResponse>(
         `/api/v1/tools/${encodeURIComponent(slug.value)}/run`,
@@ -254,10 +224,6 @@ export function useToolRun({ slug }: UseToolRunOptions) {
           body: formData,
         },
       );
-
-      if (resolvedSessionFilesMode === "clear") {
-        sessionFilesMode.value = "none";
-      }
 
       // Set placeholder run while waiting for full data
       currentRun.value = {
@@ -391,22 +357,19 @@ export function useToolRun({ slug }: UseToolRunOptions) {
     () => {
       toolInputs.resetValues();
       toolInputs.resetFileSelections();
-      resetSessionFiles();
       toolFileRefs.reset();
     },
   );
 
   watch(
-    () => [tool.value?.id ?? null, auth.bootstrapped, auth.isAuthenticated, showSessionFilesPanel.value],
+    () => [tool.value?.id ?? null, auth.bootstrapped, auth.isAuthenticated],
     ([toolId, bootstrapped, isAuthenticated]) => {
       if (!toolId) {
-        resetSessionFiles();
         toolFileRefs.reset();
         return;
       }
       if (!bootstrapped) return;
       if (!isAuthenticated) {
-        resetSessionFiles();
         toolFileRefs.reset();
         return;
       }
@@ -443,11 +406,8 @@ export function useToolRun({ slug }: UseToolRunOptions) {
     inputFields: toolInputs.nonFileFields,
     inputFieldErrors: toolInputs.fieldErrors,
     fileAcceptByField: toolInputs.fileAcceptByField,
-    fileErrors: effectiveFileErrors,
+    fileErrors: toolInputs.fileErrors,
     availableFileRefs: toolFileRefs.fileRefs,
-    sessionFiles,
-    sessionFilesMode,
-    sessionFilesHelperText,
     currentRun,
     completedSteps,
     stateRev,
@@ -462,14 +422,11 @@ export function useToolRun({ slug }: UseToolRunOptions) {
     actionErrorMessage,
 
     // Computed
-    hasSelections,
     canSubmitRun,
     hasResults,
     isRunning,
     hasNextActions,
     canSubmitActions,
-    canReuseSessionFiles,
-    canClearSessionFiles,
 
     // Actions
     loadTool,

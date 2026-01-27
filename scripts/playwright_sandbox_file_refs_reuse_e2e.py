@@ -53,7 +53,15 @@ def _launch_chromium(playwright: object) -> object:
             raise
 
         print("Chromium launch failed; retrying with explicit headless shell executable_path.")
-        return playwright.chromium.launch(headless=True, executable_path=executable_path)
+    return playwright.chromium.launch(headless=True, executable_path=executable_path)
+
+
+def _log_unauthorized(response: object) -> None:
+    try:
+        if response.status == 401:
+            print(f"[401] {response.url}")
+    except Exception:
+        return
 
 
 def _login(page: object, *, base_url: str, email: str, password: str) -> None:
@@ -211,6 +219,7 @@ def main() -> None:
                 else f"[console] {message.text}"
             ),
         )
+        page.on("response", _log_unauthorized)
 
         _login(page, base_url=base_url, email=email, password=password)
         _ensure_draft_for_tool(

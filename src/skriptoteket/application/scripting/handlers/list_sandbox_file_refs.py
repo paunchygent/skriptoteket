@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from uuid import UUID
 
+import structlog
+
 from skriptoteket.application.scripting.file_refs import (
     FileRefInfo,
     ListSandboxFileRefsQuery,
@@ -19,6 +21,8 @@ from skriptoteket.protocols.scripting import (
     ToolVersionRepositoryProtocol,
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+
+logger = structlog.get_logger(__name__)
 
 
 def _sandbox_files_context(version_id: UUID) -> str:
@@ -113,12 +117,23 @@ class ListSandboxFileRefsHandler(ListSandboxFileRefsHandlerProtocol):
                 )
             _ensure_snapshot_matches_version(snapshot=snapshot, version=version)
 
-        refs = await self._file_refs.list_refs(
-            tool_id=version.tool_id,
-            user_id=actor.id,
-            context=_sandbox_files_context(query.version_id),
-            sources=query.sources,
-        )
+        try:
+            refs = await self._file_refs.list_refs(
+                tool_id=version.tool_id,
+                user_id=actor.id,
+                context=_sandbox_files_context(query.version_id),
+                sources=query.sources,
+            )
+        except Exception:
+            logger.exception(
+                "Failed to list sandbox file refs",
+                tool_id=str(version.tool_id),
+                version_id=str(query.version_id),
+                snapshot_id=str(query.snapshot_id),
+                user_id=str(actor.id),
+                sources=[source.value for source in query.sources],
+            )
+            raise
 
         return ListSandboxFileRefsResult(
             tool_id=version.tool_id,

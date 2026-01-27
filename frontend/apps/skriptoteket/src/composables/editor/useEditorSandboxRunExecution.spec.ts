@@ -65,13 +65,11 @@ function mountRunExecution({
   isReadOnlyValue = false,
   validateSchemasNowResult = true,
   schemaValidationErrorValue = null,
-  effectiveSessionFilesModeValue = "none",
   sessionFilesSnapshotIdValue = null,
 }: {
   isReadOnlyValue?: boolean;
   validateSchemasNowResult?: boolean;
   schemaValidationErrorValue?: string | null;
-  effectiveSessionFilesModeValue?: "none" | "reuse" | "clear";
   sessionFilesSnapshotIdValue?: string | null;
 } = {}) {
   const versionId = ref("ver-1");
@@ -91,10 +89,7 @@ function mountRunExecution({
   const fileSelections = ref<Record<string, FileFieldSelection>>({
     files: { mode: "upload", uploads: [], refs: [] },
   });
-  const effectiveSessionFilesMode = ref<"none" | "reuse" | "clear">(effectiveSessionFilesModeValue);
   const sessionFilesSnapshotId = ref<string | null>(sessionFilesSnapshotIdValue);
-  const sessionFilesMode = ref<"none" | "reuse" | "clear">("none");
-  const fetchSessionFiles = vi.fn().mockResolvedValue(undefined);
 
   const validateSchemasNow = vi.fn().mockResolvedValue(validateSchemasNowResult);
   const buildApiInputs = vi.fn().mockReturnValue({ foo: "bar" });
@@ -120,10 +115,7 @@ function mountRunExecution({
         buildApiInputs,
         fileFields,
         fileSelections,
-        effectiveSessionFilesMode,
         sessionFilesSnapshotId,
-        sessionFilesMode,
-        fetchSessionFiles,
       });
       return runExec;
     },
@@ -138,10 +130,7 @@ function mountRunExecution({
     isRunning,
     validateSchemasNow,
     buildApiInputs,
-    fetchSessionFiles,
     sessionFilesSnapshotId,
-    sessionFilesMode,
-    effectiveSessionFilesMode,
   };
 }
 
@@ -213,7 +202,7 @@ describe("useEditorSandboxRunExecution", () => {
     wrapper.unmount();
   });
 
-  it("polls immediately and fetches session files when terminal", async () => {
+  it("polls immediately and stores snapshot id when terminal", async () => {
     clientMocks.apiFetch.mockResolvedValueOnce({
       run_id: "run-1",
       snapshot_id: "snap-1",
@@ -225,8 +214,7 @@ describe("useEditorSandboxRunExecution", () => {
       createEditorRunDetails({ runId: "run-1", status: "succeeded" }),
     );
 
-    const { runExec, isRunning, fetchSessionFiles, sessionFilesSnapshotId, wrapper } =
-      mountRunExecution();
+    const { runExec, isRunning, sessionFilesSnapshotId, wrapper } = mountRunExecution();
 
     await runExec.runSandbox();
     await flushPromises();
@@ -235,7 +223,6 @@ describe("useEditorSandboxRunExecution", () => {
     expect(runExec.runResult.value?.status).toBe("succeeded");
     expect(runExec.snapshotId.value).toBe("snap-1");
     expect(sessionFilesSnapshotId.value).toBe("snap-1");
-    expect(fetchSessionFiles).toHaveBeenCalledWith("snap-1");
 
     wrapper.unmount();
   });

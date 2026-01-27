@@ -9,7 +9,6 @@ import ToolFileFieldPicker from "../components/tool-run/ToolFileFieldPicker.vue"
 import ToolRunActions from "../components/tool-run/ToolRunActions.vue";
 import ToolRunArtifacts from "../components/tool-run/ToolRunArtifacts.vue";
 import ToolRunControlBar from "../components/tool-run/ToolRunControlBar.vue";
-import SessionFilesPanel from "../components/tool-run/SessionFilesPanel.vue";
 import UsageInstructions from "../components/tool-run/UsageInstructions.vue";
 import ToolRunSettingsPanel from "../components/tool-run/ToolRunSettingsPanel.vue";
 import ToolRunStepIndicator from "../components/tool-run/ToolRunStepIndicator.vue";
@@ -39,9 +38,6 @@ const {
   fileAcceptByField,
   fileErrors,
   availableFileRefs,
-  sessionFiles,
-  sessionFilesMode,
-  sessionFilesHelperText,
   currentRun,
   completedSteps,
   isLoadingTool,
@@ -53,8 +49,6 @@ const {
   hasNextActions,
   canSubmitActions,
   canSubmitRun,
-  canReuseSessionFiles,
-  canClearSessionFiles,
   loadTool,
   submitRun,
   submitAction,
@@ -104,7 +98,6 @@ const allSteps = computed<StepResult[]>(() => {
 const currentStepNumber = computed(() => completedSteps.value.length + 1);
 const showStepIndicator = computed(() => completedSteps.value.length > 0 || hasNextActions.value);
 const idBase = computed(() => `tool-${slug.value}-run-${displayedRun.value?.run_id ?? "none"}`);
-const showSessionFilesPanel = computed(() => fileFields.value.length === 0);
 const showSettingsPanel = computed(() => {
   return isSettingsOpen.value && hasSettingsSchema.value && Boolean(settingsSchema.value);
 });
@@ -294,20 +287,6 @@ watch(hasSettingsSchema, (hasSchema) => {
           @clear="onClear"
           @toggle-settings="onToggleSettings"
         />
-
-        <div
-          v-if="showSessionFilesPanel"
-          class="mt-4"
-        >
-          <SessionFilesPanel
-            v-model:mode="sessionFilesMode"
-            :files="sessionFiles"
-            density="compact"
-            :can-reuse="canReuseSessionFiles"
-            :can-clear="canClearSessionFiles"
-            :helper-text="sessionFilesHelperText"
-          />
-        </div>
       </div>
 
       <UiCollapse :open="showSettingsPanel">

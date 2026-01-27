@@ -2,7 +2,6 @@ import { onBeforeUnmount, ref, type Ref } from "vue";
 
 import { apiFetch, apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
-import type { SessionFilesMode } from "./useEditorSandboxSessionFiles";
 import type { FileFieldSelection, ToolFileFieldSpec } from "../tools/useToolInputs";
 
 type SandboxRunResponse = components["schemas"]["SandboxRunResponse"];
@@ -31,10 +30,7 @@ type UseEditorSandboxRunExecutionOptions = {
   buildApiInputs: () => Record<string, JsonValue>;
   fileFields: Readonly<Ref<ToolFileFieldSpec[]>>;
   fileSelections: Readonly<Ref<Record<string, FileFieldSelection>>>;
-  effectiveSessionFilesMode: Readonly<Ref<SessionFilesMode>>;
   sessionFilesSnapshotId: Ref<string | null>;
-  sessionFilesMode: Ref<SessionFilesMode>;
-  fetchSessionFiles: (snapshotId: string) => Promise<void>;
 };
 
 const POLL_INTERVAL_MS = 1500;
@@ -56,10 +52,7 @@ export function useEditorSandboxRunExecution({
   buildApiInputs,
   fileFields,
   fileSelections,
-  effectiveSessionFilesMode,
   sessionFilesSnapshotId,
-  sessionFilesMode,
-  fetchSessionFiles,
 }: UseEditorSandboxRunExecutionOptions) {
   const runResult = ref<EditorRunDetails | null>(null);
   const errorMessage = ref<string | null>(null);
@@ -103,9 +96,6 @@ export function useEditorSandboxRunExecution({
       if (isTerminalStatus(result.status)) {
         stopPolling();
         isRunning.value = false;
-        if (result.snapshot_id) {
-          void fetchSessionFiles(result.snapshot_id);
-        }
       }
     } catch (error: unknown) {
       stopPolling();
@@ -200,11 +190,6 @@ export function useEditorSandboxRunExecution({
     formData.append("snapshot", JSON.stringify(snapshotPayload));
     lastSentInputsJson.value = JSON.stringify(apiInputs, null, 2);
 
-    const resolvedSessionFilesMode = effectiveSessionFilesMode.value;
-    if (resolvedSessionFilesMode !== "none") {
-      formData.append("session_files_mode", resolvedSessionFilesMode);
-    }
-
     try {
       const response = await apiFetch<SandboxRunResponse>(
         `/api/v1/editor/tool-versions/${encodeURIComponent(versionId.value)}/run-sandbox`,
@@ -216,10 +201,6 @@ export function useEditorSandboxRunExecution({
 
       snapshotId.value = response.snapshot_id;
       sessionFilesSnapshotId.value = response.snapshot_id;
-
-      if (resolvedSessionFilesMode === "clear") {
-        sessionFilesMode.value = "none";
-      }
 
       if (response.state_rev !== null && response.state_rev !== undefined) {
         stateRev.value = response.state_rev;

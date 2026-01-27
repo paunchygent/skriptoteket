@@ -1,7 +1,7 @@
 import { ref, type Ref } from "vue";
 
-
 import { apiGet } from "../../api/client";
+import { useAuthStore } from "../../stores/auth";
 import type { FileRefInfo } from "../tools/fileRefHelpers";
 
 type SandboxFileRefsResponse = {
@@ -17,9 +17,14 @@ type UseSandboxFileRefsOptions = {
 
 export function useSandboxFileRefs({ versionId }: UseSandboxFileRefsOptions) {
   const fileRefs = ref<FileRefInfo[]>([]);
+  const auth = useAuthStore();
 
   async function fetchFileRefs(snapshotId: string): Promise<void> {
     if (!versionId.value || !snapshotId) {
+      fileRefs.value = [];
+      return;
+    }
+    if (!auth.bootstrapped || !auth.isAuthenticated) {
       fileRefs.value = [];
       return;
     }
