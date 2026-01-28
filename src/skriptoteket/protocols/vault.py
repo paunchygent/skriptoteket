@@ -75,6 +75,13 @@ class VaultStorageProtocol(Protocol):
         content: bytes,
     ) -> None: ...
 
+    async def exists_file(
+        self,
+        *,
+        user_id: UUID,
+        file_id: UUID,
+    ) -> bool: ...
+
     async def read_file(
         self,
         *,
@@ -88,6 +95,10 @@ class VaultStorageProtocol(Protocol):
         user_id: UUID,
         file_id: UUID,
     ) -> None: ...
+
+
+class DownloadVaultFileHandlerProtocol(Protocol):
+    async def handle(self, *, actor: User, file_id: UUID) -> tuple[str, bytes]: ...
 
 
 class ListVaultFilesHandlerProtocol(Protocol):

@@ -12,13 +12,26 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-01-27
-- Branch: `main` + local commits
+- Date: 2026-01-28
+- Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: history in `.agent/readme-first.md`
 
-## Current Session (2026-01-27)
+## Current Session (2026-01-28)
+
+- Riskbedömning workflow added for Reagent Prep Chef:
+  - Backend models + handlers + routes: `src/skriptoteket/application/curated_apps/reagent_prep_chef.py`,
+    `src/skriptoteket/application/curated_apps/handlers/reagent_prep_chef_risk_assessment.py`,
+    `src/skriptoteket/application/curated_apps/handlers/reagent_prep_chef_export_risk_pdf.py`,
+    `src/skriptoteket/application/curated_apps/handlers/reagent_prep_chef_save_risk_pdf.py`,
+    `src/skriptoteket/web/api/v1/apps_reagent_prep_chef.py`
+  - Curated data + SDS store + risk templates: `src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/`
+  - DI wiring: `src/skriptoteket/di/curated_apps.py`
+  - SPA Riskbedömning tab + API calls: `frontend/apps/skriptoteket/src/views/apps/ReagentPrepChefView.vue`
+  - Tests: `tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_risk_templates_store.py`,
+    `tests/unit/domain/curated_apps/reagent_prep_chef/test_risk_assessment.py`,
+    `tests/unit/web/reagent_prep_chef/`
 
 - Curated app planning docs added (Reagent Prep Chef):
   - Spec: `docs/reference/ref-curated-app-reagent-prep-chef.md`
@@ -33,6 +46,7 @@ Keep this file updated so the next session can pick up work quickly.
   - Reagensberedning app backend: `src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/`
   - SPA route host + bespoke view: `frontend/apps/skriptoteket/src/views/AppHostView.vue`,
     `frontend/apps/skriptoteket/src/views/apps/ReagentPrepChefView.vue`
+  - UX: always land on Step 1 (Ämne) after reload (avoid blank intermediate steps): `frontend/apps/skriptoteket/src/views/apps/ReagentPrepChefView.vue`
   - OpenAPI types refreshed: `pdm run fe-gen-api-types`
 
 - Vault UI (file refs):
@@ -51,9 +65,13 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Verification
 
+- Backend (host): `pdm run dev-logs` (background) + `curl -sSf http://127.0.0.1:8000/healthz`
+- Frontend (Vite): `pdm run fe-dev-logs` (background) + `curl -sSf http://127.0.0.1:5173/`
 - Dev-local (backend + SPA): `pdm run dev-local` (backend `:8000`, Vite `:5173`).
-- Playwright (macOS may need escalation): `BASE_URL=http://127.0.0.1:5173 pdm run python -m scripts.playwright_st_11_09_curated_app_e2e`
+- Playwright (macOS may need escalation): `pdm run python -m scripts.playwright_st_11_09_curated_app_e2e --base-url http://127.0.0.1:5173`
   → artifacts: `.artifacts/st-11-09-curated-app-e2e/` (demo.counter + Reagensberedning).
+- Playwright (vault flow): `pdm run python -m scripts.playwright_st_14_36_vault_ui_e2e --base-url http://127.0.0.1:5173`
+  → artifacts: `.artifacts/st-14-36-vault-ui-e2e/`
 - Playwright smoke (includes `/vault`): `BASE_URL=http://127.0.0.1:5173 pdm run ui-smoke`
 - Quality gates:
   - `pdm run format`

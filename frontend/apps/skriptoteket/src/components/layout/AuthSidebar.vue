@@ -88,7 +88,7 @@ function onHelp(): void {
           class="sidebar-nav-item"
           @click="onClose"
         >
-          Valv
+          Mina filer
         </RouterLink>
         <RouterLink
           v-if="canSeeContributor"

@@ -21,7 +21,7 @@ outcome: "Teachers can generate a deterministic solution prep sheet (hydrates/pu
 
 - Chemical heuristics or reaction prediction (exothermicity, incompatibilities, etc.).
 - Multi-reagent “recipes” or synthesis instructions.
-- Online SDS fetching or external chemistry APIs.
+- Unbounded runtime SDS fetching without backend caching/provenance, or any direct external SDS URLs in the SPA.
 
 ## Stories
 

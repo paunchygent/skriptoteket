@@ -1,33 +1,15 @@
 <script setup lang="ts">
+import { Info } from "lucide-vue-next";
+
 defineProps<{
   size?: number;
 }>();
 </script>
 
 <template>
-  <svg
-    :width="size ?? 24"
-    :height="size ?? 24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+  <Info
+    :size="size ?? 24"
+    :stroke-width="2.5"
     aria-hidden="true"
-  >
-    <circle
-      cx="12"
-      cy="12"
-      r="9"
-    />
-    <path d="M12 10v6" />
-    <circle
-      cx="12"
-      cy="7.5"
-      r="1"
-      fill="currentColor"
-      stroke="none"
-    />
-  </svg>
+  />
 </template>

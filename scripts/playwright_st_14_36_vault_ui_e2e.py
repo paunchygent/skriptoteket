@@ -155,19 +155,19 @@ def _run_html_to_pdf_and_save_to_vault(
 
     artifact_row = pdf_link.first.locator("xpath=ancestor::li[1]")
     save_button = artifact_row.get_by_role(
-        "button", name=re.compile(r"Spara i valv", re.IGNORECASE)
+        "button", name=re.compile(r"Spara i Mina filer", re.IGNORECASE)
     )
     expect(save_button).to_be_visible(timeout=60_000)
     save_button.click()
 
-    expect(page.get_by_text("Sparade filen i valvet.")).to_be_visible(timeout=60_000)
+    expect(page.get_by_text("Sparade filen i Mina filer.")).to_be_visible(timeout=60_000)
 
 
 def _delete_restore_in_vault_ui(page: Page, *, base_url: str, filename: str) -> None:
     page.goto(f"{base_url}/vault", wait_until="domcontentloaded")
-    expect(page.get_by_role("heading", name=re.compile(r"Valv", re.IGNORECASE))).to_be_visible(
-        timeout=30_000
-    )
+    expect(
+        page.get_by_role("heading", name=re.compile(r"Mina filer", re.IGNORECASE))
+    ).to_be_visible(timeout=30_000)
 
     search_input = page.get_by_placeholder(re.compile(r"Sök på filnamn", re.IGNORECASE)).first
     expect(search_input).to_be_visible(timeout=30_000)
@@ -177,14 +177,16 @@ def _delete_restore_in_vault_ui(page: Page, *, base_url: str, filename: str) -> 
     row = page.locator("li", has=page.get_by_text(filename)).first
     expect(row).to_be_visible(timeout=60_000)
 
-    row.get_by_role("button", name=re.compile(r"^Ta bort$", re.IGNORECASE)).click()
+    row.get_by_role("button", name=re.compile(r"^Filåtgärder$", re.IGNORECASE)).click()
+    row.get_by_role("menuitem", name=re.compile(r"^Ta bort$", re.IGNORECASE)).click()
     expect(page.get_by_text("Filen flyttades till papperskorgen.")).to_be_visible(timeout=60_000)
 
     page.get_by_role("button", name=re.compile(r"^Papperskorg$", re.IGNORECASE)).click()
 
     trash_row = page.locator("li", has=page.get_by_text(filename)).first
     expect(trash_row).to_be_visible(timeout=60_000)
-    trash_row.get_by_role("button", name=re.compile(r"^Återställ$", re.IGNORECASE)).click()
+    trash_row.get_by_role("button", name=re.compile(r"^Filåtgärder$", re.IGNORECASE)).click()
+    trash_row.get_by_role("menuitem", name=re.compile(r"^Återställ$", re.IGNORECASE)).click()
     expect(page.get_by_text("Filen återställdes.")).to_be_visible(timeout=60_000)
 
     page.get_by_role("button", name=re.compile(r"^Aktiva$", re.IGNORECASE)).click()
@@ -209,20 +211,40 @@ def _run_demo_inputs_file_with_vault_ref(page: Page, *, base_url: str, filename:
     )
 
     page.get_by_role("button", name=re.compile(r"^Välj sparade$", re.IGNORECASE)).first.click()
-    page.get_by_role("button", name=re.compile(r"^Välj i valvet$", re.IGNORECASE)).first.click()
+    page.get_by_role(
+        "button", name=re.compile(r"^Välj bland Mina filer$", re.IGNORECASE)
+    ).first.click()
 
     modal = page.get_by_role("dialog")
     expect(modal).to_be_visible(timeout=30_000)
     search_input = modal.get_by_placeholder(re.compile(r"Sök på filnamn", re.IGNORECASE)).first
     expect(search_input).to_be_visible(timeout=30_000)
     search_input.fill(filename)
-    search_input.press("Enter")
+    with page.expect_response(
+        lambda response: "/api/v1/vault/files" in response.url and response.status == 200,
+        timeout=60_000,
+    ) as response_info:
+        modal.get_by_role("button", name=re.compile(r"^Sök$", re.IGNORECASE)).first.click()
+    try:
+        payload = response_info.value.json()
+        files = payload.get("files", []) if isinstance(payload, dict) else []
+        names = [file.get("name", "?") for file in files[:10] if isinstance(file, dict)]
+        print(f"[vault-picker] {response_info.value.url} -> {len(files)} files: {names}")
+    except Exception as exc:
+        print(f"[vault-picker] failed to parse response: {exc}")
 
-    modal_row = modal.locator("li", has=modal.get_by_text(filename)).first
+    page.screenshot(
+        path=str(Path(".artifacts/st-14-36-vault-ui-e2e/vault-picker-modal.png")), full_page=True
+    )
+
+    modal_row = modal.locator("li").filter(has_text=filename).first
     expect(modal_row).to_be_visible(timeout=60_000)
-    modal_row.get_by_role("checkbox").first.check()
+    modal_row.locator("label").first.click()
+    expect(modal_row.get_by_role("checkbox").first).to_be_checked(timeout=30_000)
 
-    modal.get_by_role("button", name=re.compile(r"^Välj$", re.IGNORECASE)).click()
+    select_button = modal.get_by_role("button", name=re.compile(r"^Välj$", re.IGNORECASE)).first
+    select_button.scroll_into_view_if_needed()
+    select_button.click()
     expect(modal).not_to_be_visible(timeout=30_000)
 
     page.get_by_role("button", name=re.compile(r"^Kör$", re.IGNORECASE)).click()

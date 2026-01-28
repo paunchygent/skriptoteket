@@ -1,9 +1,9 @@
-from __future__ import annotations
-
+import mimetypes
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Query
+from fastapi.responses import Response
 
 from skriptoteket.application.scripting.vault import (
     DeleteVaultFileCommand,
@@ -19,6 +19,7 @@ from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.vault import VaultListSort, VaultListState
 from skriptoteket.protocols.vault import (
     DeleteVaultFileHandlerProtocol,
+    DownloadVaultFileHandlerProtocol,
     ListVaultFilesHandlerProtocol,
     RestoreVaultFileHandlerProtocol,
     SaveVaultFileHandlerProtocol,
@@ -82,3 +83,20 @@ async def restore_vault_file(
     _: None = Depends(require_csrf_token),
 ) -> RestoreVaultFileResult:
     return await handler.handle(actor=user, command=RestoreVaultFileCommand(file_id=file_id))
+
+
+@router.get("/files/{file_id}/download")
+@inject
+async def download_vault_file(
+    file_id: UUID,
+    handler: FromDishka[DownloadVaultFileHandlerProtocol],
+    user: User = Depends(require_user_api),
+) -> Response:
+    filename, content = await handler.handle(actor=user, file_id=file_id)
+    safe_filename = filename.replace('"', "")
+    media_type, _ = mimetypes.guess_type(safe_filename)
+    return Response(
+        content=content,
+        media_type=media_type or "application/octet-stream",
+        headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
+    )

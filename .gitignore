@@ -58,6 +58,7 @@ frontend/apps/skriptoteket/openapi.json
 
 # Local artifacts (runner output)
 .artifacts/
+.vault/
 
 # Sensitive operational docs (credentials, server details)
 .agent/rules/080-home-server-deployment.md

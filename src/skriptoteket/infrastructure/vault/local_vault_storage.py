@@ -33,6 +33,14 @@ class LocalVaultStorage(VaultStorageProtocol):
             if tmp_path.exists():
                 tmp_path.unlink(missing_ok=True)
 
+    async def exists_file(
+        self,
+        *,
+        user_id: UUID,
+        file_id: UUID,
+    ) -> bool:
+        return self._file_path(user_id=user_id, file_id=file_id).is_file()
+
     async def read_file(
         self,
         *,

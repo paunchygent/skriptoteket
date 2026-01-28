@@ -170,3 +170,57 @@ export async function apiGet<T>(path: string): Promise<T> {
 export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
   return await apiFetch<T>(path, { method: "POST", body });
 }
+
+export async function apiFetchBlob(path: string, options: ApiRequestOptions = {}): Promise<Blob> {
+  const auth = useAuthStore();
+
+  const method = (options.method ?? "GET").toUpperCase();
+  const headers = new Headers(options.headers);
+  if (!headers.has("Accept")) {
+    headers.set("Accept", "*/*");
+  }
+
+  let body: BodyInit | undefined = undefined;
+  if (options.body !== undefined) {
+    if (options.body instanceof FormData) {
+      body = options.body;
+    } else if (typeof options.body === "string") {
+      body = options.body;
+    } else if (options.body instanceof Blob) {
+      body = options.body;
+    } else if (options.body instanceof ArrayBuffer) {
+      body = options.body;
+    } else if (isJsonSerializableBody(options.body)) {
+      headers.set("Content-Type", "application/json");
+      body = JSON.stringify(options.body);
+    } else {
+      headers.set("Content-Type", "application/json");
+      body = JSON.stringify(options.body);
+    }
+  }
+
+  if (method !== "GET" && method !== "HEAD") {
+    await auth.ensureCsrfToken();
+    if (auth.csrfToken) {
+      headers.set("X-CSRF-Token", auth.csrfToken);
+    }
+  }
+
+  const response = await fetch(path, {
+    ...options,
+    method,
+    headers,
+    body,
+    credentials: "include",
+  });
+
+  if (response.ok) {
+    return await response.blob();
+  }
+
+  if (response.status === 401) {
+    auth.clear();
+  }
+
+  throw await toApiError(response);
+}

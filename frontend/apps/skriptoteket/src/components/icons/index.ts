@@ -1,7 +1,13 @@
 export { default as IconArrow } from "./IconArrow.vue";
 export { default as IconBookmark } from "./IconBookmark.vue";
 export { default as IconCheck } from "./IconCheck.vue";
+export { default as IconDownload } from "./IconDownload.vue";
 export { default as IconHelp } from "./IconHelp.vue";
 export { default as IconInfo } from "./IconInfo.vue";
+export { default as IconMoreVertical } from "./IconMoreVertical.vue";
+export { default as IconSearch } from "./IconSearch.vue";
+export { default as IconSettings } from "./IconSettings.vue";
+export { default as IconTrash } from "./IconTrash.vue";
+export { default as IconUndo } from "./IconUndo.vue";
 export { default as IconWarning } from "./IconWarning.vue";
 export { default as IconX } from "./IconX.vue";

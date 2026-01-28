@@ -5,7 +5,7 @@ title: "User file vault: UI picker + defaults"
 status: ready
 owners: "agents"
 created: 2026-01-24
-updated: 2026-01-24
+updated: 2026-01-28
 stories:
   - "ST-14-36"
 tags: ["frontend"]
@@ -61,6 +61,31 @@ Deliver the vault picker UI for runs/actions, handle defaults, and support save/
 
 - Frontend: `pdm run fe-test`
 - Playwright: vault picker flow + defaults + save/delete/restore
+
+## Code review (as of 2026-01-28)
+
+### ✅ Strong points
+
+- **Vault UI scope matches the “management UI is REQUIRED” spec:** active + trash, delete/restore, sort + quota bar.
+- **UX polish:** search is integrated with the input chrome (no clunky standalone “Sök” button), sort toggle stays
+  single-row, and per-file actions are in a kebab menu (less repetitive “Ta bort” buttons).
+- **Multi-select support:** visible checkboxes + “Markera alla/Avmarkera” + bulk delete/restore actions.
+- **Download UX:** download is triggered via blob download to avoid rendering raw JSON error payloads in the browser.
+- **Picker integration:** file field selection now supports picking vault refs via a modal without leaking filesystem
+  paths to the client.
+
+### ⚠️ Issues / risks
+
+- **Orphaned bytes after deploy:** previously non-persistent `VAULT_ROOT` can cause DB rows to outlive on-disk bytes.
+  UX now marks these as “Saknas på servern” and disables download/selection; consider cleanup policy once prod volume
+  is deployed.
+- **SRP/duplication:** `ToolFileFieldPicker.vue` and `UiActionFieldFileRef.vue` both implement similar “vault picker +
+  session picker” logic. Consider extracting shared helpers/composables to avoid drift.
+
+### 🧪 Test coverage notes
+
+- Add focused unit tests for the vault panel (search debounce, selection limits, bulk actions).
+- Update Playwright E2E to match the final DOM/ARIA contract for the picker and action menu.
 
 ## Rollback plan
 

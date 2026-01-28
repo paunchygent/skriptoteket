@@ -2,6 +2,7 @@
 import { computed } from "vue";
 
 import CatalogItemCard from "../components/catalog/CatalogItemCard.vue";
+import UiSearchBar from "../components/ui/UiSearchBar.vue";
 import { useCatalogFilters } from "../composables/useCatalogFilters";
 import { useFavorites } from "../composables/useFavorites";
 
@@ -68,15 +69,13 @@ async function handleFavoriteToggled(payload: { id: string; isFavorite: boolean 
       </div>
 
       <div class="w-full max-w-md space-y-1">
-        <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-          Sök
-        </label>
-        <input
+        <UiSearchBar
           v-model="searchInput"
-          type="text"
-          placeholder="Sök verktyg..."
-          class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
-        >
+          label="Sök"
+          placeholder="Sök verktyg…"
+          :show-button="false"
+          variant="panel"
+        />
       </div>
     </header>
 

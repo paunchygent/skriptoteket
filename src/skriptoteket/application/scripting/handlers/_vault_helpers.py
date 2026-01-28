@@ -6,12 +6,19 @@ from skriptoteket.domain.scripting.file_refs import build_vault_file_ref
 from skriptoteket.domain.scripting.vault import VaultFile, VaultUsage
 
 
-def build_vault_file_info(*, vault_file: VaultFile) -> VaultFileInfo:
+def build_vault_file_info(
+    *,
+    vault_file: VaultFile,
+    source_label: str | None = None,
+    is_missing_on_disk: bool = False,
+) -> VaultFileInfo:
     return VaultFileInfo(
         id=vault_file.id,
         ref=build_vault_file_ref(file_id=vault_file.id),
         name=vault_file.name,
         bytes=vault_file.bytes,
+        source_label=source_label,
+        is_missing_on_disk=is_missing_on_disk,
         created_at=vault_file.created_at,
         deleted_at=vault_file.deleted_at,
     )

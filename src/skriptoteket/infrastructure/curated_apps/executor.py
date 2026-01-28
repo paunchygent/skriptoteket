@@ -11,9 +11,6 @@ from skriptoteket.domain.errors import validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
 from skriptoteket.infrastructure.curated_apps.apps.demo_counter import execute_demo_counter_action
-from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef import (
-    execute_reagent_prep_chef_action,
-)
 from skriptoteket.infrastructure.curated_apps.artifacts import CuratedAppArtifactWriter
 from skriptoteket.protocols.curated_apps import CuratedAppExecutorProtocol
 
@@ -31,7 +28,6 @@ class CuratedAppHandler(Protocol):
 
 _HANDLERS: dict[str, CuratedAppHandler] = {
     "demo.counter": execute_demo_counter_action,
-    "chemistry.reagent_prep_chef": execute_reagent_prep_chef_action,
 }
 
 

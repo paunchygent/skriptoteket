@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import { IconSettings } from "../icons";
+
 const props = withDefaults(defineProps<{
   isRunning: boolean;
   hasResults: boolean;
@@ -55,7 +57,8 @@ const isCompact = computed(() => props.density === "compact");
       ]"
       @click="emit('toggle-settings')"
     >
-      ⚙ Inställningar
+      <IconSettings :size="isCompact ? 14 : 16" />
+      Inställningar
     </button>
 
     <button

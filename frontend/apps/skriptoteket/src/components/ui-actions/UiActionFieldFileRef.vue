@@ -115,7 +115,7 @@ function onVaultConfirm(selected: string[]): void {
 
 function sourceLabel(ref: FileRefInfo): string {
   const source = getFileRefSource(ref.ref);
-  if (source === "vault") return "Valv";
+  if (source === "vault") return "Filvalv";
   if (source === "session") return "Session";
   return "Okänt";
 }
@@ -144,7 +144,7 @@ function sourceLabel(ref: FileRefInfo): string {
       >
         <div class="flex items-center justify-between gap-3">
           <p :class="[isCompact ? 'text-[10px] font-semibold uppercase tracking-wide text-navy/60' : 'text-xs font-semibold uppercase tracking-wide text-navy/70']">
-            Valv
+            Mina filer
           </p>
           <button
             type="button"
@@ -152,7 +152,7 @@ function sourceLabel(ref: FileRefInfo): string {
             :disabled="isReadOnly || remainingVaultSlots === 0"
             @click="openVaultPicker"
           >
-            Välj i valvet
+            Välj bland Mina filer
           </button>
         </div>
 
@@ -182,14 +182,14 @@ function sourceLabel(ref: FileRefInfo): string {
           v-else
           :class="[isCompact ? 'text-[11px] text-navy/60' : 'text-xs text-navy/60']"
         >
-          Inga valda valvfiler.
+          Inga valda filer från Mina filer.
         </p>
 
         <p
           v-if="remainingVaultSlots === 0"
           :class="[isCompact ? 'text-[11px] text-navy/50' : 'text-xs text-navy/50']"
         >
-          Avmarkera en sessionfil för att välja från valvet.
+          Avmarkera en sessionfil för att välja bland Mina filer.
         </p>
       </div>
 

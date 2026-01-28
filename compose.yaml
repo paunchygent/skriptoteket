@@ -46,6 +46,7 @@ services:
       - LLM_CHAT_OPS_FALLBACK_REASONING_EFFORT=low
     volumes:
       - ./src:/app/src
+      - vault_data:/var/lib/skriptoteket/vault
     depends_on:
       - db
     restart: unless-stopped
@@ -86,6 +87,8 @@ services:
     depends_on:
       - db
     restart: unless-stopped
+    volumes:
+      - vault_data:/var/lib/skriptoteket/vault
     healthcheck:
       test:
         ["CMD", "pdm", "run", "python", "-m", "skriptoteket.cli", "healthcheck-execution-worker"]
@@ -123,3 +126,4 @@ networks:
 volumes:
   skriptoteket-db:
   frontend_node_modules:
+  vault_data:

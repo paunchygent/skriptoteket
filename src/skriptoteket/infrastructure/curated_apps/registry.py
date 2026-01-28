@@ -37,7 +37,7 @@ class InMemoryCuratedAppRegistry(CuratedAppRegistryProtocol):
                 title="Reagensberedning",
                 summary=(
                     "Räkna ut massa/volym för lösningar med hydrat- och renhetsstöd + "
-                    "kuraterade skyddsråd."
+                    "säkerhetsråd för ämnen i listan."
                 ),
                 min_role=Role.USER,
                 placements=[

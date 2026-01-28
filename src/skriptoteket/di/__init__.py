@@ -14,6 +14,7 @@ from dishka import make_async_container
 
 from skriptoteket.config import Settings
 from skriptoteket.di.catalog import CatalogProvider
+from skriptoteket.di.curated_apps import CuratedAppsProvider
 from skriptoteket.di.editor import EditorProvider
 from skriptoteket.di.favorites import FavoritesProvider
 from skriptoteket.di.identity import IdentityProvider
@@ -32,6 +33,7 @@ from skriptoteket.di.suggestions import SuggestionsProvider
 
 __all__ = [
     "CatalogProvider",
+    "CuratedAppsProvider",
     "EditorProvider",
     "FavoritesProvider",
     "IdentityProvider",
@@ -59,6 +61,7 @@ def create_container(settings: Settings):
         InfrastructureServicesProvider(),
         InfrastructureSessionFilesProvider(),
         InfrastructureCuratedAppsProvider(),
+        CuratedAppsProvider(),
         IdentityProvider(),
         CatalogProvider(),
         FavoritesProvider(),

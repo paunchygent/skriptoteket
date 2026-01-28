@@ -11,6 +11,9 @@ from skriptoteket.application.scripting.handlers.delete_session_files import (
     DeleteSessionFilesHandler,
 )
 from skriptoteket.application.scripting.handlers.delete_vault_file import DeleteVaultFileHandler
+from skriptoteket.application.scripting.handlers.download_vault_file import (
+    DownloadVaultFileHandler,
+)
 from skriptoteket.application.scripting.handlers.execute_tool_version import (
     ExecuteToolVersionHandler,
 )
@@ -91,6 +94,7 @@ from skriptoteket.protocols.tool_settings import (
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import (
     DeleteVaultFileHandlerProtocol,
+    DownloadVaultFileHandlerProtocol,
     ListVaultFilesHandlerProtocol,
     RestoreVaultFileHandlerProtocol,
     SaveVaultFileHandlerProtocol,
@@ -227,14 +231,22 @@ class ScriptingProvider(Provider):
     def list_vault_files_handler(
         self,
         uow: UnitOfWorkProtocol,
+        runs: ToolRunRepositoryProtocol,
+        tools: ToolRepositoryProtocol,
+        curated_apps: CuratedAppRegistryProtocol,
         vault_files: VaultFileRepositoryProtocol,
         vault_usage: VaultUsageRepositoryProtocol,
+        vault_storage: VaultStorageProtocol,
         settings: Settings,
     ) -> ListVaultFilesHandlerProtocol:
         return ListVaultFilesHandler(
             uow=uow,
+            runs=runs,
+            tools=tools,
+            curated_apps=curated_apps,
             vault_files=vault_files,
             vault_usage=vault_usage,
+            vault_storage=vault_storage,
             settings=settings,
         )
 
@@ -293,6 +305,19 @@ class ScriptingProvider(Provider):
             vault_usage=vault_usage,
             settings=settings,
             clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def download_vault_file_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_storage: VaultStorageProtocol,
+    ) -> DownloadVaultFileHandlerProtocol:
+        return DownloadVaultFileHandler(
+            uow=uow,
+            vault_files=vault_files,
+            vault_storage=vault_storage,
         )
 
     @provide(scope=Scope.REQUEST)

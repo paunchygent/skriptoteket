@@ -16,6 +16,9 @@ acceptance_criteria:
   - "App supports solid + liquid_stock flows with deterministic outputs and teacher-friendly Swedish validation errors."
   - "Safety output is curated-only with explicit SDS fallback on misses (never heuristics)."
   - "Export produces a downloadable PDF via an app-specific endpoint."
+  - "Users can save/export PDFs to Mina filer (Vault) and download them from the vault UI."
+  - "Users can save/load standardinställningar per-user, plus export/import defaults via Mina filer."
+  - "Riskbedömning tab generates a deterministic draft, supports confirmation/override, and exports/saves a PDF."
 ---
 
 ## Problem
@@ -31,7 +34,7 @@ allowed only as an internal implementation detail (not exposed to the SPA as the
 
 ## Non-goals
 
-- No chemistry heuristics (exothermicity, incompatibilities, etc.).
+- No uncurated heuristics: any CLP/heuristics/risk templates must be repo-owned data (no guessing).
 - No online SDS fetching or external chemistry APIs.
 - No multi-solute “recipes” (single-solute prep per run).
 
@@ -41,15 +44,28 @@ Primary endpoints (exact routes):
 
 - `GET /api/v1/apps/{app_id}`
   - Use existing curated apps endpoint for metadata + role gating.
+- `GET /api/v1/apps/chemistry.reagent_prep_chef/chemicals`
+  - Returns curated chemical list (key + display_name + aliases) for the typeahead picker.
 - `POST /api/v1/apps/chemistry.reagent_prep_chef/prep`
   - Validates inputs strictly and returns a prep sheet response optimized for rendering (no tool/run orchestration).
 - `POST /api/v1/apps/chemistry.reagent_prep_chef/export-pdf`
   - Returns `application/pdf` with `Content-Disposition: attachment; filename="reagensberedning.pdf"`.
-
-Optional (UX enhancement):
-
-- `GET /api/v1/apps/chemistry.reagent_prep_chef/chemicals`
-  - Returns curated chemical list (key + display_name + aliases) for a typeahead picker.
+- `POST /api/v1/apps/chemistry.reagent_prep_chef/save-pdf`
+  - Saves the prep PDF to Vault and returns `VaultFileInfo`.
+- `GET /api/v1/apps/chemistry.reagent_prep_chef/defaults`
+- `PUT /api/v1/apps/chemistry.reagent_prep_chef/defaults`
+  - Per-user defaults persisted via tool_sessions with `state_rev` optimistic concurrency.
+- `POST /api/v1/apps/chemistry.reagent_prep_chef/save-defaults`
+  - Exports defaults JSON to Vault and returns `VaultFileInfo`.
+- `POST /api/v1/apps/chemistry.reagent_prep_chef/load-defaults`
+  - Loads defaults JSON from Vault, validates it, and updates per-user defaults.
+- `POST /api/v1/apps/chemistry.reagent_prep_chef/risk-assessment`
+  - Generates/restores a deterministic risk draft and persists it via tool_sessions (`state_rev`).
+- `POST /api/v1/apps/chemistry.reagent_prep_chef/export-risk-pdf`
+- `POST /api/v1/apps/chemistry.reagent_prep_chef/save-risk-pdf`
+  - Exports/saves a deterministic PDF riskbedömning document (requires confirmations + required context fields).
+- `GET /api/v1/apps/chemistry.reagent_prep_chef/sds/{sds_ref}`
+  - Serves curated SDS attachments (offline-hosted; no runtime external fetch).
 
 ## Implementation plan
 
@@ -73,9 +89,7 @@ Registry/UI policy plumbing
 Core domain/service code (pure + testable; no HTTP/tool concepts)
 
 - Add formula normalization module (separator-only normalization; preserve chemical meaning).
-  - Add molar mass wrapper:
-  - decide dependency (recommended: `molmass`) and add to `pyproject.toml`
-  - validate support for hydrates + parentheses
+- Molar mass + normalization is implemented in-domain (no external chemistry API calls).
 - Implement deterministic calculations with `Decimal`:
   - group logistics (ceil groups, safety factor)
   - solid solute mass (purity-adjusted)
@@ -142,6 +156,54 @@ Manual smoke (local)
 2. Submit `prep` for a curated reagent → verify prep sheet response renders + safety is curated.
 3. Submit `prep` for an unknown reagent → verify explicit SDS warning and no guessed hazards.
 4. Export PDF via `export-pdf` → download PDF and verify content.
+
+## Code review (as of 2026-01-28)
+
+### Backend (DDD / Clean Architecture)
+
+✅ **Strong points**
+
+- **Domain stays pure:** calculation/normalization logic is isolated under
+  `src/skriptoteket/domain/curated_apps/reagent_prep_chef/` and is testable without web/DB.
+- **Thin web layer:** `src/skriptoteket/web/api/v1/apps_reagent_prep_chef.py` is access-gate + delegation only.
+- **Stable errors:** app-specific error codes are surfaced via `DomainError.details.app_error_code`, enabling the SPA to
+  show friendly, localized errors without tying domain code to HTTP.
+- **No-slope safety:** curated hazard lookup with explicit SDS disclaimer on misses (no heuristics).
+- **PDF generation via protocol:** renderer behind `ReagentPrepChefPdfRendererProtocol` keeps infra swappable; WeasyPrint
+  dependencies are present in Dockerfile.
+
+⚠️ **Issues / risks**
+
+- **Export HTML styling:** `build_export_html()` embeds hard-coded CSS colors. It’s acceptable for PDF output, but it
+  drifts from the HuleEdu token system; consider aligning palette/typography with tokens if PDF branding matters.
+- **Hazards dataset grounding:** hazards list is expanded to ~160+ entries with Swedish names sourced from Wikidata
+  (plus a small manual override map) via `scripts/generate_reagent_prep_chef_hazards_wikidata.py`. Hazard codes/CLP
+  bands are still sparse and should be curated further for the most common classroom reagents.
+
+🧪 **Test coverage notes**
+
+- Domain unit tests cover formula normalization + calculation; hazards store has lookup tests; web API has route tests.
+- Missing: an explicit unit test for “unknown chemical → SDS disclaimer payload” and “stock dilution invalid →
+  app_error_code=ERR_IMPOSSIBLE_DILUTION” at the handler level (API tests cover some of this indirectly).
+
+### Frontend (SPA / tokens-first)
+
+✅ **Strong points**
+
+- **Fail-closed routing policy:** `frontend/apps/skriptoteket/src/views/AppHostView.vue` blocks when
+  `ui_mode=bespoke_required` and no bespoke view exists (no generic fallback for curated apps that require bespoke UX).
+- **Chemicals search UX:** curated chemical search renders a live results list while typing, selectable via click, and
+  selection mirrors into the dropdown.
+- **App-specific API usage:** UI uses app endpoints (`/api/v1/apps/...`) for prep/export/defaults (no tool runner
+  orchestration in the primary UX).
+
+⚠️ **Issues / risks**
+
+- **SRP/LoC:** `frontend/apps/skriptoteket/src/views/apps/ReagentPrepChefView.vue` is ~1300 LoC and mixes routing, state,
+  storage, UI rendering, and interaction logic. Split into smaller components/composables (stepper, chemical picker,
+  defaults/settings, result panel, export actions).
+- **Tokens-first styling drift:** view still contains bespoke scoped CSS for the settings popover/trigger. Prefer Tailwind
+  utilities + shared primitives (`btn-*`, token colors/shadows) to stay aligned with the design rules.
 
 ## Rollback plan
 

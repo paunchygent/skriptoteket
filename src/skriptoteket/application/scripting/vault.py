@@ -16,6 +16,8 @@ class VaultFileInfo(BaseModel):
     ref: FileRef
     name: str
     bytes: int
+    source_label: str | None = None
+    is_missing_on_disk: bool = False
     created_at: datetime
     deleted_at: datetime | None = None
 

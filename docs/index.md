@@ -437,6 +437,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-19-04-runner-request-factory-seam.md`
 - `docs/backlog/stories/story-19-05-runner-result-parser-seam.md`
 - `docs/backlog/stories/story-19-06-runner-contract-selection-seam.md`
+- `docs/backlog/stories/story-20-01-curated-app-reagent-prep-chef.md`
 
 ### Reference
 

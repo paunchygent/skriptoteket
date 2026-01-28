@@ -5,7 +5,7 @@ title: "User file vault: backend + resolver"
 status: ready
 owners: "agents"
 created: 2026-01-24
-updated: 2026-01-24
+updated: 2026-01-28
 stories:
   - "ST-14-36"
 tags: ["backend"]
@@ -76,6 +76,33 @@ retention cleanup, without impacting existing session-file flows.
 
 - Backend tests: `pdm run test` (or focused tests for vault/resolver).
 - Migration check: `pdm run db-upgrade` (if migration added).
+
+## Code review (as of 2026-01-28)
+
+### ✅ Strong points
+
+- **Thin web layer:** `src/skriptoteket/web/api/v1/vault.py` delegates to handlers and returns typed results.
+- **Access control:** handlers verify `vault_file.user_id == actor.id` before exposing bytes/metadata.
+- **Vault storage layout:** `LocalVaultStorage` uses deterministic paths `VAULT_ROOT/<user_id>/<file_id>` (bytes are not
+  stored in DB).
+- **Download support added:** `GET /api/v1/vault/files/{file_id}/download` + `DownloadVaultFileHandler` returns a
+  `Content-Disposition: attachment` response with mime sniffing via `mimetypes`.
+
+### ⚠️ Issues / risks
+
+- **Operational persistence:** production compose previously did not persist `VAULT_ROOT`, causing DB rows to outlive
+  on-disk bytes and leading to `NOT_FOUND` on download. Fix is to mount a persistent volume at `VAULT_ROOT` in
+  production and deploy it.
+- **Potential N+1:** `ListVaultFilesHandler` resolves `source_label` by calling `runs.get_by_id()` per file. This is OK
+  short-term but should be revisited if vault lists grow (bulk fetch method or join-based query).
+- **Test file size budget:** `tests/unit/application/scripting/handlers/test_vault_handlers.py` is ~530 LoC (above the
+  <400–500 LoC guideline). Consider splitting into `test_vault_list.py`, `test_vault_save.py`, etc.
+
+### 🧪 Test coverage notes
+
+- Download behavior is covered in `tests/unit/application/scripting/handlers/test_download_vault_file_handler.py`.
+- Missing-on-disk flag for list responses is covered in
+  `tests/unit/application/scripting/handlers/test_list_vault_files_missing_on_disk.py`.
 
 ## Rollback plan
 

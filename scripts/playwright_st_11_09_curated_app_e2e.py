@@ -136,26 +136,50 @@ def main() -> None:
             page.get_by_role("heading", name=re.compile(r"Reagensberedning", re.IGNORECASE))
         ).to_be_visible()
 
-        formula_field = page.get_by_label(re.compile(r"Ämne.*formel", re.IGNORECASE))
+        formula_field = page.get_by_label(re.compile(r"kemisk formel", re.IGNORECASE))
         formula_field.fill("NaCl")
+        page.get_by_role("button", name=re.compile(r"Fortsätt", re.IGNORECASE)).click()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Klass", re.IGNORECASE))
+        ).to_be_visible()
+        page.get_by_role("button", name=re.compile(r"Fortsätt", re.IGNORECASE)).click()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Källa", re.IGNORECASE))
+        ).to_be_visible()
+
         page.get_by_role("button", name=re.compile(r"Beräkna", re.IGNORECASE)).click()
         expect(
             page.get_by_role("heading", name=re.compile(r"Resultat", re.IGNORECASE))
         ).to_be_visible(timeout=30_000)
         page.screenshot(path=str(artifacts_dir / "04-reagent-calc.png"), full_page=True)
 
+        # Reload should always land on step 1 (Ämne) to avoid blank intermediate steps.
+        page.reload(wait_until="domcontentloaded")
+        expect(page.get_by_role("heading", name=re.compile(r"Ämne", re.IGNORECASE))).to_be_visible(
+            timeout=30_000
+        )
+        page.screenshot(path=str(artifacts_dir / "05-reagent-reload-step-1.png"), full_page=True)
+
+        page.get_by_role("button", name=re.compile(r"Fortsätt", re.IGNORECASE)).click()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Klass", re.IGNORECASE))
+        ).to_be_visible()
+        page.get_by_role("button", name=re.compile(r"Fortsätt", re.IGNORECASE)).click()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Källa", re.IGNORECASE))
+        ).to_be_visible()
+        page.get_by_role("button", name=re.compile(r"Beräkna", re.IGNORECASE)).click()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Resultat", re.IGNORECASE))
+        ).to_be_visible()
+
         export_button = page.get_by_role("button", name=re.compile(r"Exportera PDF", re.IGNORECASE))
         expect(export_button).to_be_enabled(timeout=30_000)
-        export_button.click()
-        expect(page.get_by_text(re.compile(r"Filer", re.IGNORECASE))).to_be_visible(timeout=30_000)
-
-        download_link = page.locator("a[download]").first
-        expect(download_link).to_be_visible(timeout=30_000)
         with page.expect_download() as download_info:
-            download_link.click()
+            export_button.click()
         download = download_info.value
         download.save_as(str(artifacts_dir / "reagensberedning.pdf"))
-        page.screenshot(path=str(artifacts_dir / "05-reagent-export.png"), full_page=True)
+        page.screenshot(path=str(artifacts_dir / "06-reagent-export.png"), full_page=True)
 
         context.close()
         browser.close()

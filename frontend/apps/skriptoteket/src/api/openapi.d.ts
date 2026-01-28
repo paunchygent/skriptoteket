@@ -158,6 +158,194 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/chemistry.reagent_prep_chef/chemicals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Chemicals */
+        get: operations["list_chemicals_api_v1_apps_chemistry_reagent_prep_chef_chemicals_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/chemistry.reagent_prep_chef/defaults": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Defaults */
+        get: operations["get_defaults_api_v1_apps_chemistry_reagent_prep_chef_defaults_get"];
+        /** Update Defaults */
+        put: operations["update_defaults_api_v1_apps_chemistry_reagent_prep_chef_defaults_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/chemistry.reagent_prep_chef/export-pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Export Pdf */
+        post: operations["export_pdf_api_v1_apps_chemistry_reagent_prep_chef_export_pdf_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/chemistry.reagent_prep_chef/export-risk-pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Export Risk Pdf */
+        post: operations["export_risk_pdf_api_v1_apps_chemistry_reagent_prep_chef_export_risk_pdf_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/chemistry.reagent_prep_chef/load-defaults": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Load Defaults */
+        post: operations["load_defaults_api_v1_apps_chemistry_reagent_prep_chef_load_defaults_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/chemistry.reagent_prep_chef/prep": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Prep */
+        post: operations["prep_api_v1_apps_chemistry_reagent_prep_chef_prep_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/chemistry.reagent_prep_chef/risk-assessment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Risk Assessment */
+        post: operations["risk_assessment_api_v1_apps_chemistry_reagent_prep_chef_risk_assessment_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/chemistry.reagent_prep_chef/save-defaults": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save Defaults */
+        post: operations["save_defaults_api_v1_apps_chemistry_reagent_prep_chef_save_defaults_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/chemistry.reagent_prep_chef/save-pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save Pdf */
+        post: operations["save_pdf_api_v1_apps_chemistry_reagent_prep_chef_save_pdf_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/chemistry.reagent_prep_chef/save-risk-pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save Risk Pdf */
+        post: operations["save_risk_pdf_api_v1_apps_chemistry_reagent_prep_chef_save_risk_pdf_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/chemistry.reagent_prep_chef/sds/{sds_ref}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Sds */
+        get: operations["get_sds_api_v1_apps_chemistry_reagent_prep_chef_sds__sds_ref__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/{app_id}": {
         parameters: {
             query?: never;
@@ -1319,6 +1507,23 @@ export interface paths {
         put?: never;
         /** Delete Vault File */
         post: operations["delete_vault_file_api_v1_vault_files__file_id__delete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/vault/files/{file_id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Vault File */
+        get: operations["download_vault_file_api_v1_vault_files__file_id__download_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2583,6 +2788,328 @@ export interface components {
             /** Change Summary */
             change_summary?: string | null;
         };
+        /** ReagentPrepChefChemicalOption */
+        ReagentPrepChefChemicalOption: {
+            /** Aliases */
+            aliases?: string[];
+            /** Display Name */
+            display_name: string;
+            /** Key */
+            key: string;
+        };
+        /** ReagentPrepChefChemicalsResult */
+        ReagentPrepChefChemicalsResult: {
+            /** Chemicals */
+            chemicals?: components["schemas"]["ReagentPrepChefChemicalOption"][];
+        };
+        /** ReagentPrepChefChemistry */
+        ReagentPrepChefChemistry: {
+            /** Diluent Volume Ml */
+            diluent_volume_ml?: string | null;
+            /** Formula Clean */
+            formula_clean: string;
+            /** Mass G */
+            mass_g?: string | null;
+            /** Molar Mass G Mol */
+            molar_mass_g_mol: string;
+            /** Moles Required */
+            moles_required: string;
+            /** Solute Purity */
+            solute_purity: string;
+            source_type: components["schemas"]["SourceType"];
+            /** Stock Molarity */
+            stock_molarity?: string | null;
+            /** Stock Volume Ml */
+            stock_volume_ml?: string | null;
+            /** Target Molarity */
+            target_molarity: string;
+        };
+        /** ReagentPrepChefChemistryHeuristics */
+        ReagentPrepChefChemistryHeuristics: {
+            /**
+             * Exothermicity
+             * @default none
+             * @enum {string}
+             */
+            exothermicity: "none" | "low" | "medium" | "high";
+            /** Incompatibilities */
+            incompatibilities?: string[];
+            /** Reaction Notes */
+            reaction_notes?: string[];
+        };
+        /** ReagentPrepChefClpClassification */
+        ReagentPrepChefClpClassification: {
+            /** Hazard Codes */
+            hazard_codes?: string[];
+            /** Notes */
+            notes?: string[];
+            /** Pictograms */
+            pictograms?: string[];
+            /** Signal Word */
+            signal_word?: ("danger" | "warning") | null;
+        };
+        /** ReagentPrepChefDefaultsResult */
+        ReagentPrepChefDefaultsResult: {
+            defaults?: components["schemas"]["ReagentPrepChefPrepRequest-Output"] | null;
+            /** State Rev */
+            state_rev: number;
+        };
+        /** ReagentPrepChefLoadDefaultsRequest */
+        ReagentPrepChefLoadDefaultsRequest: {
+            /** Expected State Rev */
+            expected_state_rev: number;
+            /**
+             * File Id
+             * Format: uuid
+             */
+            file_id: string;
+        };
+        /** ReagentPrepChefLogistics */
+        ReagentPrepChefLogistics: {
+            /** Base Total Volume Ml */
+            base_total_volume_ml: string;
+            /** Safety Factor Pct */
+            safety_factor_pct: string;
+            /** Total Groups */
+            total_groups: number;
+            /** Total Volume Ml */
+            total_volume_ml: string;
+        };
+        /** ReagentPrepChefMeta */
+        ReagentPrepChefMeta: {
+            /** App Version */
+            app_version: string;
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+        };
+        /** ReagentPrepChefPrepRequest */
+        "ReagentPrepChefPrepRequest-Input": {
+            /** Chemical Formula */
+            chemical_formula: string;
+            /**
+             * Safety Factor
+             * @default 0.10
+             */
+            safety_factor: number | string;
+            /**
+             * Solute Purity
+             * @default 1.0
+             */
+            solute_purity: number | string;
+            /** @default solid */
+            source_type: components["schemas"]["SourceType"];
+            /** Stock Molarity */
+            stock_molarity?: number | string | null;
+            /** Student Count */
+            student_count: number;
+            /**
+             * Students Per Group
+             * @default 2
+             */
+            students_per_group: number;
+            /** Target Molarity */
+            target_molarity: number | string;
+            /** Vol Per Group Ml */
+            vol_per_group_ml: number | string;
+        };
+        /** ReagentPrepChefPrepRequest */
+        "ReagentPrepChefPrepRequest-Output": {
+            /** Chemical Formula */
+            chemical_formula: string;
+            /**
+             * Safety Factor
+             * @default 0.10
+             */
+            safety_factor: string;
+            /**
+             * Solute Purity
+             * @default 1.0
+             */
+            solute_purity: string;
+            /** @default solid */
+            source_type: components["schemas"]["SourceType"];
+            /** Stock Molarity */
+            stock_molarity?: string | null;
+            /** Student Count */
+            student_count: number;
+            /**
+             * Students Per Group
+             * @default 2
+             */
+            students_per_group: number;
+            /** Target Molarity */
+            target_molarity: string;
+            /** Vol Per Group Ml */
+            vol_per_group_ml: string;
+        };
+        /** ReagentPrepChefPrepResult */
+        ReagentPrepChefPrepResult: {
+            sheet: components["schemas"]["ReagentPrepChefPrepSheet"];
+        };
+        /** ReagentPrepChefPrepSheet */
+        ReagentPrepChefPrepSheet: {
+            chemistry: components["schemas"]["ReagentPrepChefChemistry"];
+            /** Instructions */
+            instructions?: string[];
+            logistics: components["schemas"]["ReagentPrepChefLogistics"];
+            meta: components["schemas"]["ReagentPrepChefMeta"];
+            safety: components["schemas"]["ReagentPrepChefSafety"];
+            /** Warnings */
+            warnings?: string[];
+        };
+        /** ReagentPrepChefRiskAssessmentDraft */
+        ReagentPrepChefRiskAssessmentDraft: {
+            clp: components["schemas"]["ReagentPrepChefClpClassification"];
+            context?: components["schemas"]["ReagentPrepChefRiskContext"] | null;
+            heuristics: components["schemas"]["ReagentPrepChefChemistryHeuristics"];
+            /** Missing Confirmations */
+            missing_confirmations?: string[];
+            /** Requires Confirmation */
+            requires_confirmation: boolean;
+            /** Risks */
+            risks: components["schemas"]["ReagentPrepChefRiskItem"][];
+            /** Sds Ref */
+            sds_ref?: string | null;
+            sheet: components["schemas"]["ReagentPrepChefPrepSheet"];
+        };
+        /** ReagentPrepChefRiskAssessmentInputs */
+        ReagentPrepChefRiskAssessmentInputs: {
+            context?: components["schemas"]["ReagentPrepChefRiskContext"] | null;
+            /** Overrides */
+            overrides?: components["schemas"]["ReagentPrepChefRiskItemOverride"][];
+        };
+        /** ReagentPrepChefRiskAssessmentRequest */
+        ReagentPrepChefRiskAssessmentRequest: {
+            /**
+             * Expected State Rev
+             * @default 0
+             */
+            expected_state_rev: number;
+            inputs?: components["schemas"]["ReagentPrepChefRiskAssessmentInputs"] | null;
+            prep: components["schemas"]["ReagentPrepChefPrepRequest-Input"];
+            /**
+             * Reset
+             * @default false
+             */
+            reset: boolean;
+        };
+        /** ReagentPrepChefRiskAssessmentResult */
+        ReagentPrepChefRiskAssessmentResult: {
+            draft: components["schemas"]["ReagentPrepChefRiskAssessmentDraft"];
+            /** State Rev */
+            state_rev: number;
+            /** Warnings */
+            warnings?: string[];
+        };
+        /** ReagentPrepChefRiskContext */
+        ReagentPrepChefRiskContext: {
+            /** Approver */
+            approver?: string | null;
+            /** Assessment Date */
+            assessment_date?: string | null;
+            /** Local Routines */
+            local_routines?: string | null;
+            /** Location */
+            location?: string | null;
+            /** Next Review Date */
+            next_review_date?: string | null;
+            /** Participants */
+            participants?: string | null;
+            /** Scope */
+            scope?: string | null;
+        };
+        /** ReagentPrepChefRiskItem */
+        ReagentPrepChefRiskItem: {
+            computed: components["schemas"]["ReagentPrepChefRiskRating"];
+            /** Confirmed */
+            confirmed: boolean;
+            /** Description */
+            description?: string | null;
+            final: components["schemas"]["ReagentPrepChefRiskRating"];
+            /** Hazard Codes */
+            hazard_codes?: string[];
+            /** Id */
+            id: string;
+            /** Measures */
+            measures?: string[];
+            /** Title */
+            title: string;
+        };
+        /** ReagentPrepChefRiskItemOverride */
+        ReagentPrepChefRiskItemOverride: {
+            /**
+             * Confirmed
+             * @default false
+             */
+            confirmed: boolean;
+            /** Id */
+            id: string;
+            /** Likelihood */
+            likelihood?: number | null;
+            /** Measures */
+            measures?: string[] | null;
+            /** Severity */
+            severity?: number | null;
+        };
+        /** ReagentPrepChefRiskRating */
+        ReagentPrepChefRiskRating: {
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "low" | "medium" | "high" | "critical";
+            /** Likelihood */
+            likelihood: number;
+            /** Score */
+            score: number;
+            /** Severity */
+            severity: number;
+        };
+        /** ReagentPrepChefSafety */
+        ReagentPrepChefSafety: {
+            /** Display Name */
+            display_name?: string | null;
+            /** Disposal */
+            disposal?: string | null;
+            /** Hazard Codes */
+            hazard_codes?: string[];
+            level: components["schemas"]["SafetyLevel"];
+            /** Message */
+            message?: string | null;
+            /** Notes */
+            notes?: string[];
+            /** Ppe */
+            ppe?: string[];
+        };
+        /** ReagentPrepChefSaveDefaultsRequest */
+        ReagentPrepChefSaveDefaultsRequest: {
+            defaults: components["schemas"]["ReagentPrepChefPrepRequest-Input"];
+            /** Name */
+            name?: string | null;
+        };
+        /** ReagentPrepChefSaveDefaultsResult */
+        ReagentPrepChefSaveDefaultsResult: {
+            file: components["schemas"]["VaultFileInfo"];
+        };
+        /** ReagentPrepChefSavePdfRequest */
+        ReagentPrepChefSavePdfRequest: {
+            /** Name */
+            name?: string | null;
+            prep: components["schemas"]["ReagentPrepChefPrepRequest-Input"];
+        };
+        /** ReagentPrepChefSavePdfResult */
+        ReagentPrepChefSavePdfResult: {
+            file: components["schemas"]["VaultFileInfo"];
+        };
+        /** ReagentPrepChefUpdateDefaultsRequest */
+        ReagentPrepChefUpdateDefaultsRequest: {
+            defaults?: components["schemas"]["ReagentPrepChefPrepRequest-Input"] | null;
+            /** Expected State Rev */
+            expected_state_rev: number;
+        };
         /** RecentCuratedAppItem */
         RecentCuratedAppItem: {
             /** App Id */
@@ -2719,6 +3246,8 @@ export interface components {
          * @enum {string}
          */
         RunStatus: "queued" | "running" | "succeeded" | "failed" | "timed_out" | "cancelled";
+        /** @enum {string} */
+        SafetyLevel: "curated" | "unknown";
         /** SandboxRunResponse */
         SandboxRunResponse: {
             /**
@@ -2864,6 +3393,8 @@ export interface components {
             /** Ref */
             ref: string;
         };
+        /** @enum {string} */
+        SourceType: "solid" | "liquid_stock";
         /**
          * StartActionCommand
          * @description Start an interactive tool turn (ADR-0024).
@@ -3660,15 +4191,22 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /**
+             * Is Missing On Disk
+             * @default false
+             */
+            is_missing_on_disk: boolean;
             /** Name */
             name: string;
             ref: components["schemas"]["FileRef"];
+            /** Source Label */
+            source_label?: string | null;
         };
         /**
          * VaultFileSourceKind
          * @enum {string}
          */
-        VaultFileSourceKind: "run_artifact";
+        VaultFileSourceKind: "run_artifact" | "app_export";
         /**
          * VaultListSort
          * @enum {string}
@@ -4015,6 +4553,392 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminUserLoginEventsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_chemicals_api_v1_apps_chemistry_reagent_prep_chef_chemicals_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReagentPrepChefChemicalsResult"];
+                };
+            };
+        };
+    };
+    get_defaults_api_v1_apps_chemistry_reagent_prep_chef_defaults_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReagentPrepChefDefaultsResult"];
+                };
+            };
+        };
+    };
+    update_defaults_api_v1_apps_chemistry_reagent_prep_chef_defaults_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReagentPrepChefUpdateDefaultsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReagentPrepChefDefaultsResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_pdf_api_v1_apps_chemistry_reagent_prep_chef_export_pdf_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReagentPrepChefPrepRequest-Input"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_risk_pdf_api_v1_apps_chemistry_reagent_prep_chef_export_risk_pdf_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReagentPrepChefRiskAssessmentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    load_defaults_api_v1_apps_chemistry_reagent_prep_chef_load_defaults_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReagentPrepChefLoadDefaultsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReagentPrepChefDefaultsResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    prep_api_v1_apps_chemistry_reagent_prep_chef_prep_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReagentPrepChefPrepRequest-Input"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReagentPrepChefPrepResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    risk_assessment_api_v1_apps_chemistry_reagent_prep_chef_risk_assessment_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReagentPrepChefRiskAssessmentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReagentPrepChefRiskAssessmentResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_defaults_api_v1_apps_chemistry_reagent_prep_chef_save_defaults_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReagentPrepChefSaveDefaultsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReagentPrepChefSaveDefaultsResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_pdf_api_v1_apps_chemistry_reagent_prep_chef_save_pdf_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReagentPrepChefSavePdfRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReagentPrepChefSavePdfResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_risk_pdf_api_v1_apps_chemistry_reagent_prep_chef_save_risk_pdf_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReagentPrepChefRiskAssessmentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReagentPrepChefSavePdfResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_sds_api_v1_apps_chemistry_reagent_prep_chef_sds__sds_ref__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sds_ref: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -6505,6 +7429,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DeleteVaultFileResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_vault_file_api_v1_vault_files__file_id__download_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                file_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

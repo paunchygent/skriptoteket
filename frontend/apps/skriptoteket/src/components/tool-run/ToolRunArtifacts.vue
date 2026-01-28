@@ -52,14 +52,14 @@ async function saveToVault(artifact: RunArtifact | ArtifactEntry): Promise<void>
       artifactId: artifactId,
       name,
     });
-    toast.success("Sparade filen i valvet.");
+    toast.success("Sparade filen i Mina filer.");
   } catch (error: unknown) {
     if (isApiError(error)) {
       toast.failure(error.message);
     } else if (error instanceof Error) {
       toast.failure(error.message);
     } else {
-      toast.failure("Det gick inte att spara filen i valvet.");
+      toast.failure("Det gick inte att spara filen i Mina filer.");
     }
   } finally {
     const cleared = new Set(savingIds.value);
@@ -115,7 +115,7 @@ async function saveToVault(artifact: RunArtifact | ArtifactEntry): Promise<void>
           :disabled="savingIds.has(artifact.artifact_id)"
           @click="void saveToVault(artifact)"
         >
-          {{ savingIds.has(artifact.artifact_id) ? "Sparar…" : "Spara i valv" }}
+          {{ savingIds.has(artifact.artifact_id) ? "Sparar…" : "Spara i Mina filer" }}
         </button>
       </li>
     </ul>

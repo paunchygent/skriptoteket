@@ -43,7 +43,7 @@ typed form and a structured prep sheet, while the backend stays deterministic an
 - Predicting reaction heat / chemistry outcomes (no heuristics).
 - Mixing multiple reagents into recipes (single-solute prep per run).
 - Concentration-dependent hazard classification beyond curated entries.
-- Fetching SDS online or calling external APIs.
+- Direct SDS fetching from the SPA. Backend fetch + cache is allowed, but the SPA must only open backend-hosted SDS copies.
 
 ## App identity and catalog placement
 

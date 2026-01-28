@@ -1,30 +1,15 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from decimal import Decimal
-from typing import Literal
 
-from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.formulas import (
+from skriptoteket.domain.curated_apps.reagent_prep_chef.formulas import (
     molar_mass_g_mol,
     normalize_formula_for_display,
 )
-from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.models import PrepRequest
+from skriptoteket.domain.curated_apps.reagent_prep_chef.models import PrepInputs, PrepNumbers
 
 
-@dataclass(frozen=True, slots=True)
-class PrepNumbers:
-    formula_clean: str
-    molar_mass_g_mol: Decimal
-    total_groups: int
-    total_volume_ml: Decimal
-    moles_required: Decimal
-    source_type: Literal["solid", "liquid_stock"]
-    mass_g: Decimal | None = None
-    stock_volume_ml: Decimal | None = None
-    diluent_volume_ml: Decimal | None = None
-
-
-def calculate_numbers(*, request: PrepRequest) -> PrepNumbers:
+def calculate_numbers(*, request: PrepInputs) -> PrepNumbers:
     formula_clean = normalize_formula_for_display(request.chemical_formula)
     molar_mass = molar_mass_g_mol(formula_clean=formula_clean)
 

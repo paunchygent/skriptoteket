@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict
 
 class VaultFileSourceKind(StrEnum):
     RUN_ARTIFACT = "run_artifact"
+    APP_EXPORT = "app_export"
 
 
 class VaultListState(StrEnum):

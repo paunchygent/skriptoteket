@@ -57,6 +57,12 @@ class Settings(BaseSettings):
     ARTIFACTS_ROOT: Path = Path("/var/lib/skriptoteket/artifacts")
     ARTIFACTS_RETENTION_DAYS: int = 7
 
+    SDS_CACHE_ROOT: Path | None = None
+    SDS_FETCH_TIMEOUT_SECONDS: float = 40.0
+    SDS_FETCH_USER_AGENT: str = "Skriptoteket/1.0 (SDS fetcher)"
+    PUBCHEM_BASE_URL: str = "https://pubchem.ncbi.nlm.nih.gov"
+    PUBCHEM_TIMEOUT_SECONDS: float = 20.0
+
     VAULT_ROOT: Path = Path("/var/lib/skriptoteket/vault")
     VAULT_MAX_FILE_BYTES: int = 20_000_000
     VAULT_MAX_TOTAL_BYTES: int = 200_000_000

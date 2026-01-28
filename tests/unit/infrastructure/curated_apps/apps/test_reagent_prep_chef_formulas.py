@@ -4,7 +4,7 @@ from decimal import Decimal
 
 import pytest
 
-from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.formulas import (
+from skriptoteket.domain.curated_apps.reagent_prep_chef.formulas import (
     molar_mass_g_mol,
     normalize_formula_key,
 )

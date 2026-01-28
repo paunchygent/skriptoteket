@@ -11,7 +11,7 @@ const props = withDefaults(defineProps<{
   confirmLabel?: string;
   isReadOnly?: boolean;
 }>(), {
-  title: "Välj filer från valvet",
+  title: "Välj filer från Mina filer",
   confirmLabel: "Bekräfta",
   isReadOnly: false,
 });

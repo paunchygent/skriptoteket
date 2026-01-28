@@ -2,22 +2,21 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.calculator import (
-    calculate_numbers,
-)
-from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.models import PrepRequest
+from skriptoteket.domain.curated_apps.reagent_prep_chef.calculator import calculate_numbers
+from skriptoteket.domain.curated_apps.reagent_prep_chef.models import PrepInputs
 
 
 def test_calculate_numbers_for_solid_solution() -> None:
-    request = PrepRequest(
+    request = PrepInputs(
         chemical_formula="NaCl",
-        target_molarity="0.1",
-        vol_per_group_ml="50",
+        target_molarity=Decimal("0.1"),
+        vol_per_group_ml=Decimal("50"),
         student_count=30,
         students_per_group=2,
-        safety_factor="0.10",
+        safety_factor=Decimal("0.10"),
         source_type="solid",
-        solute_purity="1.0",
+        stock_molarity=None,
+        solute_purity=Decimal("1.0"),
     )
 
     numbers = calculate_numbers(request=request)
@@ -30,16 +29,16 @@ def test_calculate_numbers_for_solid_solution() -> None:
 
 
 def test_calculate_numbers_for_dilution() -> None:
-    request = PrepRequest(
+    request = PrepInputs(
         chemical_formula="NaCl",
-        target_molarity="0.1",
-        vol_per_group_ml="50",
+        target_molarity=Decimal("0.1"),
+        vol_per_group_ml=Decimal("50"),
         student_count=30,
         students_per_group=2,
-        safety_factor="0.10",
+        safety_factor=Decimal("0.10"),
         source_type="liquid_stock",
-        stock_molarity="1.0",
-        solute_purity="1.0",
+        stock_molarity=Decimal("1.0"),
+        solute_purity=Decimal("1.0"),
     )
 
     numbers = calculate_numbers(request=request)

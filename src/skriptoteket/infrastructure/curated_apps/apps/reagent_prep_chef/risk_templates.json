@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "risk_levels": [
+    { "level": "low", "min_score": 1, "max_score": 4 },
+    { "level": "medium", "min_score": 5, "max_score": 9 },
+    { "level": "high", "min_score": 10, "max_score": 16 },
+    { "level": "critical", "min_score": 17, "max_score": 25 }
+  ],
+  "risk_items": [
+    {
+      "id": "eye_contact",
+      "title": "Stänk i ögon",
+      "hazard_codes_any": ["H314", "H318", "H319"],
+      "default_severity": 4,
+      "default_likelihood": 2,
+      "measures": [
+        "Skyddsglasögon",
+        "Arbeta lugnt och använd tratt",
+        "Ögondusch tillgänglig"
+      ]
+    },
+    {
+      "id": "skin_contact",
+      "title": "Hudkontakt",
+      "hazard_codes_any": ["H315", "H314"],
+      "default_severity": 3,
+      "default_likelihood": 2,
+      "measures": [
+        "Skyddshandskar",
+        "Labbrock",
+        "Tvätta huden vid spill"
+      ]
+    },
+    {
+      "id": "inhalation",
+      "title": "Inandning av ångor eller damm",
+      "hazard_codes_any": ["H330", "H331", "H332", "H335", "H336"],
+      "default_severity": 4,
+      "default_likelihood": 2,
+      "measures": [
+        "Arbeta i dragskåp vid behov",
+        "Undvik dammbildning",
+        "Håll locket på när det går"
+      ]
+    }
+  ],
+  "generic_risks": [
+    {
+      "id": "glass_breakage",
+      "title": "Glas går sönder",
+      "default_severity": 2,
+      "default_likelihood": 2,
+      "measures": [
+        "Hantera glas varsamt",
+        "Använd borste och skyffel vid glasskärvor"
+      ]
+    },
+    {
+      "id": "spill_cleanup",
+      "title": "Spill vid uppvägning eller spädning",
+      "default_severity": 2,
+      "default_likelihood": 2,
+      "measures": [
+        "Arbeta över uppsamlingskärl",
+        "Torka upp spill direkt",
+        "Ha absorberande material nära"
+      ]
+    },
+    {
+      "id": "waste_handling",
+      "title": "Avfallshantering",
+      "default_severity": 2,
+      "default_likelihood": 1,
+      "measures": [
+        "Följ lokala rutiner",
+        "Märk upp avfallsbehållare tydligt"
+      ]
+    }
+  ]
+}

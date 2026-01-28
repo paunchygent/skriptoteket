@@ -27,6 +27,7 @@ services:
       RUNNER_IMAGE: skriptoteket-runner:latest
       RUNNER_QUEUE_ENABLED: "true"
       ARTIFACTS_ROOT: /app/.artifacts
+      VAULT_ROOT: /var/lib/skriptoteket/vault
       # Observability (requires compose.observability.yaml running)
       OTEL_TRACING_ENABLED: "true"
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
@@ -98,6 +99,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - artifacts_data:/app/.artifacts
+      - vault_data:/var/lib/skriptoteket/vault
     networks:
       - hule-network
     healthcheck:
@@ -120,6 +122,7 @@ services:
       RUNNER_IMAGE: skriptoteket-runner:latest
       RUNNER_QUEUE_ENABLED: "true"
       ARTIFACTS_ROOT: /app/.artifacts
+      VAULT_ROOT: /var/lib/skriptoteket/vault
       PYTHONPATH: /app/src
       # Observability (requires compose.observability.yaml running)
       OTEL_TRACING_ENABLED: "true"
@@ -128,6 +131,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - artifacts_data:/app/.artifacts
+      - vault_data:/var/lib/skriptoteket/vault
     networks:
       - hule-network
     healthcheck:
@@ -162,3 +166,4 @@ networks:
 
 volumes:
   artifacts_data:
+  vault_data:

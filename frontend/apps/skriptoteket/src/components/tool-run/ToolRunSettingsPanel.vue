@@ -53,7 +53,7 @@ const fileRefErrors = computed<Record<string, string | null>>(() => {
     const selected = Array.isArray(raw) ? raw.filter((item) => typeof item === "string") : [];
     const missing = selected.filter((ref) => !availableSet.has(ref));
     if (missing.length > 0) {
-      errors[field.name] = "Vald fil finns inte längre i valvet. Välj en ny fil.";
+      errors[field.name] = "Vald fil finns inte längre bland Mina filer. Välj en ny fil.";
       continue;
     }
     if (selected.length < field.min) {

@@ -11,6 +11,7 @@ services:
       - ./migrations:/app/migrations:cached
       - ./alembic.ini:/app/alembic.ini:cached
       - ./.artifacts:/var/lib/skriptoteket/artifacts:cached
+      - ./.vault:/var/lib/skriptoteket/vault:cached
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - ENVIRONMENT=development
@@ -18,17 +19,20 @@ services:
       - COOKIE_SECURE=false
       # Ensure container uses the mounted artifacts dir (avoids relying on host-dev `.env` defaults like `/tmp/...`).
       - ARTIFACTS_ROOT=/var/lib/skriptoteket/artifacts
+      - VAULT_ROOT=/var/lib/skriptoteket/vault
       - WATCHFILES_FORCE_POLLING=true
       - WATCHFILES_POLL_DELAY_MS=300
   worker:
     volumes:
       - ./src:/app/src:cached
       - ./.artifacts:/var/lib/skriptoteket/artifacts:cached
+      - ./.vault:/var/lib/skriptoteket/vault:cached
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - ENVIRONMENT=development
       # Ensure container uses the mounted artifacts dir (avoids relying on host-dev `.env` defaults like `/tmp/...`).
       - ARTIFACTS_ROOT=/var/lib/skriptoteket/artifacts
+      - VAULT_ROOT=/var/lib/skriptoteket/vault
   frontend:
     environment:
       - VITE_DEV_POLLING=true

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+from types import TracebackType
 from typing import Iterable
-from unittest.mock import AsyncMock
 from uuid import UUID, uuid4
 
 import pytest
@@ -18,6 +18,8 @@ from skriptoteket.application.scripting.vault import (
     SaveVaultFileCommand,
 )
 from skriptoteket.config import Settings
+from skriptoteket.domain.catalog.models import Tool
+from skriptoteket.domain.curated_apps.models import CuratedAppDefinition
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.artifacts import (
@@ -25,7 +27,7 @@ from skriptoteket.domain.scripting.artifacts import (
     RunnerArtifact,
     StoredArtifact,
 )
-from skriptoteket.domain.scripting.models import RunContext
+from skriptoteket.domain.scripting.models import RunContext, ToolRun
 from skriptoteket.domain.scripting.vault import (
     VaultFile,
     VaultFileSourceKind,
@@ -33,10 +35,12 @@ from skriptoteket.domain.scripting.vault import (
     VaultListState,
     VaultUsage,
 )
+from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.runner import ArtifactManagerProtocol
-from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
+from skriptoteket.protocols.scripting import RecentRunRow, ToolRunRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import (
     VaultFileRepositoryProtocol,
@@ -51,7 +55,12 @@ class FakeUow(UnitOfWorkProtocol):
     async def __aenter__(self) -> UnitOfWorkProtocol:
         return self
 
-    async def __aexit__(self, exc_type, exc, tb) -> None:
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        tb: TracebackType | None,
+    ) -> None:
         return None
 
 
@@ -86,6 +95,134 @@ class FakeArtifactManager(ArtifactManagerProtocol):
 
     def read_artifact(self, *, run_id: UUID, artifact_path: str) -> bytes:
         return self._content
+
+
+class FakeRuns(ToolRunRepositoryProtocol):
+    def __init__(self, runs_by_id: dict[UUID, ToolRun] | None = None) -> None:
+        self._runs_by_id = runs_by_id or {}
+
+    async def get_by_id(self, *, run_id: UUID) -> ToolRun | None:
+        return self._runs_by_id.get(run_id)
+
+    async def create(self, *, run: ToolRun) -> ToolRun:
+        raise NotImplementedError
+
+    async def update(self, *, run: ToolRun) -> ToolRun:
+        raise NotImplementedError
+
+    async def get_latest_for_user_and_tool(
+        self,
+        *,
+        user_id: UUID,
+        tool_id: UUID,
+        context: RunContext,
+    ) -> ToolRun | None:
+        return None
+
+    async def list_for_user(
+        self,
+        *,
+        user_id: UUID,
+        context: RunContext,
+        limit: int = 50,
+    ) -> list[ToolRun]:
+        return []
+
+    async def count_for_user_this_month(
+        self,
+        *,
+        user_id: UUID,
+        context: RunContext,
+    ) -> int:
+        return 0
+
+    async def list_recent_tools_for_user(
+        self,
+        *,
+        user_id: UUID,
+        limit: int = 10,
+    ) -> list[RecentRunRow]:
+        return []
+
+
+class FakeTools(ToolRepositoryProtocol):
+    async def list_by_tags(self, *, profession_id: UUID, category_id: UUID) -> list[Tool]:
+        return []
+
+    async def list_all(self) -> list[Tool]:
+        return []
+
+    async def list_by_ids(self, *, tool_ids: list[UUID]) -> list[Tool]:
+        return []
+
+    async def list_published_filtered(
+        self,
+        *,
+        profession_ids: list[UUID] | None = None,
+        category_ids: list[UUID] | None = None,
+        search_term: str | None = None,
+    ) -> list[Tool]:
+        return []
+
+    async def get_by_id(self, *, tool_id: UUID) -> Tool | None:
+        return None
+
+    async def get_by_slug(self, *, slug: str) -> Tool | None:
+        return None
+
+    async def set_published(self, *, tool_id: UUID, is_published: bool, now: datetime) -> Tool:
+        raise NotImplementedError
+
+    async def set_active_version_id(
+        self, *, tool_id: UUID, active_version_id: UUID | None, now: datetime
+    ) -> Tool:
+        raise NotImplementedError
+
+    async def update_metadata(
+        self,
+        *,
+        tool_id: UUID,
+        title: str,
+        summary: str | None,
+        now: datetime,
+    ) -> Tool:
+        raise NotImplementedError
+
+    async def update_slug(self, *, tool_id: UUID, slug: str, now: datetime) -> Tool:
+        raise NotImplementedError
+
+    async def create_draft(
+        self,
+        *,
+        tool: Tool,
+        profession_ids: list[UUID],
+        category_ids: list[UUID],
+    ) -> Tool:
+        raise NotImplementedError
+
+    async def list_tag_ids(self, *, tool_id: UUID) -> tuple[list[UUID], list[UUID]]:
+        raise NotImplementedError
+
+    async def replace_tags(
+        self,
+        *,
+        tool_id: UUID,
+        profession_ids: list[UUID],
+        category_ids: list[UUID],
+        now: datetime,
+    ) -> None:
+        raise NotImplementedError
+
+
+class FakeCuratedApps(CuratedAppRegistryProtocol):
+    def list_all(self) -> list[CuratedAppDefinition]:
+        return []
+
+    def get_by_app_id(self, *, app_id: str) -> CuratedAppDefinition | None:
+        return None
+
+    def get_by_tool_id(self, *, tool_id: UUID) -> CuratedAppDefinition | None:
+        return None
 
 
 class FakeVaultFileRepo(VaultFileRepositoryProtocol):
@@ -194,6 +331,9 @@ class FakeVaultStorage(VaultStorageProtocol):
     async def store_file(self, *, user_id: UUID, file_id: UUID, content: bytes) -> None:
         self._files[(user_id, file_id)] = content
 
+    async def exists_file(self, *, user_id: UUID, file_id: UUID) -> bool:
+        return (user_id, file_id) in self._files
+
     async def read_file(self, *, user_id: UUID, file_id: UUID) -> bytes:
         return self._files[(user_id, file_id)]
 
@@ -221,8 +361,7 @@ async def test_save_vault_file_stores_bytes_and_updates_usage(now: datetime) -> 
         }
     )
 
-    runs = AsyncMock(spec=ToolRunRepositoryProtocol)
-    runs.get_by_id.return_value = run
+    runs = FakeRuns(runs_by_id={run.id: run})
 
     vault_files = FakeVaultFileRepo()
     vault_usage = FakeVaultUsageRepo()
@@ -430,8 +569,7 @@ async def test_save_vault_file_rejects_invalid_manifest(now: datetime) -> None:
         update={"artifacts_manifest": {"artifacts": [{"path": "output/report.pdf", "bytes": 4}]}}
     )
 
-    runs = AsyncMock(spec=ToolRunRepositoryProtocol)
-    runs.get_by_id.return_value = run
+    runs = FakeRuns(runs_by_id={run.id: run})
 
     handler = SaveVaultFileHandler(
         uow=FakeUow(),
@@ -502,10 +640,18 @@ async def test_list_vault_files_returns_usage_and_pagination(now: datetime) -> N
     vault_usage = FakeVaultUsageRepo()
     vault_usage._usage[actor.id] = VaultUsage(user_id=actor.id, bytes_total=6, updated_at=now)
 
+    runs = FakeRuns()
+    tools = FakeTools()
+    curated_apps = FakeCuratedApps()
+
     handler = ListVaultFilesHandler(
         uow=FakeUow(),
+        runs=runs,
+        tools=tools,
+        curated_apps=curated_apps,
         vault_files=vault_files,
         vault_usage=vault_usage,
+        vault_storage=FakeVaultStorage(),
         settings=Settings(VAULT_MAX_TOTAL_BYTES=10, VAULT_MAX_FILE_BYTES=5),
     )
 

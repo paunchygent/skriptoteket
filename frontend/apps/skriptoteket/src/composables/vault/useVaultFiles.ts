@@ -107,7 +107,7 @@ export function useVaultFiles(options: UseVaultFilesOptions = {}) {
       } else if (error instanceof Error) {
         errorMessage.value = error.message;
       } else {
-        errorMessage.value = "Det gick inte att ladda valvet.";
+        errorMessage.value = "Det gick inte att ladda Mina filer.";
       }
     } finally {
       isLoading.value = false;
