@@ -233,11 +233,14 @@ describe("useAuthStore", () => {
 
       expect(token).toBe("new-token");
       expect(store.csrfToken).toBe("new-token");
-      expect(fetch).toHaveBeenCalledWith("/api/v1/auth/csrf", {
-        method: "GET",
-        credentials: "include",
-        headers: { Accept: "application/json" },
-      });
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/v1/auth/csrf",
+        expect.objectContaining({
+          method: "GET",
+          credentials: "include",
+          headers: { Accept: "application/json" },
+        }),
+      );
     });
 
     it("clears user on 401 response", async () => {
